@@ -781,8 +781,17 @@ class _FillValueMaskCheckAndStoreTarget(object):
 # Placeholder object types for file elements to create/update.
 _SaveFile = NamedTuple('SaveFile', ['dims', 'vars', 'attrs'])
 _SaveDim = NamedTuple('SaveDim', ['name', 'size'])
-_SaveVar = NamedTuple('SaveVar', ['name', 'dim_names', 'attrs',
-                                  'data_source', 'controls'])
+#_SaveVar = NamedTuple('SaveVar', ['name', 'dim_names', 'attrs',
+#                                  'data_source', 'controls'])
+class _SaveVar(object):
+    __slots__ = ('name', 'dim_names', 'attrs', 'data_source', 'controls')
+    def __init__(self, name, dim_names, attrs, data_source, controls):
+        self.name = name
+        self.dim_names = dim_names
+        self.attrs = attrs
+        self.data_source = data_source
+        self.controls = controls
+
 _SaveAttr = NamedTuple('SaveAttr', ['name', 'value'])
 
 
@@ -1509,7 +1518,11 @@ class Saver(object):
         """
         if coord.has_bounds():
             # Get the values in a form which is valid for the file format.
-            n_bounds = coord.core_bounds().shape[-1]
+            bounds = self._ensure_valid_dtype(coord.core_bounds(),
+                                              'the bounds of coordinate',
+                                              coord)
+
+            n_bounds = bounds.shape[-1]
 
             if n_bounds == 2:
                 bounds_dimension_name = 'bnds'
@@ -1530,7 +1543,7 @@ class Saver(object):
                          dim_names=(cf_var.dim_names +
                                     [bounds_dimension_name]),
                          attrs=OrderedDict(),
-                         data_source=coord.core_bounds(),
+                         data_source=bounds,
                          controls={'var_type': 'bounds-var'}))
 
     def _get_cube_variable_name(self, cube):
@@ -2282,32 +2295,56 @@ class Saver(object):
         settings = var.controls
         # Get some defaults
         create_kwargs = settings.get('create_kwargs', {})
-        # NOTE: this initial dtype may change for packings or netcdf-3 output.
-        create_dtype=var.data_source.dtype 
         # Switch on variable 'type' = usage, for different save behaviours.
         # TODO: try to unify all this behaviour + remove the 'type' control.
         var_type = settings['var_type']
         if var_type == 'grid-mapping':
             # Nothing more to do in this case.
             pass
+        elif var_type == 'bounds-var':
+            pass
         elif var_type == 'coordinate':
             pass
         elif var_type == 'cell-measure':
-            pass
-        elif var_type == 'bounds-var':
-            pass
+            # Get the data values.
+            # TODO: defer this where possible.
+            data = as_concrete_data(var.data_source)
+
+            # Disallow saving of *masked* cell measures.
+            if ma.is_masked(data):
+                # We can't save masked points properly, as we don't maintain a
+                # suitable fill_value.  (Load will not record one, either).
+                msg = "Cell measures with missing data are not supported."
+                if not self._append_mode:
+                    raise ValueError(msg)
+
+                # 'else' : modify in append case...
+                # We can't save masked points properly, as we don't maintain a
+                # suitable fill_value.  (Load will not record one, either).
+                msg = ("Cell measure variable contains missing data:  This is "
+                       "not supported by the netCDF-CF conventions, and "
+                       "masked points may read back as 'real' values.")
+                warnings.warn(msg)
+
+            # Get the values in a form which is valid for the file format.
+            var.data_source = self._ensure_valid_dtype(data, 'coordinate', var)
+
         elif var_type == 'data-var':
             fill_value = settings['fill_value']
             packing = settings['packing']
         else:
             raise Exception('Save code bug : unrecognised variable type')
 
+        # Transform any dtypes that aren't supported by the netcdf version.
+        var.data_source = self._ensure_valid_dtype(
+            var.data_source, var.controls['var_type'], var)
+
         # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
         # Note : both dtype and data are *not* as simple as this ...
         # TODO: take account of the existing code.
         nc_var = self._dataset.createVariable(
             varname=var.name,
-            datatype=create_dtype,
+            datatype=var.data_source.dtype,
             dimensions=tuple(var.dim_names),
             **create_kwargs)
         # Add variable attributes.
@@ -2318,9 +2355,11 @@ class Saver(object):
 
     def _write_variable_values_in_dataset(self, nc_var, var):
         # Add data.
+        data = var.data_source
+        # Write the data ...
         # TODO should be streamed !! -- very very clunky !!
-        # TODO should account for packing etc.
-        nc_var[:] = as_concrete_data(var.data_source)
+        data = as_concrete_data(data)
+        nc_var[:] = data
 
 
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
