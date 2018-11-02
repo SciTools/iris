@@ -1729,12 +1729,12 @@ class Saver(object):
                                                 (string_dimension_depth,
                                                  coord.points[index]))
 
-            _addbyname(self._save.vars,
-                       _SaveVar(name=cf_name,
-                                dim_names=cf_dimensions,
-                                attrs=OrderedDict(),
-                                data_source=content,
-                                controls=controls))
+            cf_var = _SaveVar(name=cf_name,
+                              dim_names=cf_dimensions,
+                              attrs=OrderedDict(),
+                              data_source=content,
+                              controls=controls)
+            _addbyname(self._save.vars, cf_var)
 
         else:
             # Identify the collection of coordinates that represent CF-netCDF
@@ -1760,6 +1760,7 @@ class Saver(object):
                               attrs=OrderedDict(),
                               data_source=coord.core_points(),
                               controls=controls)
+
             _addbyname(self._save.vars, cf_var)
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -1773,6 +1774,7 @@ class Saver(object):
 
             # Create the associated CF-netCDF bounds variable.
             self._create_cf_bounds(coord, cf_var, cf_name)
+
 
         # Deal with CF-netCDF units and standard name.
         standard_name, long_name, units = self._cf_coord_identity(coord)
@@ -2268,28 +2270,57 @@ class Saver(object):
             self._dataset.createDimension(dim.name, dim.size)
 
         # Add variables.
-        for var in self._save.vars.values():
-            settings = var.controls
-            # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
-            create_kwargs = settings.get('create_kwargs', {})
-            # Note : both dtype and data are *not* as simple as this ...
-            # TODO: take account of the existing code.
-            nc_var = self._dataset.createVariable(
-                varname=var.name,
-                datatype=var.data_source.dtype,
-                dimensions=tuple(var.dim_names),
-                **create_kwargs)
-            # Add variable attributes.
-            for attr in var.attrs.values():
-                _setncattr(nc_var, attr.name, attr.value)
-            # Add data.
-            # TODO should be streamed !! -- very very clunky !!
-            # TODO should account for packing etc.
-            nc_var[:] = as_concrete_data(var.data_source)
+        for cf_var in self._save.vars.values():
+            nc_var = self._make_variable_in_dataset(cf_var)
+            self._write_variable_values_in_dataset(nc_var, cf_var)
 
         # Add global attributes.
         for attr in self._save.attrs.values():
             _setncattr(self._dataset, attr.name, attr.value)
+
+    def _make_variable_in_dataset(self, var):
+        settings = var.controls
+        # Get some defaults
+        create_kwargs = settings.get('create_kwargs', {})
+        # NOTE: this initial dtype may change for packings or netcdf-3 output.
+        create_dtype=var.data_source.dtype 
+        # Switch on variable 'type' = usage, for different save behaviours.
+        # TODO: try to unify all this behaviour + remove the 'type' control.
+        var_type = settings['var_type']
+        if var_type == 'grid-mapping':
+            # Nothing more to do in this case.
+            pass
+        elif var_type == 'coordinate':
+            pass
+        elif var_type == 'cell-measure':
+            pass
+        elif var_type == 'bounds-var':
+            pass
+        elif var_type == 'data-var':
+            fill_value = settings['fill_value']
+            packing = settings['packing']
+        else:
+            raise Exception('Save code bug : unrecognised variable type')
+
+        # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
+        # Note : both dtype and data are *not* as simple as this ...
+        # TODO: take account of the existing code.
+        nc_var = self._dataset.createVariable(
+            varname=var.name,
+            datatype=create_dtype,
+            dimensions=tuple(var.dim_names),
+            **create_kwargs)
+        # Add variable attributes.
+        for attr in var.attrs.values():
+            _setncattr(nc_var, attr.name, attr.value)
+
+        return nc_var
+
+    def _write_variable_values_in_dataset(self, nc_var, var):
+        # Add data.
+        # TODO should be streamed !! -- very very clunky !!
+        # TODO should account for packing etc.
+        nc_var[:] = as_concrete_data(var.data_source)
 
 
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
