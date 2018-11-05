@@ -1738,7 +1738,8 @@ class Saver(object):
                                                    coord.points[0])),
                                    dtype=namevar_dtype)
             else:
-                content = np.empty(coord.shape, dtype=namevar_dtype)
+                stringvar_shape = coord.shape + (string_dimension_depth,)
+                content = np.empty(stringvar_shape, dtype=namevar_dtype)
                 for index in np.ndindex(coord.shape):
                     index_slice = tuple(list(index) + [slice(None, None)])
                     content[index_slice] = list('%- *s' %
