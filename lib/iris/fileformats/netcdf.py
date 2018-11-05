@@ -1331,8 +1331,8 @@ class Saver(object):
                     **names)
                 std_name = factory_defn.std_name
 
-                if hasattr(cf_var, 'formula_terms'):
-                    if cf_var.formula_terms != formula_terms or \
+                if 'formula_terms' in cf_var.attrs:
+                    if cf_var.attrs['formula_terms'] != formula_terms or \
                             cf_var.standard_name != std_name:
                         # TODO: We need to resolve this corner-case where
                         # the dimensionless vertical coordinate containing the
@@ -1361,9 +1361,12 @@ class Saver(object):
                             # Update the cache.
                             self._formula_terms_cache[key] = name
                         # Update the associated cube variable.
-                        coords = cf_var_cube.coordinates.split()
+                        coords = cf_var_cube.attrs['coordinates'].value
+                        coords = coords.split()
                         coords = [name if c == cf_name else c for c in coords]
-                        _addattr(cf_var, 'coordinates', ' '.join(coords))
+                        # Replace the old attribute with a new one.
+                        cf_var_cube.attrs['coordinates'] = \
+                            _SaveAttr('coordinates', ' '.join(coords))
                 else:
                     _addattr(cf_var, 'standard_name', std_name),
                     _addattr(cf_var, 'axis', 'Z'),
