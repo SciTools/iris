@@ -816,8 +816,11 @@ class _SlotsHolder(object):
             setattr(self, name, values.get(name, None))
 
     def __eq__(self, other):
-        return all(getattr(self, name, None) == getattr(other, name, None)
-                   for name in self.__slots__)
+        matches = [getattr(self, name, None) == getattr(other, name, None)
+                   for name in self.__slots__]
+        # Include arrays in comparison.
+        return all(np.all(match) if hasattr(match, 'dtype') else match
+                   for match in matches)
 
     def __ne__(self, other):
         return not (self == other)
@@ -2361,7 +2364,7 @@ class Saver(object):
             pass
         elif var_type == 'cell-measure':
             # Get the data values.
-            # TODO: defer this where possible.
+            # TODO: defer this where possible?  Must give *warning* instead.
             data = as_concrete_data(var.data_source)
 
             # Disallow saving of *masked* cell measures.
@@ -2379,9 +2382,6 @@ class Saver(object):
                        "not supported by the netCDF-CF conventions, and "
                        "masked points may read back as 'real' values.")
                 warnings.warn(msg)
-
-            # Get the values in a form which is valid for the file format.
-            var.data_source = self._ensure_valid_dtype(data, 'coordinate', var)
 
         elif var_type == 'data-var':
             fill_value = settings['fill_value']
