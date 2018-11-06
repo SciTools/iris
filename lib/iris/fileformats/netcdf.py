@@ -2119,53 +2119,44 @@ class Saver(object):
             The newly created CF-netCDF data variable.
 
         """
+        if not packing:
+            pack_dtype = None
+        else:
+            if isinstance(packing, dict):
+                if 'dtype' not in packing:
+                    msg = "The dtype attribute is required for packing."
+                    raise ValueError(msg)
+                pack_dtype = np.dtype(packing['dtype'])
+                scale_factor = packing.get('scale_factor', None)
+                add_offset = packing.get('add_offset', None)
+                valid_keys = {'dtype', 'scale_factor', 'add_offset'}
+                invalid_keys = set(packing.keys()) - valid_keys
+                if invalid_keys:
+                    msg = ("Invalid packing key(s) found: '{}'. The valid "
+                           "keys are '{}'.".format("', '".join(invalid_keys),
+                                                   "', '".join(valid_keys)))
+                    raise ValueError(msg)
+            else:
+                # We compute the scale_factor and add_offset based on the
+                # min/max of the data. This requires the data to be loaded.
+                masked = ma.isMaskedArray(cube.data)
+                pack_dtype = np.dtype(packing)
+                cmax = cube.data.max()
+                cmin = cube.data.min()
+                n = pack_dtype.itemsize * 8
+                if masked:
+                    scale_factor = (cmax - cmin)/(2**n-2)
+                else:
+                    scale_factor = (cmax - cmin)/(2**n-1)
+                if pack_dtype.kind == 'u':
+                    add_offset = cmin
+                elif pack_dtype.kind == 'i':
+                    if masked:
+                        add_offset = (cmax + cmin)/2
+                    else:
+                        add_offset = cmin + 2**(n-1)*scale_factor
 
-#
-# N.B. defer all these decisions until write time ...
-#
-#        if packing:
-#            if isinstance(packing, dict):
-#                if 'dtype' not in packing:
-#                    msg = "The dtype attribute is required for packing."
-#                    raise ValueError(msg)
-#                dtype = np.dtype(packing['dtype'])
-#                scale_factor = packing.get('scale_factor', None)
-#                add_offset = packing.get('add_offset', None)
-#                valid_keys = {'dtype', 'scale_factor', 'add_offset'}
-#                invalid_keys = set(packing.keys()) - valid_keys
-#                if invalid_keys:
-#                    msg = ("Invalid packing key(s) found: '{}'. The valid "
-#                           "keys are '{}'.".format("', '".join(invalid_keys),
-#                                                   "', '".join(valid_keys)))
-#                    raise ValueError(msg)
-#            else:
-#                # We compute the scale_factor and add_offset based on the
-#                # min/max of the data. This requires the data to be loaded.
-#                masked = ma.isMaskedArray(cube.data)
-#                dtype = np.dtype(packing)
-#                cmax = cube.data.max()
-#                cmin = cube.data.min()
-#                n = dtype.itemsize * 8
-#                if masked:
-#                    scale_factor = (cmax - cmin)/(2**n-2)
-#                else:
-#                    scale_factor = (cmax - cmin)/(2**n-1)
-#                if dtype.kind == 'u':
-#                    add_offset = cmin
-#                elif dtype.kind == 'i':
-#                    if masked:
-#                        add_offset = (cmax + cmin)/2
-#                    else:
-#                        add_offset = cmin + 2**(n-1)*scale_factor
-#
-#        def set_packing_ncattrs(cfvar):
-#            """Set netCDF packing attributes."""
-#            if packing:
-#                if scale_factor:
-#                    _setncattr(cfvar, 'scale_factor', scale_factor)
-#                if add_offset:
-#                    _setncattr(cfvar, 'add_offset', add_offset)
-
+        # Make the variable.
         cf_name = self._get_cube_variable_name(cube)
         while cf_name in self._save.vars:
             cf_name = self._increment_name(cf_name)
@@ -2195,23 +2186,22 @@ class Saver(object):
 #                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
 #                da.store([data], [target])
 #                return target.is_masked, target.contains_value
-#
-#        if not packing:
-#            dtype = data.dtype.newbyteorder('=')
 
-        # Create the cube CF-netCDF data variable with data payload.
-#        cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,
-#                                              fill_value=fill_value,
-#                                              **kwargs)
         controls = {'var_type': 'data-var',
                     'create_kwargs': kwargs,
-                    'fill_value': fill_value, 'packing': packing}
+                    'fill_value': fill_value, 'pack_dtype': pack_dtype}
         cf_var = _SaveVar(name=cf_name,
                           dim_names=dimension_names,
                           attrs=OrderedDict(),
                           data_source=cube.core_data(),
                           controls=controls)
         _addbyname(self._save.vars, cf_var)
+
+        if packing:
+            if scale_factor:
+                _addattr(cf_var, 'scale_factor', scale_factor)
+            if add_offset:
+                _addattr(cf_var, 'add_offset', add_offset)
 
 #
 # N.B. defer all these decisions until write time ...
@@ -2360,6 +2350,8 @@ class Saver(object):
         # Switch on variable 'type' = usage, for different save behaviours.
         # TODO: try to unify all this behaviour + remove the 'type' control.
         var_type = settings['var_type']
+        fill_value = None
+        pack_dtype = None
         if var_type == 'grid-mapping':
             # Nothing more to do in this case.
             pass
@@ -2393,7 +2385,7 @@ class Saver(object):
 
         elif var_type == 'data-var':
             fill_value = settings['fill_value']
-            packing = settings['packing']
+            pack_dtype = settings['pack_dtype']
         else:
             raise Exception('Save code bug : unrecognised variable type')
 
@@ -2401,13 +2393,17 @@ class Saver(object):
         var.data_source = self._ensure_valid_dtype(
             var.data_source, var.controls['var_type'], var)
 
+        # Choose variable type accordingly.
+        dtype = pack_dtype or var.data_source.dtype
+
         # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
         # Note : both dtype and data are *not* as simple as this ...
         # TODO: take account of the existing code.
         nc_var = self._dataset.createVariable(
             varname=var.name,
-            datatype=var.data_source.dtype,
+            datatype=dtype,
             dimensions=tuple(var.dim_names),
+            fill_value=fill_value,
             **create_kwargs)
         # Add variable attributes.
         for attr in var.attrs.values():
