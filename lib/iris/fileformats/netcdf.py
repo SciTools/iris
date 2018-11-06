@@ -857,7 +857,8 @@ class _SaveAttr(_SlotsHolder):
 def _addbyname(saver_dict, saver_tuple_object):
     name = saver_tuple_object.name
     if name in saver_dict and saver_tuple_object != saver_dict[name]:
-        msg = '"_addbyname" : element {} does not match {} of same name, already existing in {}.'
+        msg = ('"_addbyname" : element {} does not match {} of same name, '
+               'already existing in {}.')
         raise ValueError(msg.format(name, saver_dict[name], saver_dict))
     saver_dict[name] = saver_tuple_object
 
@@ -1089,8 +1090,9 @@ class Saver(object):
 #        cf_profile_available = (iris.site_configuration.get('cf_profile') not
 #                                in [None, False])
 #        if cf_profile_available:
-#            # Perform a CF profile of the cube. This may result in an exception
-#            # being raised if mandatory requirements are not satisfied.
+#            # Perform a CF profile of the cube. This may result in an
+#            # exception being raised if mandatory requirements are not
+#            # satisfied.
 #            profile = iris.site_configuration['cf_profile'](cube)
 
         # Ensure that attributes are CF compliant and if possible to make them
@@ -1737,7 +1739,7 @@ class Saver(object):
             value = cell_measure.attributes[name]
 
             # Don't clobber existing attributes.
-            if not name in cf_var.attrs:
+            if name not in cf_var.attrs:
                 _addattr(cf_var, name, value)
 
         return cf_name
@@ -1849,7 +1851,6 @@ class Saver(object):
             # Create the associated CF-netCDF bounds variable.
             self._create_cf_bounds(coord, cf_var, cf_name)
 
-
         # Deal with CF-netCDF units and standard name.
         standard_name, long_name, units = self._cf_coord_identity(coord)
 
@@ -1877,7 +1878,7 @@ class Saver(object):
                 value = str(value)
 
             # Don't clobber existing attributes.
-            if not name in cf_var.attrs:
+            if name not in cf_var.attrs:
                 _addattr(cf_var, name, value)
 
         return cf_name
@@ -2013,7 +2014,7 @@ class Saver(object):
                     if cs.ellipsoid:
                         add_ellipsoid(cs.ellipsoid)
                     gridattr('longitude_of_projection_origin',
-                        cs.longitude_of_projection_origin)
+                             cs.longitude_of_projection_origin)
                     # The Mercator class has implicit defaults for certain
                     # parameters
                     gridattr('false_easting', 0.0)
@@ -2202,9 +2203,9 @@ class Saver(object):
 #        cf_var = self._dataset.createVariable(cf_name, dtype, dimension_names,
 #                                              fill_value=fill_value,
 #                                              **kwargs)
-        controls = {'var_type':'data-var',
-                    'create_kwargs':kwargs,
-                    'fill_value':fill_value, 'packing':packing}
+        controls = {'var_type': 'data-var',
+                    'create_kwargs': kwargs,
+                    'fill_value': fill_value, 'packing': packing}
         cf_var = _SaveVar(name=cf_name,
                           dim_names=dimension_names,
                           attrs=OrderedDict(),
