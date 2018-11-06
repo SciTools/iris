@@ -31,7 +31,6 @@ import six
 
 import collections
 from collections import OrderedDict
-from collections import namedtuple as NamedTuple
 from itertools import repeat
 import os
 import os.path
@@ -778,21 +777,80 @@ class _FillValueMaskCheckAndStoreTarget(object):
         self.target[keys] = arr
 
 
-# Placeholder object types for file elements to create/update.
-_SaveFile = NamedTuple('SaveFile', ['dims', 'vars', 'attrs'])
-_SaveDim = NamedTuple('SaveDim', ['name', 'size'])
-#_SaveVar = NamedTuple('SaveVar', ['name', 'dim_names', 'attrs',
-#                                  'data_source', 'controls'])
-class _SaveVar(object):
-    __slots__ = ('name', 'dim_names', 'attrs', 'data_source', 'controls')
-    def __init__(self, name, dim_names, attrs, data_source, controls):
-        self.name = name
-        self.dim_names = dim_names
-        self.attrs = attrs
-        self.data_source = data_source
-        self.controls = controls
+class _SlotsHolder(object):
+    """
+    Abstract parent class for container classes with fixed, named properties.
 
-_SaveAttr = NamedTuple('SaveAttr', ['name', 'value'])
+    Supports: dot-property acccess, comparison, str().
+
+    Inherit + configure by supplying class properties:
+    * __slots__ (list of string):
+        names of content attributes.
+        Order and names also provide object init args and kwargs.
+    * _typename : the headline name for the string print
+    * _defaults_dict : an kwargs-like dict of defaults for object init.
+
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initialise new instance with args or kwargs.
+
+        Args order and Kwargs entries from '__slots__'.
+
+        Unspecified args default to values in 'self._defaults_dict',
+        or else None.
+
+        """
+        values = getattr(self, '_defaults_dict', {})
+        unrecs = [key for key in kwargs if key not in self.__slots__]
+        if unrecs:
+            unrecs = ', '.join(unrecs)
+            msg = 'Unrecognised create kwargs : {}'
+            raise ValueError(msg.format(unrecs))
+        values.update(kwargs)
+        if len(args) > len(self.__slots__):
+            msg = 'Number of create args is {} > maximum {}.'
+            raise ValueError(msg.format(len(args), len(self.__slots__)))
+        values.update(zip(self.__slots__, args))
+        for name in self.__slots__:
+            setattr(self, name, values.get(name, None))
+
+    def __eq__(self, other):
+        return all(getattr(self, name, None) == getattr(other, name, None)
+                   for name in self.__slots__)
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __str__(self):
+        msg = "{}({})"
+        items = [(name, getattr(self, name)) for name in self.__slots__]
+        content = ', '.join('{}={}'.format(name, value)
+                            for name, value in items
+                            if value is not None)
+        typename = getattr(self, '_typename', self.__class__.__name__)
+        return msg.format(typename, content)
+
+
+# Placeholder object types for file elements to create/update.
+class _SaveFile(_SlotsHolder):
+    _typename = 'SaveFile'
+    __slots__ = ('dims', 'vars', 'attrs')
+
+
+class _SaveDim(_SlotsHolder):
+    _typename = 'SaveDim'
+    __slots__ = ('name', 'size')
+
+
+class _SaveVar(_SlotsHolder):
+    _typename = 'SaveVar'
+    __slots__ = ('name', 'dim_names', 'attrs', 'data_source', 'controls')
+
+
+class _SaveAttr(_SlotsHolder):
+    _typename = 'SaveAttr'
+    __slots__ = ('name', 'value')
 
 
 # Short-form for "elements[this.name] = this".
@@ -1364,9 +1422,8 @@ class Saver(object):
                         coords = cf_var_cube.attrs['coordinates'].value
                         coords = coords.split()
                         coords = [name if c == cf_name else c for c in coords]
-                        # Replace the old attribute with a new one.
-                        cf_var_cube.attrs['coordinates'] = \
-                            _SaveAttr('coordinates', ' '.join(coords))
+                        coords = ' '.join(coords)
+                        cf_var_cube.attrs['coordinates'].value = coords
                 else:
                     _addattr(cf_var, 'standard_name', std_name),
                     _addattr(cf_var, 'axis', 'Z'),
