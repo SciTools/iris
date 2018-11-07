@@ -1859,9 +1859,10 @@ class _Groupby(object):
 
         Kwargs:
 
-        * shared_coords (list of :class:`iris.coords.Coord` instances):
-            One or more coordinates that share the same group-by
-            coordinate axis.
+        * shared_coords (list of (:class:`iris.coords.Coord`, `int`) pairs):
+            One or more coordinates (including multidimensional coordinates)
+            that share the same group-by coordinate axis.  The `int` identifies
+            which dimension of the coord is on the group-by coordinate axis.
 
         """
         #: Group-by and shared coordinates that have been grouped.
@@ -1886,8 +1887,8 @@ class _Groupby(object):
                 raise TypeError('shared_coords must be a '
                                 '`collections.Iterable` type.')
             # Add valid shared coordinates.
-            for coord in shared_coords:
-                self._add_shared_coord(coord)
+            for coord, dim in shared_coords:
+                self._add_shared_coord(coord, dim)
 
     def _add_groupby_coord(self, coord):
         if coord.ndim != 1:
@@ -1898,12 +1899,10 @@ class _Groupby(object):
             raise ValueError('Group-by coordinates have different lengths.')
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord):
-        if coord.ndim != 1:
-            raise iris.exceptions.CoordinateMultiDimError(coord)
-        if coord.shape[0] != self._stop and self._stop is not None:
+    def _add_shared_coord(self, coord, dim):
+        if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError('Shared coordinates have different lengths.')
-        self._shared_coords.append(coord)
+        self._shared_coords.append((coord, dim))
 
     def group(self):
         """
@@ -2030,18 +2029,36 @@ class _Groupby(object):
                 groupby_bounds.append((key_slice.start, key_slice.stop-1))
 
         # Create new shared bounded coordinates.
-        for coord in self._shared_coords:
+        for coord, dim in self._shared_coords:
             if coord.points.dtype.kind in 'SU':
                 if coord.bounds is None:
                     new_points = []
                     new_bounds = None
+                    # np.apply_along_axis does not work with str.join, so we
+                    # need to loop through the array directly. First move axis
+                    # of interest to trailing dim and flatten the others.
+                    work_arr = np.moveaxis(coord.points, dim, -1)
+                    shape = work_arr.shape
+                    work_shape = (-1, shape[-1])
+                    new_shape = (len(self),)
+                    if coord.ndim > 1:
+                        new_shape += shape[:-1]
+                    work_arr = work_arr.reshape(work_shape)
+
                     for key_slice in six.itervalues(self._slices_by_key):
                         if isinstance(key_slice, slice):
-                            indices = key_slice.indices(coord.points.shape[0])
+                            indices = key_slice.indices(
+                                coord.points.shape[dim])
                             key_slice = range(*indices)
-                        new_pt = '|'.join([coord.points[i]
-                                           for i in key_slice])
-                        new_points.append(new_pt)
+
+                        for arr in work_arr:
+                            new_points.append('|'.join(arr.take(key_slice)))
+
+                    # Reinstate flattened dimensions. Aggregated dim now leads.
+                    new_points = np.array(new_points).reshape(new_shape)
+
+                    # Move aggregated dimension back to position it started in.
+                    new_points = np.moveaxis(new_points, 0, dim)
                 else:
                     msg = ('collapsing the bounded string coordinate {0!r}'
                            ' is not supported'.format(coord.name()))
@@ -2054,27 +2071,35 @@ class _Groupby(object):
                     if coord.has_bounds():
                         # Collapse group bounds into bounds.
                         if (getattr(coord, 'circular', False) and
-                                (stop + 1) == len(coord.points)):
-                            new_bounds.append([coord.bounds[start, 0],
-                                              coord.bounds[0, 0] +
-                                              coord.units.modulus])
+                                (stop + 1) == coord.shape[dim]):
+                            new_bounds.append(
+                                [coord.bounds.take(start, dim).take(0, -1),
+                                 coord.bounds.take(0, dim).take(0, -1) +
+                                 coord.units.modulus])
                         else:
-                            new_bounds.append([coord.bounds[start, 0],
-                                              coord.bounds[stop, 1]])
+                            new_bounds.append(
+                                [coord.bounds.take(start, dim).take(0, -1),
+                                 coord.bounds.take(stop, dim).take(1, -1)])
                     else:
                         # Collapse group points into bounds.
                         if (getattr(coord, 'circular', False) and
                                 (stop + 1) == len(coord.points)):
-                            new_bounds.append([coord.points[start],
-                                              coord.points[0] +
-                                              coord.units.modulus])
+                            new_bounds.append([coord.points.take(start, dim),
+                                               coord.points.take(0, dim) +
+                                               coord.units.modulus])
                         else:
-                            new_bounds.append([coord.points[start],
-                                              coord.points[stop]])
+                            new_bounds.append([coord.points.take(start, dim),
+                                               coord.points.take(stop, dim)])
+
+                # Bounds needs to be an array with the length 2 start-stop
+                # dimension last, and the aggregated dimension back in its
+                # original position.
+                new_bounds = np.moveaxis(
+                    np.array(new_bounds), (0, 1), (dim, -1))
 
                 # Now create the new bounded group shared coordinate.
                 try:
-                    new_points = np.array(new_bounds).mean(-1)
+                    new_points = new_bounds.mean(-1)
                 except TypeError:
                     msg = 'The {0!r} coordinate on the collapsing dimension' \
                           ' cannot be collapsed.'.format(coord.name())

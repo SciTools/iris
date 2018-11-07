@@ -1,0 +1,2 @@
+* :meth:`iris.cube.Cube.aggregated_by` now gives correct values in points and
+bounds when handling multidimensional coordinates.
