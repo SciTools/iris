@@ -58,7 +58,7 @@ import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import as_lazy_data, as_concrete_data
+from iris._lazy_data import is_lazy_data, as_lazy_data, as_concrete_data
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -1602,6 +1602,8 @@ class Saver(object):
             bounds_name = cf_name + '_bnds'
             _addattr(cf_var, 'bounds', bounds_name)
 
+            controls = {'var_type': 'bounds-var',
+                        'bounds_parent_coord_name': coord.name()}
             _addbyname(
                 self._save.vars,
                 _SaveVar(name=bounds_name,
@@ -1609,7 +1611,7 @@ class Saver(object):
                                     [bounds_dimension_name]),
                          attrs=OrderedDict(),
                          data_source=bounds,
-                         controls={'var_type': 'bounds-var'}))
+                         controls=controls))
 
     def _get_cube_variable_name(self, cube):
         """
@@ -2164,35 +2166,10 @@ class Saver(object):
         while cf_name in self._save.vars:
             cf_name = self._increment_name(cf_name)
 
-#
-# N.B. defer all these decisions until write time ...
-#
-#        # if netcdf3 avoid streaming due to dtype handling
-#        if (not cube.has_lazy_data() or
-#            self._dataset.file_format in ('NETCDF3_CLASSIC',
-#                                          'NETCDF3_64BIT')):
-#
-#            # Get the values in a form which is valid for the file format.
-#            data = self._ensure_valid_dtype(cube.data, 'cube', cube)
-#
-#            def store(data, cf_var, fill_value):
-#                cf_var[:] = data
-#                is_masked = ma.is_masked(data)
-#                contains_value = fill_value is not None and fill_value in data
-#                return is_masked, contains_value
-#        else:
-#            data = cube.lazy_data()
-#
-#            def store(data, cf_var, fill_value):
-#                # Store lazy data and check whether it is masked and contains
-#                # the fill value
-#                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
-#                da.store([data], [target])
-#                return target.is_masked, target.contains_value
-
         controls = {'var_type': 'data-var',
                     'create_kwargs': kwargs,
-                    'fill_value': fill_value, 'pack_dtype': pack_dtype}
+                    'fill_value': fill_value, 'pack_dtype': pack_dtype,
+                    'cube_name': cube.name()}
         cf_var = _SaveVar(name=cf_name,
                           dim_names=dimension_names,
                           attrs=OrderedDict(),
@@ -2205,40 +2182,6 @@ class Saver(object):
                 _addattr(cf_var, 'scale_factor', scale_factor)
             if add_offset:
                 _addattr(cf_var, 'add_offset', add_offset)
-
-#
-# N.B. defer all these decisions until write time ...
-#
-#        set_packing_ncattrs(cf_var)
-#
-#        # If packing attributes are specified, don't bother checking whether
-#        # the fill value is in the data.
-#        if packing:
-#            fill_value_to_check = None
-#        elif fill_value is not None:
-#            fill_value_to_check = fill_value
-#        else:
-#            fill_value_to_check = netCDF4.default_fillvals[dtype.str[1:]]
-#
-#        # Store the data and check if it is masked and contains the fill value
-#        is_masked, contains_fill_value = store(data, cf_var,
-#                                               fill_value_to_check)
-#
-#        if dtype.itemsize == 1 and fill_value is None:
-#            if is_masked:
-#                msg = ("Cube '{}' contains byte data with masked points, but "
-#                       "no fill_value keyword was given. As saved, these "
-#                       "points will read back as valid values. To save as "
-#                       "masked byte data, please explicitly specify the "
-#                       "'fill_value' keyword.")
-#                warnings.warn(msg.format(cube.name()))
-#        elif contains_fill_value:
-#            msg = ("Cube '{}' contains unmasked data points equal to the "
-#                   "fill-value, {}. As saved, these points will read back "
-#                   "as missing data. To save these as normal values, please "
-#                   "specify a 'fill_value' keyword not equal to any valid "
-#                   "data points.")
-#            warnings.warn(msg.format(cube.name(), fill_value))
 
         if cube.standard_name:
             _addattr(cf_var, 'standard_name', cube.standard_name)
@@ -2350,6 +2293,7 @@ class Saver(object):
         settings = var.controls
         # Get some defaults
         create_kwargs = settings.get('create_kwargs', {})
+
         # Switch on variable 'type' = usage, for different save behaviours.
         # TODO: try to unify all this behaviour + remove the 'type' control.
         var_type = settings['var_type']
@@ -2396,15 +2340,14 @@ class Saver(object):
         # Choose variable type accordingly.
         dtype = pack_dtype or var.data_source.dtype
 
-        # TODO: settings controls packing etc. :: SWITCH on 'var_type'...
-        # Note : both dtype and data are *not* as simple as this ...
-        # TODO: take account of the existing code.
+        # Create the actual file variable (initially empty + unwritten).
         nc_var = self._dataset.createVariable(
             varname=var.name,
             datatype=dtype,
             dimensions=tuple(var.dim_names),
             fill_value=fill_value,
             **create_kwargs)
+
         # Add variable attributes.
         for attr in var.attrs.values():
             _setncattr(nc_var, attr.name, attr.value)
@@ -2412,12 +2355,102 @@ class Saver(object):
         return nc_var
 
     def _write_variable_values_in_dataset(self, nc_var, var):
-        # Add data.
+        """
+        Write data values to a variable.
+
+        Note : for safe "append", this should not raise Exceptions.
+
+        """
+        # Decide whether to write or stream data into the variable.
+        # If netcdf3, avoid streaming due to dtype handling.
         data = var.data_source
-        # Write the data ...
-        # TODO should be streamed !! -- very very clunky !!
-        data = as_concrete_data(data)
-        nc_var[:] = data
+        if (not is_lazy_data(data) or
+            self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                          'NETCDF3_64BIT')):
+            data = as_concrete_data(data)
+            def store(data, cf_var, fill_value):
+                cf_var[:] = data
+                is_masked = ma.is_masked(data)
+                contains_value = fill_value is not None and fill_value in data
+                return is_masked, contains_value
+        else:
+            data = as_lazy_data(data)
+            def store(data, cf_var, fill_value):
+                # Store lazy data and check whether it is masked and contains
+                # the fill value
+                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
+                da.store([data], [target])
+                return target.is_masked, target.contains_value
+
+        # Decide on fill-value checking to use.
+        fill_value = var.controls.get('fill_value', None)
+        pack_dtype = var.controls.get('pack_dtype', None)
+        dtype = pack_dtype or data.dtype
+        if pack_dtype:
+            # Data is packed : If packing attributes are specified, don't
+            # bother checking whether the fill value is in the data.
+            fill_value_to_check = None
+        elif fill_value is not None:
+            # Data is not packed, but we have a fill-value : check for that.
+            fill_value_to_check = fill_value
+        else:
+            # No fill value given : check for (netcdf) *default* fill-value.
+            fill_value_to_check = netCDF4.default_fillvals[dtype.str[1:]]
+
+        # Store the data and check if it is masked and contains the fill value
+        is_masked, contains_fill_value = store(data, nc_var,
+                                               fill_value_to_check)
+
+        # Issue any warning messages resulting from the fill checks.
+        def _var_type_and_ref_name(var):
+            """
+            Calculate type+name identity strings for a variable.
+
+            Different for variables of different 'var_type'.
+            Closely coupled to the messages we want to build !
+
+            """
+            # Translate variable 'type' to a user-meaningful string.
+            var_type = var.controls['var_type']
+            _VAR_TYPE_NAMES = {
+                'data-var': 'Cube',
+                'bounds-var': 'Bounds of coordinate',
+                'cell-measure': 'Cell-measure',
+                'coordinate': 'Coordinate',
+                'grid-mapping': 'Grid-mapping variable'
+            }
+            object_typename = _VAR_TYPE_NAMES[var_type]
+
+            # Get a user-comprehensible 'name' for the variable.
+            if var_type == 'bounds_var':
+                # Use the name of the related "main" coord variable.
+                object_name = var.controls['bounds_parent_coord_name']
+            elif 'standard_name' in var.attrs:
+                # If it has a standard_name, use that.
+                object_name = var.attrs['standard_name'].value
+            else:
+                # Fallback on the actual file varname.
+                object_name = var.name
+
+            return object_typename, object_name
+
+        if dtype.itemsize == 1 and fill_value is None:
+            if is_masked:
+                object_typename, object_name = _var_type_and_ref_name(var)
+                msg = ("{} '{}' contains byte data with masked points, but "
+                       "no fill_value keyword was given. As saved, these "
+                       "points will read back as valid values. To save as "
+                       "masked byte data, please explicitly specify the "
+                       "'fill_value' keyword.")
+                warnings.warn(msg.format(object_typename, object_name))
+        elif contains_fill_value:
+            object_typename, object_name = _var_type_and_ref_name(var)
+            msg = ("{} '{}' contains unmasked data points equal to the "
+                   "fill-value, {}. As saved, these points will read back "
+                   "as missing data. To save these as normal values, please "
+                   "specify a 'fill_value' keyword not equal to any valid "
+                   "data points.")
+            warnings.warn(msg.format(object_typename, object_name, fill_value))
 
 
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
