@@ -1554,14 +1554,26 @@ class Saver(object):
         return coord.standard_name, coord.long_name, units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
+        """Check valid dtype against format version, and return cast values."""
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
         # so we check if we can store them as int32 instead.
+        dtype = self._get_valid_dtype(values, src_name, src_object)
+        if dtype != values.dtype:
+            values = values.astype(dtype)
+        return values
+
+    def _get_valid_dtype(self, values, src_name, src_object):
+        """Get valid dtype for format version."""
+        # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
+        # so we check if we can store them as int32 instead.
+        dtype = values.dtype
         if ((np.issubdtype(values.dtype, np.int64) or
                 np.issubdtype(values.dtype, np.unsignedinteger)) and
                 self._dataset.file_format in ('NETCDF3_CLASSIC',
                                               'NETCDF3_64BIT',
                                               'NETCDF4_CLASSIC')):
             # Cast to an integer type supported by netCDF3.
+            values = as_concrete_data(values)
             if not np.can_cast(values.max(), np.int32) or \
                     not np.can_cast(values.min(), np.int32):
                 msg = 'The data type of {} {!r} is not supported by {} and' \
@@ -1570,8 +1582,8 @@ class Saver(object):
                 msg = msg.format(src_name, src_object,
                                  self._dataset.file_format)
                 raise ValueError(msg)
-            values = values.astype(np.int32)
-        return values
+            dtype = np.int32
+        return dtype
 
     def _create_cf_bounds(self, coord, cf_var, cf_name):
         """
