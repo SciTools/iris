@@ -747,7 +747,7 @@ def _bytes_if_ascii(string):
     return string
 
 
-def _setncattr(variable, name, attribute):
+def _set_file_ncattr(variable, name, attribute):
     """
     Put the given attribute on the given netCDF4 Data type, casting
     attributes as we go to bytes rather than unicode.
@@ -838,7 +838,7 @@ class _SlotsHolder(object):
 # Placeholder object types for file elements to create/update.
 class _SaveFile(_SlotsHolder):
     _typename = 'SaveFile'
-    __slots__ = ('dims', 'vars', 'attrs')
+    __slots__ = ('dims', 'vars', 'ncattrs')
 
 
 class _SaveDim(_SlotsHolder):
@@ -848,7 +848,7 @@ class _SaveDim(_SlotsHolder):
 
 class _SaveVar(_SlotsHolder):
     _typename = 'SaveVar'
-    __slots__ = ('name', 'dim_names', 'attrs', 'data_source', 'controls')
+    __slots__ = ('name', 'dim_names', 'ncattrs', 'data_source', 'controls')
 
 
 class _SaveAttr(_SlotsHolder):
@@ -856,8 +856,11 @@ class _SaveAttr(_SlotsHolder):
     __slots__ = ('name', 'value')
 
 
-# Short-form for "elements[this.name] = this".
 def _addbyname(saver_dict, saver_tuple_object):
+    """
+    Short-form for "elements[this.name] = this".
+
+    """
     name = saver_tuple_object.name
     if name in saver_dict and saver_tuple_object != saver_dict[name]:
         msg = ('"_addbyname" : element {} does not match {} of same name, '
@@ -866,9 +869,16 @@ def _addbyname(saver_dict, saver_tuple_object):
     saver_dict[name] = saver_tuple_object
 
 
-# Short-form for "element.attrs[name] = _SaveAttr(name, value)".
-def _addattr(saver_element, name, value):
-    _addbyname(saver_element.attrs, _SaveAttr(name, value))
+def _setncattr(saver_element, name, value):
+    """
+    Short-form for "element.ncattrs[name] = _SaveAttr(name, value)".
+
+    NOTE: not fully equivalent to older '_setncattr' (which is now renamed
+    _set_file_ncattr), because this uses _addbyname, which *raises an error if
+    it is an attempt to change an already-existing value*.
+
+    """
+    _addbyname(saver_element.ncattrs, _SaveAttr(name, value))
 
 
 class Saver(object):
@@ -928,7 +938,7 @@ class Saver(object):
         #: A placeholder for elements to be written/appended to the file.
         self._save = _SaveFile(dims=OrderedDict(),
                                vars=OrderedDict(),
-                               attrs=OrderedDict())
+                               ncattrs=OrderedDict())
         self._append_mode = append
 
         #: NetCDF dataset
@@ -1088,7 +1098,9 @@ class Saver(object):
                 unlimited_dimensions = []
 
 #
-# For now, we are just not supporting the cf_profile hook.
+# For now, we are just not supporting the cf_profile hook,
+# because this expects an existing open dataset to modify after each write,
+# but we no longer have one.
 #
 #        cf_profile_available = (iris.site_configuration.get('cf_profile') not
 #                                in [None, False])
@@ -1112,17 +1124,10 @@ class Saver(object):
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
-            cube, dimension_names, local_keys,
-
-            # NOTE: these ones *could* all be relegated to a **kwargs
-            # (as they are *only* passed as kwargs to createVariable) ...
-            zlib=zlib, complevel=complevel,
+            cube, dimension_names, local_keys, zlib=zlib, complevel=complevel,
             shuffle=shuffle, fletcher32=fletcher32, contiguous=contiguous,
             chunksizes=chunksizes, endian=endian,
-            least_significant_digit=least_significant_digit,
-
-            # ... And these ones could not.
-            packing=packing,
+            least_significant_digit=least_significant_digit, packing=packing,
             fill_value=fill_value)
 
         # Add coordinate variables.
@@ -1154,7 +1159,9 @@ class Saver(object):
         self.update_global_attributes(global_attributes)
 
 #
-# For now, we are just not supporting the cf_profile hook.
+# For now, we are just not supporting the cf_profile hook,
+# because this expects an existing open dataset to modify after each write,
+# but we no longer have one.
 #
 #        if cf_profile_available:
 #            cf_patch = iris.site_configuration.get('cf_patch')
@@ -1214,10 +1221,10 @@ class Saver(object):
                 attributes = dict(attributes)
 
             for attr_name in sorted(attributes):
-                _addattr(self._save, attr_name, attributes[attr_name])
+                _setncattr(self._save, attr_name, attributes[attr_name])
 
         for attr_name in sorted(kwargs):
-            _addattr(self._save, attr_name, kwargs[attr_name])
+            _setncattr(self._save, attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(self, cube, dimension_names,
                               unlimited_dimensions=None):
@@ -1292,7 +1299,7 @@ class Saver(object):
         # CF-netCDF data variable.
         if auxiliary_coordinate_names:
             coord_variable_names = ' '.join(sorted(auxiliary_coordinate_names))
-            _addattr(cf_var_cube, 'coordinates', coord_variable_names)
+            _setncattr(cf_var_cube, 'coordinates', coord_variable_names)
 
     def _add_cell_measures(self, cube, cf_var_cube, dim_names):
         """
@@ -1327,7 +1334,7 @@ class Saver(object):
         # CF-netCDF data variable.
         if cell_measure_names:
             cm_var_names = ' '.join(sorted(cell_measure_names))
-            _addattr(cf_var_cube, 'cell_measures', cm_var_names)
+            _setncattr(cf_var_cube, 'cell_measures', cm_var_names)
 
     def _add_dim_coords(self, cube, dimension_names):
         """
@@ -1394,8 +1401,8 @@ class Saver(object):
                     **names)
                 std_name = factory_defn.std_name
 
-                if 'formula_terms' in cf_var.attrs:
-                    if cf_var.attrs['formula_terms'] != formula_terms or \
+                if 'formula_terms' in cf_var.ncattrs:
+                    if cf_var.ncattrs['formula_terms'] != formula_terms or \
                             cf_var.standard_name != std_name:
                         # TODO: We need to resolve this corner-case where
                         # the dimensionless vertical coordinate containing the
@@ -1415,24 +1422,26 @@ class Saver(object):
                                                             dimension_names,
                                                             primary_coord)
                             cf_var = self._save.vars[name]
-                            _addattr(cf_var, 'standard_name', std_name)
-                            _addattr(cf_var, 'axis', 'Z')
+                            _setncattr(cf_var, 'standard_name', std_name)
+                            _setncattr(cf_var, 'axis', 'Z')
                             # Update the formula terms.
                             ft = formula_terms.split()
                             ft = [name if t == cf_name else t for t in ft]
-                            _addattr(cf_var, 'formula_terms', ' '.join(ft))
+                            _setncattr(cf_var, 'formula_terms', ' '.join(ft))
                             # Update the cache.
                             self._formula_terms_cache[key] = name
                         # Update the associated cube variable.
-                        coords = cf_var_cube.attrs['coordinates'].value
+                        coords = cf_var_cube.ncattrs['coordinates'].value
                         coords = coords.split()
                         coords = [name if c == cf_name else c for c in coords]
                         coords = ' '.join(coords)
-                        cf_var_cube.attrs['coordinates'].value = coords
+                        # NOTE: this must re-write an *existing* value, hence
+                        # does not use '_setncattr'.
+                        cf_var_cube.ncattrs['coordinates'].value = coords
                 else:
-                    _addattr(cf_var, 'standard_name', std_name),
-                    _addattr(cf_var, 'axis', 'Z'),
-                    _addattr(cf_var, 'formula_terms', formula_terms)
+                    _setncattr(cf_var, 'standard_name', std_name)
+                    _setncattr(cf_var, 'axis', 'Z')
+                    _setncattr(cf_var, 'formula_terms', formula_terms)
 
     def _get_dim_names(self, cube):
         """
@@ -1600,7 +1609,7 @@ class Saver(object):
                            _SaveDim(name=bounds_dimension_name, size=n_bounds))
 
             bounds_name = cf_name + '_bnds'
-            _addattr(cf_var, 'bounds', bounds_name)
+            _setncattr(cf_var, 'bounds', bounds_name)
 
             controls = {'var_type': 'bounds-var',
                         'bounds_parent_coord_name': coord.name()}
@@ -1609,7 +1618,7 @@ class Saver(object):
                 _SaveVar(name=bounds_name,
                          dim_names=(cf_var.dim_names +
                                     [bounds_dimension_name]),
-                         attrs=OrderedDict(),
+                         ncattrs=OrderedDict(),
                          data_source=bounds,
                          controls=controls))
 
@@ -1697,55 +1706,36 @@ class Saver(object):
         cf_dimensions = [dimension_names[dim] for dim in
                          cube.cell_measure_dims(cell_measure)]
 
-#
-# NOTE: this action is now deferred until save time.
-#
-#        # Get the data values.
-#        data = cell_measure.data
-#
-#        # Disallow saving of *masked* cell measures.
-#        if ma.is_masked(data):
-#            # We can't save masked points properly, as we don't maintain a
-#            # suitable fill_value.  (Load will not record one, either).
-#            msg = "Cell measures with missing data are not supported."
-#            raise ValueError(msg)
-#
-#        # Get the values in a form which is valid for the file format.
-#        data = self._ensure_valid_dtype(data, 'coordinate', cell_measure)
-
-        # Create the CF-netCDF variable.
-#        # Add the data to the CF-netCDF variable.
-#        cf_var[:] = data
-
-        # Note: cell-measures have no "core-data" or "lazy_data" interface.
-        # For now, just fetch the data.
+        # Get the data values.
+        # NOTE: cell-measures have no "core-data" or "lazy_data" interface.
+        # So for now, just fetch the data.
         # ALTERNATIVELY COULD HAVE cell_measure._data_manager.core_data()
-        # - but that is using coords private API.
+        # - but that would be using a private API of Coord.
         data = cell_measure.data
         cf_var = _SaveVar(
             name=cf_name,
             dim_names=cf_dimensions,
-            attrs=OrderedDict(),
+            ncattrs=OrderedDict(),
             data_source=data,
             controls={'var_type': 'cell-measure'})
         _addbyname(self._save.vars, cf_var)
 
         if cell_measure.units != 'unknown':
-            _addattr(cf_var, 'units', str(cell_measure.units))
+            _setncattr(cf_var, 'units', str(cell_measure.units))
 
         if cell_measure.standard_name is not None:
-            _addattr(cf_var, 'standard_name', cell_measure.standard_name)
+            _setncattr(cf_var, 'standard_name', cell_measure.standard_name)
 
         if cell_measure.long_name is not None:
-            _addattr(cf_var, 'long_name', cell_measure.long_name)
+            _setncattr(cf_var, 'long_name', cell_measure.long_name)
 
         # Add any other custom coordinate attributes.
         for name in sorted(cell_measure.attributes):
             value = cell_measure.attributes[name]
 
             # Don't clobber existing attributes.
-            if name not in cf_var.attrs:
-                _addattr(cf_var, name, value)
+            if name not in cf_var.ncattrs:
+                _setncattr(cf_var, name, value)
 
         return cf_name
 
@@ -1793,9 +1783,7 @@ class Saver(object):
             # Add the string length dimension to dimension names.
             cf_dimensions.append(string_dimension_name)
 
-            # Create the label coordinate variable.
-
-            # Add the payload to the label coordinate variable.
+            # Create a payload array for the label coordinate variable.
             namevar_dtype = '|S1'
             if len(cf_dimensions) == 1:
                 content = np.array(list('%- *s' % (string_dimension_depth,
@@ -1810,9 +1798,10 @@ class Saver(object):
                                                 (string_dimension_depth,
                                                  coord.points[index]))
 
+            # Create the label coordinate variable.
             cf_var = _SaveVar(name=cf_name,
                               dim_names=cf_dimensions,
-                              attrs=OrderedDict(),
+                              ncattrs=OrderedDict(),
                               data_source=content,
                               controls=controls)
             _addbyname(self._save.vars, cf_var)
@@ -1828,17 +1817,10 @@ class Saver(object):
                 # must be the same as its dimension name.
                 cf_name = cf_dimensions[0]
 
-#            # Get the values in a form which is valid for the file format.
-#            points = self._ensure_valid_dtype(coord.points, 'coordinate',
-#                                              coord)
-#
-#            # Create the CF-netCDF variable.
-#            cf_var = self._dataset.createVariable(
-#                cf_name, points.dtype.newbyteorder('='), cf_dimensions)
-
+            # Create the CF-netCDF variable.
             cf_var = _SaveVar(name=cf_name,
                               dim_names=cf_dimensions,
-                              attrs=OrderedDict(),
+                              ncattrs=OrderedDict(),
                               data_source=coord.core_points(),
                               controls=controls)
 
@@ -1848,29 +1830,26 @@ class Saver(object):
             if coord in cf_coordinates:
                 axis = iris.util.guess_coord_axis(coord)
                 if axis is not None and axis.lower() in SPATIO_TEMPORAL_AXES:
-                    _addattr(cf_var, 'axis', axis.upper())
+                    _setncattr(cf_var, 'axis', axis.upper())
 
-#            # Add the data to the CF-netCDF variable.
-#            cf_var[:] = points
-
-            # Create the associated CF-netCDF bounds variable.
+            # Create the associated CF-netCDF bounds variable (if any).
             self._create_cf_bounds(coord, cf_var, cf_name)
 
         # Deal with CF-netCDF units and standard name.
         standard_name, long_name, units = self._cf_coord_identity(coord)
 
         if units != 'unknown':
-            _addattr(cf_var, 'units', units)
+            _setncattr(cf_var, 'units', units)
 
         if standard_name is not None:
-            _addattr(cf_var, 'standard_name', standard_name)
+            _setncattr(cf_var, 'standard_name', standard_name)
 
         if long_name is not None:
-            _addattr(cf_var, 'long_name', long_name)
+            _setncattr(cf_var, 'long_name', long_name)
 
         # Add the CF-netCDF calendar attribute.
         if coord.units.calendar:
-            _addattr(cf_var, 'calendar', coord.units.calendar)
+            _setncattr(cf_var, 'calendar', coord.units.calendar)
 
         # Add any other custom coordinate attributes.
         for name in sorted(coord.attributes):
@@ -1883,8 +1862,8 @@ class Saver(object):
                 value = str(value)
 
             # Don't clobber existing attributes.
-            if name not in cf_var.attrs:
-                _addattr(cf_var, name, value)
+            if name not in cf_var.ncattrs:
+                _setncattr(cf_var, name, value)
 
         return cf_name
 
@@ -1965,13 +1944,13 @@ class Saver(object):
 
                 cf_var_grid = _SaveVar(name=cs.grid_mapping_name,
                                        dim_names=[],
-                                       attrs=OrderedDict(),
+                                       ncattrs=OrderedDict(),
                                        data_source=np.array(0, dtype=np.int32),
                                        controls={'var_type': 'grid-mapping'})
                 _addbyname(self._save.vars, cf_var_grid)
 
                 def gridattr(name, value):
-                    _addattr(cf_var_grid, name, value)
+                    _setncattr(cf_var_grid, name, value)
 
                 gridattr('grid_mapping_name', cs.grid_mapping_name)
 
@@ -2093,7 +2072,7 @@ class Saver(object):
                 self._coord_systems.append(cs)
 
             # Refer to grid var
-            _addattr(cf_var_cube, 'grid_mapping', cs.grid_mapping_name)
+            _setncattr(cf_var_cube, 'grid_mapping', cs.grid_mapping_name)
 
     def _create_cf_data_variable(self, cube, dimension_names, local_keys=None,
                                  packing=None, fill_value=None, **kwargs):
@@ -2168,33 +2147,33 @@ class Saver(object):
 
         controls = {'var_type': 'data-var',
                     'create_kwargs': kwargs,
-                    'fill_value': fill_value, 'pack_dtype': pack_dtype,
-                    'cube_name': cube.name()}
+                    'fill_value': fill_value, 'pack_dtype': pack_dtype}
         cf_var = _SaveVar(name=cf_name,
                           dim_names=dimension_names,
-                          attrs=OrderedDict(),
+                          ncattrs=OrderedDict(),
                           data_source=cube.core_data(),
                           controls=controls)
         _addbyname(self._save.vars, cf_var)
 
+        # Set the packing attributes, if using.
         if packing:
             if scale_factor:
-                _addattr(cf_var, 'scale_factor', scale_factor)
+                _setncattr(cf_var, 'scale_factor', scale_factor)
             if add_offset:
-                _addattr(cf_var, 'add_offset', add_offset)
+                _setncattr(cf_var, 'add_offset', add_offset)
 
         if cube.standard_name:
-            _addattr(cf_var, 'standard_name', cube.standard_name)
+            _setncattr(cf_var, 'standard_name', cube.standard_name)
 
         if cube.long_name:
-            _addattr(cf_var, 'long_name', cube.long_name)
+            _setncattr(cf_var, 'long_name', cube.long_name)
 
         if cube.units != 'unknown':
-            _addattr(cf_var, 'units', str(cube.units))
+            _setncattr(cf_var, 'units', str(cube.units))
 
         # Add the CF-netCDF calendar attribute.
         if cube.units.calendar:
-            _addattr(cf_var, 'calendar', cube.units.calendar)
+            _setncattr(cf_var, 'calendar', cube.units.calendar)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -2228,13 +2207,13 @@ class Saver(object):
                       'global attribute.'.format(attr_name=attr_name)
                 warnings.warn(msg)
 
-            _addattr(cf_var, attr_name, value)
+            _setncattr(cf_var, attr_name, value)
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
 
         if cell_methods:
-            _addattr(cf_var, 'cell_methods', cell_methods)
+            _setncattr(cf_var, 'cell_methods', cell_methods)
 
         # Create the CF-netCDF grid mapping.
         self._create_cf_grid_mapping(cube, cf_var)
@@ -2286,19 +2265,28 @@ class Saver(object):
             self._write_variable_values_in_dataset(nc_var, cf_var)
 
         # Add global attributes.
-        for attr in self._save.attrs.values():
-            _setncattr(self._dataset, attr.name, attr.value)
+        for attr in self._save.ncattrs.values():
+            _set_file_ncattr(self._dataset, attr.name, attr.value)
 
     def _make_variable_in_dataset(self, var):
+        """
+        Create an actual file variable.
+
+        Args:
+
+        * var (_SaveVar):
+            required properties and create-controls for the variable.
+
+        """
+        # Set some defaults
+        fill_value = None
+        pack_dtype = None
         settings = var.controls
-        # Get some defaults
         create_kwargs = settings.get('create_kwargs', {})
 
         # Switch on variable 'type' = usage, for different save behaviours.
         # TODO: try to unify all this behaviour + remove the 'type' control.
         var_type = settings['var_type']
-        fill_value = None
-        pack_dtype = None
         if var_type == 'grid-mapping':
             # Nothing more to do in this case.
             pass
@@ -2315,18 +2303,16 @@ class Saver(object):
             if ma.is_masked(data):
                 # We can't save masked points properly, as we don't maintain a
                 # suitable fill_value.  (Load will not record one, either).
-                msg = "Cell measures with missing data are not supported."
                 if not self._append_mode:
+                    # NOTE: don't raise error if it may break an 'append' op.
+                    msg = "Cell measures with missing data are not supported."
                     raise ValueError(msg)
 
-                # 'else' : modify in append case...
-                # We can't save masked points properly, as we don't maintain a
-                # suitable fill_value.  (Load will not record one, either).
+                # 'else' : use a warning in the 'append' case...
                 msg = ("Cell measure variable contains missing data:  This is "
                        "not supported by the netCDF-CF conventions, and "
                        "masked points may read back as 'real' values.")
                 warnings.warn(msg)
-
         elif var_type == 'data-var':
             fill_value = settings['fill_value']
             pack_dtype = settings['pack_dtype']
@@ -2335,7 +2321,7 @@ class Saver(object):
 
         # Transform any dtypes that aren't supported by the netcdf version.
         var.data_source = self._ensure_valid_dtype(
-            var.data_source, var.controls['var_type'], var)
+            var.data_source, var_type, var)
 
         # Choose variable type accordingly.
         dtype = pack_dtype or var.data_source.dtype
@@ -2349,25 +2335,26 @@ class Saver(object):
             **create_kwargs)
 
         # Add variable attributes.
-        for attr in var.attrs.values():
-            _setncattr(nc_var, attr.name, attr.value)
+        for attr in var.ncattrs.values():
+            _set_file_ncattr(nc_var, attr.name, attr.value)
 
         return nc_var
 
     def _write_variable_values_in_dataset(self, nc_var, var):
         """
-        Write data values to a variable.
+        Write data values into a file variable.
 
-        Note : for safe "append", this should not raise Exceptions.
+        Note : for safe "append"s, this must not raise Exceptions.
 
         """
         # Decide whether to write or stream data into the variable.
         # If netcdf3, avoid streaming due to dtype handling.
         data = var.data_source
         if (not is_lazy_data(data) or
-            self._dataset.file_format in ('NETCDF3_CLASSIC',
-                                          'NETCDF3_64BIT')):
+                self._dataset.file_format in ('NETCDF3_CLASSIC',
+                                              'NETCDF3_64BIT')):
             data = as_concrete_data(data)
+
             def store(data, cf_var, fill_value):
                 cf_var[:] = data
                 is_masked = ma.is_masked(data)
@@ -2375,6 +2362,7 @@ class Saver(object):
                 return is_masked, contains_value
         else:
             data = as_lazy_data(data)
+
             def store(data, cf_var, fill_value):
                 # Store lazy data and check whether it is masked and contains
                 # the fill value
@@ -2407,7 +2395,7 @@ class Saver(object):
             Calculate type+name identity strings for a variable.
 
             Different for variables of different 'var_type'.
-            Closely coupled to the messages we want to build !
+            Closely tied to the missing-data messages we want to build !
 
             """
             # Translate variable 'type' to a user-meaningful string.
@@ -2425,9 +2413,9 @@ class Saver(object):
             if var_type == 'bounds_var':
                 # Use the name of the related "main" coord variable.
                 object_name = var.controls['bounds_parent_coord_name']
-            elif 'standard_name' in var.attrs:
+            elif 'standard_name' in var.ncattrs:
                 # If it has a standard_name, use that.
-                object_name = var.attrs['standard_name'].value
+                object_name = var.ncattrs['standard_name'].value
             else:
                 # Fallback on the actual file varname.
                 object_name = var.name
