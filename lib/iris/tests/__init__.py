@@ -341,8 +341,6 @@ class IrisTest_nometa(unittest.TestCase):
             reference_path = self.get_result_path(reference_filename)
 
         # Convert the netCDF file to CDL file format.
-        cdl_filename = iris.util.create_temp_filename(suffix='.cdl')
-
         if flags is None:
             flags = []
         elif isinstance(flags, six.string_types):
@@ -350,23 +348,26 @@ class IrisTest_nometa(unittest.TestCase):
         else:
             flags = list(map(str, flags))
 
-        with open(cdl_filename, 'w') as cdl_file:
-            subprocess.check_call(['ncdump'] + flags + [netcdf_filename],
-                                  stderr=cdl_file, stdout=cdl_file)
+        try:
+            # Python3 only: use subprocess.run()
+            args = ['ncdump'] + flags + [netcdf_filename]
+            cdl = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as exc:
+            print(exc.output)
+            raise
 
         # Ingest the CDL for comparison, excluding first line.
-        with open(cdl_filename, 'r') as cdl_file:
-            lines = cdl_file.readlines()[1:]
+        lines = cdl.decode('ascii').splitlines()
+        lines = lines[1:]
 
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.
         sort_key = lambda line: ('UNLIMITED' not in line, line)
-        dimension_lines = slice(lines.index('dimensions:\n') + 1,
-                                lines.index('variables:\n'))
+        dimension_lines = slice(lines.index('dimensions:') + 1,
+                                lines.index('variables:'))
         lines[dimension_lines] = sorted(lines[dimension_lines], key=sort_key)
-        cdl = ''.join(lines)
+        cdl = '\n'.join(lines) + '\n'
 
-        os.remove(cdl_filename)
         self._check_same(cdl, reference_path, type_comparison_name='CDL')
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
