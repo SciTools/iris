@@ -1585,6 +1585,12 @@ class Saver(object):
             dtype = np.int32
         return dtype
 
+    def _ensure_var_dtype(self, var):
+        """Transform variable content dtype, to suit the format version."""
+        var_type = var.controls['var_type']
+        var.data_source = self._ensure_valid_dtype(
+            var.data_source, var_type, var)
+
     def _create_cf_bounds(self, coord, cf_var, cf_name):
         """
         Create the associated CF-netCDF bounds variable.
@@ -1603,11 +1609,10 @@ class Saver(object):
 
         """
         if coord.has_bounds():
-            # Get the values in a form which is valid for the file format.
-            bounds = self._ensure_valid_dtype(coord.core_bounds(),
-                                              'the bounds of coordinate',
-                                              coord)
+            # Get the values array (NB: maybe lazy).
+            bounds = coord.core_bounds()
 
+            # Get a suitable bounds dimension.
             n_bounds = bounds.shape[-1]
 
             if n_bounds == 2:
@@ -1620,6 +1625,7 @@ class Saver(object):
                 _addbyname(self._save.dims,
                            _SaveDim(name=bounds_dimension_name, size=n_bounds))
 
+            # Create a bounds variable.
             bounds_name = cf_name + '_bnds'
             _setncattr(cf_var, 'bounds', bounds_name)
 
@@ -2273,7 +2279,11 @@ class Saver(object):
 
         # Add variables.
         for cf_var in self._save.vars.values():
+            # Fixup the variable dtype (if needed for netcdf3).
+            self._ensure_var_dtype(cf_var)
+            # Create the actual file variable.
             nc_var = self._make_variable_in_dataset(cf_var)
+            # Write the variable data.
             self._write_variable_values_in_dataset(nc_var, cf_var)
 
         # Add global attributes.
@@ -2330,10 +2340,6 @@ class Saver(object):
             pack_dtype = settings['pack_dtype']
         else:
             raise Exception('Save code bug : unrecognised variable type')
-
-        # Transform any dtypes that aren't supported by the netcdf version.
-        var.data_source = self._ensure_valid_dtype(
-            var.data_source, var_type, var)
 
         # Choose variable type accordingly.
         dtype = pack_dtype or var.data_source.dtype
