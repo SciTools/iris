@@ -287,7 +287,7 @@ class _RegularGridInterpolator(object):
         idx_res = []
         for i, yi in zip(indices, norm_distances):
             idx_res.append(np.where(yi <= .5, i, i + 1))
-        return self.values[idx_res]
+        return self.values[tuple(idx_res)]
 
     def _find_indices(self, xi):
         # find relevant edges between which xi are situated
