@@ -157,9 +157,14 @@ class TestAll(tests.IrisTest):
             expected_msg = ('Coordinate system of latitude and longitude '
                             'coordinates is not specified. Assuming WGS84 '
                             'Geodetic.')
-            assert len(warn) == 1
-            assert issubclass(warn[-1].category, IrisUserWarning)
-            assert expected_msg in str(warn[-1].message)
+            warnings_ = [w for w in warn]
+
+        for warn in warnings_:
+            if issubclass(warn.category, IrisUserWarning):
+                assert expected_msg == str(warn.message)
+            else:
+                # re-raise other warnings that have been caught
+                warnings.warn(warn.message, warn.category)
 
 if __name__ == '__main__':
     tests.main()
