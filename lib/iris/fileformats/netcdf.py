@@ -757,23 +757,135 @@ def _set_file_ncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
+
+
+def _offset_keys(keys, axis, offset):
+    """
+    Return indexes adjusted for a write offset.
+
+    This is to support append operations, where we want to translate a write
+    access, from e.g. "cf_var[:, :, :]" to something like "cf_var[:, N:, :]".
+    We can't use an index-of-index-of-thing to do this, as cf_var[keys] does
+    not produce a writeable view (unlike the equivalent numpy array access).
+    So instead we pick apart the key expression + produce a modified version.
+
+    Args:
+
+    * keys (multidimensional indexing expression):
+        A slicing representing a subarray of an array.
+        Must contain at least 'axis' key elements.
+    * axis (integer):
+        The dimension to offset.
+    * offset (integer):
+        A positive integer to add onto the 'axis'th indexing.
+
+    Returns:
+        * out_keys (tuple of ints or slices):
+            an indexing expression for the notional target region
+            "target[< axis * (:,) >, offset:][keys]".
+
+    .. note::
+        Supports *only* keys which are slice objects or integers
+        -- not newaxis, ellipsis, or anything else.
+        So we depend on dask streaming using only those.
+        It seems to work, for now.
+
+    .. note::
+        Negative indices also don't have an obvious interpretation, so we don't
+        allow them.
+
+    """
+    # Make input into an iterable of keys, if not already.
+    try:
+        keys = iter(keys)
+    except TypeError:
+        # Convert single key to 1-tuple.
+        keys = (keys,)
+
+    # Make into a list so we can change it.
+    keys = list(keys)
+
+    _DEBUG_OFFSET_KEYS = False
+    if _DEBUG_OFFSET_KEYS:
+        debug_orig_keys = keys
+
+    # Expand to minimum dimensions if required.
+    n_extra_dims = axis - len(keys) + 1
+    if n_extra_dims > 0:
+        keys = keys + n_extra_dims * [slice(None)]
+
+    # Adjust the key of the specified axis.
+    axis_key = keys[axis]
+    if isinstance(axis_key, int):
+        # The key is an integer : just add the offset.
+        axis_key += offset
+    elif isinstance(axis_key, slice):
+        # The key is a slice object : translate accordingly ..
+
+        # Take apart the slice..
+        start, stop, step = axis_key.start, axis_key.stop, axis_key.step
+
+        # ..adjust slice elements..
+        if ((start is not None and start < 0) or
+                (stop is not None and stop < 0)):
+            msg = ("Cannot offset the {}th key of index expression "
+                   "'{}', = '{}', as it uses negative indices.")
+            msg = msg.format(axis+ 1, keys, axis_key)
+            raise ValueError(msg)
+
+        if start is None:
+            start = offset
+        else:
+            start = start + offset
+
+        if stop is not None:
+            stop = stop + offset
+
+        # ..put slice back together.
+        axis_key = slice(start, stop, step)
+    else:
+        msg = ("Cannot offset the {}th key of index expression "
+               "'{}', = '{}', as it is of type '{}' but we only support "
+               "integers or slice objects.")
+        msg = msg.format(axis + 1, keys, axis_key, type(axis_key))
+        raise ValueError(msg)
+
+    # Update just the specified axis, and return a tuple of keys (always).
+    keys[axis] = axis_key
+    keys = tuple(keys)
+
+    if _DEBUG_OFFSET_KEYS:
+        msg = '\n  DEBUG: offset_keys({}, axis={}, offs={}) --> {}'
+        print(msg.format(debug_orig_keys, axis, offset, keys))
+
+    return keys
+
+
 class _FillValueMaskCheckAndStoreTarget(object):
     """
     To be used with da.store. Remembers whether any element was equal to a
     given value and whether it was masked, before passing the chunk to the
     given target.
 
+    TODO: document the added 'offset' behaviour properly.
+
     """
-    def __init__(self, target, fill_value=None):
+    def __init__(self, target, fill_value=None,
+                 write_offset=None, write_offset_axis=None):
         self.target = target
         self.fill_value = fill_value
         self.contains_value = False
         self.is_masked = False
+        self.write_offset = write_offset
+        self.write_offset_axis = write_offset_axis
 
     def __setitem__(self, keys, arr):
         if self.fill_value is not None:
             self.contains_value = self.contains_value or self.fill_value in arr
         self.is_masked = self.is_masked or ma.is_masked(arr)
+        if self.write_offset_axis is not None:
+            # Adjust keys to offset one axis, as needed in append operations.
+            keys = _offset_keys(keys, self.write_offset_axis, self.write_offset)
         self.target[keys] = arr
 
 
@@ -797,11 +909,13 @@ class _SlotsHolder(object):
 
         Args order and Kwargs entries from '__slots__'.
 
-        Unspecified args default to values in 'self._defaults_dict',
+        Unspecified args default to values in 'self._defaults_dict()', if any,
         or else None.
 
         """
         values = getattr(self, '_defaults_dict', {})
+        if callable(values):
+            values = values()
         unrecs = [key for key in kwargs if key not in self.__slots__]
         if unrecs:
             unrecs = ', '.join(unrecs)
@@ -839,11 +953,16 @@ class _SlotsHolder(object):
 class _SaveFile(_SlotsHolder):
     _typename = 'SaveFile'
     __slots__ = ('dims', 'vars', 'ncattrs')
-
+    @staticmethod
+    def _defaults_dict():
+        return dict(dims=OrderedDict(),
+                    vars=OrderedDict(),
+                    ncattrs=OrderedDict())
 
 class _SaveDim(_SlotsHolder):
     _typename = 'SaveDim'
-    __slots__ = ('name', 'size')
+    __slots__ = ('name', 'size', 'is_unlimited')
+    _defaults_dict = {'is_unlimited': False}
 
 
 class _SaveVar(_SlotsHolder):
@@ -936,9 +1055,7 @@ class Saver(object):
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: A placeholder for elements to be written/appended to the file.
-        self._save = _SaveFile(dims=OrderedDict(),
-                               vars=OrderedDict(),
-                               ncattrs=OrderedDict())
+        self._save = _SaveFile()
         self._append_mode = append
 
         #: NetCDF dataset
@@ -966,7 +1083,7 @@ class Saver(object):
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
         output_path = self._dataset.filepath()
-        self._write_to_dataset()
+        self._write_or_append_to_dataset()
         self._dataset.sync()
         self._dataset.close()
         import subprocess
@@ -1096,7 +1213,6 @@ class Saver(object):
             """
         if unlimited_dimensions is None:
                 unlimited_dimensions = []
-
 #
 # For now, we are just not supporting the cf_profile hook,
 # because this expects an existing open dataset to modify after each write,
@@ -1260,12 +1376,14 @@ class Saver(object):
 
         for dim_name in dimension_names:
             if dim_name not in self._save.dims:
-                if dim_name in unlimited_dim_names:
+                unlimited = dim_name in unlimited_dim_names
+                if unlimited :
                     size = None
                 else:
                     size = self._existing_dim[dim_name]
                 _addbyname(self._save.dims,
-                           _SaveDim(name=dim_name, size=size))
+                           _SaveDim(name=dim_name, size=size,
+                                    is_unlimited=unlimited))
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
         """
@@ -2265,6 +2383,17 @@ class Saver(object):
 
         return '{}_{}'.format(varname, num)
 
+    def _write_or_append_to_dataset(self):
+        """
+        Write the contents of self._save to an actual file.
+        The target, 'self._dataset' should be open + ready to go.
+
+        """
+        if self._append_mode:
+            self._append_to_dataset()
+        else:
+            self._write_to_dataset()
+
     def _write_to_dataset(self):
         """
         Write the contents of self._save to an actual file.
@@ -2289,6 +2418,186 @@ class Saver(object):
         # Add global attributes.
         for attr in self._save.ncattrs.values():
             _set_file_ncattr(self._dataset, attr.name, attr.value)
+
+    def _append_to_dataset(self):
+        """
+        Append the contents of self._save to an actual file.
+        The target, 'self._dataset' should be open + ready to go.
+
+        """
+        # First check all is good to go.
+        filedata = self._prepare_append()
+        # Find the unlimited dimension + get its current length in the file.
+        dims_unlim = [dim for dim in filedata.dims.values()
+                      if dim.is_unlimited]
+        assert len(dims_unlim) == 1
+        file_unlim_dim = dims_unlim[0]
+        unlim_dim_length = file_unlim_dim.size
+        file_extend_dim_name = file_unlim_dim.name
+
+        # Write to (extend) each variable mapped to the unlimited dim.
+        for src_var in self._save.vars.values():
+            if file_extend_dim_name in src_var.dim_names:
+                tgt_var = filedata.vars[src_var.name]
+                i_dim_unlim = src_var.dim_names.index(file_extend_dim_name)
+                nc_var = self._dataset.variables[tgt_var.name]
+                self._write_variable_values_in_dataset(
+                    nc_var, src_var,
+                    write_axis=i_dim_unlim, write_offset=unlim_dim_length)
+
+    def _prepare_append(self):
+        """
+        Work out the correspondence between the data elements in self._save
+        and those found in an existing file (for append).
+
+        Align the save data variables and dimensions with those in the file by
+        renaming them as needed.
+        Check all necessary matching properties between corresponding elements.
+        Check there is exactly one unlimited dimension.
+        Check that dimension variable appends will preserve monotonicity.
+
+        If this call succeeds, an append can proceed, and should be safe.
+
+        NOTE: general attributes in the new data are mostly ignored : They are
+        not written to the file.  However, structural attributes like
+        'coordinates' are used, and 'units' attributes are checked for a match.
+
+        """
+        def var_identity_name(var):
+            if 'standard_name' in var.ncattrs:
+                result = var.ncattrs['standard_name']
+            elif 'long_name' in var.ncattrs:
+                result = var.ncattrs['long_name']
+            else:
+                result = var.name
+            return result
+
+        def identity_match(var1, var2):
+            std, lng = 'standard_name', 'long_name'
+            if std in var1.ncattrs or std in var2.ncattrs:
+                match = (std in var1.ncattrs and std in var2.ncattrs and
+                         var1.ncattrs[std] == var2.ncattrs[std])
+            elif lng in var1.ncattrs or lng in var2.ncattrs:
+                match = (lng in var1.ncattrs and lng in var2.ncattrs and
+                         var1.ncattrs[lng] == var2.ncattrs[lng])
+            else:
+                match = var1.name == var2.name
+            return match
+
+        # Construct a simple representation of the existing data.
+        ds = self._dataset
+        filedata = _SaveFile()
+
+        for dimname, ds_dim in ds.dimensions.items():
+            _addbyname(filedata.dims,
+                       _SaveDim(dimname, size=ds_dim.size,
+                                is_unlimited=ds_dim.isunlimited()))
+
+        for ds_var in ds.variables.values():
+            attrs = {attname: _SaveAttr(attname, getattr(ds_var, attname))
+                     for attname in ds_var.ncattrs()}
+
+            cf_var = _SaveVar(ds_var.name,
+                              dim_names=ds_var.dimensions,
+                              ncattrs=attrs)
+            _addbyname(filedata.vars, cf_var)
+
+        # Scan both dataset + save-data to add 'linkage' information.
+        # Linkage occurs where a variable attribute names other variables, and
+        # also when a variable uses dimensions with dimension variables.
+        variable_linkage_attrs = ('bounds', 'coordinates', 'grid_mapping',
+                                  'cell_measures', 'ancillary_variables')
+
+        def label_links(cf_data, user_datatype_info):
+            # Create empty links on all variables.
+            for cf_var in cf_data.vars.values():
+                cf_var._linksto = {}
+                cf_var._linkedfrom = {}
+            for cf_var in cf_data.vars.values():
+                linksto = cf_var._linksto
+                # Make links where variable attributes name other variables.
+                # Note: all links are made both 'up' and 'down'
+                for attrname in variable_linkage_attrs:
+                    if attrname in cf_var.ncattrs:
+                        target_names = cf_var.ncattrs[attrname].value
+                        target_names = target_names.split(' ')
+                        for target_name in target_names:
+                            if target_name not in cf_data.vars:
+                                msg = ('Missing linked variable in {} : '
+                                       'variable property {}.{} contains {}, '
+                                       'which is not a variable  in the '
+                                       'dataset.')
+                                msg = msg.format(user_datatype_info,
+                                                 cf_var.name, attrname,
+                                                 target_name)
+                                raise ValueError(msg)
+                            # Make links both "up" and "down".
+                            target_var = cf_data.vars[target_name]
+                            if attrname not in linksto:
+                                linksto[attrname] = []
+                            linksto[attrname].append(target_var)
+                            linkedfrom = target_var._linkedfrom
+                            if attrname not in linkedfrom:
+                                linkedfrom[attrname] = []
+                            linkedfrom[attrname].append(target_var)
+                for dim_name in cf_var.dim_names:
+                    # Find+label the dimension variable (i.e. coord), if any.
+                    dim_var = cf_data.vars.get(dim_name, None)
+                    if dim_var is not None:
+                        if '_dim' not in linksto:
+                            linksto['_dim'] = []
+                        linksto['_dim'].append(dim_var)
+                        linkedfrom = dim_var._linkedfrom
+                        if '_dim' not in linkedfrom:
+                            linkedfrom['_dim'] = []
+                        linkedfrom['_dim'].append(cf_var)
+
+        savedata = self._save
+        label_links(filedata, 'existing file')
+        label_links(savedata, 'data to be appended')
+
+        # Get all variables in the existing file.
+        file_vars = set(filedata.vars.values())
+
+        # Identify + exclude the dimension variables.
+        file_dim_vars = set(file_var for file_var in file_vars
+                            if file_var.name in filedata.dims)
+        file_vars -= file_dim_vars
+
+        # Get all variables in the save data.
+        save_vars = set(self._save.vars.values())  # A copy !
+
+        # Identify + exclude all the dimension variables in the save data.
+        # NOTE: at this point, we don't judge which is which.  That will be
+        # done later, by matching usage in variables.
+        save_dim_vars = set(save_var for save_var in save_vars
+                            if save_var.name in savedata.dims.keys())
+        save_vars -= save_dim_vars
+
+        # Get a list of the 'primary' variables.
+        primary_save_vars = set(
+            save_var for save_var in save_vars
+            if save_var.controls['var_type'] == 'data-var')
+        save_vars -= primary_save_vars
+
+        # Identify each primary variable with one in the file, by name.
+        for save_var in primary_save_vars:
+            ident = var_identity_name(save_var)
+            matches = [file_var
+                       for file_var in filedata.vars.values()
+                       if identity_match(save_var, file_var)]
+            n_matches = len(matches)
+            if n_matches != 1:
+                fail_reason = 'no' if n_matches == 0 else 'too many'
+                msg = ('Append failure : {} variables found in original file '
+                       'matching source cube "{}"')
+                raise ValueError(msg.format(fail_reason, ident))
+            file_var = matches[0]
+            # "Label" the save variables with the matching file variable name.
+            save_var.name = file_var.name
+
+        # Return our representation of the original file.
+        return filedata
 
     def _make_variable_in_dataset(self, var):
         """
@@ -2358,9 +2667,26 @@ class Saver(object):
 
         return nc_var
 
-    def _write_variable_values_in_dataset(self, nc_var, var):
+    def _write_variable_values_in_dataset(self, nc_var, var,
+                                          write_axis=None, write_offset=None):
         """
         Write data values into a file variable.
+
+        Args:
+
+        * nc_var (:class:`netCDF4.Variable`):
+            The netCDF4 variable object to write into.
+        * var (:class:`_SaveVar`):
+            A _SaveVar whose .data_source provides the data to write.
+            Either real or lazy data can be written, in the lazy case we
+            perform a Dask streaming write.
+
+        Kwargs:
+
+        * write_axis (int):
+        * write_offset (int):
+            Keys to apply when writing to the target variable.
+            (Used for appending along a dimension).
 
         Note : for safe "append"s, this must not raise Exceptions.
 
@@ -2368,13 +2694,22 @@ class Saver(object):
         # Decide whether to write or stream data into the variable.
         # If netcdf3, avoid streaming due to dtype handling.
         data = var.data_source
+
         if (not is_lazy_data(data) or
                 self._dataset.file_format in ('NETCDF3_CLASSIC',
                                               'NETCDF3_64BIT')):
             data = as_concrete_data(data)
+            # Construct indexing keys for the data target.
+            if write_offset is None:
+                # Normal writes just use var[:]
+                write_slices = slice(None)
+            else:
+                # Appended writes require var[:, :, ... n_existing:, ...]
+                write_slices = [slice(None)] * data.ndim
+                write_slices[write_axis] = slice(write_offset, None)
 
             def store(data, cf_var, fill_value):
-                cf_var[:] = data
+                cf_var[write_slices] = data
                 is_masked = ma.is_masked(data)
                 contains_value = fill_value is not None and fill_value in data
                 return is_masked, contains_value
@@ -2384,7 +2719,9 @@ class Saver(object):
             def store(data, cf_var, fill_value):
                 # Store lazy data and check whether it is masked and contains
                 # the fill value
-                target = _FillValueMaskCheckAndStoreTarget(cf_var, fill_value)
+                target = _FillValueMaskCheckAndStoreTarget(
+                    cf_var, fill_value,
+                    write_offset_axis=write_axis, write_offset=write_offset)
                 da.store([data], [target])
                 return target.is_masked, target.contains_value
 
@@ -2462,7 +2799,8 @@ class Saver(object):
 def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
          unlimited_dimensions=None, zlib=False, complevel=4, shuffle=True,
          fletcher32=False, contiguous=False, chunksizes=None, endian='native',
-         least_significant_digit=None, packing=None, fill_value=None):
+         least_significant_digit=None, packing=None, fill_value=None,
+         append=False):
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
@@ -2584,6 +2922,11 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         `:class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
 
+    * append (bool):
+        If True, append all data to an existing file, instead of writing a new
+        file as when append=False (the default).
+        TODO: much explaining ...
+
     Returns:
         None.
 
@@ -2679,7 +3022,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
                 raise ValueError(msg)
 
     # Initialise Manager for saving
-    with Saver(filename, netcdf_format) as sman:
+    with Saver(filename, netcdf_format, append=append) as sman:
         # Iterate through the cubelist.
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(cube, local_keys, unlimited_dimensions, zlib, complevel,
