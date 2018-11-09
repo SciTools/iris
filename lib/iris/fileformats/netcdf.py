@@ -757,8 +757,6 @@ def _set_file_ncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-
-
 def _offset_keys(keys, axis, offset):
     """
     Return indexes adjusted for a write offset.
@@ -767,30 +765,31 @@ def _offset_keys(keys, axis, offset):
     access, from e.g. "cf_var[:, :, :]" to something like "cf_var[:, N:, :]".
     We can't use an index-of-index-of-thing to do this, as cf_var[keys] does
     not produce a writeable view (unlike the equivalent numpy array access).
-    So instead we pick apart the key expression + produce a modified version.
+    So instead we pick apart the index expression + return a modified version.
 
     Args:
 
     * keys (multidimensional indexing expression):
-        A slicing representing a subarray of an array.
-        Must contain at least 'axis' key elements.
+        A slicing representing a subsection of an array.
     * axis (integer):
         The dimension to offset.
     * offset (integer):
         A positive integer to add onto the 'axis'th indexing.
 
     Returns:
-        * out_keys (tuple of ints or slices):
-            an indexing expression for the notional target region
+        * out_keys (tuple of (int or slice)):
+            an indexing expression addressing the notional target region
             "target[< axis * (:,) >, offset:][keys]".
 
     .. note::
+
         Supports *only* keys which are slice objects or integers
         -- not newaxis, ellipsis, or anything else.
         So we depend on dask streaming using only those.
         It seems to work, for now.
 
     .. note::
+
         Negative indices also don't have an obvious interpretation, so we don't
         allow them.
 
@@ -830,7 +829,7 @@ def _offset_keys(keys, axis, offset):
                 (stop is not None and stop < 0)):
             msg = ("Cannot offset the {}th key of index expression "
                    "'{}', = '{}', as it uses negative indices.")
-            msg = msg.format(axis+ 1, keys, axis_key)
+            msg = msg.format(axis + 1, keys, axis_key)
             raise ValueError(msg)
 
         if start is None:
@@ -871,21 +870,21 @@ class _FillValueMaskCheckAndStoreTarget(object):
 
     """
     def __init__(self, target, fill_value=None,
-                 write_offset=None, write_offset_axis=None):
+                 write_offset_axis=None, write_offset=0):
         self.target = target
         self.fill_value = fill_value
         self.contains_value = False
         self.is_masked = False
-        self.write_offset = write_offset
-        self.write_offset_axis = write_offset_axis
+        self.offset_axis = write_offset_axis
+        self.offset = write_offset
 
     def __setitem__(self, keys, arr):
         if self.fill_value is not None:
             self.contains_value = self.contains_value or self.fill_value in arr
         self.is_masked = self.is_masked or ma.is_masked(arr)
-        if self.write_offset_axis is not None:
+        if self.offset != 0:
             # Adjust keys to offset one axis, as needed in append operations.
-            keys = _offset_keys(keys, self.write_offset_axis, self.write_offset)
+            keys = _offset_keys(keys, self.offset_axis, self.offset)
         self.target[keys] = arr
 
 
@@ -899,8 +898,11 @@ class _SlotsHolder(object):
     * __slots__ (list of string):
         names of content attributes.
         Order and names also provide object init args and kwargs.
-    * _typename : the headline name for the string print
-    * _defaults_dict : an kwargs-like dict of defaults for object init.
+    * _typename (string):
+        the headline name for the string print
+    * _defaults_dict (dict or callable):
+        a kwargs-like dict of defaults for object init,
+        or a callable returning one.
 
     """
     def __init__(self, *args, **kwargs):
@@ -953,11 +955,13 @@ class _SlotsHolder(object):
 class _SaveFile(_SlotsHolder):
     _typename = 'SaveFile'
     __slots__ = ('dims', 'vars', 'ncattrs')
+
     @staticmethod
     def _defaults_dict():
         return dict(dims=OrderedDict(),
                     vars=OrderedDict(),
                     ncattrs=OrderedDict())
+
 
 class _SaveDim(_SlotsHolder):
     _typename = 'SaveDim'
@@ -1377,7 +1381,7 @@ class Saver(object):
         for dim_name in dimension_names:
             if dim_name not in self._save.dims:
                 unlimited = dim_name in unlimited_dim_names
-                if unlimited :
+                if unlimited:
                     size = None
                 else:
                     size = self._existing_dim[dim_name]
@@ -2668,7 +2672,7 @@ class Saver(object):
         return nc_var
 
     def _write_variable_values_in_dataset(self, nc_var, var,
-                                          write_axis=None, write_offset=None):
+                                          write_axis=None, write_offset=0):
         """
         Write data values into a file variable.
 
@@ -2684,7 +2688,7 @@ class Saver(object):
         Kwargs:
 
         * write_axis (int):
-        * write_offset (int):
+        * offset (int):
             Keys to apply when writing to the target variable.
             (Used for appending along a dimension).
 
@@ -2700,7 +2704,7 @@ class Saver(object):
                                               'NETCDF3_64BIT')):
             data = as_concrete_data(data)
             # Construct indexing keys for the data target.
-            if write_offset is None:
+            if write_offset == 0:
                 # Normal writes just use var[:]
                 write_slices = slice(None)
             else:
