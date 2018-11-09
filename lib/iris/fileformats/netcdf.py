@@ -44,6 +44,8 @@ import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
+from cf_units import Unit
+
 from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, \
@@ -2430,21 +2432,15 @@ class Saver(object):
 
         """
         # First check all is good to go.
-        filedata = self._prepare_append()
-        # Find the unlimited dimension + get its current length in the file.
-        dims_unlim = [dim for dim in filedata.dims.values()
-                      if dim.is_unlimited]
-        assert len(dims_unlim) == 1
-        file_unlim_dim = dims_unlim[0]
+        filedata, file_unlim_dim = self._prepare_append()
         unlim_dim_length = file_unlim_dim.size
         file_extend_dim_name = file_unlim_dim.name
 
         # Write to (extend) each variable mapped to the unlimited dim.
         for src_var in self._save.vars.values():
             if file_extend_dim_name in src_var.dim_names:
-                tgt_var = filedata.vars[src_var.name]
                 i_dim_unlim = src_var.dim_names.index(file_extend_dim_name)
-                nc_var = self._dataset.variables[tgt_var.name]
+                nc_var = src_var._file_var.data_source
                 self._write_variable_values_in_dataset(
                     nc_var, src_var,
                     write_axis=i_dim_unlim, write_offset=unlim_dim_length)
@@ -2456,18 +2452,34 @@ class Saver(object):
 
         Align the save data variables and dimensions with those in the file by
         renaming them as needed.
-        Check all necessary matching properties between corresponding elements.
+
+        Check all necessary matching properties between corresponding elements:
         Check there is exactly one unlimited dimension.
         Check that dimension variable appends will preserve monotonicity.
+        Check that the data-variables are 1-to-1 with the file, and all 'other'
+        variables are accounted for.
+        Variables mapped to the unlimited dimension should all have the same
+        length in the that dimension, i.e. same 'append size'.
+        Variables *not* mapped to the unlimited dimension should all match
+        1-to-1 with variables in the file.
+        All variables are either 'data' variables, or are the subject of a
+        reference from another variable.
 
         If this call succeeds, an append can proceed, and should be safe.
 
         NOTE: general attributes in the new data are mostly ignored : They are
         not written to the file.  However, structural attributes like
         'coordinates' are used, and 'units' attributes are checked for a match.
+        Any packing controls are also retained as already in the file.
 
         """
         def var_identity_name(var):
+            """
+            Get the human-readable name of a variable (_SaveVar).
+
+            NOTE: Used *only* for constructing user-messages.
+
+            """
             if 'standard_name' in var.ncattrs:
                 result = var.ncattrs['standard_name']
             elif 'long_name' in var.ncattrs:
@@ -2475,18 +2487,6 @@ class Saver(object):
             else:
                 result = var.name
             return result
-
-        def identity_match(var1, var2):
-            std, lng = 'standard_name', 'long_name'
-            if std in var1.ncattrs or std in var2.ncattrs:
-                match = (std in var1.ncattrs and std in var2.ncattrs and
-                         var1.ncattrs[std] == var2.ncattrs[std])
-            elif lng in var1.ncattrs or lng in var2.ncattrs:
-                match = (lng in var1.ncattrs and lng in var2.ncattrs and
-                         var1.ncattrs[lng] == var2.ncattrs[lng])
-            else:
-                match = var1.name == var2.name
-            return match
 
         # Construct a simple representation of the existing data.
         ds = self._dataset
@@ -2503,22 +2503,57 @@ class Saver(object):
 
             cf_var = _SaveVar(ds_var.name,
                               dim_names=ds_var.dimensions,
-                              ncattrs=attrs)
+                              ncattrs=attrs,
+                              data_source=ds_var)
+
             _addbyname(filedata.vars, cf_var)
 
-        # Scan both dataset + save-data to add 'linkage' information.
+        savedata = self._save
+
+        # Check that both savedata + filedata have a single unlimited dim,
+        # and grab it.
+        def get_single_unlimited_dim(cf_data, source_description):
+            """Find the unlimited dimension + ensure there is just one."""
+            dims_unlim = [dim for dim in cf_data.dims.values()
+                          if dim.is_unlimited]
+            n_unlim = len(dims_unlim)
+            if n_unlim != 1:
+                if n_unlim == 0:
+                    fail_reason = 'no'
+                else:
+                    fail_reason = 'too many ({})'.format(n_unlim)
+                msg = ('Append failure : {} has {} unlimited '
+                       'dimensions : can only have exactly 1.')
+                msg = msg.format(source_description, fail_reason)
+                raise ValueError(msg)
+            return dims_unlim[0]
+
+        file_unlimited_dim = get_single_unlimited_dim(filedata, 'source file')
+        save_unlimited_dim = get_single_unlimited_dim(savedata, 'save data')
+
+        # Label all the links in both savedata + filedata.
+        # This enables us to identify variables like aux-coords and
+        # cell-methods through relationships, not just their names.
         # Linkage occurs where a variable attribute names other variables, and
         # also when a variable uses dimensions with dimension variables.
         variable_linkage_attrs = ('bounds', 'coordinates', 'grid_mapping',
                                   'cell_measures', 'ancillary_variables')
 
         def label_links(cf_data, user_datatype_info):
+            def addlink(linksdict, name, item):
+                """
+                Add item to a named list in a "links dictionary",
+                creating the named list if not yet present.
+
+                """
+                links_list = linksdict.setdefault(name, [])
+                links_list.append(item)
+
             # Create empty links on all variables.
             for cf_var in cf_data.vars.values():
                 cf_var._linksto = {}
                 cf_var._linkedfrom = {}
             for cf_var in cf_data.vars.values():
-                linksto = cf_var._linksto
                 # Make links where variable attributes name other variables.
                 # Note: all links are made both 'up' and 'down'
                 for attrname in variable_linkage_attrs:
@@ -2527,81 +2562,311 @@ class Saver(object):
                         target_names = target_names.split(' ')
                         for target_name in target_names:
                             if target_name not in cf_data.vars:
-                                msg = ('Missing linked variable in {} : '
-                                       'variable property {}.{} contains {}, '
-                                       'which is not a variable  in the '
-                                       'dataset.')
+                                msg = (
+                                   'Append failure : missing linked variable '
+                                   'in {} : variable property {}.{} is {!s}, '
+                                   'but there is no "{}" variable in the '
+                                   'dataset.')
                                 msg = msg.format(user_datatype_info,
                                                  cf_var.name, attrname,
+                                                 target_names,
                                                  target_name)
                                 raise ValueError(msg)
                             # Make links both "up" and "down".
                             target_var = cf_data.vars[target_name]
-                            if attrname not in linksto:
-                                linksto[attrname] = []
-                            linksto[attrname].append(target_var)
-                            linkedfrom = target_var._linkedfrom
-                            if attrname not in linkedfrom:
-                                linkedfrom[attrname] = []
-                            linkedfrom[attrname].append(target_var)
+                            addlink(cf_var._linksto, attrname, target_var)
+                            addlink(target_var._linkedfrom, attrname, cf_var)
+
+                # Also add links due to dimension usage.
                 for dim_name in cf_var.dim_names:
-                    # Find+label the dimension variable (i.e. coord), if any.
                     dim_var = cf_data.vars.get(dim_name, None)
                     if dim_var is not None:
-                        if '_dim' not in linksto:
-                            linksto['_dim'] = []
-                        linksto['_dim'].append(dim_var)
-                        linkedfrom = dim_var._linkedfrom
-                        if '_dim' not in linkedfrom:
-                            linkedfrom['_dim'] = []
-                        linkedfrom['_dim'].append(cf_var)
+                        # Note: there may *not* be a dim-coord for the dim.
+                        addlink(cf_var._linksto, '_dim', dim_var)
+                        addlink(dim_var._linkedfrom, '_dim', cf_var)
 
-        savedata = self._save
         label_links(filedata, 'existing file')
         label_links(savedata, 'data to be appended')
 
         # Get all variables in the existing file.
-        file_vars = set(filedata.vars.values())
-
-        # Identify + exclude the dimension variables.
-        file_dim_vars = set(file_var for file_var in file_vars
-                            if file_var.name in filedata.dims)
-        file_vars -= file_dim_vars
+        all_file_vars = set(filedata.vars.values())
 
         # Get all variables in the save data.
-        save_vars = set(self._save.vars.values())  # A copy !
+        all_save_vars = set(self._save.vars.values())  # A copy !
 
-        # Identify + exclude all the dimension variables in the save data.
-        # NOTE: at this point, we don't judge which is which.  That will be
-        # done later, by matching usage in variables.
-        save_dim_vars = set(save_var for save_var in save_vars
-                            if save_var.name in savedata.dims.keys())
-        save_vars -= save_dim_vars
-
-        # Get a list of the 'primary' variables.
+        # Get a list of the 'primary' variables (cube data in the save).
         primary_save_vars = set(
-            save_var for save_var in save_vars
+            save_var for save_var in all_save_vars
             if save_var.controls['var_type'] == 'data-var')
-        save_vars -= primary_save_vars
 
-        # Identify each primary variable with one in the file, by name.
-        for save_var in primary_save_vars:
-            ident = var_identity_name(save_var)
-            matches = [file_var
-                       for file_var in filedata.vars.values()
+        # Identify save variables with file variables, using the metadata in
+        # preference to matching by variable names only ...
+
+        def units_match(units_str_1, units_str_2):
+            # Compare unit strings *AS* units, if valid, else string-compare.
+            try:
+                unit1 = Unit(units_str_1)
+                unit2 = Unit(units_str_2)
+            except ValueError:
+                unit1, unit2 = units_str_1, units_str_2
+            return unit1 == unit2
+
+        def identity_match(v_save, v_file):
+            """
+            Match a save-data variable to a file variable.
+
+            Match by name attributes or actual variable name.
+            If existing identification is recorded, check it.
+            If no existing identification recorded, perform units equivalence
+            checking, but do *not* record the new identification : the caller
+            should do that.
+
+            """
+            std, lng = 'standard_name', 'long_name'
+            if std in v_save.ncattrs or std in v_file.ncattrs:
+                # If either has 'standard_name', compare those.
+                match = (std in v_save.ncattrs and std in v_file.ncattrs and
+                         v_save.ncattrs[std] == v_file.ncattrs[std])
+            elif lng in v_save.ncattrs or lng in v_file.ncattrs:
+                # ELSE if either has 'long_name', compare those.
+                match = (lng in v_save.ncattrs and lng in v_file.ncattrs and
+                         v_save.ncattrs[lng] == v_file.ncattrs[lng])
+            else:
+                # ELSE compare actual variable names.
+                match = v_save.name == v_file.name
+
+            if match:
+                # If we already have an association, check it is the same.
+                linked = (hasattr(v_save, '_file_var') or
+                          hasattr(v_file, '_save_var'))
+                if linked:
+                    if (getattr(v_save, '_file_var', None) != v_file or
+                            getattr(v_file, '_save_var', None) != v_save):
+                        msg = ('Append failure : save data variable "{}" '
+                               'appears to match file variable "{}", but '
+                               'file variable "{}" also matches save data '
+                               'variable "{}".')
+                        msg = msg.format(
+                            var_identity_name(v_save),
+                            var_identity_name(v_file),
+                            var_identity_name(v_file._save_var))
+                        raise ValueError(msg)
+                else:
+                    # New identification found : check some other aspects.
+                    # Check shapes match.
+                    save_dims = [dim.size
+                                 for dim in [savedata.dims[dim_name]
+                                             for dim_name in v_save.dim_names]
+                                 if dim is not save_unlimited_dim]
+                    file_dims = [dim.size
+                                 for dim in [filedata.dims[dim_name]
+                                             for dim_name in v_file.dim_names]
+                                 if dim is not file_unlimited_dim]
+                    if (save_dims != file_dims):
+                        msg = ('Append failure : Shapes of "{}" in save '
+                               'data and  "{}" in the file are not '
+                               'equivalent : "{}" != "{}".')
+                        msg = msg.format(var_identity_name(v_save),
+                                         var_identity_name(v_file),
+                                         save_dims,
+                                         file_dims)
+                        raise ValueError(msg)
+
+                    # Check units, if any.
+                    if ('units' in v_save.ncattrs or
+                            'units' in v_file.ncattrs):
+                        save_ut_str, file_ut_str = (
+                            var.ncattrs['units'].value
+                            for var in (v_save, v_file))
+                        if not units_match(save_ut_str, file_ut_str):
+                            msg = ('Append failure : Units of "{}" in save '
+                                   'data and  "{}" in the file are not '
+                                   'equivalent : "{}" != "{}".')
+                            msg = msg.format(var_identity_name(v_save),
+                                             var_identity_name(v_file),
+                                             save_ut_str, file_ut_str)
+                            raise ValueError(msg)
+
+            return match
+
+        def find_single_match(save_var, candidate_file_vars, element_type):
+            matches = [file_var for file_var in candidate_file_vars
                        if identity_match(save_var, file_var)]
             n_matches = len(matches)
             if n_matches != 1:
-                fail_reason = 'no' if n_matches == 0 else 'too many'
+                ident = var_identity_name(save_var)
+                if n_matches == 0:
+                    fail_reason = 'no'
+                else:
+                    fail_reason = 'too many ({})'.format(n_matches)
                 msg = ('Append failure : {} variables found in original file '
-                       'matching source cube "{}"')
-                raise ValueError(msg.format(fail_reason, ident))
-            file_var = matches[0]
-            # "Label" the save variables with the matching file variable name.
-            save_var.name = file_var.name
+                       'matching source {} "{}"')
+                raise ValueError(msg.format(fail_reason, element_type, ident))
+
+            return matches[0]
+
+        # Identify each primary variable in the save data with a variable in
+        # the file, matching by cf-meaningful name attributes in preference to
+        # the actual variable names.
+        for save_var in primary_save_vars:
+            file_var = find_single_match(save_var, all_file_vars, 'cube data')
+            # Record the matching file variable + vice-versa
+            save_var._file_var = file_var
+            file_var._save_var = save_var
+
+        # Starting with the primary variables, extend the variable
+        # identification process over all links from each variable, recursing
+        # until all done.
+        new_matches = primary_save_vars.copy()
+        all_matches = set()
+        while new_matches:
+            all_matches |= new_matches
+            scan_new_matches = new_matches.copy()
+            new_matches = set()
+            for src_var in scan_new_matches:
+                # Do identify on link groups of each 'type'.
+                for linktype in src_var._linksto:
+                    src_links = src_var._linksto[linktype]
+                    tgt_links = src_var._file_var._linksto[linktype]
+                    # Search to match these target vars 1-2-1 to source vars.
+                    assert len(tgt_links) == len(src_links)
+                    for src_link in src_links:
+                        tgt_link = find_single_match(src_link, tgt_links,
+                                                     linktype)
+                        if not hasattr(src_link, '_file_var'):
+                            # Found a new variable identity.
+                            new_matches.add(src_link)
+                            src_link._file_var = tgt_link
+                            tgt_link._save_var = src_link
+                        else:
+#                            if src_link._file_var != tgt_link:
+#                                # This can't happen, as it means src matches
+#                                # >1 target, which we already excluded.
+#                                assert(0)
+                            if tgt_link._save_var != src_link:
+                                msg = (
+                                    'Append failure : file data variable "{}" '
+                                    'appears to match save data variable '
+                                    '"{}", but also matches "{}".')
+                                msg = msg.format(
+                                    var_identity_name(tgt_link),
+                                    var_identity_name(src_link),
+                                    var_identity_name(src_link._file_var))
+                                raise ValueError(msg)
+
+        # Check that all save-vars are now matched to a file-var.
+        # NOTE: *including* dimensions, which should all appear somewhere in
+        # the '_dim' references.
+        non_id_vars = [var for var in all_save_vars
+                       if var._file_var is None]
+        if len(non_id_vars) > 0:
+            msg = ('Append failure : save data variable(s) have no match in '
+                   'the existing file : ({})')
+            msg = msg.format(', '.join(var_identity_name(var)
+                                       for var in non_id_vars))
+            raise ValueError(msg)
+
+        # NOTE: at this point, it is ok to have additional variables in the
+        # file not identified with a save variable.
+        # But ... we *must* have a save variable for all those file variables
+        # *which map to the unlimited dimension*.
+        for var in all_file_vars:
+            if (file_unlimited_dim.name in var.dim_names and
+                    not hasattr(var, '_save_var')):
+                msg = ('Append failure : variable "{}" in the existing file '
+                       'is indexed to the unlimited dimension, but there is '
+                       'no corresponding content in the saved cubes.')
+                msg = msg.format(var_identity_name(var))
+                raise ValueError(msg)
+
+        # Get the list of save variables we are going to actually write out.
+        save_vars = [var for var in all_save_vars
+                     if save_unlimited_dim.name in var.dim_names]
+
+        # Check that all save variable dimensions correspond correctly with
+        # those in the file.
+        # For this we scan through all the save variable dimensions, labelling
+        # both save and and file dimensions in the order they are encountered,
+        # and checking that the references are everywhere the same between the
+        # save and file variables.
+        i_next_dim = 0
+        for save_var in all_save_vars:
+            file_var = save_var._file_var
+            # N.B. we already checked that var *shapes* match.
+            for save_dimname, file_dimname in zip(
+                    save_var.dim_names, file_var.dim_names):
+                save_dim = savedata.dims[save_dimname]
+                file_dim = filedata.dims[file_dimname]
+                save_i = getattr(save_dim, '_i_dim', None)
+                file_i = getattr(file_dim, '_i_dim', None)
+                if (save_i is None and file_i is not None):
+                    # Newly encountered dim in both save and file.
+                    save_dim._i_dim = i_next_dim
+                    file_dim._i_dim = i_next_dim
+                    i_next_dim += 1
+                else:
+                    # At least one already seen : check both seen + match.
+                    if (save_i != file_i):
+                        # N.B. (includes 'None' values for unseen).
+                        msg = ('Append failure : the dimensions of variable '
+                               '{}({}) in the save data do not correspond with '
+                               'those of variable {}({}) in the existing '
+                               'file.')
+                        msg = msg.format(
+                            var_identity_name(save_var),
+                            save_var.dim_names,
+                            var_identity_name(file_var),
+                            file_var.dim_names)
+                        raise ValueError(msg)
+
+        # Check that all the new data is the same length along the unlimited
+        # dimension.
+        save_length = None
+        for var in save_vars:
+            i_dim = var.dim_names.index(save_unlimited_dim.name)
+            this_length = var.data_source.shape[i_dim]
+            if save_length is None:
+                save_length = this_length
+            elif this_length != save_length:
+                save_dim_var = savedata.vars[save_unlimited_dim.name]
+                save_dimname = var_identity_name(save_dim_var)
+                msg = (
+                    'Append failure : source data does not all have the '
+                    'same length in the append dimension "{}" : {} != {}.')
+                msg = msg.format(save_dimname, this_length, save_length)
+                raise ValueError(msg)
+
+        # Check that any dimension coordinate on the unlimited dimension will
+        # remain monotonic in the append.
+        file_unlim_dimvar = filedata.vars.get(file_unlimited_dim.name, None)
+        if file_unlim_dimvar:
+            file_unlim_data = file_unlim_dimvar.data_source
+            save_unlim_data = file_unlim_dimvar._save_var.data_source
+            # Existing and new dimension values will be (strictly) monotonic.
+            # Given that, check that the combination still will be ...
+            end_old_data = file_unlim_data[-2:]
+            start_new_data = save_unlim_data[:2]
+            end_old_data, start_new_data = (
+                as_concrete_data(data)
+                for data in (end_old_data, start_new_data))
+            diffs = np.diff(np.concatenate((end_old_data, start_new_data)))
+            mindiff, maxdiff = np.min(diffs), np.max(diffs)
+            if mindiff * maxdiff <= 1.0e-9:
+                # NOTE: bit tricky this ...
+                # Triggers if *either* there are diffs both above + below 0,
+                # *or* one of them is close to 0 --> not *strictly* monotonic.
+                msg = ('Append failure : append of new to old coordinate '
+                       'values along the unlimited "{}" dimension will not be '
+                       'monotonic : old values = ..., {} : '
+                       'new values = {}, ...')
+                old_vals_str = ', '.join(str(val) for val in list(end_old_data))
+                new_vals_str = ', '.join(str(val) for val in list(start_new_data))
+                msg = msg.format(var_identity_name(file_unlim_dimvar),
+                                 old_vals_str, new_vals_str)
+                raise ValueError(msg)
 
         # Return our representation of the original file.
-        return filedata
+        return filedata, file_unlimited_dim
 
     def _make_variable_in_dataset(self, var):
         """
