@@ -399,7 +399,7 @@ def interpolate(cube, sample_points, method=None):
                                 for i_dim in dims_order]
 
         # Apply the fancy indexing to get all the result data points.
-        source_data = source_data[fancy_source_indices]
+        source_data = source_data[tuple(fancy_source_indices)]
 
         # "Fix" problems with missing datapoints producing odd values
         # when copied from a masked into an unmasked array.
@@ -441,7 +441,8 @@ def interpolate(cube, sample_points, method=None):
                                         for src_dim in src_coord_dims]
 
             # Fill the new coord with all the correct points from the old one.
-            new_cube_coord.points = src_coord.points[fancy_coord_index_arrays]
+            new_cube_coord.points = src_coord.points[
+                tuple(fancy_coord_index_arrays)]
             # NOTE: the new coords do *not* have bounds.
 
     return new_cube
