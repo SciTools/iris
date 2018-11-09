@@ -5,18 +5,19 @@
 # we will use conda to give us a much faster setup time.
 
 
-language: python
-python:
-  - 2.7
-  - 3.6
+language: minimal
 sudo: false
 
 env:
   matrix:
-    - TEST_TARGET=default TEST_MINIMAL=true
-    - TEST_TARGET=default
-    - TEST_TARGET=example
-    - TEST_TARGET=doctest
+    - PYTHON_VERSION=2.7 TEST_TARGET=default TEST_MINIMAL=true
+    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
+    - PYTHON_VERSION=2.7 TEST_TARGET=default
+    - PYTHON_VERSION=3.6 TEST_TARGET=default
+    - PYTHON_VERSION=2.7 TEST_TARGET=example
+    - PYTHON_VERSION=3.6 TEST_TARGET=example
+    - PYTHON_VERSION=3.6 TEST_TARGET=doctest
+    # doctests only with Python3, see https://github.com/SciTools/iris/pull/3134
 
   global:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
@@ -31,21 +32,12 @@ install:
     export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96";
     export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
-  # Cut short doctest phase under Python 2 : now only supports Python 3
-  # SEE : https://github.com/SciTools/iris/pull/3134
-  # ------------
-  - >
-    if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_PYTHON_VERSION} != 3* ]]; then
-        echo "DOCTEST phase only valid in Python 3 : ABORTING during 'install'."
-        exit 0
-    fi
-
   # Install miniconda
   # -----------------
   - >
     echo 'Installing miniconda';
     export CONDA_BASE=https://repo.continuum.io/miniconda/Miniconda;
-    if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+    if [[ "$PYTHON_VERSION" == 2* ]]; then
       wget --quiet ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
       wget --quiet ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -63,7 +55,7 @@ install:
     conda config --add channels conda-forge;
     conda update --quiet conda;
     ENV_NAME='test-environment';
-    conda create --quiet -n $ENV_NAME python=$TRAVIS_PYTHON_VERSION pip;
+    conda create --quiet -n $ENV_NAME python=$PYTHON_VERSION pip;
     source activate $ENV_NAME;
 
   # Customise the testing environment
@@ -72,7 +64,7 @@ install:
     echo 'Install Iris dependencies';
     CONDA_REQS_FLAGS="";
     CONDA_REQS_GROUPS="test";
-    if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+    if [[ "$PYTHON_VERSION" == 2* ]]; then
         CONDA_REQS_FLAGS="${CONDA_REQS_FLAGS} --py2";
     fi;
     if [[ "$TEST_MINIMAL" != true ]]; then
@@ -119,7 +111,7 @@ install:
 
   # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-  - if [[ "$TEST_MINIMAL" != true && ${TRAVIS_PYTHON_VERSION} == 2* ]]; then
+  - if [[ "$TEST_MINIMAL" != true && ${PYTHON_VERSION} == 2* ]]; then
         conda install --quiet -n $ENV_NAME python-ecmwf_grib;
         pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
     fi
@@ -150,7 +142,7 @@ script:
   - ORG=(${TRAVIS_REPO_SLUG//\// })
 
   # When we merge a change, and we are running in python 3, push some docs. 
-  - if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${TRAVIS_PYTHON_VERSION} == 3* && ${ORG} == "SciTools" ]]; then
+  - if [[ $TEST_TARGET == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${PYTHON_VERSION} == 3* && ${ORG} == "SciTools" ]]; then
       cd $INSTALL_DIR;
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
