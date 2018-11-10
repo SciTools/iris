@@ -296,11 +296,6 @@ class TestBasicMaths(tests.IrisTest):
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
                           lambda cube: cf_units.Unit('1'))
 
-        # should fail because math.sqrt is built-in function, which can not be
-        # used in inspect.getargspec
-        self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
-                          lambda cube: cf_units.Unit('1'))
-
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
                           lambda cube: cf_units.Unit('1'))
@@ -583,7 +578,7 @@ class TestIFunc(tests.IrisTest):
         c = a.copy() + 2
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
-        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, 
+        my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc,
                    lambda x,y: (x + y).units)
         b = my_ifunc(a, c)
 
@@ -605,7 +600,7 @@ class TestIFunc(tests.IrisTest):
 
         b = cs_ifunc(a, axis=1)
         ans = a.data.copy()
-        ans = np.cumsum(ans, axis=1) 
+        ans = np.cumsum(ans, axis=1)
 
         self.assertArrayAlmostEqual(b.data, ans)
 
