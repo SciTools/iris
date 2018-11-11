@@ -13,7 +13,6 @@ env:
   - PYTHON_VERSION=3.6 
 
 matrix:
-  include:
   - env: TEST_TARGET=default TEST_MINIMAL=true
   - env: TEST_TARGET=default
   - env: TEST_TARGET=example
