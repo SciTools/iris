@@ -9,15 +9,19 @@ language: minimal
 sudo: false
 
 env:
-  matrix:
-    - PYTHON_VERSION=2.7 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=2.7 TEST_TARGET=default
-    - PYTHON_VERSION=3.6 TEST_TARGET=default
-    - PYTHON_VERSION=2.7 TEST_TARGET=example
-    - PYTHON_VERSION=3.6 TEST_TARGET=example
-    - PYTHON_VERSION=3.6 TEST_TARGET=doctest
-    # doctests only with Python3, see https://github.com/SciTools/iris/pull/3134
+  - PYTHON_VERSION=2.7
+  - PYTHON_VERSION=3.6 
+
+matrix:
+  include:
+  - env: TEST_TARGET=default TEST_MINIMAL=true
+  - env: TEST_TARGET=default
+  - env: TEST_TARGET=example
+  - env: TEST_TARGET=doctest
+  allow_failures:
+  - env: 
+    - PYTHON_VERSION=2.7
+    - TEST_TARGET=doctest
 
   global:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
