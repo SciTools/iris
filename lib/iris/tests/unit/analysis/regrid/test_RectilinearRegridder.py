@@ -147,7 +147,7 @@ class Test__regrid__linear(tests.IrisTest):
     def test_reverse_x_coord(self):
         index = [slice(None)] * self.data.ndim
         index[self.x_dim] = slice(None, None, -1)
-        result = regrid(self.data[index], self.x_dim,
+        result = regrid(self.data[tuple(index)], self.x_dim,
                         self.y_dim, self.x[::-1], self.y,
                         self.target_x, self.target_y)
         self.assertArrayEqual(result, self.expected)
