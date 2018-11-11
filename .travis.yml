@@ -9,22 +9,22 @@ language: minimal
 sudo: false
 
 env:
-  - PYTHON_VERSION=2.7
-  - PYTHON_VERSION=3.6 
-
-matrix:
-  - env: TEST_TARGET=default TEST_MINIMAL=true
-  - env: TEST_TARGET=default
-  - env: TEST_TARGET=example
-  - env: TEST_TARGET=doctest
-  allow_failures:
-  - env: 
-    - PYTHON_VERSION=2.7
-    - TEST_TARGET=doctest
-
   global:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
+
+matrix:
+  include:  
+    - env: PYTHON_VERSION=2.7 TEST_TARGET=default TEST_MINIMAL=true
+    - env: PYTHON_VERSION=2.7 TEST_TARGET=default
+    - env: PYTHON_VERSION=2.7 TEST_TARGET=example
+    # doctests fail with Python2, see https://github.com/SciTools/iris/pull/3134
+    #- env: PYTHON_VERSION=2.7 TEST_TARGET=doctest
+
+    - env: PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
+    - env: PYTHON_VERSION=3.6 TEST_TARGET=default
+    - env: PYTHON_VERSION=3.6 TEST_TARGET=example
+    - env: PYTHON_VERSION=3.6 TEST_TARGET=doctest
 
 git:
   # We need a deep clone so that we can compute the age of the files using their git history.
