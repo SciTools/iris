@@ -331,18 +331,20 @@ class _CubeSignature(object):
         self.defn = cube.metadata
         self.data_type = cube.dtype
 
-        #
-        # Collate the dimension coordinate metadata.
-        #
+        # Populate dim- and aux-coord metadata.
+        self._collate_dim_metadata(cube)
+        self._collate_aux_metadata(cube)
+
+    def _collate_dim_metadata(self, cube):
+        """Collate the dimension coordinate metadata."""
         for ind, coord in enumerate(self.dim_coords):
             dims = cube.coord_dims(coord)
             metadata = _CoordMetaData(coord, dims)
             self.dim_metadata.append(metadata)
             self.dim_mapping.append(dims[0])
 
-        #
-        # Collate the auxiliary coordinate metadata and scalar coordinates.
-        #
+    def _collate_aux_metadata(self, cube):
+        """Collate the auxiliary coordinate metadata and scalar coordinates."""
         axes = dict(T=0, Z=1, Y=2, X=3)
 
         # Coordinate sort function - by guessed coordinate axis, then
@@ -361,6 +363,14 @@ class _CubeSignature(object):
                 self.aux_coords_and_dims.append(coord_and_dims)
             else:
                 self.scalar_coords.append(coord)
+
+    def _can_and_will_cast(self, other, attr):
+        """
+        Determine whether the dtypes of `self.attr` and `other.attr` can be
+        cast. If they can be, cast both to be of the same appropriate dtype.
+
+        """
+        pass
 
     def _coordinate_differences(self, other, attr):
         """
