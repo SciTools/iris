@@ -390,11 +390,11 @@ class Test_LambertConformal(tests.GraphicsTest):
         lcc = LambertConformal(secant_latitudes=lat_1)
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(lat_1, ccrs.proj4_params['lat_1'])
-	seff.assertNotIn('lat_2', ccrs.proj4_params)
+	self.assertNotIn('lat_2', ccrs.proj4_params)
 
     def test_secant_latitudes(self):
         lat_1, lat_2 = 40, 41
-        lcc = LambertConformal(secant_latitudes=(lat_0, lat_1))
+        lcc = LambertConformal(secant_latitudes=(lat_1, lat_2))
         ccrs = lcc.as_cartopy_crs()
         self.assertEqual(lat_1, ccrs.proj4_params['lat_1'])
         self.assertEqual(lat_2, ccrs.proj4_params['lat_2'])
