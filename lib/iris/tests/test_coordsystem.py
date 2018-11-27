@@ -375,6 +375,30 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
         self.assertEqual(res, expected)
 
 class Test_LambertConformal(tests.GraphicsTest):
+    def test_fail_secant_latitudes_none(self):
+        emsg = 'one or two secant latitudes required'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            LambertConformal(secant_latitudes=())
+
+    def test_fail_secant_latitudes_excessive(self):
+        emsg = 'one or two secant latitudes required'
+        with self.assertRaisesRegexp(ValueError, emsg):
+            LambertConformal(secant_latitudes=(1, 2, 3))
+
+    def test_secant_latitudes_single_value(self):
+	lat_1 = 40
+        lcc = LambertConformal(secant_latitudes=lat_1)
+        ccrs = lcc.as_cartopy_crs()
+        self.assertEqual(lat_1, ccrs.proj4_params['lat_1'])
+	seff.assertNotIn('lat_2', ccrs.proj4_params)
+
+    def test_secant_latitudes(self):
+        lat_1, lat_2 = 40, 41
+        lcc = LambertConformal(secant_latitudes=(lat_0, lat_1))
+        ccrs = lcc.as_cartopy_crs()
+        self.assertEqual(lat_1, ccrs.proj4_params['lat_1'])
+        self.assertEqual(lat_2, ccrs.proj4_params['lat_2'])
+
     def test_north_cutoff(self):
         lcc = LambertConformal(0, 0, secant_latitudes=(30, 60))
         ccrs = lcc.as_cartopy_crs()
