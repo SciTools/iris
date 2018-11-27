@@ -48,6 +48,15 @@ class Test_masked(tests.IrisTest):
         cube = self.cube.collapsed("foo", PROPORTION, function=self.func)
         self.assertArrayEqual(cube.data, [0.5])
 
+    def test_false_mask(self):
+        # Test corner case where mask is returned as boolean value rather
+        # than boolean array when the mask is unspecified on construction.
+        masked_cube = iris.cube.Cube(ma.array([1, 2, 3, 4, 5]))
+        masked_cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'),
+                                  0)
+        cube = masked_cube.collapsed("foo", PROPORTION, function=self.func)
+        self.assertArrayEqual(cube.data, ma.array([0.6]))
+
 
 class Test_name(tests.IrisTest):
     def test(self):
