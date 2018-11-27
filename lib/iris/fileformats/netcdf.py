@@ -1095,8 +1095,12 @@ class Saver(object):
         import subprocess
         import sys
         cmd = 'ncdump -h ' + output_path
-        lines = subprocess.check_output(cmd, shell=True)
-        lines = lines.split('\n')
+        chars = subprocess.check_output(cmd, shell=True)
+        # Convert bytes into strings in Python 2/3 compatible way.
+        if (not isinstance(chars, six.string_types) and
+                hasattr(chars, 'decode')):
+            chars = chars.decode()
+        lines = chars.split('\n')
         lines = ['netcdf [[XXX]] {'] + \
             lines[1:]  # replace first with filepath
         outlines = ['',
