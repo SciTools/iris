@@ -364,13 +364,43 @@ class _CubeSignature(object):
             else:
                 self.scalar_coords.append(coord)
 
-    def _can_and_will_cast(self, other, attr):
+    @staticmethod
+    def _coordinate_attribute_differences(coord_1, coord_2):
         """
-        Determine whether the dtypes of `self.attr` and `other.attr` can be
-        cast. If they can be, cast both to be of the same appropriate dtype.
+        Determine the coordinate attributes that differ between `coord_1`
+        and `coord_2`. Note that if the dtypes of the points and bounds
+        attributes can be cast safely, they count as not different.
+
+
+        Args:
+
+        * coord_1: (_CoordMetaData)
+            The first _CoordMetaData object to compare the attributes of.
+
+        * coord_2: (_CoordMetaData)
+            The second _CoordMetaData object to compare the attributes of.
+
+        Returns:
+            A list of the keys that differ between `coord_1` and
+            `coord_2`.
 
         """
-        pass
+        diffs = []
+        coord_1_defn = coord_1._asdict()
+        coord_2_defn = coord_2._asdict()
+        for coord_1_key, coord_1_value in coord_1_defn.items():
+            coord_2_value = coord_2_defn[coord_1_key]
+            if 'dtype' in coord_1_key:
+                values = (coord_1_value, coord_2_value)
+                dtype_is_none = any([v is None for v in values])
+                can_cast = any((np.can_cast(*values),
+                                np.can_cast(*values[::-1])))
+                if can_cast and not dtype_is_none:
+                    diffs.append(coord_1_key)
+            else:
+                if coord_1_value != coord_2_value:
+                    diffs.append(coord_1_key)
+        return diffs
 
     def _coordinate_differences(self, other, attr):
         """
@@ -403,16 +433,18 @@ class _CubeSignature(object):
 
         # Compare coord metadata.
         if len(self_names) != len(other_names) or self_names != other_names:
-            result = ('', ', '.join(self_names), ', '.join(other_names))
+            result = ['differ: {} != {}'.format(', '.join(self_names),
+                                                ', '.join(other_names))]
         else:
-            diff_names = []
+            result = []
             for self_key, self_value in six.iteritems(self_dict):
                 other_value = other_dict[self_key]
                 if self_value != other_value:
-                    diff_names.append(self_key)
-            result = (' metadata',
-                      ', '.join(diff_names),
-                      ', '.join(diff_names))
+                    diffs = self._coordinate_attribute_differences(self_value,
+                                                                   other_value)
+                    msg = 'metadata differs: {} ({})'.format(self_key,
+                                                             ', '.join(diffs))
+                    result.append(msg)
         return result
 
     def match(self, other, error_on_mismatch):
@@ -451,16 +483,18 @@ class _CubeSignature(object):
             msg = 'Cube metadata differs for phenomenon: {}'
             msgs.append(msg.format(self.defn.name()))
 
-        # Check dim coordinates.
+        # Check dimension coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
-            msgs.append(msg_template.format('Dimension coordinates',
-                                            *differences))
-        # Check aux coordinates.
+            msgs.extend(['Dimension coordinates {}'.format(msg)
+                         for msg in differences])
+
+        # Check auxiliary coordinates.
         if self.aux_metadata != other.aux_metadata:
             differences = self._coordinate_differences(other, 'aux_metadata')
-            msgs.append(msg_template.format('Auxiliary coordinates',
-                                            *differences))
+            msgs.extend(['Auxiliary coordinates {}'.format(msg)
+                         for msg in differences])
+
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
             differences = self._coordinate_differences(other, 'scalar_coords')
@@ -470,6 +504,7 @@ class _CubeSignature(object):
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions', '',
                                             self.ndim, other.ndim))
+
         # Check data type.
         if self.data_type != other.data_type:
             msgs.append(msg_template.format('Data types', '',
