@@ -776,11 +776,15 @@ class LambertConformal(CoordSystem):
         self.false_easting = false_easting
         #: Y offset from planar origin in metres.
         self.false_northing = false_northing
-        #: The two standard parallels of the cone.
+        #: The one or two standard parallels of the cone.
         try:
             self.secant_latitudes = tuple(secant_latitudes)
         except TypeError:
             self.secant_latitudes = (secant_latitudes,)
+        nlats = len(self.secant_latitudes)
+        if nlats == 0 or nlats > 2:
+            emsg = 'Either one or two secant latitudes required, got {}'
+            raise ValueError(emsg.format(nlats))
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
@@ -796,7 +800,9 @@ class LambertConformal(CoordSystem):
         # We're either north or south polar. Set a cutoff accordingly.
         if self.secant_latitudes is not None:
             lats = self.secant_latitudes
-            max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
+            max_lat = lats[0]
+            if len(lats) == 2:
+                max_lat = lats[0] if abs(lats[0]) > abs(lats[1]) else lats[1]
             cutoff = -30 if max_lat > 0 else 30
         else:
             cutoff = None

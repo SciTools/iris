@@ -49,7 +49,8 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         # converted to a cartopy CRS.
         merc_cs = Mercator()
         res = merc_cs.as_cartopy_crs()
-        expected = ccrs.Mercator(globe=ccrs.Globe())
+        # expected = ccrs.Mercator(globe=ccrs.Globe())
+        expected = ccrs.Mercator(globe=ccrs.Globe(), latitude_true_scale=0.0)
         self.assertEqual(res, expected)
 
     def test_extra_kwargs(self):
@@ -81,7 +82,7 @@ class Test_as_cartopy_projection(tests.IrisTest):
         # converted to a cartopy projection.
         merc_cs = Mercator()
         res = merc_cs.as_cartopy_projection()
-        expected = ccrs.Mercator(globe=ccrs.Globe())
+        expected = ccrs.Mercator(globe=ccrs.Globe(), latitude_true_scale=0.0)
         self.assertEqual(res, expected)
 
     def test_extra_kwargs(self):

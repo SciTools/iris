@@ -1241,9 +1241,15 @@ def _proportion(array, function, axis, **kwargs):
     # values
     if ma.isMaskedArray(array):
         # calculate the total number of non-masked values across the given axis
-        total_non_masked = count(
-            array.mask, axis=axis, function=np.logical_not, **kwargs)
-        total_non_masked = ma.masked_equal(total_non_masked, 0)
+        if array.mask is np.bool_(False):
+            # numpy will return a single boolean as a mask if the mask
+            # was not explicitly specified on array construction, so in this
+            # case pass the array shape instead of the mask:
+            total_non_masked = array.shape[axis]
+        else:
+            total_non_masked = count(
+                array.mask, axis=axis, function=np.logical_not, **kwargs)
+            total_non_masked = ma.masked_equal(total_non_masked, 0)
     else:
         total_non_masked = array.shape[axis]
 
