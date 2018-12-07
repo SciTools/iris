@@ -156,10 +156,7 @@ class CubeList(list):
         """Given a :class:`list` of cubes, return a CubeList instance."""
         cube_list = list.__new__(cls, list_of_cubes)
 
-        # Check that all items in the incoming list are cubes. Note that this
-        # checking does not guarantee that a CubeList instance *always* has
-        # just cubes in its list as the append & __getitem__ methods have not
-        # been overridden.
+        # Check that all items in the incoming list are cubes.
         if not all([isinstance(cube, Cube) for cube in cube_list]):
             raise ValueError(
                 "All items in list_of_cubes must be Cube " "instances."
@@ -209,6 +206,48 @@ class CubeList(list):
         result = super().__getslice__(start, stop)
         result = CubeList(result)
         return result
+
+    def append(self, cube):
+        """
+        Append a cube.
+        """
+        if isinstance(cube, Cube):
+            super(CubeList, self).append(cube)
+        else:
+            raise TypeError('Only Cube instances can be appended to cubelists.'
+                            '  Got {}.'.format(type(cube)))
+
+    def extend(self, other_cubes):
+        """
+        Extend cubelist by appending the cubes contained in other_cubes.
+
+        Args:
+
+        * other_cubes:
+           A cubelist or other sequence of cubes.
+        """
+        if isinstance(other_cubes, Cube):
+            raise TypeError(
+                'Use append to add a single cube to the cubelist.')
+        elif not isinstance(other_cubes, collections.Iterable):
+            raise TypeError(
+                'Can only extend with a sequece of Cube instances.')
+        elif isinstance(other_cubes, CubeList) or all(
+                [isinstance(cube, Cube) for cube in other_cubes]):
+            super(CubeList, self).extend(other_cubes)
+        else:
+            raise TypeError('All items in other_cubes must be Cube '
+                            'instances.')
+
+    def insert(self, index, cube):
+        """
+        Insert a cube before index.
+        """
+        if isinstance(cube, Cube):
+            super(CubeList, self).insert(index, cube)
+        else:
+            raise TypeError('Only Cube instances can be inserted into '
+                            'cubelists.  Got {}.'.format(type(cube)))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""

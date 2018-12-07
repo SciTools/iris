@@ -24,6 +24,25 @@ from iris.fileformats.pp import STASH
 import iris.tests.stock
 
 
+class Test_append(tests.IrisTest):
+    def setUp(self):
+        self.cubelist = iris.cube.CubeList()
+        self.cube1 = iris.cube.Cube(1, long_name='foo')
+        self.cube2 = iris.cube.Cube(1, long_name='bar')
+
+    def test_pass(self):
+        self.cubelist.append(self.cube1)
+        self.assertEqual(self.cubelist[-1], self.cube1)
+        self.cubelist.append(self.cube2)
+        self.assertEqual(self.cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        msg = ("Only Cube instances can be appended to cubelists.  Got "
+               "<class 'NoneType'>")
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist.append(None)
+
+
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit(
@@ -68,6 +87,32 @@ class Test_concatenate_cube(tests.IrisTest):
         exc_regexp = "can't concatenate an empty CubeList"
         with self.assertRaisesRegex(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
+
+
+class Test_extend(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name='foo')
+        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = self.cubelist1.copy()
+        cubelist.extend(self.cubelist2)
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist.extend([self.cube2])
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        msg = 'Use append to add a single cube to the cubelist.'
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist1.extend(self.cube1)
+        msg = 'Can only extend with a sequece of Cube instances.'
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist1.extend(None)
+        msg = 'All items in other_cubes must be Cube instances.'
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist1.extend(range(3))
 
 
 class Test_extract_overlapping(tests.IrisTest):
@@ -128,6 +173,23 @@ class Test_extract_overlapping(tests.IrisTest):
         a, b = cubes.extract_overlapping("time")
         self.assertEqual(a.coord("time"), self.cube[::-1].coord("time")[2:4])
         self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+
+
+class Test_insert(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name='foo')
+        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist.insert(1, self.cube2)
+        self.assertEqual(self.cubelist[1], self.cube2)
+
+    def test_fail(self):
+        msg = ("Only Cube instances can be inserted into cubelists.  Got "
+               "<class 'NoneType'>")
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist.insert(0, None)
 
 
 class Test_merge_cube(tests.IrisTest):
