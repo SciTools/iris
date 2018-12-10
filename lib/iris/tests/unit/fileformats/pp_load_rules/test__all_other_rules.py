@@ -107,7 +107,7 @@ class TestCellMethods(tests.IrisTest):
 
     def test_climatology_max(self):
         field = mock.MagicMock(lbproc=8192,
-                               lbtim=mock.Mock(ia=24, ib=3, ic=3))
+                               lbtim=mock.Mock(ia=0, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
         expected = [CellMethod('maximum within years', 'time'),
                     CellMethod('mean over years', 'time')]
@@ -115,7 +115,7 @@ class TestCellMethods(tests.IrisTest):
 
     def test_climatology_min(self):
         field = mock.MagicMock(lbproc=4096,
-                               lbtim=mock.Mock(ia=24, ib=3, ic=3))
+                               lbtim=mock.Mock(ia=0, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
         expected = [CellMethod('minimum with years', 'time'),
                     CellMethod('mean over years', 'time')]
