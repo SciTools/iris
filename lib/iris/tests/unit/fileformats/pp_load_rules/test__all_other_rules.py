@@ -109,14 +109,16 @@ class TestCellMethods(tests.IrisTest):
         field = mock.MagicMock(lbproc=8192,
                                lbtim=mock.Mock(ia=24, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
-        expected = [CellMethod('maximum', 'time')]
+        expected = [CellMethod('maximum within years', 'time'),
+                    CellMethod('mean over years', 'time')]
         self.assertEqual(res, expected)
 
-    def test_climatology_max(self):
+    def test_climatology_min(self):
         field = mock.MagicMock(lbproc=4096,
                                lbtim=mock.Mock(ia=24, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
-        expected = [CellMethod('minimum', 'time')]
+        expected = [CellMethod('minimum with years', 'time'),
+                    CellMethod('mean over years', 'time')]
         self.assertEqual(res, expected)
 
     def test_other_lbtim_ib(self):

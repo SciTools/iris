@@ -983,17 +983,12 @@ def _all_other_rules(f):
                                            coords='time',
                                            intervals=intervals))
             unhandled_lbproc = False
-        elif f.lbtim.ib == 3 and f.lbproc == 128:
-            # Aggregation over a period of time within a year, over a number
-            # of years.
-            # Only mean (lbproc of 128) is handled as the min/max
-            # interpretation is ambiguous e.g. decadal mean of daily max,
-            # decadal max of daily mean, decadal mean of max daily mean etc.
+        elif f.lbtim.ib == 3:
             cell_methods.append(
                 CellMethod('{} within years'.format(time_method),
                            coords='time', intervals=intervals))
             cell_methods.append(
-                CellMethod('{} over years'.format(time_method),
+                CellMethod('mean over years',
                            coords='time'))
             unhandled_lbproc = False
         else:
