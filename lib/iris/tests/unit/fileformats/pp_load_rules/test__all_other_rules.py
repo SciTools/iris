@@ -117,7 +117,7 @@ class TestCellMethods(tests.IrisTest):
         field = mock.MagicMock(lbproc=4096,
                                lbtim=mock.Mock(ia=0, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
-        expected = [CellMethod('minimum with years', 'time'),
+        expected = [CellMethod('minimum within years', 'time'),
                     CellMethod('mean over years', 'time')]
         self.assertEqual(res, expected)
 
