@@ -227,7 +227,8 @@ class CubeList(list):
         if isinstance(cube, Cube):
             super(CubeList, self).__setitem__(key, cube)
         else:
-            raise TypeError('Elements of cubelists must be Cube instances')
+            raise TypeError('Elements of cubelists must be Cube instances.  '
+                            'Got {}.'.format(type(cube)))
 
     def append(self, cube):
         """

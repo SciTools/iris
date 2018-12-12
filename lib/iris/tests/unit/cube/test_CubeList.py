@@ -361,6 +361,23 @@ class Test_merge__time_triple(tests.IrisTest):
         self.assertCML(cube, checksum=False)
 
 
+class Test_setitem(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name='foo')
+        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist[1] = self.cube2
+        self.assertEqual(self.cubelist[1], self.cube2)
+
+    def test_fail(self):
+        msg = ("Elements of cubelists must be Cube instances.  Got "
+               "<class 'NoneType'>.")
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist[0] = None
+
+
 class Test_xml(tests.IrisTest):
     def setUp(self):
         self.cubes = CubeList([Cube(np.arange(3)), Cube(np.arange(3))])
