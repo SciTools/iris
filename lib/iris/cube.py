@@ -207,6 +207,28 @@ class CubeList(list):
         result = CubeList(result)
         return result
 
+    def __iadd__(self, other_cubes):
+        """
+        Add a sequence of cubes to the cubelist in place.
+        """
+        if isinstance(other_cubes, Cube) or not isinstance(
+                other_cubes, collections.Iterable):
+            raise TypeError(
+                'Can only add a sequence of Cube instances.')
+        elif isinstance(other_cubes, CubeList) or all(
+                [isinstance(cube, Cube) for cube in other_cubes]):
+            super(CubeList, self).__iadd__(other_cubes)
+        else:
+            raise ValueError('All items in added sequence must be Cube '
+                             'instances.')
+
+    def __setitem__(self, key, cube):
+        """Set self[key] to cube"""
+        if isinstance(cube, Cube):
+            super(CubeList, self).__setitem__(key, cube)
+        else:
+            raise TypeError('Elements of cubelists must be Cube instances')
+
     def append(self, cube):
         """
         Append a cube.
@@ -231,13 +253,13 @@ class CubeList(list):
                 'Use append to add a single cube to the cubelist.')
         elif not isinstance(other_cubes, collections.Iterable):
             raise TypeError(
-                'Can only extend with a sequece of Cube instances.')
+                'Can only extend with a sequence of Cube instances.')
         elif isinstance(other_cubes, CubeList) or all(
                 [isinstance(cube, Cube) for cube in other_cubes]):
             super(CubeList, self).extend(other_cubes)
         else:
-            raise TypeError('All items in other_cubes must be Cube '
-                            'instances.')
+            raise ValueError('All items in other_cubes must be Cube '
+                             'instances.')
 
     def insert(self, index, cube):
         """

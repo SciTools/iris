@@ -107,11 +107,11 @@ class Test_extend(tests.IrisTest):
         msg = 'Use append to add a single cube to the cubelist.'
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist1.extend(self.cube1)
-        msg = 'Can only extend with a sequece of Cube instances.'
+        msg = 'Can only extend with a sequence of Cube instances.'
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist1.extend(None)
         msg = 'All items in other_cubes must be Cube instances.'
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegexp(ValueError, msg):
             self.cubelist1.extend(range(3))
 
 
@@ -173,6 +173,31 @@ class Test_extract_overlapping(tests.IrisTest):
         a, b = cubes.extract_overlapping("time")
         self.assertEqual(a.coord("time"), self.cube[::-1].coord("time")[2:4])
         self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+
+
+class Test_iadd(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name='foo')
+        self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = self.cubelist1.copy()
+        cubelist += self.cubelist2
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist += [self.cube2]
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        msg = 'Can only add a sequence of Cube instances.'
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist1 += self.cube1
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist1 += 1.
+        msg = 'All items in added sequence must be Cube instances.'
+        with self.assertRaisesRegexp(ValueError, msg):
+            self.cubelist1 += range(3)
 
 
 class Test_insert(tests.IrisTest):
