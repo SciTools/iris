@@ -27,7 +27,7 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
-from iris._concatenate import concatenate
+from iris._concatenate import _can_cast_dtype, concatenate
 from iris._lazy_data import as_lazy_data
 import iris.coords
 import iris.cube
@@ -59,6 +59,53 @@ class TestEpoch(tests.IrisTest):
         result = concatenate(cubes)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (10,))
+
+
+class Test__can_cast_dtype(tests.IrisTest):
+    def test_castable(self):
+        dtype1 = np.float64
+        dtype2 = np.float32
+        # Confirm that ordering does not affect result.
+        self.assertTrue(_can_cast_dtype(dtype1, dtype2))
+        self.assertTrue(_can_cast_dtype(dtype2, dtype1))
+
+    def test_all_none(self):
+        self.assertTrue(_can_cast_dtype(None, None))
+
+    def test_any_none(self):
+        self.assertFalse(_can_cast_dtype(np.float32, None))
+
+
+class Test_result_dtypes(tests.IrisTest):
+    # Differing dtypes between cube data / coord points should not prevent
+    # concatenation, so long as the dtypes can be cast.
+    def _make_cube(self, points,
+                   data_dtype=np.float32,
+                   points_dtype=np.float32):
+        cube = iris.cube.Cube(np.arange(2, dtype=data_dtype))
+        coord = iris.coords.DimCoord(np.array(points, dtype=points_dtype),
+                                     standard_name='latitude',
+                                     units='degrees')
+        cube.add_dim_coord(coord, 0)
+        return cube
+
+    def test_differing_cube_dtypes(self):
+        dtype = np.float64
+        cube_1 = self._make_cube([1, 2])
+        cube_2 = self._make_cube([3, 4], data_dtype=dtype)
+        cubes = iris.cube.CubeList([cube_1, cube_2])
+        result, = concatenate(cubes)
+        dtype_result = np.promote_types(np.float32, dtype)
+        self.assertEqual(result.data.dtype, dtype_result)
+
+    def test_differing_points_dtypes(self):
+        dtype = np.float64
+        cube_1 = self._make_cube([1, 2], points_dtype=dtype)
+        cube_2 = self._make_cube([3, 4])
+        cubes = iris.cube.CubeList([cube_1, cube_2])
+        result, = concatenate(cubes)
+        dtype_result = np.promote_types(dtype, np.float32)
+        self.assertEqual(result.coord('latitude').points.dtype, dtype_result)
 
 
 class TestMessages(tests.IrisTest):

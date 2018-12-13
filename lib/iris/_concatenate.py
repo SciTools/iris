@@ -52,16 +52,16 @@ _DECREASING = -1
 _INCREASING = 1
 
 
-def _can_cast_dtype(values):
+def _can_cast_dtype(dtype_1, dtype_2):
     """dtypes can be considered "equal" if they can be cast."""
-    dtype_is_none = [v is None for v in values]
+    dtype_is_none = [v is None for v in (dtype_1, dtype_2)]
     if all(dtype_is_none):
         can_cast = True
     elif any(dtype_is_none):
         can_cast = False
     else:
-        can_cast = any((np.can_cast(*values),
-                        np.can_cast(*values[::-1])))
+        can_cast = any((np.can_cast(dtype_1, dtype_2),
+                        np.can_cast(dtype_2, dtype_1)))
     return can_cast
 
 
@@ -171,10 +171,10 @@ class _CoordMetaData(namedtuple('CoordMetaData',
             sbounds_dtype = sprops.pop('bounds_dtype')
             obounds_dtype = oprops.pop('bounds_dtype')
             if spoints_dtype != opoints_dtype:
-                result = _can_cast_dtype((spoints_dtype, opoints_dtype))
+                result = _can_cast_dtype(spoints_dtype, opoints_dtype)
             if sbounds_dtype != obounds_dtype:
-                can_cast_bounds = _can_cast_dtype((sbounds_dtype,
-                                                   obounds_dtype))
+                can_cast_bounds = _can_cast_dtype(sbounds_dtype,
+                                                   obounds_dtype)
                 result = result and can_cast_bounds
             # Also check the rest of the props.
             result = result and sprops == oprops
@@ -433,7 +433,7 @@ class _CubeSignature(object):
                                                       coord_2_value)
                     diffs.append(msg)
             elif 'dtype' in coord_1_key:
-                can_cast = _can_cast_dtype((coord_1_value, coord_2_value))
+                can_cast = _can_cast_dtype(coord_1_value, coord_2_value)
                 if not can_cast:
                     msg = '{!r} {} ({} != {})'.format(name, coord_1_key,
                                                       coord_1_value,
@@ -551,7 +551,7 @@ class _CubeSignature(object):
 
         # Check data type.
         if self.data_type != other.data_type:
-            if not _can_cast_dtype((self.data_type, other.data_type)):
+            if not _can_cast_dtype(self.data_type, other.data_type):
                 msgs.append(msg_template.format('Data types', '',
                                                 self.data_type,
                                                 other.data_type))
