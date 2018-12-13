@@ -365,17 +365,24 @@ class Test_setitem(tests.IrisTest):
     def setUp(self):
         self.cube1 = iris.cube.Cube(1, long_name='foo')
         self.cube2 = iris.cube.Cube(1, long_name='bar')
+        self.cube3 = iris.cube.Cube(1, long_name='boo')
         self.cubelist = iris.cube.CubeList([self.cube1] * 3)
 
     def test_pass(self):
         self.cubelist[1] = self.cube2
         self.assertEqual(self.cubelist[1], self.cube2)
+        self.cubelist[:2] = (self.cube2, self.cube3)
+        self.assertEqual(
+            self.cubelist,
+            iris.cube.Cubelist([self.cube2, self.cube3, self.cube1]))
 
     def test_fail(self):
         msg = ("Elements of cubelists must be Cube instances.  Got "
                "<class 'NoneType'>.")
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist[0] = None
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist[0:2] = [self.cube3, None]
 
 
 class Test_xml(tests.IrisTest):
