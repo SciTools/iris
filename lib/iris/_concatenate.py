@@ -52,6 +52,19 @@ _DECREASING = -1
 _INCREASING = 1
 
 
+def _can_cast_dtype(values):
+    """dtypes can be considered "equal" if they can be cast."""
+    dtype_is_none = [v is None for v in values]
+    if all(dtype_is_none):
+        can_cast = True
+    elif any(dtype_is_none):
+        can_cast = False
+    else:
+        can_cast = any((np.can_cast(*values),
+                        np.can_cast(*values[::-1])))
+    return can_cast
+
+
 class _CoordAndDims(namedtuple('CoordAndDims',
                                ['coord', 'dims'])):
     """
@@ -150,10 +163,24 @@ class _CoordMetaData(namedtuple('CoordMetaData',
             sprops, oprops = self._asdict(), other._asdict()
             # Ignore "kwargs" meta-data for the first comparison.
             sprops['kwargs'] = oprops['kwargs'] = None
-            result = sprops == oprops
+            # Check the points and bounds dtypes.
+            # If they don't match but can be cast then we can
+            # consider this "equal".
+            spoints_dtype = sprops.pop('points_dtype')
+            opoints_dtype = oprops.pop('points_dtype')
+            sbounds_dtype = sprops.pop('bounds_dtype')
+            obounds_dtype = oprops.pop('bounds_dtype')
+            if spoints_dtype != opoints_dtype:
+                result = _can_cast_dtype((spoints_dtype, opoints_dtype))
+            if sbounds_dtype != obounds_dtype:
+                can_cast_bounds = _can_cast_dtype((sbounds_dtype,
+                                                   obounds_dtype))
+                result = result and can_cast_bounds
+            # Also check the rest of the props.
+            result = result and sprops == oprops
             if result:
                 skwargs, okwargs = self.kwargs.copy(), other.kwargs.copy()
-                # Monotonic "order" only applies to DimCoord's.
+                # Monotonic "order" only applies to DimCoords.
                 # The monotonic "order" must be _INCREASING or _DECREASING if
                 # the DimCoord is NOT "scalar". Otherwise, if the DimCoord is
                 # "scalar" then the "order" must be _CONSTANT.
@@ -320,7 +347,7 @@ class _CubeSignature(object):
         self.dim_coords = cube.dim_coords
         self.dim_metadata = []
         self.ndim = cube.ndim
-        self.scalar_coords = []
+        self.scalar_metadata = []
         self.cell_measures_and_dims = cube._cell_measures_and_dims
         self.dim_mapping = []
 
@@ -362,10 +389,11 @@ class _CubeSignature(object):
                 coord_and_dims = _CoordAndDims(coord, tuple(dims))
                 self.aux_coords_and_dims.append(coord_and_dims)
             else:
-                self.scalar_coords.append(coord)
+                metadata = _CoordMetaData(coord, None)
+                self.scalar_metadata.append(metadata)
 
     @staticmethod
-    def _coordinate_attribute_differences(coord_1, coord_2):
+    def _coordinate_attribute_differences(name, coord_1, coord_2):
         """
         Determine the coordinate attributes that differ between `coord_1`
         and `coord_2`. Note that if the dtypes of the points and bounds
@@ -381,8 +409,8 @@ class _CubeSignature(object):
             The second _CoordMetaData object to compare the attributes of.
 
         Returns:
-            A list of the keys that differ between `coord_1` and
-            `coord_2`.
+            A list of error messages that describe the differences between
+            `coord_1` and `coord_2`.
 
         """
         diffs = []
@@ -390,16 +418,31 @@ class _CubeSignature(object):
         coord_2_defn = coord_2._asdict()
         for coord_1_key, coord_1_value in coord_1_defn.items():
             coord_2_value = coord_2_defn[coord_1_key]
-            if 'dtype' in coord_1_key:
-                values = (coord_1_value, coord_2_value)
-                dtype_is_none = any([v is None for v in values])
-                can_cast = any((np.can_cast(*values),
-                                np.can_cast(*values[::-1])))
-                if can_cast and not dtype_is_none:
-                    diffs.append(coord_1_key)
+            if coord_1_key == 'defn':
+                defn_1 = coord_1_value._asdict()
+                defn_2 = coord_2_value._asdict()
+                msg = '{} ({!r} != {!r})'
+                for key, value_1 in defn_1.items():
+                    value_2 = defn_2[key]
+                    if value_1 != value_2:
+                        diffs.append(msg.format(key, value_1, value_2))
+            elif coord_1_key == 'dims':
+                if coord_1_value != coord_2_value:
+                    msg = '{!r} {} ({} != {})'.format(name, coord_1_key,
+                                                      coord_1_value,
+                                                      coord_2_value)
+                    diffs.append(msg)
+            elif 'dtype' in coord_1_key:
+                can_cast = _can_cast_dtype((coord_1_value, coord_2_value))
+                if not can_cast:
+                    msg = '{!r} {} ({} != {})'.format(name, coord_1_key,
+                                                      coord_1_value,
+                                                      coord_2_value)
+                    diffs.append(msg)
             else:
                 if coord_1_value != coord_2_value:
-                    diffs.append(coord_1_key)
+                    msg = '{!r} {}'.format(name, coord_1_key)
+                    diffs.append(msg)
         return diffs
 
     def _coordinate_differences(self, other, attr):
@@ -417,35 +460,34 @@ class _CubeSignature(object):
             between `self` and `other`.
 
         Returns:
-            Tuple of a descriptive error message and the names of coordinates
-            that differ between `self` and `other`.
+            List of descriptive error messages of the differences between
+            `self` and `other`.
 
         """
         # Set up {name: coord_metadata} dictionaries.
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
         if len(self_dict) == 0:
-            self_dict = {'< None >': None}
+            self_dict = {'None': None}
         if len(other_dict) == 0:
-            other_dict = {'< None >': None}
+            other_dict = {'None': None}
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())
 
         # Compare coord metadata.
         if len(self_names) != len(other_names) or self_names != other_names:
-            result = ['differ: {} != {}'.format(', '.join(self_names),
-                                                ', '.join(other_names))]
+            msgs = ['name ({} != {})'.format(', '.join(self_names),
+                                             ', '.join(other_names))]
         else:
-            result = []
+            msgs = []
             for self_key, self_value in six.iteritems(self_dict):
                 other_value = other_dict[self_key]
                 if self_value != other_value:
-                    diffs = self._coordinate_attribute_differences(self_value,
+                    diffs = self._coordinate_attribute_differences(self_key,
+                                                                   self_value,
                                                                    other_value)
-                    msg = 'metadata differs: {} ({})'.format(self_key,
-                                                             ', '.join(diffs))
-                    result.append(msg)
-        return result
+                    msgs.extend(diffs)
+        return msgs
 
     def match(self, other, error_on_mismatch):
         """
@@ -486,20 +528,22 @@ class _CubeSignature(object):
         # Check dimension coordinates.
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
-            msgs.extend(['Dimension coordinates {}'.format(msg)
-                         for msg in differences])
+            diff_msg = 'Dimension coordinate metadata differs: {}'
+            msgs.extend([diff_msg.format(msg) for msg in differences])
 
         # Check auxiliary coordinates.
         if self.aux_metadata != other.aux_metadata:
             differences = self._coordinate_differences(other, 'aux_metadata')
-            msgs.extend(['Auxiliary coordinates {}'.format(msg)
-                         for msg in differences])
+            diff_msg = 'Auxiliary coordinate metadata differs: {}'
+            msgs.extend([diff_msg.format(msg) for msg in differences])
 
         # Check scalar coordinates.
-        if self.scalar_coords != other.scalar_coords:
-            differences = self._coordinate_differences(other, 'scalar_coords')
-            msgs.append(msg_template.format('Scalar coordinates',
-                                            *differences))
+        if self.scalar_metadata != other.scalar_metadata:
+            differences = self._coordinate_differences(other,
+                                                       'scalar_metadata')
+            diff_msg = 'Scalar coordinate metadata differs: {}'
+            msgs.extend([diff_msg.format(msg) for msg in differences])
+
         # Check ndim.
         if self.ndim != other.ndim:
             msgs.append(msg_template.format('Data dimensions', '',
@@ -507,8 +551,10 @@ class _CubeSignature(object):
 
         # Check data type.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Data types', '',
-                                            self.data_type, other.data_type))
+            if not _can_cast_dtype((self.data_type, other.data_type)):
+                msgs.append(msg_template.format('Data types', '',
+                                                self.data_type,
+                                                other.data_type))
 
         # Check _cell_measures_and_dims
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
@@ -879,7 +925,7 @@ class _ProtoCube(object):
             aux_coords_and_dims.append((coord.copy(), dims))
 
         # Generate all the scalar coordinates for the new concatenated cube.
-        for coord in cube_signature.scalar_coords:
+        for coord in cube_signature.scalar_metadata:
             aux_coords_and_dims.append((coord.copy(), ()))
 
         return aux_coords_and_dims
