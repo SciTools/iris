@@ -174,7 +174,7 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                 result = _can_cast_dtype(spoints_dtype, opoints_dtype)
             if sbounds_dtype != obounds_dtype:
                 can_cast_bounds = _can_cast_dtype(sbounds_dtype,
-                                                   obounds_dtype)
+                                                  obounds_dtype)
                 result = result and can_cast_bounds
             # Also check the rest of the props.
             result = result and sprops == oprops
@@ -529,20 +529,20 @@ class _CubeSignature(object):
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, 'dim_metadata')
             diff_msg = 'Dimension coordinate metadata differs: {}'
-            msgs.extend([diff_msg.format(msg) for msg in differences])
+            msgs.extend([diff_msg.format(diff) for diff in differences])
 
         # Check auxiliary coordinates.
         if self.aux_metadata != other.aux_metadata:
             differences = self._coordinate_differences(other, 'aux_metadata')
             diff_msg = 'Auxiliary coordinate metadata differs: {}'
-            msgs.extend([diff_msg.format(msg) for msg in differences])
+            msgs.extend([diff_msg.format(diff) for diff in differences])
 
         # Check scalar coordinates.
         if self.scalar_metadata != other.scalar_metadata:
             differences = self._coordinate_differences(other,
                                                        'scalar_metadata')
             diff_msg = 'Scalar coordinate metadata differs: {}'
-            msgs.extend([diff_msg.format(msg) for msg in differences])
+            msgs.extend([diff_msg.format(diff) for diff in differences])
 
         # Check ndim.
         if self.ndim != other.ndim:
