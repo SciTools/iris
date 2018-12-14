@@ -346,8 +346,9 @@ class _CubeSignature(object):
         self.aux_metadata = []
         self.dim_coords = cube.dim_coords
         self.dim_metadata = []
-        self.ndim = cube.ndim
+        self.scalar_coords = []
         self.scalar_metadata = []
+        self.ndim = cube.ndim
         self.cell_measures_and_dims = cube._cell_measures_and_dims
         self.dim_mapping = []
 
@@ -391,6 +392,7 @@ class _CubeSignature(object):
             else:
                 metadata = _CoordMetaData(coord, None)
                 self.scalar_metadata.append(metadata)
+                self.scalar_coords.append(coord)
 
     @staticmethod
     def _coordinate_attribute_differences(name, coord_1, coord_2):
@@ -925,7 +927,7 @@ class _ProtoCube(object):
             aux_coords_and_dims.append((coord.copy(), dims))
 
         # Generate all the scalar coordinates for the new concatenated cube.
-        for coord in cube_signature.scalar_metadata:
+        for coord in cube_signature.scalar_coords:
             aux_coords_and_dims.append((coord.copy(), ()))
 
         return aux_coords_and_dims
