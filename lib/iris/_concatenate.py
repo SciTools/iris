@@ -423,11 +423,11 @@ class _CubeSignature(object):
             if coord_1_key == 'defn':
                 defn_1 = coord_1_value._asdict()
                 defn_2 = coord_2_value._asdict()
-                msg = '{} ({!r} != {!r})'
+                msg = '{!r} {} ({!r} != {!r})'
                 for key, value_1 in defn_1.items():
                     value_2 = defn_2[key]
                     if value_1 != value_2:
-                        diffs.append(msg.format(key, value_1, value_2))
+                        diffs.append(msg.format(name, key, value_1, value_2))
             elif coord_1_key == 'dims':
                 if coord_1_value != coord_2_value:
                     msg = '{!r} {} ({} != {})'.format(name, coord_1_key,

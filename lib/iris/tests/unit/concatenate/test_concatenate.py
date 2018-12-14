@@ -158,10 +158,12 @@ class TestMessages(tests.IrisTest):
             concatenate([cube_1, cube_2], True)
 
     def test_dimensions_metadata_difference_message(self):
+        tgt_coord = 'latitude'
         cube_1 = self.cube
         cube_2 = cube_1.copy()
-        cube_2.coord('latitude').long_name = 'bob'
-        exc_regexp = 'Dimension .* differs: long_name (.* != .*)'
+        cube_2.coord(tgt_coord).long_name = 'bob'
+        exc_regexp = "Dimension .* differs: {!r} long_name (.* != .*)"
+        exc_regexp = exc_regexp.format(tgt_coord)
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             concatenate([cube_1, cube_2], True)
 
@@ -174,10 +176,12 @@ class TestMessages(tests.IrisTest):
             concatenate([cube_1, cube_2], True)
 
     def test_aux_coords_metadata_difference_message(self):
+        tgt_coord = 'foo'
         cube_1 = self.cube
         cube_2 = cube_1.copy()
-        cube_2.coord('foo').units = 'm'
-        exc_regexp = 'Auxiliary .* differs: units (.* != .*)'
+        cube_2.coord(tgt_coord).units = 'm'
+        exc_regexp = 'Auxiliary .* differs: {!r} units (.* != .*)'
+        exc_regexp = exc_regexp.format(tgt_coord)
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             concatenate([cube_1, cube_2], True)
 
@@ -206,10 +210,12 @@ class TestMessages(tests.IrisTest):
             concatenate([cube_1, cube_2], True)
 
     def test_scalar_coords_metadata_difference_message(self):
+        tgt_coord = 'height'
         cube_1 = self.cube
         cube_2 = cube_1.copy()
-        cube_2.coord('height').long_name = 'alice'
-        exc_regexp = 'Scalar .* differs: long_name (.* != .*)'
+        cube_2.coord(tgt_coord).long_name = 'alice'
+        exc_regexp = "Scalar .* differs: {!r} long_name (.* != .*)"
+        exc_regexp = exc_regexp.format(tgt_coord)
         with self.assertRaisesRegexp(ConcatenateError, exc_regexp):
             concatenate([cube_1, cube_2], True)
 
