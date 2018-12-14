@@ -12,6 +12,8 @@ import iris.tests as tests  # isort:skip
 import collections
 from unittest import mock
 
+import copy
+
 from cf_units import Unit
 import numpy as np
 
@@ -37,8 +39,7 @@ class Test_append(tests.IrisTest):
         self.assertEqual(self.cubelist[-1], self.cube2)
 
     def test_fail(self):
-        msg = ("Only Cube instances can be appended to cubelists.  Got "
-               "<class 'NoneType'>")
+        msg = "Only Cube instances can be appended to cubelists.  Got "
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist.append(None)
 
@@ -97,7 +98,7 @@ class Test_extend(tests.IrisTest):
         self.cubelist2 = iris.cube.CubeList([self.cube2])
 
     def test_pass(self):
-        cubelist = self.cubelist1.copy()
+        cubelist = copy.copy(self.cubelist1)
         cubelist.extend(self.cubelist2)
         self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
         cubelist.extend([self.cube2])
@@ -183,7 +184,7 @@ class Test_iadd(tests.IrisTest):
         self.cubelist2 = iris.cube.CubeList([self.cube2])
 
     def test_pass(self):
-        cubelist = self.cubelist1.copy()
+        cubelist = copy.copy(self.cubelist1)
         cubelist += self.cubelist2
         self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
         cubelist += [self.cube2]
@@ -211,8 +212,7 @@ class Test_insert(tests.IrisTest):
         self.assertEqual(self.cubelist[1], self.cube2)
 
     def test_fail(self):
-        msg = ("Only Cube instances can be inserted into cubelists.  Got "
-               "<class 'NoneType'>")
+        msg = "Only Cube instances can be inserted into cubelists.  Got "
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist.insert(0, None)
 
@@ -374,15 +374,21 @@ class Test_setitem(tests.IrisTest):
         self.cubelist[:2] = (self.cube2, self.cube3)
         self.assertEqual(
             self.cubelist,
-            iris.cube.Cubelist([self.cube2, self.cube3, self.cube1]))
+            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]))
 
     def test_fail(self):
-        msg = ("Elements of cubelists must be Cube instances.  Got "
-               "<class 'NoneType'>.")
+        msg = "Elements of cubelists must be Cube instances.  Got "
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist[0] = None
-        with self.assertRaisesRegexp(TypeError, msg):
+        msg = "Elements of cubelists must be Cube instances."
+        with self.assertRaisesRegexp(ValueError, msg):
             self.cubelist[0:2] = [self.cube3, None]
+        msg = ('Assigning to a slice of a cubelist requires a sequence of '
+               'cubes.')
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist[:1] = 2.5
+        with self.assertRaisesRegexp(TypeError, msg):
+            self.cubelist[:1] = self.cube1
 
 
 class Test_xml(tests.IrisTest):

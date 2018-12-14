@@ -222,13 +222,24 @@ class CubeList(list):
             raise ValueError('All items in added sequence must be Cube '
                              'instances.')
 
-    def __setitem__(self, key, cube):
-        """Set self[key] to cube"""
-        if isinstance(cube, Cube):
-            super(CubeList, self).__setitem__(key, cube)
+    def __setitem__(self, key, cube_or_sequence):
+        """Set self[key] to cube or sequence of cubes"""
+        if isinstance(key, int):
+            if not isinstance(cube_or_sequence, Cube):
+                raise TypeError('Elements of cubelists must be Cube instances.'
+                                '  Got {}.'.format(type(cube_or_sequence)))
         else:
-            raise TypeError('Elements of cubelists must be Cube instances.  '
-                            'Got {}.'.format(type(cube)))
+            # key is a slice (or exception will come from list method).
+            if isinstance(cube_or_sequence, Cube) or not isinstance(
+                    cube_or_sequence, collections.Iterable):
+                raise TypeError('Assigning to a slice of a cubelist requires '
+                                'a sequence of cubes.')
+            elif not all([isinstance(cube, Cube) for
+                          cube in cube_or_sequence]):
+                raise ValueError(
+                    'Elements of cubelists must be Cube instances.')
+
+        super(CubeList, self).__setitem__(key, cube_or_sequence)
 
     def append(self, cube):
         """
