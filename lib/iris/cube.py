@@ -241,6 +241,18 @@ class CubeList(list):
 
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
+    #  __setslice__ is only required for python2.7 compatibility.
+    def __setslice__(self, *args):
+        cubes = args[-1]
+        if isinstance(cubes, Cube) or not isinstance(
+                cubes, collections.Iterable):
+            raise TypeError('Assigning to a slice of a cubelist requires '
+                            'a sequence of cubes.')
+        elif not all([isinstance(cube, Cube) for cube in cubes]):
+            raise ValueError('Elements of cubelists must be Cube instances.')
+
+        super(CubeList, self).__setslice__(*args)
+
     def append(self, cube):
         """
         Append a cube.
