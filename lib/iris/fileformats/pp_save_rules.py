@@ -124,12 +124,19 @@ def _general_time_rules(cube, pp):
     cm_time_min = scalar_cell_method(cube, 'minimum', 'time')
     cm_time_max = scalar_cell_method(cube, 'maximum', 'time')
 
+    # Handle case of no time coordinate.
+    if time_coord is None and fp_coord is None and frt_coord is None:
+        # Deal with the cftime error:
+        # "date 0000-00-00 does not exist in the standard calendar".
+        pp.t1 = cftime.datetime(1, 1, 1)
+        pp.t2 = cftime.datetime(1, 1, 1)
+
     # No forecast.
     if time_coord is not None and fp_coord is None and frt_coord is None:
         pp.lbtim.ia = 0
         pp.lbtim.ib = 0
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = cftime.datetime(0, 0, 0)
+        pp.t2 = cftime.datetime(1, 1, 1)
 
     # Forecast.
     if (time_coord is not None and

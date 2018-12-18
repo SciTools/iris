@@ -201,6 +201,44 @@ class Test_Save__LbprocProduction(tests.IrisTest):
         self.assertEqual(lbproc, 8192)
 
 
+class TestNoTimeCoord(tests.IrisTest):
+    """
+    Test that saving a cube with no time coordinate at all to PP does not trip
+    up cftime by creating header T1 and T2 values set to 0000-00-00, which is
+    not a valid date.
+
+    """
+    def setUp(self):
+        self.no_time_cube = stock.lat_lon_cube()
+        self.no_t2_cube = stock.lat_lon_cube()
+        t_unit = cf_units.Unit('hours since 1970-01-01',
+                               calendar=cf_units.CALENDAR_STANDARD)
+        scalar_t_coord = DimCoord(1, standard_name='time', units=t_unit)
+        self.no_t2_cube.add_aux_coord(scalar_t_coord)
+
+    def test_save_no_t_coord(self):
+        expected = cftime.datetime(1, 1, 1)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            verify(self.no_time_cube, pp_field)
+        actual_t1 = pp_field.t1
+        actual_t2 = pp_field.t2
+
+        self.assertEqual(expected, actual_t1)
+        self.assertEqual(expected, actual_t2)
+
+    def test_no_fp_frt(self):
+        expected = cftime.datetime(1, 1, 1)
+
+        with mock.patch('iris.fileformats.pp.PPField3',
+                        autospec=True) as pp_field:
+            verify(self.no_time_cube, pp_field)
+        actual_t2 = pp_field.t2
+
+        self.assertEqual(expected, actual_t2)
+
+
 class TestTimeMean(tests.IrisTest):
     '''
     Tests that time mean cell method is converted to pp appropriately.
