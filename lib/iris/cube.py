@@ -3047,11 +3047,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result = not (coord_comparison['not_equal'] or
                               coord_comparison['non_equal_data_dimension'])
 
-            # having checked everything else, check approximate data
-            # equality - loading the data if has not already been loaded.
+            # Having checked everything else, check approximate data equality.
             if result:
-                result = np.all(np.abs(self.data - other.data) < 1e-8)
-
+                result = da.allclose(self.core_data(),
+                                     other.core_data()).compute()
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
