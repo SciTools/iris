@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -63,7 +63,6 @@ class Test__create_field_data(tests.IrisTest):
         core_data = mock.MagicMock(return_value=deferred_bytes)
         field = mock.Mock(core_data=core_data)
         data_shape = (100, 120)
-        land_mask = mock.Mock()
         proxy = mock.Mock(dtype=np.dtype('f4'), shape=data_shape,
                           spec=pp.PPDataProxy)
         # We can't directly inspect the concrete data source underlying
@@ -71,7 +70,7 @@ class Test__create_field_data(tests.IrisTest):
         # being created and invoked correctly.
         with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
             PPDataProxy.return_value = proxy
-            pp._create_field_data(field, data_shape, land_mask)
+            pp._create_field_data(field, data_shape, with_landmask_field=None)
         # The data should be assigned via field.data. As this is a mock object
         # we can check the attribute directly.
         self.assertEqual(field.data.shape, data_shape)
@@ -84,8 +83,7 @@ class Test__create_field_data(tests.IrisTest):
                                             n_bytes,
                                             field.raw_lbpack,
                                             field.boundary_packing,
-                                            field.bmdi,
-                                            land_mask)
+                                            field.bmdi)
 
 
 if __name__ == "__main__":

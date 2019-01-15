@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -31,14 +31,14 @@ class Test_lbpack(tests.IrisTest):
     def test_lbpack_SplittableInt(self):
         lbpack = mock.Mock(spec_set=SplittableInt)
         proxy = PPDataProxy(None, None, None, None,
-                            None, lbpack, None, None, None)
+                            None, lbpack, None, None)
         self.assertEqual(proxy.lbpack, lbpack)
         self.assertIs(proxy.lbpack, lbpack)
 
     def test_lnpack_raw(self):
         lbpack = 4321
         proxy = PPDataProxy(None, None, None, None,
-                            None, lbpack, None, None, None)
+                            None, lbpack, None, None)
         self.assertEqual(proxy.lbpack, lbpack)
         self.assertIsNot(proxy.lbpack, lbpack)
         self.assertIsInstance(proxy.lbpack, SplittableInt)
