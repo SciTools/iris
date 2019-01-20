@@ -1540,7 +1540,6 @@ def flatten_multidim_coord(cube, name_or_coord):
     """
     Flatten the Aux coord and associated dimensions on the cube
 
-
     * cube
         An instance of :class:`iris.cube.Cube`
 
@@ -1552,7 +1551,7 @@ def flatten_multidim_coord(cube, name_or_coord):
         or
 
         (b) the :attr:`standard_name`, :attr:`long_name`, or
-        :attr:`var_name` of an instance of an instance of
+        :attr:`var_name` of an instance of
         :class:`iris.coords.DimCoord`.
 
     For example::
@@ -1592,13 +1591,20 @@ def flatten_multidim_coord(cube, name_or_coord):
     if len(coord_dims) == 1:
         # Do nothing
         return cube
+    elif len(coord_dims) > 2:
+        # Don't currently support coords with more than 2 dimensions
+        msg = ("Collapsing coordinates with more than 2 dimensions "
+               "is not currently supported. Tried to collapse {} with"
+               " {} dimensions. ")
+        msg = msg.format(coord.name(), coord_dims)
+        raise NotImplementedError(msg)
 
     return flatten_cube(cube, coord_dims)
 
 
 def flatten_cube(cube, dims=None):
     """
-    Flatten the cube along the specified dimensionss or all (by default).
+    Flatten the cube along the specified dimensions or all (by default).
     Coordinates along those dimensions are flattened. DimCoords are
     demoted to AuxCoords before flattening. The new (anonymous)
     flattened dimension will be along the first dimension of the
@@ -1609,7 +1615,6 @@ def flatten_cube(cube, dims=None):
 
     * dims (:class:`list`, :class:`tuple` etc.):
         The dimensions of the cube to flatten
-
 
     For example::
 
@@ -1677,7 +1682,8 @@ def flatten_cube(cube, dims=None):
     other_aux_coords = [(c, cube.coord_dims(c)) for c in
                         cube.coords(dim_coords=False)
                         if c not in coords_to_flatten and
-                        c not in coords_to_ignore]
+                        c not in coords_to_ignore and
+                        c not in cube.derived_coords]
 
     new_data = cube.core_data().reshape(new_shape)
     new_aux_coords = other_aux_coords
