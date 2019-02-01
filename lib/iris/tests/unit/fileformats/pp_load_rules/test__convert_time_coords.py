@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -140,8 +140,8 @@ class TestLBTIMx1x_Forecast(TestField):
             lbcode=_lbcode(1), lbtim=lbtim, epoch_hours_unit=_EPOCH_HOURS_UNIT,
             t1=t1, t2=t2, lbft=None)
         (fp, _), (t, _), (frt, _) = coords_and_dims
-        self.assertEqual(fp.points[0], 7.1666666641831398)
-        self.assertEqual(t.points[0], 394927.16666666418)
+        self.assertArrayAllClose(fp.points[0], 7.1666666, atol=0.0001, rtol=0)
+        self.assertArrayAllClose(t.points[0], 394927.166666, atol=0.01, rtol=0)
 
 
 class TestLBTIMx2x_TimePeriod(TestField):
