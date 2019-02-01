@@ -719,8 +719,10 @@ def _data_bytes_to_shaped_array(data_bytes, lbpack, boundary_packing,
         raise iris.exceptions.NotYetImplementedError(
             'PP fields with LBPACK of %s are not yet supported.' % lbpack)
 
-    # Ensure we have write permission on the data buffer.
-    data.setflags(write=True)
+    # Ensure we have a writeable data buffer.
+    # NOTE: "data.setflags(write=True)" is not valid for numpy >= 1.16.0.
+    if not data.flags['WRITEABLE']:
+        data = data.copy()
 
     # Ensure the data is in the native byte order
     if not data.dtype.isnative:
