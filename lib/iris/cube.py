@@ -201,11 +201,10 @@ class CubeList(list):
         was already checked.
         """
         if (isinstance(sequence, collections.Iterable) and
-            not isinstance(sequence, Cube) and
-            not isinstance(sequence, CubeList)):
+                not isinstance(sequence, Cube) and
+                not isinstance(sequence, CubeList)):
             for obj in sequence:
                 self._check_iscube(obj)
-
 
     # TODO #370 Which operators need overloads?
 
