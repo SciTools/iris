@@ -185,7 +185,30 @@ class CubeList(list):
         representer = CubeListRepresentation(self)
         return representer.repr_html()
 
+    def _check_iscube(self, obj):
+        """
+        Raise a warning if obj is not a cube.
+        """
+        if not isinstance(obj, Cube):
+            msg = ('Cubelist now contains object of type {}.  This may '
+                   'adversely affect subsequent operations.')
+            warnings.warn(msg.format(type(obj)))
+
+    def _check_cube_sequence(self, sequence):
+        """
+        Raise one or more warnings if sequence contains elements that are not
+        Cubes.  Skip this if the sequence is a CubeList, as we can assume it
+        was already checked.
+        """
+        if (isinstance(sequence, collections.Iterable) and
+            not isinstance(sequence, Cube) and
+            not isinstance(sequence, CubeList)):
+            for obj in sequence:
+                self._check_iscube(obj)
+
+
     # TODO #370 Which operators need overloads?
+
     def __add__(self, other):
         return CubeList(list.__add__(self, other))
 
@@ -211,57 +234,32 @@ class CubeList(list):
         """
         Add a sequence of cubes to the cubelist in place.
         """
-        if isinstance(other_cubes, Cube) or not isinstance(
-                other_cubes, collections.Iterable):
-            raise TypeError(
-                'Can only add a sequence of Cube instances.')
-        elif isinstance(other_cubes, CubeList) or all(
-                [isinstance(cube, Cube) for cube in other_cubes]):
-            super(CubeList, self).__iadd__(other_cubes)
-        else:
-            raise ValueError('All items in added sequence must be Cube '
-                             'instances.')
+        self._check_cube_sequence(other_cubes)
+        super(CubeList, self).__iadd__(other_cubes)
 
     def __setitem__(self, key, cube_or_sequence):
         """Set self[key] to cube or sequence of cubes"""
         if isinstance(key, int):
-            if not isinstance(cube_or_sequence, Cube):
-                raise TypeError('Elements of cubelists must be Cube instances.'
-                                '  Got {}.'.format(type(cube_or_sequence)))
+            # should have single cube.
+            self._check_iscube(cube_or_sequence)
         else:
             # key is a slice (or exception will come from list method).
-            if isinstance(cube_or_sequence, Cube) or not isinstance(
-                    cube_or_sequence, collections.Iterable):
-                raise TypeError('Assigning to a slice of a cubelist requires '
-                                'a sequence of cubes.')
-            elif not all([isinstance(cube, Cube) for
-                          cube in cube_or_sequence]):
-                raise ValueError(
-                    'Elements of cubelists must be Cube instances.')
+            self._check_cube_sequence(cube_or_sequence)
 
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
     #  __setslice__ is only required for python2.7 compatibility.
     def __setslice__(self, *args):
         cubes = args[-1]
-        if isinstance(cubes, Cube) or not isinstance(
-                cubes, collections.Iterable):
-            raise TypeError('Assigning to a slice of a cubelist requires '
-                            'a sequence of cubes.')
-        elif not all([isinstance(cube, Cube) for cube in cubes]):
-            raise ValueError('Elements of cubelists must be Cube instances.')
-
+        self._check_cube_sequence(cubes)
         super(CubeList, self).__setslice__(*args)
 
     def append(self, cube):
         """
         Append a cube.
         """
-        if isinstance(cube, Cube):
-            super(CubeList, self).append(cube)
-        else:
-            raise TypeError('Only Cube instances can be appended to cubelists.'
-                            '  Got {}.'.format(type(cube)))
+        self._check_iscube(cube)
+        super(CubeList, self).append(cube)
 
     def extend(self, other_cubes):
         """
@@ -272,28 +270,15 @@ class CubeList(list):
         * other_cubes:
            A cubelist or other sequence of cubes.
         """
-        if isinstance(other_cubes, Cube):
-            raise TypeError(
-                'Use append to add a single cube to the cubelist.')
-        elif not isinstance(other_cubes, collections.Iterable):
-            raise TypeError(
-                'Can only extend with a sequence of Cube instances.')
-        elif isinstance(other_cubes, CubeList) or all(
-                [isinstance(cube, Cube) for cube in other_cubes]):
-            super(CubeList, self).extend(other_cubes)
-        else:
-            raise ValueError('All items in other_cubes must be Cube '
-                             'instances.')
+        self._check_cube_sequence(other_cubes)
+        super(CubeList, self).extend(other_cubes)
 
     def insert(self, index, cube):
         """
         Insert a cube before index.
         """
-        if isinstance(cube, Cube):
-            super(CubeList, self).insert(index, cube)
-        else:
-            raise TypeError('Only Cube instances can be inserted into '
-                            'cubelists.  Got {}.'.format(type(cube)))
+        self._check_iscube(cube)
+        super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""

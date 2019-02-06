@@ -25,6 +25,8 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 import iris.tests.stock
 
+NOT_CUBE_MSG = 'Cubelist now contains object of type '
+
 
 class Test_append(tests.IrisTest):
     def setUp(self):
@@ -38,9 +40,8 @@ class Test_append(tests.IrisTest):
         self.cubelist.append(self.cube2)
         self.assertEqual(self.cubelist[-1], self.cube2)
 
-    def test_fail(self):
-        msg = "Only Cube instances can be appended to cubelists.  Got "
-        with self.assertRaisesRegexp(TypeError, msg):
+    def test_warn(self):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist.append(None)
 
 
@@ -105,14 +106,14 @@ class Test_extend(tests.IrisTest):
         self.assertEqual(cubelist[-1], self.cube2)
 
     def test_fail(self):
-        msg = 'Use append to add a single cube to the cubelist.'
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegexp(TypeError, 'Cube is not iterable'):
             self.cubelist1.extend(self.cube1)
-        msg = 'Can only extend with a sequence of Cube instances.'
+        msg = "'NoneType' object is not iterable"
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist1.extend(None)
-        msg = 'All items in other_cubes must be Cube instances.'
-        with self.assertRaisesRegexp(ValueError, msg):
+
+    def test_warn(self):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist1.extend(range(3))
 
 
@@ -191,13 +192,15 @@ class Test_iadd(tests.IrisTest):
         self.assertEqual(cubelist[-1], self.cube2)
 
     def test_fail(self):
-        msg = 'Can only add a sequence of Cube instances.'
+        msg = 'Cube is not iterable'
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist1 += self.cube1
+        msg = "'float' object is not iterable"
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist1 += 1.
-        msg = 'All items in added sequence must be Cube instances.'
-        with self.assertRaisesRegexp(ValueError, msg):
+
+    def test_warn(self):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist1 += range(3)
 
 
@@ -211,9 +214,8 @@ class Test_insert(tests.IrisTest):
         self.cubelist.insert(1, self.cube2)
         self.assertEqual(self.cubelist[1], self.cube2)
 
-    def test_fail(self):
-        msg = "Only Cube instances can be inserted into cubelists.  Got "
-        with self.assertRaisesRegexp(TypeError, msg):
+    def test_warn(self):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist.insert(0, None)
 
 
@@ -376,15 +378,14 @@ class Test_setitem(tests.IrisTest):
             self.cubelist,
             iris.cube.CubeList([self.cube2, self.cube3, self.cube1]))
 
-    def test_fail(self):
-        msg = "Elements of cubelists must be Cube instances.  Got "
-        with self.assertRaisesRegexp(TypeError, msg):
+    def test_warn(self):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist[0] = None
-        msg = "Elements of cubelists must be Cube instances."
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG):
             self.cubelist[0:2] = [self.cube3, None]
-        msg = ('Assigning to a slice of a cubelist requires a sequence of '
-               'cubes.')
+
+    def test_fail(self):
+        msg = "can only assign an iterable"
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist[:1] = 2.5
         with self.assertRaisesRegexp(TypeError, msg):
