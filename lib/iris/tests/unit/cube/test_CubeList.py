@@ -25,6 +25,53 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 
 
+class TestCreateCubelist(tests.IrisTest):
+    def test_create_no_args(self):
+        result = CubeList()
+        self.assertIsInstance(result, CubeList)
+        self.assertEqual(len(result), 0)
+
+    def test_create_empty_arg(self):
+        # In principle, any iterable should do.  So let's use a generator.
+        def empty_iter():
+            if False:
+                yield False
+
+        result = CubeList(empty_iter())
+        self.assertIsInstance(result, CubeList)
+        self.assertEqual(len(result), 0)
+
+    def test_create_single_cube(self):
+        cube = Cube([1])
+        result = CubeList([cube])
+        self.assertIsInstance(result, CubeList)
+        self.assertEqual(len(result), 1)
+        self.assertIs(result[0], cube)
+
+    def test_create_cubes(self):
+        cubes = (
+            Cube([1], long_name="a"),
+            Cube(np.arange(6).reshape((2, 3)), long_name="b"),
+        )
+        result = CubeList(cubes)
+        self.assertIsInstance(result, CubeList)
+        self.assertEqual(len(result), 2)
+        self.assertIs(result[0], cubes[0])
+        self.assertIs(result[1], cubes[1])
+
+    def test_create_fail_noncube_object(self):
+        with self.assertRaisesRegexp(ValueError, "Cube instance"):
+            CubeList([Cube([1]), []])
+
+    def test_create_fail_noncube_None(self):
+        with self.assertRaisesRegexp(ValueError, "Cube instance"):
+            CubeList([Cube([1]), None])
+
+    def test_create_fail_noncube_number(self):
+        with self.assertRaisesRegexp(ValueError, "Cube instance"):
+            CubeList([Cube([1]), 123.45])
+
+
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
         self.units = Unit(
@@ -592,7 +639,9 @@ class TestRealiseData(tests.IrisTest):
     def test_realise_data(self):
         # Simply check that calling CubeList.realise_data is calling
         # _lazy_data.co_realise_cubes.
-        mock_cubes_list = [mock.Mock(ident=count) for count in range(3)]
+        mock_cubes_list = [
+            mock.Mock(ident=count, spec=Cube) for count in range(3)
+        ]
         test_cubelist = CubeList(mock_cubes_list)
         call_patch = self.patch("iris._lazy_data.co_realise_cubes")
         test_cubelist.realise_data()

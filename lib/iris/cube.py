@@ -165,19 +165,25 @@ class CubeList(list):
 
     """
 
-    def __new__(cls, list_of_cubes=None):
-        """Given a :class:`list` of cubes, return a CubeList instance."""
-        cube_list = list.__new__(cls, list_of_cubes)
+    def __init__(self, iterable_of_cubes=None):
+        """Given an iterable of cubes, return a CubeList instance."""
+        if iterable_of_cubes is None:
+            iterable_of_cubes = []
+        # Run the iterable, and capture as a list.
+        list_of_cubes = list(iterable_of_cubes)
 
-        # Check that all items in the incoming list are cubes. Note that this
-        # checking does not guarantee that a CubeList instance *always* has
-        # just cubes in its list as the append & __getitem__ methods have not
-        # been overridden.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
+        # Check that all items in the incoming list (if any) are cubes.
+        # Note that this checking does not (yet) guarantee that a CubeList
+        # instance *always* contains only cubes, as the append & __setitem__ methods
+        # (for example), have not  been overridden.
+        if not all(isinstance(cube, Cube) for cube in list_of_cubes):
             raise ValueError(
-                "All items in list_of_cubes must be Cube " "instances."
+                "CubeList create arguments are not all Cube "
+                "instances : {}".format(list_of_cubes)
             )
-        return cube_list
+
+        # Initialise "as a" list.
+        super().__init__(list_of_cubes)
 
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
