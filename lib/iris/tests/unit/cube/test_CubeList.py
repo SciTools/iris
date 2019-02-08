@@ -384,7 +384,6 @@ class Test_setitem(tests.IrisTest):
                                      NOT_CUBE_MSG.format('NoneType')):
             self.cubelist[0:2] = [self.cube3, None]
 
-    def test_fail(self):
         msg = "can only assign an iterable"
         with self.assertRaisesRegexp(TypeError, msg):
             self.cubelist[:1] = 2.5
