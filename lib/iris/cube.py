@@ -184,6 +184,7 @@ class _CubeFilterCollection(object):
         return _CubeFilterCollection([pair.merged(unique) for pair in
                                       self.pairs])
 
+
 def _check_iscube(obj):
     """
     Raise a warning if obj does not look like a cube.
@@ -192,6 +193,7 @@ def _check_iscube(obj):
         msg = ("Cubelist now contains object of type '{}'.  This may "
                "adversely affect subsequent operations.")
         warnings.warn(msg.format(type(obj).__name__))
+
 
 def _check_cube_sequence(sequence):
     """
@@ -204,6 +206,7 @@ def _check_cube_sequence(sequence):
             not isinstance(sequence, CubeList)):
         for obj in sequence:
             _check_iscube(obj)
+
 
 class CubeList(list):
     """
