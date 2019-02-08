@@ -36,7 +36,7 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 from iris.tests import mock
 
-NOT_CUBE_MSG = 'Cubelist now contains object of type '
+NOT_CUBE_MSG = "Cubelist now contains object of type '{}'"
 
 
 class Test_append(tests.IrisTest):
@@ -52,7 +52,7 @@ class Test_append(tests.IrisTest):
         self.assertEqual(self.cubelist[-1], self.cube2)
 
     def test_warn(self):
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('NoneType')):
             self.cubelist.append(None)
 
 
@@ -107,7 +107,7 @@ class Test_extend(tests.IrisTest):
             self.cubelist1.extend(None)
 
     def test_warn(self):
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('int')):
             self.cubelist1.extend(range(3))
 
 
@@ -188,7 +188,7 @@ class Test_iadd(tests.IrisTest):
             self.cubelist1 += 1.
 
     def test_warn(self):
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('int')):
             self.cubelist1 += range(3)
 
 
@@ -203,7 +203,7 @@ class Test_insert(tests.IrisTest):
         self.assertEqual(self.cubelist[1], self.cube2)
 
     def test_warn(self):
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('NoneType')):
             self.cubelist.insert(0, None)
 
 
@@ -346,9 +346,9 @@ class Test_setitem(tests.IrisTest):
             iris.cube.CubeList([self.cube2, self.cube3, self.cube1]))
 
     def test_warn(self):
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('NoneType')):
             self.cubelist[0] = None
-        with self.assertWarnsRegexp(NOT_CUBE_MSG):
+        with self.assertWarnsRegexp(NOT_CUBE_MSG.format('NoneType')):
             self.cubelist[0:2] = [self.cube3, None]
 
     def test_fail(self):
