@@ -147,25 +147,28 @@ class _CubeFilterCollection:
 
 def _check_iscube(obj):
     """
-    Raise a warning if obj does not look like a cube.
+    Raise an exception if obj does not look like a cube.
     """
     if not hasattr(obj, 'add_aux_coord'):
-        msg = ("Cubelist now contains object of type '{}'.  This may "
-               "adversely affect subsequent operations.")
-        warnings.warn(msg.format(type(obj).__name__))
+        msg = ("Object of type '{}' does not look like a cube so can't be "
+               "included in cubelist.")
+        raise TypeError(msg.format(type(obj).__name__))
 
 
 def _check_cube_sequence(sequence):
     """
-    Raise one or more warnings if sequence contains elements that are not
-    Cubes (or cube-like).  Skip this if the sequence is a CubeList, as we can
-    assume it was already checked.
+    Raise an exception if sequence contains an element that is not a Cube (or
+    cube-like).  Skip this if the sequence is a CubeList, as we can assume it
+    was already checked.
     """
     if (isinstance(sequence, collections.Iterable) and
             not isinstance(sequence, Cube) and
             not isinstance(sequence, CubeList)):
         for obj in sequence:
-            _check_iscube(obj)
+            if not hasattr(obj, 'add_aux_coord'):
+                msg = ("Sequence contains object of type '{}', which does not "
+                       "look like a cube so can't be included in cubelist.")
+                raise ValueError(msg.format(type(obj).__name__))
 
 
 class CubeList(list):
