@@ -144,6 +144,26 @@ class _CubeFilterCollection:
             [pair.merged(unique) for pair in self.pairs]
         )
 
+def _check_iscube(obj):
+    """
+    Raise a warning if obj does not look like a cube.
+    """
+    if not hasattr(obj, 'add_aux_coord'):
+        msg = ("Cubelist now contains object of type '{}'.  This may "
+               "adversely affect subsequent operations.")
+        warnings.warn(msg.format(type(obj).__name__))
+
+def _check_cube_sequence(sequence):
+    """
+    Raise one or more warnings if sequence contains elements that are not
+    Cubes (or cube-like).  Skip this if the sequence is a CubeList, as we can
+    assume it was already checked.
+    """
+    if (isinstance(sequence, collections.Iterable) and
+            not isinstance(sequence, Cube) and
+            not isinstance(sequence, CubeList)):
+        for obj in sequence:
+            _check_iscube(obj)
 
 class CubeList(list):
     """
@@ -177,34 +197,7 @@ class CubeList(list):
 
     def __repr__(self):
         """Runs repr on every cube."""
-        return "[%s]" % ",\n".join([repr(cube) for cube in self])
-
-    def _repr_html_(self):
-        from iris.experimental.representation import CubeListRepresentation
-
-        representer = CubeListRepresentation(self)
-        return representer.repr_html()
-
-    def _check_iscube(self, obj):
-        """
-        Raise a warning if obj is not a cube.
-        """
-        if not isinstance(obj, Cube):
-            msg = ('Cubelist now contains object of type {}.  This may '
-                   'adversely affect subsequent operations.')
-            warnings.warn(msg.format(type(obj)))
-
-    def _check_cube_sequence(self, sequence):
-        """
-        Raise one or more warnings if sequence contains elements that are not
-        Cubes.  Skip this if the sequence is a CubeList, as we can assume it
-        was already checked.
-        """
-        if (isinstance(sequence, collections.Iterable) and
-                not isinstance(sequence, Cube) and
-                not isinstance(sequence, CubeList)):
-            for obj in sequence:
-                self._check_iscube(obj)
+        return '[%s]' % ',\n'.join([repr(cube) for cube in self])
 
     # TODO #370 Which operators need overloads?
 
@@ -233,31 +226,31 @@ class CubeList(list):
         """
         Add a sequence of cubes to the cubelist in place.
         """
-        self._check_cube_sequence(other_cubes)
+        _check_cube_sequence(other_cubes)
         super(CubeList, self).__iadd__(other_cubes)
 
     def __setitem__(self, key, cube_or_sequence):
         """Set self[key] to cube or sequence of cubes"""
         if isinstance(key, int):
             # should have single cube.
-            self._check_iscube(cube_or_sequence)
+            _check_iscube(cube_or_sequence)
         else:
             # key is a slice (or exception will come from list method).
-            self._check_cube_sequence(cube_or_sequence)
+            _check_cube_sequence(cube_or_sequence)
 
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
     #  __setslice__ is only required for python2.7 compatibility.
     def __setslice__(self, *args):
         cubes = args[-1]
-        self._check_cube_sequence(cubes)
+        _check_cube_sequence(cubes)
         super(CubeList, self).__setslice__(*args)
 
     def append(self, cube):
         """
         Append a cube.
         """
-        self._check_iscube(cube)
+        _check_iscube(cube)
         super(CubeList, self).append(cube)
 
     def extend(self, other_cubes):
@@ -269,14 +262,14 @@ class CubeList(list):
         * other_cubes:
            A cubelist or other sequence of cubes.
         """
-        self._check_cube_sequence(other_cubes)
+        _check_cube_sequence(other_cubes)
         super(CubeList, self).extend(other_cubes)
 
     def insert(self, index, cube):
         """
         Insert a cube before index.
         """
-        self._check_iscube(cube)
+        _check_iscube(cube)
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
