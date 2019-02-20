@@ -145,32 +145,6 @@ class _CubeFilterCollection:
         )
 
 
-def _check_iscube(obj):
-    """
-    Raise an exception if obj does not look like a cube.
-    """
-    if not hasattr(obj, 'add_aux_coord'):
-        msg = ("Object of type '{}' does not look like a cube so can't be "
-               "included in cubelist.")
-        raise TypeError(msg.format(type(obj).__name__))
-
-
-def _check_cube_sequence(sequence):
-    """
-    Raise an exception if sequence contains an element that is not a Cube (or
-    cube-like).  Skip this if the sequence is a CubeList, as we can assume it
-    was already checked.
-    """
-    if (isinstance(sequence, collections.Iterable) and
-            not isinstance(sequence, Cube) and
-            not isinstance(sequence, CubeList)):
-        for obj in sequence:
-            if not hasattr(obj, 'add_aux_coord'):
-                msg = ("Sequence contains object of type '{}', which does not "
-                       "look like a cube so can't be included in cubelist.")
-                raise ValueError(msg.format(type(obj).__name__))
-
-
 class CubeList(list):
     """
     All the functionality of a standard :class:`list` with added "Cube"
@@ -205,6 +179,12 @@ class CubeList(list):
         """Runs repr on every cube."""
         return '[%s]' % ',\n'.join([repr(cube) for cube in self])
 
+    @staticmethod
+    def _assert_is_cube(obj):
+        if not isinstance(obj, Cube):
+            msg = ("Object of type '{}' does not belong in a cubelist.")
+            raise ValueError(msg.format(type(obj).__name__))
+
     # TODO #370 Which operators need overloads?
 
     def __add__(self, other):
@@ -232,31 +212,30 @@ class CubeList(list):
         """
         Add a sequence of cubes to the cubelist in place.
         """
-        _check_cube_sequence(other_cubes)
-        super(CubeList, self).__iadd__(other_cubes)
+        super(CubeList, self).__iadd__(CubeList(other_cubes))
 
     def __setitem__(self, key, cube_or_sequence):
         """Set self[key] to cube or sequence of cubes"""
         if isinstance(key, int):
             # should have single cube.
-            _check_iscube(cube_or_sequence)
+            self._assert_is_cube(cube_or_sequence)
         else:
             # key is a slice (or exception will come from list method).
-            _check_cube_sequence(cube_or_sequence)
+            cube_or_sequence = CubeList(cube_or_sequence)
 
         super(CubeList, self).__setitem__(key, cube_or_sequence)
 
     #  __setslice__ is only required for python2.7 compatibility.
     def __setslice__(self, *args):
-        cubes = args[-1]
-        _check_cube_sequence(cubes)
-        super(CubeList, self).__setslice__(*args)
+        args_list = list(args)
+        args_list[-1] = CubeList(args[-1])
+        super(CubeList, self).__setslice__(*args_list)
 
     def append(self, cube):
         """
         Append a cube.
         """
-        _check_iscube(cube)
+        self._assert_is_cube(cube)
         super(CubeList, self).append(cube)
 
     def extend(self, other_cubes):
@@ -268,14 +247,13 @@ class CubeList(list):
         * other_cubes:
            A cubelist or other sequence of cubes.
         """
-        _check_cube_sequence(other_cubes)
-        super(CubeList, self).extend(other_cubes)
+        super(CubeList, self).extend(CubeList(other_cubes))
 
     def insert(self, index, cube):
         """
         Insert a cube before index.
         """
-        _check_iscube(cube)
+        self._assert_is_cube(cube)
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
