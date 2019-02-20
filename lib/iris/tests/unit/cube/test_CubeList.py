@@ -36,7 +36,7 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 from iris.tests import mock
 
-NOT_CUBE_MSG = "bject of type '{}'"
+NOT_CUBE_MSG = "Object of type '{}' does not belong in a cubelist."
 
 
 class Test_append(tests.IrisTest):
@@ -52,7 +52,7 @@ class Test_append(tests.IrisTest):
         self.assertEqual(self.cubelist[-1], self.cube2)
 
     def test_fail(self):
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegexp(ValueError,
                                      NOT_CUBE_MSG.format('NoneType')):
             self.cubelist.append(None)
 
@@ -200,7 +200,7 @@ class Test_insert(tests.IrisTest):
         self.assertEqual(self.cubelist[1], self.cube2)
 
     def test_fail(self):
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegexp(ValueError,
                                      NOT_CUBE_MSG.format('NoneType')):
             self.cubelist.insert(0, None)
 
@@ -344,7 +344,7 @@ class Test_setitem(tests.IrisTest):
             iris.cube.CubeList([self.cube2, self.cube3, self.cube1]))
 
     def test_fail(self):
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegexp(ValueError,
                                      NOT_CUBE_MSG.format('NoneType')):
             self.cubelist[0] = None
         with self.assertRaisesRegexp(ValueError,
