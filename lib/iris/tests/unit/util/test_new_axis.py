@@ -140,7 +140,7 @@ class Test(tests.IrisTest):
         self._assert_cube_notis(res, cube)
 
         # Check that factory dependencies are actual coords within the cube.
-        # Addresses a former bug : see XXXX
+        # Addresses a former bug : https://github.com/SciTools/iris/pull/3263
         factory, = list(res.aux_factories)
         deps = factory.dependencies
         for dep_name, dep_coord in six.iteritems(deps):
