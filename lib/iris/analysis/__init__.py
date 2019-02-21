@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -1324,7 +1324,9 @@ def _peak(array, **kwargs):
 
     # Collapse array to its final data shape.
     slices = [slice(None)] * array.ndim
-    slices[-1] = 0
+    endslice = slice(0, 1) if len(slices) == 1 else 0
+    slices[-1] = endslice
+    slices = tuple(slices)  # Numpy>=1.16 : index with tuple, *not* list.
 
     if isinstance(array.dtype, np.float):
         data = array[slices]
