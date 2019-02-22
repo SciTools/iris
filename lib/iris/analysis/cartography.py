@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of Iris.
 #
@@ -717,7 +717,6 @@ def project(cube, target_proj, nx=None, ny=None):
         index = list(index)
         index[xdim] = slice(None, None)
         index[ydim] = slice(None, None)
-        index = tuple(index)  # Numpy>=1.16 : index with tuple, *not* list.
         new_data[index] = cartopy.img_transform.regrid(ll_slice.data,
                                                        source_x, source_y,
                                                        source_cs,

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2017, Met Office
 #
 # This file is part of Iris.
 #
@@ -197,16 +197,16 @@ class TestDataMergeCombos(tests.IrisTest):
     def test__masked_masked(self):
         for (lazy0, lazy1), (fill0, fill1) in self.combos:
             cubes = iris.cube.CubeList()
-            mask = ((0,), (0,))
+            mask = [(0,), (0,)]
             cubes.append(self._make_cube(0, mask=mask, lazy=lazy0,
                                          dtype=self.dtype,
                                          fill_value=fill0))
-            mask = ((1,), (1,))
+            mask = [(1,), (1,)]
             cubes.append(self._make_cube(1, mask=mask, lazy=lazy1,
                                          dtype=self.dtype,
                                          fill_value=fill1))
             result = cubes.merge_cube()
-            mask = ((0, 1), (0, 1), (0, 1))
+            mask = [(0, 1), (0, 1), (0, 1)]
             expected_fill_value = self._expected_fill_value(fill0, fill1)
             expected = self._make_data([0, 1], mask=mask, dtype=self.dtype,
                                        fill_value=expected_fill_value)
