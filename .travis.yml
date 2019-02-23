@@ -132,7 +132,7 @@ script:
   - >
     if [[ $TEST_TARGET == 'default' ]]; then
       export IRIS_REPO_DIR=$INSTALL_DIR;
-      python -m iris.tests.runner --default-tests --system-tests --coding-tests --print-failed-images --num-processors=3;
+      python -m iris.tests.runner --default-tests --system-tests --print-failed-images --num-processors=3;
     fi
 
   - if [[ $TEST_TARGET == 'example' ]]; then
