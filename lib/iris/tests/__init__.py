@@ -115,7 +115,8 @@ except ImportError:
     NC_TIME_AXIS_AVAILABLE = False
 
 try:
-    requests.get('https://github.com/SciTools/iris')
+    # Added 1 second timeout to stop call hanging on the HPC
+    requests.get('https://github.com/SciTools/iris', timeout=1.0)
     INET_AVAILABLE = True
 except requests.exceptions.ConnectionError:
     INET_AVAILABLE = False
