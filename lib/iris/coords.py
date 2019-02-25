@@ -817,11 +817,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             eq = self._as_defn() == other._as_defn()
             # points comparison
             if eq:
-                eq = iris.util.array_equal(self.points, other.points)
+                eq = iris.util.array_equal(self.points, other.points,
+                                           withnans=True)
             # bounds comparison
             if eq:
                 if self.has_bounds() and other.has_bounds():
-                    eq = iris.util.array_equal(self.bounds, other.bounds)
+                    eq = iris.util.array_equal(self.bounds, other.bounds,
+                                               withnans=True)
                 else:
                     eq = self.bounds is None and other.bounds is None
 

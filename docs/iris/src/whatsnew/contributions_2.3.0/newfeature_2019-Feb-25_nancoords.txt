@@ -1,0 +1,4 @@
+* :class:`iris.coords.AuxCoord`_'s can now test as 'equal' even when the points
+  or bounds arrays contain NaN values, if values are the same at all points.
+  Previously this would fail, as conventionally "NaN != NaN" in normal
+  floating-point arithmetic.

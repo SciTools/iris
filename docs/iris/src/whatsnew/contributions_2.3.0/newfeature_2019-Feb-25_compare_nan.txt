@@ -1,0 +1,2 @@
+* :func:`iris.util.array_equal` now has a 'withnans' keyword, which provides
+  a NaN-tolerant array comparison.

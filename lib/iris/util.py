@@ -331,19 +331,39 @@ def rolling_window(a, window=1, step=1, axis=-1):
     return rw
 
 
-def array_equal(array1, array2):
+def array_equal(array1, array2, withnans=False):
     """
     Returns whether two arrays have the same shape and elements.
 
-    This provides the same functionality as :func:`numpy.array_equal` but with
-    additional support for arrays of strings.
+    Args:
+
+    * array1, array2 (arraylike):
+        args to be compared, after normalising with :func:`np.asarray`.
+
+    Kwargs:
+
+    * withnans (bool):
+        When unset (default), the result is False if either input contains NaN
+        points.  This is the normal floating-point arithmetic result.
+        When set, return True if inputs contain the same value in all elements,
+        _including_ any NaN values.
+
+    This provides much the same functionality as :func:`numpy.array_equal`, but
+    with additional support for arrays of strings and NaN-tolerant operation.
 
     """
     array1, array2 = np.asarray(array1), np.asarray(array2)
     if array1.shape != array2.shape:
         eq = False
     else:
-        eq = bool(np.asarray(array1 == array2).all())
+        eqs = array1 == array2
+        if withnans and (array1.dtype.kind == 'f' or array2.dtype.kind == 'f'):
+            nans1, nans2 = np.isnan(array1), np.isnan(array2)
+            if not np.all(nans1 == nans2):
+                eq = False
+            else:
+                eqs[nans1] = True
+        eq = np.all(eqs)
 
     return eq
 
