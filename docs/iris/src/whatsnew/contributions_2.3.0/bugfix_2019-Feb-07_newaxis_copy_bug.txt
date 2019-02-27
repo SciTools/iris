@@ -1,2 +1,0 @@
-* fixed a bug in :meth:`iris.util.new_axis` : copying the resulting cube
-resulted in an exception, if it contained an aux-factory.
