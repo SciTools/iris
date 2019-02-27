@@ -1062,8 +1062,12 @@ def new_axis(src_cube, scalar_coord=None):
         coord_dims = np.array(src_cube.coord_dims(coord)) + 1
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
+    nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
+    coord_mapping = {id(old_co): new_cube.coord(old_co)
+                     for old_co in nonderived_coords}
     for factory in src_cube.aux_factories:
-        new_cube.add_aux_factory(copy.deepcopy(factory))
+        new_factory = factory.updated(coord_mapping)
+        new_cube.add_aux_factory(new_factory)
 
     return new_cube
 
