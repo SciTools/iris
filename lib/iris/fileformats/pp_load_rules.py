@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,6 @@ from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.rules import (ConversionMetadata, Factory, Reference,
                                     ReferenceTarget)
-import iris.fileformats.pp
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.um_cf_map import (LBFC_TO_CF, STASH_TO_CF,
                                         STASHCODE_IMPLIED_HEIGHTS)
@@ -444,6 +443,81 @@ def _new_coord_and_dims(is_vector_operation,
 _HOURS_UNIT = cf_units.Unit('hours')
 
 
+def _epoch_date_hours(epoch_hours_unit, datetime):
+    """
+    Return an 'hours since epoch' number for a date.
+
+    Args:
+    * epoch_hours_unit (:class:`cf_unit.Unit'):
+        Unit defining the calendar and zero-time of conversion.
+    * datetime (:class:`datetime.datetime`-like):
+         Date object containing year / month / day attributes.
+
+    This routine can also handle dates with a zero year, month or day  : such
+    dates were valid inputs to 'date2num' up to cftime version 1.0.1, but are
+    now illegal :  This routine interprets any zeros as being "1 year/month/day
+    before a year/month/day of 1".  This produces results consistent with the
+    "old" cftime behaviour.
+
+    """
+    days_offset = None
+    if (datetime.year == 0 or datetime.month == 0 or datetime.day == 0):
+        # cftime > 1.0.1 no longer allows non-calendar dates.
+        # Add 1 to year/month/day, to get a valid date, and adjust the result
+        # according to the actual epoch and calendar.  This reproduces 'old'
+        # results that were produced with cftime <= 1.0.1.
+        days_offset = 0
+        y, m, d = datetime.year, datetime.month, datetime.day
+        calendar = epoch_hours_unit.calendar
+        if d == 0:
+            # Add one day, by changing day=0 to 1.
+            d = 1
+            days_offset += 1
+        if m == 0:
+            # Add a 'January', by changing month=0 to 1.
+            m = 1
+            if calendar == cf_units.CALENDAR_GREGORIAN:
+                days_offset += 31
+            elif calendar == cf_units.CALENDAR_360_DAY:
+                days_offset += 30
+            elif calendar == cf_units.CALENDAR_365_DAY:
+                days_offset += 31
+            else:
+                msg = 'unrecognised calendar : {}'
+                raise ValueError(msg.format(calendar))
+
+        if y == 0:
+            # Add a 'Year 0', by changing year=0 to 1.
+            y = 1
+            if calendar == cf_units.CALENDAR_GREGORIAN:
+                days_in_year_0 = 366
+            elif calendar == cf_units.CALENDAR_360_DAY:
+                days_in_year_0 = 360
+            elif calendar == cf_units.CALENDAR_365_DAY:
+                days_in_year_0 = 365
+            else:
+                msg = 'unrecognised calendar : {}'
+                raise ValueError(msg.format(calendar))
+
+            days_offset += days_in_year_0
+
+        # Replace y/m/d with a modified date, that cftime will accept.
+        datetime = datetime.replace(year=y, month=m, day=d)
+
+    # netcdf4python has changed it's behaviour, at version 1.2, such
+    # that a date2num calculation returns a python float, not
+    # numpy.float64.  The behaviour of round is to recast this to an
+    # int, which is not the desired behaviour for PP files.
+    # So, cast the answer to numpy.float_ to be safe.
+    epoch_hours = np.float_(epoch_hours_unit.date2num(datetime))
+
+    if days_offset is not None:
+        # Correct for any modifications to achieve a valid date.
+        epoch_hours -= 24.0 * days_offset
+
+    return epoch_hours
+
+
 def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
                          t1, t2, lbft,
                          t1_dims=(), t2_dims=(), lbft_dims=()):
@@ -481,12 +555,7 @@ def _convert_time_coords(lbcode, lbtim, epoch_hours_unit,
 
     """
     def date2hours(t):
-        # netcdf4python has changed it's behaviour, at version 1.2, such
-        # that a date2num calculation returns a python float, not
-        # numpy.float64.  The behaviour of round is to recast this to an
-        # int, which is not the desired behaviour for PP files.
-        # So, cast the answer to numpy.float_ to be safe.
-        epoch_hours = np.float_(epoch_hours_unit.date2num(t))
+        epoch_hours = _epoch_date_hours(epoch_hours_unit, t)
         if t.minute == 0 and t.second == 0:
             epoch_hours = round(epoch_hours)
         return epoch_hours
