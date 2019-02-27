@@ -25,11 +25,14 @@ import iris.tests as tests
 import iris.tests.stock as stock
 
 import copy
-from iris._lazy_data import as_lazy_data
 import numpy as np
 import unittest
 
+import six
+
 import iris
+from iris._lazy_data import as_lazy_data
+
 from iris.util import new_axis
 
 
@@ -135,6 +138,17 @@ class Test(tests.IrisTest):
 
         self.assertEqual(res, com)
         self._assert_cube_notis(res, cube)
+
+        # Check that factory dependencies are actual coords within the cube.
+        # Addresses a former bug : https://github.com/SciTools/iris/pull/3263
+        factory, = list(res.aux_factories)
+        deps = factory.dependencies
+        for dep_name, dep_coord in six.iteritems(deps):
+            coord_name = dep_coord.name()
+            msg = ('Factory dependency {!r} is a coord named {!r}, '
+                   'but it is *not* the coord of that name in the new cube.')
+            self.assertIs(dep_coord, res.coord(coord_name),
+                          msg.format(dep_name, coord_name))
 
     def test_lazy_data(self):
         cube = iris.cube.Cube(as_lazy_data(self.data))

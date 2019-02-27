@@ -89,8 +89,15 @@ Bugs Fixed
 * "Gracefully filling..." warnings are now only issued when the coordinate or
   bound data is actually masked.
 
+
+Bugs fixed in v2.2.1
+--------------------
+
 * Iris can now correctly unpack a column of header objects when saving a
   pandas DataFrame to a cube.
+
+* fixed a bug in :meth:`iris.util.new_axis` : copying the resulting cube
+  resulted in an exception, if it contained an aux-factory.
 
 
 Documentation Changes
