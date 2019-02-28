@@ -353,17 +353,20 @@ def array_equal(array1, array2, withnans=False):
 
     """
     array1, array2 = np.asarray(array1), np.asarray(array2)
-    if array1.shape != array2.shape:
-        eq = False
-    else:
-        eqs = array1 == array2
+
+    eq = (array1.shape == array2.shape)
+    if eq:
+        eqs = (array1 == array2)
+
         if withnans and (array1.dtype.kind == 'f' or array2.dtype.kind == 'f'):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
             if not np.all(nans1 == nans2):
-                eq = False
+                eq = False  # simply fail
             else:
-                eqs[nans1] = True
-        eq = np.all(eqs)
+                eqs[nans1] = True  # fix NaNs; check all the others
+
+        if eq:
+            eq = np.all(eqs)  # check equal at all points
 
     return eq
 
