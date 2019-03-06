@@ -1,0 +1,3 @@
+* The name of the :func:`iris.util` function previously known as
+:func:`mask_cube` has been changed to :func:`iris.util.mask_discontiguities`
+for clarity.
