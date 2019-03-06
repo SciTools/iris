@@ -31,6 +31,8 @@ from iris.util import broadcast_to_shape
 def _ones_like(cube):
     """
     Return a copy of cube with the same mask, but all data values set to 1.
+
+    The operation is non-lazy.
     """
     ones_cube = cube.copy()
     ones_cube.data = np.ones_like(cube.data)
@@ -84,6 +86,8 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
 
     Reference:
         http://www.statsoft.com/textbook/glosp.html#Pearson%20Correlation
+
+    This operation is non-lazy.
 
     """
 
