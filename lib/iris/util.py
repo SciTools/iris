@@ -1611,18 +1611,17 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         discontiguities in the coordinate points array.
 
         This can be used as the input array for
-        :func:`iris.util.mask_discontiguities`.
+        :func:`iris.util.mask_cube`.
 
     Examples::
 
         # Find any unknown discontiguities in your cube's x and y arrays:
         discontiguities = iris.util.find_discontiguities(cube)
 
-        # Pass the resultant boolean array to `iris.util.mask_discontiguities`
+        # Pass the resultant boolean array to `iris.util.mask_cube`
         # with a cube slice; this will use the boolean array to mask
         # any discontiguous data points before plotting:
-        masked_cube_slice = iris.util.mask_discontiguities(cube[0],
-                                                           discontiguities)
+        masked_cube_slice = iris.util.mask_cube(cube[0], discontiguities)
 
         # Plot the masked cube slice:
         iplt.pcolormesh(masked_cube_slice)
