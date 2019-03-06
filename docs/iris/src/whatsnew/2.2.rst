@@ -64,7 +64,7 @@ Iris 2.2 Features
 * The function :func:`iris.util.find_discontiguities` can be used to check for
   discontiguities in the bounds arrays of cube coordinates.  Additionally,
   discontiguous points in coordinates can be explicitly masked
-  using another new feature :func:`iris.util.mask_cube`.
+  using another new feature :func:`iris.util.mask_discontiguties`.
 
 
 Iris 2.2 Dependency updates

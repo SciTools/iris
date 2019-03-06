@@ -1666,7 +1666,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     return bad_points_boolean
 
 
-def mask_cube(cube, points_to_mask):
+def mask_discontiguities(cube, points_to_mask):
     """
     Masks any cells in the data array which correspond to cells marked `True`
     in the `points_to_mask` array.

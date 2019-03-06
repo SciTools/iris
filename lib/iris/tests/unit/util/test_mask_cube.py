@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Test function :func:`iris.util.mask_cube"""
+"""Test function :func:`iris.util.mask_discontiguities"""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -26,7 +26,7 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris.util import mask_cube
+from iris.util import mask_discontiguities
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock import make_bounds_discontiguous_at_point
 
@@ -43,7 +43,7 @@ class Test(tests.IrisTest):
         self.cube_2d = full2d_global()
         make_bounds_discontiguous_at_point(self.cube_2d, 3, 3)
 
-    def test_mask_cube_2d(self):
+    def test_mask_discontiguities_2d(self):
         # This tests the masking of a 2d data array
         cube = self.cube_2d
         discontiguity_array = ma.getmaskarray(cube.data).copy()
@@ -53,7 +53,7 @@ class Test(tests.IrisTest):
         # mask_discontiguities, and check that it masks the correct point by
         # comparing with masked data
         cube.data.mask = ma.nomask
-        returned = mask_cube(cube, discontiguity_array)
+        returned = mask_discontiguities(cube, discontiguity_array)
         self.assertTrue(np.all(expected.data.mask == returned.data.mask))
 
 
