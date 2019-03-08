@@ -1,0 +1,2 @@
+* :meth:`iris.cube.Cube.remove_cell_measure` now also allows removal of a cell
+measure by its name (previously only accepted a CellMeasure object).

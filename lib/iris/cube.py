@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -1117,19 +1117,36 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for factory in self.aux_factories:
             factory.update(coord)
 
-    def remove_cell_measure(self, cell_measure):
+    def remove_cell_measure(self, name_or_cell_measure):
         """
         Removes a cell measure from the cube.
 
         Args:
 
-        * cell_measure (CellMeasure)
-            The CellMeasure to remove from the cube.
+        * name_or_cell_measure
+            The cell measure to remove from the cube. As either
 
-        See also
-        :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
+            (a) a :attr:`standard_name`, :attr:`long_name`, or
+            :attr:`var_name`. Defaults to value of `default`
+            (which itself defaults to `unknown`) as defined in
+            :class:`iris._cube_coord_common.CFVariableMixin`.
+
+            (b) a cell_measure instance with metadata equal to that of
+            the desired cell_measures.
+
+        .. note::
+
+            If the argument given does not represent a valid cell_measure on
+            the cube, an :class:`iris.exceptions.CellMeasureNotFoundError`
+            is raised.
+
+        .. seealso::
+
+            :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
 
         """
+        cell_measure = self.cell_measure(name_or_cell_measure)
+
         self._cell_measures_and_dims = [[cell_measure_, dim] for cell_measure_,
                                         dim in self._cell_measures_and_dims
                                         if cell_measure_ is not cell_measure]
