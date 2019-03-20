@@ -374,7 +374,7 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
     return new_cube
 
 
-def multiply(cube, other, dim=None, in_place=False):
+def multiply(cube, other, dim=None, in_place=False, strict=True):
     """
     Calculate the product of a cube and another cube or coordinate.
 
@@ -391,6 +391,12 @@ def multiply(cube, other, dim=None, in_place=False):
     * dim:
         If supplying a coord with no match on the cube, you must supply
         the dimension to process.
+    * in_place:
+        whether or not to apply the operation in place to `cube` and
+        `cube.data`
+    * strict:
+        whether to adhere to all iris checks and CF conventions when
+        performing operation
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
@@ -407,31 +413,39 @@ def multiply(cube, other, dim=None, in_place=False):
     else:
         op = operator.mul
 
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
-        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
-                          coord_comp['resamplable'])
-        if bad_coord_grps:
-            raise ValueError('This operation cannot be performed as there are '
-                             'differing coordinates (%s) remaining '
-                             'which cannot be ignored.'
-                             % ', '.join({coord_grp.name() for coord_grp
-                                          in bad_coord_grps}))
+    if not strict:
+        xcube = xda.from_iris(cube)
+        xother = xda.from_iris(other)
+        new_cube = _binary_op_common(op, 'multiply', xcube, xother, new_unit,
+                                     new_dtype=new_dtype, dim=dim,
+                                     in_place=in_place)
+
     else:
-        coord_comp = None
+        if isinstance(other, iris.cube.Cube):
+            # get a coordinate comparison of this cube and the cube to do the
+            # operation with
+            coord_comp = iris.analysis.coord_comparison(cube, other)
+            bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
+                              coord_comp['resamplable'])
+            if bad_coord_grps:
+                raise ValueError('This operation cannot be performed as there '
+                                 'are differing coordinates (%s) remaining '
+                                 'which cannot be ignored.'
+                                 % ', '.join({coord_grp.name() for coord_grp
+                                              in bad_coord_grps}))
+        else:
+            coord_comp = None
 
-    new_cube = _binary_op_common(op, 'multiply', cube, other, new_unit,
-                                 new_dtype=new_dtype, dim=dim,
-                                 in_place=in_place)
+        new_cube = _binary_op_common(op, 'multiply', cube, other, new_unit,
+                                     new_dtype=new_dtype, dim=dim,
+                                     in_place=in_place)
 
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(None, [coord_grp[0] for coord_grp
-                        in coord_comp['ignorable']])
-        for coord in ignore:
-            new_cube.remove_coord(coord)
+        if coord_comp:
+            # If a coordinate is to be ignored - remove it
+            ignore = filter(None, [coord_grp[0] for coord_grp
+                            in coord_comp['ignorable']])
+            for coord in ignore:
+                new_cube.remove_coord(coord)
 
     return new_cube
 
@@ -452,7 +466,7 @@ def _inplace_common_checks(cube, other, math_op):
                 aemsg.format(math_op, cube, cube.dtype, other, other_dtype))
 
 
-def divide(cube, other, dim=None, in_place=False):
+def divide(cube, other, dim=None, in_place=False, strict=True):
     """
     Calculate the division of a cube by a cube or coordinate.
 
@@ -469,6 +483,11 @@ def divide(cube, other, dim=None, in_place=False):
     * dim:
         If supplying a coord with no match on the cube, you must supply
         the dimension to process.
+    * in_place:
+        Whether to do the calculation in place or not.
+    * strict:
+        whether to adhere to all iris checks and CF conventions when
+        performing operation
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
@@ -489,31 +508,39 @@ def divide(cube, other, dim=None, in_place=False):
     else:
         op = operator.truediv
 
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
-        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
-                          coord_comp['resamplable'])
-        if bad_coord_grps:
-            raise ValueError('This operation cannot be performed as there are '
-                             'differing coordinates (%s) remaining '
-                             'which cannot be ignored.'
-                             % ', '.join({coord_grp.name() for coord_grp
-                                          in bad_coord_grps}))
+    if not strict:
+        xcube = xda.from_iris(cube)
+        xother = xda.from_iris(other)
+        new_cube = _binary_op_common(op, 'divide', xcube, xother, new_unit,
+                                     new_dtype=new_dtype, dim=dim,
+                                     in_place=in_place)
+
     else:
-        coord_comp = None
+        if isinstance(other, iris.cube.Cube):
+            # get a coordinate comparison of this cube and the cube to do the
+            # operation with
+            coord_comp = iris.analysis.coord_comparison(cube, other)
+            bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
+                              coord_comp['resamplable'])
+            if bad_coord_grps:
+                raise ValueError('This operation cannot be performed as there are '
+                                 'differing coordinates (%s) remaining '
+                                 'which cannot be ignored.'
+                                 % ', '.join({coord_grp.name() for coord_grp
+                                              in bad_coord_grps}))
+        else:
+            coord_comp = None
 
-    new_cube = _binary_op_common(op, 'divide', cube, other, new_unit,
-                                 new_dtype=new_dtype, dim=dim,
-                                 in_place=in_place)
+        new_cube = _binary_op_common(op, 'divide', cube, other, new_unit,
+                                    new_dtype=new_dtype, dim=dim,
+                                    in_place=in_place)
 
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(None, [coord_grp[0] for coord_grp
-                        in coord_comp['ignorable']])
-        for coord in ignore:
-            new_cube.remove_coord(coord)
+        if coord_comp:
+            # If a coordinate is to be ignored - remove it
+            ignore = filter(None, [coord_grp[0] for coord_grp
+                            in coord_comp['ignorable']])
+            for coord in ignore:
+                new_cube.remove_coord(coord)
 
     return new_cube
 
