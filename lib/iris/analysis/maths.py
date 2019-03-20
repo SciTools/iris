@@ -226,7 +226,7 @@ def _assert_matching_units(cube, other, operation_name):
         raise iris.exceptions.NotYetImplementedError(msg)
 
 
-def add(cube, other, dim=None, in_place=False):
+def add(cube, other, dim=None, in_place=False, strict=True):
     """
     Calculate the sum of two cubes, or the sum of a cube and a
     coordinate or scalar value.
@@ -252,6 +252,8 @@ def add(cube, other, dim=None, in_place=False):
         the dimension to process.
     * in_place:
         Whether to create a new Cube, or alter the given "cube".
+    * strict:
+        whether to follow iris checks and CF conventions in operation.
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
@@ -265,11 +267,20 @@ def add(cube, other, dim=None, in_place=False):
         op = operator.iadd
     else:
         op = operator.add
-    return _add_subtract_common(op, 'add', cube, other, new_dtype, dim=dim,
-                                in_place=in_place)
 
+    if not strict:
+        xcube = xda.from_iris(cube)
+        xother = xda.from_iris(other)
+        new_xcube = xcube + xother
+        new_cube = xda.to_iris(new_xcube)
 
-def subtract(cube, other, dim=None, in_place=False):
+    else:
+        new_cube = _add_subtract_common(op, 'add', cube, other, new_dtype,
+                                         dim=dim, in_place=in_place)
+
+    return new_cube
+
+def subtract(cube, other, dim=None, in_place=False, strict=False):
     """
     Calculate the difference between two cubes, or the difference between
     a cube and a coordinate or scalar value.
@@ -295,6 +306,8 @@ def subtract(cube, other, dim=None, in_place=False):
         the dimension to process.
     * in_place:
         Whether to create a new Cube, or alter the given "cube".
+    * strict:
+        blah...
 
     Returns:
         An instance of :class:`iris.cube.Cube`.
@@ -308,12 +321,21 @@ def subtract(cube, other, dim=None, in_place=False):
         op = operator.isub
     else:
         op = operator.sub
-    return _add_subtract_common(op, 'subtract', cube, other, new_dtype,
-                                dim=dim, in_place=in_place)
 
+    if not strict:
+        xcube = xda.from_iris(cube)
+        xother = xda.from_iris(other)
+        new_xcube = xcube - xother
+        new_cube = xda.to_iris(new_xcube)
+
+    else:
+        new_cube = _add_subtract_common(op, 'subtract', cube, other, new_dtype,
+                                    dim=dim, in_place=in_place)
+
+    return new_cube
 
 def _add_subtract_common(operation_function, operation_name, cube, other,
-                         new_dtype, dim=None, in_place=False, strict=True):
+                         new_dtype, dim=None, in_place=False):
     """
     Function which shares common code between addition and subtraction
     of cubes.
@@ -331,45 +353,37 @@ def _add_subtract_common(operation_function, operation_name, cube, other,
                            coordinate that is not found in `cube`
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
-    strict               - whether to adhere to all iris checks and CF
-                           conventions when performing operation
 
     """
     _assert_is_cube(cube)
     _assert_matching_units(cube, other, operation_name)
 
-    if not strict:
-        xcube = xda.from_iris(cube)
-        xother = xda.from_iris(other)
-        new_cube = operation_function(xcube, xother)
+    if isinstance(other, iris.cube.Cube):
+        # get a coordinate comparison of this cube and the cube to do the
+        # operation with
+        coord_comp = iris.analysis.coord_comparison(cube, other)
 
+        bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
+                          coord_comp['resamplable'])
+        if bad_coord_grps:
+            raise ValueError('This operation cannot be performed as there '
+                             'are differing coordinates (%s) remaining '
+                             'which cannot be ignored.'
+                             % ', '.join({coord_grp.name() for coord_grp
+                                          in bad_coord_grps}))
     else:
-        if isinstance(other, iris.cube.Cube):
-            # get a coordinate comparison of this cube and the cube to do the
-            # operation with
-            coord_comp = iris.analysis.coord_comparison(cube, other)
+        coord_comp = None
 
-            bad_coord_grps = (coord_comp['ungroupable_and_dimensioned'] +
-                              coord_comp['resamplable'])
-            if bad_coord_grps:
-                raise ValueError('This operation cannot be performed as there '
-                                 'are differing coordinates (%s) remaining '
-                                 'which cannot be ignored.'
-                                 % ', '.join({coord_grp.name() for coord_grp
-                                              in bad_coord_grps}))
-        else:
-            coord_comp = None
+    new_cube = _binary_op_common(operation_function, operation_name, cube,
+                                 other, cube.units, new_dtype=new_dtype,
+                                 dim=dim, in_place=in_place)
 
-        new_cube = _binary_op_common(operation_function, operation_name, cube,
-                                     other, cube.units, new_dtype=new_dtype,
-                                     dim=dim, in_place=in_place)
-
-        if coord_comp:
-            # If a coordinate is to be ignored - remove it
-            ignore = filter(None, [coord_grp[0] for coord_grp
-                                   in coord_comp['ignorable']])
-            for coord in ignore:
-                new_cube.remove_coord(coord)
+    if coord_comp:
+        # If a coordinate is to be ignored - remove it
+        ignore = filter(None, [coord_grp[0] for coord_grp
+                               in coord_comp['ignorable']])
+        for coord in ignore:
+            new_cube.remove_coord(coord)
 
     return new_cube
 
@@ -416,9 +430,8 @@ def multiply(cube, other, dim=None, in_place=False, strict=True):
     if not strict:
         xcube = xda.from_iris(cube)
         xother = xda.from_iris(other)
-        new_cube = _binary_op_common(op, 'multiply', xcube, xother, new_unit,
-                                     new_dtype=new_dtype, dim=dim,
-                                     in_place=in_place)
+        new_xcube = xcube * xother
+        new_cube = xda.to_iris(new_xcube)
 
     else:
         if isinstance(other, iris.cube.Cube):
@@ -511,9 +524,8 @@ def divide(cube, other, dim=None, in_place=False, strict=True):
     if not strict:
         xcube = xda.from_iris(cube)
         xother = xda.from_iris(other)
-        new_cube = _binary_op_common(op, 'divide', xcube, xother, new_unit,
-                                     new_dtype=new_dtype, dim=dim,
-                                     in_place=in_place)
+        new_xcube = xcube/xother
+        new_cube = xda.to_iris(new_xcube)
 
     else:
         if isinstance(other, iris.cube.Cube):
@@ -775,8 +787,7 @@ def apply_ufunc(ufunc, cube, other_cube=None, new_unit=None, new_name=None,
 
 
 def _binary_op_common(operation_function, operation_name, cube, other,
-                      new_unit, new_dtype=None, dim=None, in_place=False,
-                      strict=True):
+                      new_unit, new_dtype=None, dim=None, in_place=False):
     """
     Function which shares common code between binary operations.
 
@@ -794,8 +805,6 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                            coordinate that is not found in `cube`
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
-    strict               - whether to adhere to all iris checks and CF
-                           conventions when performing operation
 
     """
     _assert_is_cube(cube)
@@ -826,16 +835,7 @@ def _binary_op_common(operation_function, operation_name, cube, other,
                              type(other).__name__))
         return ret
 
-    if not strict:
-        xcube = xda.from_iris(cube)
-        xother = xda.from_iris(other)
-        new_cube = operation_function(xcube, xother)
-
-    else:
-        new_cube = _math_op_common(cube, unary_func, new_unit, new_dtype,
-                                   in_place)
-
-    return new_cube
+    return _math_op_common(cube, unary_func, new_unit, new_dtype, in_place)
 
 
 def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
