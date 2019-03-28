@@ -1486,7 +1486,7 @@ This aggregator handles masked data.
 
 
 MEAN = WeightedAggregator('mean', ma.average,
-                          lazy_func=_build_dask_mdtol_function(da.mean))
+                          lazy_func=_build_dask_mdtol_function(da.ma.average))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1526,7 +1526,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanmean`.
+    Lazy operation is supported, via :func:`dask.array.ma.average`.
 
 This aggregator handles masked data.
 
