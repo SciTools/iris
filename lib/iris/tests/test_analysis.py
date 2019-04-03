@@ -411,10 +411,12 @@ class TestAggregators(tests.IrisTest):
     def _check_collapsed_percentile(self, cube, percents, collapse_coord,
                                     expected_result, CML_filename=None,
                                     **kwargs):
+        cube_data_type = type(cube.data)
         expected_result = np.array(expected_result, dtype=np.float32)
         result = cube.collapsed(collapse_coord, iris.analysis.PERCENTILE,
                                 percent=percents, **kwargs)
         np.testing.assert_array_almost_equal(result.data, expected_result)
+        self.assertEqual(type(result.data), cube_data_type)
         if CML_filename is not None:
             self.assertCML(result, ('analysis', CML_filename), checksum=False)
 
@@ -422,6 +424,7 @@ class TestAggregators(tests.IrisTest):
                           **kwargs):
         result = iris.analysis._percentile(data, axis, percents, **kwargs)
         np.testing.assert_array_almost_equal(result, expected_result)
+        self.assertEqual(type(result), type(expected_result))
 
     def test_percentile_1d_25_percent(self):
         cube = tests.stock.simple_1d()
@@ -441,6 +444,13 @@ class TestAggregators(tests.IrisTest):
 
     def test_fast_percentile_1d_75_percent(self):
         cube = tests.stock.simple_1d()
+        self._check_collapsed_percentile(
+            cube, 75, 'foo', 7.5, fast_percentile_method=True,
+            CML_filename='third_quartile_foo_1d_fast_percentile.cml')
+
+    def test_fast_percentile_1d_75_percent_masked_type_no_mask(self):
+        cube = tests.stock.simple_1d()
+        cube.data = ma.MaskedArray(cube.data)
         self._check_collapsed_percentile(
             cube, 75, 'foo', 7.5, fast_percentile_method=True,
             CML_filename='third_quartile_foo_1d_fast_percentile.cml')
@@ -465,6 +475,20 @@ class TestAggregators(tests.IrisTest):
 
     def test_fast_percentile_2d_two_coords(self):
         cube = tests.stock.simple_2d()
+        self._check_collapsed_percentile(
+            cube, 25, ['foo', 'bar'], [2.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_bar_2d_fast_percentile.cml')
+
+    def test_fast_percentile_2d_single_coord_masked_type_no_mask(self):
+        cube = tests.stock.simple_2d()
+        cube.data = ma.MaskedArray(cube.data)
+        self._check_collapsed_percentile(
+            cube, 25, 'foo', [0.75, 4.75, 8.75], fast_percentile_method=True,
+            CML_filename='first_quartile_foo_2d_fast_percentile.cml')
+
+    def test_fast_percentile_2d_two_coords_masked_type_no_mask(self):
+        cube = tests.stock.simple_2d()
+        cube.data = ma.MaskedArray(cube.data)
         self._check_collapsed_percentile(
             cube, 25, ['foo', 'bar'], [2.75], fast_percentile_method=True,
             CML_filename='first_quartile_foo_bar_2d_fast_percentile.cml')
@@ -503,6 +527,16 @@ class TestAggregators(tests.IrisTest):
         self._check_percentile(array_3d, 1, 50, expected_result,
                                fast_percentile_method=True)
 
+    def test_fast_percentile_3d_axis_one_masked_type_no_mask(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        array_3d = np.ma.MaskedArray(array_3d)
+        expected_result = ma.MaskedArray([[4., 5., 6., 7.],
+                                          [16., 17., 18., 19.]],
+                                         dtype=np.float32)
+
+        self._check_percentile(array_3d, 1, 50, expected_result,
+                               fast_percentile_method=True)
+
     def test_percentile_3d_axis_two(self):
         array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
         expected_result = np.array([[1.5, 5.5, 9.5],
@@ -520,6 +554,16 @@ class TestAggregators(tests.IrisTest):
         self._check_percentile(array_3d, 2, 50, expected_result,
                                fast_percentile_method=True)
 
+    def test_fast_percentile_3d_axis_two_masked_type_no_mask(self):
+        array_3d = np.arange(24, dtype=np.int32).reshape((2, 3, 4))
+        array_3d = ma.MaskedArray(array_3d)
+        expected_result = ma.MaskedArray([[1.5, 5.5, 9.5],
+                                          [13.5, 17.5, 21.5]],
+                                         dtype=np.float32)
+
+        self._check_percentile(array_3d, 2, 50, expected_result,
+                               fast_percentile_method=True)
+
     def test_percentile_3d_masked(self):
         cube = tests.stock.simple_3d_mask()
         expected_result = [[12., 13., 14., 15.],
@@ -530,7 +574,7 @@ class TestAggregators(tests.IrisTest):
             cube, 75, 'wibble', expected_result,
             CML_filename='last_quartile_foo_3d_masked.cml')
 
-    def test_fast_percentile_3d_masked(self):
+    def test_fast_percentile_3d_masked_type_masked(self):
         cube = tests.stock.simple_3d_mask()
         msg = 'Cannot use fast np.percentile method with masked array.'
 
