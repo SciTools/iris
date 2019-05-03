@@ -63,8 +63,8 @@ class TestImageFile(tests.IrisTest):
         missing_refs = list(tests_uris - reference_image_uris)
         if missing_refs:
             amsg = ('Images are referenced in imagerepo.json '
-                    'but not published in {}:\n{}')
-            amsg = amsg.format(base, '\n'.join(missing_refs))
+                    'but not published in {}:\n    {}')
+            amsg = amsg.format(base, '    \n'.join(missing_refs))
             # Already seen the problThis should always fail
             self.assertFalse(bool(missing_refs), msg=amsg)
 
