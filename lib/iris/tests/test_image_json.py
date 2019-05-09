@@ -29,44 +29,45 @@ import itertools
 import json
 import os
 import requests
-import unittest
-import time
 
 
 @tests.skip_inet
-@tests.skip_data
 class TestImageFile(tests.IrisTest):
     def test_resolve(self):
         listingfile_uri = (
-            'https://raw.githubusercontent.com/pp-mo/test-iris-imagehash'
-            '/image_listing/v4_files_listing.txt')
+            'https://raw.githubusercontent.com/SciTools/test-iris-imagehash'
+            '/gh-pages/v4_files_listing.txt')
         req = requests.get(listingfile_uri)
         if req.status_code != 200:
-            raise ValueError('Github API get failed: {}'.format(
+            raise ValueError('Get failed on image listings file: {}'.format(
                 listingfile_uri))
 
-        reference_image_names = [line.strip()
-                                 for line in req.content.split('\n')]
+        listings_text = req.content.decode('utf-8')
+        reference_image_filenames = [line.strip()
+                                     for line in listings_text.split('\n')]
         base = 'https://scitools.github.io/test-iris-imagehash/images/v4'
         reference_image_uris = set('{}/{}'.format(base, name)
-                                   for name in reference_image_names)
+                                   for name in reference_image_filenames)
 
         imagerepo_json_filepath = os.path.join(
             os.path.dirname(__file__), 'results', 'imagerepo.json')
         with open(imagerepo_json_filepath, 'rb') as fi:
             imagerepo = json.load(codecs.getreader('utf-8')(fi))
 
-        # "imagerepo" is {key: list_of_uris}. Put all uris in one big set.
+        # "imagerepo" maps key: list-of-uris. Put all the uris in one big set.
         tests_uris = set(itertools.chain.from_iterable(
             six.itervalues(imagerepo)))
 
         missing_refs = list(tests_uris - reference_image_uris)
-        if missing_refs:
-            amsg = ('Images are referenced in imagerepo.json '
-                    'but not published in {}:\n{}')
-            amsg = amsg.format(base, '\n'.join(missing_refs))
-            # Already seen the problThis should always fail
-            self.assertFalse(bool(missing_refs), msg=amsg)
+        n_missing_refs = len(missing_refs)
+        if n_missing_refs > 0:
+            amsg = ('Missing images: These {} image uris are referenced in '
+                    'imagerepo.json, but not listed in {} : ')
+            amsg = amsg.format(n_missing_refs, listingfile_uri)
+            amsg += ''.join('\n        {}'.format(uri)
+                            for uri in missing_refs)
+            # Always fails when we get here: report the problem.
+            self.assertEqual(n_missing_refs, 0, msg=amsg)
 
 
 if __name__ == "__main__":
