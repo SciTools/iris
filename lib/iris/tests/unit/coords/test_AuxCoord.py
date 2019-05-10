@@ -624,5 +624,20 @@ class Test_convert_units(tests.IrisTest):
         self.assertArrayAllClose(coord.bounds, test_bounds_ft)
 
 
+class TestEquality(tests.IrisTest):
+    def test_nanpoints_eq_self(self):
+        co1 = AuxCoord([1., np.nan, 2.])
+        self.assertEqual(co1, co1)
+
+    def test_nanpoints_eq_copy(self):
+        co1 = AuxCoord([1., np.nan, 2.])
+        co2 = co1.copy()
+        self.assertEqual(co1, co2)
+
+    def test_nanbounds_eq_self(self):
+        co1 = AuxCoord([15., 25.], bounds=[[14., 16.], [24., np.nan]])
+        self.assertEqual(co1, co1)
+
+
 if __name__ == '__main__':
     tests.main()

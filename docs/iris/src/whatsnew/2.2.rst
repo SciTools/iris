@@ -66,6 +66,9 @@ Iris 2.2 Features
   discontiguous points in coordinates can be explicitly masked
   using another new feature :func:`iris.util.mask_cube`.
 
+* :func:`iris.util.array_equal` now has a 'withnans' keyword, which provides
+  a NaN-tolerant array comparison.
+
 
 Iris 2.2 Dependency updates
 =============================
@@ -95,9 +98,15 @@ Bugs fixed in v2.2.1
 
 * Iris can now correctly unpack a column of header objects when saving a
   pandas DataFrame to a cube.
-
+  
 * fixed a bug in :meth:`iris.util.new_axis` : copying the resulting cube
   resulted in an exception, if it contained an aux-factory.
+
+* :class:`iris.coords.AuxCoord`_'s can now test as 'equal' even when the points
+  or bounds arrays contain NaN values, if values are the same at all points.
+  Previously this would fail, as conventionally "NaN != NaN" in normal
+  floating-point arithmetic.
+
 
 
 Documentation Changes
