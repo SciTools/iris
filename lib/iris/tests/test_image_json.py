@@ -39,7 +39,7 @@ class TestImageFile(tests.IrisTest):
             '/gh-pages/v4_files_listing.txt')
         req = requests.get(listingfile_uri)
         if req.status_code != 200:
-            raise ValueError('Get failed on image listings file: {}'.format(
+            raise ValueError('GET failed on image listings file: {}'.format(
                 listingfile_uri))
 
         listings_text = req.content.decode('utf-8')
