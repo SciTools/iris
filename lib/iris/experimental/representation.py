@@ -371,7 +371,6 @@ class CubeListRepresentation(object):
     def __init__(self, cubelist):
         self.cubelist = cubelist
         self.cubelist_id = id(self.cubelist)
-        self.cubelist_str_split = str(self.cubelist).split('\n')
 
     def make_content(self):
         html = []
@@ -382,9 +381,10 @@ class CubeListRepresentation(object):
             html.append(self._accordian_panel.format(uid=self.cubelist_id,
                                                      title=title,
                                                      content=content))
-        return '\n'.join(html)
+        return html
 
     def repr_html(self):
         contents = self.make_content()
+        contents_str = '\n'.join(contents)
         return self._template.format(uid=self.cubelist_id,
-                                     contents=contents)
+                                     contents=contents_str)
