@@ -306,3 +306,85 @@ class CubeRepresentation(object):
                                      id=self.cube_id,
                                      shape=shape,
                                      content=content)
+
+
+class CubeListRepresentation(object):
+    _template = """
+<style>
+    .accordion-{uid} {{
+        color: #637983;
+        background: #fff;
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid #637983;
+        width: 100%;
+        text-align: left;
+        font-size: 14px;
+        font-family: monaco, monospace;
+        font-weight: normal;
+        outline: none;
+        transition: 0.4s;
+    }}
+    .active, .accordion-{uid}:hover {{
+        color: #444;
+        border: 2px solid var(--jp-brand-color2);
+        box-shadow: var(--jp-input-box-shadow);
+        font-weight: 900;
+        margin-top: 5px;
+    }}
+    .panel-{uid} {{
+        padding: 0 18px;
+        margin-bottom: 5px;
+        background-color: white;
+        display: none;
+        overflow: hidden;
+        border: 1px solid var(--jp-brand-color2);
+    }}
+</style>
+<script type="text/javascript">
+    var accordion = document.getElementsByClassName("accordion-{uid}");
+    var i;
+
+    for (i = 0; i < accordion.length; i++) {{
+        accordion[i].addEventListener("click", function() {{
+            this.classList.toggle("active");
+
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {{
+                panel.style.display = "none";
+            }} else {{
+                panel.style.display = "block";
+            }}
+        }});
+    }}
+</script>
+{contents}
+    """
+
+    _accordian_panel = """
+<button class="accordion-{uid}">{title}</button>
+<div class="panel-{uid}">
+    <p>{content}</p>
+</div> 
+    """
+
+    def __init__(self, cubelist):
+        self.cubelist = cubelist
+        self.cubelist_id = id(self.cubelist)
+        self.cubelist_str_split = str(self.cubelist).split('\n')
+
+    def make_content(self):
+        html = []
+        for i, cube in enumerate(self.cubelist):
+            title = '{i}: {summary}'.format(i=i,
+                                            summary=cube.summary(shorten=True))
+            content = cube._repr_html_()
+            html.append(self._accordian_panel.format(uid=self.cubelist_id,
+                                                     title=title,
+                                                     content=content))
+        return '\n'.join(html)
+
+    def repr_html(self):
+        contents = self.make_content()
+        return self._template.format(uid=self.cubelist_id,
+                                     contents=contents)
