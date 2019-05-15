@@ -365,7 +365,7 @@ class CubeListRepresentation(object):
 <button class="accordion-{uid}">{title}</button>
 <div class="panel-{uid}">
     <p>{content}</p>
-</div> 
+</div>
     """
 
     def __init__(self, cubelist):
