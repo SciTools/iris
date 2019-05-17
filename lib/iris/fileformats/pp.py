@@ -1642,7 +1642,7 @@ def _interpret_fields(fields):
 def _create_field_data(field, data_shape, land_mask_field=None):
     """
     Modifies a field's ``_data`` attribute either by:
-     * converting DeferredArrayBytes into a lazy array,
+     * converting a 'deferred array bytes' tuple into a lazy array,
      * converting LoadedArrayBytes into an actual numpy array.
 
     If 'land_mask_field' is passed (not None), then it contains the associated
@@ -1735,8 +1735,8 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
 
     A field returned by the generator is only "half-formed" because its
     `_data` attribute represents a simple one-dimensional stream of
-    bytes. (Encoded as an instance of either LoadedArrayBytes or
-    DeferredArrayBytes, depending on the value of `read_data_bytes`.)
+    bytes. (Encoded either as an instance of LoadedArrayBytes or as a
+    'deferred array bytes' tuple, depending on the value of `read_data_bytes`.)
     This is because fields encoded with a land/sea mask do not contain
     sufficient information within the field to determine the final
     two-dimensional shape of the data.
@@ -1825,7 +1825,10 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 pp_field.data = LoadedArrayBytes(pp_file.read(data_len),
                                                  dtype)
             else:
-                # Provide enough context to read the data bytes later on.
+                # Provide enough context to read the data bytes later on,
+                # as a 'deferred array bytes' tuple.
+                # N.B. this used to be a namedtuple called DeferredArrayBytes,
+                # but it no longer is. Possibly for performance reasons?
                 pp_field.data = (filename, pp_file.tell(), data_len, dtype)
                 # Seek over the actual data payload.
                 pp_file_seek(data_len, os.SEEK_CUR)
@@ -2242,8 +2245,6 @@ def save_fields(fields, target, append=False):
         of the file.
         Only applicable when target is a filename, not a file handle.
         Default is False.
-    * callback:
-        A modifier/filter function.
 
     See also :func:`iris.io.save`.
 
@@ -2272,11 +2273,9 @@ def save_fields(fields, target, append=False):
 
     if isinstance(target, six.string_types):
         pp_file = open(target, "ab" if append else "wb")
-        filename = target
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        filename = target.name if hasattr(target, 'name') else None
         pp_file = target
     else:
         raise ValueError("Can only save pp to filename or writable")
