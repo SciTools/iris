@@ -1588,22 +1588,20 @@ def _interpret_fields(fields):
     numpy arrays (via the _create_field_data) function.
 
     """
-    land_mask = None
+    land_mask_field = None
     landmask_compressed_fields = []
     for field in fields:
         # Store the first reference to a land mask, and use this as the
         # definitive mask for future fields in this generator.
-        if land_mask is None and field.lbuser[6] == 1 and \
+        if land_mask_field is None and field.lbuser[6] == 1 and \
                 (field.lbuser[3] // 1000) == 0 and \
                 (field.lbuser[3] % 1000) == 30:
-            land_mask = field
+            land_mask_field = field
 
-        apply_landmask = None
-
-        # Handle land compressed data payloads,
-        # when lbpack.n2 is 2.
+        # Handle land compressed data payloads, when lbpack.n2 is 2.
         if (field.raw_lbpack // 10 % 10) == 2:
-            if land_mask is None:
+            # Field uses land-mask packing, so needs a related land-mask field.
+            if land_mask_field is None:
                 landmask_compressed_fields.append(field)
                 # Land-masked fields have their size+shape defined by the
                 # reference landmask field, so we can't yield them if they
@@ -1612,42 +1610,45 @@ def _interpret_fields(fields):
                 # the end of the file.
                 continue
 
-            # Landmask-compressed fields don't have an lbrow and lbnpt.
-            field.lbrow, field.lbnpt = land_mask.lbrow, land_mask.lbnpt
-            # Construct a data array using the landmask field as a template.
-            apply_landmask = land_mask
+            # Land-mask compressed fields don't have an lbrow and lbnpt.
+            field.lbrow, field.lbnpt = \
+                land_mask_field.lbrow, land_mask_field.lbnpt
+            _create_field_data(field, (field.lbrow, field.lbnpt),
+                               land_mask_field=land_mask_field)
+        else:
+            # Field does not use land-mask packing.
+            _create_field_data(field, (field.lbrow, field.lbnpt))
 
-        _create_field_data(field, (field.lbrow, field.lbnpt),
-                           with_landmask_field=apply_landmask)
         yield field
 
     # At file end, return any land-masked fields that were deferred because
     # they were encountered before the landmask reference field.
     if landmask_compressed_fields:
-        if land_mask is None:
+        if land_mask_field is None:
             warnings.warn('Landmask compressed fields existed without a '
                           'landmask to decompress with. The data will have '
                           'a shape of (0, 0) and will not read.')
             mask_shape = (0, 0)
         else:
-            mask_shape = (land_mask.lbrow, land_mask.lbnpt)
+            mask_shape = (land_mask_field.lbrow, land_mask_field.lbnpt)
 
         for field in landmask_compressed_fields:
             field.lbrow, field.lbnpt = mask_shape
             _create_field_data(field, mask_shape,
-                               with_landmask_field=land_mask)
+                               land_mask_field=land_mask_field)
             yield field
 
 
-def _create_field_data(field, data_shape, with_landmask_field=None):
+def _create_field_data(field, data_shape, land_mask_field=None):
     """
     Modifies a field's ``_data`` attribute either by:
      * converting DeferredArrayBytes into a lazy array,
      * converting LoadedArrayBytes into an actual numpy array.
 
-    If 'with_landmask_field' is passed, it is another field :  The landmask
-    field's data is used as a template for this field's data, determining its
-    size, shape and the locations of valid (non-missing) datapoints.
+    If 'land_mask_field' is passed (not None), then it contains the associated
+    landmask, which is also a field :  Its data array is used as a template for
+    `field`'s data, determining its size, shape and the locations of all the
+    valid (non-missing) datapoints.
 
     """
     if isinstance(field.core_data(), LoadedArrayBytes):
@@ -1658,7 +1659,7 @@ def _create_field_data(field, data_shape, with_landmask_field=None):
                                                  data_shape,
                                                  loaded_bytes.dtype,
                                                  field.bmdi,
-                                                 with_landmask_field)
+                                                 land_mask_field)
     else:
         # Wrap the reference to the data payload within a data proxy
         # in order to support deferred data loading.
@@ -1669,7 +1670,7 @@ def _create_field_data(field, data_shape, with_landmask_field=None):
                             field.boundary_packing,
                             field.bmdi)
         block_shape = data_shape if 0 not in data_shape else (1, 1)
-        if with_landmask_field is None:
+        if land_mask_field is None:
             # For a "normal" (non-landsea-masked) field, the proxy can be
             # wrapped directly as a deferred array.
             field.data = as_lazy_data(proxy, chunks=block_shape)
@@ -1690,7 +1691,7 @@ def _create_field_data(field, data_shape, with_landmask_field=None):
             # Get the mask data-array from the landsea-mask field.
             # This is *either* a lazy or a real array, we don't actually care.
             # If this is a deferred dependency, the delayed calc can see that.
-            mask_field_array = with_landmask_field.core_data()
+            mask_field_array = land_mask_field.core_data()
 
             # Check whether this field uses a land or a sea mask.
             if field.lbpack.n3 not in (1, 2):
@@ -1708,6 +1709,11 @@ def _create_field_data(field, data_shape, with_landmask_field=None):
                 # First ensure the mask array is boolean (not int).
                 mask = mask.astype(bool)
                 result = ma.masked_all(mask.shape, dtype=dtype)
+                # Apply the fill-value from the proxy object.
+                # Note: 'values' is just 'proxy' in a dask wrapper.  This arg
+                # must be a dask type so that 'delayed' can recognise it, but
+                # that provides no access to the underlying fill value.
+                result.fill_value = proxy.mdi
                 n_values = np.sum(mask)
                 if n_values > 0:
                     # Note: data field can have excess values, but not fewer.
@@ -1734,6 +1740,13 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
     This is because fields encoded with a land/sea mask do not contain
     sufficient information within the field to determine the final
     two-dimensional shape of the data.
+
+    The callers of this routine are the 'load' routines (both PP and FF).
+    They both filter the resulting stream of fields with `_interpret_fields`,
+    which replaces each field.data with an actual array (real or lazy).
+    This is done separately so that `_interpret_fields` can detect land-mask
+    fields and use them to construct data arrays for any fields which use
+    land/sea-mask packing.
 
     """
     dtype_endian_char = '<' if little_ended else '>'

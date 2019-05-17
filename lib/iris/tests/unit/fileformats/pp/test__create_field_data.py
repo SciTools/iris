@@ -70,7 +70,7 @@ class Test__create_field_data(tests.IrisTest):
         # being created and invoked correctly.
         with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
             PPDataProxy.return_value = proxy
-            pp._create_field_data(field, data_shape, with_landmask_field=None)
+            pp._create_field_data(field, data_shape, land_mask_field=None)
         # The data should be assigned via field.data. As this is a mock object
         # we can check the attribute directly.
         self.assertEqual(field.data.shape, data_shape)
