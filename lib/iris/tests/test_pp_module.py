@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -443,7 +443,7 @@ class TestPPDataProxyEquality(tests.IrisTest):
     def test_not_implemented(self):
         class Terry(object): pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
-                             "spam", "beans", "eggs", "parrot")
+                             "spam", "beans", "eggs")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)
 
