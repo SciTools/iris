@@ -28,7 +28,7 @@ git:
 
 install:
   - >
-    export IRIS_TEST_DATA_REF="2f3a6bcf25f81bd152b3d66223394074c9069a96";
+    export IRIS_TEST_DATA_REF="dba47566a9147645fea586f94a138e0a8d45a48e";
     export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
   # Cut short doctest phase under Python 2 : now only supports Python 3
