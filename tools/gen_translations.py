@@ -71,37 +71,7 @@ from collections import namedtuple
 CFName = namedtuple('CFName', 'standard_name long_name units')
 """
 
-HEADER_GRIB = """# (C) British Crown Copyright 2013 - {year}, Met Office
-#
-# This file is part of {name}.
-#
-# {name} is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# {name} is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with {name}.  If not, see <http://www.gnu.org/licenses/>.
-#
-# DO NOT EDIT: AUTO-GENERATED
-# Created on {datestamp} from 
-# http://www.metarelate.net/metOcean
-# at commit {git_sha}
-# https://github.com/metarelate/metOcean/commit/{git_sha}
-{doc_string}
-
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
-from collections import namedtuple
-
-
-CFName = namedtuple('CFName', 'standard_name long_name units')
+HEADER_GRIB = """
 DimensionCoordinate = namedtuple('DimensionCoordinate',
                                  'standard_name units points')
 
@@ -219,9 +189,10 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
 
     # Create the file to contain GRIB/CF translations.
     with open(filename, 'w') as fh:
-        fh.write(HEADER_GRIB.format(year=YEAR, doc_string=DOC_STRING_GRIB,
+        fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB,
                                datestamp=now, git_sha=git_sha,
                                name='iris-grib'))
+        fh.write(HEADER_GRIB)
         fh.write('\n')
 
         # Encode the relevant GRIB to CF translations.
