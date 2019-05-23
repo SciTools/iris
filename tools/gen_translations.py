@@ -221,6 +221,9 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
 
 
 def main():
+    # Protect metarelate resource from 1.0 emergent bug
+    if not float(metarelate.__version__) >= 1.1:
+        raise ValueError("Please ensure that Metarelate Version is >= 1.1")
     now = datetime.utcnow().strftime('%d %B %Y %H:%m')
     git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
     gen_path = os.path.abspath(sys.modules['__main__'].__file__)
