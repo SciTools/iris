@@ -97,10 +97,6 @@ For an example of using this functionality, the
 in the gallery takes a zonal mean of an ``XYT`` cube by using the
 ``collapsed`` method with ``latitude`` and ``iris.analysis.MEAN`` as arguments.
 
-You cannot partially collapse a multi-dimensional coordinate. See
-:ref:`cube.collapsed <partially_collapse_multi-dim_coord>` for more
-information.
-
 .. _cube-statistics-collapsing-average:
 
 Area averaging
