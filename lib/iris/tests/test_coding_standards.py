@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -63,14 +63,16 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
 IRIS_DIR = os.path.realpath(os.path.dirname(iris.__file__))
-REPO_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
-DOCS_DIR = os.path.join(REPO_DIR, 'docs', 'iris')
+IRIS_INSTALL_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
+DOCS_DIR = os.path.join(IRIS_INSTALL_DIR, 'docs', 'iris')
 DOCS_DIR = iris.config.get_option('Resources', 'doc_dir', default=DOCS_DIR)
 exclusion = ['Makefile', 'build']
 DOCS_DIRS = glob(os.path.join(DOCS_DIR, '*'))
 DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not
              in exclusion]
-
+# Get a dirpath to the git repository : allow setting with an environment
+# variable, so Travis can test for headers in the repo, not the installation.
+IRIS_REPO_DIRPATH = os.environ.get('IRIS_REPO_DIR', IRIS_INSTALL_DIR)
 
 # pycodestyle / pep8 error codes that should be ignored:
 PYCODESTYLE_IGNORE_OPTIONS = (
@@ -279,14 +281,16 @@ class TestLicenseHeaders(tests.IrisTest):
 
         """
         # Check the ".git" folder exists at the repo dir.
-        if not os.path.isdir(os.path.join(REPO_DIR, '.git')):
-            raise ValueError('{} is not a git repository.'.format(REPO_DIR))
+        if not os.path.isdir(os.path.join(IRIS_REPO_DIRPATH, '.git')):
+            msg = '{} is not a git repository.'
+            raise ValueError(msg.format(IRIS_REPO_DIRPATH))
 
         # Call "git whatchanged" to get the details of all the files and when
         # they were last changed.
         output = subprocess.check_output(['git', 'whatchanged',
                                           "--pretty=TIME:%ct"],
-                                         cwd=REPO_DIR)
+                                         cwd=IRIS_REPO_DIRPATH)
+
         output = output.decode().split('\n')
         res = {}
         for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
@@ -311,14 +315,15 @@ class TestLicenseHeaders(tests.IrisTest):
 
         try:
             last_change_by_fname = self.last_change_by_fname()
-        except ValueError:
+        except ValueError as err:
             # Caught the case where this is not a git repo.
-            return self.skipTest('Iris installation did not look like a '
-                                 'git repo.')
+            msg = ('Iris installation did not look like a git repo?'
+                   '\nERR = {}\n\n')
+            return self.skipTest(msg.format(str(err)))
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
-            full_fname = os.path.join(REPO_DIR, fname)
+            full_fname = os.path.join(IRIS_REPO_DIRPATH, fname)
             if full_fname.endswith('.py') and os.path.isfile(full_fname) and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
                 with open(full_fname) as fh:
