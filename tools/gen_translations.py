@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,7 @@ import os.path
 import requests
 import sys
 
+import metarelate
 from metarelate.fuseki import FusekiServer
 
 from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
