@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017 - 2018, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -622,6 +622,21 @@ class Test_convert_units(tests.IrisTest):
         test_bounds_ft = Unit('m').convert(test_bounds, 'ft')
         self.assertArrayAllClose(coord.points, test_points_ft)
         self.assertArrayAllClose(coord.bounds, test_bounds_ft)
+
+
+class TestEquality(tests.IrisTest):
+    def test_nanpoints_eq_self(self):
+        co1 = AuxCoord([1., np.nan, 2.])
+        self.assertEqual(co1, co1)
+
+    def test_nanpoints_eq_copy(self):
+        co1 = AuxCoord([1., np.nan, 2.])
+        co2 = co1.copy()
+        self.assertEqual(co1, co2)
+
+    def test_nanbounds_eq_self(self):
+        co1 = AuxCoord([15., 25.], bounds=[[14., 16.], [24., np.nan]])
+        self.assertEqual(co1, co1)
 
 
 if __name__ == '__main__':

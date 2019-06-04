@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -115,7 +115,9 @@ except ImportError:
     NC_TIME_AXIS_AVAILABLE = False
 
 try:
-    requests.get('https://github.com/SciTools/iris')
+    # Added a timeout to stop the call to requests.get hanging when running
+    # on a platform which has restricted/no internet access.
+    requests.get('https://github.com/SciTools/iris', timeout=10.0)
     INET_AVAILABLE = True
 except requests.exceptions.ConnectionError:
     INET_AVAILABLE = False

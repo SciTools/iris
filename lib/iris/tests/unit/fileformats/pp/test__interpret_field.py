@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,7 @@ import iris.tests as tests
 from copy import deepcopy
 import numpy as np
 
+import iris
 import iris.fileformats.pp as pp
 from iris.tests import mock
 
@@ -37,7 +38,8 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         # A field packed using a land/sea mask.
         self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0] * 7,
                                   lbrow=0, lbnpt=0,
-                                  raw_lbpack=20,
+                                  raw_lbpack=21,
+                                  lbpack=mock.Mock(n1=0, n2=2, n3=1),
                                   core_data=core_data)
         # The field specifying the land/seamask.
         lbuser = [None, None, None, 30, None, None, 1]  # m01s00i030
@@ -91,19 +93,41 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         self.assertEqual(f1.lbrow, 3)
         self.assertEqual(f1.lbnpt, 4)
 
-    def test_shared_land_mask_field(self):
-        # Check that multiple land masked fields share the
-        # land mask field instance.
-        f1 = deepcopy(self.pp_field)
-        f2 = deepcopy(self.pp_field)
-        self.assertIsNot(f1, f2)
-        with mock.patch('iris.fileformats.pp.PPDataProxy') as PPDataProxy:
-            PPDataProxy.return_value = mock.MagicMock(shape=(3, 4),
-                                                      dtype=np.float32)
-            list(pp._interpret_fields([f1, self.land_mask_field, f2]))
-        for call in PPDataProxy.call_args_list:
-            positional_args = call[0]
-            self.assertIs(positional_args[8], self.land_mask_field)
+    @tests.skip_data
+    def test_landsea_unpacking_uses_dask(self):
+        # Ensure that the graph of the (lazy) landsea-masked data contains an
+        # explicit reference to a (lazy) landsea-mask field.
+        # Otherwise its compute() will need to invoke another compute().
+        # See https://github.com/SciTools/iris/issues/3237
+
+        # This is too complex to explore in a mock-ist way, so let's load a
+        # tiny bit of real data ...
+        testfile_path = tests.get_data_path(
+            ['FF', 'landsea_masked', 'testdata_mini_lsm.ff'])
+        landsea_mask, soil_temp = iris.load_cubes(
+            testfile_path, ('land_binary_mask', 'soil_temperature'))
+
+        # Now check that the soil-temp dask graph correctly references the
+        # landsea mask, in its dask graph.
+        lazy_mask_array = landsea_mask.core_data()
+        lazy_soildata_array = soil_temp.core_data()
+
+        # Work out the main dask key for the mask data, as used by 'compute()'.
+        mask_toplev_key = (lazy_mask_array.name,) + (0,) * lazy_mask_array.ndim
+        # Get the 'main' calculation entry.
+        mask_toplev_item = lazy_mask_array.dask[mask_toplev_key]
+        # This should be a task (a simple fetch).
+        self.assertTrue(callable(mask_toplev_item[0]))
+        # Get the key (name) of the array that it fetches.
+        mask_data_name = mask_toplev_item[1]
+
+        # Check that the item this refers to is a PPDataProxy.
+        self.assertIsInstance(lazy_mask_array.dask[mask_data_name],
+                              pp.PPDataProxy)
+
+        # Check that the soil-temp graph references the *same* lazy element,
+        # showing that the mask+data calculation is handled by dask.
+        self.assertIn(mask_data_name, lazy_soildata_array.dask.keys())
 
 
 if __name__ == "__main__":

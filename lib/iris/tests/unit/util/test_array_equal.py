@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -114,6 +114,25 @@ class Test(tests.IrisTest):
         self.assertTrue(array_equal(array_a, 'foobar'))
         self.assertFalse(array_equal(array_a, 'foo'))
         self.assertFalse(array_equal(array_a, 'foobar.'))
+
+    def test_nan_equality_nan_ne_nan(self):
+        array = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
+        self.assertFalse(array_equal(array, array))
+
+    def test_nan_equality_nan_naneq_nan(self):
+        array_a = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
+        array_b = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
+        self.assertTrue(array_equal(array_a, array_b, withnans=True))
+
+    def test_nan_equality_nan_nanne_a(self):
+        array_a = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
+        array_b = np.array([1.0, np.nan, 2.0, 0.0, 3.0])
+        self.assertFalse(array_equal(array_a, array_b, withnans=True))
+
+    def test_nan_equality_a_nanne_b(self):
+        array_a = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
+        array_b = np.array([1.0, np.nan, 2.0, np.nan, 4.0])
+        self.assertFalse(array_equal(array_a, array_b, withnans=True))
 
 
 if __name__ == '__main__':

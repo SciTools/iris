@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -20,6 +20,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 from sphinx.ext import autodoc
 from sphinx.ext.autodoc import *
+from sphinx.util import force_decode
+from sphinx.util.docstrings import prepare_docstring
 
 import inspect
 

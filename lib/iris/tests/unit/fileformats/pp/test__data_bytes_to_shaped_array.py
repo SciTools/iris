@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -111,16 +111,15 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
         return pp.SplittableInt(value, name_mapping)
 
     def test_no_land_mask(self):
+        # Check that without a mask, it returns the raw (compressed) data.
         with mock.patch('numpy.frombuffer',
                         return_value=np.arange(3)):
-            with self.assertRaises(ValueError) as err:
-                pp._data_bytes_to_shaped_array(mock.Mock(),
-                                               self.create_lbpack(120), None,
-                                               (3, 4), np.dtype('>f4'),
-                                               -999, mask=None)
-            self.assertEqual(str(err.exception),
-                             ('No mask was found to unpack the data. '
-                              'Could not load.'))
+            result = pp._data_bytes_to_shaped_array(
+                mock.Mock(),
+                self.create_lbpack(120), None,
+                (3, 4), np.dtype('>f4'),
+                -999, mask=None)
+            self.assertArrayAllClose(result, np.arange(3))
 
     def test_land_mask(self):
         # Check basic land unpacking.

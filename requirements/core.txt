@@ -5,8 +5,8 @@
 
 cartopy
 #conda: proj4<5
-cf_units>=2
-cftime==1.0.1
+cf-units>=2
+cftime
 dask[array]  #conda: dask
 matplotlib>=2,<3
 netcdf4

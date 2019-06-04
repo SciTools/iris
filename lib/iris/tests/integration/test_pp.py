@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -48,19 +48,27 @@ class TestVertical(tests.IrisTest):
         if bounds is not None:
             self.assertArrayEqual(coords[0].bounds, [bounds])
 
+    @staticmethod
+    def _mock_field(**kwargs):
+        mock_data = np.zeros(1)
+        mock_core_data = mock.MagicMock(return_value=mock_data)
+        field = mock.MagicMock(lbuser=[0] * 7, lbrsvd=[0] * 4,
+                               brsvd=[0] * 4, brlev=0,
+                               t1=mock.MagicMock(year=1990, month=1, day=3),
+                               t2=mock.MagicMock(year=1990, month=1, day=3),
+                               core_data=mock_core_data,
+                               realised_dtype=mock_data.dtype)
+        field.configure_mock(**kwargs)
+        return field
+
     def test_soil_level_round_trip(self):
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
-        mock_data = np.zeros(1)
-        mock_core_data = mock.MagicMock(return_value=mock_data)
-        field = mock.MagicMock(lbvc=6, lblev=soil_level,
-                               stash=iris.fileformats.pp.STASH(1, 0, 9),
-                               lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               brsvd=[0] * 4, brlev=0,
-                               core_data=mock_core_data,
-                               realised_dtype=mock_data.dtype)
+        field = self._mock_field(
+            lbvc=6, lblev=soil_level,
+            stash=iris.fileformats.pp.STASH(1, 0, 9))
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -89,14 +97,9 @@ class TestVertical(tests.IrisTest):
         # LBCODE, support len().
         lower, point, upper = 1.2, 3.4, 5.6
         brsvd = [lower, 0, 0, 0]
-        mock_data = np.zeros(1)
-        mock_core_data = mock.MagicMock(return_value=mock_data)
-        field = mock.MagicMock(lbvc=6, blev=point,
-                               stash=iris.fileformats.pp.STASH(1, 0, 9),
-                               lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               brsvd=brsvd, brlev=upper,
-                               core_data=mock_core_data,
-                               realised_dtype=mock_data.dtype)
+        field = self._mock_field(
+            lbvc=6, blev=point, brsvd=brsvd, brlev=upper,
+            stash=iris.fileformats.pp.STASH(1, 0, 9))
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load) as load:
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -126,12 +129,7 @@ class TestVertical(tests.IrisTest):
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         potm_value = 22.5
-        mock_data = np.zeros(1)
-        mock_core_data = mock.MagicMock(return_value=mock_data)
-        field = mock.MagicMock(lbvc=19, blev=potm_value,
-                               lbuser=[0] * 7, lbrsvd=[0] * 4,
-                               core_data=mock_core_data,
-                               realised_dtype=mock_data.dtype)
+        field = self._mock_field(lbvc=19, blev=potm_value)
         load = mock.Mock(return_value=iter([field]))
         with mock.patch('iris.fileformats.pp.load', new=load):
             cube = next(iris.fileformats.pp.load_cubes('DUMMY'))
@@ -149,40 +147,46 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.lbvc, 19)
         self.assertEqual(field.blev, potm_value)
 
+    @staticmethod
+    def _field_with_data(scale=1, **kwargs):
+        x, y = 40, 30
+        mock_data = np.arange(1200).reshape(y, x) * scale
+        mock_core_data = mock.MagicMock(return_value=mock_data)
+        field = mock.MagicMock(core_data=mock_core_data,
+                               realised_dtype=mock_data.dtype,
+                               lbcode=[1],
+                               lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
+                               bzy=40, bdy=1.5, lbuser=[0] * 7,
+                               lbrsvd=[0] * 4,
+                               t1=mock.MagicMock(year=1990, month=1, day=3),
+                               t2=mock.MagicMock(year=1990, month=1, day=3))
+
+        field._x_coord_name = lambda: 'longitude'
+        field._y_coord_name = lambda: 'latitude'
+        field.coord_system = lambda: None
+        field.configure_mock(**kwargs)
+        return field
+
     def test_hybrid_pressure_round_trip(self):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            mock_data = np.arange(1200).reshape(y, x) * scale
-            mock_core_data = mock.MagicMock(return_value=mock_data)
-            field = mock.MagicMock(core_data=mock_core_data,
-                                   realised_dtype=mock_data.dtype,
-                                   lbcode=[1],
-                                   lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
-                                   bzy=40, bdy=1.5, lbuser=[0] * 7,
-                                   lbrsvd=[0] * 4)
-
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
 
         # Make a fake reference surface field.
-        pressure_field = field_with_data(10)
-        pressure_field.stash = iris.fileformats.pp.STASH(1, 0, 409)
-        pressure_field.lbuser[3] = 409
+        pressure_field = self._field_with_data(
+            10,
+            stash=iris.fileformats.pp.STASH(1, 0, 409),
+            lbuser=[0, 0, 0, 409, 0, 0, 0])
 
         # Make a fake data field which needs the reference surface.
         model_level = 5678
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
-        data_field = field_with_data()
-        data_field.configure_mock(lbvc=9, lblev=model_level,
-                                  bhlev=delta, bhrlev=delta_lower,
-                                  blev=sigma, brlev=sigma_lower,
-                                  brsvd=[sigma_upper, delta_upper])
+        data_field = self._field_with_data(
+            lbvc=9, lblev=model_level,
+            bhlev=delta, bhrlev=delta_lower,
+            blev=sigma, brlev=sigma_lower,
+            brsvd=[sigma_upper, delta_upper])
 
         # Convert both fields to cubes.
         load = mock.Mock(return_value=iter([pressure_field, data_field]))
@@ -236,35 +240,21 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
 
     def test_hybrid_pressure_with_duplicate_references(self):
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            mock_data = np.arange(1200).reshape(y, x) * scale
-            mock_core_data = mock.MagicMock(return_value=mock_data)
-            field = mock.MagicMock(core_data=mock_core_data,
-                                   realised_dtype=mock_data.dtype,
-                                   lbcode=[1],
-                                   lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
-                                   bzy=40, bdy=1.5, lbuser=[0] * 7,
-                                   lbrsvd=[0] * 4)
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
-
         # Make a fake reference surface field.
-        pressure_field = field_with_data(10)
-        pressure_field.stash = iris.fileformats.pp.STASH(1, 0, 409)
-        pressure_field.lbuser[3] = 409
+        pressure_field = self._field_with_data(
+            10,
+            stash=iris.fileformats.pp.STASH(1, 0, 409),
+            lbuser=[0, 0, 0, 409, 0, 0, 0])
 
         # Make a fake data field which needs the reference surface.
         model_level = 5678
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
-        data_field = field_with_data()
-        data_field.configure_mock(lbvc=9, lblev=model_level,
-                                  bhlev=delta, bhrlev=delta_lower,
-                                  blev=sigma, brlev=sigma_lower,
-                                  brsvd=[sigma_upper, delta_upper])
+        data_field = self._field_with_data(
+            lbvc=9, lblev=model_level,
+            bhlev=delta, bhrlev=delta_lower,
+            blev=sigma, brlev=sigma_lower,
+            brsvd=[sigma_upper, delta_upper])
 
         # Convert both fields to cubes.
         load = mock.Mock(return_value=iter([data_field,
@@ -351,30 +341,15 @@ class TestVertical(tests.IrisTest):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
-        def field_with_data(scale=1):
-            x, y = 40, 30
-            mock_data = np.arange(1200).reshape(y, x) * scale
-            mock_core_data = mock.MagicMock(return_value=mock_data)
-            field = mock.MagicMock(core_data=mock_core_data,
-                                   realised_dtype=mock_data.dtype,
-                                   lbcode=[1],
-                                   lbnpt=x, lbrow=y, bzx=350, bdx=1.5,
-                                   bzy=40, bdy=1.5, lbuser=[0] * 7,
-                                   lbrsvd=[0] * 4)
-            field._x_coord_name = lambda: 'longitude'
-            field._y_coord_name = lambda: 'latitude'
-            field.coord_system = lambda: None
-            return field
-
         # Make a fake data field which needs the reference surface.
         model_level = 5678
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
-        data_field = field_with_data()
-        data_field.configure_mock(lbvc=65, lblev=model_level,
-                                  bhlev=sigma, bhrlev=sigma_lower,
-                                  blev=delta, brlev=delta_lower,
-                                  brsvd=[delta_upper, sigma_upper])
+        data_field = self._field_with_data(
+            lbvc=65, lblev=model_level,
+            bhlev=sigma, bhrlev=sigma_lower,
+            blev=delta, brlev=delta_lower,
+            brsvd=[delta_upper, sigma_upper])
 
         # Convert field to a cube.
         load = mock.Mock(return_value=iter([data_field]))
