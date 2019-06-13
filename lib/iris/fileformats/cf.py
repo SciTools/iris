@@ -924,6 +924,7 @@ class CFReader(object):
 
     """
     def __init__(self, filename, warn=False, monotonic=False):
+        self._dataset = None
         self._filename = os.path.expanduser(filename)
         # All CF variable types EXCEPT for the "special cases" of
         # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
@@ -1121,7 +1122,8 @@ class CFReader(object):
 
     def __del__(self):
         # Explicitly close dataset to prevent file remaining open.
-        self._dataset.close()
+        if self._dataset is not None:
+            self._dataset.close()
 
 
 def _getncattr(dataset, attr, default=None):
