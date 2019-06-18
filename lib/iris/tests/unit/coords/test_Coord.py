@@ -28,6 +28,7 @@ import mock
 import warnings
 
 import numpy as np
+import dask.array as da
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
@@ -303,7 +304,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
                                                                 [4, 10],
                                                                 [5, 11]]))
 
-    def test_numeric_nd_bounds(self):
+    def test_numeric_nd_bounds_all(self):
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
 
@@ -311,14 +312,19 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         self.assertArrayEqual(collapsed_coord.points, np.array([55]))
         self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2, 112]]))
 
-        # Test partially collapsing one dimension...
+    def test_numeric_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         collapsed_coord = coord.collapsed(1)
         self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
         self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
                                                                 [38,  72],
                                                                 [78, 112]]))
 
-        # ... and the other
+    def test_numeric_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
+        # ... and the other..
         collapsed_coord = coord.collapsed(0)
         self.assertArrayEqual(
             collapsed_coord.points, np.array([40, 50, 60, 70]))
@@ -327,9 +333,17 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
                                                                 [18, 102],
                                                                 [28, 112]]))
 
-    def test_lazy_nd_bounds(self):
-        import dask.array as da
+    def test_numeric_nd_bounds_last(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
+        # ... and again with -ve dimension specification.
+        collapsed_coord = coord.collapsed(-1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
 
+    def test_lazy_nd_bounds_all(self):
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
@@ -343,14 +357,20 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         self.assertArrayEqual(collapsed_coord.points, np.array([55]))
         self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
 
-        # Test partially collapsing one dimension...
+    def test_lazy_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
         collapsed_coord = coord.collapsed(1)
         self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
         self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
                                                                 [38,  72],
                                                                 [78, 112]]))
 
-        # ... and the other
+    def test_lazy_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
         collapsed_coord = coord.collapsed(0)
         self.assertArrayEqual(
             collapsed_coord.points, np.array([40, 50, 60, 70]))
@@ -359,8 +379,17 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
                                                                 [18, 102],
                                                                 [28, 112]]))
 
+    def test_lazy_nd_bounds_last(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed(-1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
+
     def test_lazy_nd_points_and_bounds(self):
-        import dask.array as da
 
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
