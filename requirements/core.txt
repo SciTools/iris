@@ -7,7 +7,7 @@ cartopy
 #conda: proj4<5
 cf-units>=2
 cftime
-dask[array]  #conda: dask
+dask[array]<2  #conda: dask<2
 matplotlib>=2,<3
 netcdf4
 numpy>=1.14
