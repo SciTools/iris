@@ -298,8 +298,8 @@ class TestBasicMaths(tests.IrisTest):
                           lambda cube: cf_units.Unit('1'))
 
         if six.PY2:
-            # should fail because math.sqrt is built-in function, which can not be
-            # used in inspect.getargspec
+            # should fail because math.sqrt is built-in function, which cannot
+            # be used in inspect.getargspec
             self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
                               lambda cube: cf_units.Unit('1'))
 
