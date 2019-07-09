@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import unittest
 import six.moves.cPickle as pickle
 
 import iris
@@ -31,57 +32,69 @@ if tests.GRIB_AVAILABLE:
     from iris_grib.message import GribMessage
 
 
-@tests.skip_data
-@tests.skip_grib
-class TestGribMessage(tests.IrisTest):
-    def test(self):
-        # Check that a GribMessage pickles without errors.
-        path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = GribMessage.messages_from_filename(path)
-        message = next(messages)
+class Common(object):
+    def pickle_cube(self, protocol):
+        # Ensure that data proxies are pickleable.
+        cube = iris.load(self.path)[0]
         with self.temp_filename('.pkl') as filename:
             with open(filename, 'wb') as f:
-                pickle.dump(message, f)
+                pickle.dump(cube, f, protocol)
+            with open(filename, 'rb') as f:
+                ncube = pickle.load(f)
+        self.assertEqual(ncube, cube)
+
+    def test_protocol_0(self):
+        self.pickle_cube(0)
+
+    def test_protocol_1(self):
+        self.pickle_cube(1)
+
+    def test_protocol_2(self):
+        self.pickle_cube(2)
+
+
+@tests.skip_data
+@tests.skip_grib
+@unittest.expectedFailure
+class TestGribMessage(Common, tests.IrisTest):
+    def setUp(self):
+        self.path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
+
+    def pickle_obj(self, obj):
+        with self.temp_filename('.pkl') as filename:
+            with open(filename, 'wb') as f:
+                pickle.dump(obj, f)
+
+    def test(self):
+        # Check that a GribMessage pickles without errors.
+        messages = GribMessage.messages_from_filename(self.path)
+        obj = next(messages)
+        self.pickle_obj(obj)
 
     def test_data(self):
         # Check that GribMessage.data pickles without errors.
-        path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
-        messages = GribMessage.messages_from_filename(path)
-        message = next(messages)
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
-                pickle.dump(message.data, f)
-
-
-class Common(object):
-    # Ensure that data proxies are pickleable.
-    def pickle_cube(self, path):
-        cube = iris.load(path)[0]
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
-                pickle.dump(cube, f)
+        messages = GribMessage.messages_from_filename(self.path)
+        obj = next(messages).data
+        self.pickle_obj(obj)
 
 
 @tests.skip_data
 class test_netcdf(Common, tests.IrisTest):
-    def test(self):
-        path = tests.get_data_path(('NetCDF', 'global', 'xyt',
-                                    'SMALL_hires_wind_u_for_ipcc4.nc'))
-        self.pickle_cube(path)
+    def setUp(self):
+        self.path = tests.get_data_path(('NetCDF', 'global', 'xyt',
+                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
 
 
 @tests.skip_data
 class test_pp(Common, tests.IrisTest):
-    def test(self):
-        path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
-        self.pickle_cube(path)
+    def setUp(self):
+        self.path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
 
 
 @tests.skip_data
 class test_ff(Common, tests.IrisTest):
-    def test(self):
-        path = tests.get_data_path(('FF', 'n48_multi_field'))
-        self.pickle_cube(path)
+    def setUp(self):
+        self.path = tests.get_data_path(('FF', 'n48_multi_field'))
 
 
 if __name__ == '__main__':
