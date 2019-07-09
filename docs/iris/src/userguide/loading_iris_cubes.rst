@@ -258,7 +258,7 @@ However, when constraining by time we usually want to test calendar-related
 aspects such as hours of the day or months of the year, so Iris
 provides special features to facilitate this:
 
-Firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate 
+When Iris evaluates Constraint expressions, it will convert time-coordinate
 values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
 for ease of calendar-based testing.
 
@@ -274,7 +274,30 @@ for ease of calendar-based testing.
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
-Secondly, the :class:`iris.time` module provides flexible time comparison
+A common case is the selection of all points between two given dates. In the
+following example we construct a time sequence representing the first day of
+every week for many years:
+
+   >>> long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
+   >>> _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+   >>> long_ts.add_dim_coord(_mondays, 0)
+   >>> print(long_ts.coord('time'))
+   DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
+             ...
+             2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
+            standard_name='time', calendar='gregorian')
+
+Given two dates in datetime format, we can select all points between them.
+
+   >>> d1 = datetime.datetime.strptime('20070416T0000Z', '%Y%m%dT%H%MZ')
+   >>> d2 = datetime.datetime.strptime('20070430T0000Z', '%Y%m%dT%H%MZ')
+   >>> daterange = iris.Constraint(time=lambda cell: d1<= cell.point <= d2)
+   >>> data_subset = long_ts.extract(daterange)
+   >>> print(data_subset.coord('time'))
+   DimCoord([2007-04-16 00:00:00, 2007-04-23 00:00:00, 2007-04-30 00:00:00],
+            standard_name='time', calendar='gregorian')
+
+Additionally, the :class:`iris.time` module provides flexible time comparison
 facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
 objects such as :class:`datetime.datetime` instances, and this comparison will
 then test only those 'aspects' which the PartialDateTime instance defines:
@@ -299,8 +322,8 @@ The previous constraint example can now be written as:
    ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
-A more complex example might be when there exists a time sequence representing the first day of every week
-for many years:
+A more complex example might require selecting points over an annually repeating
+date range. We may use the previously defined time sequence:
 
 
 .. testsetup:: timeseries_range
