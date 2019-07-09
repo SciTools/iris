@@ -53,9 +53,9 @@ class Common(object):
         self.pickle_cube(2)
 
 
+@unittest.expectedFailure
 @tests.skip_data
 @tests.skip_grib
-@unittest.expectedFailure
 class TestGribMessage(Common, tests.IrisTest):
     def setUp(self):
         self.path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
