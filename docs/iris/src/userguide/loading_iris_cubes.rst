@@ -267,6 +267,7 @@ for ease of calendar-based testing.
     >>> print('All times :\n' + str(cube_all.coord('time')))
     All times :
     DimCoord([2009-11-19 10:00:00, 2009-11-19 11:00:00, 2009-11-19 12:00:00], standard_name='time', calendar='gregorian')
+    >>> # Define a function which accepts a datetime as its argument (this is simplified in later examples).
     >>> hour_11 = iris.Constraint(time=lambda cell: cell.point.hour == 11)
     >>> cube_11 = cube_all.extract(hour_11)
     >>> print('Selected times :\n' + str(cube_11.coord('time')))
