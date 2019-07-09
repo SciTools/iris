@@ -65,13 +65,23 @@ class TestGribMessage(Common, tests.IrisTest):
                 pickle.dump(obj, f)
 
     @unittest.expectedFailure
+    def test_protocol_0(self):
+        super(TestGribMessage, self).test_protocol_0()
+
+    @unittest.expectedFailure
+    def test_protocol_1(self):
+        super(TestGribMessage, self).test_protocol_1()
+
+    @unittest.expectedFailure
+    def test_protocol_2(self):
+        super(TestGribMessage, self).test_protocol_2()
+
     def test(self):
         # Check that a GribMessage pickles without errors.
         messages = GribMessage.messages_from_filename(self.path)
         obj = next(messages)
         self.pickle_obj(obj)
 
-    @unittest.expectedFailure
     def test_data(self):
         # Check that GribMessage.data pickles without errors.
         messages = GribMessage.messages_from_filename(self.path)
