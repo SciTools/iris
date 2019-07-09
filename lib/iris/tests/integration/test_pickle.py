@@ -53,7 +53,6 @@ class Common(object):
         self.pickle_cube(2)
 
 
-@unittest.expectedFailure
 @tests.skip_data
 @tests.skip_grib
 class TestGribMessage(Common, tests.IrisTest):
@@ -65,12 +64,14 @@ class TestGribMessage(Common, tests.IrisTest):
             with open(filename, 'wb') as f:
                 pickle.dump(obj, f)
 
+    @unittest.expectedFailure
     def test(self):
         # Check that a GribMessage pickles without errors.
         messages = GribMessage.messages_from_filename(self.path)
         obj = next(messages)
         self.pickle_obj(obj)
 
+    @unittest.expectedFailure
     def test_data(self):
         # Check that GribMessage.data pickles without errors.
         messages = GribMessage.messages_from_filename(self.path)
