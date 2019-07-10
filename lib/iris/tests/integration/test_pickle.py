@@ -64,6 +64,8 @@ class TestGribMessage(Common, tests.IrisTest):
             with open(filename, 'wb') as f:
                 pickle.dump(obj, f)
 
+    # These probably "ought" to work, but currently fail.
+    # see https://github.com/SciTools/iris/pull/2608
     @unittest.expectedFailure
     def test_protocol_0(self):
         super(TestGribMessage, self).test_protocol_0()
