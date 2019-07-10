@@ -280,6 +280,7 @@ every week for many years:
 
 .. testsetup:: timeseries_range
 
+    import datetime
     import numpy as np
     from iris.time import PartialDateTime
     long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
@@ -314,6 +315,7 @@ facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
 objects such as :class:`datetime.datetime` instances, and this comparison will
 then test only those 'aspects' which the PartialDateTime instance defines:
 
+    >>> import datetime
     >>> from iris.time import PartialDateTime
     >>> dt = datetime.datetime(2011, 3, 7)
     >>> print(dt > PartialDateTime(year=2010, month=6))
