@@ -1,0 +1,193 @@
+# IEP 1 - Enhanced indexing
+
+## Background
+
+Currently, to select a subset of a Cube based on coordinate values we use something like:
+[source,python]
+----
+cube.extract(iris.Constraint(realization=3,
+                             model_level_number=[1, 5],
+                             latitude=lambda cell: 40 <= cell <= 60))
+----
+On the plus side, this works irrespective of the dimension order of the data, but the drawbacks with this form of indexing include:
+
+* It uses a completely different syntax to position-based indexing, e.g. `cube[4, 0:6]`.
+* It uses a completely different syntax to pandas and xarray value-based indexing, e.g. `df.loc[4, 0:6]`.
+* It is long-winded and requires the use of an additional class.
+* It requires the use of lambda functions even when just selecting a range.
+
+Arguably, the situation when subsetting using positional indices but where the dimension order is unknown is even worse - it has no standard syntax _at all_! Instead it requires code akin to:
+[source,python]
+----
+key = [slice(None)] * cube.ndim
+key[cube.coord_dims('model_level_number')[0]] = slice(3, 9, 2)
+cube[tuple(key)]
+----
+
+The only form of indexing that is well supported is indexing by position where the dimension order is known:
+[source,python]
+----
+cube[4, 0:6, 30:]
+----
+
+## Proposal
+
+Provide indexing helpers on the Cube to extend explicit support to all permutations of:
+
+* implicit dimension vs. named coordinate,
+* and positional vs. coordinate-value based selection.
+
+### Helper syntax options
+
+Commonly, the names of coordinates are also valid Python identifiers.
+For names where this is not true, the names can expressed through either the `helper[...]` or `helper(...)` syntax by constructing an explicit dict.
+For example: `cube.loc[{'12': 0}]` or `cube.loc(**{'12': 0})`.
+
+#### Extended pandas style
+
+Use a single helper for index by position, and a single helper for index by value. Helper names taken from pandas, but their behaviour is extended by making them callable to support named coordinates.
+
+|===
+.2+| 2+h|Index by
+h|Position h|Value
+
+h|Implicit dimension
+
+a|[source,python]
+----
+cube[:, 2]  # No change
+cube.iloc[:, 2]
+----
+
+a|[source,python]
+----
+cube.loc[:, 1.5]
+----
+
+h|Coordinate name
+
+a|[source,python]
+----
+cube[dict(height=2)]
+cube.iloc[dict(height=2)]
+cube.iloc(height=2)
+----
+
+a|[source,python]
+----
+cube.loc[dict(height=1.5)]
+cube.loc(height=1.5)
+----
+|===
+
+#### xarray style
+
+xarray introduces a second set of helpers for accessing named dimensions that provide the callable syntax `(foo=...)`.
+
+|===
+.2+| 2+h|Index by
+h|Position h|Value
+
+h|Implicit dimension
+
+a|[source,python]
+----
+cube[:, 2]  # No change
+----
+
+a|[source,python]
+----
+cube.loc[:, 1.5]
+----
+
+h|Coordinate name
+
+a|[source,python]
+----
+ cube[dict(height=2)]
+ cube.isel(height=2)
+----
+
+a|[source,python]
+----
+cube.loc[dict(height=1.5)]
+cube.sel(height=1.5)
+----
+|===
+
+### Slices
+
+The semantics of position-based slices will continue to match that of normal Python slices. The start position is included, the end position is excluded.
+
+Value-based slices will be stricly inclusive, with both the start and end values included. This behaviour differs from normal Python slices but is in common with pandas.
+
+Just as for normal Python slices, we do not need to provide the ability to control the include/exclude behaviour for slicing.
+
+### Value-based indexing
+
+#### Equality
+
+Should the behaviour of value-based equality depend on the data type of the coordinate?
+
+* integer: exact match
+* float: tolerance match, tolerance determined by bit-width
+* string: exact match
+
+#### Scalar/category
+
+If/how to deal with category selection `cube.loc(season='JJA')`? Defer to `groupby()`?
+
+`cube.loc[12]` - must always match a single value or raise KeyError, corresponding dimension will be removed
+`cube.loc[[12]]` - may match any number of values?  (incl. zero?), dimension will be retained
+
+### Out of scope
+
+* Deliberately enhancing the performance.
+This is a very valuable topic and should be addressed by subsequent efforts.
+
+* Time/date values as strings.
+Providing pandas-style string representations for convenient representation of partial date/times should be addressed in a subsequent effort - perhaps in conjunction with an explicit performance test suite.
+There is a risk that this topic could bog down when dealing with non-standard calendars and climatological date ranges.
+
+## Work required
+
+* Implementations for each of the new helper objects.
+* An update to the documentation to demonstrate best practice. Known impacted areas include:
+** The "Subsetting a Cube" chapter of the user guide.
+
+### TODO
+* Multi-dimensional coordinates
+* Non-orthogonal coordinates
+* Bounds
+* Boolean array indexing
+* Lambdas?
+* What to do about constrained loading?
+* Relationship to http://scitools.org.uk/iris/docs/v1.9.2/iris/iris/cube.html#iris.cube.Cube.intersection[iris.cube.Cube.intersection]?
+* Relationship to interpolation (especially nearest-neighbour)?
+** e.g. What to do about values that don't exist?
+*** pandas throws a KeyError
+*** xarray supports (several) nearest-neighbour schemes via http://xarray.pydata.org/en/stable/indexing.html#nearest-neighbor-lookups[`data.sel()`]
+*** Apparently http://holoviews.org/[holoviews] does nearest-neighbour interpolation.
+* multi-dimensional coordinate => unroll?
+* var_name only selection? `cube.vloc(t0=12)`
+* Orthogonal only? Or also independent? `cube.loc_points(lon=[1, 1, 5], lat=[31, 33, 32])`
+  ** This seems quite closely linked to interpolation. Is the interpolation scheme orthogonal to cross-product vs. independent?
++
+[source,python]
+----
+cube.interpolate(
+    scheme='nearest',
+    mesh=dict(lon=[5, 10, 15], lat=[40, 50]))
+cube.interpolate(
+    scheme=Nearest(mode='spherical'),
+    locations=Ortho(lon=[5, 10, 15], lat=[40, 50]))
+----
+
+## References
+. Iris
+ * http://scitools.org.uk/iris/docs/v1.9.2/iris/iris.html#iris.Constraint[iris.Constraint]
+ * http://scitools.org.uk/iris/docs/v1.9.2/userguide/subsetting_a_cube.html[Subsetting a cube]
+. http://pandas.pydata.org/pandas-docs/stable/indexing.html[pandas indexing]
+. http://xarray.pydata.org/en/stable/indexing.html[xarray indexing]
+. http://legacy.python.org/dev/peps/pep-0472/[PEP 472 - Support for indexing with keyword arguments]
+. http://nbviewer.jupyter.org/gist/rsignell-usgs/13d7ce9d95fddb4983d4cbf98be6c71d[Time slicing NetCDF or OPeNDAP datasets] - Rich Signell's xarray/iris comparison focussing on time handling and performance
