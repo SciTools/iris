@@ -68,11 +68,15 @@ install:
     echo 'Install Iris dependencies';
     CONDA_REQS_FLAGS="";
     CONDA_REQS_GROUPS="test";
+    CONDA_INSTALL_EXTRAS="";
     if [[ "${PYTHON_VERSION}" == 2* ]]; then
         CONDA_REQS_FLAGS="${CONDA_REQS_FLAGS} --py2";
     fi;
     if [[ "${TEST_MINIMAL}" != true ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
+        if [[ "${PYTHON_VERSION}" == 2* ]]; then
+            CONDA_INSTALL_EXTRAS="${CONDA_INSTALL_EXTRAS} eccodes python-eccodes";
+        fi;
     fi;
     if [[ "${TEST_TARGET}" == 'doctest' ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
@@ -80,7 +84,7 @@ install:
     CONDA_REQS_FILE="conda-requirements.txt";
     python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
     cat ${CONDA_REQS_FILE};
-    conda install --quiet -n ${ENV_NAME} --file ${CONDA_REQS_FILE};
+    conda install --quiet -n ${ENV_NAME} --file ${CONDA_REQS_FILE} ${CONDA_INSTALL_EXTRAS};
 
   - PREFIX="${HOME}/miniconda/envs/${ENV_NAME}"
 
@@ -111,14 +115,14 @@ install:
     echo "[System]" >> ${SITE_CFG};
     echo "udunits2_path = ${PREFIX}/lib/libudunits2.so" >> ${SITE_CFG};
 
-  - python setup.py --quiet install
+# install iris from local copy
+  - python setup.py --quiet install;
 
-  # JUST FOR NOW : Install latest version of iris-grib.
-  # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-  - if [[ "${TEST_MINIMAL}" != true && ${PYTHON_VERSION} == 2* ]]; then
-        conda install --quiet -n ${ENV_NAME} python-ecmwf_grib;
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
-    fi
+# when wanted, add iris-grib (last and --no-deps, to avoid installing iris from channels)
+  - >
+    if [[ "${TEST_MINIMAL}" != true && "${PYTHON_VERSION}" == 2* ]]; then
+      conda install --no-deps iris-grib
+    fi;
 
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
