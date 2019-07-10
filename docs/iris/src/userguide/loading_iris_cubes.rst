@@ -278,26 +278,36 @@ A common case is the selection of all points between two given dates. In the
 following example we construct a time sequence representing the first day of
 every week for many years:
 
-   >>> import datetime
-   >>> import numpy as np
-   >>> long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-   >>> _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
-   >>> long_ts.add_dim_coord(_mondays, 0)
-   >>> print(long_ts.coord('time'))
-   DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
-             ...
-             2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
-            standard_name='time', calendar='gregorian')
+.. testsetup:: timeseries_range
+
+    import numpy as np
+    from iris.time import PartialDateTime
+    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
+    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+    long_ts.add_dim_coord(_mondays, 0)
+
+
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> print(long_ts.coord('time'))
+    DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
+              ...
+              2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
+             standard_name='time', calendar='gregorian')
 
 Given two dates in datetime format, we can select all points between them.
 
-   >>> d1 = datetime.datetime.strptime('20070416T0000Z', '%Y%m%dT%H%MZ')
-   >>> d2 = datetime.datetime.strptime('20070430T0000Z', '%Y%m%dT%H%MZ')
-   >>> daterange = iris.Constraint(time=lambda cell: d1<= cell.point <= d2)
-   >>> data_subset = long_ts.extract(daterange)
-   >>> print(data_subset.coord('time'))
-   DimCoord([2007-04-16 00:00:00, 2007-04-23 00:00:00, 2007-04-30 00:00:00],
-            standard_name='time', calendar='gregorian')
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> d1 = datetime.datetime.strptime('20070416T0000Z', '%Y%m%dT%H%MZ')
+    >>> d2 = datetime.datetime.strptime('20070430T0000Z', '%Y%m%dT%H%MZ')
+    >>> daterange = iris.Constraint(time=lambda cell: d1<= cell.point <= d2)
+    >>> data_subset = long_ts.extract(daterange)
+    >>> print(data_subset.coord('time'))
+    DimCoord([2007-04-16 00:00:00, 2007-04-23 00:00:00, 2007-04-30 00:00:00],
+    ...      standard_name='time', calendar='gregorian')
 
 Additionally, the :class:`iris.time` module provides flexible time comparison
 facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
@@ -324,30 +334,10 @@ The previous constraint example can now be written as:
    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 A more complex example might require selecting points over an annually repeating
-date range. We may use the previously defined time sequence:
-
-
-.. testsetup:: timeseries_range
-
-    import numpy as np
-    from iris.time import PartialDateTime
-    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
-    long_ts.add_dim_coord(_mondays, 0)
-
-
-.. doctest:: timeseries_range
-    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
-    
-    >>> print(long_ts.coord('time'))
-    DimCoord([2007-04-09 00:00:00, 2007-04-16 00:00:00, 2007-04-23 00:00:00,
-              ...
-              2010-02-01 00:00:00, 2010-02-08 00:00:00, 2010-02-15 00:00:00],
-             standard_name='time', calendar='gregorian')
-
-We can select points within a certain part of the year, in this case between
-the 15th of July through to the 25th of August, by combining the datetime cell
-functionality with PartialDateTime:
+date range. Using the previously defined long time sequence, we can select points
+within a certain part of the year, in this case between the 15th of July through
+to the 25th of August, by combining the datetime cell functionality with
+PartialDateTime:
 
 .. doctest:: timeseries_range
 
