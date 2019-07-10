@@ -278,6 +278,8 @@ A common case is the selection of all points between two given dates. In the
 following example we construct a time sequence representing the first day of
 every week for many years:
 
+   >>> import datetime
+   >>> import numpy as np
    >>> long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
    >>> _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
    >>> long_ts.add_dim_coord(_mondays, 0)
@@ -302,7 +304,6 @@ facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
 objects such as :class:`datetime.datetime` instances, and this comparison will
 then test only those 'aspects' which the PartialDateTime instance defines:
 
-    >>> import datetime
     >>> from iris.time import PartialDateTime
     >>> dt = datetime.datetime(2011, 3, 7)
     >>> print(dt > PartialDateTime(year=2010, month=6))
