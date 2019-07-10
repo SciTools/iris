@@ -308,7 +308,7 @@ Given two dates in datetime format, we can select all points between them.
     >>> data_subset = long_ts.extract(daterange)
     >>> print(data_subset.coord('time'))
     DimCoord([2007-04-16 00:00:00, 2007-04-23 00:00:00, 2007-04-30 00:00:00],
-    ...      standard_name='time', calendar='gregorian')
+             standard_name='time', calendar='gregorian')
 
 Additionally, the :class:`iris.time` module provides flexible time comparison
 facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
