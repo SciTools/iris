@@ -28,7 +28,7 @@ import collections
 import copy
 from copy import deepcopy
 import datetime
-from functools import reduce
+from functools import reduce, partial
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -3410,17 +3410,19 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Aggregate the group-by data.
         if (aggregator.lazy_func is not None and self.has_lazy_data()):
-            cube_slice_1 = [slice(None, None)] * dimension_to_groupby
-            cube_slice_2 = [slice(None, None)] * (len(data_shape) -
-                                                  dimension_to_groupby -
-                                                  1)
-            result = [
-                aggregator.lazy_aggregate(
-                    self[tuple(cube_slice_1 +
-                               [groupby_slice] +
-                               cube_slice_2)].lazy_data(),
-                    axis=dimension_to_groupby,
-                    **kwargs) for groupby_slice in groupby.group()]
+            front_slice = (slice(None, None),) * dimension_to_groupby
+            back_slice = (slice(None, None),) * (len(data_shape) -
+                                                 dimension_to_groupby -
+                                                 1)
+            groupby_subcubes = map(
+                lambda groupby_slice:
+                self[front_slice + (groupby_slice,) + back_slice].lazy_data(),
+                groupby.group()
+            )
+            agg = partial(aggregator.lazy_aggregate,
+                          axis=dimension_to_groupby,
+                          **kwargs)
+            result = list(map(agg, groupby_subcubes))
             aggregateby_data = da.stack(result, axis=dimension_to_groupby)
         else:
             cube_slice = [slice(None, None)] * len(data_shape)
