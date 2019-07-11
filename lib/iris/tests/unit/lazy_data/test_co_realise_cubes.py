@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -36,6 +36,7 @@ class ArrayAccessCounter(object):
     def __init__(self, array):
         self.dtype = array.dtype
         self.shape = array.shape
+        self.ndim = array.ndim
         self._array = array
         self.access_count = 0
 
