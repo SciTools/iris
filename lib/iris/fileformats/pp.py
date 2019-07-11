@@ -2079,7 +2079,9 @@ def save(cube, target, append=False, field_coords=None):
                          If None, the final two  dimensions are chosen
                          for slicing.
 
-    See also :func:`iris.io.save`.
+    See also :func:`iris.io.save`. Note that :func:`iris.save` is the preferred
+    method of saving. This allows a :class:`iris.cube.CubeList` or a sequence
+    of cubes to be saved to a PP file.
 
     """
     fields = as_fields(cube, field_coords, target)
