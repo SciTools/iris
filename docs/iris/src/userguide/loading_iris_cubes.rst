@@ -302,12 +302,14 @@ Given two dates in datetime format, we can select all points between them.
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
-    >>> d1 = datetime.datetime.strptime('20070416T0000Z', '%Y%m%dT%H%MZ')
-    >>> d2 = datetime.datetime.strptime('20070430T0000Z', '%Y%m%dT%H%MZ')
-    >>> daterange = iris.Constraint(time=lambda cell: d1<= cell.point <= d2)
-    >>> data_subset = long_ts.extract(daterange)
-    >>> print(data_subset.coord('time'))
-    DimCoord([2007-04-16 00:00:00, 2007-04-23 00:00:00, 2007-04-30 00:00:00],
+    >>> d1 = datetime.datetime.strptime('20070715T0000Z', '%Y%m%dT%H%MZ')
+    >>> d2 = datetime.datetime.strptime('20070825T0000Z', '%Y%m%dT%H%MZ')
+    >>> st_swithuns_daterange_07 = iris.Constraint(
+    ...     time=lambda cell: d1 <= cell.point < d2)
+    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
+    >>> print(within_st_swithuns_07.coord('time'))
+    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+              2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
              standard_name='time', calendar='gregorian')
 
 Additionally, the :class:`iris.time` module provides flexible time comparison
@@ -344,7 +346,7 @@ PartialDateTime:
 .. doctest:: timeseries_range
 
     >>> st_swithuns_daterange = iris.Constraint(
-    ...     time=lambda cell: PartialDateTime(month=7, day=15) < cell < PartialDateTime(month=8, day=25))
+    ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell < PartialDateTime(month=8, day=25))
     >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
     ... 
     >>> print(within_st_swithuns.coord('time'))
