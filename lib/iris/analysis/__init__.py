@@ -50,7 +50,11 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import collections
+from collections import OrderedDict
+try:  # Python 3
+    from collections.abc import Iterable
+except:  # Python 2.7
+    from collections import Iterable
 from functools import wraps
 
 import dask.array as da
@@ -715,7 +719,7 @@ class PercentileAggregator(_Aggregator):
         names = [coord.name() for coord in coords]
         coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
 
-        if not isinstance(points, collections.Iterable):
+        if not isinstance(points, Iterable):
             points = [points]
 
         # Decorate a collapsed cube with a scalar additive coordinate
@@ -764,7 +768,7 @@ class PercentileAggregator(_Aggregator):
         points = kwargs[self._args[0]]
         shape = ()
 
-        if not isinstance(points, collections.Iterable):
+        if not isinstance(points, Iterable):
             points = [points]
 
         points = np.array(points)
@@ -1089,7 +1093,7 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
 
     # Ensure to unflatten any leading dimensions.
     if shape:
-        if not isinstance(percent, collections.Iterable):
+        if not isinstance(percent, Iterable):
             percent = [percent]
         percent = np.array(percent)
         # Account for the additive dimension.
@@ -1207,7 +1211,7 @@ def _weighted_percentile(data, axis, weights, percent, returned=False,
 
     # Ensure to unflatten any leading dimensions.
     if shape:
-        if not isinstance(percent, collections.Iterable):
+        if not isinstance(percent, Iterable):
             percent = [percent]
         percent = np.array(percent)
         # Account for the additive dimension.
@@ -1877,10 +1881,10 @@ class _Groupby(object):
         self.coords = []
         self._groupby_coords = []
         self._shared_coords = []
-        self._slices_by_key = collections.OrderedDict()
+        self._slices_by_key = OrderedDict()
         self._stop = None
         # Ensure group-by coordinates are iterable.
-        if not isinstance(groupby_coords, collections.Iterable):
+        if not isinstance(groupby_coords, Iterable):
             raise TypeError('groupby_coords must be a '
                             '`collections.Iterable` type.')
 
@@ -1891,7 +1895,7 @@ class _Groupby(object):
         # coordinates.
         if shared_coords is not None:
             # Ensure shared coordinates are iterable.
-            if not isinstance(shared_coords, collections.Iterable):
+            if not isinstance(shared_coords, Iterable):
                 raise TypeError('shared_coords must be a '
                                 '`collections.Iterable` type.')
             # Add valid shared coordinates.

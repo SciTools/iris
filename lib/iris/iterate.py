@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,7 +22,10 @@ Cube functions for iteration in step.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import collections
+try:  # Python 3
+    from collections.abc import Iterator
+except:  # Python 2.7
+    from collections import Iterator
 import itertools
 import warnings
 
@@ -167,7 +170,7 @@ def izip(*cubes, **kwargs):
                               coords_by_cube)
 
 
-class _ZipSlicesIterator(collections.Iterator):
+class _ZipSlicesIterator(Iterator):
     """
     Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.

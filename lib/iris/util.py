@@ -23,8 +23,11 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+try:  # Python 3
+    from collections.abc import Hashable
+except:  # Python 2.7
+    from collections import Hashable
 import abc
-import collections
 from contextlib import contextmanager
 import copy
 import functools
@@ -835,7 +838,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
 
 @functools.total_ordering
 class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
-                                          collections.Hashable)):
+                                          Hashable)):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 

@@ -24,7 +24,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractproperty
-import collections
+from collections import namedtuple
+try:  # Python 3
+    from collections.abc import Iterator
+except:  # Python 2.7
+    from collections import Iterator
 import copy
 from itertools import chain
 from six.moves import zip_longest
@@ -48,10 +52,10 @@ from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
 
 
-class CoordDefn(collections.namedtuple('CoordDefn',
-                                       ['standard_name', 'long_name',
-                                        'var_name', 'units',
-                                        'attributes', 'coord_system'])):
+class CoordDefn(namedtuple('CoordDefn',
+                           ['standard_name', 'long_name',
+                            'var_name', 'units',
+                            'attributes', 'coord_system'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
     :class:`AuxCoord` based on its metadata.
@@ -86,11 +90,11 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         return _sort_key(self) < _sort_key(other)
 
 
-class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
-                                                          'minimum',
-                                                          'maximum',
-                                                          'min_inclusive',
-                                                          'max_inclusive'])):
+class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
+                                              'minimum',
+                                              'maximum',
+                                              'min_inclusive',
+                                              'max_inclusive'])):
     """Defines a range of values for a coordinate."""
 
     def __new__(cls, name_or_coord, minimum, maximum,
@@ -139,8 +143,8 @@ BOUND_POSITION_END = 1
 
 
 # Private named tuple class for coordinate groups.
-_GroupbyItem = collections.namedtuple('GroupbyItem',
-                                      'groupby_point, groupby_slice')
+_GroupbyItem = namedtuple('GroupbyItem',
+                          'groupby_point, groupby_slice')
 
 
 def _get_2d_coord_bound_grid(bounds):
@@ -184,7 +188,7 @@ def _get_2d_coord_bound_grid(bounds):
     return result
 
 
-class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
+class Cell(namedtuple('Cell', ['point', 'bound'])):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -2315,7 +2319,7 @@ class CellMethod(iris.util._OrderedHashable):
 
 
 # See Coord.cells() for the description/context.
-class _CellIterator(collections.Iterator):
+class _CellIterator(Iterator):
     def __init__(self, coord):
         self._coord = coord
         if coord.ndim != 1:
@@ -2331,7 +2335,7 @@ class _CellIterator(collections.Iterator):
 
 
 # See ExplicitCoord._group() for the description/context.
-class _GroupIterator(collections.Iterator):
+class _GroupIterator(Iterator):
     def __init__(self, points):
         self._points = points
         self._start = 0
