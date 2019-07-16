@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractmethod
-from collections import Iterable, MutableMapping
+
+try:  # Python 3
+    from collections.abc import Iterable, MutableMapping
+except:  # Python 2.7
+    from collections import Iterable, MutableMapping
 import os
 import re
 import warnings

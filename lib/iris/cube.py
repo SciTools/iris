@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,7 +24,19 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import collections
+from collections import namedtuple, OrderedDict
+try:  # Python 3
+    from collections.abc import (Iterable,
+                                 Container,
+                                 Mapping,
+                                 MutableMapping,
+                                 Iterator)
+except:  # Python 2.7
+    from collections import (Iterable,
+                             Container,
+                             Mapping,
+                             MutableMapping,
+                             Iterator)
 import copy
 from copy import deepcopy
 import datetime
@@ -58,13 +70,13 @@ import iris.util
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
-class CubeMetadata(collections.namedtuple('CubeMetadata',
-                                          ['standard_name',
-                                           'long_name',
-                                           'var_name',
-                                           'units',
-                                           'attributes',
-                                           'cell_methods'])):
+class CubeMetadata(namedtuple('CubeMetadata',
+                              ['standard_name',
+                               'long_name',
+                               'var_name',
+                               'units',
+                               'attributes',
+                               'cell_methods'])):
     """
     Represents the phenomenon metadata for a single :class:`Cube`.
 
@@ -495,7 +507,7 @@ class CubeList(list):
             raise ValueError("can't concatenate an empty CubeList")
 
         names = [cube.metadata.name() for cube in self]
-        unique_names = list(collections.OrderedDict.fromkeys(names))
+        unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
             res = iris._concatenate.concatenate(
                 self, error_on_mismatch=True,
@@ -629,7 +641,7 @@ def _is_single_item(testee):
 
     """
     return (isinstance(testee, six.string_types) or
-            not isinstance(testee, collections.Iterable))
+            not isinstance(testee, Iterable))
 
 
 class Cube(CFVariableMixin):
@@ -952,7 +964,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Convert to a tuple of integers
         if data_dims is None:
             data_dims = tuple()
-        elif isinstance(data_dims, collections.Container):
+        elif isinstance(data_dims, Container):
             data_dims = tuple(int(d) for d in data_dims)
         else:
             data_dims = (int(data_dims),)
@@ -1064,7 +1076,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise ValueError('The dim_coord may not be an AuxCoord instance.')
 
         # Convert data_dim to a single integer
-        if isinstance(data_dim, collections.Container):
+        if isinstance(data_dim, Container):
             if len(data_dim) != 1:
                 raise ValueError('The supplied data dimension must be a'
                                  ' single number.')
@@ -1366,7 +1378,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                     if guess_axis(coord_) == axis]
 
         if attributes is not None:
-            if not isinstance(attributes, collections.Mapping):
+            if not isinstance(attributes, Mapping):
                 msg = 'The attributes keyword was expecting a dictionary ' \
                       'type, but got a %s instead.' % type(attributes)
                 raise ValueError(msg)
@@ -1396,7 +1408,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                     self.coord_dims(coord_)]
 
         if dimensions is not None:
-            if not isinstance(dimensions, collections.Container):
+            if not isinstance(dimensions, Container):
                 dimensions = [dimensions]
             dimensions = tuple(dimensions)
             coords_and_factories = [coord_ for coord_ in coords_and_factories
@@ -3185,7 +3197,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                 for coord in coords]
 
             # Remove duplicate dimensions.
-            new_dims = collections.OrderedDict.fromkeys(
+            new_dims = OrderedDict.fromkeys(
                 d for dim in dims_to_collapse for d in dim)
             # Reverse the dimensions so the order can be maintained when
             # reshaping the data.
@@ -3753,7 +3765,7 @@ calendar='gregorian')
         return regridder(self)
 
 
-class ClassDict(collections.MutableMapping, object):
+class ClassDict(MutableMapping, object):
     """
     A mapping that stores objects keyed on their superclasses and their names.
 
@@ -3839,7 +3851,7 @@ def sorted_axes(axes):
 
 
 # See Cube.slice() for the definition/context.
-class _SliceIterator(collections.Iterator):
+class _SliceIterator(Iterator):
     def __init__(self, cube, dims_index, requested_dims, ordered):
         self._cube = cube
 
