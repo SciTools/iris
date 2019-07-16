@@ -511,7 +511,7 @@ def _get_cf_var_data(cf_var, filename):
     proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
                             fill_value)
     chunks = cf_var.cf_data.chunking()
-    # Chunks can be an iterable, None, or `'contiguous'`.
+    # Chunks can be an iterable, or `'contiguous'`.
     if chunks == 'contiguous':
         chunks = None
     return as_lazy_data(proxy, chunks=chunks)

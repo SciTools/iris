@@ -26,7 +26,7 @@ import iris.tests as tests
 from dask.array import Array as dask_array
 import numpy as np
 
-from iris._lazy_data import _limited_shape
+from iris._lazy_data import _optimised_chunks
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _get_cf_var_data
 from iris.tests import mock
@@ -36,7 +36,7 @@ class Test__get_cf_var_data(tests.IrisTest):
     def setUp(self):
         self.filename = 'DUMMY'
         self.shape = (3, 240, 200)
-        self.expected_chunks = _limited_shape(self.shape)
+        self.expected_chunks = _optimised_chunks(self.shape)
 
     def _make(self, chunksizes):
         cf_data = mock.Mock(_FillValue=None)
@@ -63,7 +63,7 @@ class Test__get_cf_var_data(tests.IrisTest):
 
     def test_cf_data_no_chunks(self):
         # No chunks means chunks are calculated from the array's shape by
-        # `iris._lazy_data._limited_shape()`.
+        # `iris._lazy_data._optimised_chunks()`.
         chunks = None
         cf_var = self._make(chunks)
         lazy_data = _get_cf_var_data(cf_var, self.filename)

@@ -23,6 +23,7 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from collections import Iterable
 from functools import wraps
 
 import dask
@@ -61,14 +62,30 @@ def is_lazy_data(data):
 # A magic value, chosen to minimise chunk creation time and chunk processing
 # time within dask.
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
+# A magic value, chosen to be a few timess,maller than that.
+_MIN_CHUNK_SIZE = _MAX_CHUNK_SIZE // 4
 
-
-def _limited_shape(shape):
-    # Reduce a shape to less than a default overall number-of-points, reducing
-    # earlier dimensions preferentially.
+def _optimised_chunks(starting_chunks, full_shape=None):
+    # Reduce or increase a chunk shape to get within a chosen size window,
+    # reducing earlier dimensions, and expanding later ones, preferentially.
     # Note: this is only a heuristic, assuming that earlier dimensions are
     # 'outer' storage dimensions -- not *always* true, even for NetCDF data.
-    shape = list(shape)
+    shape = list(starting_chunks)
+    if full_shape is None:
+        full_shape = shape[:]
+
+    # First expand size in later dims if chunks are too small.
+    i_expand = len(shape) - 1
+    while np.prod(shape) < _MIN_CHUNK_SIZE and i_expand >= 0:
+        factor = np.ceil(_MIN_CHUNK_SIZE * 1.0 / np.prod(shape))
+        new_dim = shape[i_expand] * int(factor)
+        # Clip to dim size : N.B. means it cannot exceed the original dims.
+        if new_dim > full_shape[i_expand]:
+            new_dim = full_shape[i_expand]
+        shape[i_expand] = new_dim
+        i_expand -= 1
+
+    # Then reduce earlier dims if chunks are too big.
     i_reduce = 0
     while np.prod(shape) > _MAX_CHUNK_SIZE:
         factor = np.ceil(np.prod(shape) / _MAX_CHUNK_SIZE)
@@ -77,6 +94,7 @@ def _limited_shape(shape):
             new_dim = 1
         shape[i_reduce] = new_dim
         i_reduce += 1
+
     return tuple(shape)
 
 
@@ -106,9 +124,13 @@ def as_lazy_data(data, chunks=None, asarray=False):
 
     """
     if chunks is None:
-        # Default to the shape of the wrapped array-like,
-        # but reduce it if larger than a default maximum size.
-        chunks = _limited_shape(data.shape)
+        # Start with the shape of the wrapped array-like,
+        # but reduce/expand it into a chosen size range.
+        chunks = list(data.shape)
+    elif not isinstance(chunks, Iterable):
+        chunks = [chunks]
+
+    chunks = _optimised_chunks(chunks, full_shape=data.shape)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
