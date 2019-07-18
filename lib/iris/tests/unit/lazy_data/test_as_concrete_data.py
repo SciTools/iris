@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -34,6 +34,7 @@ class MyProxy(object):
     def __init__(self, a):
         self.shape = a.shape
         self.dtype = a.dtype
+        self.ndim = a.ndim
         self.a = a
 
     def __getitem__(self, keys):

@@ -64,7 +64,7 @@ class Test__create_field_data(tests.IrisTest):
         field = mock.Mock(core_data=core_data)
         data_shape = (100, 120)
         proxy = mock.Mock(dtype=np.dtype('f4'), shape=data_shape,
-                          spec=pp.PPDataProxy)
+                          spec=pp.PPDataProxy, ndim=len(data_shape))
         # We can't directly inspect the concrete data source underlying
         # the dask array, so instead we patch the proxy creation and check it's
         # being created and invoked correctly.
