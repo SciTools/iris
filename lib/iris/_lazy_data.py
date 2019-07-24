@@ -28,8 +28,9 @@ from functools import wraps
 
 import dask
 import dask.array as da
-import dask.context
-from dask.local import get_sync as dget_sync
+import dask.array.core
+import dask.config
+
 import numpy as np
 import numpy.ma as ma
 
@@ -62,40 +63,90 @@ def is_lazy_data(data):
 # A magic value, chosen to minimise chunk creation time and chunk processing
 # time within dask.
 _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
-# A magic value, chosen to be a few timess,maller than that.
-_MIN_CHUNK_SIZE = _MAX_CHUNK_SIZE // 4
 
-def _optimised_chunks(starting_chunks, full_shape=None):
-    # Reduce or increase a chunk shape to get within a chosen size window,
-    # reducing earlier dimensions, and expanding later ones, preferentially.
-    # Note: this is only a heuristic, assuming that earlier dimensions are
-    # 'outer' storage dimensions -- not *always* true, even for NetCDF data.
-    shape = list(starting_chunks)
-    if full_shape is None:
-        full_shape = shape[:]
+# _MAX_CHUNK_SIZE = dask.config.get('array', {}).get('chunk-size', None)
+# if _MAX_CHUNK_SIZE is not None:
+#     # Convert to bytes
+#     _MAX_CHUNK_SIZE = da.core.parse_bytes(_MAX_CHUNK_SIZE)
+# else:
+#     # Fall back on our own "magic" value.
+#     _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
 
-    # First expand size in later dims if chunks are too small.
-    i_expand = len(shape) - 1
-    while np.prod(shape) < _MIN_CHUNK_SIZE and i_expand >= 0:
-        factor = np.ceil(_MIN_CHUNK_SIZE * 1.0 / np.prod(shape))
-        new_dim = shape[i_expand] * int(factor)
-        # Clip to dim size : N.B. means it cannot exceed the original dims.
-        if new_dim > full_shape[i_expand]:
-            new_dim = full_shape[i_expand]
-        shape[i_expand] = new_dim
-        i_expand -= 1
 
-    # Then reduce earlier dims if chunks are too big.
-    i_reduce = 0
-    while np.prod(shape) > _MAX_CHUNK_SIZE:
-        factor = np.ceil(np.prod(shape) / _MAX_CHUNK_SIZE)
-        new_dim = int(shape[i_reduce] / factor)
-        if new_dim < 1:
-            new_dim = 1
-        shape[i_reduce] = new_dim
-        i_reduce += 1
+def _optimise_chunksize(chunks, shape,
+                        limit=None,
+                        dtype=np.dtype('f4')):
+    """
+    Reduce or increase an initial chunk shape to get close to a chosen ideal
+    size, while prioritising the splitting of the earlier (outer) dimensions
+    and keeping intact the later (inner) ones.
 
-    return tuple(shape)
+    Args:
+
+    * chunks (tuple of int, or None):
+        Pre-existing chunk shape of the target data : None if unknown.
+    * shape (tuple of int):
+        The full array shape of the target data.
+    * limit (int):
+        The 'ideal' target chunk size, in bytes.
+    * dtype (np.dtype):
+        Numpy dtype of target data.
+
+    Returns:
+    * chunk (tuple of int):
+        The proposed shape of one full chunk.
+
+    .. note::
+        The use of this is very similar to `dask.array.core.normalize_chunks`,
+        when called as
+        `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
+        Except : that the logic here is optimised for a specific to a 'c-like'
+        dimension order, i.e. outer dimensions first, as in netcdf variables.
+        So if, in future, this policy can be implemented in dask, then we would
+        prefer to replace this function with a call to that one.
+        Accordingly, the arguments roughly match 'normalize_chunks', except
+        that we don't support the alternative argument forms of that routine.
+        This routine also returns a single 'full chunk', rather
+        than a complete chunking scheme : so equivalent code usage would be
+        "chunks = [c[0] for c in normalise_chunks(chunks, ...)]".
+
+    """
+    # reducing earlier dimensions and expanding later ones, preferentially.
+    # Note: this *assumes* that the first dimensions are 'outer' ones.
+    # That is at least true for file data, either from netcdf, or fields-based
+    # file formats (UM and grib).
+    if limit is None:
+        limit = _MAX_CHUNK_SIZE * 4
+    point_size_limit = limit / dtype.itemsize
+
+    result = list(chunks)
+    if shape is None:
+        shape = result[:]
+
+    if np.prod(result) < point_size_limit:
+        # While size is less than maximum, expand the chunks, multiplying later
+        # (i.e. inner) dims first.
+        i_expand = len(shape) - 1
+        while np.prod(result) < point_size_limit and i_expand >= 0:
+            factor = np.floor(point_size_limit * 1.0 / np.prod(result))
+            new_dim = result[i_expand] * int(factor)
+            # Clip to dim size : N.B. means it cannot exceed the original dims.
+            if new_dim > shape[i_expand]:
+                new_dim = shape[i_expand]
+            result[i_expand] = new_dim
+            i_expand -= 1
+    else:
+        # Similarly, reduce if too big, reducing earlier (outer) dims first.
+        i_reduce = 0
+        while np.prod(result) > point_size_limit:
+            factor = np.ceil(np.prod(result) / point_size_limit)
+            new_dim = int(result[i_reduce] / factor)
+            if new_dim < 1:
+                new_dim = 1
+            result[i_reduce] = new_dim
+            i_reduce += 1
+
+    return tuple(result)
 
 
 def as_lazy_data(data, chunks=None, asarray=False):
@@ -123,14 +174,20 @@ def as_lazy_data(data, chunks=None, asarray=False):
         The input array converted to a dask array.
 
     """
-    if chunks is None:
-        # Start with the shape of the wrapped array-like,
-        # but reduce/expand it into a chosen size range.
+    if chunks is not None:
+        # Use existing chunking (but we will multiply it if too small).
+        if not isinstance(chunks, Iterable):
+            # Make a plain number into a 1-tuple.
+            chunks = (chunks,)
+    else:
+        # No existing chunks : Make a chunk the shape of the entire input array
+        # (but we will subdivide it if too big).
         chunks = list(data.shape)
-    elif not isinstance(chunks, Iterable):
-        chunks = [chunks]
 
-    chunks = _optimised_chunks(chunks, full_shape=data.shape)
+    # Expand or reduce the basic chunk shape to an optimum size.
+    if 0 not in data.shape:
+        # Skip for unknown shapes (raw landsea-masked data).
+        chunks = _optimise_chunksize(chunks, shape=data.shape)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
