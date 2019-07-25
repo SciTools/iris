@@ -50,21 +50,11 @@ class Test_as_lazy_data(tests.IrisTest):
         self.assertIsInstance(result, da.core.Array)
 
     def test_non_default_chunks(self):
-        data = np.arange(30)
-        chunks = 12
-        old_limit = iris._lazy_data._MAX_CHUNK_SIZE
-        iris._lazy_data._MAX_CHUNK_SIZE = 25
+        data = np.arange(24)
+        chunks = (12,)
         lazy_data = as_lazy_data(data, chunks=chunks)
-        iris._lazy_data._MAX_CHUNK_SIZE = old_limit
-        result = lazy_data.chunks[0][0]
-        self.assertEqual(result, 24)
-
-    def test_non_default_chunks__chunks_already_set(self):
-        chunks = 12
-        data = da.from_array(np.arange(24), chunks=chunks)
-        lazy_data = as_lazy_data(data)
         result, = np.unique(lazy_data.chunks)
-        self.assertEqual(result, chunks)
+        self.assertEqual(result, 24)
 
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
