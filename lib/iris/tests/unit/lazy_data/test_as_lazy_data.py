@@ -99,7 +99,7 @@ class Test__optimised_chunks(tests.IrisTest):
     def test_chunk_size_expanding(self):
         # Check the default chunksizes for small data.
         given_shapes_and_resulting_chunks = [
-            ((1, 100, 100), (16, 100, 100), (16, 100, 100)),  # largest unmodified
+            ((1, 100, 100), (16, 100, 100), (16, 100, 100)),  # large case
             ((1, 100, 100), (5000, 100, 100), (1677, 100, 100)),
             ((3, 300, 200), (10000, 3000, 2000), (3, 2700, 2000)),
             ((3, 300, 200), (10000, 300, 2000), (27, 300, 2000)),
@@ -112,7 +112,8 @@ class Test__optimised_chunks(tests.IrisTest):
             self.assertEqual(chunks, expected, msg)
 
     def test_default_chunks_limiting(self):
-        # Check that chunking is still controlled when no specific 'chunks' given.
+        # Check that chunking is still controlled when no specific 'chunks'
+        # is passed.
         limitcall_patch = self.patch('iris._lazy_data._optimise_chunksize')
         test_shape = (3, 2, 4)
         data = self._dummydata(test_shape)
