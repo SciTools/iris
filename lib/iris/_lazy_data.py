@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017 - 2018, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -111,20 +111,26 @@ def _optimise_chunksize(chunks, shape,
         "chunks = [c[0] for c in normalise_chunks(chunks, ...)]".
 
     """
-    # reducing earlier dimensions and expanding later ones, preferentially.
-    # Note: this *assumes* that the first dimensions are 'outer' ones.
-    # That is at least true for file data, either from netcdf, or fields-based
-    # file formats (UM and grib).
+    # Return chunks unchanged, for types of invocation we don't comprehend.
+    if (any(elem <= 0 for elem in shape) or
+            not isinstance(chunks, Iterable) or
+            len(chunks) != len(shape)):
+        # Don't modify chunks for special values like -1, (0,), 'auto',
+        # or if shape contains 0 or -1 (like raw landsea-mask data proxies).
+        return chunks
+
+    # Calculate default chunksize limit.
     if limit is None:
         limit = _MAX_CHUNK_SIZE * 4
     point_size_limit = limit / dtype.itemsize
 
+    # Create result chunks, starting with a copy of the input.
     result = list(chunks)
     if shape is None:
         shape = result[:]
 
     if np.prod(result) < point_size_limit:
-        # While size is less than maximum, expand the chunks, multiplying later
+        # If size is less than maximum, expand the chunks, multiplying later
         # (i.e. inner) dims first.
         i_expand = len(shape) - 1
         while np.prod(result) < point_size_limit and i_expand >= 0:
@@ -174,20 +180,13 @@ def as_lazy_data(data, chunks=None, asarray=False):
         The input array converted to a dask array.
 
     """
-    if chunks is not None:
-        # Use existing chunking (but we will multiply it if too small).
-        if not isinstance(chunks, Iterable):
-            # Make a plain number into a 1-tuple.
-            chunks = (chunks,)
-    else:
+    if chunks is None:
         # No existing chunks : Make a chunk the shape of the entire input array
         # (but we will subdivide it if too big).
         chunks = list(data.shape)
 
     # Expand or reduce the basic chunk shape to an optimum size.
-    if 0 not in data.shape:
-        # Skip for unknown shapes (raw landsea-masked data).
-        chunks = _optimise_chunksize(chunks, shape=data.shape)
+    chunks = _optimise_chunksize(chunks, shape=data.shape)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
