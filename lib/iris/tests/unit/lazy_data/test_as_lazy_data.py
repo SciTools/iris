@@ -27,7 +27,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-import iris._lazy_data
 from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE, _optimise_chunksize
 from iris.tests import mock
 
