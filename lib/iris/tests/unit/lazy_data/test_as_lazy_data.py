@@ -24,17 +24,17 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import dask.array as da
+import dask.config
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, _MAX_CHUNK_SIZE, _optimise_chunksize
+from iris._lazy_data import as_lazy_data, _optimise_chunksize
 from iris.tests import mock
 
 
 class Test_as_lazy_data(tests.IrisTest):
     def test_lazy(self):
-        data = da.from_array(np.arange(24).reshape((2, 3, 4)),
-                             chunks=_MAX_CHUNK_SIZE)
+        data = da.from_array(np.arange(24).reshape((2, 3, 4)), chunks='auto')
         result = as_lazy_data(data)
         self.assertIsInstance(result, da.core.Array)
 
@@ -63,6 +63,9 @@ class Test_as_lazy_data(tests.IrisTest):
 
 
 class Test__optimised_chunks(tests.IrisTest):
+    # Stable, known chunksize for testing.
+    FIXED_CHUNKSIZE_LIMIT = 1024 * 1024 * 64
+
     @staticmethod
     def _dummydata(shape):
         return mock.Mock(spec=da.core.Array,
@@ -70,7 +73,7 @@ class Test__optimised_chunks(tests.IrisTest):
                          shape=shape)
 
     def test_chunk_size_limiting(self):
-        # Check the default chunksizes for large data.
+        # Check default chunksizes for large data (with a known size limit).
         given_shapes_and_resulting_chunks = [
             ((16, 1024, 1024), (16, 1024, 1024)),  # largest unmodified
             ((17, 1011, 1022), (8, 1011, 1022)),
@@ -81,14 +84,15 @@ class Test__optimised_chunks(tests.IrisTest):
         ]
         err_fmt = 'Result of optimising chunks {} was {}, expected {}'
         for (shape, expected) in given_shapes_and_resulting_chunks:
-            chunks = _optimise_chunksize(shape, shape)
+            chunks = _optimise_chunksize(shape, shape,
+                                         limit=self.FIXED_CHUNKSIZE_LIMIT)
             msg = err_fmt.format(shape, chunks, expected)
             self.assertEqual(chunks, expected, msg)
 
     def test_chunk_size_expanding(self):
-        # Check the default chunksizes for small data.
+        # Check the expansion of small chunks, (with a known size limit).
         given_shapes_and_resulting_chunks = [
-            ((1, 100, 100), (16, 100, 100), (16, 100, 100)),  # large case
+            ((1, 100, 100), (16, 100, 100), (16, 100, 100)),
             ((1, 100, 100), (5000, 100, 100), (1677, 100, 100)),
             ((3, 300, 200), (10000, 3000, 2000), (3, 2700, 2000)),
             ((3, 300, 200), (10000, 300, 2000), (27, 300, 2000)),
@@ -96,9 +100,18 @@ class Test__optimised_chunks(tests.IrisTest):
         ]
         err_fmt = 'Result of optimising shape={};chunks={} was {}, expected {}'
         for (shape, fullshape, expected) in given_shapes_and_resulting_chunks:
-            chunks = _optimise_chunksize(chunks=shape, shape=fullshape)
+            chunks = _optimise_chunksize(chunks=shape, shape=fullshape,
+                                         limit=self.FIXED_CHUNKSIZE_LIMIT)
             msg = err_fmt.format(fullshape, shape, chunks, expected)
             self.assertEqual(chunks, expected, msg)
+
+    def test_default_chunksize(self):
+        # Check that the "ideal" chunksize is taken from the dask config.
+        with dask.config.set({'array.chunk-size': '20b'}):
+            chunks = _optimise_chunksize((1, 8),
+                                         shape=(400, 20),
+                                         dtype=np.dtype('f4'))
+            self.assertEqual(chunks, (1, 4))
 
     def test_default_chunks_limiting(self):
         # Check that chunking is still controlled when no specific 'chunks'

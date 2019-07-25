@@ -60,19 +60,6 @@ def is_lazy_data(data):
     return result
 
 
-# A magic value, chosen to minimise chunk creation time and chunk processing
-# time within dask.
-_MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
-
-# _MAX_CHUNK_SIZE = dask.config.get('array', {}).get('chunk-size', None)
-# if _MAX_CHUNK_SIZE is not None:
-#     # Convert to bytes
-#     _MAX_CHUNK_SIZE = da.core.parse_bytes(_MAX_CHUNK_SIZE)
-# else:
-#     # Fall back on our own "magic" value.
-#     _MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
-
-
 def _optimise_chunksize(chunks, shape,
                         limit=None,
                         dtype=np.dtype('f4')):
@@ -88,7 +75,7 @@ def _optimise_chunksize(chunks, shape,
     * shape (tuple of int):
         The full array shape of the target data.
     * limit (int):
-        The 'ideal' target chunk size, in bytes.
+        The 'ideal' target chunk size, in bytes.  Default from dask.config.
     * dtype (np.dtype):
         Numpy dtype of target data.
 
@@ -97,18 +84,18 @@ def _optimise_chunksize(chunks, shape,
         The proposed shape of one full chunk.
 
     .. note::
-        The use of this is very similar to `dask.array.core.normalize_chunks`,
-        when called as
+        The purpose of this is very similar to
+        `dask.array.core.normalize_chunks`, when called as
         `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
-        Except : that the logic here is optimised for a specific to a 'c-like'
-        dimension order, i.e. outer dimensions first, as in netcdf variables.
+        Except, the operation here is optimised specifically for a 'c-like'
+        dimension order, i.e. outer dimensions first, as for netcdf variables.
         So if, in future, this policy can be implemented in dask, then we would
         prefer to replace this function with a call to that one.
         Accordingly, the arguments roughly match 'normalize_chunks', except
         that we don't support the alternative argument forms of that routine.
-        This routine also returns a single 'full chunk', rather
-        than a complete chunking scheme : so equivalent code usage would be
-        "chunks = [c[0] for c in normalise_chunks(chunks, ...)]".
+        The return value, however, is a single 'full chunk', rather than a
+        complete chunking scheme : so an equivalent code usage could be
+        "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
     # Return chunks unchanged, for types of invocation we don't comprehend.
@@ -119,9 +106,13 @@ def _optimise_chunksize(chunks, shape,
         # or if shape contains 0 or -1 (like raw landsea-mask data proxies).
         return chunks
 
-    # Calculate default chunksize limit.
+    # Set the chunksize limit.
     if limit is None:
-        limit = _MAX_CHUNK_SIZE * 4
+        # Fetch the default 'optimal' chunksize from the dask config.
+        limit = dask.config.get('array.chunk-size')
+        # Convert to bytes
+        limit = da.core.parse_bytes(limit)
+
     point_size_limit = limit / dtype.itemsize
 
     # Create result chunks, starting with a copy of the input.
