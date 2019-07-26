@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,13 +26,13 @@ import iris.tests as tests
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import is_lazy_data, _MAX_CHUNK_SIZE
+from iris._lazy_data import is_lazy_data
 
 
 class Test_is_lazy_data(tests.IrisTest):
     def test_lazy(self):
         values = np.arange(30).reshape((2, 5, 3))
-        lazy_array = da.from_array(values, chunks=_MAX_CHUNK_SIZE)
+        lazy_array = da.from_array(values, chunks='auto')
         self.assertTrue(is_lazy_data(lazy_array))
 
     def test_real(self):
