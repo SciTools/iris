@@ -60,9 +60,9 @@ def is_lazy_data(data):
     return result
 
 
-def _optimise_chunksize(chunks, shape,
-                        limit=None,
-                        dtype=np.dtype('f4')):
+def _optimum_chunksize(chunks, shape,
+                       limit=None,
+                       dtype=np.dtype('f4')):
     """
     Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
@@ -177,7 +177,7 @@ def as_lazy_data(data, chunks=None, asarray=False):
         chunks = list(data.shape)
 
     # Expand or reduce the basic chunk shape to an optimum size.
-    chunks = _optimise_chunksize(chunks, shape=data.shape)
+    chunks = _optimum_chunksize(chunks, shape=data.shape, dtype=data.dtype)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
