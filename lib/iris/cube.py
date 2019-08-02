@@ -31,7 +31,7 @@ try:  # Python 3
                                  Mapping,
                                  MutableMapping,
                                  Iterator)
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import (Iterable,
                              Container,
                              Mapping,
