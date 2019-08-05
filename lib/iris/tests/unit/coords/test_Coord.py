@@ -280,6 +280,13 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             self.assertArrayEqual(collapsed_coord.bounds,
                                   [[coord.bounds.min(), coord.bounds.max()]])
 
+    def test_lazy_points(self):
+        # Lazy points should stay lazy after collapse.
+        coord = AuxCoord(points=da.from_array(np.arange(5), chunks=5))
+        collapsed_coord = coord.collapsed()
+        self.assertTrue(collapsed_coord.has_lazy_bounds())
+        self.assertTrue(collapsed_coord.has_lazy_points())
+
     def test_numeric_nd(self):
         coord = AuxCoord(points=np.array([[1, 2, 4, 5],
                                           [4, 5, 7, 8],
