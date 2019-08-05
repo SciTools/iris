@@ -258,7 +258,7 @@ However, when constraining by time we usually want to test calendar-related
 aspects such as hours of the day or months of the year, so Iris
 provides special features to facilitate this:
 
-When Iris evaluates Constraint expressions, it will convert time-coordinate
+firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate
 values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
 for ease of calendar-based testing.
 
@@ -274,9 +274,32 @@ for ease of calendar-based testing.
     Selected times :
     DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
-A common case is the selection of all points between two given dates. In the
-following example we construct a time sequence representing the first day of
-every week for many years:
+Secondly, the :class:`iris.time` module provides flexible time comparison
+facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
+objects such as :class:`datetime.datetime` instances, and this comparison will
+then test only those 'aspects' which the PartialDateTime instance defines:
+
+    >>> import datetime
+    >>> from iris.time import PartialDateTime
+    >>> dt = datetime.datetime(2011, 3, 7)
+    >>> print(dt > PartialDateTime(year=2010, month=6))
+    True
+    >>> print(dt > PartialDateTime(month=6))
+    False
+    >>>
+
+These :class:`iris.time.PartialDateTime` objects can be used to write clearer,
+more concise constraints:
+
+   >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
+   >>> print(iris.load_cube(
+   ...     iris.sample_data_path('uk_hires.pp'),
+   ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
+   DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+
+It is common that a cube will need to be constrained between two given dates.
+In the following example we construct a time sequence representing the first
+day of every week for many years:
 
 .. testsetup:: timeseries_range
 
@@ -312,35 +335,9 @@ Given two dates in datetime format, we can select all points between them.
               2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
              standard_name='time', calendar='gregorian')
 
-Additionally, the :class:`iris.time` module provides flexible time comparison
-facilities.  An :class:`iris.time.PartialDateTime` object can be compared to
-objects such as :class:`datetime.datetime` instances, and this comparison will
-then test only those 'aspects' which the PartialDateTime instance defines:
-
-    >>> import datetime
-    >>> from iris.time import PartialDateTime
-    >>> dt = datetime.datetime(2011, 3, 7)
-    >>> print(dt > PartialDateTime(year=2010, month=6))
-    True
-    >>> print(dt > PartialDateTime(month=6))
-    False
-    >>> 
-
-These two facilities can be combined to provide straightforward calendar-based
-time selections when loading or extracting data.
-
-The previous constraint example can now be written as:
-
-   >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
-   >>> print(iris.load_cube(
-   ...     iris.sample_data_path('uk_hires.pp'),
-   ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
-   DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
-
 A more complex example might require selecting points over an annually repeating
-date range. Using the previously defined long time sequence, we can select points
-within a certain part of the year, in this case between the 15th of July through
-to the 25th of August, by combining the datetime cell functionality with
+date range. We can select points within a certain part of the year, in this case
+between the 15th of July through to the 25th of August, by making use of
 PartialDateTime:
 
 .. doctest:: timeseries_range
