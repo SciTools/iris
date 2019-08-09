@@ -602,8 +602,7 @@ class TestIFunc(tests.IrisTest):
         self.assertArrayAlmostEqual(b.data, b2.data)
 
         cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
-                   lambda a: a.units
-                   )
+                   lambda a: a.units)
 
         b = cs_ifunc(a, axis=1)
         ans = a.data.copy()
