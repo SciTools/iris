@@ -1360,16 +1360,22 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     'Metadata may not be fully descriptive for {!r}.'
                 warnings.warn(msg.format(self.name()))
 
-            # Determine the array library for stacking
-            al = da if self.has_bounds() \
-                and _lazy.is_lazy_data(self.core_bounds()) else np
+            if self.has_bounds():
+                item = self.core_bounds()
+                if dims_to_collapse is not None:
+                    # Express main dims_to_collapse as non-negative integers
+                    # and add the last (bounds specific) dimension.
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse) + (-1,)
+            else:
+                item = self.core_points()
 
-            item = al.concatenate(self.core_bounds()) if self.has_bounds() \
-                else self.core_points()
+            # Determine the array library for stacking
+            al = da if _lazy.is_lazy_data(item) else np
 
             # Calculate the bounds and points along the right dims
             bounds = al.stack([item.min(axis=dims_to_collapse),
-                               item.max(axis=dims_to_collapse)]).T
+                               item.max(axis=dims_to_collapse)], axis=-1)
             points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
 
             # Create the new collapsed coordinate.
