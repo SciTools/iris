@@ -23,7 +23,10 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-from collections import Iterable
+try:  # Python 3
+    from collections.abc import Iterable
+except ImportError:  # Python 2
+    from collections import Iterable
 from functools import wraps
 
 import dask
