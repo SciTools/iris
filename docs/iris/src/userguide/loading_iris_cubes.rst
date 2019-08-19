@@ -291,11 +291,11 @@ then test only those 'aspects' which the PartialDateTime instance defines:
 These :class:`iris.time.PartialDateTime` objects can be used to write clearer,
 more concise constraints:
 
-   >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
-   >>> print(iris.load_cube(
-   ...     iris.sample_data_path('uk_hires.pp'),
-   ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
-   DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
+    >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
+    >>> print(iris.load_cube(
+    ...     iris.sample_data_path('uk_hires.pp'),
+    ...	   'air_potential_temperature' & the_11th_hour).coord('time'))
+    DimCoord([2009-11-19 11:00:00], standard_name='time', calendar='gregorian')
 
 It is common that a cube will need to be constrained between two given dates.
 In the following example we construct a time sequence representing the first
