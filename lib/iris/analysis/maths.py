@@ -925,7 +925,8 @@ class IFunc(object):
             else:
                 sig = inspect.signature(data_func)
                 args = [param for param in sig.parameters.values()
-                        if '=' not in str(param)]
+                        if (param.kind != param.KEYWORD_ONLY and
+                            param.default is param.empty)]
                 self.nin = len(args)
 
         if self.nin not in [1, 2]:
