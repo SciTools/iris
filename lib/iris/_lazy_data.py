@@ -23,16 +23,12 @@ To avoid replicating implementation-dependent test and conversion code.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2
-    from collections import Iterable
 from functools import wraps
 
 import dask
 import dask.array as da
-import dask.array.core
 import dask.config
+import dask.utils
 
 import numpy as np
 import numpy.ma as ma
@@ -101,27 +97,17 @@ def _optimum_chunksize(chunks, shape,
         "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
 
     """
-    # Return chunks unchanged, for types of invocation we don't comprehend.
-    if (any(elem <= 0 for elem in shape) or
-            not isinstance(chunks, Iterable) or
-            len(chunks) != len(shape)):
-        # Don't modify chunks for special values like -1, (0,), 'auto',
-        # or if shape contains 0 or -1 (like raw landsea-mask data proxies).
-        return chunks
-
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.
         limit = dask.config.get('array.chunk-size')
         # Convert to bytes
-        limit = da.core.parse_bytes(limit)
+        limit = dask.utils.parse_bytes(limit)
 
     point_size_limit = limit / dtype.itemsize
 
     # Create result chunks, starting with a copy of the input.
     result = list(chunks)
-    if shape is None:
-        shape = result[:]
 
     if np.prod(result) < point_size_limit:
         # If size is less than maximum, expand the chunks, multiplying later
@@ -155,23 +141,28 @@ def as_lazy_data(data, chunks=None, asarray=False):
 
     Args:
 
-    * data:
-        An array. This will be converted to a dask array.
+    * data (array-like):
+        An indexable object with 'shape', 'dtype' and 'ndim' properties.
+        This will be converted to a dask array.
 
     Kwargs:
 
-    * chunks:
-        Describes how the created dask array should be split up. Defaults to a
-        value first defined in biggus (being `8 * 1024 * 1024 * 2`).
-        For more information see
-        http://dask.pydata.org/en/latest/array-creation.html#chunks.
+    * chunks (list of int):
+        If present, a source chunk shape, e.g. for a chunked netcdf variable.
 
-    * asarray:
+    * asarray (bool):
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
 
     Returns:
         The input array converted to a dask array.
+
+    .. note::
+        The result chunk size is a multiple of 'chunks', if given, up to the
+        dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
+        or the full data shape if that is smaller.
+        If 'chunks' is not given, the result has chunks of the full data shape,
+        but reduced by a factor if that exceeds the dask default chunksize.
 
     """
     if chunks is None:
@@ -179,8 +170,12 @@ def as_lazy_data(data, chunks=None, asarray=False):
         # (but we will subdivide it if too big).
         chunks = list(data.shape)
 
-    # Expand or reduce the basic chunk shape to an optimum size.
-    chunks = _optimum_chunksize(chunks, shape=data.shape, dtype=data.dtype)
+    # Adjust chunk size for better dask performance,
+    # NOTE: but only if no shape dimension is zero, so that we can handle the
+    # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
+    if all(elem > 0 for elem in data.shape):
+        # Expand or reduce the basic chunk shape to an optimum size.
+        chunks = _optimum_chunksize(chunks, shape=data.shape, dtype=data.dtype)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)

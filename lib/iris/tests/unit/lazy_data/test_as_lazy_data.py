@@ -137,6 +137,15 @@ class Test__optimised_chunks(tests.IrisTest):
                                     dtype=np.dtype('f4'))])
         self.assertEqual(result.shape, huge_test_shape)
 
+    def test_shapeless_data(self):
+        # Check that chunk optimisation is skipped if shape contains a zero.
+        limitcall_patch = self.patch('iris._lazy_data._optimum_chunksize')
+        test_shape = (2, 1, 0, 2)
+        data = self._dummydata(test_shape)
+        result = as_lazy_data(data, chunks=test_shape)
+        self.assertFalse(limitcall_patch.called)
+        self.assertEqual(result.shape, test_shape)
+
 
 if __name__ == '__main__':
     tests.main()
