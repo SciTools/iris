@@ -33,7 +33,7 @@ from abc import ABCMeta, abstractmethod
 
 try:  # Python 3
     from collections.abc import Iterable, MutableMapping
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterable, MutableMapping
 import os
 import re

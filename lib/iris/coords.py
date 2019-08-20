@@ -27,7 +27,7 @@ from abc import ABCMeta, abstractproperty
 from collections import namedtuple
 try:  # Python 3
     from collections.abc import Iterator
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterator
 import copy
 from itertools import chain

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -22,10 +22,11 @@ Basic mathematical and statistical operations.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-import warnings
+import inspect
 import math
 import operator
-import inspect
+import six
+import warnings
 
 import cf_units
 import numpy as np
@@ -917,9 +918,16 @@ class IFunc(object):
         if hasattr(data_func, 'nin'):
             self.nin = data_func.nin
         else:
-            (args, varargs, keywords, defaults) = inspect.getargspec(data_func)
-            self.nin = len(args) - (
-                len(defaults) if defaults is not None else 0)
+            if six.PY2:
+                (args, _, _, defaults) = inspect.getargspec(data_func)
+                self.nin = len(args) - (
+                    len(defaults) if defaults is not None else 0)
+            else:
+                sig = inspect.signature(data_func)
+                args = [param for param in sig.parameters.values()
+                        if (param.kind != param.KEYWORD_ONLY and
+                            param.default is param.empty)]
+                self.nin = len(args)
 
         if self.nin not in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class '

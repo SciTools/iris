@@ -28,7 +28,7 @@ import iris.tests as tests
 
 try:  # Python 3
     from collections.abc import Iterable
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterable
 import datetime
 import itertools

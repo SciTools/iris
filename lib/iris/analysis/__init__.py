@@ -53,7 +53,7 @@ import six
 from collections import OrderedDict
 try:  # Python 3
     from collections.abc import Iterable
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterable
 from functools import wraps
 

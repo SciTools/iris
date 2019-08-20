@@ -24,7 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 try:  # Python 3
     from collections.abc import Iterator
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterator
 import itertools
 import warnings

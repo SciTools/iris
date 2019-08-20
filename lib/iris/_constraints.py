@@ -25,7 +25,7 @@ import six
 
 try:  # Python 3
     from collections.abc import Iterable, Mapping
-except:  # Python 2.7
+except ImportError:  # Python 2.7
     from collections import Iterable, Mapping
 import operator
 
