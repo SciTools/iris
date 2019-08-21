@@ -125,18 +125,6 @@ class Test__optimised_chunks(tests.IrisTest):
                                     shape=test_shape,
                                     dtype=np.dtype('f4'))])
 
-    def test_large_specific_chunk_passthrough(self):
-        # Check that even a too-large specific 'chunks' arg is honoured.
-        limitcall_patch = self.patch('iris._lazy_data._optimum_chunksize')
-        huge_test_shape = (1001, 1002, 1003, 1004)
-        data = self._dummydata(huge_test_shape)
-        result = as_lazy_data(data, chunks=huge_test_shape)
-        self.assertEqual(limitcall_patch.call_args_list,
-                         [mock.call(huge_test_shape,
-                                    shape=huge_test_shape,
-                                    dtype=np.dtype('f4'))])
-        self.assertEqual(result.shape, huge_test_shape)
-
     def test_shapeless_data(self):
         # Check that chunk optimisation is skipped if shape contains a zero.
         limitcall_patch = self.patch('iris._lazy_data._optimum_chunksize')
@@ -144,7 +132,6 @@ class Test__optimised_chunks(tests.IrisTest):
         data = self._dummydata(test_shape)
         result = as_lazy_data(data, chunks=test_shape)
         self.assertFalse(limitcall_patch.called)
-        self.assertEqual(result.shape, test_shape)
 
 
 if __name__ == '__main__':
