@@ -337,7 +337,9 @@ def load(uris, constraints=None, callback=None):
         A modifier/filter function.
 
     Returns:
-        An :class:`iris.cube.CubeList`.
+        An :class:`iris.cube.CubeList`. Note that there is no inherent order
+        to this :class:`iris.cube.CubeList` and it should be treated as if it
+        were random.
 
     """
     return _load_collection(uris, constraints, callback).merged().cubes()
@@ -402,7 +404,9 @@ def load_cubes(uris, constraints=None, callback=None):
         A modifier/filter function.
 
     Returns:
-        An :class:`iris.cube.CubeList`.
+        An :class:`iris.cube.CubeList`. Note that there is no inherent order
+        to this :class:`iris.cube.CubeList` and it should be treated as if it
+        were random.
 
     """
     # Merge the incoming cubes
