@@ -258,7 +258,7 @@ However, when constraining by time we usually want to test calendar-related
 aspects such as hours of the day or months of the year, so Iris
 provides special features to facilitate this:
 
-firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate
+Firstly, when Iris evaluates Constraint expressions, it will convert time-coordinate
 values (points and bounds) from numbers into :class:`~datetime.datetime`-like objects
 for ease of calendar-based testing.
 
@@ -288,8 +288,10 @@ then test only those 'aspects' which the PartialDateTime instance defines:
     False
     >>>
 
-These :class:`iris.time.PartialDateTime` objects can be used to write clearer,
-more concise constraints:
+These two facilities can be combined to provide straightforward calendar-based
+time selections when loading or extracting data.
+
+The previous constraint example can now be written as:
 
     >>> the_11th_hour = iris.Constraint(time=iris.time.PartialDateTime(hour=11))
     >>> print(iris.load_cube(
@@ -335,10 +337,26 @@ Given two dates in datetime format, we can select all points between them.
               2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
              standard_name='time', calendar='gregorian')
 
+Alternatively, we may do the same thing with :class:`iris.time.PartialDateTime`
+objects.
+
+.. doctest:: timeseries_range
+    :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
+
+    >>> pdt1 = PartialDateTime(year=2007, month=7, day=15)
+    >>> pdt2 = PartialDateTime(year=2007, month=8, day=25)
+    >>> st_swithuns_daterange_07 = iris.Constraint(
+    ...     time=lambda cell: pdt1 <= cell.point < pdt2)
+    >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
+    >>> print(within_st_swithuns_07.coord('time'))
+    DimCoord([2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
+              2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
+             standard_name='time', calendar='gregorian')
+
 A more complex example might require selecting points over an annually repeating
 date range. We can select points within a certain part of the year, in this case
-between the 15th of July through to the 25th of August, by making use of
-PartialDateTime:
+between the 15th of July through to the 25th of August. By making use of
+PartialDateTime this becomes simple:
 
 .. doctest:: timeseries_range
 
