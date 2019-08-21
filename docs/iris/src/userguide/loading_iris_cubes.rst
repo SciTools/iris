@@ -57,7 +57,7 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
      :class:`list of cubes <iris.cube.CubeList>`.
      Because of this, indexing may be inconsistent. A more consistent way to
      extract a cube is by using the :class:`iris.Constraint` class as
-     described in :ref:`constrained`.
+     described in :ref:`constrained-loading`.
 
 .. hint::
 
@@ -151,7 +151,7 @@ This is referred to as 'lazy' data.  It allows loading to be much quicker, and t
 For more on the benefits, handling and uses of lazy data, see :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`.
 
 
-.. _constrained:
+.. _constrained-loading:
 
 Constrained loading
 -----------------------
