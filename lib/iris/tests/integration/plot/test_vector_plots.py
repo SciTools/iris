@@ -171,17 +171,17 @@ class MixinVectorPlotCases(object):
         # Test circular longitude does not cause a crash.
         res = 5
         lat = DimCoord(np.arange(-90, 91, res), 'latitude',
-                                   units='degrees_north')
+                       units='degrees_north')
         lon = DimCoord(np.arange(0, 360, res), 'longitude',
-                                   units='degrees_east')
+                       units='degrees_east')
         nlat = len(lat.points)
         nlon = len(lon.points)
         u_arr = np.ones((nlat, nlon))
         v_arr = np.ones((nlat, nlon))
         u_cube = Cube(u_arr, dim_coords_and_dims=[(lat, 0), (lon, 1)],
-                           standard_name='eastward_wind')
+                      standard_name='eastward_wind')
         v_cube = Cube(v_arr, dim_coords_and_dims=[(lat, 0), (lon, 1)],
-                           standard_name='northward_wind')
+                      standard_name='northward_wind')
         u_cube.coord('longitude').circular = True
 
         self.plot('circular', u_cube, v_cube,
