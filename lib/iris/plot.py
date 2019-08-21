@@ -878,7 +878,6 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
             v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
             kwargs['_v_data'] = v_data
 
-
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
     kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord,
