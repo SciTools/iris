@@ -271,9 +271,14 @@ class CubeRepresentation(object):
                         title = body.pop(0)
                         colspan = 0
                     else:
-                        split_point = line.index(':')
-                        title = line[:split_point].strip()
-                        body = line[split_point + 2:].strip()
+                        try:
+                            split_point = line.index(':')
+                        except ValueError:
+                            title = ''
+                            body = line.strip()
+                        else:
+                            title = line[:split_point].strip()
+                            body = line[split_point + 2:].strip()
                         colspan = self.ndims
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan))
