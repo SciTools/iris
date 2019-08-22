@@ -116,9 +116,33 @@ def _optimum_chunksize(chunks, shape,
         while np.prod(result) < point_size_limit and i_expand >= 0:
             factor = np.floor(point_size_limit * 1.0 / np.prod(result))
             new_dim = result[i_expand] * int(factor)
-            # Clip to dim size : N.B. means it cannot exceed the original dims.
-            if new_dim > shape[i_expand]:
+            if new_dim >= shape[i_expand]:
+                # Clip to dim size : chunk dims must not exceed the full shape.
                 new_dim = shape[i_expand]
+            else:
+                # 'new_dim' is less than the relevant dim of 'shape' -- but it
+                # is also the largest possible multiple of the input-chunks,
+                # within the size limit.
+                # So : 'i_expand' is the outer (last) dimension over which we
+                # will multiply the input chunks, and 'new_dim' is a value that
+                # ensures the fewest possible chunks within that dim.
+
+                # Now replace 'new_dim' with the value **closest to equal-size
+                # chunks**, for the same (minimum) number of chunks.
+                # More-equal chunks are practically better.
+                # E.G. : "divide 8 into multiples of 2, with a limit of 7",
+                # produces new_dim=6, which would mean chunks of sizes (6, 2).
+                # But (4, 4) is clearly better for memory and time cost.
+
+                # Calculate how many (expanded) chunks fit into this dimension.
+                dim_chunks = np.ceil(shape[i_expand] * 1. / new_dim)
+                # Get "ideal" (equal) size for that many chunks.
+                ideal_equal_chunk_size = shape[i_expand] / dim_chunks
+                # Use the nearest whole multiple of input chunks >= ideal.
+                new_dim = int(result[i_expand] *
+                              np.ceil(ideal_equal_chunk_size /
+                                      result[i_expand]))
+
             result[i_expand] = new_dim
             i_expand -= 1
     else:
