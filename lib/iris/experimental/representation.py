@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018-2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -258,6 +258,11 @@ class CubeRepresentation(object):
         row.append('</tr>')
         return row
 
+    def _expand_last_cell(self, element, body):
+        split_point = element.index('</td>')
+        element = element[:split_point] + '<br>' + body + element[split_point:]
+        return element
+
     def _make_content(self):
         elements = []
         for k, v in self.str_headings.items():
@@ -274,8 +279,11 @@ class CubeRepresentation(object):
                         try:
                             split_point = line.index(':')
                         except ValueError:
-                            title = ''
                             body = line.strip()
+                            element = elements[-2]
+                            element = self._expand_last_cell(element, body)
+                            elements[-2] = element
+                            continue
                         else:
                             title = line[:split_point].strip()
                             body = line[split_point + 2:].strip()
