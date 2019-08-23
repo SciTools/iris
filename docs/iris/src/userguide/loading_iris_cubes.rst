@@ -337,7 +337,7 @@ Given two dates in datetime format, we can select all points between them.
               2007-08-06 00:00:00, 2007-08-13 00:00:00, 2007-08-20 00:00:00],
              standard_name='time', calendar='gregorian')
 
-Alternatively, we may do the same thing with :class:`iris.time.PartialDateTime`
+Alternatively, we may rewrite this using :class:`iris.time.PartialDateTime`
 objects.
 
 .. doctest:: timeseries_range
