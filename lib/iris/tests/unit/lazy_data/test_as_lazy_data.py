@@ -120,8 +120,8 @@ class Test__optimised_chunks(tests.IrisTest):
             # A multi-dimensional case, where trailing dims are 'filled'.
             ((4, 5, 100), (25, 10, 200), 16*2000, (16, 10, 200)),
             # Equivalent case with additional initial dimensions.
-             ((1, 1, 4, 5, 100), (3, 5, 25, 10, 200), 16*2000,
-              (1, 1, 16, 10, 200)),  # effectively the same as the previous.
+            ((1, 1, 4, 5, 100), (3, 5, 25, 10, 200), 16*2000,
+             (1, 1, 16, 10, 200)),  # effectively the same as the previous.
         ]
         err_fmt_main = ('Main chunks result of optimising '
                         'chunks={},shape={},limit={} '
