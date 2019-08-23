@@ -2561,7 +2561,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         from iris.experimental.representation import CubeRepresentation
 
         representer = CubeRepresentation(self)
-        return representer.repr_html()
+        # Catch exceptions in the html repr rather than passing them,
+        # and so fall back to the default cube repr.
+        try:
+            result = representer.repr_html()
+        except (IndexError, ValueError):
+            result = None
+        finally:
+            return result
 
     def __iter__(self):
         raise TypeError("Cube is not iterable")
