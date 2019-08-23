@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -510,8 +510,10 @@ def _get_cf_var_data(cf_var, filename):
                          netCDF4.default_fillvals[cf_var.dtype.str[1:]])
     proxy = NetCDFDataProxy(cf_var.shape, dtype, filename, cf_var.cf_name,
                             fill_value)
+    # Get the chunking specified for the variable : this is either a shape, or
+    # maybe the string "contiguous".
     chunks = cf_var.cf_data.chunking()
-    # Chunks can be an iterable, None, or `'contiguous'`.
+    # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
     if chunks == 'contiguous':
         chunks = None
     return as_lazy_data(proxy, chunks=chunks)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -1475,9 +1475,7 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
     def test__lazy(self):
-        # Note: multiple chunks added as a workaround suggested to dask#3751,
-        # which is fixed in dask#3754.
-        cube = Cube(as_lazy_data(np.array([1, 0]), chunks=(1, 1)))
+        cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
 
 
