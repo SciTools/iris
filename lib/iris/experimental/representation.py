@@ -312,30 +312,34 @@ class CubeListRepresentation(object):
     _template = """
 <style>
     .accordion-{uid} {{
-        color: #637983;
-        background: #fff;
+        color: var(--jp-ui-font-color2);
+        background: var(--jp-layout-color2);
         cursor: pointer;
         padding: 10px;
-        border: 1px solid #637983;
+        border: 1px solid var(--jp-border-color0);
         width: 100%;
         text-align: left;
         font-size: 14px;
-        font-family: monaco, monospace;
+        font-family: var(--jp-code-font-family);
         font-weight: normal;
         outline: none;
         transition: 0.4s;
     }}
-    .active, .accordion-{uid}:hover {{
-        color: #444;
-        border: 2px solid var(--jp-brand-color2);
-        box-shadow: var(--jp-input-box-shadow);
+    .active {{
+        background: var(--jp-layout-color1);
         font-weight: 900;
-        margin-top: 5px;
+    }}
+    .accordion-{uid}.active {{
+        border: 1px solid var(--jp-brand-color1) !important;
+    }}
+    .accordion-{uid}:hover {{
+        box-shadow: var(--jp-input-box-shadow);
+        border: 2px solid var(--jp-brand-color1);
     }}
     .panel-{uid} {{
         padding: 0 18px;
         margin-bottom: 5px;
-        background-color: white;
+        background-color: var(--jp-layout-color1);
         display: none;
         overflow: hidden;
         border: 1px solid var(--jp-brand-color2);
