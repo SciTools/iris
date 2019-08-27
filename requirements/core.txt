@@ -4,7 +4,7 @@
 # Without these, iris won't even import.
 
 cartopy
-#conda: proj4<5
+#conda: proj4<6
 cf-units>=2
 cftime
 dask[array]  #conda: dask
