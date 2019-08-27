@@ -33,24 +33,24 @@ class CubeRepresentation:
   table.iris {{
       white-space: pre;
       border: 1px solid;
-      border-color: #9c9c9c;
-      font-family: monaco, monospace;
+      border-color: var(--jp-border-color2);
+      font-family: var(--jp-code-font-family);
   }}
   th.iris {{
-      background: #303f3f;
-      color: #e0e0e0;
+      background: var(--jp-layout-color4);
+      color: var(--jp-ui-inverse-font-color1);
       border-left: 1px solid;
-      border-color: #9c9c9c;
-      font-size: 1.05em;
+      border-color: var(--jp-border-color2);
+      font-size: var(--jp-code-font-size);
       min-width: 50px;
-      max-width: 125px;
   }}
   tr.iris :first-child {{
-      border-right: 1px solid #9c9c9c !important;
+      border-right: 1px solid var(--jp-border-color2) !important;
   }}
   td.iris-title {{
-      background: #d5dcdf;
-      border-top: 1px solid #9c9c9c;
+      background: var(--jp-layout-color3);
+      border-top: 1px solid;
+      border-top-color: var(--jp-border-color2);
       font-weight: bold;
   }}
   .iris-word-cell {{
