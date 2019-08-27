@@ -62,7 +62,7 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, CurvilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 import iris._lazy_data
@@ -2554,3 +2554,67 @@ class UnstructuredNearest(object):
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
+
+
+class PointInCell(object):
+    """
+    This class describes the point-in-cell regridding scheme for use
+    typically with :meth:`iris.cube.Cube.regrid()`.
+
+    The PointInCell regridder can regrid data from a source grid of any
+    dimensionality and in any coordinate system.
+    The location of each source point is specified by X and Y coordinates
+    mapped over the same cube dimensions, aka "grid dimensions" : the grid may
+    have any dimensionality.  The X and Y coordinates must also have the same,
+    defined coord_system.
+    The weights, if specified, must have the same shape as the X and Y
+    coordinates.
+    The output grid can be any 'normal' XY grid, specified by *separate* X
+    and Y coordinates :  That is, X and Y have two different cube dimensions.
+    The output X and Y coordinates must also have a common, specified
+    coord_system.
+
+    """
+    def __init__(self, weights=None):
+        """
+        Point-in-cell regridding scheme suitable for regridding over one
+        or more orthogonal coordinates.
+
+        Optional Args:
+
+        * weights:
+            A :class:`numpy.ndarray` instance that defines the weights
+            for the grid cells of the source grid. Must have the same shape
+            as the data of the source grid.
+            If unspecified, equal weighting is assumed.
+
+        """
+        self.weights = weights
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a point-in-cell regridder to perform regridding from the
+        source grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return CurvilinearRegridder(src_grid, target_grid, self.weights)
