@@ -1,0 +1,7 @@
+* Iris now makes better choices of dask chunk sizes, when loading from netcdf
+  files:  If a file variable has specified, small chunks, Iris will now choose
+  dask chunks which are a multiple of these, up to a default target size.
+  This is particularly relevant to files with an unlimited dimension, which
+  previously could produce a large number of small chunks.
+  In addition, Iris now takes its default chunksize from the default configured
+  in dask itself, i.e. `dask.config.get('array.chunk-size')`.
