@@ -11,7 +11,10 @@ from html import escape
 # importing anything else.
 import iris.tests as tests
 
+from unittest import skip
+
 from iris.cube import Cube
+from iris.tests import mock
 import iris.tests.stock as stock
 import numpy as np
 
@@ -160,5 +163,37 @@ class TestScalarCube(tests.IrisTest):
         self.assertIn(expected_str, content)
 
 
-if __name__ == "__main__":
+@tests.skip_data
+class TestLazyDataRepr(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.lazy_data_cube()
+
+    def test_not_lazy(self):
+        cube = self.cube
+        _ = cube.data
+        representer = CubeRepresentation(cube)
+        result = representer.repr_html()
+        exp_str = '&nbsp;'
+        self.assertIn(exp_str, result)
+
+    @skip('Dask version does not include html repr')
+    def test_lazy_data_repr(self):
+        # Dask array repr uses an SVG.
+        exp_str = '<svg'
+        representer = CubeRepresentation(self.cube)
+        result = representer._lazy_data_repr()
+        self.assertIn(exp_str, result)
+
+    def test_cannot_repr(self):
+        # Test cases where the dask array repr cannot be made.
+        cube = mock.MagicMock(spec=self.cube)
+        cube.lazy_data()._repr_html_ = \
+            mock.MagicMock(side_effect=AttributeError)
+        representer = CubeRepresentation(cube)
+        result = representer._lazy_data_repr()
+        exp_str = '&nbsp;'
+        self.assertIn(exp_str, result)
+
+
+if __name__ == '__main__':
     tests.main()
