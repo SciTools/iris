@@ -181,8 +181,7 @@ class TestLazyDataRepr(tests.IrisTest):
         self.cube = stock.lazy_data_cube()
 
     def test_not_lazy(self):
-        cube = self.cube
-        _ = cube.data
+        cube = stock.lat_lon_cube()
         representer = CubeRepresentation(cube)
         result = representer.repr_html()
         exp_str = '&nbsp;'
