@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -66,6 +66,11 @@ class CubeRepresentation(object):
       border-top: 1px solid #9c9c9c;
       font-weight: bold;
   }}
+  .container {{
+      display: inline-block;
+      padding-right: 2em;
+      vertical-align: top;
+  }}
   .iris-word-cell {{
       text-align: left !important;
       white-space: pre;
@@ -86,11 +91,14 @@ class CubeRepresentation(object):
       margin-top: 7px;
   }}
 </style>
-<table class="iris" id="{id}">
-    {header}
-    {shape}
-    {content}
-</table>
+<div class="container">
+    <table class="iris" id="{id}">
+        {header}
+        {shape}
+        {content}
+    </table>
+</div>
+<div class="container">{data}</div>
         """
 
     def __init__(self, cube):
@@ -111,6 +119,7 @@ class CubeRepresentation(object):
                                 'Derived coordinates:']
 
         # Important content that summarises a cube is defined here.
+        self.lazy_data = self.cube.has_lazy_data()
         self.shapes = self.cube.shape
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
@@ -210,6 +219,18 @@ class CubeRepresentation(object):
         cells.append('</td>')
         return '\n'.join(cell for cell in cells)
 
+    def _lazy_data_repr(self):
+        """
+        Add the dask array repr if the cube has lazy data and dask can
+        produce an array repr.
+
+        """
+        try:
+            content = self.cube.lazy_data()._repr_html_()
+        except AttributeError:
+            content = '&nbsp;'
+        return content
+
     def _make_row(self, title, body=None, col_span=0):
         """
         Produce one row for the table body; i.e.
@@ -284,6 +305,9 @@ class CubeRepresentation(object):
         # Deal with the header first.
         header = self._make_header()
 
+        # Add content describing the cube's data attribute.
+        data = self._lazy_data_repr() if self.lazy_data else '&nbsp;'
+
         # Check if we have a scalar cube.
         if self.scalar_cube:
             shape = ''
@@ -305,4 +329,5 @@ class CubeRepresentation(object):
         return self._template.format(header=header,
                                      id=self.cube_id,
                                      shape=shape,
-                                     content=content)
+                                     content=content,
+                                     data=data)

@@ -34,6 +34,7 @@ import iris.aux_factory
 import iris.coords
 import iris.coords as icoords
 from iris.coords import DimCoord, AuxCoord
+import iris._lazy_data as _lazy
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from ._stock_2d_latlons import (sample_2d_latlons,
@@ -57,6 +58,13 @@ def lat_lon_cube():
                                  units='degrees',
                                  coord_system=cs)
     cube.add_dim_coord(coord, 1)
+    return cube
+
+
+def lazy_data_cube():
+    cube = lat_lon_cube()
+    lazy_data = _lazy.as_lazy_data(cube.data)
+    cube.data = lazy_data
     return cube
 
 
