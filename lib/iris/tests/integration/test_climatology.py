@@ -53,9 +53,10 @@ class TestClimatology(iris.tests.IrisTest):
         lon = np.linspace(-25, 25, 5)
         lat = np.linspace(0, 60, 3)
 
-        time_dim = DimCoord(time_points, standard_name='time',
-                                        bounds=time_bounds,
-                                        units='days since 1970-01-01 00:00:00-00')
+        time_dim = DimCoord(time_points,
+                            standard_name='time',
+                            bounds=time_bounds,
+                            units='days since 1970-01-01 00:00:00-00')
         lon_dim = DimCoord(lon, standard_name='longitude')
         lat_dim = DimCoord(lat, standard_name='latitude')
 
@@ -65,11 +66,23 @@ class TestClimatology(iris.tests.IrisTest):
         cube.add_dim_coord(time_dim, 0)
         cube.add_dim_coord(lat_dim, 1)
         cube.add_dim_coord(lon_dim, 2)
+        cube.rename('climatology test')
         cube.units = 'Kelvin'
         cube.add_cell_method(CellMethod('mean over years', coords='time'))
 
-        cube.rename('climatology test')
         return cube
+
+    @staticmethod
+    def _bounds_to_climatology(filepath):
+        # Hack file until Iris does it right ..
+        ds = nc.Dataset(filepath, 'r+')
+        ds.variables['time'].renameAttribute('bounds', 'climatology')
+        old_name = 'time_bnds'
+        new_name = 'time_climatology'
+        assert (ds.variables['time'].climatology == old_name)
+        ds.variables['time'].climatology = new_name
+        ds.renameVariable(old_name, new_name)
+        ds.close()
 
     def test_save_simpledata(self):
         cube = self._simple_data_cube()
@@ -77,22 +90,13 @@ class TestClimatology(iris.tests.IrisTest):
         with self.temp_filename(suffix='.nc') as filepath_out:
             iris.save(cube, filepath_out)
 
-            # Hack file until Iris does it right ..
-            ds = nc.Dataset(filepath_out, 'r+')
-            ds.variables['time'].renameAttribute('bounds', 'climatology')
-            old_name = 'time_bnds'
-            new_name = 'time_climatology'
-            assert(ds.variables['time'].climatology == old_name)
-            ds.variables['time'].climatology = new_name
-            ds.renameVariable(old_name, new_name)
-            ds.close()
+            self._bounds_to_climatology(filepath_out)
 
             # Check CDL of saved result.
-            # import os
-            # os.system('which ncdump')
-            # os.system('ncdump --version')
-            # os.system('ncdump ' + filepath_out)
             self.assertCDL(filepath_out, flags='')
+
+    def test_cube_to_cube(self):
+
 
 
 if __name__ == "__main__":
