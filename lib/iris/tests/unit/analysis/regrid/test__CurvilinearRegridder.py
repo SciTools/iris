@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.experimental.regrid._CurvilinearRegridder`."""
+"""Unit tests for :class:`iris.analysis._regrid._CurvilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -30,7 +30,7 @@ from iris.cube import Cube
 from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS
-from iris.experimental.regrid import _CurvilinearRegridder as Regridder
+from iris.analysis._regrid import CurvilinearRegridder as Regridder
 from iris.tests import mock
 from iris.tests.stock import global_pp, lat_lon_cube
 
@@ -57,10 +57,10 @@ class Test___init__(tests.IrisTest):
 class Test___call__(tests.IrisTest):
     def setUp(self):
         self.func_setup = (
-            'iris.experimental.regrid.'
+            'iris.analysis._regrid.'
             '_regrid_weighted_curvilinear_to_rectilinear__prepare')
         self.func_operate = (
-            'iris.experimental.regrid.'
+            'iris.analysis.regrid.'
             '_regrid_weighted_curvilinear_to_rectilinear__perform')
         # Define a test source grid and target grid, basically the same.
         self.src_grid = global_pp()

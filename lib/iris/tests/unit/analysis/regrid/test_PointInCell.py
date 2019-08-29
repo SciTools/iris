@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.experimental.regrid.PointInCell`."""
+"""Unit tests for :class:`iris.analysis.PointInCell`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from iris.experimental.regrid import PointInCell
+from iris.analysis import PointInCell
 from iris.tests import mock
 
 
@@ -31,7 +31,7 @@ class Test_regridder(tests.IrisTest):
     def test(self):
         point_in_cell = PointInCell(mock.sentinel.weights)
 
-        with mock.patch('iris.experimental.regrid._CurvilinearRegridder',
+        with mock.patch('iris.analysis._regrid.CurvilinearRegridder',
                         return_value=mock.sentinel.regridder) as ecr:
             regridder = point_in_cell.regridder(mock.sentinel.src,
                                                 mock.sentinel.target)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -32,6 +32,8 @@ from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 import iris.cube
 from iris.util import _meshgrid
+
+from scipy.sparse import csc_matrix, diags as sparse_diags
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):

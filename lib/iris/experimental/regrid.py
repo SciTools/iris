@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -37,9 +37,11 @@ import six
 import iris.analysis.cartography
 from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
                                           snapshot_grid)
-from iris.analysis._regrid import (RectilinearRegridder,
-                                   _regrid_weighted_curvilinear_to_rectilinear__prepare,
-                                   _regrid_weighted_curvilinear_to_rectilinear__perform)
+from iris.analysis._regrid import (
+    RectilinearRegridder,
+    _regrid_weighted_curvilinear_to_rectilinear__prepare,
+    _regrid_weighted_curvilinear_to_rectilinear__perform
+)
 import iris.coord_systems
 import iris.cube
 from iris.util import _meshgrid
