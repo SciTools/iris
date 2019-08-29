@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2015, Met Office
+# (C) British Crown Copyright 2012 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -118,9 +118,9 @@ class ABFField(object):
 
         # Name.
         if self.format.lower() == "abf":
-            cube.rename("leaf_area_index")
-        elif self.format.lower() == "abl":
             cube.rename("FAPAR")
+        elif self.format.lower() == "abl":
+            cube.rename("leaf_area_index")
         else:
             msg = "Unknown ABF/ABL format: {}".format(self.format)
             raise iris.exceptions.TranslationError(msg)
