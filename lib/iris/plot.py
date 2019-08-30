@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -873,6 +873,10 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
+        if '_v_data' in kwargs:
+            v_data = kwargs['_v_data']
+            v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
+            kwargs['_v_data'] = v_data
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
