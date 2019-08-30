@@ -89,14 +89,20 @@ class TestClimatology(iris.tests.IrisTest):
         # Write Cube to netCDF file.
         with self.temp_filename(suffix='.nc') as filepath_out:
             iris.save(cube, filepath_out)
-
             self._bounds_to_climatology(filepath_out)
-
             # Check CDL of saved result.
             self.assertCDL(filepath_out, flags='')
 
     def test_cube_to_cube(self):
-
+        cube_out = self._simple_data_cube()
+        bounds_out = cube_out.coord('time').bounds
+        # Write Cube to netCDF file.
+        with self.temp_filename(suffix='.nc') as filepath_out:
+            iris.save(cube_out, filepath_out)
+            self._bounds_to_climatology(filepath_out)
+            cube_in = iris.load_cube(filepath_out)
+            bounds_in = cube_in.coord('time').bounds
+            self.assertArrayEqual(bounds_in, bounds_out)
 
 
 if __name__ == "__main__":
