@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,6 +28,7 @@ import os.path
 import requests
 import sys
 
+import metarelate
 from metarelate.fuseki import FusekiServer
 
 from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
@@ -191,7 +192,7 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
     with open(filename, 'w') as fh:
         fh.write(HEADER.format(year=YEAR, doc_string=DOC_STRING_GRIB,
                                datestamp=now, git_sha=git_sha,
-                               name='Iris'))
+                               name='iris-grib'))
         fh.write(HEADER_GRIB)
         fh.write('\n')
 
@@ -221,6 +222,9 @@ def build_grib_cf_map(fuseki, now, git_sha, base_dir):
 
 
 def main():
+    # Protect metarelate resource from 1.0 emergent bug
+    if not float(metarelate.__version__) >= 1.1:
+        raise ValueError("Please ensure that Metarelate Version is >= 1.1")
     now = datetime.utcnow().strftime('%d %B %Y %H:%m')
     git_sha = requests.get('http://www.metarelate.net/metOcean/latest_sha').text
     gen_path = os.path.abspath(sys.modules['__main__'].__file__)
