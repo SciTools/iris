@@ -26,6 +26,18 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import re
 
 
+def escape(s):
+    """
+    Replace special characters "&", "<" and ">" to HTML-safe sequences.
+    Code taken from:
+    https://github.com/python/cpython/blob/3.7/Lib/html/__init__.py
+    """
+    s = s.replace("&", "&amp;")  # Must be done first!
+    s = s.replace("<", "&lt;")
+    s = s.replace(">", "&gt;")
+    return s
+
+
 class CubeRepresentation(object):
     """
     Produce representations of a :class:`~iris.cube.Cube`.
@@ -96,7 +108,7 @@ class CubeRepresentation(object):
     def __init__(self, cube):
         self.cube = cube
         self.cube_id = id(self.cube)
-        self.cube_str = str(self.cube)
+        self.cube_str = escape(str(self.cube))
 
         self.str_headings = {
             'Dimension coordinates:': None,
@@ -115,9 +127,9 @@ class CubeRepresentation(object):
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
 
-        self.name = self.cube.name().title().replace('_', ' ')
-        self.names = self._dim_names()
-        self.units = self.cube.units
+        self.name = escape(self.cube.name().title().replace('_', ' '))
+        self.names = [escape(dim_name) for dim_name in self._dim_names()]
+        self.units = escape(str(self.cube.units))
 
     def _get_dim_names(self):
         """
