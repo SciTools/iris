@@ -24,7 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
-import mock
 import warnings
 
 import numpy as np
@@ -787,6 +786,54 @@ class Test___str__(tests.IrisTest):
         expected = repr(coord)
         result = coord.__str__()
         self.assertEqual(expected, result)
+
+
+class TestClimatology(tests.IrisTest):
+    # Variety of tests for the bounds_are_climatological property of a coord.
+    # Only using AuxCoord since there is no different behaviour between Aux
+    # and DimCoords for this property.
+
+    def test_create(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         bounds_are_climatological=True)
+        self.assertTrue(coord.bounds_are_climatological)
+
+    def test_create_no_bounds_no_set(self):
+        with self.assertRaisesRegex(ValueError,
+                                    'Cannot set.*no bounds exist'):
+            coord = AuxCoord(points=[0, 1], bounds_are_climatological=True)
+
+    def test_absent(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        self.assertFalse(coord.bounds_are_climatological)
+
+    def test_absent_no_bounds_no_set(self):
+        coord = AuxCoord(points=[0, 1])
+        with self.assertRaisesRegex(ValueError,
+                                    'Cannot set.*no bounds exist'):
+            coord.bounds_are_climatological = True
+
+    def test_absent_no_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1])
+        coord.bounds_are_climatological = False
+        self.assertFalse(coord.bounds_are_climatological)
+
+    def test_bounds_set(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        coord.bounds_are_climatological = True
+        self.assertTrue(coord.bounds_are_climatological)
+
+    def test_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         bounds_are_climatological=True)
+        coord.bounds_are_climatological = False
+        self.assertFalse(coord.bounds_are_climatological)
+
+    def test_remove_bounds(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         bounds_are_climatological=True)
+        coord.bounds = None
+        self.assertFalse(coord.bounds_are_climatological)
 
 
 if __name__ == '__main__':
