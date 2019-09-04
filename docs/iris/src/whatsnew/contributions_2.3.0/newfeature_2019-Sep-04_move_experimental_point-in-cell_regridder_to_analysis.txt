@@ -1,0 +1,2 @@
+* :class:`iris.experimental.regrid.PointInCell` moved to
+:class:`iris.analysis.PointInCell` to make this regridding scheme public
