@@ -259,6 +259,7 @@ class CubeRepresentation(object):
         return row
 
     def _expand_last_cell(self, element, body):
+        '''Expand an element containing a cell by adding a new line.'''
         split_point = element.index('</td>')
         element = element[:split_point] + '<br>' + body + element[split_point:]
         return element
@@ -279,7 +280,13 @@ class CubeRepresentation(object):
                         try:
                             split_point = line.index(':')
                         except ValueError:
+                            # When a line exists in v without a ':', we expect
+                            # that this is due to the value of some attribute
+                            # containing multiple lines. We collect all these
+                            # lines in the same cell.
                             body = line.strip()
+                            # We choose the element containing the last cell
+                            # in the last row.
                             element = elements[-2]
                             element = self._expand_last_cell(element, body)
                             elements[-2] = element
