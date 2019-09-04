@@ -60,7 +60,7 @@ class Test___call__(tests.IrisTest):
             'iris.analysis._regrid.'
             '_regrid_weighted_curvilinear_to_rectilinear__prepare')
         self.func_operate = (
-            'iris.analysis.regrid.'
+            'iris.analysis._regrid.'
             '_regrid_weighted_curvilinear_to_rectilinear__perform')
         # Define a test source grid and target grid, basically the same.
         self.src_grid = global_pp()
