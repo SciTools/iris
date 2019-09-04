@@ -304,6 +304,7 @@ class Test__expand_last_cell(tests.IrisTest):
         cell = self.representer._expand_last_cell(self.row[-2], 'second')
         self.assertIn('first<br>second', cell)
 
+
 @tests.skip_data
 class Test__make_content(tests.IrisTest):
     def setUp(self):
