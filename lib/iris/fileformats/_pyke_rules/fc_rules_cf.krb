@@ -1536,7 +1536,6 @@ fc_extras
                         standard_name = coord_name
                     else:
                         standard_name = None
-                        long_name = standard_name
         else:
             if coord_name is not None:
                 standard_name = coord_name
