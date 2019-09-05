@@ -55,6 +55,7 @@ from iris.util import points_step
 class CoordDefn(namedtuple('CoordDefn',
                            ['standard_name', 'long_name',
                             'var_name', 'units',
+                            'bounds_are_climatological',
                             'attributes', 'coord_system'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
@@ -85,6 +86,8 @@ class CoordDefn(namedtuple('CoordDefn',
                     defn.long_name is not None, defn.long_name,
                     defn.var_name is not None, defn.var_name,
                     defn.units is not None, defn.units,
+                    # Should attributes be included here?
+                    # Should bounds_are_climatological be included here?
                     defn.coord_system is not None, defn.coord_system)
 
         return _sort_key(self) < _sort_key(other)
@@ -823,6 +826,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             fmt += ', attributes={self.attributes}'
         if self.coord_system:
             fmt += ', coord_system={self.coord_system}'
+        if self.bounds_are_climatological:
+            fmt += ', bounds_are_climatological={' \
+                   'self.bounds_are_climatological}'
         result = fmt.format(self=self)
         return result
 
@@ -902,7 +908,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
-                         self.units, self.attributes, self.coord_system)
+                         self.units, self.bounds_are_climatological,
+                         self.attributes, self.coord_system)
         return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1855,18 +1862,21 @@ class DimCoord(Coord):
                    coord_system=coord_system, circular=circular)
 
     def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None, attributes=None,
+                 var_name=None, units='1', bounds=None,
+                 bounds_are_climatological=False, attributes=None,
                  coord_system=None, circular=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
 
         """
-        super(DimCoord, self).__init__(points, standard_name=standard_name,
-                                       long_name=long_name, var_name=var_name,
-                                       units=units, bounds=bounds,
-                                       attributes=attributes,
-                                       coord_system=coord_system)
+        super(DimCoord, self).__init__(
+            points, standard_name=standard_name,
+            long_name=long_name, var_name=var_name,
+            units=units, bounds=bounds,
+            bounds_are_climatological=bounds_are_climatological,
+            attributes=attributes,
+            coord_system=coord_system)
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)

@@ -66,9 +66,14 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
 
     def _as_defn(self):
-        defn = iris.coords.CoordDefn(self.standard_name, self.long_name,
-                                     self.var_name, self.units,
-                                     self.attributes, self.coord_system)
+        defn = iris.coords.CoordDefn(
+            self.standard_name, self.long_name,
+            self.var_name, self.units,
+            self.attributes,
+            # Slot for Coord 'bounds_are_climatological' property, which this
+            # doesn't have.
+            False,
+            self.coord_system)
         return defn
 
     @abstractmethod
