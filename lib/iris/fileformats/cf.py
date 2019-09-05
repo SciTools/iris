@@ -74,6 +74,13 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
                        ocean_s_coordinate_g1=['eta', 'depth'],
                        ocean_s_coordinate_g2=['eta', 'depth'])
 
+# Supported standard name modifiers and their associated units. Ref: [CF]
+# Appendix C.
+STD_NAME_MODIFIERS_UNITS = ['detection_minimum',
+                            'number_of_observations',
+                            'standard_error',
+                            'status_flag']
+
 
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):

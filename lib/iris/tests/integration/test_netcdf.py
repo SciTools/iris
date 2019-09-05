@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -427,6 +427,16 @@ class TestScalarCube(tests.IrisTest):
             iris.save(cube, fout)
             scalar_cube = iris.load_cube(fout)
             self.assertEqual(scalar_cube.name(), 'scalar_cube')
+
+
+class TestStandardName(tests.IrisTest):
+    def test_standard_name_roundtrip(self):
+        standard_name = 'air_temperature detection_minimum'
+        cube = iris.cube.Cube(1, standard_name=standard_name)
+        with self.temp_filename(suffix='.nc') as fout:
+            iris.save(cube, fout)
+            scalar_cube = iris.load_cube(fout)
+            self.assertEqual(scalar_cube.standard_name, standard_name)
 
 
 if __name__ == "__main__":
