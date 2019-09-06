@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -258,6 +258,12 @@ class CubeRepresentation(object):
         row.append('</tr>')
         return row
 
+    def _expand_last_cell(self, element, body):
+        '''Expand an element containing a cell by adding a new line.'''
+        split_point = element.index('</td>')
+        element = element[:split_point] + '<br>' + body + element[split_point:]
+        return element
+
     def _make_content(self):
         elements = []
         for k, v in self.str_headings.items():
@@ -271,9 +277,23 @@ class CubeRepresentation(object):
                         title = body.pop(0)
                         colspan = 0
                     else:
-                        split_point = line.index(':')
-                        title = line[:split_point].strip()
-                        body = line[split_point + 2:].strip()
+                        try:
+                            split_point = line.index(':')
+                        except ValueError:
+                            # When a line exists in v without a ':', we expect
+                            # that this is due to the value of some attribute
+                            # containing multiple lines. We collect all these
+                            # lines in the same cell.
+                            body = line.strip()
+                            # We choose the element containing the last cell
+                            # in the last row.
+                            element = elements[-2]
+                            element = self._expand_last_cell(element, body)
+                            elements[-2] = element
+                            continue
+                        else:
+                            title = line[:split_point].strip()
+                            body = line[split_point + 2:].strip()
                         colspan = self.ndims
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan))
