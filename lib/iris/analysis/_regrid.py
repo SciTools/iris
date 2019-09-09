@@ -344,6 +344,124 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     return cube
 
 
+class CurvilinearRegridder(object):
+    """
+    This class provides support for performing point-in-cell regridding
+    between a curvilinear source grid and a rectilinear target grid.
+
+    """
+    def __init__(self, src_grid_cube, target_grid_cube, weights=None):
+        """
+        Create a regridder for conversions between the source
+        and target grids.
+
+        Args:
+
+        * src_grid_cube:
+            The :class:`~iris.cube.Cube` providing the source grid.
+        * tgt_grid_cube:
+            The :class:`~iris.cube.Cube` providing the target grid.
+
+        Optional Args:
+
+        * weights:
+            A :class:`numpy.ndarray` instance that defines the weights
+            for the grid cells of the source grid. Must have the same shape
+            as the data of the source grid.
+            If unspecified, equal weighting is assumed.
+
+        """
+        # Validity checks.
+        if not isinstance(src_grid_cube, iris.cube.Cube):
+            raise TypeError("'src_grid_cube' must be a Cube")
+        if not isinstance(target_grid_cube, iris.cube.Cube):
+            raise TypeError("'target_grid_cube' must be a Cube")
+        # Snapshot the state of the cubes to ensure that the regridder
+        # is impervious to external changes to the original source cubes.
+        self._src_cube = src_grid_cube.copy()
+        self._target_cube = target_grid_cube.copy()
+        self.weights = weights
+        self._regrid_info = None
+
+    @staticmethod
+    def _get_horizontal_coord(cube, axis):
+        """
+        Gets the horizontal coordinate on the supplied cube along the
+        specified axis.
+
+        Args:
+
+        * cube:
+            An instance of :class:`iris.cube.Cube`.
+        * axis:
+            Locate coordinates on `cube` along this axis.
+
+        Returns:
+            The horizontal coordinate on the specified axis of the supplied
+            cube.
+
+        """
+        coords = cube.coords(axis=axis, dim_coords=False)
+        if len(coords) != 1:
+            raise ValueError('Cube {!r} must contain a single 1D {} '
+                             'coordinate.'.format(cube.name()), axis)
+        return coords[0]
+
+    def __call__(self, src):
+        """
+        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
+        this :class:`_CurvilinearRegridder`.
+
+        The given cube must be defined with the same grid as the source
+        grid used to create this :class:`_CurvilinearRegridder`.
+
+        Args:
+
+        * src:
+            A :class:`~iris.cube.Cube` to be regridded.
+
+        Returns:
+            A cube defined with the horizontal dimensions of the target
+            and the other dimensions from this cube. The data values of
+            this cube will be converted to values on the new grid using
+            point-in-cell regridding.
+
+        """
+        # Validity checks.
+        if not isinstance(src, iris.cube.Cube):
+            raise TypeError("'src' must be a Cube")
+
+        gx = self._get_horizontal_coord(self._src_cube, 'x')
+        gy = self._get_horizontal_coord(self._src_cube, 'y')
+        src_grid = (gx.copy(), gy.copy())
+        sx = self._get_horizontal_coord(src, 'x')
+        sy = self._get_horizontal_coord(src, 'y')
+        if (sx, sy) != src_grid:
+            raise ValueError('The given cube is not defined on the same '
+                             'source grid as this regridder.')
+
+        # Call the regridder function.
+        # This includes repeating over any non-XY dimensions, because the
+        # underlying routine does not support this.
+        # FOR NOW: we will use cube.slices and merge to achieve this,
+        # though that is not a terribly efficient method ...
+        # TODO: create a template result cube and paste data slices into it,
+        # which would be more efficient.
+        result_slices = iris.cube.CubeList([])
+        for slice_cube in src.slices(sx):
+            if self._regrid_info is None:
+                # Calculate the basic regrid info just once.
+                self._regrid_info = \
+                    _regrid_weighted_curvilinear_to_rectilinear__prepare(
+                        slice_cube, self.weights, self._target_cube)
+            slice_result = \
+                _regrid_weighted_curvilinear_to_rectilinear__perform(
+                    slice_cube, self._regrid_info)
+            result_slices.append(slice_result)
+        result = result_slices.merge_cube()
+        return result
+
+
 class RectilinearRegridder(object):
     """
     This class provides support for performing nearest-neighbour or
@@ -854,122 +972,4 @@ class RectilinearRegridder(object):
                                    grid_x_coord, grid_y_coord,
                                    sample_grid_x, sample_grid_y,
                                    regrid_callback)
-        return result
-
-
-class CurvilinearRegridder(object):
-    """
-    This class provides support for performing point-in-cell regridding
-    between a curvilinear source grid and a rectilinear target grid.
-
-    """
-    def __init__(self, src_grid_cube, target_grid_cube, weights=None):
-        """
-        Create a regridder for conversions between the source
-        and target grids.
-
-        Args:
-
-        * src_grid_cube:
-            The :class:`~iris.cube.Cube` providing the source grid.
-        * tgt_grid_cube:
-            The :class:`~iris.cube.Cube` providing the target grid.
-
-        Optional Args:
-
-        * weights:
-            A :class:`numpy.ndarray` instance that defines the weights
-            for the grid cells of the source grid. Must have the same shape
-            as the data of the source grid.
-            If unspecified, equal weighting is assumed.
-
-        """
-        # Validity checks.
-        if not isinstance(src_grid_cube, iris.cube.Cube):
-            raise TypeError("'src_grid_cube' must be a Cube")
-        if not isinstance(target_grid_cube, iris.cube.Cube):
-            raise TypeError("'target_grid_cube' must be a Cube")
-        # Snapshot the state of the cubes to ensure that the regridder
-        # is impervious to external changes to the original source cubes.
-        self._src_cube = src_grid_cube.copy()
-        self._target_cube = target_grid_cube.copy()
-        self.weights = weights
-        self._regrid_info = None
-
-    @staticmethod
-    def _get_horizontal_coord(cube, axis):
-        """
-        Gets the horizontal coordinate on the supplied cube along the
-        specified axis.
-
-        Args:
-
-        * cube:
-            An instance of :class:`iris.cube.Cube`.
-        * axis:
-            Locate coordinates on `cube` along this axis.
-
-        Returns:
-            The horizontal coordinate on the specified axis of the supplied
-            cube.
-
-        """
-        coords = cube.coords(axis=axis, dim_coords=False)
-        if len(coords) != 1:
-            raise ValueError('Cube {!r} must contain a single 1D {} '
-                             'coordinate.'.format(cube.name()), axis)
-        return coords[0]
-
-    def __call__(self, src):
-        """
-        Regrid the supplied :class:`~iris.cube.Cube` on to the target grid of
-        this :class:`_CurvilinearRegridder`.
-
-        The given cube must be defined with the same grid as the source
-        grid used to create this :class:`_CurvilinearRegridder`.
-
-        Args:
-
-        * src:
-            A :class:`~iris.cube.Cube` to be regridded.
-
-        Returns:
-            A cube defined with the horizontal dimensions of the target
-            and the other dimensions from this cube. The data values of
-            this cube will be converted to values on the new grid using
-            point-in-cell regridding.
-
-        """
-        # Validity checks.
-        if not isinstance(src, iris.cube.Cube):
-            raise TypeError("'src' must be a Cube")
-
-        gx = self._get_horizontal_coord(self._src_cube, 'x')
-        gy = self._get_horizontal_coord(self._src_cube, 'y')
-        src_grid = (gx.copy(), gy.copy())
-        sx = self._get_horizontal_coord(src, 'x')
-        sy = self._get_horizontal_coord(src, 'y')
-        if (sx, sy) != src_grid:
-            raise ValueError('The given cube is not defined on the same '
-                             'source grid as this regridder.')
-
-        # Call the regridder function.
-        # This includes repeating over any non-XY dimensions, because the
-        # underlying routine does not support this.
-        # FOR NOW: we will use cube.slices and merge to achieve this,
-        # though that is not a terribly efficient method ...
-        # TODO: create a template result cube and paste data slices into it,
-        # which would be more efficient.
-        result_slices = iris.cube.CubeList([])
-        for slice_cube in src.slices(sx):
-            if self._regrid_info is None:
-                # Calculate the basic regrid info just once.
-                self._regrid_info = \
-                    _regrid_weighted_curvilinear_to_rectilinear__prepare(
-                        slice_cube, self.weights, self._target_cube)
-            slice_result = \
-                _regrid_weighted_curvilinear_to_rectilinear__perform(
-                    slice_cube, self._regrid_info)
-            result_slices.append(slice_result)
-        result = result_slices.merge_cube()
         return result

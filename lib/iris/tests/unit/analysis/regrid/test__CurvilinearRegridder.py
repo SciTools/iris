@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for :class:`iris.analysis._regrid._CurvilinearRegridder`."""
+"""Unit tests for :class:`iris.analysis._regrid.CurvilinearRegridder`."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
