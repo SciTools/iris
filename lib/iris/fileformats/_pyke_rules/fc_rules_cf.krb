@@ -1075,6 +1075,7 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.util
+    from iris._cube_coord_common import get_valid_standard_name
     from iris._lazy_data import as_lazy_data
 
 
@@ -1186,13 +1187,16 @@ fc_extras
         cube.long_name = long_name
 
         if standard_name is not None:
-            if standard_name in iris.std_names.STD_NAMES:
-                cube.standard_name = standard_name
-            else:
-                if cube.long_name is not None:
-                    cube.attributes['invalid_standard_name'] = standard_name
+            try:
+                cube.standard_name = get_valid_standard_name(standard_name)
+            except ValueError as e:
+                if str(e) != '{!r} is not a valid standard_name'.format(standard_name):
+                    raise
                 else:
-                    cube.long_name = standard_name
+                    if cube.long_name is not None:
+                        cube.attributes['invalid_standard_name'] = standard_name
+                    else:
+                        cube.long_name = standard_name
 
         # Determine the cube units.
         attr_units = get_attr_units(cf_var, cube.attributes)
@@ -1523,19 +1527,25 @@ fc_extras
         cf_name = str(cf_coord_var.cf_name)
 
         if standard_name is not None:
-            if standard_name not in iris.std_names.STD_NAMES:
-                if long_name is not None:
-                    attributes['invalid_standard_name'] = standard_name
-                    if coord_name is not None:
-                        standard_name = coord_name
-                    else:
-                        standard_name = None
+            try:
+                standard_name = get_valid_standard_name(standard_name)
+            except ValueError as e:
+                if str(e) != '{!r} is not a valid standard_name'.format(standard_name):
+                    raise
                 else:
-                    if coord_name is not None:
+                    if long_name is not None:
                         attributes['invalid_standard_name'] = standard_name
-                        standard_name = coord_name
+                        if coord_name is not None:
+                            standard_name = coord_name
+                        else:
+                            standard_name = None
                     else:
-                        standard_name = None
+                        if coord_name is not None:
+                            attributes['invalid_standard_name'] = standard_name
+                            standard_name = coord_name
+                        else:
+                            standard_name = None
+
         else:
             if coord_name is not None:
                 standard_name = coord_name
