@@ -23,7 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from os.path import join as path_join
+from os.path import join as path_join, dirname, sep as os_sep
 import shutil
 from subprocess import check_call
 import tempfile
@@ -33,9 +33,10 @@ from iris.tests import stock
 
 
 class TestClimatology(iris.tests.IrisTest):
-    reference_cdl_path = (
-        '../results/integration/climatology/TestClimatology/'
-        'reference_simpledata.cdl')
+    reference_cdl_path = os_sep.join([
+        dirname(tests.__file__),
+        ('results/integration/climatology/TestClimatology/'
+            'reference_simpledata.cdl')])
 
     @classmethod
     def _simple_cdl_string(cls):
