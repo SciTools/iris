@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,7 +19,8 @@
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-# import iris tests first so that some things can be initialised before importing anything else
+# import iris tests first so that some things can be initialised before
+# importing anything else
 import iris.tests as tests
 
 from xml.dom.minidom import Document
@@ -36,105 +37,113 @@ from iris._data_manager import DataManager
 import iris.tests.stock
 
 
-
-
 @tests.skip_data
 class TestCoordSlicing(tests.IrisTest):
     def setUp(self):
         cube = iris.tests.stock.realistic_4d()
         self.lat = cube.coord('grid_latitude')
         self.surface_altitude = cube.coord('surface_altitude')
-        
+
     def test_slice_copy(self):
         a = self.lat
         b = a.copy()
         self.assertEqual(a, b)
         self.assertFalse(a is b)
-        
+
         a = self.lat
         b = a[:]
         self.assertEqual(a, b)
         self.assertFalse(a is b)
-        
+
     def test_slice_multiple_indices(self):
         aux_lat = iris.coords.AuxCoord.from_coord(self.lat)
         aux_sliced = aux_lat[(3, 4), :]
-        dim_sliced   = self.lat[(3, 4), :]
-        
+        dim_sliced = self.lat[(3, 4), :]
+
         self.assertEqual(dim_sliced, aux_sliced)
 
     def test_slice_reverse(self):
         b = self.lat[::-1]
         np.testing.assert_array_equal(b.points, self.lat.points[::-1])
         np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
-        
+
         c = b[::-1]
         self.assertEqual(self.lat, c)
-        
+
     def test_multidim(self):
         a = self.surface_altitude
         # make some arbitrary bounds
         bound_shape = a.shape + (2,)
         a.bounds = np.arange(np.prod(bound_shape)).reshape(bound_shape)
         b = a[(0, 2), (0, -1)]
-        np.testing.assert_array_equal(b.points, a.points[(0, 2), :][:, (0, -1)])
-        np.testing.assert_array_equal(b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :])
+        np.testing.assert_array_equal(
+            b.points, a.points[(0, 2), :][:, (0, -1)])
+        np.testing.assert_array_equal(
+            b.bounds, a.bounds[(0, 2), :, :][:, (0, -1), :])
 
 
 class TestCoordIntersection(tests.IrisTest):
     def setUp(self):
-        self.a = iris.coords.DimCoord(np.arange(9., dtype=np.float32) * 3 + 9., long_name='foo', units='meter')# 0.75)
+        self.a = iris.coords.DimCoord(
+            np.arange(9., dtype=np.float32) * 3 + 9.,
+            long_name='foo',
+            units='meter')  # 0.75)
         self.a.guess_bounds(0.75)
-        pts = np.array([  3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.,  30.], dtype=np.float32)
-        bnds = np.array([[  0.75,   3.75],
-           [  3.75,   6.75],
-           [  6.75,   9.75],
-           [  9.75,  12.75],
-           [ 12.75,  15.75],
-           [ 15.75,  18.75],
-           [ 18.75,  21.75],
-           [ 21.75,  24.75],
-           [ 24.75,  27.75],
-           [ 27.75,  30.75]], dtype=np.float32)
-        self.b = iris.coords.AuxCoord(pts, long_name='foo', units='meter', bounds=bnds)
-    
+        pts = np.array(
+            [3.,   6.,   9.,  12.,  15.,  18.,  21.,  24.,  27.,  30.],
+            dtype=np.float32)
+        bnds = np.array([[0.75,   3.75],
+                         [3.75, 6.75],
+                         [6.75, 9.75],
+                         [9.75, 12.75],
+                         [12.75, 15.75],
+                         [15.75, 18.75],
+                         [18.75, 21.75],
+                         [21.75, 24.75],
+                         [24.75, 27.75],
+                         [27.75, 30.75]], dtype=np.float32)
+        self.b = iris.coords.AuxCoord(
+            pts, long_name='foo', units='meter', bounds=bnds)
+
     def test_basic_intersection(self):
         inds = self.a.intersect(self.b, return_indices=True)
         self.assertEqual((0, 1, 2, 3, 4, 5, 6, 7), tuple(inds))
-            
+
         c = self.a.intersect(self.b)
         self.assertXMLElement(c, ('coord_api', 'intersection.xml'))
-    
+
     def test_intersection_reverse(self):
-        inds = self.a.intersect(self.b[::-1], return_indices=True)    
+        inds = self.a.intersect(self.b[::-1], return_indices=True)
         self.assertEqual((7, 6, 5, 4, 3, 2, 1, 0), tuple(inds))
-        
+
         c = self.a.intersect(self.b[::-1])
         self.assertXMLElement(c, ('coord_api', 'intersection_reversed.xml'))
-    
-    def test_no_intersection_on_points(self):    
-        # Coordinates which do not share common points but with common bounds should fail
+
+    def test_no_intersection_on_points(self):
+        # Coordinates which do not share common points but with common
+        # bounds should fail
         self.a.points = self.a.points + 200
         self.assertRaises(ValueError, self.a.intersect, self.b)
-        
+
     def test_intersection_one_fewer_upper_bound_than_lower(self):
-        self.b.bounds[4, 1] = self.b.bounds[0, 1]        
+        self.b.bounds[4, 1] = self.b.bounds[0, 1]
         c = self.a.intersect(self.b)
         self.assertXMLElement(c, ('coord_api', 'intersection_missing.xml'))
-        
-    def test_no_intersection_on_bounds(self):        
-        # Coordinates which do not share common bounds but with common points should fail
+
+    def test_no_intersection_on_bounds(self):
+        # Coordinates which do not share common bounds but with common
+        # points should fail
         self.a.bounds = None
         a = self.a.copy()
         a.bounds = None
         a.guess_bounds(bound_position=0.25)
         self.assertRaises(ValueError, a.intersect, self.b)
-    
+
     def test_no_intersection_on_name(self):
         # Coordinates which do not share the same name should fail
         self.a.long_name = 'foobar'
         self.assertRaises(ValueError, self.a.intersect, self.b)
-        
+
     def test_no_intersection_on_unit(self):
         # Coordinates which do not share the same unit should fail
         self.a.units = 'kilometer'
@@ -145,8 +154,10 @@ class TestCoordIntersection(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         coord = cube.coord('grid_longitude')
         offset_coord = coord.copy()
-        offset_coord = offset_coord - (offset_coord.points[20] - offset_coord.points[0])
-        self.assertEqual(coord.intersect(offset_coord), offset_coord.intersect(coord))
+        offset_coord =\
+            offset_coord - (offset_coord.points[20] - offset_coord.points[0])
+        self.assertEqual(
+            coord.intersect(offset_coord), offset_coord.intersect(coord))
 
 
 class TestXML(tests.IrisTest):
@@ -192,7 +203,7 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
 class TestCoord_ReprStr_time(tests.IrisTest):
     def setUp(self):
         self.time = iris.tests.stock.realistic_4d().coord('time')
-        
+
     def test_DimCoord_repr(self):
         self.assertRepr(self.time,
                         ('coord_api', 'str_repr', 'dim_time_repr.txt'))
@@ -214,20 +225,27 @@ class TestAuxCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
-        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'))"
+        result = "AuxCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name='air_temperature'," \
+                 " units=Unit('kelvin'))"
         self.assertEqual(result, str(a))
 
         b = iris.coords.AuxCoord(list(range(10)),
                                  attributes={'monty': 'python'})
-        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name=None, units=Unit('1'), attributes={'monty': 'python'})"
+        result = "AuxCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name=None," \
+                 " units=Unit('1')," \
+                 " attributes={'monty': 'python'})"
         self.assertEqual(result, str(b))
-        
+
     def test_excluded_attributes(self):
         with self.assertRaises(ValueError):
             iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  attributes={'standard_name': 'whoopsy'})
-        
+
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
         with self.assertRaises(ValueError):
@@ -239,21 +257,27 @@ class TestAuxCoordCreation(tests.IrisTest):
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  coord_system=iris.coord_systems.GeogCS(6000))
-        result = "AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), "\
-                 "coord_system=GeogCS(6000.0))"
+        result = "AuxCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name='air_temperature'," \
+                 " units=Unit('kelvin')," \
+                 " coord_system=GeogCS(6000.0))"
         self.assertEqual(result, str(a))
-        
+
     def test_bounded(self):
         a = iris.coords.AuxCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  bounds=np.arange(0, 20).reshape(10, 2))
         result = ("AuxCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
-                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
+                  ", bounds=array(["
+                  "[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n"
+                  "[ 6,  7],\n       [ 8,  9],\n       [10, 11],\n"
+                  "[12, 13],\n       [14, 15],\n       [16, 17],\n"
+                  "[18, 19]])"
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
         self.assertEqual(result, str(a))
-        
+
     def test_string_coord_equality(self):
         b = iris.coords.AuxCoord(['Jan', 'Feb', 'March'], units='no_unit')
         c = iris.coords.AuxCoord(['Jan', 'Feb', 'March'], units='no_unit')
@@ -266,26 +290,33 @@ class TestAuxCoordCreation(tests.IrisTest):
         a = iris.coords.DimCoord(10, coord_system=crs)
         b = iris.coords.AuxCoord.from_coord(a)
         self.assertIsNot(a.coord_system, b.coord_system)
-  
-  
+
+
 class TestDimCoordCreation(tests.IrisTest):
     def test_basic(self):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'))"
+        result = "DimCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name='air_temperature'," \
+                 " units=Unit('kelvin'))"
         self.assertEqual(result, str(a))
 
         b = iris.coords.DimCoord(list(range(10)),
                                  attributes={'monty': 'python'})
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name=None, units=Unit('1'), attributes={'monty': 'python'})"
+        result = "DimCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name=None," \
+                 " units=Unit('1')," \
+                 " attributes={'monty': 'python'})"
         self.assertEqual(result, str(b))
-        
+
     def test_excluded_attributes(self):
         with self.assertRaises(ValueError):
             iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  attributes={'standard_name': 'whoopsy'})
-        
+
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin')
         with self.assertRaises(ValueError):
@@ -297,21 +328,27 @@ class TestDimCoordCreation(tests.IrisTest):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  coord_system=iris.coord_systems.GeogCS(6000))
-        result = "DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), standard_name='air_temperature', units=Unit('kelvin'), "\
-                 "coord_system=GeogCS(6000.0))"
+        result = "DimCoord(" \
+                 "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])," \
+                 " standard_name='air_temperature'," \
+                 " units=Unit('kelvin')," \
+                 " coord_system=GeogCS(6000.0))"
         self.assertEqual(result, str(a))
-        
+
     def test_bounded(self):
         a = iris.coords.DimCoord(np.arange(10), 'air_temperature',
                                  units='kelvin',
                                  bounds=np.arange(0, 20).reshape(10, 2))
         result = ("DimCoord(array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])"
-                  ", bounds=array([[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n       [ 6,  7],\n       [ 8,  9],\n       "\
-                  "[10, 11],\n       [12, 13],\n       [14, 15],\n       [16, 17],\n       [18, 19]])"
+                  ", bounds=array(["
+                  "[ 0,  1],\n       [ 2,  3],\n       [ 4,  5],\n"
+                  "[ 6,  7],\n       [ 8,  9],\n       [10, 11],\n"
+                  "[12, 13],\n       [14, 15],\n       [16, 17],\n"
+                  "[18, 19]])"
                   ", standard_name='air_temperature', units=Unit('kelvin'))"
                   )
-        self.assertEqual(result, str(a))      
-        
+        self.assertEqual(result, str(a))
+
     def test_dim_coord_restrictions(self):
         # 1d
         with self.assertRaisesRegexp(ValueError, 'must be scalar or 1-dim'):
@@ -320,7 +357,7 @@ class TestDimCoordCreation(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
             iris.coords.DimCoord([1, 2, 99, 4, 5])
         # monotonic bounds
-        with self.assertRaisesRegexp(ValueError, 
+        with self.assertRaisesRegexp(ValueError,
                                      'monotonicity.*consistent.*all bounds'):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # shapes of points and bounds
@@ -334,19 +371,23 @@ class TestDimCoordCreation(tests.IrisTest):
         # numeric
         with self.assertRaises(ValueError):
             iris.coords.DimCoord(['Jan', 'Feb', 'March'])
-            
+
     def test_DimCoord_equality(self):
         # basic regular coord
-        b = iris.coords.DimCoord([1, 2]) 
-        c = iris.coords.DimCoord([1, 2.]) 
+        b = iris.coords.DimCoord([1, 2])
+        c = iris.coords.DimCoord([1, 2.])
         d = iris.coords.DimCoord([1, 2], circular=True)
         self.assertEqual(b, c)
         self.assertNotEqual(b, d)
-        
+
     def test_Dim_to_Aux(self):
-        a = iris.coords.DimCoord(np.arange(10), standard_name='air_temperature', long_name='custom air temp',
-                                 units='kelvin', attributes={'monty': 'python'}, 
-                                 bounds=np.arange(20).reshape(10, 2), circular=True)
+        a = iris.coords.DimCoord(np.arange(10),
+                                 standard_name='air_temperature',
+                                 long_name='custom air temp',
+                                 units='kelvin',
+                                 attributes={'monty': 'python'},
+                                 bounds=np.arange(20).reshape(10, 2),
+                                 circular=True)
         b = iris.coords.AuxCoord.from_coord(a)
         # Note - circular attribute is not a factor in equality comparison
         self.assertEqual(a, b)
@@ -414,10 +455,13 @@ class TestCoordMaths(tests.IrisTest):
         count = int(count or self.count)
         bound_position = dtype(0.5)
         points = np.arange(count, dtype=dtype) * step + start
-        bounds = np.concatenate([[points - bound_position * step], 
-                                    [points + (1 - bound_position) * step]]).T
-        self.lon = iris.coords.AuxCoord(points, 'latitude',  units='degrees', bounds=bounds)
-        self.rlon = iris.coords.AuxCoord(np.deg2rad(points), 'latitude',  units='radians', bounds=np.deg2rad(bounds))
+        bounds = np.concatenate([[points - bound_position * step],
+                                 [points + (1 - bound_position) * step]]).T
+        self.lon = iris.coords.AuxCoord(
+            points, 'latitude',  units='degrees', bounds=bounds)
+        self.rlon = iris.coords.AuxCoord(
+            np.deg2rad(points), 'latitude',  units='radians',
+            bounds=np.deg2rad(bounds))
 
     def setUp(self):
         self.start = 0
@@ -429,103 +473,119 @@ class TestCoordMaths(tests.IrisTest):
 class TestCoordAdditionSubtract(TestCoordMaths):
     def test_subtract(self):
         r_expl = self.lon - 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'subtract_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'subtract_simple_expl.xml'))
+
     def test_subtract_in_place(self):
         r_expl = self.lon.copy()
         r_expl -= 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'subtract_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'subtract_simple_expl.xml'))
+
     def test_neg(self):
         self._build_coord(start=8)
         r_expl = -self.lon
         np.testing.assert_array_equal(r_expl.points, -(self.lon.points))
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'negate_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'negate_expl.xml'))
+
     def test_right_subtract(self):
         r_expl = 10 - self.lon
         # XXX original xml was for regular case, not explicit.
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'r_subtract_simple_exl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'r_subtract_simple_exl.xml'))
+
     def test_add(self):
         r_expl = self.lon + 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'add_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'add_simple_expl.xml'))
+
     def test_add_in_place(self):
         r_expl = self.lon.copy()
         r_expl += 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'add_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'add_simple_expl.xml'))
+
     def test_add_float(self):
         r_expl = self.lon + 10.321
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'add_float_expl.xml'))
-        self.assertEqual(r_expl, 10.321 + self.lon.copy() )
-        
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'add_float_expl.xml'))
+        self.assertEqual(r_expl, 10.321 + self.lon.copy())
+
+
 class TestCoordMultDivide(TestCoordMaths):
     def test_divide(self):
         r_expl = self.lon.copy() / 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'divide_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'divide_simple_expl.xml'))
+
     def test_right_divide(self):
         self._build_coord(start=10)
         test_coord = self.lon.copy()
-        
+
         r_expl = 1 / test_coord
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'right_divide_simple_expl.xml'))
+        self.assertXMLElement(
+            r_expl,
+            ('coord_api', 'coord_maths', 'right_divide_simple_expl.xml'))
 
     def test_divide_in_place(self):
         r_expl = self.lon.copy()
         r_expl /= 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'divide_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'divide_simple_expl.xml'))
+
     def test_multiply(self):
         r_expl = self.lon.copy() * 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'multiply_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'multiply_simple_expl.xml'))
+
     def test_multiply_in_place_reg(self):
         r_expl = self.lon.copy()
         r_expl *= 10
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'multiply_simple_expl.xml'))
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'multiply_simple_expl.xml'))
+
     def test_multiply_float(self):
         r_expl = self.lon.copy() * 10.321
-        self.assertXMLElement(r_expl, ('coord_api', 'coord_maths', 'mult_float_expl.xml'))
-        self.assertEqual(r_expl, 10.321 * self.lon.copy() )
-        
+        self.assertXMLElement(
+            r_expl, ('coord_api', 'coord_maths', 'mult_float_expl.xml'))
+        self.assertEqual(r_expl, 10.321 * self.lon.copy())
+
 
 class TestCoordCollapsed(tests.IrisTest):
     def create_1d_coord(self, bounds=None, points=None, units='meter'):
-        coord = iris.coords.DimCoord(points, long_name='test', units=units, 
+        coord = iris.coords.DimCoord(points, long_name='test', units=units,
                                      bounds=bounds)
         return coord
-        
+
     def test_explicit(self):
-        orig_coord = self.create_1d_coord(points=list(range(10)), 
+        orig_coord = self.create_1d_coord(points=list(range(10)),
                                           bounds=[(b, b+1) for b in range(10)])
         coord_expected = self.create_1d_coord(points=5, bounds=[(0, 10)])
 
         # test points & bounds
         self.assertEqual(coord_expected, orig_coord.collapsed())
-        
+
         # test points only
         coord = orig_coord.copy()
         coord_expected = self.create_1d_coord(points=4, bounds=[(0, 9)])
         coord.bounds = None
-        self.assertEqual(coord_expected, coord.collapsed())        
+        self.assertEqual(coord_expected, coord.collapsed())
 
     def test_circular_collapse(self):
-        # set up a coordinate that wraps 360 degrees in points using the circular flag
+        # set up a coordinate that wraps 360 degrees in points using the
+        # circular flag
         coord = self.create_1d_coord(None, np.arange(10) * 36, 'degrees')
         expected_coord = self.create_1d_coord([0., 360.], [180.], 'degrees')
         coord.circular = True
-        
+
         # test collapsing
         self.assertEqual(expected_coord, coord.collapsed())
-        # the order of the points/bounds should not affect the resultant bounded coordinate 
+        # the order of the points/bounds should not affect the resultant
+        # bounded coordinate.
         coord = coord[::-1]
         self.assertEqual(expected_coord, coord.collapsed())
-        
+
     def test_nd_bounds(self):
         cube = iris.tests.stock.simple_2d_w_multidim_coords(with_bounds=True)
         pcube = cube.collapsed(['bar', 'foo'], iris.analysis.SUM)
@@ -755,11 +815,12 @@ class TestCoordCompatibility(tests.IrisTest):
                                               standard_name='longitude',
                                               var_name='lon',
                                               units='degrees')
-        self.dim_coord = iris.coords.DimCoord(np.arange(0, 360, dtype=np.float64),
-                                              standard_name='longitude',
-                                              var_name='lon',
-                                              units='degrees',
-                                              circular=True)
+        self.dim_coord = iris.coords.DimCoord(
+            np.arange(0, 360, dtype=np.float64),
+            standard_name='longitude',
+            var_name='lon',
+            units='degrees',
+            circular=True)
 
     def test_not_compatible(self):
         r = self.aux_coord.copy()
@@ -774,7 +835,7 @@ class TestCoordCompatibility(tests.IrisTest):
         self.assertFalse(self.aux_coord.is_compatible(r))
         # Different attributes.
         r = self.aux_coord.copy()
-        self.aux_coord.attributes['source']= 'bob'
+        self.aux_coord.attributes['source'] = 'bob'
         r.attributes['source'] = 'alice'
         self.assertFalse(self.aux_coord.is_compatible(r))
 
@@ -782,7 +843,7 @@ class TestCoordCompatibility(tests.IrisTest):
         # The following changes should not affect compatibility.
         # Different non-common attributes.
         r = self.aux_coord.copy()
-        self.aux_coord.attributes['source']= 'bob'
+        self.aux_coord.attributes['source'] = 'bob'
         r.attributes['origin'] = 'alice'
         self.assertTrue(self.aux_coord.is_compatible(r))
         # Different points.
@@ -812,7 +873,7 @@ class TestCoordCompatibility(tests.IrisTest):
 
     def test_is_ignore(self):
         r = self.aux_coord.copy()
-        self.aux_coord.attributes['source']= 'bob'
+        self.aux_coord.attributes['source'] = 'bob'
         r.attributes['source'] = 'alice'
         self.assertFalse(self.aux_coord.is_compatible(r))
         # Use ignore keyword.
@@ -823,7 +884,8 @@ class TestCoordCompatibility(tests.IrisTest):
 
 class TestAuxCoordEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object): pass
+        class Terry(object):
+            pass
         aux = iris.coords.AuxCoord(0)
         self.assertIs(aux.__eq__(Terry()), NotImplemented)
         self.assertIs(aux.__ne__(Terry()), NotImplemented)
@@ -831,7 +893,8 @@ class TestAuxCoordEquality(tests.IrisTest):
 
 class TestDimCoordEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object): pass
+        class Terry(object):
+            pass
         dim = iris.coords.DimCoord(0)
         aux = iris.coords.AuxCoord(0)
         self.assertIs(dim.__eq__(Terry()), NotImplemented)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -298,6 +298,7 @@ class Test__create_cf_bounds(tests.IrisTest):
 
     def test_set_bounds_climatology(self):
         self._check_bounds_setting(bounds_are_climatological=True)
+
 
 class Test_write__valid_x_cube_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
