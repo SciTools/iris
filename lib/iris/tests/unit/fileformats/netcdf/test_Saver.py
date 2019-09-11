@@ -274,18 +274,26 @@ class Test__create_cf_bounds(tests.IrisTest):
         boundsvar_name = 'time_' + varname_extra
 
         # Set up arguments for testing _create_cf_bounds.
-        saver = mock.MagicMock(spec=(Saver, '_dataset', '_ensure_valid_dtype'))
+        saver = mock.MagicMock(spec=Saver)
+        # NOTE: 'saver' must have spec=Saver to fake isinstance(save, Saver),
+        # so it can pass as 'self' in the call to _create_cf_cbounds.
+        # Mock a '_dataset' property; not automatic because 'spec=Saver'.
+        saver._dataset = mock.MagicMock()
+        # Mock the '_ensure_valid_dtype' method to return an object with a
+        # suitable 'shape' and 'dtype'. 
         saver._ensure_valid_dtype.return_value = mock.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype)
         var = mock.MagicMock(spec=nc.Variable)
+
+        # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, 'time')
 
-        # Mock and test call of _setncattr in _create_cf_bounds.
+        # Test the call of _setncattr in _create_cf_bounds.
         setncattr_call = mock.call(property_name,
                                    boundsvar_name.encode(encoding='ascii'))
         self.assertEqual(setncattr_call, var.setncattr.call_args)
 
-        # Mock and test call of createVariable in _create_cf_bounds.
+        # Test the call of createVariable in _create_cf_bounds.
         dataset = saver._dataset
         expected_dimensions = var.dimensions + ('bnds',)
         create_var_call = mock.call(
