@@ -662,38 +662,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
-        else:
-            bounds = self._sanitise_array(bounds, 2)
-            if self.shape != bounds.shape[:-1]:
-                raise ValueError("Bounds shape must be compatible with points "
-                                 "shape.")
-            if not self.has_bounds() \
-                    or self.core_bounds().shape != bounds.shape:
-                # Construct a new bounds DataManager.
-                self._bounds_dm = DataManager(bounds)
-            else:
-                self._bounds_dm.data = bounds
-
-    bounds = property(_bounds_getter, _bounds_setter)
-
-    def _bounds_getter(self):
-        """
-        The coordinate bounds values, as a NumPy array,
-        or None if no bound values are defined.
-
-        .. note:: The shape of the bound array should be: ``points.shape +
-            (n_bounds, )``.
-
-        """
-        bounds = None
-        if self.has_bounds():
-            bounds = self._bounds_dm.data.view()
-        return bounds
-
-    def _bounds_setter(self, bounds):
-        # Ensure the bounds are a compatible shape.
-        if bounds is None:
-            self._bounds_dm = None
             self._bounds_are_climatological = False
         else:
             bounds = self._sanitise_array(bounds, 2)
