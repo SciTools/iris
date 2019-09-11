@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :class:`iris.coords.Coord` class."""
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
@@ -26,8 +25,9 @@ import iris.tests as tests
 import collections
 import warnings
 
-import numpy as np
 import dask.array as da
+import numpy as np
+import six
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
@@ -799,8 +799,8 @@ class TestClimatology(tests.IrisTest):
         self.assertTrue(coord.bounds_are_climatological)
 
     def test_create_no_bounds_no_set(self):
-        with self.assertRaisesRegex(ValueError,
-                                    'Cannot set.*no bounds exist'):
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
             AuxCoord(points=[0, 1], bounds_are_climatological=True)
 
     def test_absent(self):
@@ -809,8 +809,8 @@ class TestClimatology(tests.IrisTest):
 
     def test_absent_no_bounds_no_set(self):
         coord = AuxCoord(points=[0, 1])
-        with self.assertRaisesRegex(ValueError,
-                                    'Cannot set.*no bounds exist'):
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
             coord.bounds_are_climatological = True
 
     def test_absent_no_bounds_unset(self):
