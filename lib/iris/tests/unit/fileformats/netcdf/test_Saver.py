@@ -280,7 +280,7 @@ class Test__create_cf_bounds(tests.IrisTest):
         # Mock a '_dataset' property; not automatic because 'spec=Saver'.
         saver._dataset = mock.MagicMock()
         # Mock the '_ensure_valid_dtype' method to return an object with a
-        # suitable 'shape' and 'dtype'. 
+        # suitable 'shape' and 'dtype'.
         saver._ensure_valid_dtype.return_value = mock.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype)
         var = mock.MagicMock(spec=nc.Variable)
