@@ -23,6 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+from datetime import datetime
 import os.path
 
 import numpy as np
@@ -33,7 +34,7 @@ from iris.cube import Cube
 import iris.aux_factory
 import iris.coords
 import iris.coords as icoords
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import DimCoord, AuxCoord, CellMethod
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from ._stock_2d_latlons import (sample_2d_latlons,
@@ -645,4 +646,42 @@ def ocean_sigma_z():
         depth=co_depth, eta=co_ssh, depth_c=co_depthc, zlev=co_zlay,
         sigma=co_sigma, nsigma=co_nsigma)
     cube.add_aux_factory(fact)
+    return cube
+
+
+def climatology_3d():
+    def jan_offset(day, year):
+        dt = (datetime(year, 1, day) - datetime(1970, 1, 1))
+        return dt.total_seconds() / (24. * 3600)
+
+    days = range(10, 15)
+    years = [[year, year + 10] for year in [2001] * 4]
+    days_since = [[jan_offset(day, yr1), jan_offset(day, yr2)]
+                  for (day, [yr1, yr2])
+                  in zip(days, years)]
+    time_bounds = np.array(days_since)
+    time_points = time_bounds[..., 0]
+
+    lon = np.linspace(-25, 25, 5)
+    lat = np.linspace(0, 60, 3)
+
+    time_dim = DimCoord(time_points,
+                        standard_name='time',
+                        bounds=time_bounds,
+                        bounds_are_climatological=True,
+                        units='days since 1970-01-01 00:00:00-00'
+                        )
+    lon_dim = DimCoord(lon, standard_name='longitude')
+    lat_dim = DimCoord(lat, standard_name='latitude')
+
+    data_shape = (len(time_points), len(lat), len(lon))
+    values = np.zeros(shape=data_shape, dtype=np.int8)
+    cube = Cube(values)
+    cube.add_dim_coord(time_dim, 0)
+    cube.add_dim_coord(lat_dim, 1)
+    cube.add_dim_coord(lon_dim, 2)
+    cube.rename('climatology test')
+    cube.units = 'Kelvin'
+    cube.add_cell_method(CellMethod('mean over years', coords='time'))
+
     return cube

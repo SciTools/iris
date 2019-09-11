@@ -23,34 +23,4 @@ variables:
 		longitude:axis = "X" ;
 		longitude:units = "1" ;
 		longitude:standard_name = "longitude" ;
-
-// global attributes:
-		:Conventions = "CF-1.5" ;
-data:
-
- climatology_test =
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0 ;
-
- time = 11332, 11333, 11334, 11335 ;
-
- time_climatology =
-  11332, 14984,
-  11333, 14985,
-  11334, 14986,
-  11335, 14987 ;
-
- latitude = 0, 30, 60 ;
-
- longitude = -25, -12.5, 0, 12.5, 25 ;
 }

@@ -162,16 +162,16 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube('>f4')
-        with mock.patch('iris.fileformats.netcdf.netCDF4') as api:
-            with Saver('/dummy/path', 'NETCDF4') as saver:
-                saver.write(cube, zlib=True)
+        api = self.patch('iris.fileformats.netcdf.netCDF4')
+        with Saver('/dummy/path', 'NETCDF4') as saver:
+            saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
-        create_var_calls = mock.call.createVariable(
+        create_var_call = mock.call(
             'air_pressure_anomaly', np.dtype('float32'), ['dim0', 'dim1'],
             fill_value=None, shuffle=True, least_significant_digit=None,
             contiguous=False, zlib=True, fletcher32=False,
-            endian='native', complevel=4, chunksizes=None).call_list()
-        dataset.assert_has_calls(create_var_calls)
+            endian='native', complevel=4, chunksizes=None)
+        self.assertIn(create_var_call, dataset.createVariable.call_args_list)
 
     def test_least_significant_digit(self):
         cube = Cube(np.array([1.23, 4.56, 7.89]),
@@ -247,6 +247,57 @@ class Test_write(tests.IrisTest):
             ds.close()
             self.assertEqual(res, 'something something_else')
 
+    def test_with_climatology(self):
+        cube = stock.climatology_3d()
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path)
+
+
+class Test__create_cf_bounds(tests.IrisTest):
+    def _check_bounds_setting(self, bounds_are_climatological=False):
+        # Generic test that can run with or without climatological bounds.
+        cube = stock.climatology_3d()
+        coord = cube.coord('time').copy()
+        # Over-write original value from stock.climatology_3d with test value.
+        coord.bounds_are_climatological = \
+            bounds_are_climatological
+
+        # Set up expected strings.
+        if bounds_are_climatological:
+            property_name = 'climatology'
+            varname_extra = 'climatology'
+        else:
+            property_name = 'bounds'
+            varname_extra = 'bnds'
+        boundsvar_name = 'time_' + varname_extra
+
+        # Set up arguments for testing _create_cf_bounds.
+        saver = mock.MagicMock(spec=(Saver, '_dataset', '_ensure_valid_dtype'))
+        saver._ensure_valid_dtype.return_value = mock.Mock(
+            shape=coord.bounds.shape, dtype=coord.bounds.dtype)
+        var = mock.MagicMock(spec=nc.Variable)
+        Saver._create_cf_bounds(saver, coord, var, 'time')
+
+        # Mock and test call of _setncattr in _create_cf_bounds.
+        setncattr_call = mock.call(property_name,
+                                   boundsvar_name.encode(encoding='ascii'))
+        self.assertEqual(setncattr_call, var.setncattr.call_args)
+
+        # Mock and test call of createVariable in _create_cf_bounds.
+        dataset = saver._dataset
+        expected_dimensions = var.dimensions + ('bnds',)
+        create_var_call = mock.call(
+            boundsvar_name, coord.bounds.dtype,
+            expected_dimensions)
+        self.assertEqual(create_var_call, dataset.createVariable.call_args)
+
+    def test_set_bounds_default(self):
+        self._check_bounds_setting(bounds_are_climatological=False)
+
+    def test_set_bounds_climatology(self):
+        self._check_bounds_setting(bounds_are_climatological=True)
 
 class Test_write__valid_x_cube_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""

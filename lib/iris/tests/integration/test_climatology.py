@@ -23,60 +23,19 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from datetime import datetime
 from os.path import join as path_join
 import shutil
 from subprocess import check_call
 import tempfile
 
-import netCDF4 as nc
-import numpy as np
-
 import iris
-from iris.coords import CellMethod, DimCoord
-from iris.cube import Cube
+from iris.tests import stock
 
 
 class TestClimatology(iris.tests.IrisTest):
     reference_cdl_path = (
         '../results/integration/climatology/TestClimatology/'
         'reference_simpledata.cdl')
-
-    @staticmethod
-    def _simple_data_cube():
-        def jan_offset(day, year):
-            dt = (datetime(year, 1, day) - datetime(1970, 1, 1))
-            return dt.total_seconds() / (24. * 3600)
-
-        days = range(10, 15)
-        years = [[year, year + 10] for year in [2001] * 4]
-        days_since = [[jan_offset(day, yr1), jan_offset(day, yr2)]
-                      for (day, [yr1, yr2])
-                      in zip(days, years)]
-        time_bounds = np.array(days_since)
-        time_points = time_bounds[..., 0]
-
-        lon = np.linspace(-25, 25, 5)
-        lat = np.linspace(0, 60, 3)
-
-        time_dim = DimCoord(time_points,
-                            standard_name='time',
-                            bounds=time_bounds,
-                            units='days since 1970-01-01 00:00:00-00')
-        lon_dim = DimCoord(lon, standard_name='longitude')
-        lat_dim = DimCoord(lat, standard_name='latitude')
-
-        data_shape = (len(time_points), len(lat), len(lon))
-        values = np.zeros(shape=data_shape, dtype=np.int8)
-        cube = Cube(values)
-        cube.add_dim_coord(time_dim, 0)
-        cube.add_dim_coord(lat_dim, 1)
-        cube.add_dim_coord(lon_dim, 2)
-        cube.rename('climatology test')
-        cube.units = 'Kelvin'
-        cube.add_cell_method(CellMethod('mean over years', coords='time'))
-
-        return cube
 
     @classmethod
     def _simple_cdl_string(cls):
@@ -87,19 +46,6 @@ class TestClimatology(iris.tests.IrisTest):
         cdl_content = 'netcdf {\n' + cdl_content
 
         return cdl_content
-
-    @staticmethod
-    def _bounds_to_climatology(file_path):
-        # Hack file until Iris does it right ..
-        # TODO: remove this and any references to it.
-        ds = nc.Dataset(file_path, 'r+')
-        ds.variables['time'].renameAttribute('bounds', 'climatology')
-        old_name = 'time_bnds'
-        new_name = 'time_climatology'
-        assert (ds.variables['time'].climatology == old_name)
-        ds.variables['time'].climatology = new_name
-        ds.renameVariable(old_name, new_name)
-        ds.close()
 
     @staticmethod
     def _load_sanitised_cube(filepath):
@@ -128,7 +74,7 @@ class TestClimatology(iris.tests.IrisTest):
         cls.path_temp_nc = path_join(cls.temp_dir, 'tmp.nc')
 
         # Create reference cube.
-        cls.cube_ref = cls._simple_data_cube()
+        cls.cube_ref = stock.climatology_3d()
 
     @classmethod
     def tearDownClass(cls):
@@ -136,21 +82,7 @@ class TestClimatology(iris.tests.IrisTest):
         shutil.rmtree(cls.temp_dir)
 
 ###############################################################################
-
-    def test_save_simpledata(self):
-        # Create file from cube, test against reference CDL.
-        cube = self.cube_ref
-        iris.save(cube, self.path_temp_nc)
-        self._bounds_to_climatology(self.path_temp_nc)
-        self.assertCDL(
-            self.path_temp_nc,
-            reference_filename=self.reference_cdl_path,
-            flags='')
-
-    def test_load_simpledata(self):
-        # Create cube from file, test against reference cube.
-        cube = self._load_sanitised_cube(self.path_ref_nc)
-        self.assertEqual(cube, self.cube_ref)
+    # Round-trip tests
 
     def test_cube_to_cube(self):
         # Save reference cube to file, load cube from same file, test against
@@ -164,11 +96,22 @@ class TestClimatology(iris.tests.IrisTest):
         # reference CDL.
         cube = iris.load_cube(self.path_ref_nc)
         iris.save(cube, self.path_temp_nc)
-        self._bounds_to_climatology(self.path_temp_nc)
         self.assertCDL(
             self.path_temp_nc,
             reference_filename=self.reference_cdl_path,
             flags='')
+
+    # NOTE:
+    # The saving half of the round-trip tests is tested in the
+    # appropriate dedicated test class:
+    # unit.fileformats.netcdf.test_Saver.Test_write.test_with_climatology .
+    # The loading half has no equivalent dedicated location, so is tested
+    # here as test_load_from_file.
+
+    def test_load_from_file(self):
+        # Create cube from file, test against reference cube.
+        cube = self._load_sanitised_cube(self.path_ref_nc)
+        self.assertEqual(cube, self.cube_ref)
 
 
 if __name__ == "__main__":
