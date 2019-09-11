@@ -655,8 +655,8 @@ def climatology_3d():
     time_dim = DimCoord(time_points,
                         standard_name='time',
                         bounds=time_bounds,
-                        bounds_are_climatological=True,
-                        units='days since 1970-01-01 00:00:00-00'
+                        units='days since 1970-01-01 00:00:00-00',
+                        bounds_are_climatological=True
                         )
     lon_dim = DimCoord(lon, standard_name='longitude')
     lat_dim = DimCoord(lat, standard_name='latitude')

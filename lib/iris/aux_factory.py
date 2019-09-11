@@ -70,10 +70,10 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             self.standard_name, self.long_name,
             self.var_name, self.units,
             self.attributes,
+            self.coord_system,
             # Slot for Coord 'bounds_are_climatological' property, which this
             # doesn't have.
-            False,
-            self.coord_system)
+            False,)
         return defn
 
     @abstractmethod

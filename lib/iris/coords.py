@@ -55,8 +55,8 @@ from iris.util import points_step
 class CoordDefn(namedtuple('CoordDefn',
                            ['standard_name', 'long_name',
                             'var_name', 'units',
-                            'bounds_are_climatological',
-                            'attributes', 'coord_system'])):
+                            'attributes', 'coord_system',
+                            'bounds_are_climatological'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
     :class:`AuxCoord` based on its metadata.
@@ -452,8 +452,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None,
-                 bounds_are_climatological=False, attributes=None,
-                 coord_system=None):
+                 attributes=None, coord_system=None,
+                 bounds_are_climatological=False):
 
         """
         Constructs a single coordinate.
@@ -876,8 +876,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
-                         self.units, self.bounds_are_climatological,
-                         self.attributes, self.coord_system)
+                         self.units, self.attributes, self.coord_system,
+                         self.bounds_are_climatological)
         return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1831,8 +1831,8 @@ class DimCoord(Coord):
 
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None,
-                 bounds_are_climatological=False, attributes=None,
-                 coord_system=None, circular=False):
+                 attributes=None, coord_system=None, circular=False,
+                 bounds_are_climatological=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
@@ -1842,9 +1842,9 @@ class DimCoord(Coord):
             points, standard_name=standard_name,
             long_name=long_name, var_name=var_name,
             units=units, bounds=bounds,
-            bounds_are_climatological=bounds_are_climatological,
             attributes=attributes,
-            coord_system=coord_system)
+            coord_system=coord_system,
+            bounds_are_climatological=bounds_are_climatological)
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
