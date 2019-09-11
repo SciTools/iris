@@ -801,7 +801,7 @@ class TestClimatology(tests.IrisTest):
     def test_create_no_bounds_no_set(self):
         with self.assertRaisesRegex(ValueError,
                                     'Cannot set.*no bounds exist'):
-            coord = AuxCoord(points=[0, 1], bounds_are_climatological=True)
+            AuxCoord(points=[0, 1], bounds_are_climatological=True)
 
     def test_absent(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])

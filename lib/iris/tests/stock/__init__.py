@@ -472,27 +472,6 @@ def realistic_4d():
     grid_latitude: 100; grid_longitude: 100)>
 
     """
-    # the stock arrays were created in Iris 0.8 with:
-    #    >>> fname = iris.sample_data_path('PP', 'COLPEX', 'theta_and_orog_subset.pp')
-    #    >>> theta = iris.load_cube(fname, 'air_potential_temperature')
-    #    >>> for coord in theta.coords():
-    #    ...  print(coord.name, coord.has_points(), coord.has_bounds(), coord.units)
-    #    ...
-    #    grid_latitude True True degrees
-    #    grid_longitude True True degrees
-    #    level_height True True m
-    #    model_level True False 1
-    #    sigma True True 1
-    #    time True False hours since 1970-01-01 00:00:00
-    #    source True False no_unit
-    #    forecast_period True False hours
-    #    >>> arrays = []
-    #    >>> for coord in theta.coords():
-    #    ...  if coord.has_points(): arrays.append(coord.points)
-    #    ...  if coord.has_bounds(): arrays.append(coord.bounds)
-    #    >>> arrays.append(theta.data)
-    #    >>> arrays.append(theta.coord('sigma').coord_system.orography.data)
-    #    >>> np.savez('stock_arrays.npz', *arrays)
     data_path = tests.get_data_path(('stock', 'stock_arrays.npz'))
     if not os.path.isfile(data_path):
         raise IOError('Test data is not available at {}.'.format(data_path))
