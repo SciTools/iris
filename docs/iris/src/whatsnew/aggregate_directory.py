@@ -242,6 +242,7 @@ def compile_directory(directory, release):
                 if not text[-1].endswith('\n'):
                     text[-1] += '\n'
                 category_text.extend(text)
+            category_text.append('\n----\n\n')
         compiled_text.extend(category_text)
     return compiled_text
 
