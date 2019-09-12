@@ -144,7 +144,7 @@ script:
 
   # When pushing built docs, attempt to make a preliminary whatsnew with 'aggregate_directory.py', before the build.
   - >
-    if [[ ${PUSH_BUILT_DOCS} == 'true' ]] then
+    if [[ ${PUSH_BUILT_DOCS} == 'true' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       WHATSNEW=$(ls -d contributions_* 2>/dev/null);
       if [[ "$WHATSNEW" != "" ]]; then
