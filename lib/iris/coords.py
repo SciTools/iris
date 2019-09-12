@@ -487,7 +487,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
-
+        * bounds_are_climatological (bool):
+            When True, indicates that an existing bounds property is the
+            NetCDF climatological type. Always False if no bounds exist.
         """
         #: CF standard name of the quantity that the coordinate represents.
         self.standard_name = standard_name
