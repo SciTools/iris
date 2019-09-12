@@ -13,7 +13,19 @@ env:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
   matrix:
-    - PYTHON_VERSION=3.7 TEST_TARGET=doctest
+    - PYTHON_VERSION=2.7 TEST_TARGET=default TEST_MINIMAL=true
+    - PYTHON_VERSION=2.7 TEST_TARGET=default
+    - PYTHON_VERSION=2.7 TEST_TARGET=example
+
+    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
+    - PYTHON_VERSION=3.6 TEST_TARGET=default
+    - PYTHON_VERSION=3.6 TEST_TARGET=example
+    - PYTHON_VERSION=3.6 TEST_TARGET=doctest
+
+    - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_MINIMAL=true
+    - PYTHON_VERSION=3.7 TEST_TARGET=default
+    - PYTHON_VERSION=3.7 TEST_TARGET=example
+    - PYTHON_VERSION=3.7 TEST_TARGET=doctest PUSH_BUILT_DOCS=true
 
 git:
   # We need a deep clone so that we can compute the age of the files using their git history.
@@ -123,14 +135,27 @@ script:
       python -m iris.tests.runner --example-tests --print-failed-images;
     fi
 
+  # A call to check "whatsnew" contributions are valid, because the Iris test
+  # for it needs a *developer* install to be able to find the docs.
+  - if [[ ${TEST_TARGET} == 'doctest' ]]; then
+      cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
+      python aggregate_directory.py --checkonly;
+    fi
+
+  # When pushing built docs, attempt to make a preliminary whatsnew with 'aggregate_directory.py', before the build.
   - >
-    if [[ ${TEST_TARGET} == 'doctest' ]]; then
+    if [[ ${PUSH_BUILT_DOCS} == 'true' ]] then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       WHATSNEW=$(ls -d contributions_* 2>/dev/null);
       if [[ "$WHATSNEW" != "" ]]; then
         VERSION=$(echo $WHATSNEW | grep -o "[[:digit:].]*");
         python aggregate_directory.py $VERSION;
       fi;
+    fi
+
+  # Build the docs.
+  - >
+    if [[ ${TEST_TARGET} == 'doctest' ]]; then
       MPL_RC_DIR="${HOME}/.config/matplotlib";
       mkdir -p ${MPL_RC_DIR};
       echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
@@ -142,8 +167,10 @@ script:
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
   - ORG=(${TRAVIS_REPO_SLUG//\// })
 
-  # When we merge a change, and we are running in python 3, push some docs.
-  - if [[ ${TEST_TARGET} == 'doctest' && ${TRAVIS_EVENT_TYPE} == 'push' && ${PYTHON_VERSION} == 3.7 && ${ORG} == "SciTools" ]]; then
+  # When we merge a change to SciTools/iris, we can push docs to github pages.
+  # At present, only the Python 3.7 "doctest" job does this.
+  # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
+  - if [[ ${ORG} == "SciTools" && ${TRAVIS_EVENT_TYPE} == 'push' && ${PUSH_BUILT_DOCS} == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
@@ -152,9 +179,3 @@ script:
         ${TRAVIS_BRANCH:-${TRAVIS_TAG}};
     fi
 
-  # An extra call to check "whatsnew" contributions are valid, because the
-  # Iris test for it needs a *developer* install to be able to find the docs.
-  - if [[ ${TEST_TARGET} == 'doctest' ]]; then
-      cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
-      python aggregate_directory.py --checkonly;
-    fi
