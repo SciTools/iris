@@ -85,6 +85,11 @@ use of standard NumPy/dask arrays as its underlying data storage.
 The documentation for Iris is available at <https://scitools.org.uk/iris/docs/latest>,
 including a user guide, example code, and gallery.
 
+## Work in progress
+
+A documentation build for the latest development code is visible at
+<https://scitools-docs.github.io/iris/master/index.html>.
+
 # Installation
 
 The easiest way to install Iris is with [conda](https://conda.io/miniconda.html):
