@@ -1120,6 +1120,7 @@ fc_extras
     CF_GRID_MAPPING_STEREO = 'stereographic'
     CF_GRID_MAPPING_TRANSVERSE = 'transverse_mercator'
     CF_GRID_MAPPING_VERTICAL = 'vertical_perspective'
+    CF_GRID_MAPPING_GEOSTATIONARY = 'geostationary'
 
     #
     # CF Attribute Names.

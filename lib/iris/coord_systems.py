@@ -76,6 +76,15 @@ class CoordSystem(six.with_metaclass(ABCMeta, object)):
 
         return coord_system_xml_element
 
+    @staticmethod
+    def _ellipsoid_to_globe(ellipsoid, globe_default):
+        if ellipsoid is not None:
+            globe = ellipsoid.as_cartopy_globe()
+        else:
+            globe = globe_default
+
+        return globe
+
     @abstractmethod
     def as_cartopy_crs(self):
         """
@@ -338,9 +347,8 @@ class RotatedGeogCS(CoordSystem):
         return CoordSystem.xml_element(self, doc, self._pretty_attrs())
 
     def _ccrs_kwargs(self):
-        globe = None
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
+
         # Cartopy v0.12 provided the new arg north_pole_grid_longitude
         cartopy_kwargs = {'pole_longitude': self.grid_north_pole_longitude,
                           'pole_latitude': self.grid_north_pole_latitude,
@@ -441,10 +449,7 @@ class TransverseMercator(CoordSystem):
                                         self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = None
+        globe = self._ellipsoid_to_globe(self.ellipsoid, None)
 
         return ccrs.TransverseMercator(
             central_longitude=self.longitude_of_central_meridian,
@@ -534,10 +539,7 @@ class Orthographic(CoordSystem):
                                         self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         warnings.warn('Discarding false_easting and false_northing that are '
                       'not used by Cartopy.')
@@ -553,7 +555,7 @@ class Orthographic(CoordSystem):
 
 class VerticalPerspective(CoordSystem):
     """
-    An geostationary satellite image map projection.
+    An vertical/near-side perspective satellite image map projection.
 
     """
 
@@ -592,9 +594,6 @@ class VerticalPerspective(CoordSystem):
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
             latitude_of_projection_origin)
-        if self.latitude_of_projection_origin != 0.0:
-            raise ValueError('Non-zero latitude of projection currently not'
-                             ' supported by Cartopy.')
 
         #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = float(
@@ -619,7 +618,7 @@ class VerticalPerspective(CoordSystem):
     def __repr__(self):
         return "Vertical Perspective(latitude_of_projection_origin={!r}, "\
                "longitude_of_projection_origin={!r}, "\
-               "perspective_point_height = {!r}, "\
+               "perspective_point_height={!r}, "\
                "false_easting={!r}, false_northing={!r}, "\
                "ellipsoid={!r})".format(self.latitude_of_projection_origin,
                                         self.longitude_of_projection_origin,
@@ -629,17 +628,87 @@ class VerticalPerspective(CoordSystem):
                                         self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
+
+        return ccrs.NearsidePerspective(
+            central_latitude=self.latitude_of_projection_origin,
+            central_longitude=self.longitude_of_projection_origin,
+            satellite_height=self.perspective_point_height,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
+            globe=globe)
+
+    def as_cartopy_projection(self):
+        return self.as_cartopy_crs()
+
+
+class Geostationary(CoordSystem):
+    """
+    An geostationary satellite image map projection.
+
+    """
+
+    grid_mapping_name = 'geostationary'
+
+    def __init__(self, latitude_of_projection_origin,
+                 longitude_of_projection_origin,
+                 perspective_point_height, sweep_axis, false_easting=0,
+                 false_northing=0, ellipsoid=None):
+
+        #: True latitude of planar origin in degrees.
+        self.latitude_of_projection_origin = float(
+            latitude_of_projection_origin)
+        if self.latitude_of_projection_origin != 0.0:
+            raise ValueError('Non-zero latitude of projection currently not'
+                             ' supported by Cartopy.')
+
+        #: True longitude of planar origin in degrees.
+        self.longitude_of_projection_origin = float(
+            longitude_of_projection_origin)
+
+        #: Altitude of satellite in metres.
+        # test if perspective_point_height may be cast to float for proj.4
+        test_pph = float(perspective_point_height)
+        self.perspective_point_height = perspective_point_height
+
+        #: X offset from planar origin in metres.
+        test_fe = float(false_easting)
+        self.false_easting = false_easting
+
+        #: Y offset from planar origin in metres.
+        test_fn = float(false_northing)
+        self.false_northing = false_northing
+
+        #: The axis along which the satellite instrument sweeps - 'x' or 'y'.
+        self.sweep_axis = sweep_axis
+        if self.sweep_axis not in ('x', 'y'):
+            raise ValueError('Invalid sweep_axis - must be "x" or "y"')
+
+        #: Ellipsoid definition.
+        self.ellipsoid = ellipsoid
+
+    def __repr__(self):
+        return "Geostationary(latitude_of_projection_origin={!r}, " \
+               "longitude_of_projection_origin={!r}, " \
+               "perspective_point_height={!r}, false_easting={!r}, " \
+               "false_northing={!r}, sweep_axis={!r}, " \
+               "ellipsoid={!r}".format(self.latitude_of_projection_origin,
+                                       self.longitude_of_projection_origin,
+                                       self.perspective_point_height,
+                                       self.false_easting,
+                                       self.false_northing,
+                                       self.sweep_axis, self.ellipsoid)
+
+    def as_cartopy_crs(self):
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         return ccrs.Geostationary(
             central_longitude=self.longitude_of_projection_origin,
             satellite_height=self.perspective_point_height,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
-            globe=globe)
+            globe=globe,
+            sweep_axis=self.sweep_axis)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()
@@ -712,10 +781,8 @@ class Stereographic(CoordSystem):
                                         self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
+
         return ccrs.Stereographic(
             self.central_lat, self.central_lon,
             self.false_easting, self.false_northing,
@@ -807,10 +874,7 @@ class LambertConformal(CoordSystem):
         else:
             cutoff = None
 
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         # Cartopy v0.12 deprecated the use of secant_latitudes.
         if cartopy.__version__ < '0.12':
@@ -866,10 +930,7 @@ class Mercator(CoordSystem):
         return res.format(self=self)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         return ccrs.Mercator(
             central_longitude=self.longitude_of_projection_origin,
@@ -935,10 +996,8 @@ class LambertAzimuthalEqualArea(CoordSystem):
                     self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
+
         return ccrs.LambertAzimuthalEqualArea(
             central_longitude=self.longitude_of_projection_origin,
             central_latitude=self.latitude_of_projection_origin,
@@ -1015,10 +1074,8 @@ class AlbersEqualArea(CoordSystem):
                     self.ellipsoid)
 
     def as_cartopy_crs(self):
-        if self.ellipsoid is not None:
-            globe = self.ellipsoid.as_cartopy_globe()
-        else:
-            globe = ccrs.Globe()
+        globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
+
         return ccrs.AlbersEqualArea(
             central_longitude=self.longitude_of_central_meridian,
             central_latitude=self.latitude_of_projection_origin,
