@@ -2247,16 +2247,21 @@ class CellMethod(iris.util._OrderedHashable):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
+        if CFVariableMixin.token(method) is None:
+            emsg = 'The provided method is not a valid token, got {!r}.'
+            raise ValueError(emsg.format(method))
+
         _coords = []
         if coords is None:
             pass
         elif isinstance(coords, Coord):
-            _coords.append(coords.name())
+            _coords.append(coords.name(token=True))
         elif isinstance(coords, six.string_types):
-            _coords.append(coords)
+            _coords.append(CFVariableMixin.token(coords))
         else:
-            normalise = (lambda coord: coord.name() if
-                         isinstance(coord, Coord) else coord)
+            normalise = (lambda coord: coord.name(token=True) if
+                         isinstance(coord, Coord) else
+                         CFVariableMixin.token(coord))
             _coords.extend([normalise(coord) for coord in coords])
 
         _intervals = []
