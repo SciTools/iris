@@ -8,11 +8,12 @@ different time dimensions in these files can prevent Iris from concatenating
 them without the intervention shown here.
 """
 from __future__ import unicode_literals
+
 import iris
-from iris.util import promote_aux_coord_to_dim_coord
 import iris.plot as iplt
 import iris.quickplot as qplt
 import matplotlib.pyplot as plt
+from iris.util import promote_aux_coord_to_dim_coord
 
 
 def main():
