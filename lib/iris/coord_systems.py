@@ -565,7 +565,7 @@ class VerticalPerspective(CoordSystem):
                  longitude_of_projection_origin, perspective_point_height,
                  false_easting=0, false_northing=0, ellipsoid=None):
         """
-        Constructs an Vertical Perspective Geostationary coord system.
+        Constructs an Vertical Perspective coord system.
 
         Args:
 
@@ -655,6 +655,35 @@ class Geostationary(CoordSystem):
                  perspective_point_height, sweep_axis, false_easting=0,
                  false_northing=0, ellipsoid=None):
 
+        """
+        Constructs a Geostationary coord system.
+
+        Args:
+
+        * latitude_of_projection_origin (float):
+            True latitude of planar origin in degrees.
+
+        * longitude_of_projection_origin (float):
+            True longitude of planar origin in degrees.
+
+        * perspective_point_height (float):
+            Altitude of satellite in metres above the surface of the ellipsoid.
+
+        * sweep_axis (string):
+            The axis along which the satellite instrument sweeps - 'x' or 'y'.
+
+        Kwargs:
+
+        * false_easting (float):
+            X offset from planar origin in metres. Defaults to 0.
+
+        * false_northing (float):
+            Y offset from planar origin in metres. Defaults to 0.
+
+        * ellipsoid (iris.coord_systems.GeogCS):
+            :class:`GeogCS` defining the ellipsoid.
+
+        """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(
             latitude_of_projection_origin)
