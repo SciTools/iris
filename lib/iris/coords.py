@@ -2247,7 +2247,7 @@ class CellMethod(iris.util._OrderedHashable):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
-        default = 'unknown'
+        default = CFVariableMixin._DEFAULT
         _coords = []
         if coords is None:
             pass

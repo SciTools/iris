@@ -87,6 +87,9 @@ class LimitedAttributeDict(dict):
 
 
 class CFVariableMixin(object):
+
+    _DEFAULT = 'unknown'  # the name default string
+
     @staticmethod
     def token(name):
         '''
@@ -107,7 +110,7 @@ class CFVariableMixin(object):
             name = result if result is None else name
         return name
 
-    def name(self, default='unknown', token=False):
+    def name(self, default=None, token=False):
         """
         Returns a human-readable name.
 
@@ -131,6 +134,8 @@ class CFVariableMixin(object):
         """
         def _check(item):
             return self.token(item) if token else item
+
+        default = self._DEFAULT if default is None else default
 
         result = (_check(self.standard_name) or _check(self.long_name) or
                   _check(self.var_name) or
