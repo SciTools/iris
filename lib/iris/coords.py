@@ -2247,17 +2247,18 @@ class CellMethod(iris.util._OrderedHashable):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
+        default = 'unknown'
         _coords = []
         if coords is None:
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
         elif isinstance(coords, six.string_types):
-            _coords.append(CFVariableMixin.token(coords))
+            _coords.append(CFVariableMixin.token(coords) or default)
         else:
             normalise = (lambda coord: coord.name(token=True) if
                          isinstance(coord, Coord) else
-                         CFVariableMixin.token(coord))
+                         CFVariableMixin.token(coord) or default)
             _coords.extend([normalise(coord) for coord in coords])
 
         _intervals = []

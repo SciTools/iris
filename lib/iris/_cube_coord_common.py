@@ -191,12 +191,10 @@ class CFVariableMixin(object):
     @var_name.setter
     def var_name(self, name):
         if name is not None:
-            if not name:
-                raise ValueError('An empty string is not a valid netCDF '
-                                 'variable name.')
-            elif set(name).intersection(string.whitespace):
-                raise ValueError('{!r} is not a valid netCDF variable name '
-                                 'as it contains whitespace.'.format(name))
+            result = self.token(name)
+            if result is None or not name:
+                emsg = '{!r} is not a valid NetCDF variable name.'
+                raise ValueError(emsg.format(name))
         self._var_name = name
 
     @property
