@@ -26,6 +26,9 @@
 <a href="https://travis-ci.org/SciTools/iris/branches">
 <img src="https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master"
      alt="Travis-CI" /></a>
+<a href="https://scitools-docs.github.io/iris/master/index.html">
+<img src="https://img.shields.io/badge/docs-master-blue.svg"
+     alt="Master docs build" /></a>
 <a href="https://zenodo.org/badge/latestdoi/5312648">
 <img src="https://zenodo.org/badge/5312648.svg"
      alt="zenodo" /></a>
@@ -84,6 +87,9 @@ use of standard NumPy/dask arrays as its underlying data storage.
 
 The documentation for Iris is available at <https://scitools.org.uk/iris/docs/latest>,
 including a user guide, example code, and gallery.
+
+A documentation build for the latest development code is visible at
+<https://scitools-docs.github.io/iris/master/index.html>.
 
 # Installation
 

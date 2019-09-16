@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -166,13 +166,16 @@ def find_release_directory(root_directory, release=None,
     return result
 
 
-def generate_header(release):
+def generate_header(release, unreleased=False):
     '''Return a list of text lines that make up a header for the document.'''
+    if unreleased:
+        isodatestamp = '<unreleased>'
+    else:
+        isodatestamp = datetime.date.today().strftime('%Y-%m-%d')
     header_text = []
     title_template = 'What\'s New in {} {!s}\n'
     title_line = title_template.format(SOFTWARE_NAME, release)
     title_underline = ('*' * (len(title_line) - 1)) + '\n'
-    isodatestamp = datetime.date.today().strftime('%Y-%m-%d')
     header_text.append(title_line)
     header_text.append(title_underline)
     header_text.append('\n')
@@ -215,11 +218,13 @@ def read_directory(directory_path):
     return compilable_files
 
 
-def compile_directory(directory, release):
+def compile_directory(directory, release, unreleased=False):
     '''Read in source files in date order and compile the text into a list.'''
+    if unreleased:
+        release = '<interim>'
     source_text = read_directory(directory)
     compiled_text = []
-    header_text = generate_header(release)
+    header_text = generate_header(release, unreleased)
     compiled_text.extend(header_text)
     for count, category in enumerate(VALID_CATEGORIES):
         category_text = []
@@ -242,11 +247,12 @@ def compile_directory(directory, release):
                 if not text[-1].endswith('\n'):
                     text[-1] += '\n'
                 category_text.extend(text)
+            category_text.append('\n----\n\n')
         compiled_text.extend(category_text)
     return compiled_text
 
 
-def check_all_contributions_valid(release=None, quiet=False):
+def check_all_contributions_valid(release=None, quiet=False, unreleased=False):
     """"Scan the contributions directory for badly-named files."""
     root_directory = _self_root_directory()
     # Check there are *some* contributions directory(s), else silently pass.
@@ -263,12 +269,12 @@ def check_all_contributions_valid(release=None, quiet=False):
         # Run the directory scan, but convert any warning into an error.
         with warnings.catch_warnings():
             warnings.simplefilter('error')
-            compile_directory(release_directory, release)
+            compile_directory(release_directory, release, unreleased)
     if not quiet:
         print('done.')
 
 
-def run_compilation(release=None, quiet=False):
+def run_compilation(release=None, quiet=False, unreleased=False):
     '''Write a draft release.rst file given a specified uncompiled release.'''
     if release is None:
         # This must exist !
@@ -278,8 +284,11 @@ def run_compilation(release=None, quiet=False):
         print(msg.format(release))
     root_directory = _self_root_directory()
     release_directory = find_release_directory(root_directory, release)
-    compiled_text = compile_directory(release_directory, release)
-    compiled_filename = str(release) + EXTENSION
+    compiled_text = compile_directory(release_directory, release, unreleased)
+    if unreleased:
+        compiled_filename = 'latest' + EXTENSION
+    else:
+        compiled_filename = str(release) + EXTENSION
     compiled_filepath = os.path.join(root_directory, compiled_filename)
     with open(compiled_filepath, 'w') as output_object:
         for string_line in compiled_text:
@@ -296,12 +305,18 @@ if __name__ == '__main__':
         '-c', '--checkonly', action='store_true',
         help="Check contribution file names, do not build.")
     PARSER.add_argument(
+        '-u', '--unreleased', action='store_true',
+        help=("Label the release version as '<interim>', "
+              "and its date as '<unreleased>'."))
+    PARSER.add_argument(
         '-q', '--quiet', action='store_true',
         help="Do not print progress messages.")
     ARGUMENTS = PARSER.parse_args()
     release = ARGUMENTS.release
+    unreleased = ARGUMENTS.unreleased
     quiet = ARGUMENTS.quiet
     if ARGUMENTS.checkonly:
-        check_all_contributions_valid(release, quiet=quiet)
+        check_all_contributions_valid(release, quiet=quiet,
+                                      unreleased=unreleased)
     else:
-        run_compilation(release, quiet=quiet)
+        run_compilation(release, quiet=quiet, unreleased=unreleased)
