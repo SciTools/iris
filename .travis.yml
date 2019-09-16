@@ -142,7 +142,8 @@ script:
       python aggregate_directory.py --checkonly;
     fi
 
-  # When pushing built docs, attempt to make a preliminary whatsnew with 'aggregate_directory.py', before the build.
+  # When pushing built docs, attempt to make a preliminary whatsnew by calling
+  # 'aggregate_directory.py', before the build.
   - >
     if [[ ${PUSH_BUILT_DOCS} == 'true' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;

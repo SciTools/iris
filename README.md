@@ -26,6 +26,9 @@
 <a href="https://travis-ci.org/SciTools/iris/branches">
 <img src="https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master"
      alt="Travis-CI" /></a>
+<a href="https://scitools-docs.github.io/iris/master/index.html">
+<img src="https://img.shields.io/badge/docs-master-blue.svg"
+     alt="Master docs build" /></a>
 <a href="https://zenodo.org/badge/latestdoi/5312648">
 <img src="https://zenodo.org/badge/5312648.svg"
      alt="zenodo" /></a>
