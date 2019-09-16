@@ -149,8 +149,7 @@ script:
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       WHATSNEW=$(ls -d contributions_* 2>/dev/null);
       if [[ "$WHATSNEW" != "" ]]; then
-        VERSION=$(echo $WHATSNEW | grep -o "[[:digit:].]*");
-        python aggregate_directory.py $VERSION;
+        python aggregate_directory.py --unreleased;
       fi;
     fi
 
