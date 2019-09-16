@@ -35,7 +35,8 @@ from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
                                 LambertAzimuthalEqualArea,
-                                AlbersEqualArea)
+                                AlbersEqualArea, VerticalPerspective,
+                                Geostationary)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
@@ -864,6 +865,71 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'semi_minor_axis': 6356256.909,
                     'longitude_of_prime_meridian': 0,
                     }
+        self._test(coord_system, expected)
+
+    def test_vp_cs(self):
+        latitude_of_projection_origin = 1.0
+        longitude_of_projection_origin = 2.0
+        perspective_point_height = 2000000.0
+        false_easting = 100.0
+        false_northing = 200.0
+
+        semi_major_axis = 6377563.396
+        semi_minor_axis = 6356256.909
+        ellipsoid = GeogCS(semi_major_axis, semi_minor_axis)
+
+        coord_system = VerticalPerspective(
+            latitude_of_projection_origin=latitude_of_projection_origin,
+            longitude_of_projection_origin=longitude_of_projection_origin,
+            perspective_point_height=perspective_point_height,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = {
+            'grid_mapping_name': b'vertical_perspective',
+            'latitude_of_projection_origin': latitude_of_projection_origin,
+            'longitude_of_projection_origin': longitude_of_projection_origin,
+            'perspective_point_height': perspective_point_height,
+            'false_easting': false_easting,
+            'false_northing': false_northing,
+            'semi_major_axis': semi_major_axis,
+            'semi_minor_axis': semi_minor_axis,
+            'longitude_of_prime_meridian': 0,
+        }
+        self._test(coord_system, expected)
+
+    def test_geo_cs(self):
+        latitude_of_projection_origin = 1.0
+        longitude_of_projection_origin = 2.0
+        perspective_point_height = 2000000.0
+        sweep_axis = 'x'
+        false_easting = 100.0
+        false_northing = 200.0
+
+        semi_major_axis = 6377563.396
+        semi_minor_axis = 6356256.909
+        ellipsoid = GeogCS(semi_major_axis, semi_minor_axis)
+
+        coord_system = Geostationary(
+            latitude_of_projection_origin=latitude_of_projection_origin,
+            longitude_of_projection_origin=longitude_of_projection_origin,
+            perspective_point_height=perspective_point_height,
+            sweep_axis=sweep_axis,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = {
+            'grid_mapping_name': b'geostationary',
+            'latitude_of_projection_origin': latitude_of_projection_origin,
+            'longitude_of_projection_origin': longitude_of_projection_origin,
+            'perspective_point_height': perspective_point_height,
+            'sweep_axis': sweep_axis,
+            'false_easting': false_easting,
+            'false_northing': false_northing,
+            'semi_major_axis': semi_major_axis,
+            'semi_minor_axis': semi_minor_axis,
+            'longitude_of_prime_meridian': 0,
+        }
         self._test(coord_system, expected)
 
 
