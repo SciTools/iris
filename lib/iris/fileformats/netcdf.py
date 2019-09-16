@@ -1898,6 +1898,35 @@ class Saver(object):
                     cf_var_grid.false_northing = cs.false_northing
                     cf_var_grid.standard_parallel = (cs.standard_parallels)
 
+                # vertical perspective
+                elif isinstance(cs,
+                                iris.coord_systems.VerticalPerspective):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.perspective_point_height = (
+                        cs.perspective_point_height)
+
+                # geostationary
+                elif isinstance(cs,
+                                iris.coord_systems.Geostationary):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.perspective_point_height = (
+                        cs.perspective_point_height)
+                    cf_var_grid.sweep_angle_axis = cs.sweep_axis
+
                 # other
                 else:
                     warnings.warn('Unable to represent the horizontal '
