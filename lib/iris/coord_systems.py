@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -737,7 +737,7 @@ class Geostationary(CoordSystem):
             false_easting=self.false_easting,
             false_northing=self.false_northing,
             globe=globe,
-            sweep_angle_axis=self.sweep_angle_axis)
+            sweep_axis=self.sweep_angle_axis)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()

@@ -61,10 +61,10 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
 
         cs = build_vertical_perspective_coordinate_system(None, cf_grid_var)
         expected = VerticalPerspective(
-            latitude_of_projection_origin=cf_grid_var
-                .latitude_of_projection_origin,
-            longitude_of_projection_origin=cf_grid_var
-                .longitude_of_projection_origin,
+            latitude_of_projection_origin=cf_grid_var.
+            latitude_of_projection_origin,
+            longitude_of_projection_origin=cf_grid_var.
+            longitude_of_projection_origin,
             perspective_point_height=cf_grid_var.perspective_point_height,
             false_easting=cf_grid_var.false_easting,
             false_northing=cf_grid_var.false_northing,

@@ -53,7 +53,7 @@ class Test(tests.IrisTest):
             false_easting=self.false_easting,
             false_northing=self.false_northing,
             globe=self.globe,
-            sweep_angle_axis=self.sweep_angle_axis
+            sweep_axis=self.sweep_angle_axis
         )
         self.geo_cs = Geostationary(self.latitude_of_projection_origin,
                                     self.longitude_of_projection_origin,
@@ -82,7 +82,8 @@ class Test(tests.IrisTest):
                                 self.ellipsoid)
 
     def test_invalid_sweep(self):
-        with six.assertRaisesRegex(self, ValueError, 'Invalid sweep_angle_axis'):
+        with six.assertRaisesRegex(
+                self, ValueError, 'Invalid sweep_angle_axis'):
             res = Geostationary(self.latitude_of_projection_origin,
                                 self.longitude_of_projection_origin,
                                 self.perspective_point_height,
