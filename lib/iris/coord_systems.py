@@ -652,7 +652,7 @@ class Geostationary(CoordSystem):
 
     def __init__(self, latitude_of_projection_origin,
                  longitude_of_projection_origin,
-                 perspective_point_height, sweep_axis, false_easting=0,
+                 perspective_point_height, sweep_angle_axis, false_easting=0,
                  false_northing=0, ellipsoid=None):
 
         """
@@ -669,7 +669,7 @@ class Geostationary(CoordSystem):
         * perspective_point_height (float):
             Altitude of satellite in metres above the surface of the ellipsoid.
 
-        * sweep_axis (string):
+        * sweep_angle_axis (string):
             The axis along which the satellite instrument sweeps - 'x' or 'y'.
 
         Kwargs:
@@ -709,9 +709,9 @@ class Geostationary(CoordSystem):
         self.false_northing = false_northing
 
         #: The axis along which the satellite instrument sweeps - 'x' or 'y'.
-        self.sweep_axis = sweep_axis
-        if self.sweep_axis not in ('x', 'y'):
-            raise ValueError('Invalid sweep_axis - must be "x" or "y"')
+        self.sweep_angle_axis = sweep_angle_axis
+        if self.sweep_angle_axis not in ('x', 'y'):
+            raise ValueError('Invalid sweep_angle_axis - must be "x" or "y"')
 
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
@@ -720,13 +720,13 @@ class Geostationary(CoordSystem):
         return "Geostationary(latitude_of_projection_origin={!r}, " \
                "longitude_of_projection_origin={!r}, " \
                "perspective_point_height={!r}, false_easting={!r}, " \
-               "false_northing={!r}, sweep_axis={!r}, " \
+               "false_northing={!r}, sweep_angle_axis={!r}, " \
                "ellipsoid={!r}".format(self.latitude_of_projection_origin,
                                        self.longitude_of_projection_origin,
                                        self.perspective_point_height,
                                        self.false_easting,
                                        self.false_northing,
-                                       self.sweep_axis, self.ellipsoid)
+                                       self.sweep_angle_axis, self.ellipsoid)
 
     def as_cartopy_crs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
@@ -737,7 +737,7 @@ class Geostationary(CoordSystem):
             false_easting=self.false_easting,
             false_northing=self.false_northing,
             globe=globe,
-            sweep_axis=self.sweep_axis)
+            sweep_angle_axis=self.sweep_angle_axis)
 
     def as_cartopy_projection(self):
         return self.as_cartopy_crs()

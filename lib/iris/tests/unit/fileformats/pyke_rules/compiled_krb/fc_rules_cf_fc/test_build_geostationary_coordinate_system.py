@@ -67,7 +67,7 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
             longitude_of_projection_origin=cf_grid_var
                 .longitude_of_projection_origin,
             perspective_point_height=cf_grid_var.perspective_point_height,
-            sweep_axis=cf_grid_var.sweep_angle_axis,
+            sweep_angle_axis=cf_grid_var.sweep_angle_axis,
             false_easting=cf_grid_var.false_easting,
             false_northing=cf_grid_var.false_northing,
             ellipsoid=ellipsoid)

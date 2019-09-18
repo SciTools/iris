@@ -1652,7 +1652,7 @@ fc_extras
             cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
         false_northing = getattr(
             cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-        sweep_axis = getattr(
+        sweep_angle_axis = getattr(
             cf_grid_var, CF_ATTR_GRID_SWEEP_ANGLE_AXIS, None)
 
         ellipsoid = None
@@ -1663,7 +1663,7 @@ fc_extras
 
         cs = iris.coord_systems.Geostationary(
             latitude_of_projection_origin, longitude_of_projection_origin,
-            perspective_point_height, sweep_axis, false_easting,
+            perspective_point_height, sweep_angle_axis, false_easting,
             false_northing, ellipsoid)
 
         return cs

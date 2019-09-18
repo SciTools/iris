@@ -1925,7 +1925,7 @@ class Saver(object):
                     cf_var_grid.false_northing = cs.false_northing
                     cf_var_grid.perspective_point_height = (
                         cs.perspective_point_height)
-                    cf_var_grid.sweep_angle_axis = cs.sweep_axis
+                    cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
                 # other
                 else:

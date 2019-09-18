@@ -906,7 +906,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         latitude_of_projection_origin = 0.0
         longitude_of_projection_origin = 2.0
         perspective_point_height = 2000000.0
-        sweep_axis = 'x'
+        sweep_angle_axis = 'x'
         false_easting = 100.0
         false_northing = 200.0
 
@@ -918,7 +918,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             latitude_of_projection_origin=latitude_of_projection_origin,
             longitude_of_projection_origin=longitude_of_projection_origin,
             perspective_point_height=perspective_point_height,
-            sweep_axis=sweep_axis,
+            sweep_angle_axis=sweep_angle_axis,
             false_easting=false_easting,
             false_northing=false_northing,
             ellipsoid=ellipsoid)
@@ -927,7 +927,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             'latitude_of_projection_origin': latitude_of_projection_origin,
             'longitude_of_projection_origin': longitude_of_projection_origin,
             'perspective_point_height': perspective_point_height,
-            'sweep_axis': sweep_axis,
+            'sweep_angle_axis': sweep_angle_axis,
             'false_easting': false_easting,
             'false_northing': false_northing,
             'semi_major_axis': semi_major_axis,
