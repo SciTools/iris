@@ -45,6 +45,10 @@ import iris.tests.stock as stock
 
 
 class Test_write(tests.IrisTest):
+    # -------------------------------------------------------------------------
+    # It is not considered necessary to have integration tests for saving
+    # EVERY coordinate system. A subset are tested below.
+    # -------------------------------------------------------------------------
     def _transverse_mercator_cube(self, ellipsoid=None):
         data = np.arange(12).reshape(3, 4)
         cube = Cube(data, 'air_pressure_anomaly')
@@ -899,7 +903,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         self._test(coord_system, expected)
 
     def test_geo_cs(self):
-        latitude_of_projection_origin = 1.0
+        latitude_of_projection_origin = 0.0
         longitude_of_projection_origin = 2.0
         perspective_point_height = 2000000.0
         sweep_axis = 'x'
