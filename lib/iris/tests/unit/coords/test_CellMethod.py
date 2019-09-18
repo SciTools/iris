@@ -25,6 +25,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from iris._cube_coord_common import CFVariableMixin
 from iris.coords import CellMethod, Coord
 
 
@@ -34,7 +35,7 @@ class Test(tests.IrisTest):
 
     def _check(self, token, coord, default=False):
         result = CellMethod(self.method, coords=coord)
-        token = token if not default else 'unknown'
+        token = token if not default else CFVariableMixin._DEFAULT_NAME
         expected = '{}: {}'.format(self.method, token)
         self.assertEqual(str(result), expected)
 

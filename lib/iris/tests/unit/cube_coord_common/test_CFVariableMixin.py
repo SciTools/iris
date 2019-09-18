@@ -81,7 +81,7 @@ class Test_name(tests.IrisTest):
         self.cf_var.long_name = None
         self.cf_var.var_name = None
         self.cf_var.attributes = {}
-        self.default = 'unknown'
+        self.default = CFVariableMixin._DEFAULT_NAME
         # bad token CFVariableMixin
         self.cf_bad = CFVariableMixin()
         self.cf_bad.standard_name = None
@@ -109,7 +109,7 @@ class Test_name(tests.IrisTest):
 
     def test_stash(self):
         token = 'stash'
-        self.cf_var.var_name = token
+        self.cf_var.attributes['STASH'] = token
         result = self.cf_var.name()
         self.assertEqual(result, token)
 
@@ -140,15 +140,9 @@ class Test_name(tests.IrisTest):
         self.assertEqual(result, self.default)
 
     def test_fail_token_default(self):
-        cf_var = CFVariableMixin()
-        cf_var.standard_name = None
-        cf_var.long_name = None
-        cf_var.var_name = None
-        cf_var.attributes = {}
-
         emsg = 'Cannot retrieve a valid name token'
         with self.assertRaisesRegexp(ValueError, emsg):
-            cf_var.name(default='_nope', token=True)
+            self.cf_var.name(default='_nope', token=True)
 
 
 if __name__ == '__main__':
