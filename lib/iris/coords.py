@@ -1035,11 +1035,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         * contiguous: (boolean)
             True if there are no discontiguities.
         * diffs: (array or tuple of arrays)
-            The diffs along the bounds of the coordinate. If self is a 2D
-            coord of shape (Y, X), a tuple of arrays is returned, where the
-            first is an array of differences along the x-axis, of the shape
-            (Y, X-1) and the second is an array of differences along the
-            y-axis, of the shape (Y-1, X).
+            A boolean array or tuple of boolean arrays which are true where
+            there are discontiguities between neighbouring bounds. If self is
+            a 2D coord of shape (Y, X), a tuple of arrays is returned, where
+            the first is an array of differences along the x-axis, of the
+            shape (Y, X-1) and the second is an array of differences along
+            the y-axis, of the shape (Y-1, X).
 
         """
         self._sanity_check_bounds()
@@ -1048,18 +1049,24 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             contiguous = np.allclose(self.bounds[1:, 0],
                                      self.bounds[:-1, 1],
                                      rtol=rtol, atol=atol)
-            diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
+            diffs = np.isclose(self.bounds[1:, 0],
+                               self.bounds[:-1, 1],
+                               rtol=rtol, atol=atol)
 
         elif self.ndim == 2:
             def mod360_adjust(compare_axis):
                 bounds = self.bounds.copy()
 
                 if compare_axis == 'x':
-                    upper_bounds = bounds[:, :-1, 1]
-                    lower_bounds = bounds[:, 1:, 0]
+                    upper_bounds = np.stack(bounds[:, :-1, 1],
+                                            bounds[:, :-1, 2])
+                    lower_bounds = np.stack(bounds[:, 1:, 0],
+                                            bounds[:, 1:, 3])
                 elif compare_axis == 'y':
-                    upper_bounds = bounds[:-1, :, 3]
-                    lower_bounds = bounds[1:, :, 0]
+                    upper_bounds = np.stack(bounds[:-1, :, 3],
+                                            bounds[:-1, :, 2])
+                    lower_bounds = np.stack(bounds[1:, :, 0],
+                                            bounds[1:, :, 1])
 
                 if self.name() in ['longitude', 'grid_longitude']:
                     # If longitude, adjust for longitude wrapping
@@ -1074,10 +1081,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 cell_size = lower_bounds - upper_bounds
                 diffs_along_axis = diffs_between_cells > (atol +
                                                           rtol * cell_size)
+                diffs_along_axis = np.logical_or(diffs_along_axis[0],
+                                                 diffs_along_axis[1])
 
-                points_close_enough = diffs_along_axis <= (atol +
-                                                           rtol * cell_size)
-                contiguous_along_axis = np.all(points_close_enough)
+                contiguous_along_axis = not np.any(diffs_along_axis)
                 return diffs_along_axis, contiguous_along_axis
 
             diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis='x')
