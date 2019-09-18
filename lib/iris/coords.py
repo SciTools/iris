@@ -1049,24 +1049,24 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             contiguous = np.allclose(self.bounds[1:, 0],
                                      self.bounds[:-1, 1],
                                      rtol=rtol, atol=atol)
-            diffs = np.isclose(self.bounds[1:, 0],
-                               self.bounds[:-1, 1],
-                               rtol=rtol, atol=atol)
+            diffs = np.logical_not(np.isclose(self.bounds[1:, 0],
+                                              self.bounds[:-1, 1],
+                                              rtol=rtol, atol=atol))
 
         elif self.ndim == 2:
             def mod360_adjust(compare_axis):
                 bounds = self.bounds.copy()
 
                 if compare_axis == 'x':
-                    upper_bounds = np.stack(bounds[:, :-1, 1],
-                                            bounds[:, :-1, 2])
-                    lower_bounds = np.stack(bounds[:, 1:, 0],
-                                            bounds[:, 1:, 3])
+                    upper_bounds = np.stack((bounds[:, :-1, 1],
+                                             bounds[:, :-1, 2]))
+                    lower_bounds = np.stack((bounds[:, 1:, 0],
+                                             bounds[:, 1:, 3]))
                 elif compare_axis == 'y':
-                    upper_bounds = np.stack(bounds[:-1, :, 3],
-                                            bounds[:-1, :, 2])
-                    lower_bounds = np.stack(bounds[1:, :, 0],
-                                            bounds[1:, :, 1])
+                    upper_bounds = np.stack((bounds[:-1, :, 3],
+                                             bounds[:-1, :, 2]))
+                    lower_bounds = np.stack((bounds[1:, :, 0],
+                                             bounds[1:, :, 1]))
 
                 if self.name() in ['longitude', 'grid_longitude']:
                     # If longitude, adjust for longitude wrapping
