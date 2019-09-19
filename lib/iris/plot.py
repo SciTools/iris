@@ -888,6 +888,16 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     else:
         new_args = (x, y, data) + args
 
+    # Geostationary stores projected coordinates as scanning angles (
+    # radians), in line with CF definition (behaviour is unique to
+    # Geostationary). Before plotting, must be converted by multiplying by
+    # satellite height.
+    transform = kwargs.get('transform')
+    if type(transform) == cartopy.crs.Geostationary:
+        satellite_height = transform.proj4_params['h']
+        for i in (x, y):
+            i *= satellite_height
+
     # Draw the contour lines/filled contours.
     axes = kwargs.pop('axes', None)
     plotfn = getattr(axes if axes else plt, draw_method_name)
