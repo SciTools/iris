@@ -601,16 +601,13 @@ class VerticalPerspective(CoordSystem):
 
         #: Altitude of satellite in metres.
         # test if perspective_point_height may be cast to float for proj.4
-        test_pph = float(perspective_point_height)
-        self.perspective_point_height = perspective_point_height
+        self.perspective_point_height = float(perspective_point_height)
 
         #: X offset from planar origin in metres.
-        test_fe = float(false_easting)
-        self.false_easting = false_easting
+        self.false_easting = float(false_easting)
 
         #: Y offset from planar origin in metres.
-        test_fn = float(false_northing)
-        self.false_northing = false_northing
+        self.false_northing = float(false_northing)
 
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
@@ -697,16 +694,13 @@ class Geostationary(CoordSystem):
 
         #: Altitude of satellite in metres.
         # test if perspective_point_height may be cast to float for proj.4
-        test_pph = float(perspective_point_height)
-        self.perspective_point_height = perspective_point_height
+        self.perspective_point_height = float(perspective_point_height)
 
         #: X offset from planar origin in metres.
-        test_fe = float(false_easting)
-        self.false_easting = false_easting
+        self.false_easting = float(false_easting)
 
         #: Y offset from planar origin in metres.
-        test_fn = float(false_northing)
-        self.false_northing = false_northing
+        self.false_northing = float(false_northing)
 
         #: The axis along which the satellite instrument sweeps - 'x' or 'y'.
         self.sweep_angle_axis = sweep_angle_axis
