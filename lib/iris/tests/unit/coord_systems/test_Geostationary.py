@@ -73,24 +73,24 @@ class Test(tests.IrisTest):
 
     def test_non_zero_lat(self):
         with six.assertRaisesRegex(self, ValueError, 'Non-zero latitude'):
-            res = Geostationary(0.1,
-                                self.longitude_of_projection_origin,
-                                self.perspective_point_height,
-                                self.sweep_angle_axis,
-                                self.false_easting,
-                                self.false_northing,
-                                self.ellipsoid)
+            Geostationary(0.1,
+                          self.longitude_of_projection_origin,
+                          self.perspective_point_height,
+                          self.sweep_angle_axis,
+                          self.false_easting,
+                          self.false_northing,
+                          self.ellipsoid)
 
     def test_invalid_sweep(self):
         with six.assertRaisesRegex(
                 self, ValueError, 'Invalid sweep_angle_axis'):
-            res = Geostationary(self.latitude_of_projection_origin,
-                                self.longitude_of_projection_origin,
-                                self.perspective_point_height,
-                                'a',
-                                self.false_easting,
-                                self.false_northing,
-                                self.ellipsoid)
+            Geostationary(self.latitude_of_projection_origin,
+                          self.longitude_of_projection_origin,
+                          self.perspective_point_height,
+                          'a',
+                          self.false_easting,
+                          self.false_northing,
+                          self.ellipsoid)
 
 
 if __name__ == '__main__':
