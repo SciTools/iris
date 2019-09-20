@@ -79,50 +79,50 @@ class TestGetNames(tests.IrisTest):
         self.assertEqual(attributes, exp_attributes)
 
     def test_var_name_valid(self):
-        # Only var_name is set and it is set to a valid standard_name.
+        # Only var_name is set and it is set to a valid standard name.
         inp = (None, None, 'grid_latitude', None)
         exp = ('grid_latitude', None, 'grid_latitude', {})
         self.check_names(inp, exp)
 
     def test_var_name_valid_coord_name_set(self):
-        # var_name is a valid standard_name, coord_name is also set.
+        # var_name is a valid standard name, coord_name is also set.
         inp = (None, None, 'grid_latitude', 'latitude')
         exp = ('latitude', None, 'grid_latitude', {})
         self.check_names(inp, exp)
 
     def test_var_name_invalid(self):
-        # Only var_name is set but it is not a valid standard_name.
+        # Only var_name is set but it is not a valid standard name.
         inp = (None, None, 'lat_var_name', None)
         exp = (None, None, 'lat_var_name', {})
         self.check_names(inp, exp)
 
     def test_var_name_invalid_coord_name_set(self):
-        # var_name is not a valid standard_name, the coord_name is also set.
+        # var_name is not a valid standard name, the coord_name is also set.
         inp = (None, None, 'lat_var_name', 'latitude')
         exp = ('latitude', None, 'lat_var_name', {})
         self.check_names(inp, exp)
 
     def test_long_name_set_var_name_valid(self):
-        # long_name is not None, var_name is set to a valid standard_name.
+        # long_name is not None, var_name is set to a valid standard name.
         inp = (None, 'lat_long_name', 'grid_latitude', None)
         exp = ('grid_latitude', 'lat_long_name', 'grid_latitude', {})
         self.check_names(inp, exp)
 
     def test_long_name_set_var_name_valid_coord_name_set(self):
-        # long_name is not None, var_name is set to a valid standard_name, and
+        # long_name is not None, var_name is set to a valid standard name, and
         # coord_name is set.
         inp = (None, 'lat_long_name', 'grid_latitude', 'latitude')
         exp = ('latitude', 'lat_long_name', 'grid_latitude', {})
         self.check_names(inp, exp)
 
     def test_long_name_set_var_name_invalid(self):
-        # long_name is not None, var_name is not set to a valid standard_name.
+        # long_name is not None, var_name is not set to a valid standard name.
         inp = (None, 'lat_long_name', 'lat_var_name', None)
         exp = (None, 'lat_long_name', 'lat_var_name', {})
         self.check_names(inp, exp)
 
     def test_long_name_set_var_name_invalid_coord_name_set(self):
-        # long_name is not None, var_name is not set to a valid standard_name,
+        # long_name is not None, var_name is not set to a valid standard name,
         # and coord_name is set.
         inp = (None, 'lat_long_name', 'lat_var_name', 'latitude')
         exp = ('latitude', 'lat_long_name', 'lat_var_name', {})

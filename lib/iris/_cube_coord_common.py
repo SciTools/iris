@@ -34,22 +34,30 @@ _TOKEN_PARSE = re.compile(r'''^[a-zA-Z0-9][\w\.\+\-@]*$''')
 def get_valid_standard_name(name):
     # Standard names are optionally followed by a standard name
     # modifier, separated by one or more blank spaces
-    name_parts = name.split(' ')
-    std_name, std_name_extension = name_parts[0], name_parts[1:]
 
-    error_msg = '{!r} is not a valid standard_name'.format(name)
+    if name is not None:
+        name_is_valid = False
+        # Supported standard name modifiers. Ref: [CF] Appendix C.
+        valid_std_name_modifiers = ['detection_minimum',
+                                    'number_of_observations',
+                                    'standard_error',
+                                    'status_flag']
 
-    if std_name in iris.std_names.STD_NAMES:
-        if std_name_extension:
-            standard_name_modifier = std_name_extension[-1]
-            # Check only blank spaces before valid standard_name_modifier
-            if (any(item for item in std_name_extension[:-1]) or
-                    standard_name_modifier not in
-                    iris.fileformats.cf.STD_NAME_MODIFIERS):
-                raise ValueError(error_msg)
-        return name
-    else:
-        raise ValueError(error_msg)
+        valid_name_pattern = re.compile(r'''^([a-zA-Z_]+)( *)([a-zA-Z_]*)$''')
+        name_groups = valid_name_pattern.match(name)
+
+        if name_groups:
+            std_name, whitespace, std_name_modifier = name_groups.groups()
+            if (std_name in iris.std_names.STD_NAMES) and (
+                bool(whitespace) == (std_name_modifier in
+                                     valid_std_name_modifiers)):
+                name_is_valid = True
+
+        if name_is_valid is False:
+            raise ValueError('{!r} is not a valid standard_name'.format(
+                    name))
+
+    return name
 
 
 class LimitedAttributeDict(dict):
@@ -195,10 +203,7 @@ class CFVariableMixin(object):
 
     @standard_name.setter
     def standard_name(self, name):
-        if name is None:
-            self._standard_name = name
-        else:
-            self._standard_name = get_valid_standard_name(name)
+        self._standard_name = get_valid_standard_name(name)
 
     @property
     def units(self):
