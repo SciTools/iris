@@ -74,7 +74,7 @@ class Tests(tests.IrisTest):
 
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
-        msg = 'New data shape must match existing data shape.'
+        msg = 'Require data with shape.'
         with self.assertRaisesRegexp(ValueError, msg):
             self.measure.data = new_vals
 
@@ -123,6 +123,7 @@ class Tests(tests.IrisTest):
 
     def test__eq__(self):
         self.assertEqual(self.measure, self.measure)
+
 
 if __name__ == '__main__':
     tests.main()

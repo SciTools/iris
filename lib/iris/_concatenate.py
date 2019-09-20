@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -301,7 +301,8 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
 class _CubeSignature(object):
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
-    on its metadata, coordinates and cell_measures.
+    on its metadata and dimensional metadata, including: coordinates,
+    cell_measures and ancillary_variables.
 
     """
     def __init__(self, cube):
@@ -322,6 +323,7 @@ class _CubeSignature(object):
         self.ndim = cube.ndim
         self.scalar_coords = []
         self.cell_measures_and_dims = cube._cell_measures_and_dims
+        self.ancillary_variables_and_dims = cube._ancillary_variables_and_dims
         self.dim_mapping = []
 
         # Determine whether there are any anonymous cube dimensions.
@@ -415,6 +417,8 @@ class _CubeSignature(object):
             - dimensions metadata
             - aux coords metadata
             - scalar coords
+            - cell measures
+            - ancillary variables
             - attributes
             - dtype
 
@@ -470,6 +474,14 @@ class _CubeSignature(object):
             msgs.append(msg_template.format('CellMeasures', '',
                                             self.cell_measures_and_dims,
                                             other.cell_measures_and_dims))
+
+        # Check ancillary_variables_and_dims
+        if self.ancillary_variables_and_dims != \
+                other.ancillary_variables_and_dims:
+            msgs.append(msg_template.format(
+                'AncillaryVariables', '',
+                self.ancillary_variables_and_dims,
+                other.ancillary_variables_and_dims))
 
         match = not bool(msgs)
         if error_on_mismatch and not match:
@@ -670,11 +682,15 @@ class _ProtoCube(object):
             kwargs = cube_signature.defn._asdict()
             new_cm_and_dims = [(deepcopy(cm), dims) for cm, dims
                                in self._cube._cell_measures_and_dims]
-            cube = iris.cube.Cube(data,
-                                  dim_coords_and_dims=dim_coords_and_dims,
-                                  aux_coords_and_dims=aux_coords_and_dims,
-                                  cell_measures_and_dims=new_cm_and_dims,
-                                  **kwargs)
+            new_av_and_dims = [(deepcopy(av), dims) for av, dims
+                               in self._cube._ancillary_variables_and_dims]
+            cube = iris.cube.Cube(
+                data,
+                dim_coords_and_dims=dim_coords_and_dims,
+                aux_coords_and_dims=aux_coords_and_dims,
+                cell_measures_and_dims=new_cm_and_dims,
+                ancillary_variables_and_dims=new_av_and_dims,
+                **kwargs)
         else:
             # There are no other source-cubes to concatenate
             # with this proto-cube.

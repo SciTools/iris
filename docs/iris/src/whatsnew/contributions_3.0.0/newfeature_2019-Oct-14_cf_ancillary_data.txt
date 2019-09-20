@@ -1,0 +1,1 @@
+* CF Ancillary Data are now supported in cubes.

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """
-Definitions of coordinates.
+Definitions of coordinates and other dimensional metadata.
 
 """
 
@@ -23,7 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-from abc import ABCMeta, abstractproperty
+from abc import ABCMeta
 from collections import namedtuple
 try:  # Python 3
     from collections.abc import Iterator
@@ -50,6 +50,697 @@ import iris.util
 
 from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
+
+
+class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
+    """
+    Superclass for dimensional metadata.
+
+    """
+
+    _MODE_ADD = 1
+    _MODE_SUB = 2
+    _MODE_MUL = 3
+    _MODE_DIV = 4
+    _MODE_RDIV = 5
+    _MODE_SYMBOL = {_MODE_ADD: '+', _MODE_SUB: '-',
+                    _MODE_MUL: '*', _MODE_DIV: '/',
+                    _MODE_RDIV: '/'}
+
+    def __init__(self, values, standard_name=None, long_name=None,
+                 var_name=None, units='no-unit', attributes=None):
+        """
+        Constructs a single dimensional metadata object.
+
+        Args:
+
+        * values:
+            The values of the dimensional metadata.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the dimensional metadata.
+        * long_name:
+            Descriptive name of the dimensional metadata.
+        * var_name:
+            The netCDF variable name for the dimensional metadata.
+        * units
+            The :class:`~cf_units.Unit` of the dimensional metadata's values.
+            Can be a string, which will be converted to a Unit object.
+        * attributes
+            A dictionary containing other cf and user-defined attributes.
+
+        """
+        #: CF standard name of the quantity that the metadata represents.
+        self.standard_name = standard_name
+
+        #: Descriptive name of the metadata.
+        self.long_name = long_name
+
+        #: The netCDF variable name for the metadata.
+        self.var_name = var_name
+
+        #: Unit of the quantity that the metadata represents.
+        self.units = units
+
+        #: Other attributes, including user specified attributes that
+        #: have no meaning to Iris.
+        self.attributes = attributes
+
+        # Set up DataManager attributes and values.
+        self._values_dm = None
+        self._values = values
+
+    def __getitem__(self, keys):
+        """
+        Returns a new dimensional metadata whose values are obtained by
+        conventional array indexing.
+
+        .. note::
+
+            Indexing of a circular coordinate results in a non-circular
+            coordinate if the overall shape of the coordinate changes after
+            indexing.
+
+        """
+        # Fetch the values.
+        values = self._values_dm.core_data()
+
+        # Index values with the keys.
+        _, values = iris.util._slice_data_with_keys(
+            values, keys)
+
+        # Copy values after indexing to avoid making metadata that is a
+        # view on another metadata.
+        values = values.copy()
+
+        # If the metadata is a coordinate and it has bounds, repeat the above
+        # with the bounds.
+        if isinstance(self, Coord):
+            if self.has_bounds():
+                bounds = self._bounds_dm.core_data()
+                _, bounds = iris.util._slice_data_with_keys(bounds, keys)
+                bounds = bounds.copy()
+            else:
+                bounds = None
+
+            copy_args = dict(points=values, bounds=bounds)
+        else:
+            copy_args = dict(values=values)
+
+        # The new metadata is a copy of the old one with replaced content.
+        new_metadata = self.copy(**copy_args)
+
+        return new_metadata
+
+    def copy(self, values=None):
+        """
+        Returns a copy of this dimensional metadata object.
+
+        Kwargs:
+
+        * values
+            An array of values for the new dimensional metadata object.
+            This may be a different shape to the orginal values array being
+            copied.
+
+        """
+        new_metadata = copy.deepcopy(self)
+        if values is not None:
+            new_metadata._values_dm = None
+            new_metadata._values = values
+
+        return new_metadata
+
+    def _sanitise_array(self, src, ndmin):
+        if _lazy.is_lazy_data(src):
+            # Lazy data : just ensure ndmin requirement.
+            ndims_missing = ndmin - src.ndim
+            if ndims_missing <= 0:
+                result = src
+            else:
+                extended_shape = tuple([1] * ndims_missing + list(src.shape))
+                result = src.reshape(extended_shape)
+        else:
+            # Real data : a few more things to do in this case.
+            # Ensure the array is writeable.
+            # NB. Returns the *same object* if src is already writeable.
+            result = np.require(src, requirements='W')
+            # Ensure the array has enough dimensions.
+            # NB. Returns the *same object* if result.ndim >= ndmin
+            func = ma.array if ma.isMaskedArray(result) else np.array
+            result = func(result, ndmin=ndmin, copy=False)
+            # We don't need to copy the data, but we do need to have our
+            # own view so we can control the shape, etc.
+            result = result.view()
+        return result
+
+    @property
+    def _values(self):
+        """The _DimensionalMetadata values as a NumPy array."""
+        return self._values_dm.data.view()
+
+    @_values.setter
+    def _values(self, values):
+        # Set the values to a new array - as long as it's the same shape.
+
+        # Ensure values has an ndmin of 1 and is either a numpy or lazy array.
+        # This will avoid Scalar _DimensionalMetadata with values of shape ()
+        # rather than the desired (1,).
+        values = self._sanitise_array(values, 1)
+
+        # Set or update DataManager.
+        if self._values_dm is None:
+            self._values_dm = DataManager(values)
+        else:
+            self._values_dm.data = values
+
+    def _lazy_values(self):
+        """
+        Returns a lazy array representing the dimensional metadata values.
+
+        """
+        return self._values_dm.lazy_data()
+
+    def _core_values(self):
+        """
+        The values array of this dimensional metadata which may be a NumPy
+        array or a dask array.
+
+        """
+        result = self._values_dm.core_data()
+        if not _lazy.is_lazy_data(result):
+            result = result.view()
+
+        return result
+
+    def _has_lazy_values(self):
+        """
+        Returns a boolean indicating whether the metadata's values array is a
+        lazy dask array or not.
+
+        """
+        return self._values_dm.has_lazy_data()
+
+    def _repr_other_metadata(self):
+        fmt = ''
+        if self.long_name:
+            fmt = ', long_name={self.long_name!r}'
+        if self.var_name:
+            fmt += ', var_name={self.var_name!r}'
+        if len(self.attributes) > 0:
+            fmt += ', attributes={self.attributes}'
+        result = fmt.format(self=self)
+        return result
+
+    def _str_dates(self, dates_as_numbers):
+        date_obj_array = self.units.num2date(dates_as_numbers)
+        kwargs = {'separator': ', ', 'prefix': '      '}
+        return np.core.arrayprint.array2string(date_obj_array,
+                                               formatter={'all': str},
+                                               **kwargs)
+
+    def __str__(self):
+        if self.units.is_time_reference():
+            fmt = '{cls}({values}{bounds}' \
+                  ', standard_name={self.standard_name!r}' \
+                  ', calendar={self.units.calendar!r}{other_metadata})'
+            if self.units.is_long_time_interval():
+                # A time unit with a long time interval ("months" or "years")
+                # cannot be converted to a date using `num2date` so gracefully
+                # fall back to printing points as numbers, not datetimes.
+                values = self._values
+            else:
+                values = self._str_dates(self._values)
+            bounds = ''
+            if self.has_bounds():
+                if self.units.is_long_time_interval():
+                    bounds_vals = self.bounds
+                else:
+                    bounds_vals = self._str_dates(self.bounds)
+                bounds = ', bounds={vals}'.format(vals=bounds_vals)
+            result = fmt.format(self=self, cls=type(self).__name__,
+                                values=values, bounds=bounds,
+                                other_metadata=self._repr_other_metadata())
+        else:
+            result = repr(self)
+
+        return result
+
+    def __repr__(self):
+        fmt = '{cls}({self._values!r}{bounds}' \
+              ', standard_name={self.standard_name!r}, units={self.units!r}' \
+              '{other_metadata})'
+        bounds = ''
+        # if coordinate, handle the bounds
+        if self.has_bounds():
+            bounds = ', bounds=' + repr(self.bounds)
+        result = fmt.format(self=self, cls=type(self).__name__,
+                            bounds=bounds,
+                            other_metadata=self._repr_other_metadata())
+        return result
+
+    def __eq__(self, other):
+        eq = NotImplemented
+        # If the other object has a means of getting its definition, then do
+        # the  comparison, otherwise return a NotImplemented to let Python try
+        # to resolve the operator elsewhere.
+        if hasattr(other, '_as_defn'):
+            # metadata comparison
+            eq = self._as_defn() == other._as_defn()
+            # data values comparison
+            if eq:
+                eq = iris.util.array_equal(self._values, other._values,
+                                           withnans=True)
+        return eq
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
+
+    def _as_defn(self):
+        defn = (self.standard_name, self.long_name, self.var_name,
+                self.units, self.attributes)
+
+        return defn
+
+    # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
+    # NOTE: Violates "objects which compare equal must have the same hash".
+    # We ought to remove this, as equality of two dimensional metadata can
+    # *change*, so they really should not be hashable.
+    # However, current code needs it, e.g. so we can put them in sets.
+    # Fixing it will require changing those uses.  See #962 and #1772.
+    def __hash__(self):
+        return hash(id(self))
+
+    def __binary_operator__(self, other, mode_constant):
+        """
+        Common code which is called by add, sub, mul and div
+
+        Mode constant is one of ADD, SUB, MUL, DIV, RDIV
+
+        .. note::
+
+            The unit is *not* changed when doing scalar operations on a
+            metadata object. This means that a metadata object which represents
+            "10 meters" when multiplied by a scalar i.e. "1000" would result in
+            a metadata object of "10000 meters". An alternative approach could
+            be taken to multiply the *unit* by 1000 and the resultant metadata
+            object would represent "10 kilometers".
+
+        """
+        result = NotImplemented
+
+        if isinstance(other, (int, float, np.number)):
+            values = self._values_dm.core_data()
+
+            if mode_constant == self._MODE_ADD:
+                new_values = values + other
+            elif mode_constant == self._MODE_SUB:
+                new_values = values - other
+            elif mode_constant == self._MODE_MUL:
+                new_values = values * other
+            elif mode_constant == self._MODE_DIV:
+                new_values = values / other
+            elif mode_constant == self._MODE_RDIV:
+                new_values = other / values
+
+            result = self.copy(new_values)
+
+        return result
+
+    def __add__(self, other):
+        return self.__binary_operator__(other, self._MODE_ADD)
+
+    def __sub__(self, other):
+        return self.__binary_operator__(other, self._MODE_SUB)
+
+    def __mul__(self, other):
+        return self.__binary_operator__(other, self._MODE_MUL)
+
+    def __div__(self, other):
+        return self.__binary_operator__(other, self._MODE_DIV)
+
+    def __truediv__(self, other):
+        return self.__binary_operator__(other, self._MODE_DIV)
+
+    def __radd__(self, other):
+        return self + other
+
+    def __rsub__(self, other):
+        return (-self) + other
+
+    def __rdiv__(self, other):
+        return self.__binary_operator__(other, self._MODE_RDIV)
+
+    def __rtruediv__(self, other):
+        return self.__binary_operator__(other, self._MODE_RDIV)
+
+    def __rmul__(self, other):
+        return self * other
+
+    def __neg__(self):
+        return self.copy(-self._core_values())
+
+    def convert_units(self, unit):
+        """Change the units, converting the values of the metadata."""
+        # If the coord has units convert the values in points (and bounds if
+        # present).
+        if self.units.is_unknown():
+            raise iris.exceptions.UnitConversionError(
+                'Cannot convert from unknown units. '
+                'The "units" attribute may be set directly.')
+
+        # Set up a delayed conversion for use if either values or bounds (if
+        # present) are lazy.
+        # Make fixed copies of old + new units for a delayed conversion.
+        old_unit = self.units
+        new_unit = unit
+
+        # Define a delayed conversion operation (i.e. a callback).
+        def pointwise_convert(values):
+            return old_unit.convert(values, new_unit)
+
+        if self._has_lazy_values():
+            new_values = _lazy.lazy_elementwise(self._lazy_values(),
+                                                pointwise_convert)
+        else:
+            new_values = self.units.convert(self._values, unit)
+        self._values = new_values
+        if self.has_bounds():
+            if self.has_lazy_bounds():
+                new_bounds = _lazy.lazy_elementwise(self.lazy_bounds(),
+                                                    pointwise_convert)
+            else:
+                new_bounds = self.units.convert(self.bounds, unit)
+            self.bounds = new_bounds
+        self.units = unit
+
+    def is_compatible(self, other, ignore=None):
+        """
+        Return whether the current dimensional metadata object is compatible
+        with another.
+
+        """
+        compatible = (self.name() == other.name() and
+                      self.units == other.units)
+
+        if compatible:
+            common_keys = set(self.attributes).intersection(other.attributes)
+            if ignore is not None:
+                if isinstance(ignore, six.string_types):
+                    ignore = (ignore,)
+                common_keys = common_keys.difference(ignore)
+            for key in common_keys:
+                if np.any(self.attributes[key] != other.attributes[key]):
+                    compatible = False
+                    break
+
+        return compatible
+
+    @property
+    def dtype(self):
+        """
+        The NumPy dtype of the current dimensional metadata object, as
+        specified by its values.
+
+        """
+        return self._values_dm.dtype
+
+    @property
+    def ndim(self):
+        """
+        Return the number of dimensions of the current dimensional metadata
+        object.
+
+        """
+        return self._values_dm.ndim
+
+    def has_bounds(self):
+        """
+        Return a boolean indicating whether the current dimensional metadata
+        object has a bounds array.
+
+        """
+        # Allows for code to handle unbounded dimensional metadata agnostic of
+        # whether the metadata is a coordinate or not.
+        return False
+
+    @property
+    def shape(self):
+        """The fundamental shape of the metadata, expressed as a tuple."""
+        return self._values_dm.shape
+
+    def xml_element(self, doc):
+        """Return a DOM element describing this metadata."""
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name.
+        element_name = type(self).__name__
+        element_name = element_name[0].lower() + element_name[1:]
+        element = doc.createElement(element_name)
+
+        element.setAttribute('id', self._xml_id())
+
+        if self.standard_name:
+            element.setAttribute('standard_name', str(self.standard_name))
+        if self.long_name:
+            element.setAttribute('long_name', str(self.long_name))
+        if self.var_name:
+            element.setAttribute('var_name', str(self.var_name))
+        element.setAttribute('units', repr(self.units))
+        if isinstance(self, Coord):
+            if self.climatological:
+                element.setAttribute('climatological',
+                                     str(self.climatological))
+
+        if self.attributes:
+            attributes_element = doc.createElement('attributes')
+            for name in sorted(six.iterkeys(self.attributes)):
+                attribute_element = doc.createElement('attribute')
+                attribute_element.setAttribute('name', name)
+                attribute_element.setAttribute('value',
+                                               str(self.attributes[name]))
+                attributes_element.appendChild(attribute_element)
+            element.appendChild(attributes_element)
+
+        if isinstance(self, Coord):
+            if self.coord_system:
+                element.appendChild(self.coord_system.xml_element(doc))
+
+        # Add the values
+        element.setAttribute('value_type', str(self._value_type_name()))
+        element.setAttribute('shape', str(self.shape))
+
+        # The values are referred to "points" of a coordinate and "data"
+        # otherwise.
+        if isinstance(self, Coord):
+            values_term = 'points'
+        else:
+            values_term = 'data'
+        if hasattr(self._values, 'to_xml_attr'):
+            element.setAttribute(values_term, self._values.to_xml_attr())
+        else:
+            element.setAttribute(values_term,
+                                 iris.util.format_array(self._values))
+        return element
+
+    def _xml_id_extra(self, unique_value):
+        return unique_value
+
+    def _xml_id(self):
+        # Returns a consistent, unique string identifier for this coordinate.
+        unique_value = b''
+        if self.standard_name:
+            unique_value += self.standard_name.encode('utf-8')
+        unique_value += b'\0'
+        if self.long_name:
+            unique_value += self.long_name.encode('utf-8')
+        unique_value += b'\0'
+        unique_value += str(self.units).encode('utf-8') + b'\0'
+        for k, v in sorted(self.attributes.items()):
+            unique_value += (str(k) + ':' + str(v)).encode('utf-8') + b'\0'
+        # Extra modifications to unique_value that are specialised in child
+        # classes
+        unique_value = self._xml_id_extra(unique_value)
+        # Mask to ensure consistency across Python versions & platforms.
+        crc = zlib.crc32(unique_value) & 0xffffffff
+        return '%08x' % (crc, )
+
+    def _value_type_name(self):
+        """
+        A simple, readable name for the data type of the dimensional metadata
+        values.
+
+        """
+        dtype = self._core_values().dtype
+        kind = dtype.kind
+        if kind in 'SU':
+            # Establish the basic type name for 'string' type data.
+            # N.B. this means "unicode" in Python3, and "str" in Python2.
+            value_type_name = 'string'
+
+            # Override this if not the 'native' string type.
+            if six.PY3:
+                if kind == 'S':
+                    value_type_name = 'bytes'
+            else:
+                if kind == 'U':
+                    value_type_name = 'unicode'
+        else:
+            value_type_name = dtype.name
+
+        return value_type_name
+
+
+class AncillaryVariable(_DimensionalMetadata):
+    def __init__(self, data, standard_name=None, long_name=None,
+                 var_name=None, units='no-unit', attributes=None):
+        """
+        Constructs a single ancillary variable.
+
+        Args:
+
+        * values:
+            The values of the ancillary variable.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the ancillary variable.
+        * long_name:
+            Descriptive name of the ancillary variable.
+        * var_name:
+            The netCDF variable name for the ancillary variable.
+        * units
+            The :class:`~cf_units.Unit` of the ancillary variable's values.
+            Can be a string, which will be converted to a Unit object.
+        * attributes
+            A dictionary containing other cf and user-defined attributes.
+
+        """
+        super(AncillaryVariable, self).__init__(
+            values=data, standard_name=standard_name,
+            long_name=long_name, var_name=var_name,
+            units=units, attributes=attributes)
+
+    @property
+    def data(self):
+        return self._values
+
+    @data.setter
+    def data(self, data):
+        self._values = data
+
+    def lazy_data(self):
+        """
+        Return a lazy array representing the ancillary variable's data.
+
+        Accessing this method will never cause the data values to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the ancillary variable to have loaded data.
+
+        If the data have already been loaded for the ancillary variable, the
+        returned Array will be a new lazy array wrapper.
+
+        Returns:
+            A lazy array, representing the ancillary variable data array.
+
+        """
+        return super(AncillaryVariable, self)._lazy_values()
+
+    def core_data(self):
+        """
+        The data array at the core of this ancillary variable, which may be a
+        NumPy array or a dask array.
+
+        """
+        return super(AncillaryVariable, self)._core_values()
+
+    def has_lazy_data(self):
+        """
+        Return a boolean indicating whether the ancillary variable's data array
+        is a lazy dask array or not.
+
+        """
+        return super(AncillaryVariable, self)._has_lazy_values()
+
+
+class CellMeasure(AncillaryVariable):
+    """
+    A CF Cell Measure, providing area or volume properties of a cell
+    where these cannot be inferred from the Coordinates and
+    Coordinate Reference System.
+
+    """
+    def __init__(self, data, standard_name=None, long_name=None,
+                 var_name=None, units='1', attributes=None, measure=None):
+
+        """
+        Constructs a single cell measure.
+
+        Args:
+
+        * data:
+            The values of the measure for each cell.
+            Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
+            (:class:`dask.array.Array`).
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the coordinate.
+        * long_name:
+            Descriptive name of the coordinate.
+        * var_name:
+            The netCDF variable name for the coordinate.
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * attributes
+            A dictionary containing other CF and user-defined attributes.
+        * measure
+            A string describing the type of measure.  'area' and 'volume'
+            are the only valid entries.
+
+        """
+        super(CellMeasure, self).__init__(
+            data=data, standard_name=standard_name,
+            long_name=long_name, var_name=var_name,
+            units=units, attributes=attributes)
+
+        #: String naming the measure type.
+        self.measure = measure
+
+    @property
+    def measure(self):
+        return self._measure
+
+    @measure.setter
+    def measure(self, measure):
+        if measure not in ['area', 'volume']:
+            raise ValueError("measure must be 'area' or 'volume', "
+                             "not {}".format(measure))
+        self._measure = measure
+
+    def __str__(self):
+        result = repr(self)
+        return result
+
+    def __repr__(self):
+        fmt = ('{cls}({self.data!r}'
+               ', measure={self.measure}, standard_name={self.standard_name!r}'
+               ', units={self.units!r}{other_metadata})')
+        result = fmt.format(self=self, cls=type(self).__name__,
+                            other_metadata=self._repr_other_metadata())
+        return result
+
+    def _as_defn(self):
+        defn = (self.standard_name, self.long_name, self.var_name,
+                self.units, self.attributes, self.measure)
+        return defn
 
 
 class CoordDefn(namedtuple('CoordDefn',
@@ -433,21 +1124,11 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
         return np.min(self.bound) <= point <= np.max(self.bound)
 
 
-class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
+class Coord(_DimensionalMetadata):
     """
-    Abstract superclass for coordinates.
+    Superclass for coordinates.
 
     """
-
-    _MODE_ADD = 1
-    _MODE_SUB = 2
-    _MODE_MUL = 3
-    _MODE_DIV = 4
-    _MODE_RDIV = 5
-    _MODE_SYMBOL = {_MODE_ADD: '+', _MODE_SUB: '-',
-                    _MODE_MUL: '*', _MODE_DIV: '/',
-                    _MODE_RDIV: '/'}
-
     def __init__(self, points, standard_name=None, long_name=None,
                  var_name=None, units='1', bounds=None,
                  attributes=None, coord_system=None,
@@ -497,67 +1178,17 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             from NetCDF.
             Always False if no bounds exist.
         """
-        #: CF standard name of the quantity that the coordinate represents.
-        self.standard_name = standard_name
-
-        #: Descriptive name of the coordinate.
-        self.long_name = long_name
-
-        #: The netCDF variable name for the coordinate.
-        self.var_name = var_name
-
-        #: Unit of the quantity that the coordinate represents.
-        self.units = units
-
-        #: Other attributes, including user specified attributes that
-        #: have no meaning to Iris.
-        self.attributes = attributes
+        super(Coord, self).__init__(values=points, standard_name=standard_name,
+                                    long_name=long_name, var_name=var_name,
+                                    units=units, attributes=attributes)
 
         #: Relevant coordinate system (if any).
         self.coord_system = coord_system
 
-        # Set up DataManager attributes and points and bounds values.
-        self._points_dm = None
+        # Set up bounds DataManager attributes and the bounds values.
         self._bounds_dm = None
-        self.points = points
         self.bounds = bounds
         self.climatological = climatological
-
-    def __getitem__(self, keys):
-        """
-        Returns a new Coord whose values are obtained by conventional array
-        indexing.
-
-        .. note::
-
-            Indexing of a circular coordinate results in a non-circular
-            coordinate if the overall shape of the coordinate changes after
-            indexing.
-
-        """
-        # Fetch the points and bounds.
-        points = self._points_dm.core_data()
-        if self.has_bounds():
-            bounds = self._bounds_dm.core_data()
-        else:
-            bounds = None
-
-        # Index both points and bounds with the keys.
-        _, points = iris.util._slice_data_with_keys(
-            points, keys)
-        if bounds is not None:
-            _, bounds = iris.util._slice_data_with_keys(
-                bounds, keys)
-
-        # Copy data after indexing, to avoid making coords that are
-        # views on other coords.  This will not realise lazy data.
-        points = points.copy()
-        if bounds is not None:
-            bounds = bounds.copy()
-
-        # The new coordinate is a copy of the old one with replaced content.
-        new_coord = self.copy(points=points, bounds=bounds)
-        return new_coord
 
     def copy(self, points=None, bounds=None):
         """
@@ -583,10 +1214,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = copy.deepcopy(self)
+        new_coord = super(Coord, self).copy(values=points)
         if points is not None:
-            new_coord._points_dm = None
-            new_coord.points = points
             # Regardless of whether bounds are provided as an argument, new
             # points will result in new bounds, discarding those copied from
             # self.
@@ -610,49 +1239,14 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             kwargs['circular'] = getattr(coord, 'circular', False)
         return cls(**kwargs)
 
-    @staticmethod
-    def _sanitise_array(src, ndmin):
-        if _lazy.is_lazy_data(src):
-            # Lazy data : just ensure ndmin requirement.
-            ndims_missing = ndmin - src.ndim
-            if ndims_missing <= 0:
-                result = src
-            else:
-                extended_shape = tuple([1] * ndims_missing + list(src.shape))
-                result = src.reshape(extended_shape)
-        else:
-            # Real data : a few more things to do in this case.
-            # Ensure the array is writeable.
-            # NB. Returns the *same object* if src is already writeable.
-            result = np.require(src, requirements='W')
-            # Ensure the array has enough dimensions.
-            # NB. Returns the *same object* if result.ndim >= ndmin
-            func = ma.array if ma.isMaskedArray(result) else np.array
-            result = func(result, ndmin=ndmin, copy=False)
-            # We don't need to copy the data, but we do need to have our
-            # own view so we can control the shape, etc.
-            result = result.view()
-        return result
-
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
-        return self._points_dm.data.view()
+        return self._values
 
     @points.setter
     def points(self, points):
-        # Set the points to a new array - as long as it's the same shape.
-
-        # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
-        # This will avoid Scalar coords with points of shape () rather
-        # than the desired (1,).
-        points = self._sanitise_array(points, 1)
-
-        # Set or update DataManager.
-        if self._points_dm is None:
-            self._points_dm = DataManager(points)
-        else:
-            self._points_dm.data = points
+        self._values = points
 
     @property
     def bounds(self):
@@ -731,7 +1325,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             A lazy array, representing the coord points array.
 
         """
-        return self._points_dm.lazy_data()
+        return super(Coord, self)._lazy_values()
 
     def lazy_bounds(self):
         """
@@ -760,10 +1354,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         or a dask array.
 
         """
-        result = self._points_dm.core_data()
-        if not _lazy.is_lazy_data(result):
-            result = result.view()
-        return result
+        return super(Coord, self)._core_values()
 
     def core_bounds(self):
         """
@@ -784,7 +1375,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         lazy dask array or not.
 
         """
-        return self._points_dm.has_lazy_data()
+        return super(Coord, self)._has_lazy_values()
 
     def has_lazy_bounds(self):
         """
@@ -798,94 +1389,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return result
 
     def _repr_other_metadata(self):
-        fmt = ''
-        if self.long_name:
-            fmt = ', long_name={self.long_name!r}'
-        if self.var_name:
-            fmt += ', var_name={self.var_name!r}'
-        if len(self.attributes) > 0:
-            fmt += ', attributes={self.attributes}'
+        result = super(Coord, self)._repr_other_metadata()
         if self.coord_system:
-            fmt += ', coord_system={self.coord_system}'
+            result += ', coord_system={}'.format(self.coord_system)
         if self.climatological:
-            fmt += ', climatological={' \
-                   'self.climatological}'
-        result = fmt.format(self=self)
-        return result
-
-    def _str_dates(self, dates_as_numbers):
-        date_obj_array = self.units.num2date(dates_as_numbers)
-        kwargs = {'separator': ', ', 'prefix': '      '}
-        return np.core.arrayprint.array2string(date_obj_array,
-                                               formatter={'all': str},
-                                               **kwargs)
-
-    def __str__(self):
-        if self.units.is_time_reference():
-            fmt = '{cls}({points}{bounds}' \
-                  ', standard_name={self.standard_name!r}' \
-                  ', calendar={self.units.calendar!r}{other_metadata})'
-            if self.units.is_long_time_interval():
-                # A time unit with a long time interval ("months" or "years")
-                # cannot be converted to a date using `num2date` so gracefully
-                # fall back to printing points as numbers, not datetimes.
-                points = self.points
-            else:
-                points = self._str_dates(self.points)
-            bounds = ''
-            if self.has_bounds():
-                if self.units.is_long_time_interval():
-                    bounds_vals = self.bounds
-                else:
-                    bounds_vals = self._str_dates(self.bounds)
-                bounds = ', bounds={vals}'.format(vals=bounds_vals)
-            result = fmt.format(self=self, cls=type(self).__name__,
-                                points=points, bounds=bounds,
-                                other_metadata=self._repr_other_metadata())
-        else:
-            result = repr(self)
-        return result
-
-    def __repr__(self):
-        fmt = '{cls}({self.points!r}{bounds}' \
-              ', standard_name={self.standard_name!r}, units={self.units!r}' \
-              '{other_metadata})'
-        bounds = ''
-        if self.has_bounds():
-            bounds = ', bounds=' + repr(self.bounds)
-        result = fmt.format(self=self, cls=type(self).__name__,
-                            bounds=bounds,
-                            other_metadata=self._repr_other_metadata())
+            result += ', climatological={}'.format(self.climatological)
         return result
 
     def __eq__(self, other):
-        eq = NotImplemented
-        # If the other object has a means of getting its definition, and
-        # whether or not it has_points and has_bounds, then do the
-        # comparison, otherwise return a NotImplemented to let Python try to
-        # resolve the operator elsewhere.
-        if hasattr(other, '_as_defn'):
-            # metadata comparison
-            eq = self._as_defn() == other._as_defn()
-            # points comparison
-            if eq:
-                eq = iris.util.array_equal(self.points, other.points,
+        eq = super(Coord, self).__eq__(other=other)
+
+        if eq and eq is not NotImplemented:
+            if self.has_bounds() and other.has_bounds():
+                eq = iris.util.array_equal(self.bounds, other.bounds,
                                            withnans=True)
-            # bounds comparison
-            if eq:
-                if self.has_bounds() and other.has_bounds():
-                    eq = iris.util.array_equal(self.bounds, other.bounds,
-                                               withnans=True)
-                else:
-                    eq = self.bounds is None and other.bounds is None
-
+            else:
+                eq = self.bounds is None and other.bounds is None
         return eq
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
-        return result
 
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
@@ -903,90 +1423,33 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return hash(id(self))
 
     def __binary_operator__(self, other, mode_constant):
-        """
-        Common code which is called by add, sub, mul and div
-
-        Mode constant is one of ADD, SUB, MUL, DIV, RDIV
-
-        .. note::
-
-            The unit is *not* changed when doing scalar operations on a
-            coordinate. This means that a coordinate which represents
-            "10 meters" when multiplied by a scalar i.e. "1000" would result
-            in a coordinate of "10000 meters". An alternative approach could
-            be taken to multiply the *unit* by 1000 and the resultant
-            coordinate would represent "10 kilometers".
-
-        """
         if isinstance(other, Coord):
-            emsg = 'coord {} coord'.format(Coord._MODE_SYMBOL[mode_constant])
+            emsg = 'coord {} coord'.format(
+                self._MODE_SYMBOL[mode_constant])
             raise iris.exceptions.NotYetImplementedError(emsg)
 
-        elif isinstance(other, (int, float, np.number)):
-            points = self._points_dm.core_data()
+        new_coord = super(Coord, self).__binary_operator__(
+            other=other, mode_constant=mode_constant)
 
-            if mode_constant == Coord._MODE_ADD:
-                new_points = points + other
-            elif mode_constant == Coord._MODE_SUB:
-                new_points = points - other
-            elif mode_constant == Coord._MODE_MUL:
-                new_points = points * other
-            elif mode_constant == Coord._MODE_DIV:
-                new_points = points / other
-            elif mode_constant == Coord._MODE_RDIV:
-                new_points = other / points
-
+        if new_coord is not NotImplemented:
             if self.has_bounds():
                 bounds = self._bounds_dm.core_data()
 
-                if mode_constant == Coord._MODE_ADD:
+                if mode_constant == self._MODE_ADD:
                     new_bounds = bounds + other
-                elif mode_constant == Coord._MODE_SUB:
+                elif mode_constant == self._MODE_SUB:
                     new_bounds = bounds - other
-                elif mode_constant == Coord._MODE_MUL:
+                elif mode_constant == self._MODE_MUL:
                     new_bounds = bounds * other
-                elif mode_constant == Coord._MODE_DIV:
+                elif mode_constant == self._MODE_DIV:
                     new_bounds = bounds / other
-                elif mode_constant == Coord._MODE_RDIV:
+                elif mode_constant == self._MODE_RDIV:
                     new_bounds = other / bounds
 
             else:
                 new_bounds = None
-            new_coord = self.copy(new_points, new_bounds)
-            return new_coord
-
-        else:
-            return NotImplemented
-
-    def __add__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_ADD)
-
-    def __sub__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_SUB)
-
-    def __mul__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_MUL)
-
-    def __div__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_DIV)
-
-    def __truediv__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_DIV)
-
-    def __radd__(self, other):
-        return self + other
-
-    def __rsub__(self, other):
-        return (-self) + other
-
-    def __rdiv__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_RDIV)
-
-    def __rtruediv__(self, other):
-        return self.__binary_operator__(other, Coord._MODE_RDIV)
-
-    def __rmul__(self, other):
-        return self * other
+            new_coord.bounds = new_bounds
+        return new_coord
 
     def __neg__(self):
         return self.copy(-self.core_points(),
@@ -1008,35 +1471,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
         """
-        # If the coord has units convert the values in points (and bounds if
-        # present).
-        if self.units.is_unknown():
-            raise iris.exceptions.UnitConversionError(
-                'Cannot convert from unknown units. '
-                'The "coord.units" attribute may be set directly.')
-        if self.has_lazy_points() or self.has_lazy_bounds():
-            # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = self.units
-            new_unit = unit
-
-            # Define a delayed conversion operation (i.e. a callback).
-            def pointwise_convert(values):
-                return old_unit.convert(values, new_unit)
-
-        if self.has_lazy_points():
-            new_points = _lazy.lazy_elementwise(self.lazy_points(),
-                                                pointwise_convert)
-        else:
-            new_points = self.units.convert(self.points, unit)
-        self.points = new_points
-        if self.has_bounds():
-            if self.has_lazy_bounds():
-                new_bounds = _lazy.lazy_elementwise(self.lazy_bounds(),
-                                                    pointwise_convert)
-            else:
-                new_bounds = self.units.convert(self.bounds, unit)
-            self.bounds = new_bounds
-        self.units = unit
+        super(Coord, self).convert_units(unit=unit)
 
     def cells(self):
         """
@@ -1251,30 +1686,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
            Boolean.
 
         """
-        compatible = (self.name() == other.name() and
-                      self.units == other.units and
-                      self.coord_system == other.coord_system)
-
-        if compatible:
-            common_keys = set(self.attributes).intersection(other.attributes)
-            if ignore is not None:
-                if isinstance(ignore, six.string_types):
-                    ignore = (ignore,)
-                common_keys = common_keys.difference(ignore)
-            for key in common_keys:
-                if np.any(self.attributes[key] != other.attributes[key]):
-                    compatible = False
-                    break
+        compatible = False
+        if (self.coord_system == other.coord_system):
+            compatible = super(Coord, self).is_compatible(other=other,
+                                                          ignore=ignore)
 
         return compatible
-
-    @property
-    def dtype(self):
-        """
-        The NumPy dtype of the coord, as specified by its points.
-
-        """
-        return self._points_dm.dtype
 
     @property
     def bounds_dtype(self):
@@ -1287,15 +1704,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.has_bounds():
             result = self._bounds_dm.dtype
         return result
-
-    @property
-    def ndim(self):
-        """
-        Return the number of dimensions of the coordinate (not including the
-        bounded dimension).
-
-        """
-        return self._points_dm.ndim
 
     @property
     def nbounds(self):
@@ -1311,11 +1719,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def has_bounds(self):
         """Return a boolean indicating whether the coord has a bounds array."""
         return self._bounds_dm is not None
-
-    @property
-    def shape(self):
-        """The fundamental shape of the Coord, expressed as a tuple."""
-        return self._points_dm.shape
 
     def cell(self, index):
         """
@@ -1701,45 +2104,15 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
     def xml_element(self, doc):
         """Return a DOM element describing this Coord."""
         # Create the XML element as the camelCaseEquivalent of the
-        # class name.
-        element_name = type(self).__name__
-        element_name = element_name[0].lower() + element_name[1:]
-        element = doc.createElement(element_name)
+        # class name
+        element = super(Coord, self).xml_element(doc=doc)
 
-        element.setAttribute('id', self._xml_id())
-
-        if self.standard_name:
-            element.setAttribute('standard_name', str(self.standard_name))
-        if self.long_name:
-            element.setAttribute('long_name', str(self.long_name))
-        if self.var_name:
-            element.setAttribute('var_name', str(self.var_name))
-        element.setAttribute('units', repr(self.units))
-        if self.climatological:
-            element.setAttribute('climatological', str(self.climatological))
-
-        if self.attributes:
-            attributes_element = doc.createElement('attributes')
-            for name in sorted(six.iterkeys(self.attributes)):
-                attribute_element = doc.createElement('attribute')
-                attribute_element.setAttribute('name', name)
-                attribute_element.setAttribute('value',
-                                               str(self.attributes[name]))
-                attributes_element.appendChild(attribute_element)
-            element.appendChild(attributes_element)
-
-        # Add a coord system sub-element?
-        if self.coord_system:
-            element.appendChild(self.coord_system.xml_element(doc))
-
-        # Add the values
-        element.setAttribute('value_type', str(self._value_type_name()))
-        element.setAttribute('shape', str(self.shape))
         if hasattr(self.points, 'to_xml_attr'):
             element.setAttribute('points', self.points.to_xml_attr())
         else:
             element.setAttribute('points', iris.util.format_array(self.points))
 
+        # Add bounds handling
         if self.has_bounds():
             if hasattr(self.bounds, 'to_xml_attr'):
                 element.setAttribute('bounds', self.bounds.to_xml_attr())
@@ -1749,47 +2122,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         return element
 
-    def _xml_id(self):
-        # Returns a consistent, unique string identifier for this coordinate.
-        unique_value = b''
-        if self.standard_name:
-            unique_value += self.standard_name.encode('utf-8')
-        unique_value += b'\0'
-        if self.long_name:
-            unique_value += self.long_name.encode('utf-8')
-        unique_value += b'\0'
-        unique_value += str(self.units).encode('utf-8') + b'\0'
-        for k, v in sorted(self.attributes.items()):
-            unique_value += (str(k) + ':' + str(v)).encode('utf-8') + b'\0'
+    def _xml_id_extra(self, unique_value):
+        """Coord specific stuff for the xml id"""
         unique_value += str(self.coord_system).encode('utf-8') + b'\0'
-        # Mask to ensure consistency across Python versions & platforms.
-        crc = zlib.crc32(unique_value) & 0xffffffff
-        return '%08x' % (crc, )
-
-    def _value_type_name(self):
-        """
-        A simple, readable name for the data type of the Coord point/bound
-        values.
-
-        """
-        dtype = self.core_points().dtype
-        kind = dtype.kind
-        if kind in 'SU':
-            # Establish the basic type name for 'string' type data.
-            # N.B. this means "unicode" in Python3, and "str" in Python2.
-            value_type_name = 'string'
-
-            # Override this if not the 'native' string type.
-            if six.PY3:
-                if kind == 'S':
-                    value_type_name = 'bytes'
-            else:
-                if kind == 'U':
-                    value_type_name = 'unicode'
-        else:
-            value_type_name = dtype.name
-
-        return value_type_name
+        return unique_value
 
 
 class DimCoord(Coord):
@@ -1873,7 +2209,7 @@ class DimCoord(Coord):
         """
         new_coord = copy.deepcopy(super(DimCoord, self), memo)
         # Ensure points and bounds arrays are read-only.
-        new_coord._points_dm.data.flags.writeable = False
+        new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
             new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
@@ -1881,7 +2217,7 @@ class DimCoord(Coord):
     def copy(self, points=None, bounds=None):
         new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
         # Make the arrays read-only.
-        new_coord._points_dm.data.flags.writeable = False
+        new_coord._values_dm.data.flags.writeable = False
         if bounds is not None:
             new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
@@ -1951,8 +2287,8 @@ class DimCoord(Coord):
             emsg = 'The {!r} {} points array must be strictly monotonic.'
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
 
-    @Coord.points.setter
-    def points(self, points):
+    @Coord._values.setter
+    def _values(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
         # can make it read-only.
@@ -1965,12 +2301,11 @@ class DimCoord(Coord):
         # Cast to a numpy array for masked arrays with no mask.
         points = np.array(points)
 
-        # Call the parent points setter.
-        super(DimCoord, self.__class__).points.fset(self, points)
+        super(DimCoord, self.__class__)._values.fset(self, points)
 
-        if self._points_dm is not None:
+        if self._values_dm is not None:
             # Re-fetch the core array, as the super call may replace it.
-            points = self._points_dm.core_data()
+            points = self._values_dm.core_data()
             # N.B. always a *real* array, as we realised 'points' at the start.
 
             # Make the array read-only.
@@ -2075,198 +2410,6 @@ class AuxCoord(Coord):
     # So we retain :class:`AuxCoord` as a distinct concrete subclass.
     # This provides clarity, backwards compatibility, and so we can add
     # AuxCoord-specific code if needed in future.
-
-
-class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
-    """
-    A CF Cell Measure, providing area or volume properties of a cell
-    where these cannot be inferred from the Coordinates and
-    Coordinate Reference System.
-
-    """
-
-    def __init__(self, data, standard_name=None, long_name=None,
-                 var_name=None, units='1', attributes=None, measure=None):
-
-        """
-        Constructs a single cell measure.
-
-        Args:
-
-        * data:
-            The values of the measure for each cell.
-            Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
-            (:class:`dask.array.Array`).
-
-        Kwargs:
-
-        * standard_name:
-            CF standard name of the cell measure.
-        * long_name:
-            Descriptive name of the cell measure.
-        * var_name:
-            The netCDF variable name for the cell measure.
-        * units
-            The :class:`~cf_units.Unit` of the cell measure's values.
-            Can be a string, which will be converted to a Unit object.
-        * attributes
-            A dictionary containing other CF and user-defined attributes.
-        * measure
-            A string describing the type of measure.  'area' and 'volume'
-            are the only valid entries.
-
-        """
-        #: CF standard name of the quantity that the cell measure represents.
-        self.standard_name = standard_name
-
-        #: Descriptive name of the cell measure.
-        self.long_name = long_name
-
-        #: The netCDF variable name for the cell measure.
-        self.var_name = var_name
-
-        #: Unit of the quantity that the cell measure represents.
-        self.units = units
-
-        #: Other attributes, including user specified attributes that
-        #: have no meaning to Iris.
-        self.attributes = attributes
-
-        #: String naming the measure type.
-        self.measure = measure
-
-        # Initialise data via the data setter code, which applies standard
-        # checks and ajustments.
-        self.data = data
-
-    @property
-    def measure(self):
-        return self._measure
-
-    @property
-    def data(self):
-        """Property containing the data values as a numpy array"""
-        return self._data_manager.data
-
-    @data.setter
-    def data(self, data):
-        # Set the data to a new array - as long as it's the same shape.
-        # If data are already defined for this CellMeasure,
-        if data is None:
-            raise ValueError('The data payload of a CellMeasure may not be '
-                             'None; it must be a numpy array or equivalent.')
-        if data.shape == ():
-            # If we have a scalar value, promote the shape from () to (1,).
-            # NOTE: this way also *realises* it.  Don't think that matters.
-            data = np.array(data, ndmin=1)
-        if hasattr(self, '_data_manager') and self._data_manager is not None:
-            # Check that setting these data wouldn't change self.shape
-            if data.shape != self.shape:
-                raise ValueError("New data shape must match existing data "
-                                 "shape.")
-
-        self._data_manager = DataManager(data)
-
-    @property
-    def shape(self):
-        """Returns the shape of the Cell Measure, expressed as a tuple."""
-        return self._data_manager.shape
-
-    @property
-    def ndim(self):
-        """Returns the number of dimensions of the cell measure."""
-        return self._data_manager.ndim
-
-    @measure.setter
-    def measure(self, measure):
-        if measure not in ['area', 'volume']:
-            raise ValueError("measure must be 'area' or 'volume', "
-                             "not {}".format(measure))
-        self._measure = measure
-
-    def __getitem__(self, keys):
-        """
-        Returns a new CellMeasure whose values are obtained by
-        conventional array indexing.
-
-        """
-        # Get the data, all or part of which will become the new data.
-        data = self._data_manager.core_data()
-
-        # Index data with the keys.
-        # Note: does not copy data unless it has to.
-        _, data = iris.util._slice_data_with_keys(data, keys)
-
-        # Always copy data, to avoid making the new measure a view onto the old
-        # one.
-        data = data.copy()
-
-        # The result is a copy with replacement data.
-        return self.copy(data=data)
-
-    def copy(self, data=None):
-        """
-        Returns a copy of this CellMeasure.
-
-        Kwargs:
-
-        * data: A data array for the new cell_measure.
-                This may be a different shape to the data of the
-                cell_measure being copied.
-
-        """
-        new_cell_measure = copy.deepcopy(self)
-        if data is not None:
-            # Remove the existing data manager, to prevent the data setter
-            # checking against existing content.
-            new_cell_measure._data_manager = None
-            # Set new data via the data setter code, which applies standard
-            # checks and ajustments.
-            new_cell_measure.data = data
-
-        return new_cell_measure
-
-    def _repr_other_metadata(self):
-        fmt = ''
-        if self.long_name:
-            fmt = ', long_name={self.long_name!r}'
-        if self.var_name:
-            fmt += ', var_name={self.var_name!r}'
-        if len(self.attributes) > 0:
-            fmt += ', attributes={self.attributes}'
-        result = fmt.format(self=self)
-        return result
-
-    def __str__(self):
-        result = repr(self)
-        return result
-
-    def __repr__(self):
-        fmt = ('{cls}({self.data!r}'
-               ', measure={self.measure}, standard_name={self.standard_name!r}'
-               ', units={self.units!r}{other_metadata})')
-        result = fmt.format(self=self, cls=type(self).__name__,
-                            other_metadata=self._repr_other_metadata())
-        return result
-
-    def _as_defn(self):
-        defn = (self.standard_name, self.long_name, self.var_name,
-                self.units, self.attributes, self.measure)
-        return defn
-
-    def __eq__(self, other):
-        eq = NotImplemented
-        if isinstance(other, CellMeasure):
-            eq = self._as_defn() == other._as_defn()
-            if eq:
-                eq = (self.data == other.data).all()
-        return eq
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
-        return result
 
 
 class CellMethod(iris.util._OrderedHashable):
