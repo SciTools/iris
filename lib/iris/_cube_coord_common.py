@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,13 +19,16 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-# TODO: Is this a mixin or a base class?
-
+import re
 import string
 
 import cf_units
 
 import iris.std_names
+
+
+# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
+_TOKEN_PARSE = re.compile(r'''^[a-zA-Z0-9][\w\.\+\-@]*$''')
 
 
 class LimitedAttributeDict(dict):
@@ -84,7 +87,30 @@ class LimitedAttributeDict(dict):
 
 
 class CFVariableMixin(object):
-    def name(self, default='unknown'):
+
+    _DEFAULT_NAME = 'unknown'  # the name default string
+
+    @staticmethod
+    def token(name):
+        '''
+        Determine whether the provided name is a valid NetCDF name and thus
+        safe to represent a single parsable token.
+
+        Args:
+
+        * name:
+            The string name to verify
+
+        Returns:
+            The provided name if valid, otherwise None.
+
+        '''
+        if name is not None:
+            result = _TOKEN_PARSE.match(name)
+            name = result if result is None else name
+        return name
+
+    def name(self, default=None, token=False):
         """
         Returns a human-readable name.
 
@@ -92,9 +118,35 @@ class CFVariableMixin(object):
         'var_name', then the STASH attribute before falling back to
         the value of `default` (which itself defaults to 'unknown').
 
+        Kwargs:
+
+        * default:
+            The value of the default name.
+        * token:
+            If true, ensure that the name returned satisfies the criteria for
+            the characters required by a valid NetCDF name. If it is not
+            possible to return a valid name, then a ValueError exception is
+            raised.
+
+        Returns:
+            String.
+
         """
-        return self.standard_name or self.long_name or self.var_name or \
-            str(self.attributes.get('STASH', '')) or default
+        def _check(item):
+            return self.token(item) if token else item
+
+        default = self._DEFAULT_NAME if default is None else default
+
+        result = (_check(self.standard_name) or _check(self.long_name) or
+                  _check(self.var_name) or
+                  _check(str(self.attributes.get('STASH', ''))) or
+                  _check(default))
+
+        if token and result is None:
+            emsg = 'Cannot retrieve a valid name token from {!r}'
+            raise ValueError(emsg.format(self))
+
+        return result
 
     def rename(self, name):
         """
@@ -144,12 +196,10 @@ class CFVariableMixin(object):
     @var_name.setter
     def var_name(self, name):
         if name is not None:
-            if not name:
-                raise ValueError('An empty string is not a valid netCDF '
-                                 'variable name.')
-            elif set(name).intersection(string.whitespace):
-                raise ValueError('{!r} is not a valid netCDF variable name '
-                                 'as it contains whitespace.'.format(name))
+            result = self.token(name)
+            if result is None or not name:
+                emsg = '{!r} is not a valid NetCDF variable name.'
+                raise ValueError(emsg.format(name))
         self._var_name = name
 
     @property
