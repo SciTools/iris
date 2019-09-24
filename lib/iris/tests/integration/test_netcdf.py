@@ -276,6 +276,33 @@ class TestCellMeasures(tests.IrisTest):
 
 class TestCMIP6VolcelloLoad(tests.IrisTest):
     def setUp(self):
+        self.fname = tests.get_data_path(
+            ('NetCDF', 'volcello',
+             'volcello_Ofx_CESM2_deforest-globe_r1i1p1f1_gn.nc'))
+
+    def test_cmip6_volcello_load_issue_3367(self):
+        # Ensure that reading a file which references itself in
+        # `cell_measures` can be read. At the same time, ensure that we
+        # still receive a warning about other variables mentioned in
+        # `cell_measures` i.e. a warning should be raised about missing
+        # areacello.
+        areacello_str = "areacello" if six.PY3 else u"areacello"
+        volcello_str = "volcello" if six.PY3 else u"volcello"
+        expected_msg = "Missing CF-netCDF measure variable %r, " \
+                       "referenced by netCDF variable %r" \
+                       % (areacello_str, volcello_str)
+
+        with mock.patch('warnings.warn') as warn:
+            # ensure file loads without failure
+            cube = iris.load_cube(self.fname)
+            warn.assert_has_calls([mock.call(expected_msg)])
+
+        # extra check to ensure correct variable was found
+        assert cube.standard_name == 'ocean_volume'
+
+
+class TestSelfReferencingVarLoad(tests.IrisTest):
+    def setUp(self):
         self.temp_dir_path = os.path.join(tempfile.mkdtemp(),
                                           'issue_3367_volcello_test_file.nc')
         dataset = nc.Dataset(self.temp_dir_path, 'w')
@@ -317,7 +344,7 @@ class TestCMIP6VolcelloLoad(tests.IrisTest):
 
         dataset.close()
 
-    def test_cmip6_volcello_load_issue_3367(self):
+    def test_self_referencing_load_issue_3367(self):
         # Ensure that reading a file which references itself in
         # `cell_measures` can be read. At the same time, ensure that we
         # still receive a warning about other variables mentioned in
