@@ -31,6 +31,35 @@ import iris.std_names
 _TOKEN_PARSE = re.compile(r'''^[a-zA-Z0-9][\w\.\+\-@]*$''')
 
 
+def get_valid_standard_name(name):
+    # Standard names are optionally followed by a standard name
+    # modifier, separated by one or more blank spaces
+
+    if name is not None:
+        name_is_valid = False
+        # Supported standard name modifiers. Ref: [CF] Appendix C.
+        valid_std_name_modifiers = ['detection_minimum',
+                                    'number_of_observations',
+                                    'standard_error',
+                                    'status_flag']
+
+        valid_name_pattern = re.compile(r'''^([a-zA-Z_]+)( *)([a-zA-Z_]*)$''')
+        name_groups = valid_name_pattern.match(name)
+
+        if name_groups:
+            std_name, whitespace, std_name_modifier = name_groups.groups()
+            if (std_name in iris.std_names.STD_NAMES) and (
+                bool(whitespace) == (std_name_modifier in
+                                     valid_std_name_modifiers)):
+                name_is_valid = True
+
+        if name_is_valid is False:
+            raise ValueError('{!r} is not a valid standard_name'.format(
+                    name))
+
+    return name
+
+
 class LimitedAttributeDict(dict):
     _forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds', 'axis',
                        'calendar', 'leap_month', 'leap_year', 'month_lengths',
@@ -174,10 +203,7 @@ class CFVariableMixin(object):
 
     @standard_name.setter
     def standard_name(self, name):
-        if name is None or name in iris.std_names.STD_NAMES:
-            self._standard_name = name
-        else:
-            raise ValueError('%r is not a valid standard_name' % name)
+        self._standard_name = get_valid_standard_name(name)
 
     @property
     def units(self):

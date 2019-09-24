@@ -145,5 +145,23 @@ class Test_name(tests.IrisTest):
             self.cf_var.name(default='_nope', token=True)
 
 
+class Test_standard_name__setter(tests.IrisTest):
+    def test_valid_standard_name(self):
+        cf_var = CFVariableMixin()
+        cf_var.standard_name = 'air_temperature'
+        self.assertEqual(cf_var.standard_name, 'air_temperature')
+
+    def test_invalid_standard_name(self):
+        cf_var = CFVariableMixin()
+        emsg = "'not_a_standard_name' is not a valid standard_name"
+        with self.assertRaisesRegexp(ValueError, emsg):
+            cf_var.standard_name = 'not_a_standard_name'
+
+    def test_none_standard_name(self):
+        cf_var = CFVariableMixin()
+        cf_var.standard_name = None
+        self.assertIsNone(cf_var.standard_name)
+
+
 if __name__ == '__main__':
     tests.main()
