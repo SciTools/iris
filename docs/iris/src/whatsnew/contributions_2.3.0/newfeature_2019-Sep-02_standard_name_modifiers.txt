@@ -1,0 +1,1 @@
+* Iris now supports standard name modifiers. See `Appendix C, Standard Name Modifiers <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_ for more information.
