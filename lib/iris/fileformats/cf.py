@@ -795,7 +795,8 @@ class CFMeasureVariable(CFVariable):
                     measure = match_group['lhs']
                     variable_name = match_group['rhs']
 
-                    if variable_name not in ignore and variable_name != nc_var_name:
+                    var_matches_nc = variable_name != nc_var_name
+                    if variable_name not in ignore and var_matches_nc:
                         if variable_name not in variables:
                             if warn:
                                 message = 'Missing CF-netCDF measure variable %r, referenced by netCDF variable %r'
