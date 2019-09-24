@@ -621,7 +621,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     _string_coord_axis_tick_labels(string_axes, axes)
 
     # Invert y-axis if necessary.
-    _invert_yaxis(v_object)
+    _invert_yaxis(v_object, axes)
 
     return result
 
