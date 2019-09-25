@@ -479,6 +479,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             points.shape + (n,). For example, a 1d coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
+            Note if the data is a climatology, `bounds_are_climatological`
+            should be set.
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
@@ -486,8 +488,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
         * bounds_are_climatological (bool):
-            When True, indicates that an existing bounds property is the
-            NetCDF climatological type. Always False if no bounds exist.
+            When True: existing bounds are of the NetCDF climatological type.
+            When True: bounds will be labelled as 'climatology_bounds' when
+            saved in NetCDF.
+            Will set to True when NetCDF containing 'climatology_bounds' is
+            loaded.
+            Always False if no bounds exist.
         """
         #: CF standard name of the quantity that the coordinate represents.
         self.standard_name = standard_name
