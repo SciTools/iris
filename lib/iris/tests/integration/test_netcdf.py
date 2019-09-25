@@ -274,6 +274,7 @@ class TestCellMeasures(tests.IrisTest):
                          '    x         x') in printed)
 
 
+@tests.skip_data
 class TestCMIP6VolcelloLoad(tests.IrisTest):
     def setUp(self):
         self.fname = tests.get_data_path(
