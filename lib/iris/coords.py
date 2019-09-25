@@ -619,11 +619,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             result = result.view()
         return result
 
-    def _points_getter(self):
+    @property
+    def points(self):
         """The coordinate points values as a NumPy array."""
         return self._points_dm.data.view()
 
-    def _points_setter(self, points):
+    @points.setter
+    def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
@@ -637,9 +639,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             self._points_dm.data = points
 
-    points = property(_points_getter, _points_setter)
-
-    def _bounds_getter(self):
+    @property
+    def bounds(self):
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -653,7 +654,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = self._bounds_dm.data.view()
         return bounds
 
-    def _bounds_setter(self, bounds):
+    @bounds.setter
+    def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
@@ -668,8 +670,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 self._bounds_dm = DataManager(bounds)
             else:
                 self._bounds_dm.data = bounds
-
-    bounds = property(_bounds_getter, _bounds_setter)
 
     def lazy_points(self):
         """
