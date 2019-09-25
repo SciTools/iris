@@ -903,7 +903,8 @@ class TestDimCoordEquality(tests.IrisTest):
         self.assertIs(dim.__ne__(aux), NotImplemented)
 
     def test_climatological(self):
-        co1 = iris.coords.DimCoord([0], bounds=[[0, 1]])
+        co1 = iris.coords.DimCoord(
+            [0], bounds=[[0, 1]], units='days since 1970-01-01')
         co2 = co1.copy()
         co2.climatological = True
         self.assertNotEqual(co1, co2)
