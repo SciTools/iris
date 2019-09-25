@@ -207,7 +207,7 @@ class CubeRepresentation(object):
         for shape in self.shapes:
             cells.append(
                 '<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
-        cells.append('</td>')
+        cells.append('</tr>')
         return '\n'.join(cell for cell in cells)
 
     def _make_row(self, title, body=None, col_span=0):
