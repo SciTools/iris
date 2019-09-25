@@ -86,8 +86,6 @@ class CoordDefn(namedtuple('CoordDefn',
                     defn.long_name is not None, defn.long_name,
                     defn.var_name is not None, defn.var_name,
                     defn.units is not None, defn.units,
-                    # Should attributes be included here?
-                    # Should bounds_are_climatological be included here?
                     defn.coord_system is not None, defn.coord_system)
 
         return _sort_key(self) < _sort_key(other)
@@ -689,10 +687,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         raised if there are no bounds.
 
         """
-        result = False
-        if self.has_bounds():
-            result = self._bounds_are_climatological
-        return result
+        return self._bounds_are_climatological if self.has_bounds() else False
 
     def _climatology_setter(self, value):
         # Ensure the bounds are a compatible shape.

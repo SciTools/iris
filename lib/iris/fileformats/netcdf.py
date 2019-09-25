@@ -1461,7 +1461,7 @@ class Saver(object):
                 # Create the bounds dimension with the appropriate extent.
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
-            boundsvar_name = cf_name + '_' + varname_extra
+            boundsvar_name = '{}_{}'.format(cf_name, varname_extra)
             _setncattr(cf_var, property_name, boundsvar_name)
             cf_var_bounds = self._dataset.createVariable(
                 boundsvar_name, bounds.dtype.newbyteorder('='),
