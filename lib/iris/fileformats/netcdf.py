@@ -1450,7 +1450,7 @@ class Saver(object):
             else:
                 bounds_dimension_name = 'bnds_%s' % n_bounds
 
-            if coord.bounds_are_climatological:
+            if coord.climatological:
                 property_name = 'climatology'
                 varname_extra = 'climatology'
             else:

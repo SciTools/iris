@@ -71,7 +71,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             self.var_name, self.units,
             self.attributes,
             self.coord_system,
-            # Slot for Coord 'bounds_are_climatological' property, which this
+            # Slot for Coord 'climatological' property, which this
             # doesn't have.
             False,)
         return defn

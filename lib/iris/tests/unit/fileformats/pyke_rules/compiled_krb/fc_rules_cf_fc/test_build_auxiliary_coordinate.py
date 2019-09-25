@@ -91,7 +91,7 @@ class TestBoundsVertexDim(tests.IrisTest):
                    new=patched__getitem__)
 
         # Patch the helper function that retrieves the bounds cf variable,
-        # and a False flag for bounds_are_climatological.
+        # and a False flag for climatological.
         # This avoids the need for setting up further mocking of cf objects.
         def _get_per_test_bounds_var(_coord_unused):
             # Return the 'cf_bounds_var' created by the current test.
@@ -277,7 +277,7 @@ class TestCoordConstruction(tests.IrisTest):
 
     def check_case_aux_coord_construction(self, climatology=False):
         # Test a generic auxiliary coordinate, with or without
-        # climatological bounds.
+        # a climatological coord.
         self.use_climatology_bounds = climatology
 
         expected_coord = AuxCoord(
@@ -286,7 +286,7 @@ class TestCoordConstruction(tests.IrisTest):
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
             bounds=self.bounds,
-            bounds_are_climatological=climatology)
+            climatological=climatology)
 
         build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 

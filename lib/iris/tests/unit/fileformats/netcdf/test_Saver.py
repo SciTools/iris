@@ -256,16 +256,16 @@ class Test_write(tests.IrisTest):
 
 
 class Test__create_cf_bounds(tests.IrisTest):
-    def _check_bounds_setting(self, bounds_are_climatological=False):
-        # Generic test that can run with or without climatological bounds.
+    def _check_bounds_setting(self, climatological=False):
+        # Generic test that can run with or without a climatological coord.
         cube = stock.climatology_3d()
         coord = cube.coord('time').copy()
         # Over-write original value from stock.climatology_3d with test value.
-        coord.bounds_are_climatological = \
-            bounds_are_climatological
+        coord.climatological = \
+            climatological
 
         # Set up expected strings.
-        if bounds_are_climatological:
+        if climatological:
             property_name = 'climatology'
             varname_extra = 'climatology'
         else:
@@ -302,10 +302,10 @@ class Test__create_cf_bounds(tests.IrisTest):
         self.assertEqual(create_var_call, dataset.createVariable.call_args)
 
     def test_set_bounds_default(self):
-        self._check_bounds_setting(bounds_are_climatological=False)
+        self._check_bounds_setting(climatological=False)
 
     def test_set_bounds_climatology(self):
-        self._check_bounds_setting(bounds_are_climatological=True)
+        self._check_bounds_setting(climatological=True)
 
 
 class Test_write__valid_x_cube_attributes(tests.IrisTest):

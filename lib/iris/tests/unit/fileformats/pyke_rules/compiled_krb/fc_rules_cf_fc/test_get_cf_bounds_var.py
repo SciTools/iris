@@ -36,7 +36,7 @@ from iris.tests import mock
 
 class TestGetCFBoundsVar(tests.IrisTest):
     # Tests to check that get_cf_bounds_var will return the bounds_var and
-    # the correct bounds_are_climatological flag.
+    # the correct climatological flag.
     def _generic_test(self, test_climatological_bounds=False):
         cf_coord_var = mock.MagicMock()
 
@@ -52,9 +52,9 @@ class TestGetCFBoundsVar(tests.IrisTest):
             attr_val = 'TEST' if attr == test_attr else None
             setattr(cf_coord_var, attr, attr_val)
 
-        bounds_var, bounds_are_climatological = get_cf_bounds_var(cf_coord_var)
+        bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
         self.assertIs(bounds_var, mock.sentinel.bounds_var)
-        self.assertEqual(bounds_are_climatological, test_climatological_bounds)
+        self.assertEqual(climatological, test_climatological_bounds)
 
     def test_bounds_normal(self):
         self._generic_test(test_climatological_bounds=False)

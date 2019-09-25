@@ -98,7 +98,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
     def check_case_dim_coord_construction(self, climatology=False):
         # Test a generic dimension coordinate, with or without
-        # climatological bounds.
+        # a climatological coord.
         self.use_climatology_bounds = climatology
         self._set_cf_coord_var(np.arange(6))
 
@@ -108,7 +108,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
             bounds=self.bounds,
-            bounds_are_climatological=climatology)
+            climatological=climatology)
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
