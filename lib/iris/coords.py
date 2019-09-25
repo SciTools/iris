@@ -36,7 +36,6 @@ import operator
 import warnings
 import zlib
 
-import cf_units
 import cftime
 import numpy as np
 import numpy.ma as ma
