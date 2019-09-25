@@ -1733,8 +1733,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             else:
                 element.setAttribute('bounds',
                                      iris.util.format_array(self.bounds))
-            element.setAttribute('bounds_are_climatological',
-                                 str(self.bounds_are_climatological))
 
         return element
 
