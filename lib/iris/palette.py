@@ -197,10 +197,12 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
         if update_max:
             self._vmax = self.pivot + diff
 
-    def _get_vmin(self):
+    @property
+    def vmin(self):
         return getattr(self, '_vmin')
 
-    def _set_vmin(self, val):
+    @vmin.setter
+    def vmin(self, val):
         if val is None:
             self._vmin = None
         elif self._vmax is None:
@@ -210,12 +212,12 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
             # Set both _vmin and _vmax from value
             self._update(val)
 
-    vmin = property(_get_vmin, _set_vmin)
-
-    def _get_vmax(self):
+    @property
+    def vmax(self):
         return getattr(self, '_vmax')
 
-    def _set_vmax(self, val):
+    @vmax.setter
+    def vmax(self, val):
         if val is None:
             self._vmax = None
         elif self._vmin is None:
@@ -224,8 +226,6 @@ class SymmetricNormalize(mpl_colors.Normalize, object):
         else:
             # Set both _vmin and _vmax from value
             self._update(val)
-
-    vmax = property(_get_vmax, _set_vmax)
 
 
 def _load_palette():
