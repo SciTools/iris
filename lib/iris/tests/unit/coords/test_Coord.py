@@ -865,7 +865,7 @@ class TestClimatology(tests.IrisTest):
                          units='days since 1970-01-01',
                          climatological=True)
         emsg = 'Cannot change units of climatological time coordinate'
-        with self.assertRaisesRegex(TypeError, emsg):
+        with six.assertRaisesRegex(self, TypeError, emsg):
             coord.units = 'm'
 
     def test_units__change_valid_not_climatological(self):
