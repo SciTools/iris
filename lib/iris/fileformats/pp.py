@@ -619,17 +619,17 @@ class PPDataProxy(object):
         self.mdi = mdi
 
     # lbpack
-    def _lbpack_setter(self, value):
-        self._lbpack = value
-
-    def _lbpack_getter(self):
+    @property
+    def lbpack(self):
         value = self._lbpack
         if not isinstance(self._lbpack, SplittableInt):
             mapping = dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0)
             value = SplittableInt(self._lbpack, mapping)
         return value
 
-    lbpack = property(_lbpack_getter, _lbpack_setter)
+    @lbpack.setter
+    def lbpack(self, value):
+        self._lbpack = value
 
     @property
     def dtype(self):
@@ -1004,17 +1004,25 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
                                             'ic': 0})
 
     # lbcode
-    def _lbcode_setter(self, new_value):
+    @property
+    def lbcode(self):
+        return self._lbcode
+
+    @lbcode.setter
+    def lbcode(self, new_value):
         if not isinstance(new_value, SplittableInt):
             # add the ix/iy values for lbcode
             new_value = SplittableInt(new_value,
                                       {'iy': slice(0, 2), 'ix': slice(2, 4)})
         self._lbcode = new_value
 
-    lbcode = property(lambda self: self._lbcode, _lbcode_setter)
-
     # lbpack
-    def _lbpack_setter(self, new_value):
+    @property
+    def lbpack(self):
+        return self._lbpack
+
+    @lbpack.setter
+    def lbpack(self, new_value):
         if not isinstance(new_value, SplittableInt):
             self.raw_lbpack = new_value
             # add the n1/n2/n3/n4/n5 values for lbpack
@@ -1023,8 +1031,6 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         else:
             self.raw_lbpack = new_value._value
         self._lbpack = new_value
-
-    lbpack = property(lambda self: self._lbpack, _lbpack_setter)
 
     @property
     def lbproc(self):
@@ -1438,13 +1444,17 @@ class PPField2(PPField):
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
-    def _get_t1(self):
+    @property
+    def t1(self):
+        "A cftime.datetime object consisting of the lbyr, lbmon,"
+        " lbdat, lbhr, and lbmin attributes."
         if not hasattr(self, '_t1'):
             self._t1 = cftime.datetime(self.lbyr, self.lbmon, self.lbdat,
                                        self.lbhr, self.lbmin)
         return self._t1
 
-    def _set_t1(self, dt):
+    @t1.setter
+    def t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
         self.lbdat = dt.day
@@ -1454,18 +1464,18 @@ class PPField2(PPField):
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
 
-    t1 = property(_get_t1, _set_t1, None,
-                  "A cftime.datetime object consisting of the lbyr, lbmon,"
-                  " lbdat, lbhr, and lbmin attributes.")
-
-    def _get_t2(self):
+    @property
+    def t2(self):
+        "A cftime.datetime object consisting of the lbyrd, "
+        "lbmond, lbdatd, lbhrd, and lbmind attributes."
         if not hasattr(self, '_t2'):
             self._t2 = cftime.datetime(self.lbyrd, self.lbmond,
                                        self.lbdatd, self.lbhrd,
                                        self.lbmind)
         return self._t2
 
-    def _set_t2(self, dt):
+    @t2.setter
+    def t2(self, dt):
         self.lbyrd = dt.year
         self.lbmond = dt.month
         self.lbdatd = dt.day
@@ -1474,10 +1484,6 @@ class PPField2(PPField):
         self.lbdayd = int(dt.strftime('%j'))
         if hasattr(self, '_t2'):
             delattr(self, '_t2')
-
-    t2 = property(_get_t2, _set_t2, None,
-                  "A cftime.datetime object consisting of the lbyrd, "
-                  "lbmond, lbdatd, lbhrd, and lbmind attributes.")
 
 
 class PPField3(PPField):
@@ -1491,13 +1497,20 @@ class PPField3(PPField):
 
     __slots__ = _pp_attribute_names(HEADER_DEFN)
 
-    def _get_t1(self):
+    @property
+    def t1(self):
+        """
+        A cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
+        lbmin, and lbsec attributes.
+
+        """
         if not hasattr(self, '_t1'):
             self._t1 = cftime.datetime(self.lbyr, self.lbmon, self.lbdat,
                                        self.lbhr, self.lbmin, self.lbsec)
         return self._t1
 
-    def _set_t1(self, dt):
+    @t1.setter
+    def t1(self, dt):
         self.lbyr = dt.year
         self.lbmon = dt.month
         self.lbdat = dt.day
@@ -1507,18 +1520,21 @@ class PPField3(PPField):
         if hasattr(self, '_t1'):
             delattr(self, '_t1')
 
-    t1 = property(_get_t1, _set_t1, None,
-                  "A cftime.datetime object consisting of the lbyr, lbmon,"
-                  " lbdat, lbhr, lbmin, and lbsec attributes.")
+    @property
+    def t2(self):
+        """
+        A cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
+        lbhrd, lbmind, and lbsecd attributes.
 
-    def _get_t2(self):
+        """
         if not hasattr(self, '_t2'):
             self._t2 = cftime.datetime(self.lbyrd, self.lbmond,
                                        self.lbdatd, self.lbhrd,
                                        self.lbmind, self.lbsecd)
         return self._t2
 
-    def _set_t2(self, dt):
+    @t2.setter
+    def t2(self, dt):
         self.lbyrd = dt.year
         self.lbmond = dt.month
         self.lbdatd = dt.day
@@ -1527,10 +1543,6 @@ class PPField3(PPField):
         self.lbsecd = dt.second
         if hasattr(self, '_t2'):
             delattr(self, '_t2')
-
-    t2 = property(_get_t2, _set_t2, None,
-                  "A cftime.datetime object consisting of the lbyrd, "
-                  "lbmond, lbdatd, lbhrd, lbmind, and lbsecd attributes.")
 
 
 PP_CLASSES = {
