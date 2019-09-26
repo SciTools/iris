@@ -1712,6 +1712,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.var_name:
             element.setAttribute('var_name', str(self.var_name))
         element.setAttribute('units', repr(self.units))
+        if self.climatological:
+            element.setAttribute('climatological', str(self.climatological))
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
