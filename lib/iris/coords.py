@@ -36,6 +36,7 @@ import operator
 import warnings
 import zlib
 
+import cf_units
 import cftime
 import numpy as np
 import numpy.ma as ma
@@ -712,6 +713,30 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 raise ValueError(emsg)
 
         self._climatological = value
+
+    @property
+    def units(self):
+        """"The :mod:`~cf_units.Unit` instance of the object."""
+        return self._units
+
+    @units.setter
+    def units(self, unit):
+        # Instance may be mid creation - ensure we have all the instance
+        # attributes that we need...
+        bootstrapped = (hasattr(self, '_units') and
+                        hasattr(self, '_bounds_dm') and
+                        hasattr(self, '_climatological'))
+
+        new_unit = cf_units.as_unit(unit)
+
+        if bootstrapped:
+            # Ensure new units are a time reference, if climatological.
+            if not new_unit.is_time_reference() and self.climatological:
+                emsg = ("Cannot change units of climatological time "
+                        "coordinate, must be a time reference, got {!r}.")
+                raise TypeError(emsg.format(new_unit))
+
+        self._units = new_unit
 
     def lazy_points(self):
         """

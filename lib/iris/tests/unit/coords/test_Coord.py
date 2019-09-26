@@ -852,6 +852,31 @@ class TestClimatology(tests.IrisTest):
         coord.bounds = None
         self.assertFalse(coord.climatological)
 
+    def test_units__change_valid_climatological(self):
+        coord = DimCoord(points=2, bounds=[[1, 3]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        new_units = 'hours since 1970-01-01'
+        coord.units = new_units
+        self.assertEqual(str(coord.units), new_units)
+
+    def test_units__change_invalid_climatological(self):
+        coord = DimCoord(points=2, bounds=[[1, 3]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        emsg = 'Cannot change units of climatological time coordinate'
+        with self.assertRaisesRegex(TypeError, emsg):
+            coord.units = 'm'
+
+    def test_units__change_valid_not_climatological(self):
+        coord = DimCoord(points=2, bounds=[[1, 3]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        coord.climatological = False
+        new_units = 'm'
+        coord.units = new_units
+        self.assertEqual(str(coord.units), new_units)
+
 
 if __name__ == '__main__':
     tests.main()
