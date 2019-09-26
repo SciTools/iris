@@ -806,8 +806,8 @@ class TestClimatology(tests.IrisTest):
                      climatological=True)
 
     def test_create_no_time_no_set(self):
-        with six.assertRaisesRegex(self, TypeError,
-                                   'Cannot set.*not have time units.*'):
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
             AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
                      climatological=True)
 
@@ -823,8 +823,8 @@ class TestClimatology(tests.IrisTest):
 
     def test_absent_no_time_no_set(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
-        with six.assertRaisesRegex(self, TypeError,
-                                   'Cannot set.*not have time units.*'):
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
             coord.climatological = True
 
     def test_absent_no_bounds_unset(self):
