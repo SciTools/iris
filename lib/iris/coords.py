@@ -55,7 +55,8 @@ from iris.util import points_step
 class CoordDefn(namedtuple('CoordDefn',
                            ['standard_name', 'long_name',
                             'var_name', 'units',
-                            'attributes', 'coord_system'])):
+                            'attributes', 'coord_system',
+                            'climatological'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
     :class:`AuxCoord` based on its metadata.
@@ -448,8 +449,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     _MODE_RDIV: '/'}
 
     def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None):
+                 var_name=None, units='1', bounds=None,
+                 attributes=None, coord_system=None,
+                 climatological=False):
 
         """
         Constructs a single coordinate.
@@ -477,13 +479,22 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             points.shape + (n,). For example, a 1d coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
+            Note if the data is a climatology, `climatological`
+            should be set.
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
-
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will label the time axis with
+            'climatology' and 'climatology_bounds' in place of standard
+            bounds labels.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
         """
         #: CF standard name of the quantity that the coordinate represents.
         self.standard_name = standard_name
@@ -509,6 +520,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         self._bounds_dm = None
         self.points = points
         self.bounds = bounds
+        self.climatological = climatological
 
     def __getitem__(self, keys):
         """
@@ -657,6 +669,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
+            self._climatological = False
         else:
             bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
@@ -670,6 +683,35 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 self._bounds_dm.data = bounds
 
     bounds = property(_bounds_getter, _bounds_setter)
+
+    @property
+    def climatological(self):
+        """
+        A boolean that controls whether the coordinate is a climatological
+        time axis, in which case the bounds represent a climatological period
+        rather than a normal period.
+
+        Always reads as False if there are no bounds.
+        On set, the input value is cast to a boolean, exceptions raised
+        if units are not time units or if there are no bounds.
+        """
+        return self._climatological if self.has_bounds() else False
+
+    @climatological.setter
+    def climatological(self, value):
+        # Ensure the bounds are a compatible shape.
+        value = bool(value)
+        if value:
+            if not self.units.is_time_reference():
+                emsg = ("Cannot set climatological coordinate, does not have"
+                        " valid time reference units, got {!r}.")
+                raise TypeError(emsg.format(self.units))
+
+            if not self.has_bounds():
+                emsg = "Cannot set climatological coordinate, no bounds exist."
+                raise ValueError(emsg)
+
+        self._climatological = value
 
     def lazy_points(self):
         """
@@ -762,6 +804,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             fmt += ', attributes={self.attributes}'
         if self.coord_system:
             fmt += ', coord_system={self.coord_system}'
+        if self.climatological:
+            fmt += ', climatological={' \
+                   'self.climatological}'
         result = fmt.format(self=self)
         return result
 
@@ -841,7 +886,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
-                         self.units, self.attributes, self.coord_system)
+                         self.units, self.attributes, self.coord_system,
+                         self.climatological)
         return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1794,18 +1840,21 @@ class DimCoord(Coord):
                    coord_system=coord_system, circular=circular)
 
     def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None, circular=False):
+                 var_name=None, units='1', bounds=None,
+                 attributes=None, coord_system=None, circular=False,
+                 climatological=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
 
         """
-        super(DimCoord, self).__init__(points, standard_name=standard_name,
-                                       long_name=long_name, var_name=var_name,
-                                       units=units, bounds=bounds,
-                                       attributes=attributes,
-                                       coord_system=coord_system)
+        super(DimCoord, self).__init__(
+            points, standard_name=standard_name,
+            long_name=long_name, var_name=var_name,
+            units=units, bounds=bounds,
+            attributes=attributes,
+            coord_system=coord_system,
+            climatological=climatological)
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)

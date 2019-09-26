@@ -1,0 +1,3 @@
+* Support for loading, storing and saving of NetCDF climatological coordinates.
+Stored as a boolean property - ``climatological`` - of the relevant
+cube coordinate.

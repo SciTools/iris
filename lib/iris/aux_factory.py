@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -66,9 +66,14 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
 
     def _as_defn(self):
-        defn = iris.coords.CoordDefn(self.standard_name, self.long_name,
-                                     self.var_name, self.units,
-                                     self.attributes, self.coord_system)
+        defn = iris.coords.CoordDefn(
+            self.standard_name, self.long_name,
+            self.var_name, self.units,
+            self.attributes,
+            self.coord_system,
+            # Slot for Coord 'climatological' property, which this
+            # doesn't have.
+            False,)
         return defn
 
     @abstractmethod

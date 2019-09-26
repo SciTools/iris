@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -1567,6 +1567,7 @@ fc_extras
         # variable is missing, as that will already have been done by
         # iris.fileformats.cf.
         cf_bounds_var = None
+        climatological = False
         if attr_bounds is not None:
             bounds_vars = cf_coord_var.cf_group.bounds
             if attr_bounds in bounds_vars:
@@ -1575,13 +1576,14 @@ fc_extras
             climatology_vars = cf_coord_var.cf_group.climatology
             if attr_climatology in climatology_vars:
                 cf_bounds_var = climatology_vars[attr_climatology]
+                climatological = True
 
         if attr_bounds is not None and attr_climatology is not None:
             warnings.warn('Ignoring climatology in favour of bounds attribute '
                           'on NetCDF variable {!r}.'.format(
                           cf_coord_var.cf_name))
 
-        return cf_bounds_var
+        return cf_bounds_var, climatological
 
 
     ################################################################################
@@ -1630,7 +1632,8 @@ fc_extras
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Get any coordinate bounds.
-        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
+        cf_bounds_var, climatological = get_cf_bounds_var(
+            cf_coord_var)
         if cf_bounds_var is not None:
             bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
@@ -1676,7 +1679,9 @@ fc_extras
                                          bounds=bounds_data,
                                          attributes=attributes,
                                          coord_system=coord_system,
-                                         circular=circular)
+                                         circular=circular,
+                                         climatological=
+                                             climatological)
         except ValueError as e_msg:
             # Attempt graceful loading.
             coord = iris.coords.AuxCoord(points_data,
@@ -1686,7 +1691,9 @@ fc_extras
                                          units=attr_units,
                                          bounds=bounds_data,
                                          attributes=attributes,
-                                         coord_system=coord_system)
+                                         coord_system=coord_system,
+                                         climatological=
+                                             climatological)
             cube.add_aux_coord(coord, data_dims)
             msg = 'Failed to create {name!r} dimension coordinate: {error}\n' \
                   'Gracefully creating {name!r} auxiliary coordinate instead.'
@@ -1722,7 +1729,8 @@ fc_extras
             points_data = _get_cf_var_data(cf_coord_var, engine.filename)
 
         # Get any coordinate bounds.
-        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
+        cf_bounds_var, climatological = get_cf_bounds_var(
+            cf_coord_var)
         if cf_bounds_var is not None:
             bounds_data = _get_cf_var_data(cf_bounds_var, engine.filename)
 
@@ -1758,7 +1766,9 @@ fc_extras
                                      units=attr_units,
                                      bounds=bounds_data,
                                      attributes=attributes,
-                                     coord_system=coord_system)
+                                     coord_system=coord_system,
+                                     climatological=
+                                         climatological)
 
         # Add it to the cube
         cube.add_aux_coord(coord, data_dims)

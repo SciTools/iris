@@ -362,6 +362,12 @@ class IrisTest_nometa(unittest.TestCase):
         lines = cdl.decode('ascii').splitlines()
         lines = lines[1:]
 
+        # Ignore any lines of the general form "... :_NCProperties = ..."
+        # (an extra global attribute, displayed by older versions of ncdump).
+        re_ncprop = re.compile('^\s*:_NCProperties *=')
+        lines = [line for line in lines
+                 if not re_ncprop.match(line)]
+
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.
         sort_key = lambda line: ('UNLIMITED' not in line, line)

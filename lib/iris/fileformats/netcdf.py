@@ -1450,13 +1450,21 @@ class Saver(object):
             else:
                 bounds_dimension_name = 'bnds_%s' % n_bounds
 
+            if coord.climatological:
+                property_name = 'climatology'
+                varname_extra = 'climatology'
+            else:
+                property_name = 'bounds'
+                varname_extra = 'bnds'
+
             if bounds_dimension_name not in self._dataset.dimensions:
                 # Create the bounds dimension with the appropriate extent.
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
-            _setncattr(cf_var, 'bounds', cf_name + '_bnds')
+            boundsvar_name = '{}_{}'.format(cf_name, varname_extra)
+            _setncattr(cf_var, property_name, boundsvar_name)
             cf_var_bounds = self._dataset.createVariable(
-                cf_var.bounds, bounds.dtype.newbyteorder('='),
+                boundsvar_name, bounds.dtype.newbyteorder('='),
                 cf_var.dimensions + (bounds_dimension_name,))
             cf_var_bounds[:] = bounds
 
