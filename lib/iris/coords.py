@@ -631,13 +631,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             result = result.view()
         return result
 
-    @property
-    def points(self):
+    def _points_getter(self):
         """The coordinate points values as a NumPy array."""
         return self._points_dm.data.view()
 
-    @points.setter
-    def points(self, points):
+    def _points_setter(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
@@ -651,8 +649,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             self._points_dm.data = points
 
-    @property
-    def bounds(self):
+    # Require to use this property pattern rather than @property due to
+    # subclass specialisation of _points_setter method
+    points = property(_points_getter, _points_setter)
+
+    def _bounds_getter(self):
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -666,8 +667,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = self._bounds_dm.data.view()
         return bounds
 
-    @bounds.setter
-    def bounds(self, bounds):
+    def _bounds_setter(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
@@ -714,6 +714,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 raise ValueError(emsg)
 
         self._climatological = value
+
+    # Require to use this property pattern rather than @property due to
+    # subclass specialisation on _bounds_setter method
+    bounds = property(_bounds_getter, _bounds_setter)
 
     def lazy_points(self):
         """
