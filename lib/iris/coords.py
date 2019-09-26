@@ -703,15 +703,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         value = bool(value)
         if value:
             if not self.units.is_time_reference():
-                raise TypeError(
-                    "Cannot set climatological to True: coordinate does not "
-                    "have time units - cannot be represented as time axis."
-                )
+                emsg = ("Cannot set climatological coordinate, does not have"
+                        " valid time reference units, got {!r}.")
+                raise TypeError(emsg.format(self.units))
 
             if not self.has_bounds():
-                raise ValueError(
-                    "Cannot set climatological to True: no bounds "
-                    "exist.")
+                emsg = "Cannot set climatological coordinate, no bounds exist."
+                raise ValueError(emsg)
 
         self._climatological = value
 

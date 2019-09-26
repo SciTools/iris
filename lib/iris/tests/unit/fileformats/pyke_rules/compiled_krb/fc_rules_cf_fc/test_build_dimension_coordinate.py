@@ -91,7 +91,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
-            units='m',
+            units='days since 1970-01-01',
+            calendar=None,
             shape=points.shape,
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])
@@ -106,7 +107,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             self.cf_coord_var[:],
             long_name=self.cf_coord_var.long_name,
             var_name=self.cf_coord_var.cf_name,
-            units='days since 1970-01-01',
+            units=self.cf_coord_var.units,
             bounds=self.bounds,
             climatological=climatology)
 
