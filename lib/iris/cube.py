@@ -1117,14 +1117,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for factory in self.aux_factories:
             factory.update(coord)
 
-    def remove_cell_measure(self, name_or_cell_measure):
+    def remove_cell_measure(self, cell_measure):
         """
         Removes a cell measure from the cube.
 
         Args:
 
-        * name_or_cell_measure
-            The cell measure to remove from the cube. As either
+        * cell_measure (string or cell_measure)
+            The (name of the) cell measure to remove from the cube. As either
 
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
@@ -1145,7 +1145,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
 
         """
-        cell_measure = self.cell_measure(name_or_cell_measure)
+        cell_measure = self.cell_measure(cell_measure)
 
         self._cell_measures_and_dims = [[cell_measure_, dim] for cell_measure_,
                                         dim in self._cell_measures_and_dims
