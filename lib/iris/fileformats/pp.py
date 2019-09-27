@@ -1446,8 +1446,11 @@ class PPField2(PPField):
 
     @property
     def t1(self):
-        "A cftime.datetime object consisting of the lbyr, lbmon,"
-        " lbdat, lbhr, and lbmin attributes."
+        """
+        A cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
+        and lbmin attributes.
+
+        """
         if not hasattr(self, '_t1'):
             self._t1 = cftime.datetime(self.lbyr, self.lbmon, self.lbdat,
                                        self.lbhr, self.lbmin)
@@ -1466,8 +1469,11 @@ class PPField2(PPField):
 
     @property
     def t2(self):
-        "A cftime.datetime object consisting of the lbyrd, "
-        "lbmond, lbdatd, lbhrd, and lbmind attributes."
+        """
+        A cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
+        lbhrd, and lbmind attributes.
+
+        """
         if not hasattr(self, '_t2'):
             self._t2 = cftime.datetime(self.lbyrd, self.lbmond,
                                        self.lbdatd, self.lbhrd,
