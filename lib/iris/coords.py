@@ -631,11 +631,13 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             result = result.view()
         return result
 
-    def _points_getter(self):
+    @property
+    def points(self):
         """The coordinate points values as a NumPy array."""
         return self._points_dm.data.view()
 
-    def _points_setter(self, points):
+    @points.setter
+    def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
@@ -649,9 +651,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             self._points_dm.data = points
 
-    points = property(_points_getter, _points_setter)
-
-    def _bounds_getter(self):
+    @property
+    def bounds(self):
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -665,7 +666,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = self._bounds_dm.data.view()
         return bounds
 
-    def _bounds_setter(self, bounds):
+    @bounds.setter
+    def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
@@ -681,8 +683,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                 self._bounds_dm = DataManager(bounds)
             else:
                 self._bounds_dm.data = bounds
-
-    bounds = property(_bounds_getter, _bounds_setter)
 
     @property
     def climatological(self):
@@ -1942,7 +1942,8 @@ class DimCoord(Coord):
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
-    def _points_setter(self, points):
+    @Coord.points.setter
+    def points(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
         # can make it read-only.
@@ -1952,8 +1953,8 @@ class DimCoord(Coord):
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
 
-        # Invoke the generic points setter.
-        super(DimCoord, self)._points_setter(points)
+        # Call the parent points setter.
+        super(DimCoord, self.__class__).points.fset(self, points)
 
         if self._points_dm is not None:
             # Re-fetch the core array, as the super call may replace it.
@@ -1962,8 +1963,6 @@ class DimCoord(Coord):
 
             # Make the array read-only.
             points.flags.writeable = False
-
-    points = property(Coord._points_getter, _points_setter)
 
     def _new_bounds_requirements(self, bounds):
         """
@@ -2002,7 +2001,8 @@ class DimCoord(Coord):
                     raise ValueError('The direction of monotonicity must be '
                                      'consistent across all bounds')
 
-    def _bounds_setter(self, bounds):
+    @Coord.bounds.setter
+    def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
             bounds = _lazy.as_concrete_data(bounds)
@@ -2011,8 +2011,8 @@ class DimCoord(Coord):
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
 
-        # Invoke the generic bounds setter.
-        super(DimCoord, self)._bounds_setter(bounds)
+        # Call the parent bounds setter.
+        super(DimCoord, self.__class__).bounds.fset(self, bounds)
 
         if self._bounds_dm is not None:
             # Re-fetch the core array, as the super call may replace it.
@@ -2021,8 +2021,6 @@ class DimCoord(Coord):
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-
-    bounds = property(Coord._bounds_getter, _bounds_setter)
 
     def is_monotonic(self):
         return True
