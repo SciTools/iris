@@ -1646,6 +1646,15 @@ class Test_remove_metadata(tests.IrisTest):
         self.assertEqual(self.cube._cell_measures_and_dims,
                          [[self.b_cell_measure, (0, 1)]])
 
+    def test_remove_cell_measure_by_name(self):
+        self.cube.remove_cell_measure('area')
+        self.assertEqual(self.cube._cell_measures_and_dims,
+                         [[self.b_cell_measure, (0, 1)]])
+
+    def test_fail_remove_cell_measure_by_name(self):
+        with self.assertRaises(CellMeasureNotFoundError):
+            self.cube.remove_cell_measure('notarea')
+
 
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
