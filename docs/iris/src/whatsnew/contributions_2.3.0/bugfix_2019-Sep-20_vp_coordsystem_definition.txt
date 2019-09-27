@@ -1,0 +1,4 @@
+* :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
+the `CF Vertical perspective definition <http://cfconventions
+.org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
+erroneously using Geostationary.

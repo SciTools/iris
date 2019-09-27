@@ -1,7 +1,5 @@
 * New coordinate system: :class:`iris.coord_systems.Geostationary`, based on
 the `CF Geostationary projection definition <http://cfconventions
 .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
-* :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
-the `CF Vertical perspective definition <http://cfconventions
-.org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
-erroneously using Geostationary.
+* :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
+loaded from NetCDF files.
