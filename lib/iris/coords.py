@@ -1940,12 +1940,7 @@ class DimCoord(Coord):
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
             raise ValueError('The points array must be strictly monotonic.')
 
-    @property
-    def points(self):
-        # Call the parent points getter.
-        return super(DimCoord, self).points
-
-    @points.setter
+    @Coord.points.setter
     def points(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
@@ -2004,12 +1999,7 @@ class DimCoord(Coord):
                     raise ValueError('The direction of monotonicity must be '
                                      'consistent across all bounds')
 
-    @property
-    def bounds(self):
-        # Call the parent bounds getter.
-        return super(DimCoord, self).bounds
-
-    @bounds.setter
+    @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
