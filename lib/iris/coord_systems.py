@@ -555,7 +555,7 @@ class Orthographic(CoordSystem):
 
 class VerticalPerspective(CoordSystem):
     """
-    An vertical/near-side perspective satellite image map projection.
+    A vertical/near-side perspective satellite image map projection.
 
     """
 
@@ -565,7 +565,7 @@ class VerticalPerspective(CoordSystem):
                  longitude_of_projection_origin, perspective_point_height,
                  false_easting=0, false_northing=0, ellipsoid=None):
         """
-        Constructs an Vertical Perspective coord system.
+        Constructs a Vertical Perspective coord system.
 
         Args:
 
@@ -641,7 +641,7 @@ class VerticalPerspective(CoordSystem):
 
 class Geostationary(CoordSystem):
     """
-    An geostationary satellite image map projection.
+    A geostationary satellite image map projection.
 
     """
 
