@@ -625,7 +625,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             result = np.require(src, requirements='W')
             # Ensure the array has enough dimensions.
             # NB. Returns the *same object* if result.ndim >= ndmin
-            result = np.array(result, ndmin=ndmin, copy=False)
+            func = ma.array if ma.isMaskedArray(result) else np.array
+            result = func(result, ndmin=ndmin, copy=False)
             # We don't need to copy the data, but we do need to have our
             # own view so we can control the shape, etc.
             result = result.view()
@@ -1930,17 +1931,23 @@ class DimCoord(Coord):
         Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
             * points are scalar or 1D,
-            * points are numeric, and
+            * points are numeric,
+            * points are not masked, and
             * points are monotonic.
 
         """
         if points.ndim not in (0, 1):
-            raise ValueError(
-                'The points array must be scalar or 1-dimensional.')
+            emsg = 'The {!r} {} points array must be scalar or 1-dimensional.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         if not np.issubdtype(points.dtype, np.number):
-            raise ValueError('The points array must be numeric.')
+            emsg = 'The {!r} {} points array must be numeric.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        if ma.isMaskedArray(points) and ma.count_masked(points):
+            emsg = 'A {!r} {} points array must not be masked.'
+            raise TypeError(emsg.format(self.name(), self.__class__.__name__))
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
-            raise ValueError('The points array must be strictly monotonic.')
+            emsg = 'The {!r} {} points array must be strictly monotonic.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
 
     @Coord.points.setter
     def points(self, points):
@@ -1948,10 +1955,13 @@ class DimCoord(Coord):
         # Ensure it is an actual array, and also make our own copy so that we
         # can make it read-only.
         points = _lazy.as_concrete_data(points)
-        points = np.array(points)
+        # Make sure that we have an array (any type of array).
+        points = np.asanyarray(points)
 
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
+        # Cast to a numpy array for masked arrays with no mask.
+        points = np.array(points)
 
         # Call the parent points setter.
         super(DimCoord, self.__class__).points.fset(self, points)
@@ -1969,20 +1979,27 @@ class DimCoord(Coord):
         Confirm that a new set of coord bounds adheres to the requirements for
         :class:`~iris.coords.DimCoord` bounds, being:
             * bounds are compatible in shape with the points
-            * bounds are numeric, and
+            * bounds are numeric,
+            * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and \
                 not (self.shape == (1,) and bounds.ndim == 1):
-            raise ValueError(
-                "The shape of the bounds array should be "
-                "points.shape + (n_bounds,)")
-        # Checks for numeric and monotonic.
+            emsg = ('The shape of the {!r} {} bounds array should be '
+                    'points.shape + (n_bounds)')
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        # Checks for numeric.
         if not np.issubdtype(bounds.dtype, np.number):
-            raise ValueError('The bounds array must be numeric.')
+            emsg = 'The {!r} {} bounds array must be numeric.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        # Check not masked.
+        if ma.isMaskedArray(bounds) and ma.count_masked(bounds):
+            emsg = 'A {!r} {} bounds array must not be masked.'
+            raise TypeError(emsg.format(self.name(), self.__class__.__name__))
 
+        # Check bounds are monotonic.
         if bounds.ndim > 1:
             n_bounds = bounds.shape[-1]
             n_points = bounds.shape[0]
@@ -1993,23 +2010,30 @@ class DimCoord(Coord):
                     monotonic, direction = iris.util.monotonic(
                         bounds[:, b_index], strict=True, return_direction=True)
                     if not monotonic:
-                        raise ValueError('The bounds array must be strictly '
-                                         'monotonic.')
+                        emsg = ('The {!r} {} bounds array must be strictly '
+                                'monotonic.')
+                        raise ValueError(emsg.format(self.name(),
+                                                     self.__class__.__name__))
                     directions.add(direction)
 
                 if len(directions) != 1:
-                    raise ValueError('The direction of monotonicity must be '
-                                     'consistent across all bounds')
+                    emsg = ('The direction of monotonicity for {!r} {} must '
+                            'be consistent across all bounds.')
+                    raise ValueError(emsg.format(self.name(),
+                                                 self.__class__.__name__))
 
     @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
             bounds = _lazy.as_concrete_data(bounds)
-            bounds = np.array(bounds)
+            # Make sure we have an array (any type of array).
+            bounds = np.asanyarray(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
+            # Cast to a numpy array for masked arrays with no mask.
+            bounds = np.array(bounds)
 
         # Call the parent bounds setter.
         super(DimCoord, self.__class__).bounds.fset(self, bounds)

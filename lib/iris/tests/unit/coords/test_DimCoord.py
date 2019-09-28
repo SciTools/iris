@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -78,7 +78,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         bds_shape = list(self.bds_real.shape)
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
-        msg = 'The shape of the bounds array should be'
+        msg = "The shape of the 'unknown' DimCoord bounds array should be"
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord(self.pts_real, bounds=bds_wrong)
 
@@ -452,7 +452,7 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
-        msg = 'The shape of the bounds array should be'
+        msg = "The shape of the 'unknown' DimCoord bounds array should be"
         with self.assertRaisesRegexp(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
         self.assertArrayEqual(coord.bounds, self.bds_real)
