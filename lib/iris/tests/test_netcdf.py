@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -105,6 +105,11 @@ class TestNetCDFLoad(tests.IrisTest):
                 key=lambda cube: cube.name())):
             self.assertCML(cube, ('netcdf',
                                   'netcdf_global_xyzt_gems_iter_%d.cml' % i))
+
+    # -------------------------------------------------------------------------
+    # It is not considered necessary to have integration tests for
+    # loading EVERY coordinate system. A subset are tested below.
+    # -------------------------------------------------------------------------
 
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.

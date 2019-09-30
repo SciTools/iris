@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
-"""Unit tests for the :class:`iris.coord_systems.VerticalPerspective` class."""
+"""Unit tests for the :class:`iris.coord_systems.Geostationary` class."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -23,15 +23,18 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import six
+
 import cartopy.crs as ccrs
-from iris.coord_systems import GeogCS, VerticalPerspective
+from iris.coord_systems import GeogCS, Geostationary
 
 
 class Test(tests.IrisTest):
     def setUp(self):
         self.latitude_of_projection_origin = 0.0
         self.longitude_of_projection_origin = 0.0
-        self.perspective_point_height = 38204820000.0
+        self.perspective_point_height = 35785831.0
+        self.sweep_angle_axis = 'y'
         self.false_easting = 0.0
         self.false_northing = 0.0
 
@@ -43,28 +46,51 @@ class Test(tests.IrisTest):
                                 ellipse=None)
 
         # Actual and expected coord system can be re-used for
-        # VerticalPerspective.test_crs_creation and test_projection_creation.
-        self.expected = ccrs.NearsidePerspective(
+        # Geostationary.test_crs_creation and test_projection_creation.
+        self.expected = ccrs.Geostationary(
             central_longitude=self.longitude_of_projection_origin,
-            central_latitude=self.latitude_of_projection_origin,
             satellite_height=self.perspective_point_height,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
-            globe=self.globe)
-        self.vp_cs = VerticalPerspective(self.latitude_of_projection_origin,
-                                         self.longitude_of_projection_origin,
-                                         self.perspective_point_height,
-                                         self.false_easting,
-                                         self.false_northing,
-                                         self.ellipsoid)
+            globe=self.globe,
+            sweep_axis=self.sweep_angle_axis
+        )
+        self.geo_cs = Geostationary(self.latitude_of_projection_origin,
+                                    self.longitude_of_projection_origin,
+                                    self.perspective_point_height,
+                                    self.sweep_angle_axis,
+                                    self.false_easting,
+                                    self.false_northing,
+                                    self.ellipsoid)
 
     def test_crs_creation(self):
-        res = self.vp_cs.as_cartopy_crs()
+        res = self.geo_cs.as_cartopy_crs()
         self.assertEqual(res, self.expected)
 
     def test_projection_creation(self):
-        res = self.vp_cs.as_cartopy_projection()
+        res = self.geo_cs.as_cartopy_projection()
         self.assertEqual(res, self.expected)
+
+    def test_non_zero_lat(self):
+        with six.assertRaisesRegex(self, ValueError, 'Non-zero latitude'):
+            Geostationary(0.1,
+                          self.longitude_of_projection_origin,
+                          self.perspective_point_height,
+                          self.sweep_angle_axis,
+                          self.false_easting,
+                          self.false_northing,
+                          self.ellipsoid)
+
+    def test_invalid_sweep(self):
+        with six.assertRaisesRegex(
+                self, ValueError, 'Invalid sweep_angle_axis'):
+            Geostationary(self.latitude_of_projection_origin,
+                          self.longitude_of_projection_origin,
+                          self.perspective_point_height,
+                          'a',
+                          self.false_easting,
+                          self.false_northing,
+                          self.ellipsoid)
 
 
 if __name__ == '__main__':
