@@ -609,7 +609,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             kwargs['circular'] = getattr(coord, 'circular', False)
         return cls(**kwargs)
 
-    def _sanitise_array(self, src, ndmin):
+    @staticmethod
+    def _sanitise_array(src, ndmin):
         if _lazy.is_lazy_data(src):
             # Lazy data : just ensure ndmin requirement.
             ndims_missing = ndmin - src.ndim
