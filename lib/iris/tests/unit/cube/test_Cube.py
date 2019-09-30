@@ -564,11 +564,6 @@ class Test_aggregated_by__lazy(tests.IrisTest):
                                 'gamma', 'beta'],
                                long_name='label', units='no_unit')
         simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name='simple_agg')
-        spanning_coord = AuxCoord(np.arange(44).reshape(4, 11),
-                                  long_name='spanning')
-        spanning_label_coord = AuxCoord(
-            np.arange(1, 441, 10).reshape(4, 11).astype(str),
-            long_name='span_label', units='no_unit')
 
         self.label_mean = np.array(
             [[4.+1./3., 5., 7.],
@@ -584,8 +579,6 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         self.cube.add_aux_coord(simple_agg_coord, 0)
         self.cube.add_aux_coord(val_coord, 1)
         self.cube.add_aux_coord(label_coord, 1)
-        self.cube.add_aux_coord(spanning_coord, (0, 1))
-        self.cube.add_aux_coord(spanning_label_coord, (0, 1))
 
     def test_agg_by_label__lazy(self):
         # Aggregate a cube on a string coordinate label where label
