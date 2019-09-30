@@ -476,6 +476,7 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.aggregate = mock.Mock(
             return_value=mock.Mock(dtype='object'))
         self.mock_agg.aggregate_shape = mock.Mock(return_value=())
+        self.mock_agg.lazy_func = None
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
     def test_2d_coord_simple_agg(self):
@@ -547,6 +548,86 @@ class Test_aggregated_by(tests.IrisTest):
         self.assertEqual(result.shape, (2, 4))
         self.assertEqual(result.coord('bar'),
                          AuxCoord(['a|a', 'a'], long_name='bar'))
+
+
+class Test_aggregated_by__lazy(tests.IrisTest):
+    def setUp(self):
+        self.data = np.arange(44).reshape(4, 11)
+        self.lazydata = as_lazy_data(self.data)
+        self.cube = Cube(self.lazydata)
+
+        val_coord = AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1],
+                             long_name="val")
+        label_coord = AuxCoord(['alpha', 'alpha', 'beta',
+                                'beta', 'alpha', 'gamma',
+                                'alpha', 'alpha', 'alpha',
+                                'gamma', 'beta'],
+                               long_name='label', units='no_unit')
+        simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name='simple_agg')
+
+        self.label_mean = np.array(
+            [[4.+1./3., 5., 7.],
+             [15.+1./3., 16., 18.],
+             [26.+1./3., 27., 29.],
+             [37.+1./3., 38., 40.]])
+        self.val_mean = np.array(
+            [[4.+1./6., 5.+2./3., 6.5],
+             [15.+1./6., 16.+2./3., 17.5],
+             [26.+1./6., 27.+2./3., 28.5],
+             [37.+1./6., 38.+2./3., 39.5]])
+
+        self.cube.add_aux_coord(simple_agg_coord, 0)
+        self.cube.add_aux_coord(val_coord, 1)
+        self.cube.add_aux_coord(label_coord, 1)
+
+    def test_agg_by_label__lazy(self):
+        # Aggregate a cube on a string coordinate label where label
+        # and val entries are not in step; the resulting cube has a val
+        # coord of bounded cells and a label coord of single string entries.
+        res_cube = self.cube.aggregated_by('label', MEAN)
+        val_coord = AuxCoord(np.array([1., 0.5, 1.]),
+                             bounds=np.array([[0, 2], [0, 1], [2, 0]]),
+                             long_name='val')
+        label_coord = AuxCoord(np.array(['alpha', 'beta', 'gamma']),
+                               long_name='label', units='no_unit')
+        self.assertTrue(res_cube.has_lazy_data())
+        self.assertEqual(res_cube.coord('val'), val_coord)
+        self.assertEqual(res_cube.coord('label'), label_coord)
+        self.assertArrayEqual(res_cube.data, self.label_mean)
+        self.assertFalse(res_cube.has_lazy_data())
+
+    def test_agg_by_val__lazy(self):
+        # Aggregate a cube on a numeric coordinate val where label
+        # and val entries are not in step; the resulting cube has a label
+        # coord with serialised labels from the aggregated cells.
+        res_cube = self.cube.aggregated_by('val', MEAN)
+        val_coord = AuxCoord(np.array([0,  1,  2]), long_name='val')
+        exp0 = 'alpha|alpha|beta|alpha|alpha|gamma'
+        exp1 = 'beta|alpha|beta'
+        exp2 = 'gamma|alpha'
+        label_coord = AuxCoord(np.array((exp0, exp1, exp2)),
+                               long_name='label', units='no_unit')
+        self.assertTrue(res_cube.has_lazy_data())
+        self.assertEqual(res_cube.coord('val'), val_coord)
+        self.assertEqual(res_cube.coord('label'), label_coord)
+        self.assertArrayEqual(res_cube.data, self.val_mean)
+        self.assertFalse(res_cube.has_lazy_data())
+
+    def test_single_string_aggregation__lazy(self):
+        aux_coords = [(AuxCoord(['a', 'b', 'a'], long_name='foo'), 0),
+                      (AuxCoord(['a', 'a', 'a'], long_name='bar'), 0)]
+        cube = iris.cube.Cube(as_lazy_data(np.arange(12).reshape(3, 4)),
+                              aux_coords_and_dims=aux_coords)
+        means = np.array(
+            [[4., 5., 6., 7.],
+             [4., 5., 6., 7.]])
+        result = cube.aggregated_by('foo', MEAN)
+        self.assertTrue(result.has_lazy_data())
+        self.assertEqual(result.shape, (2, 4))
+        self.assertEqual(result.coord('bar'),
+                         AuxCoord(['a|a', 'a'], long_name='bar'))
+        self.assertArrayEqual(result.data, means)
+        self.assertFalse(result.has_lazy_data())
 
 
 class Test_rolling_window(tests.IrisTest):

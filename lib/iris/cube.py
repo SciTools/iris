@@ -40,7 +40,7 @@ except ImportError:  # Python 2.7
 import copy
 from copy import deepcopy
 import datetime
-from functools import reduce
+from functools import reduce, partial
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -3345,10 +3345,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns:
             :class:`iris.cube.Cube`.
 
-        .. note::
-
-            This operation does not yet have support for lazy evaluation.
-
         For example:
 
             >>> import iris
@@ -3442,29 +3438,46 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         data_shape[dimension_to_groupby] = len(groupby)
 
         # Aggregate the group-by data.
-        cube_slice = [slice(None, None)] * len(data_shape)
+        if (aggregator.lazy_func is not None and self.has_lazy_data()):
+            front_slice = (slice(None, None),) * dimension_to_groupby
+            back_slice = (slice(None, None),) * (len(data_shape) -
+                                                 dimension_to_groupby -
+                                                 1)
+            groupby_subcubes = map(
+                lambda groupby_slice:
+                self[front_slice + (groupby_slice,) + back_slice].lazy_data(),
+                groupby.group()
+            )
+            agg = partial(aggregator.lazy_aggregate,
+                          axis=dimension_to_groupby,
+                          **kwargs)
+            result = list(map(agg, groupby_subcubes))
+            aggregateby_data = da.stack(result, axis=dimension_to_groupby)
+        else:
+            cube_slice = [slice(None, None)] * len(data_shape)
+            for i, groupby_slice in enumerate(groupby.group()):
+                # Slice the cube with the group-by slice to create a group-by
+                # sub-cube.
+                cube_slice[dimension_to_groupby] = groupby_slice
+                groupby_sub_cube = self[tuple(cube_slice)]
+                # Perform the aggregation over the group-by sub-cube and
+                # repatriate the aggregated data into the aggregate-by
+                # cube data.
+                cube_slice[dimension_to_groupby] = i
+                result = aggregator.aggregate(groupby_sub_cube.data,
+                                              axis=dimension_to_groupby,
+                                              **kwargs)
 
-        for i, groupby_slice in enumerate(groupby.group()):
-            # Slice the cube with the group-by slice to create a group-by
-            # sub-cube.
-            cube_slice[dimension_to_groupby] = groupby_slice
-            groupby_sub_cube = self[tuple(cube_slice)]
-            # Perform the aggregation over the group-by sub-cube and
-            # repatriate the aggregated data into the aggregate-by cube data.
-            cube_slice[dimension_to_groupby] = i
-            result = aggregator.aggregate(groupby_sub_cube.data,
-                                          axis=dimension_to_groupby,
-                                          **kwargs)
-
-            # Determine aggregation result data type for the aggregate-by cube
-            # data on first pass.
-            if i == 0:
-                if ma.isMaskedArray(self.data):
-                    aggregateby_data = ma.zeros(data_shape, dtype=result.dtype)
-                else:
-                    aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
-
-            aggregateby_data[tuple(cube_slice)] = result
+                # Determine aggregation result data type for the aggregate-by
+                # cube data on first pass.
+                if i == 0:
+                    if ma.isMaskedArray(self.data):
+                        aggregateby_data = ma.zeros(data_shape,
+                                                    dtype=result.dtype)
+                    else:
+                        aggregateby_data = np.zeros(data_shape,
+                                                    dtype=result.dtype)
+                aggregateby_data[tuple(cube_slice)] = result
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(aggregateby_cube,
