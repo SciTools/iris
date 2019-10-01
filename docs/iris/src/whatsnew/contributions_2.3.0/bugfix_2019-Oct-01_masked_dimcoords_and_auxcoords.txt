@@ -1,0 +1,1 @@
+* Enforce that a :class:`~iris.coords.DimCoord` is not permitted to have masked points or bounds, however allow a :class:`~iris.coords.AuxCoord` to have masked points and/or bounds.
