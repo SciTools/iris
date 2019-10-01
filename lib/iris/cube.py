@@ -2819,17 +2819,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
-        def remap_dim_coord(coord_and_dim):
-            coord, dim = coord_and_dim
-            return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = list(map(remap_dim_coord,
-                                             self._dim_coords_and_dims))
+        # Remap all cube dimensional metadata (dim and aux coords and cell
+        # measures).
+        def remap_cube_metadata(metadata_and_dims):
+            metadata, dims = metadata_and_dims
+            if isinstance(dims, Iterable):
+                dims = tuple(dim_mapping[dim] for dim in dims)
+            else:
+                dims = dim_mapping[dims]
+            return metadata, dims
 
-        def remap_aux_coord(coord_and_dims):
-            coord, dims = coord_and_dims
-            return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = list(map(remap_aux_coord,
+        self._dim_coords_and_dims = list(map(remap_cube_metadata,
+                                             self._dim_coords_and_dims))
+        self._aux_coords_and_dims = list(map(remap_cube_metadata,
                                              self._aux_coords_and_dims))
+        self._cell_measures_and_dims = list(map(remap_cube_metadata,
+                                                self._cell_measures_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """

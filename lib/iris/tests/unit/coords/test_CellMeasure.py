@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -132,6 +132,9 @@ class Tests(tests.IrisTest):
                     "units=Unit('m^2'), long_name='measured_area', "
                     "var_name='area', attributes={'notes': '1m accuracy'})")
         self.assertEqual(self.measure.__repr__(), expected)
+
+    def test__eq__(self):
+        self.assertEqual(self.measure, self.measure)
 
 if __name__ == '__main__':
     tests.main()
