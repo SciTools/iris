@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float32" standard_name="air_temperature" units="Celsius" var_name="air_temperature">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="STASH" value="m01s03i236"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>

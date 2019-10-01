@@ -19,5 +19,5 @@ variables:
 		dim0:long_name = "Rnd Coordinate" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

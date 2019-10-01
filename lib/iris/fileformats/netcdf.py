@@ -100,7 +100,7 @@ _CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ['STASH', 'um_stash_source', 'ukmo__process_flags']
 
-CF_CONVENTIONS_VERSION = 'CF-1.5'
+CF_CONVENTIONS_VERSION = 'CF-1.7'
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                        'formula_terms_format'))
