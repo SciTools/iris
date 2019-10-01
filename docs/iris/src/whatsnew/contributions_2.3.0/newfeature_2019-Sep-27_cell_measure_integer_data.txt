@@ -1,0 +1,1 @@
+* Loading CellMeasures with non-float values is now supported.
