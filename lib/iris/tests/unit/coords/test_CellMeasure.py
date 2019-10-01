@@ -121,5 +121,8 @@ class Tests(tests.IrisTest):
                     "var_name='area', attributes={'notes': '1m accuracy'})")
         self.assertEqual(self.measure.__repr__(), expected)
 
+    def test__eq__(self):
+        self.assertEqual(self.measure, self.measure)
+
 if __name__ == '__main__':
     tests.main()

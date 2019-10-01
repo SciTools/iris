@@ -1863,6 +1863,29 @@ class Test_transpose(tests.IrisTest):
         with self.assertRaisesRegexp(ValueError, exp_emsg):
             self.cube.transpose([1])
 
+    def test_dim_coords(self):
+        x_coord = DimCoord(points=np.array([2, 3, 4]),
+                           long_name='x')
+        self.cube.add_dim_coord(x_coord, 0)
+        self.cube.transpose()
+        self.assertEqual(self.cube._dim_coords_and_dims, [(x_coord, 2)])
+
+    def test_aux_coords(self):
+        x_coord = AuxCoord(points=np.array([[2, 3], [8, 4], [7, 9]]),
+                           long_name='x')
+        self.cube.add_aux_coord(x_coord, (0, 1))
+        self.cube.transpose()
+        self.assertEqual(self.cube._aux_coords_and_dims,
+                         [(x_coord, (2, 1))])
+
+    def test_cell_measures(self):
+        area_cm = CellMeasure(data=np.arange(12).reshape(3, 4),
+                              long_name='area of cells', measure='area')
+        self.cube.add_cell_measure(area_cm, (0, 2))
+        self.cube.transpose()
+        self.assertEqual(self.cube._cell_measures_and_dims,
+                         [(area_cm, (2, 0))])
+
 
 class Test_convert_units(tests.IrisTest):
     def test_convert_unknown_units(self):
