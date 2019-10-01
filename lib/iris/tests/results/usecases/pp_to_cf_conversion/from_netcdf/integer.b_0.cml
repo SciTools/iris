@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="int32" standard_name="land_binary_mask" units="1" var_name="land_binary_mask">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
     <coords>

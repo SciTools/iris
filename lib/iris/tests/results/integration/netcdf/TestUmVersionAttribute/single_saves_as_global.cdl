@@ -7,5 +7,5 @@ variables:
 
 // global attributes:
 		:um_version = "4.3" ;
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

@@ -60,5 +60,5 @@ variables:
 		grid_latitude:long_name = "3" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

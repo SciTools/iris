@@ -11,5 +11,5 @@ variables:
 		air_pressure:um_version = "4.4" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

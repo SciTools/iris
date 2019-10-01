@@ -25,7 +25,7 @@ variables:
 		longitude:standard_name = "longitude" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 data:
 
  climatology_test =
