@@ -2075,13 +2075,13 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Kwargs:
 
         * standard_name:
-            CF standard name of the coordinate.
+            CF standard name of the cell measure.
         * long_name:
-            Descriptive name of the coordinate.
+            Descriptive name of the cell measure.
         * var_name:
-            The netCDF variable name for the coordinate.
+            The netCDF variable name for the cell measure.
         * units
-            The :class:`~cf_units.Unit` of the coordinate's values.
+            The :class:`~cf_units.Unit` of the cell measure's values.
             Can be a string, which will be converted to a Unit object.
         * attributes
             A dictionary containing other CF and user-defined attributes.
@@ -2090,16 +2090,16 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
             are the only valid entries.
 
         """
-        #: CF standard name of the quantity that the coordinate represents.
+        #: CF standard name of the quantity that the cell measure represents.
         self.standard_name = standard_name
 
-        #: Descriptive name of the coordinate.
+        #: Descriptive name of the cell measure.
         self.long_name = long_name
 
-        #: The netCDF variable name for the coordinate.
+        #: The netCDF variable name for the cell measure.
         self.var_name = var_name
 
-        #: Unit of the quantity that the coordinate represents.
+        #: Unit of the quantity that the cell measure represents.
         self.units = units
 
         #: Other attributes, including user specified attributes that
@@ -2129,11 +2129,6 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if data is None:
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
-        if _lazy.is_lazy_data(data) and data.dtype.kind in 'biu':
-            # Non-floating cell measures are not valid up to CF v1.7
-            msg = ('Cannot create cell measure with lazy data of type {}, as '
-                   'integer types are not currently supported.')
-            raise ValueError(msg.format(data.dtype))
         if data.shape == ():
             # If we have a scalar value, promote the shape from () to (1,).
             # NOTE: this way also *realises* it.  Don't think that matters.
