@@ -1943,7 +1943,7 @@ class DimCoord(Coord):
         if not np.issubdtype(points.dtype, np.number):
             emsg = 'The {!r} {} points array must be numeric.'
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
-        if ma.isMaskedArray(points) and ma.count_masked(points):
+        if ma.is_masked(points):
             emsg = 'A {!r} {} points array must not be masked.'
             raise TypeError(emsg.format(self.name(), self.__class__.__name__))
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
@@ -1996,7 +1996,7 @@ class DimCoord(Coord):
             emsg = 'The {!r} {} bounds array must be numeric.'
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         # Check not masked.
-        if ma.isMaskedArray(bounds) and ma.count_masked(bounds):
+        if ma.is_masked(bounds):
             emsg = 'A {!r} {} bounds array must not be masked.'
             raise TypeError(emsg.format(self.name(), self.__class__.__name__))
 

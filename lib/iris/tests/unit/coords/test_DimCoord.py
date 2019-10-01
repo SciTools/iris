@@ -24,12 +24,14 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.tests.unit.coords import (CoordTestMixin,
                                     lazyness_string,
@@ -40,8 +42,8 @@ from iris.coords import DimCoord
 
 class DimCoordTestMixin(CoordTestMixin):
     # Define a 1-D default array shape.
-    def setupTestArrays(self, shape=(3, )):
-        super(DimCoordTestMixin, self).setupTestArrays(shape)
+    def setupTestArrays(self, shape=(3, ), masked=False):
+        super(DimCoordTestMixin, self).setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, DimCoordTestMixin):
@@ -480,6 +482,83 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         coord = DimCoord(pts, bounds=bnds)
         bnds[1, 1] = 10
         self.assertEqual(coord.bounds[1, 1], 5)
+
+
+class Test_masked__creation(tests.IrisTest, CoordTestMixin):
+    def setUp(self):
+        self.setupTestArrays(masked=True)
+
+    def test_no_masked_pts_real(self):
+        data = self.no_masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = DimCoord(data)
+        self.assertFalse(coord.has_lazy_points())
+        self.assertFalse(ma.isMaskedArray(coord.points))
+        self.assertEqual(ma.count_masked(coord.points), 0)
+
+    def test_no_masked_pts_lazy(self):
+        data = self.no_masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = DimCoord(data)
+        # DimCoord always realises its points.
+        self.assertFalse(coord.has_lazy_points())
+        self.assertFalse(ma.isMaskedArray(coord.points))
+
+    def test_masked_pts_real(self):
+        data = self.masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        emsg = 'points array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(data)
+
+    def test_masked_pts_lazy(self):
+        data = self.masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        emsg = 'points array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(data)
+
+    def test_no_masked_bds_real(self):
+        data = self.no_masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = DimCoord(self.pts_real, bounds=data)
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertFalse(ma.isMaskedArray(coord.bounds))
+        self.assertEqual(ma.count_masked(coord.bounds), 0)
+
+    def test_no_masked_bds_lazy(self):
+        data = self.no_masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = DimCoord(self.pts_real, bounds=data)
+        # DimCoord always realises its bounds.
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertFalse(ma.isMaskedArray(coord.bounds))
+
+    def test_masked_bds_real(self):
+        data = self.masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        emsg = 'bounds array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(self.pts_real, bounds=data)
+
+    def test_masked_bds_lazy(self):
+        data = self.masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        emsg = 'bounds array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(self.pts_real, bounds=data)
 
 
 if __name__ == '__main__':
