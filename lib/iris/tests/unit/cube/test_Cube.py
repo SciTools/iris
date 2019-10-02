@@ -1905,5 +1905,57 @@ class Test_convert_units(tests.IrisTest):
         self.assertArrayAllClose(cube.data, real_data_ft)
 
 
+class Test__eq__data(tests.IrisTest):
+    """Partial cube equality testing, for data type only."""
+    def _check_data_eq(self, data1, data2):
+        cube1 = Cube(data1)
+        cube2 = Cube(data2)
+        self.assertEqual(cube1 == cube2,
+                         np.all(data1 == data2))
+
+    def test_data_float_eq(self):
+        cube1 = Cube([1.0])
+        cube2 = Cube([1.0])
+        self.assertTrue(cube1 == cube2)
+
+    def test_data_float_eqtol(self):
+        val1 = np.array(1.0, dtype=np.float32)
+        # NOTE: Since v2.3, Iris uses "allclose".  Prior to that we used
+        # "rtol=1e-8", and this example would *fail*.
+        val2 = np.array(1.0 + 1.e-6, dtype=np.float32)
+        cube1 = Cube([val1])
+        cube2 = Cube([val2])
+        self.assertNotEqual(val1, val2)
+        self.assertTrue(cube1 == cube2)
+
+    def test_data_float_not_eq(self):
+        val1 = 1.0
+        val2 = 1.0 + 1.e-4
+        cube1 = Cube([1.0, val1])
+        cube2 = Cube([1.0, val2])
+        self.assertFalse(cube1 == cube2)
+
+    def test_data_int_eq(self):
+        cube1 = Cube([1, 2, 3])
+        cube2 = Cube([1, 2, 3])
+        self.assertTrue(cube1 == cube2)
+
+    def test_data_int_not_eq(self):
+        cube1 = Cube([1, 2, 3])
+        cube2 = Cube([1, 2, 0])
+        self.assertFalse(cube1 == cube2)
+
+    # NOTE: since numpy v1.18, boolean array subtract is deprecated.
+    def test_data_bool_eq(self):
+        cube1 = Cube([True, False])
+        cube2 = Cube([True, False])
+        self.assertTrue(cube1 == cube2)
+
+    def test_data_bool_not_eq(self):
+        cube1 = Cube([True, False])
+        cube2 = Cube([True, True])
+        self.assertFalse(cube1 == cube2)
+
+
 if __name__ == '__main__':
     tests.main()
