@@ -1,0 +1,3 @@
+* Cube data equality testing (and hence cube equality) now uses a more relaxed
+  tolerance, thus some cubes may now test 'equal' that previously did not.
+  The new behaviour is the default for :func:`numpy.allclose`.
