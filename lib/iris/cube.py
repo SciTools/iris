@@ -231,6 +231,11 @@ class CubeList(list):
         """Runs repr on every cube."""
         return '[%s]' % ',\n'.join([repr(cube) for cube in self])
 
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeListRepresentation
+        representer = CubeListRepresentation(self)
+        return representer.repr_html()
+
     # TODO #370 Which operators need overloads?
     def __add__(self, other):
         return CubeList(list.__add__(self, other))
