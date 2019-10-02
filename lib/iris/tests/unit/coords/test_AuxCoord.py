@@ -43,15 +43,15 @@ from iris._lazy_data import as_lazy_data
 
 class AuxCoordTestMixin(CoordTestMixin):
     # Define a 2-D default array shape.
-    def setupTestArrays(self, shape=(2, 3)):
-        super(AuxCoordTestMixin, self).setupTestArrays(shape)
+    def setupTestArrays(self, shape=(2, 3), masked=False):
+        super(AuxCoordTestMixin, self).setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, AuxCoordTestMixin):
     # Test for AuxCoord creation, with various combinations of points and
     # bounds = real / lazy / None.
     def setUp(self):
-        self.setupTestArrays()
+        self.setupTestArrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
         for (coord, points_type_name, bounds_type_name) in \
@@ -111,6 +111,82 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
         msg = 'Bounds shape must be compatible with points shape'
         with self.assertRaisesRegexp(ValueError, msg):
             AuxCoord(self.pts_real, bounds=bds_wrong)
+
+    def test_no_masked_pts_real(self):
+        data = self.no_masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = AuxCoord(data)
+        self.assertFalse(coord.has_lazy_points())
+        self.assertTrue(ma.isMaskedArray(coord.points))
+        self.assertEqual(ma.count_masked(coord.points), 0)
+
+    def test_no_masked_pts_lazy(self):
+        data = self.no_masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = AuxCoord(data)
+        self.assertTrue(coord.has_lazy_points())
+        self.assertTrue(ma.isMaskedArray(coord.points))
+        self.assertEqual(ma.count_masked(coord.points), 0)
+
+    def test_masked_pts_real(self):
+        data = self.masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        coord = AuxCoord(data)
+        self.assertFalse(coord.has_lazy_points())
+        self.assertTrue(ma.isMaskedArray(coord.points))
+        self.assertTrue(ma.count_masked(coord.points))
+
+    def test_masked_pts_lazy(self):
+        data = self.masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        coord = AuxCoord(data)
+        self.assertTrue(coord.has_lazy_points())
+        self.assertTrue(ma.isMaskedArray(coord.points))
+        self.assertTrue(ma.count_masked(coord.points))
+
+    def test_no_masked_bds_real(self):
+        data = self.no_masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = AuxCoord(self.pts_real, bounds=data)
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertTrue(ma.isMaskedArray(coord.bounds))
+        self.assertEqual(ma.count_masked(coord.bounds), 0)
+
+    def test_no_masked_bds_lazy(self):
+        data = self.no_masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = AuxCoord(self.pts_real, bounds=data)
+        self.assertTrue(coord.has_lazy_bounds())
+        self.assertTrue(ma.isMaskedArray(coord.bounds))
+        self.assertEqual(ma.count_masked(coord.bounds), 0)
+
+    def test_masked_bds_real(self):
+        data = self.masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        coord = AuxCoord(self.pts_real, bounds=data)
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertTrue(ma.isMaskedArray(coord.bounds))
+        self.assertTrue(ma.count_masked(coord.bounds))
+
+    def test_masked_bds_lazy(self):
+        data = self.masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        coord = AuxCoord(self.pts_real, bounds=data)
+        self.assertTrue(coord.has_lazy_bounds())
+        self.assertTrue(ma.isMaskedArray(coord.bounds))
+        self.assertTrue(ma.count_masked(coord.bounds))
 
 
 class Test_core_points(tests.IrisTest, AuxCoordTestMixin):
@@ -638,87 +714,6 @@ class TestEquality(tests.IrisTest):
     def test_nanbounds_eq_self(self):
         co1 = AuxCoord([15., 25.], bounds=[[14., 16.], [24., np.nan]])
         self.assertEqual(co1, co1)
-
-
-class Test_masked__creation(tests.IrisTest, CoordTestMixin):
-    def setUp(self):
-        self.setupTestArrays(masked=True)
-
-    def test_no_masked_pts_real(self):
-        data = self.no_masked_pts_real
-        self.assertTrue(ma.isMaskedArray(data))
-        self.assertEqual(ma.count_masked(data), 0)
-        coord = AuxCoord(data)
-        self.assertFalse(coord.has_lazy_points())
-        self.assertTrue(ma.isMaskedArray(coord.points))
-        self.assertEqual(ma.count_masked(coord.points), 0)
-
-    def test_no_masked_pts_lazy(self):
-        data = self.no_masked_pts_lazy
-        computed = data.compute()
-        self.assertTrue(ma.isMaskedArray(computed))
-        self.assertEqual(ma.count_masked(computed), 0)
-        coord = AuxCoord(data)
-        self.assertTrue(coord.has_lazy_points())
-        self.assertTrue(ma.isMaskedArray(coord.points))
-        self.assertEqual(ma.count_masked(coord.points), 0)
-
-    def test_masked_pts_real(self):
-        data = self.masked_pts_real
-        self.assertTrue(ma.isMaskedArray(data))
-        self.assertTrue(ma.count_masked(data))
-        coord = AuxCoord(data)
-        self.assertFalse(coord.has_lazy_points())
-        self.assertTrue(ma.isMaskedArray(coord.points))
-        self.assertTrue(ma.count_masked(coord.points))
-
-    def test_masked_pts_lazy(self):
-        data = self.masked_pts_lazy
-        computed = data.compute()
-        self.assertTrue(ma.isMaskedArray(computed))
-        self.assertTrue(ma.count_masked(computed))
-        coord = AuxCoord(data)
-        self.assertTrue(coord.has_lazy_points())
-        self.assertTrue(ma.isMaskedArray(coord.points))
-        self.assertTrue(ma.count_masked(coord.points))
-
-    def test_no_masked_bds_real(self):
-        data = self.no_masked_bds_real
-        self.assertTrue(ma.isMaskedArray(data))
-        self.assertEqual(ma.count_masked(data), 0)
-        coord = AuxCoord(self.pts_real, bounds=data)
-        self.assertFalse(coord.has_lazy_bounds())
-        self.assertTrue(ma.isMaskedArray(coord.bounds))
-        self.assertEqual(ma.count_masked(coord.bounds), 0)
-
-    def test_no_masked_bds_lazy(self):
-        data = self.no_masked_bds_lazy
-        computed = data.compute()
-        self.assertTrue(ma.isMaskedArray(computed))
-        self.assertEqual(ma.count_masked(computed), 0)
-        coord = AuxCoord(self.pts_real, bounds=data)
-        self.assertTrue(coord.has_lazy_bounds())
-        self.assertTrue(ma.isMaskedArray(coord.bounds))
-        self.assertEqual(ma.count_masked(coord.bounds), 0)
-
-    def test_masked_bds_real(self):
-        data = self.masked_bds_real
-        self.assertTrue(ma.isMaskedArray(data))
-        self.assertTrue(ma.count_masked(data))
-        coord = AuxCoord(self.pts_real, bounds=data)
-        self.assertFalse(coord.has_lazy_bounds())
-        self.assertTrue(ma.isMaskedArray(coord.bounds))
-        self.assertTrue(ma.count_masked(coord.bounds))
-
-    def test_masked_bds_lazy(self):
-        data = self.masked_bds_lazy
-        computed = data.compute()
-        self.assertTrue(ma.isMaskedArray(computed))
-        self.assertTrue(ma.count_masked(computed))
-        coord = AuxCoord(self.pts_real, bounds=data)
-        self.assertTrue(coord.has_lazy_bounds())
-        self.assertTrue(ma.isMaskedArray(coord.bounds))
-        self.assertTrue(ma.count_masked(coord.bounds))
 
 
 if __name__ == '__main__':

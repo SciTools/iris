@@ -33,9 +33,10 @@ from iris._lazy_data import is_lazy_data
 
 
 def setup_test_arrays(self, shape, masked=False):
-    # Create standard coordinate points and bounds test arrays,
+    # Create concrete and lazy coordinate points and bounds test arrays,
     # given a desired coord shape.
-    # Also create lazy versions, and save all on the 'self' object.
+    # If masked=True, also add masked arrays with some or no masked data,
+    # for both points and bounds, lazy and real.
     n_pts = np.prod(shape)
     # Note: the values must be integral for testing integer dtypes.
     points = 10.0 * np.arange(n_pts, dtype=float).reshape(shape)
