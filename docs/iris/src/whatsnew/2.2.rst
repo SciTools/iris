@@ -85,8 +85,6 @@ Iris 2.2 Dependency updates
 Bugs Fixed
 ==========
 
-* Cube equality of boolean data is now handled correctly.
-
 * The bug has been fixed that prevented printing time coordinates with bounds
   when the time coordinate was measured on a long interval (that is, ``months``
   or ``years``).
