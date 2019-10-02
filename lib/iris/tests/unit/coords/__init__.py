@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,14 +27,16 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 
 from iris._lazy_data import is_lazy_data
 
 
-def setup_test_arrays(self, shape):
-    # Create standard coordinate points and bounds test arrays,
+def setup_test_arrays(self, shape, masked=False):
+    # Create concrete and lazy coordinate points and bounds test arrays,
     # given a desired coord shape.
-    # Also create lazy versions, and save all on the 'self' object.
+    # If masked=True, also add masked arrays with some or no masked data,
+    # for both points and bounds, lazy and real.
     n_pts = np.prod(shape)
     # Note: the values must be integral for testing integer dtypes.
     points = 10.0 * np.arange(n_pts, dtype=float).reshape(shape)
@@ -45,6 +47,25 @@ def setup_test_arrays(self, shape):
     self.pts_lazy = da.from_array(points, points.shape)
     self.bds_real = bounds
     self.bds_lazy = da.from_array(bounds, bounds.shape)
+    if masked:
+        mpoints = ma.array(points)
+        self.no_masked_pts_real = mpoints
+        self.no_masked_pts_lazy = da.from_array(mpoints, mpoints.shape,
+                                                asarray=False)
+        mpoints = ma.array(mpoints, copy=True)
+        mpoints[0] = ma.masked
+        self.masked_pts_real = mpoints
+        self.masked_pts_lazy = da.from_array(mpoints, mpoints.shape,
+                                             asarray=False)
+        mbounds = ma.array(bounds)
+        self.no_masked_bds_real = mbounds
+        self.no_masked_bds_lazy = da.from_array(mbounds, mbounds.shape,
+                                                asarray=False)
+        mbounds = ma.array(mbounds, copy=True)
+        mbounds[0] = ma.masked
+        self.masked_bds_real = mbounds
+        self.masked_bds_lazy = da.from_array(mbounds, mbounds.shape,
+                                             asarray=False)
 
 
 def is_real_data(array):
@@ -96,8 +117,8 @@ def coords_all_dtypes_and_lazynesses(self, coord_class):
 
 
 class CoordTestMixin(object):
-    def setupTestArrays(self, shape=(3,)):
-        setup_test_arrays(self, shape=shape)
+    def setupTestArrays(self, shape=(3,), masked=False):
+        setup_test_arrays(self, shape=shape, masked=masked)
 
     def assertArraysShareData(self, a1, a2, *args, **kwargs):
         # Check that two arrays are both real, same dtype, and based on the
