@@ -1,1 +1,1 @@
-* :meth:`~iris.plot.quiver` now handles circular coordinates.
+* :func:`~iris.plot.quiver` now handles circular coordinates.
