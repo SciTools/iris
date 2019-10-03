@@ -1,3 +1,3 @@
 * Cubes are now rendered more robustly by Jupyter.
 :meth:`iris.cube.Cube._repr_html_` no longer crashes for a cube with
-attributes containing '/n'.
+attributes containing '\n'.
