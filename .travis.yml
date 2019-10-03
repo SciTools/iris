@@ -13,10 +13,6 @@ env:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
   matrix:
-    - PYTHON_VERSION=2.7 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=2.7 TEST_TARGET=default
-    - PYTHON_VERSION=2.7 TEST_TARGET=example
-
     - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
     - PYTHON_VERSION=3.6 TEST_TARGET=default
     - PYTHON_VERSION=3.6 TEST_TARGET=example
@@ -40,11 +36,7 @@ install:
   - >
     echo 'Installing miniconda';
     export CONDA_BASE="https://repo.continuum.io/miniconda/Miniconda";
-    if [[ "${PYTHON_VERSION}" == 2* ]]; then
-      wget --quiet ${CONDA_BASE}2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget --quiet ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi;
+    wget --quiet ${CONDA_BASE}3-latest-Linux-x86_64.sh -O miniconda.sh;
     bash miniconda.sh -b -p ${HOME}/miniconda;
     export PATH="${HOME}/miniconda/bin:${PATH}";
 
@@ -65,11 +57,7 @@ install:
   # ---------------------------------
   - >
     echo 'Install Iris dependencies';
-    CONDA_REQS_FLAGS="";
     CONDA_REQS_GROUPS="test";
-    if [[ "${PYTHON_VERSION}" == 2* ]]; then
-        CONDA_REQS_FLAGS="${CONDA_REQS_FLAGS} --py2";
-    fi;
     if [[ "${TEST_MINIMAL}" != true ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
     fi;
@@ -77,7 +65,7 @@ install:
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
     fi;
     CONDA_REQS_FILE="conda-requirements.txt";
-    python requirements/gen_conda_requirements.py ${CONDA_REQS_FLAGS} --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
+    python requirements/gen_conda_requirements.py --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
     cat ${CONDA_REQS_FILE};
     conda install --quiet -n ${ENV_NAME} --file ${CONDA_REQS_FILE};
 
@@ -112,12 +100,12 @@ install:
 
   - python setup.py --quiet install
 
-  # JUST FOR NOW : Install latest version of iris-grib.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-  - if [[ "${TEST_MINIMAL}" != true && ${PYTHON_VERSION} == 2* ]]; then
-        conda install --quiet -n ${ENV_NAME} python-ecmwf_grib;
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
-    fi
+# TODO: uncomment and address the 5 failures and 10 errors in iris-grib.
+#  - if [[ "${TEST_MINIMAL}" != true ]]; then
+#        conda install --quiet -n ${ENV_NAME} python-eccodes;
+#        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
+#    fi
 
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
