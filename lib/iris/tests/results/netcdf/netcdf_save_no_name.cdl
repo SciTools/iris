@@ -13,5 +13,5 @@ variables:
 		unknown_scalar:units = "no_unit" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

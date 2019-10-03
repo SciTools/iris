@@ -20,7 +20,6 @@ env:
     - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
     - PYTHON_VERSION=3.6 TEST_TARGET=default
     - PYTHON_VERSION=3.6 TEST_TARGET=example
-    - PYTHON_VERSION=3.6 TEST_TARGET=doctest
 
     - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_MINIMAL=true
     - PYTHON_VERSION=3.7 TEST_TARGET=default
@@ -33,7 +32,7 @@ git:
 
 install:
   - >
-    export IRIS_TEST_DATA_REF="dba47566a9147645fea586f94a138e0a8d45a48e";
+    export IRIS_TEST_DATA_REF="1696ac3a823a06b95f430670f285ee97671d2cf2";
     export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
   # Install miniconda

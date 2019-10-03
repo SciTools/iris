@@ -1,0 +1,1 @@
+* Added support to render HTML for :class:`~iris.cube.CubeList`s in Jupyter Notebooks and JupyterLab. 

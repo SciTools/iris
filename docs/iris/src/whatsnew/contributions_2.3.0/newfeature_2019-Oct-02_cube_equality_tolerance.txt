@@ -1,0 +1,6 @@
+* Cube data equality testing (and hence cube equality) now uses a more relaxed
+  tolerance : This means that some cubes may now test 'equal' that previously
+  did not.
+  Previously, Iris compared cube data arrays using "abs(a - b) < 1.e-8".
+  We now apply the default operation of :func:`numpy.allclose` instead,
+  which is equivalent to "abs(a - b) < (1.e-8 + 1.e-5 * b)".

@@ -66,11 +66,6 @@ class CubeRepresentation(object):
       border-top: 1px solid #9c9c9c;
       font-weight: bold;
   }}
-  .container {{
-      display: inline-block;
-      padding-right: 2em;
-      vertical-align: top;
-  }}
   .iris-word-cell {{
       text-align: left !important;
       white-space: pre;
@@ -91,14 +86,11 @@ class CubeRepresentation(object):
       margin-top: 7px;
   }}
 </style>
-<div class="container">
-    <table class="iris" id="{id}">
-        {header}
-        {shape}
-        {content}
-    </table>
-</div>
-<div class="container">{data}</div>
+<table class="iris" id="{id}">
+    {header}
+    {shape}
+    {content}
+</table>
         """
 
     def __init__(self, cube):
@@ -119,7 +111,6 @@ class CubeRepresentation(object):
                                 'Derived coordinates:']
 
         # Important content that summarises a cube is defined here.
-        self.lazy_data = self.cube.has_lazy_data()
         self.shapes = self.cube.shape
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
@@ -216,20 +207,8 @@ class CubeRepresentation(object):
         for shape in self.shapes:
             cells.append(
                 '<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
-        cells.append('</td>')
+        cells.append('</tr>')
         return '\n'.join(cell for cell in cells)
-
-    def _lazy_data_repr(self):
-        """
-        Add the dask array repr if the cube has lazy data and dask can
-        produce an array repr.
-
-        """
-        try:
-            content = self.cube.lazy_data()._repr_html_()
-        except AttributeError:
-            content = '&nbsp;'
-        return content
 
     def _make_row(self, title, body=None, col_span=0):
         """
@@ -325,9 +304,6 @@ class CubeRepresentation(object):
         # Deal with the header first.
         header = self._make_header()
 
-        # Add content describing the cube's data attribute.
-        data = self._lazy_data_repr() if self.lazy_data else '&nbsp;'
-
         # Check if we have a scalar cube.
         if self.scalar_cube:
             shape = ''
@@ -349,5 +325,90 @@ class CubeRepresentation(object):
         return self._template.format(header=header,
                                      id=self.cube_id,
                                      shape=shape,
-                                     content=content,
-                                     data=data)
+                                     content=content)
+
+
+class CubeListRepresentation(object):
+    _template = """
+<style>
+    .accordion-{uid} {{
+        color: var(--jp-ui-font-color2);
+        background: var(--jp-layout-color2);
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid var(--jp-border-color0);
+        width: 100%;
+        text-align: left;
+        font-size: 14px;
+        font-family: var(--jp-code-font-family);
+        font-weight: normal;
+        outline: none;
+        transition: 0.4s;
+    }}
+    .active {{
+        background: var(--jp-layout-color1);
+        font-weight: 900;
+    }}
+    .accordion-{uid}.active {{
+        border: 1px solid var(--jp-brand-color1) !important;
+    }}
+    .accordion-{uid}:hover {{
+        box-shadow: var(--jp-input-box-shadow);
+        border: 2px solid var(--jp-brand-color1);
+    }}
+    .panel-{uid} {{
+        padding: 0 18px;
+        margin-bottom: 5px;
+        background-color: var(--jp-layout-color1);
+        display: none;
+        overflow: hidden;
+        border: 1px solid var(--jp-brand-color2);
+    }}
+</style>
+<script type="text/javascript">
+    var accordion = document.getElementsByClassName("accordion-{uid}");
+    var i;
+
+    for (i = 0; i < accordion.length; i++) {{
+        accordion[i].addEventListener("click", function() {{
+            this.classList.toggle("active");
+
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {{
+                panel.style.display = "none";
+            }} else {{
+                panel.style.display = "block";
+            }}
+        }});
+    }}
+</script>
+{contents}
+    """
+
+    _accordian_panel = """
+<button class="accordion-{uid}">{title}</button>
+<div class="panel-{uid}">
+    <p>{content}</p>
+</div>
+    """
+
+    def __init__(self, cubelist):
+        self.cubelist = cubelist
+        self.cubelist_id = id(self.cubelist)
+
+    def make_content(self):
+        html = []
+        for i, cube in enumerate(self.cubelist):
+            title = '{i}: {summary}'.format(i=i,
+                                            summary=cube.summary(shorten=True))
+            content = cube._repr_html_()
+            html.append(self._accordian_panel.format(uid=self.cubelist_id,
+                                                     title=title,
+                                                     content=content))
+        return html
+
+    def repr_html(self):
+        contents = self.make_content()
+        contents_str = '\n'.join(contents)
+        return self._template.format(uid=self.cubelist_id,
+                                     contents=contents_str)

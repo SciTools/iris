@@ -40,7 +40,7 @@ except ImportError:  # Python 2.7
 import copy
 from copy import deepcopy
 import datetime
-from functools import reduce
+from functools import reduce, partial
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -230,6 +230,11 @@ class CubeList(list):
     def __repr__(self):
         """Runs repr on every cube."""
         return '[%s]' % ',\n'.join([repr(cube) for cube in self])
+
+    def _repr_html_(self):
+        from iris.experimental.representation import CubeListRepresentation
+        representer = CubeListRepresentation(self)
+        return representer.repr_html()
 
     # TODO #370 Which operators need overloads?
     def __add__(self, other):
@@ -1135,13 +1140,30 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Args:
 
-        * cell_measure (CellMeasure)
-            The CellMeasure to remove from the cube.
+        * cell_measure (string or cell_measure)
+            The (name of the) cell measure to remove from the cube. As either
 
-        See also
-        :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
+            (a) a :attr:`standard_name`, :attr:`long_name`, or
+            :attr:`var_name`. Defaults to value of `default`
+            (which itself defaults to `unknown`) as defined in
+            :class:`iris._cube_coord_common.CFVariableMixin`.
+
+            (b) a cell_measure instance with metadata equal to that of
+            the desired cell_measures.
+
+        .. note::
+
+            If the argument given does not represent a valid cell_measure on
+            the cube, an :class:`iris.exceptions.CellMeasureNotFoundError`
+            is raised.
+
+        .. seealso::
+
+            :meth:`Cube.add_cell_measure()<iris.cube.Cube.add_cell_measure>`
 
         """
+        cell_measure = self.cell_measure(cell_measure)
+
         self._cell_measures_and_dims = [[cell_measure_, dim] for cell_measure_,
                                         dim in self._cell_measures_and_dims
                                         if cell_measure_ is not cell_measure]
@@ -2802,17 +2824,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
-        def remap_dim_coord(coord_and_dim):
-            coord, dim = coord_and_dim
-            return coord, dim_mapping[dim]
-        self._dim_coords_and_dims = list(map(remap_dim_coord,
-                                             self._dim_coords_and_dims))
+        # Remap all cube dimensional metadata (dim and aux coords and cell
+        # measures).
+        def remap_cube_metadata(metadata_and_dims):
+            metadata, dims = metadata_and_dims
+            if isinstance(dims, Iterable):
+                dims = tuple(dim_mapping[dim] for dim in dims)
+            else:
+                dims = dim_mapping[dims]
+            return metadata, dims
 
-        def remap_aux_coord(coord_and_dims):
-            coord, dims = coord_and_dims
-            return coord, tuple(dim_mapping[dim] for dim in dims)
-        self._aux_coords_and_dims = list(map(remap_aux_coord,
+        self._dim_coords_and_dims = list(map(remap_cube_metadata,
+                                             self._dim_coords_and_dims))
+        self._aux_coords_and_dims = list(map(remap_cube_metadata,
                                              self._aux_coords_and_dims))
+        self._cell_measures_and_dims = list(map(remap_cube_metadata,
+                                                self._cell_measures_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """
@@ -3030,11 +3057,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 result = not (coord_comparison['not_equal'] or
                               coord_comparison['non_equal_data_dimension'])
 
-            # having checked everything else, check approximate data
-            # equality - loading the data if has not already been loaded.
+            # Having checked everything else, check approximate data equality.
             if result:
-                result = np.all(np.abs(self.data - other.data) < 1e-8)
-
+                result = da.allclose(self.core_data(),
+                                     other.core_data()).compute()
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
@@ -3328,10 +3354,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns:
             :class:`iris.cube.Cube`.
 
-        .. note::
-
-            This operation does not yet have support for lazy evaluation.
-
         For example:
 
             >>> import iris
@@ -3425,29 +3447,46 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         data_shape[dimension_to_groupby] = len(groupby)
 
         # Aggregate the group-by data.
-        cube_slice = [slice(None, None)] * len(data_shape)
+        if (aggregator.lazy_func is not None and self.has_lazy_data()):
+            front_slice = (slice(None, None),) * dimension_to_groupby
+            back_slice = (slice(None, None),) * (len(data_shape) -
+                                                 dimension_to_groupby -
+                                                 1)
+            groupby_subcubes = map(
+                lambda groupby_slice:
+                self[front_slice + (groupby_slice,) + back_slice].lazy_data(),
+                groupby.group()
+            )
+            agg = partial(aggregator.lazy_aggregate,
+                          axis=dimension_to_groupby,
+                          **kwargs)
+            result = list(map(agg, groupby_subcubes))
+            aggregateby_data = da.stack(result, axis=dimension_to_groupby)
+        else:
+            cube_slice = [slice(None, None)] * len(data_shape)
+            for i, groupby_slice in enumerate(groupby.group()):
+                # Slice the cube with the group-by slice to create a group-by
+                # sub-cube.
+                cube_slice[dimension_to_groupby] = groupby_slice
+                groupby_sub_cube = self[tuple(cube_slice)]
+                # Perform the aggregation over the group-by sub-cube and
+                # repatriate the aggregated data into the aggregate-by
+                # cube data.
+                cube_slice[dimension_to_groupby] = i
+                result = aggregator.aggregate(groupby_sub_cube.data,
+                                              axis=dimension_to_groupby,
+                                              **kwargs)
 
-        for i, groupby_slice in enumerate(groupby.group()):
-            # Slice the cube with the group-by slice to create a group-by
-            # sub-cube.
-            cube_slice[dimension_to_groupby] = groupby_slice
-            groupby_sub_cube = self[tuple(cube_slice)]
-            # Perform the aggregation over the group-by sub-cube and
-            # repatriate the aggregated data into the aggregate-by cube data.
-            cube_slice[dimension_to_groupby] = i
-            result = aggregator.aggregate(groupby_sub_cube.data,
-                                          axis=dimension_to_groupby,
-                                          **kwargs)
-
-            # Determine aggregation result data type for the aggregate-by cube
-            # data on first pass.
-            if i == 0:
-                if ma.isMaskedArray(self.data):
-                    aggregateby_data = ma.zeros(data_shape, dtype=result.dtype)
-                else:
-                    aggregateby_data = np.zeros(data_shape, dtype=result.dtype)
-
-            aggregateby_data[tuple(cube_slice)] = result
+                # Determine aggregation result data type for the aggregate-by
+                # cube data on first pass.
+                if i == 0:
+                    if ma.isMaskedArray(self.data):
+                        aggregateby_data = ma.zeros(data_shape,
+                                                    dtype=result.dtype)
+                    else:
+                        aggregateby_data = np.zeros(data_shape,
+                                                    dtype=result.dtype)
+                aggregateby_data[tuple(cube_slice)] = result
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(aggregateby_cube,

@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="int64" standard_name="air_temperature" units="K" var_name="air_temperature">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="cube" value="hh1"/>
     </attributes>
     <coords>
@@ -66,7 +66,7 @@
   </cube>
   <cube dtype="int64" standard_name="air_temperature" units="K" var_name="air_temperature_0">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="cube" value="hh2"/>
     </attributes>
     <coords>

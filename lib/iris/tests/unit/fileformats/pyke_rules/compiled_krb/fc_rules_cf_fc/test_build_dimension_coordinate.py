@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -61,8 +61,10 @@ class RulesTestMixin(object):
 
         # Patch the helper function that retrieves the bounds cf variable.
         # This avoids the need for setting up further mocking of cf objects.
+        self.use_climatology_bounds = False  # Set this when you need to.
+
         def get_cf_bounds_var(coord_var):
-            return self.cf_bounds_var
+            return self.cf_bounds_var, self.use_climatology_bounds
 
         self.get_cf_bounds_var_patch = mock.patch(
             'iris.fileformats._pyke_rules.compiled_krb.'
@@ -89,12 +91,16 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
-            units='m',
+            units='days since 1970-01-01',
+            calendar=None,
             shape=points.shape,
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])
 
-    def test_dim_coord_construction(self):
+    def check_case_dim_coord_construction(self, climatology=False):
+        # Test a generic dimension coordinate, with or without
+        # a climatological coord.
+        self.use_climatology_bounds = climatology
         self._set_cf_coord_var(np.arange(6))
 
         expected_coord = DimCoord(
@@ -102,7 +108,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             long_name=self.cf_coord_var.long_name,
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
-            bounds=self.bounds)
+            bounds=self.bounds,
+            climatological=climatology)
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
@@ -111,6 +118,12 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Test that expected coord is built and added to cube.
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
+
+    def test_dim_coord_construction(self):
+        self.check_case_dim_coord_construction(climatology=False)
+
+    def test_dim_coord_construction__climatology(self):
+        self.check_case_dim_coord_construction(climatology=True)
 
     def test_dim_coord_construction_masked_array(self):
         self._set_cf_coord_var(np.ma.array(

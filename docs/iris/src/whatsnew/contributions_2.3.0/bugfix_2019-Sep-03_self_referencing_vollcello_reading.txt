@@ -1,0 +1,1 @@
+* Variables which reference themselves in ``cell_measures`` can now be read.

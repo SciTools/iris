@@ -14,5 +14,5 @@ variables:
 		temp2:foo = "orange" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :class:`iris.coords.Coord` class."""
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
@@ -24,11 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
-import mock
 import warnings
 
-import numpy as np
 import dask.array as da
+import numpy as np
+import six
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
@@ -787,6 +786,71 @@ class Test___str__(tests.IrisTest):
         expected = repr(coord)
         result = coord.__str__()
         self.assertEqual(expected, result)
+
+
+class TestClimatology(tests.IrisTest):
+    # Variety of tests for the climatological property of a coord.
+    # Only using AuxCoord since there is no different behaviour between Aux
+    # and DimCoords for this property.
+
+    def test_create(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        self.assertTrue(coord.climatological)
+
+    def test_create_no_bounds_no_set(self):
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
+            AuxCoord(points=[0, 1], units='days since 1970-01-01',
+                     climatological=True)
+
+    def test_create_no_time_no_set(self):
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                     climatological=True)
+
+    def test_absent(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        self.assertFalse(coord.climatological)
+
+    def test_absent_no_bounds_no_set(self):
+        coord = AuxCoord(points=[0, 1], units='days since 1970-01-01')
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
+            coord.climatological = True
+
+    def test_absent_no_time_no_set(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            coord.climatological = True
+
+    def test_absent_no_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1])
+        coord.climatological = False
+        self.assertFalse(coord.climatological)
+
+    def test_bounds_set(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01')
+        coord.climatological = True
+        self.assertTrue(coord.climatological)
+
+    def test_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        coord.climatological = False
+        self.assertFalse(coord.climatological)
+
+    def test_remove_bounds(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        coord.bounds = None
+        self.assertFalse(coord.climatological)
 
 
 if __name__ == '__main__':

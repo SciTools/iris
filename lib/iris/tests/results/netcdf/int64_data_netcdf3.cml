@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="int32" standard_name="surface_temperature" units="K" var_name="temp">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
     </attributes>
     <coords/>
     <cellMethods/>

@@ -100,7 +100,7 @@ _CF_GLOBAL_ATTRS = ['conventions', 'featureType', 'history', 'title']
 # UKMO specific attributes that should not be global.
 _UKMO_DATA_ATTRS = ['STASH', 'um_stash_source', 'ukmo__process_flags']
 
-CF_CONVENTIONS_VERSION = 'CF-1.5'
+CF_CONVENTIONS_VERSION = 'CF-1.7'
 
 _FactoryDefn = collections.namedtuple('_FactoryDefn', ('primary', 'std_name',
                                                        'formula_terms_format'))
@@ -1450,13 +1450,21 @@ class Saver(object):
             else:
                 bounds_dimension_name = 'bnds_%s' % n_bounds
 
+            if coord.climatological:
+                property_name = 'climatology'
+                varname_extra = 'climatology'
+            else:
+                property_name = 'bounds'
+                varname_extra = 'bnds'
+
             if bounds_dimension_name not in self._dataset.dimensions:
                 # Create the bounds dimension with the appropriate extent.
                 self._dataset.createDimension(bounds_dimension_name, n_bounds)
 
-            _setncattr(cf_var, 'bounds', cf_name + '_bnds')
+            boundsvar_name = '{}_{}'.format(cf_name, varname_extra)
+            _setncattr(cf_var, property_name, boundsvar_name)
             cf_var_bounds = self._dataset.createVariable(
-                cf_var.bounds, bounds.dtype.newbyteorder('='),
+                boundsvar_name, bounds.dtype.newbyteorder('='),
                 cf_var.dimensions + (bounds_dimension_name,))
             cf_var_bounds[:] = bounds
 
@@ -1889,6 +1897,35 @@ class Saver(object):
                     cf_var_grid.false_easting = cs.false_easting
                     cf_var_grid.false_northing = cs.false_northing
                     cf_var_grid.standard_parallel = (cs.standard_parallels)
+
+                # vertical perspective
+                elif isinstance(cs,
+                                iris.coord_systems.VerticalPerspective):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.perspective_point_height = (
+                        cs.perspective_point_height)
+
+                # geostationary
+                elif isinstance(cs,
+                                iris.coord_systems.Geostationary):
+                    if cs.ellipsoid:
+                        add_ellipsoid(cs.ellipsoid)
+                    cf_var_grid.longitude_of_projection_origin = (
+                        cs.longitude_of_projection_origin)
+                    cf_var_grid.latitude_of_projection_origin = (
+                        cs.latitude_of_projection_origin)
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
+                    cf_var_grid.perspective_point_height = (
+                        cs.perspective_point_height)
+                    cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
 
                 # other
                 else:
