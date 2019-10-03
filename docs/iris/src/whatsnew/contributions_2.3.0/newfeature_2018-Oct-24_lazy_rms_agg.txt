@@ -1,0 +1,4 @@
+* The :data:`iris.analysis.RMS` aggregator now supports a lazy calculation.
+  However, the "weights" keyword is not currently supported by this, so a
+  *weighted* calculation will still return a realised result, *and* force
+  realisation of the original cube data.

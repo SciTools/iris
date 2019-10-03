@@ -1,0 +1,4 @@
+* Fixed references in the documentation of
+  :func:`iris.utils.find_discontiguities` to a nonexistent
+  "mask_discontiguities" routine : these now refer to
+  :func:`~iris.utils.mask_cube`.
