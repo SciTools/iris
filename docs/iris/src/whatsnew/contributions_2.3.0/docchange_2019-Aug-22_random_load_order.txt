@@ -1,0 +1,4 @@
+* Added notes to the :func:`iris.load` documentation, and the userguide
+  `Loading Iris Cubes <https://scitools.org.uk/iris/docs/latest/userguide/loading_iris_cubes.html>`_
+  chapter, emphasizing that the _order_ of the cubes returned by an iris load
+  operation is effectively random and unstable, and should not be relied on.
