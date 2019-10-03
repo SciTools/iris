@@ -1,0 +1,4 @@
+* Fixed a bug in the :meth:`iris.cube.Cube.collapse` operation, which caused
+  the unexpected realization of any attached auxiliary coordinates that were
+  _bounded_.  It now correctly produces a lazy result and does not realise the
+  original attached AuxCoords.

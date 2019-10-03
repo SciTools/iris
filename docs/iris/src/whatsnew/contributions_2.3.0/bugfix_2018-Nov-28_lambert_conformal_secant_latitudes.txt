@@ -1,0 +1,6 @@
+* Fixed a bug where plotting a cube with a
+  :class:`iris.coord_systems.LamberConformal` coordinate system would result
+  in an error.  This would happen if the coordinate system was defined with one
+  standard parallel, rather than two.
+  In these cases, a call to
+  :meth:`~iris.coord_systems.LambertConform.as_cartopy_crs` would fail.
