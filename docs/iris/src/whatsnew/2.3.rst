@@ -85,7 +85,7 @@ Iris 2.3.0 Features
   * :class:`~iris.analysis.RMS` (more detail below)
   * :class:`~iris.analysis.MEAN`
 
-|
+----
 
 * Cube data equality testing (and hence cube equality) now uses a more relaxed
   tolerance : This means that some cubes may now test 'equal' that previously
