@@ -1,13 +1,13 @@
-What's New in Iris 2.3
+What's New in Iris 2.3.0
 **********************
 
-:Release: 2.3
+:Release: 2.3.0
 :Date: 2019-10-04
 
-This document explains the new/changed features of Iris in version 2.3
+This document explains the new/changed features of Iris in version 2.3.0
 (:doc:`View all changes <index>`.)
 
-Iris 2.3 Features
+Iris 2.3.0 Features
 =================
 .. _showcase:
 
@@ -112,7 +112,7 @@ Iris 2.3 Features
   is currently only supported for un-masked arrays.
 
 
-Iris 2.3 Dependency Updates
+Iris 2.3.0 Dependency Updates
 ===========================
 * The Proj4 pin has been moved from version 5 to version 6 pending `fixes to
   some cartopy tests <https://github
