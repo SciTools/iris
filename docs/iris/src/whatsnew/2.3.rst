@@ -196,13 +196,14 @@ Bugs Fixed
 Documentation Changes
 =====================
 * Added a gallery example showing `how to concatenate NEMO ocean model data
-  <example_code/Oceanography/load_nemo.py>`_.
+  </examples/Oceanography/load_nemo.html>`_.
 * Added an example in the
-  `Loading Iris Cubes: Constraining on Time <https://scitools.org.uk/iris/docs/latest/userguide/loading_iris_cubes.html#constraining-on-time>`_
+  `Loading Iris Cubes: Constraining on Time </userguide/loading_iris_cubes
+  .html#constraining-on-time>`_
   Userguide section, demonstrating how to load data within a specified date
   range.
 * Added notes to the :func:`iris.load` documentation, and the userguide
-  `Loading Iris Cubes <https://scitools.org.uk/iris/docs/latest/userguide/loading_iris_cubes.html>`_
+  `Loading Iris Cubes </userguide/loading_iris_cubes.html>`_
   chapter, emphasizing that the *order* of the cubes returned by an iris load
   operation is effectively random and unstable, and should not be relied on.
 * Fixed references in the documentation of
