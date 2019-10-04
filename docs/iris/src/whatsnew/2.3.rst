@@ -35,9 +35,9 @@ Iris 2.3.0 Features
   coordinate variable will be given a 'climatology' attribute, and the
   contents of the
   coordinate's ``bounds`` property are written to a NetCDF boundary variable
-  called 'climatology_bounds'.  These are in place of the more usual NetCDF
-  'bounds' attribute and accompanying 'bnds' boundary variable. See below
-  for an `example from CF conventions <http://cfconventions
+  called '<coordinate-name>_bounds'.  These are in place of a standard
+  'bounds' attribute and accompanying boundary variable. See below
+  for an `example adapted from CF conventions <http://cfconventions
   .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
   .html#climatological-statistics>`_:
 
@@ -45,22 +45,22 @@ Iris 2.3.0 Features
 
         dimensions:
           time=4;
-          nv=2;
+          bnds=2;
         variables:
           float temperature(time,lat,lon);
             temperature:long_name="surface air temperature";
             temperature:cell_methods="time: minimum within years time: mean over years";
             temperature:units="K";
           double time(time);
-            time:climatology="climatology_bounds";
+            time:climatology="time_climatology";
             time:units="days since 1960-1-1";
-          double climatology_bounds(time,nv);
+          double time_climatology(time,bnds);
         data:  // time coordinates translated to date/time format
           time="1960-4-16", "1960-7-16", "1960-10-16", "1961-1-16" ;
-          climatology_bounds="1960-3-1",  "1990-6-1",
-                             "1960-6-1",  "1990-9-1",
-                             "1960-9-1",  "1990-12-1",
-                             "1960-12-1", "1991-3-1" ;
+          time_climatology="1960-3-1",  "1990-6-1",
+                           "1960-6-1",  "1990-9-1",
+                           "1960-9-1",  "1990-12-1",
+                           "1960-12-1", "1991-3-1" ;
 
   If a climatological time axis is detected when loading NetCDF -
   indicated by the format described above - the ``climatological`` property
