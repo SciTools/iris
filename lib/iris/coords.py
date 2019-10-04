@@ -489,8 +489,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
         * climatological (bool):
             When True: the coordinate is a NetCDF climatological time axis.
-            When True: saving in NetCDF will give the time axis a
-            'climatology' attribute and a boundary variable called
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
             '<coordinate-name>_climatology' in place of a standard bounds
             attribute and bounds variable.
             Will set to True when a climatological time axis is loaded
