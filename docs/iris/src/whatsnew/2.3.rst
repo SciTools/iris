@@ -133,7 +133,7 @@ Iris 2.3.0 Dependency Updates
 * The Proj4 pin has been moved from version 5 to version 6 pending `fixes to
   some cartopy tests <https://github
   .com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
-* Iris now requires Dask > 1.2 to allow for improved coordinate equality
+* Iris now requires Dask >= 1.2 to allow for improved coordinate equality
   checks.
 
 
