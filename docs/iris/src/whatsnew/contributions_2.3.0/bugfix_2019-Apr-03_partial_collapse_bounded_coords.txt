@@ -1,2 +1,0 @@
-* :meth:`iris.cube.Cube.collapsed` now handles partial collapsing of
-multidimensional coordinates that have bounds.

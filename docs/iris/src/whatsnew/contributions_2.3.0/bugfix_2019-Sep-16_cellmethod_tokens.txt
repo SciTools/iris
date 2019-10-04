@@ -1,1 +1,0 @@
-* :class:`~iris.coords.CellMethod` will now only use valid `NetCDF name tokens <https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name>`_ to reference the coordinates involved in the statistical operation.

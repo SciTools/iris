@@ -1,2 +1,0 @@
-* :meth:`iris.cube.Cube.aggregated_by` now performs aggregation lazily where
-possible.

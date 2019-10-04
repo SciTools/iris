@@ -1,1 +1,0 @@
-* Iris now supports NetCDF Climate and Forecast (CF) Metadata Conventions 1.7 (see `CF 1.7 Conventions Document <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html>`_ for more information)
