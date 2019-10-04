@@ -195,7 +195,8 @@ Bugs Fixed
 
 Documentation Changes
 =====================
-* Added a gallery example showing how to concatenate NEMO ocean model data.
+* Added a gallery example showing `how to concatenate NEMO ocean model data
+  <example_code/Oceanography/load_nemo.py>`_.
 * Added an example in the
   `Loading Iris Cubes: Constraining on Time <https://scitools.org.uk/iris/docs/latest/userguide/loading_iris_cubes.html#constraining-on-time>`_
   Userguide section, demonstrating how to load data within a specified date
