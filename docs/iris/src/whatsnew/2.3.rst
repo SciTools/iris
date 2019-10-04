@@ -169,7 +169,7 @@ Bugs Fixed
   attributes containing ``\n``.
 * Variables which reference themselves in ``cell_measures`` can now be read.
 * :func:`~iris.plot.quiver` now handles circular coordinates.
-* The name of cubes loaded from abf/abl files has been corrected.
+* The names of cubes loaded from abf/abl files have been corrected.
 * Fixed a bug in UM file loading, where any landsea-mask-compressed fields
   (i.e. with LBPACK=x2x) would cause an error later, when realising the data.
 * :meth:`iris.cube.Cube.collapsed` now handles partial collapsing of
