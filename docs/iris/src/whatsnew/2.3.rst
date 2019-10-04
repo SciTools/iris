@@ -36,7 +36,9 @@ Iris 2.3.0 Features
   coordinate's ``bounds`` property are written to a NetCDF boundary variable
   called 'climatology_bounds'.  These are in place of the more usual NetCDF
   'bounds' attribute and accompanying 'bnds' boundary variable. See below
-  for an example:
+  for an `example from CF conventions <http://cfconventions
+  .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
+  .html#climatological-statistics>`_:
 
     .. code-block::
 
