@@ -15,14 +15,16 @@ Iris 2.3.0 Features
 
   Several changes have contributed to our increased support for CF 1.7:
 
-  * climatological coordinate support
-  * standard name modifier support
-  * name tokens enforcement in cell methods
-  * coordinate var_name, CF_CONVENTIONS_VERSION advanced to 1.7
-  * Geostationary projection support
+  * :ref:`climatological coordinate support<climatological>`
+  * :ref:`standard name modifier support<standard_name>`
+  * :ref:`name tokens enforcement in cell methods and coordinate
+    var_name<name_tokens>`
+  * :ref:`CF_CONVENTIONS_VERSION advanced to 1.7<conventions_1.7>`
+  * :ref:`Geostationary projection support<geostationary>`
 
   You can read more about each of these below.
 
+.. _climatological:
 .. admonition:: Climatological Coordinate Support
 
   Iris can now load, store and save `NetCDF climatological coordinates
@@ -91,6 +93,10 @@ Iris 2.3.0 Features
 
 ----
 
+.. _geostationary:
+.. _standard_name:
+.. _conventions_1.7:
+
 * Cube data equality testing (and hence cube equality) now uses a more relaxed
   tolerance : This means that some cubes may now test 'equal' that previously
   did not.
@@ -129,6 +135,8 @@ Iris 2.3.0 Dependency Updates
 
 Bugs Fixed
 ==========
+.. _name_tokens:
+
 * Cube equality of boolean data is now handled correctly.
 * Fixed a bug where cell measures were incorrect after a cube
   :meth:`~iris.cube.Cube.transpose` operation.  Previously, this resulted in
