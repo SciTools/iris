@@ -19,8 +19,6 @@ Iris 2.3.0 Features
 
   * :ref:`Climatological Coordinates<climatological>`
   * :ref:`Standard name modifiers<standard_name>`
-  * :ref:`Name tokens enforcement in cell methods and coordinate
-    var_name<name_tokens>`
   * :ref:`Geostationary projection<geostationary>`
 
   You can read more about each of these below.
@@ -144,8 +142,6 @@ Iris 2.3.0 Dependency Updates
 
 Bugs Fixed
 ==========
-.. _name_tokens:
-
 * Cube equality of boolean data is now handled correctly.
 * Fixed a bug where cell measures were incorrect after a cube
   :meth:`~iris.cube.Cube.transpose` operation.  Previously, this resulted in
