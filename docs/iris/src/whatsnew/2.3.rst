@@ -70,7 +70,7 @@ Iris 2.3.0 Features
 .. admonition:: New Chunking Strategy
 
   Iris now makes better choices of Dask chunk sizes when loading from NetCDF
-  files: If a file variable has specified, small chunks, Iris will now choose
+  files: If a file variable has small, specified chunks, Iris will now choose
   Dask chunks which are a multiple of these up to a default target size.
 
   This is particularly relevant to files with an unlimited dimension, which
