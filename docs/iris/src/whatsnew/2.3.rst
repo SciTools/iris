@@ -147,7 +147,8 @@ Bugs Fixed
   cell-measures that were no longer correctly mapped to the cube dimensions.
 * The :class:`~iris.coords.AuxCoord` disregarded masked points and bounds, as did the :class:`~iris.coords.DimCoord`.
   Fix permits an :class:`~iris.coords.AuxCoord` to contain masked points/bounds, and a TypeError exception is now
-  raised when attempting to create or set the points/bounds of a :class:`~iris.coords.DimCoord` with masked arrays.
+  raised when attempting to create or set the points/bounds of a
+  :class:`~iris.coords.DimCoord` with arrays with missing points.
 * :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
   the `CF Vertical perspective definition <http://cfconventions
   .org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
