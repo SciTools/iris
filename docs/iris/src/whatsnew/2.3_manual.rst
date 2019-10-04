@@ -73,12 +73,25 @@ Iris 2.3 Features
   In addition, Iris now takes its default chunksize from the default configured
   in Dask itself, i.e. ``dask.config.get('array.chunk-size')``.
 
+.. admonition:: Lazy Statistics
+
+  Several statistical operations can now be done lazily, taking advantage of the
+  performance improvements offered by Dask:
+
+  * :meth:`~iris.cube.Cube.aggregated_by`
+
+  * | :class:`~iris.analysis.RMS`
+    | NOTE: RMS currently only supports un-masked arrays.
+
+  * :class:`~iris.analysis.MEAN`
+
 
 Iris 2.3 Dependency Updates
 ===========================
 * The Proj4 pin has been moved from version 5 to version 6 pending `fixes to
 some cartopy tests <https://github
 .com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
+
 * Iris now requires Dask > 1.2 to allow for improved coordinate equality
 checks.
 
