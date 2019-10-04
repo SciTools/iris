@@ -13,16 +13,20 @@ Iris 2.3.0 Features
 
 .. admonition:: Increased Support for CF 1.7
 
-  Several changes have contributed to our increased support for CF 1.7:
+  We have introduced several changes that contribute to Iris's support for
+  the CF Conventions, including some CF 1.7 additions. We are now able to
+  support:
 
-  * :ref:`climatological coordinate support<climatological>`
-  * :ref:`standard name modifier support<standard_name>`
-  * :ref:`name tokens enforcement in cell methods and coordinate
+  * :ref:`Climatological Coordinates<climatological>`
+  * :ref:`Standard name modifiers<standard_name>`
+  * :ref:`Name tokens enforcement in cell methods and coordinate
     var_name<name_tokens>`
-  * :ref:`CF_CONVENTIONS_VERSION advanced to 1.7<conventions_1.7>`
-  * :ref:`Geostationary projection support<geostationary>`
+  * :ref:`Geostationary projection<geostationary>`
 
   You can read more about each of these below.
+
+  Additionally, the conventions attribute, added by Iris when saving to
+  NetCDF, has been updated to "CF-1.7", accordingly.
 
 .. _climatological:
 .. admonition:: Climatological Coordinate Support
@@ -113,7 +117,7 @@ Iris 2.3.0 Features
 * Loading CellMeasures with integer values is now supported.
 * New coordinate system: :class:`iris.coord_systems.Geostationary`,
   including load and save support, based on the `CF Geostationary projection
-   definition <http://cfconventions
+  definition <http://cfconventions
   .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
 * :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
   loaded from NetCDF files.
