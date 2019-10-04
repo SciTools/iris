@@ -19,6 +19,7 @@ Iris 2.3.0 Features
   * standard name modifier support
   * name tokens enforcement in cell methods
   * coordinate var_name, CF_CONVENTIONS_VERSION advanced to 1.7
+  * Geostationary projection support
 
   You can read more about each of these below.
 
