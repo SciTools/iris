@@ -1,5 +1,5 @@
 What's New in Iris 2.3.0
-**********************
+************************
 
 :Release: 2.3.0
 :Date: 2019-10-04
@@ -8,7 +8,7 @@ This document explains the new/changed features of Iris in version 2.3.0
 (:doc:`View all changes <index>`.)
 
 Iris 2.3.0 Features
-=================
+===================
 .. _showcase:
 
 .. admonition:: Increased Support for CF 1.7
@@ -31,8 +31,9 @@ Iris 2.3.0 Features
   property: ``climatological``. The climatological bounds are stored in the
   coordinate's ``bounds`` property.
 
-  When an Iris climatological coordinate is saved in NetCDF, the NetCDF time
-  axis will be given a 'climatology' attribute, and the contents of the
+  When an Iris climatological coordinate is saved in NetCDF, the NetCDF
+  coordinate variable will be given a 'climatology' attribute, and the
+  contents of the
   coordinate's ``bounds`` property are written to a NetCDF boundary variable
   called 'climatology_bounds'.  These are in place of the more usual NetCDF
   'bounds' attribute and accompanying 'bnds' boundary variable. See below
@@ -40,7 +41,7 @@ Iris 2.3.0 Features
   .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
   .html#climatological-statistics>`_:
 
-    .. code-block::
+    .. code-block:: none
 
         dimensions:
           time=4;
@@ -116,7 +117,7 @@ Iris 2.3.0 Features
 
 
 Iris 2.3.0 Dependency Updates
-===========================
+=============================
 * The Proj4 pin has been moved from version 5 to version 6 pending `fixes to
   some cartopy tests <https://github
   .com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
