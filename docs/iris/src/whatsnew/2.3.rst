@@ -168,7 +168,8 @@ Bugs Fixed
     - :attr:`iris.cube.Cube.var_name`
 * Rendering a cube in Jupyter will no longer crash for a cube with
   attributes containing ``\n``.
-* Variables which reference themselves in ``cell_measures`` can now be read.
+* NetCDF variables which reference themselves in their ``cell_measures``
+  attribute can now be read.
 * :func:`~iris.plot.quiver` now handles circular coordinates.
 * The names of cubes loaded from abf/abl files have been corrected.
 * Fixed a bug in UM file loading, where any landsea-mask-compressed fields
