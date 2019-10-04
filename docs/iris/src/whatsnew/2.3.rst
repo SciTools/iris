@@ -111,8 +111,9 @@ Iris 2.3.0 Features
 * Added support to render HTML for :class:`~iris.cube.CubeList` in Jupyter
   Notebooks and JupyterLab.
 * Loading CellMeasures with integer values is now supported.
-* New coordinate system: :class:`iris.coord_systems.Geostationary`, based on
-  the `CF Geostationary projection definition <http://cfconventions
+* New coordinate system: :class:`iris.coord_systems.Geostationary`,
+  including load and save support, based on the `CF Geostationary projection
+   definition <http://cfconventions
   .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
 * :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
   loaded from NetCDF files.
