@@ -1,1 +1,3 @@
-* Cell measures are now handled correctly when a cube is transposed.
+* Fixed a bug where cell measures were incorrect after a cube 
+  :meth:`~iris.cube.Cube.transpose` operation.  Previously, this resulted in
+  cell-measures that were no longer correctly mapped to the cube dimensions.

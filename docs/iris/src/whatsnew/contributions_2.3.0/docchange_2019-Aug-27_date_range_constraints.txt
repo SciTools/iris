@@ -1,0 +1,4 @@
+* Added an example in the 
+  `Loading Iris Cubes: Constraining on Time <https://scitools.org.uk/iris/docs/latest/userguide/loading_iris_cubes.html#constraining-on-time>`_
+  Userguide section, demonstrating how to load data within a specified date
+  range.

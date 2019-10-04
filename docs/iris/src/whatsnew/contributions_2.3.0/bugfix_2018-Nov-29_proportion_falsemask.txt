@@ -1,0 +1,5 @@
+* Fixed a bug in the :data:`~iris.analysis.PROPORTION` aggregator, where cube
+  data in the form of a masked array with "array.mask=False" would cause an
+  error, but possibly only later when the values are actually realised.
+  ( Note: since netCDF4 version 1.4.0, this is now a common form for data
+  loaded from netCDF files ).
