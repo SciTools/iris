@@ -9,7 +9,6 @@ Iris versions.
 .. toctree::
    :maxdepth: 2
 
-   latest.rst
    2.3.rst
    2.2.rst
    2.1.rst

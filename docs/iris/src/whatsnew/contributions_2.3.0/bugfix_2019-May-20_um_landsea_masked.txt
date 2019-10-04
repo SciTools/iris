@@ -1,2 +1,0 @@
-* Fixed a bug in UM file loading, where any landsea-mask-compressed fields
- (i.e. with LBPACK=x2x) would cause an error later, when realising the data.
