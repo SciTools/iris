@@ -154,7 +154,8 @@ Bugs Fixed
   .org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
   erroneously using Geostationary.
 * :class:`~iris.coords.CellMethod` will now only use valid `NetCDF name tokens <https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name>`_ to reference the coordinates involved in the statistical operation.
-* The following var_names will now only use valid `NetCDF name tokens
+* The following var_name properties will now only allow valid `NetCDF name
+  tokens
   <https://www.unidata.ucar
   .edu/software/netcdf/docs/netcdf_data_set_components.html#object_name>`_ to
   reference the said NetCDF variable name. Note that names with a leading
