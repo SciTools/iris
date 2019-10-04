@@ -156,7 +156,7 @@ Bugs Fixed
 * The name of cubes loaded from abf/abl files has been corrected.
 * Fixed a bug in UM file loading, where any landsea-mask-compressed fields
   (i.e. with LBPACK=x2x) would cause an error later, when realising the data.
-* :meth:`iris.cube.Cube.coll\apsed` now handles partial collapsing of
+* :meth:`iris.cube.Cube.collapsed` now handles partial collapsing of
   multidimensional coordinates that have bounds.
 * Fixed a bug in the :data:`~iris.analysis.PROPORTION` aggregator, where cube
   data in the form of a masked array with ``array.mask=False`` would cause an
