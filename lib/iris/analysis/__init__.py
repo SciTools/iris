@@ -75,7 +75,7 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'PEAK', 'PERCENTILE', 'PROPORTION', 'RMS', 'STD_DEV', 'SUM',
            'VARIANCE', 'WPERCENTILE', 'coord_comparison', 'Aggregator',
            'WeightedAggregator', 'clear_phenomenon_identity', 'Linear',
-           'AreaWeighted', 'Nearest', 'UnstructuredNearest')
+           'AreaWeighted', 'Nearest', 'UnstructuredNearest', 'PointInCell')
 
 
 class _CoordGroup(object):
