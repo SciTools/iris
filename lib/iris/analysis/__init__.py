@@ -78,6 +78,7 @@ __all__ = (
     "AreaWeighted",
     "Nearest",
     "UnstructuredNearest",
+    "PointInCell",
 )
 
 
