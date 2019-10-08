@@ -1,1 +1,0 @@
-* Cell measures are now handled correctly when a cube is transposed.

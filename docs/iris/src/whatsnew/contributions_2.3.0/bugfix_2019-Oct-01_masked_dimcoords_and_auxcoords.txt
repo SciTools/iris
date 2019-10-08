@@ -1,3 +1,0 @@
-* The :class:`~iris.coords.AuxCoord` disregarded masked points and bounds, as did the :class:`~iris.coords.DimCoord`.
-  Fix permits an :class:`~iris.coords.AuxCoord` to contain masked points/bounds, and an TypeError exception is now
-  raised when attempting to create or set the points/bounds of a :class:`~iris.coords.DimCoord` with masked arrays.

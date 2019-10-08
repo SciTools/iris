@@ -1,1 +1,0 @@
-* Cube equality of boolean data is now handled correctly.
