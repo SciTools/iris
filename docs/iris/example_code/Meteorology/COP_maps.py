@@ -103,7 +103,7 @@ def main():
 
         # Add the first subplot showing the E1 scenario
         plt.subplot(121)
-        plt.title('HadGEM2 E1 Scenario',  fontsize=10)
+        plt.title('HadGEM2 E1 Scenario', fontsize=10)
         iplt.contourf(delta_e1, levels, colors=colors, extend='both')
         plt.gca().coastlines()
         # get the current axes' subplot for use later on
@@ -111,7 +111,7 @@ def main():
 
         # Add the second subplot showing the A1B scenario
         plt.subplot(122)
-        plt.title('HadGEM2 A1B-Image Scenario',  fontsize=10)
+        plt.title('HadGEM2 A1B-Image Scenario', fontsize=10)
         contour_result = iplt.contourf(delta_a1b, levels, colors=colors,
                                        extend='both')
         plt.gca().coastlines()
@@ -131,8 +131,7 @@ def main():
         width = left - first_plot_left + width
 
         # Add axes to the figure, to place the colour bar
-        colorbar_axes = fig.add_axes([first_plot_left, bottom + 0.07,
-                                      width, 0.03])
+        colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
 
         # Add the colour bar
         cbar = plt.colorbar(contour_result, colorbar_axes,
