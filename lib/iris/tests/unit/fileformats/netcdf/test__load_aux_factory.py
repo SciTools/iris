@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,13 +23,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 import warnings
 
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import _load_aux_factory
-from iris.tests import mock
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):

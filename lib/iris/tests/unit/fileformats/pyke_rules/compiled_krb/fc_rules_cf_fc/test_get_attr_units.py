@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,11 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     get_attr_units
-from iris.tests import mock
 
 
 class TestGetAttrUnits(tests.IrisTest):

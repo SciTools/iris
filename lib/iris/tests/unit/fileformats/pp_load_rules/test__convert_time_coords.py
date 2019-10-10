@@ -27,6 +27,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 from cf_units import Unit, CALENDAR_GREGORIAN
 from cftime import datetime as nc_datetime
 import numpy as np
@@ -34,7 +36,6 @@ import numpy as np
 from iris.coords import DimCoord, AuxCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_load_rules import _convert_time_coords
-from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 
 

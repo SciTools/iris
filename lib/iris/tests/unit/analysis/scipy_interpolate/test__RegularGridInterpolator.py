@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,12 +24,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 import iris
 
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from scipy.sparse.csr import csr_matrix
-from iris.tests import mock
 import iris.tests.stock as stock
 
 

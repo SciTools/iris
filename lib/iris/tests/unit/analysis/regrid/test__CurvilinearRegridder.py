@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 from iris.analysis.cartography import rotate_pole
@@ -31,7 +33,6 @@ from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS
 from iris.analysis._regrid import CurvilinearRegridder as Regridder
-from iris.tests import mock
 from iris.tests.stock import global_pp, lat_lon_cube
 
 

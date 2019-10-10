@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 import abc
+from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
@@ -34,7 +35,6 @@ from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import DimCoord, AuxCoord
 from iris.exceptions import MergeError
-from iris.tests import mock
 
 
 def example_cube():

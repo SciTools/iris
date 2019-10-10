@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from contextlib import contextmanager
+from unittest import mock
 import warnings
 
 import numpy as np
@@ -31,7 +32,6 @@ import numpy as np
 import iris.fileformats.pp as pp
 from iris.fileformats.pp import PPField
 from iris.fileformats.pp import SplittableInt
-from iris.tests import mock
 
 # The PPField class is abstract, so to test we define a minimal,
 # concrete subclass with the `t1` and `t2` properties.

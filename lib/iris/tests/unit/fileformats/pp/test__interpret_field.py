@@ -24,11 +24,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from copy import deepcopy
+from unittest import mock
+
 import numpy as np
 
 import iris
 import iris.fileformats.pp as pp
-from iris.tests import mock
 
 
 class Test__interpret_fields__land_packed_fields(tests.IrisTest):

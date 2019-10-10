@@ -23,13 +23,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 from dask.array import Array as dask_array
 import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _get_cf_var_data
-from iris.tests import mock
 
 
 class Test__get_cf_var_data(tests.IrisTest):

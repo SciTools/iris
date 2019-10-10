@@ -24,6 +24,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 from itertools import permutations
+from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
@@ -42,7 +43,6 @@ from iris.coords import AuxCoord, DimCoord, CellMeasure
 from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
                              UnitConversionError)
 from iris._lazy_data import as_lazy_data
-from iris.tests import mock
 import iris.tests.stock as stock
 
 

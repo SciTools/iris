@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,13 +24,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import six
+from unittest import mock
 import warnings
 
-from iris.fileformats.rules import ConversionMetadata
-from iris.tests import mock
 import numpy as np
 
 from iris.fileformats.rules import _make_cube
+from iris.fileformats.rules import ConversionMetadata
 
 
 class Test(tests.IrisTest):

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2018, Met Office
+# (C) British Crown Copyright 2016 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,9 +27,9 @@ import os
 import os.path
 import shutil
 import tempfile
+from unittest import mock
 
 from iris import sample_data_path
-from iris.tests import mock
 
 
 def _temp_file(sample_dir):

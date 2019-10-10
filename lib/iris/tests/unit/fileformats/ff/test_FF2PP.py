@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,14 +26,15 @@ import iris.tests as tests
 
 import collections
 import contextlib
-import numpy as np
+from unittest import mock
 import warnings
+
+import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
 import iris.fileformats.pp as pp
 from iris.fileformats._ff import FF2PP
-from iris.tests import mock
 
 
 # PP-field: LBPACK N1 values.

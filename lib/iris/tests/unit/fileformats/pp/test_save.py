@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,11 +26,12 @@ import cf_units
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 from iris.coords import DimCoord, CellMethod
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
-from iris.tests import mock
 import iris.tests.stock as stock
 
 
