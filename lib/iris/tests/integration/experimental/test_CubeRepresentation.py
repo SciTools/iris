@@ -18,15 +18,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from html import escape
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-from unittest import skip
-
 from iris.cube import Cube
-from iris.tests import mock
 import iris.tests.stock as stock
 import numpy as np
 
@@ -139,12 +137,12 @@ class TestScalarCube(tests.IrisTest):
 
     def test_header__name(self):
         header = self.representer._make_header()
-        expected_name = self.cube.name().title().replace('_', ' ')
+        expected_name = escape(self.cube.name().title().replace('_', ' '))
         self.assertIn(expected_name, header)
 
     def test_header__units(self):
         header = self.representer._make_header()
-        expected_units = self.cube.units.symbol
+        expected_units = escape(self.cube.units.symbol)
         self.assertIn(expected_units, header)
 
     def test_header__scalar_str(self):
@@ -163,9 +161,9 @@ class TestScalarCube(tests.IrisTest):
         # Check a specific scalar coord is present in the main content.
         content = self.representer._make_content()
         expected_coord = self.cube.coords()[0]
-        expected_coord_name = expected_coord.name()
+        expected_coord_name = escape(expected_coord.name())
         self.assertIn(expected_coord_name, content)
-        expected_coord_val = str(expected_coord.points[0])
+        expected_coord_val = escape(str(expected_coord.points[0]))
         self.assertIn(expected_coord_val, content)
 
     def test_content__attributes(self):
@@ -173,37 +171,6 @@ class TestScalarCube(tests.IrisTest):
         content = self.representer._make_content()
         expected_str = 'Attributes'
         self.assertIn(expected_str, content)
-
-
-@tests.skip_data
-class TestLazyDataRepr(tests.IrisTest):
-    def setUp(self):
-        self.cube = stock.lazy_data_cube()
-
-    def test_not_lazy(self):
-        cube = stock.lat_lon_cube()
-        representer = CubeRepresentation(cube)
-        result = representer.repr_html()
-        exp_str = '&nbsp;'
-        self.assertIn(exp_str, result)
-
-    @skip('Dask version does not include html repr')
-    def test_lazy_data_repr(self):
-        # Dask array repr uses an SVG.
-        exp_str = '<svg'
-        representer = CubeRepresentation(self.cube)
-        result = representer._lazy_data_repr()
-        self.assertIn(exp_str, result)
-
-    def test_cannot_repr(self):
-        # Test cases where the dask array repr cannot be made.
-        cube = mock.MagicMock(spec=self.cube)
-        cube.lazy_data()._repr_html_ = \
-            mock.MagicMock(side_effect=AttributeError)
-        representer = CubeRepresentation(cube)
-        result = representer._lazy_data_repr()
-        exp_str = '&nbsp;'
-        self.assertIn(exp_str, result)
 
 
 if __name__ == '__main__':

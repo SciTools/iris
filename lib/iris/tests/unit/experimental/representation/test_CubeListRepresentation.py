@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from html import escape, unescape
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -46,6 +47,7 @@ class Test_make_content(tests.IrisTest):
                                stock.lat_lon_cube()])
         self.representer = CubeListRepresentation(self.cubes)
         self.content = self.representer.make_content()
+        self.cubes[0].rename('name & <html>')
 
     def test_repr_len(self):
         self.assertEqual(len(self.cubes), len(self.content))
@@ -62,8 +64,10 @@ class Test_make_content(tests.IrisTest):
         # Get the cube name out of the repr html...
         cube_name = first_contents_line.split('>0: ')[1].split('/')[0]
         # ... and prettify it (to be the same as in the following cube repr).
-        pretty_cube_name = cube_name.strip().replace('_', ' ').title()
-        self.assertIn(pretty_cube_name, single_cube_html)
+        unescaped_name = unescape(cube_name)
+        pretty_cube_name = unescaped_name.strip().replace('_', ' ').title()
+        pretty_escaped_name = escape(pretty_cube_name)
+        self.assertIn(pretty_escaped_name, single_cube_html)
 
 
 @tests.skip_data

@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from html import escape
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -81,13 +82,13 @@ class Test__summary_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         # Check we're not tripped up by names containing spaces.
-        self.cube.rename('Electron density')
+        self.cube.rename('Electron density (&<html>)')
         self.cube.units = '1e11 e/m^3'
         self.representer = CubeRepresentation(self.cube)
 
     def test_name(self):
         # Check the cube name is being set and formatted correctly.
-        expected = self.cube.name().replace('_', ' ').title()
+        expected = escape(self.cube.name().replace('_', ' ').title())
         result = self.representer.name
         self.assertEqual(expected, result)
 

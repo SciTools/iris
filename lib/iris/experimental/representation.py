@@ -23,19 +23,8 @@ Definitions of how Iris objects should be represented.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from html import escape
 import re
-
-
-def escape(s):
-    """
-    Replace special characters "&", "<" and ">" to HTML-safe sequences.
-    Code taken from:
-    https://github.com/python/cpython/blob/3.7/Lib/html/__init__.py
-    """
-    s = s.replace("&", "&amp;")  # Must be done first!
-    s = s.replace("<", "&lt;")
-    s = s.replace(">", "&gt;")
-    return s
 
 
 class CubeRepresentation(object):
@@ -413,6 +402,7 @@ class CubeListRepresentation(object):
         for i, cube in enumerate(self.cubelist):
             title = '{i}: {summary}'.format(i=i,
                                             summary=cube.summary(shorten=True))
+            title = escape(title)
             content = cube._repr_html_()
             html.append(self._accordian_panel.format(uid=self.cubelist_id,
                                                      title=title,
