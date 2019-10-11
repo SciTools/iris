@@ -1321,21 +1321,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
-
-        .. note::
-
-            If `iris.FUTURE.cell_datetime_objects` is True, then this
-            method will return Cell objects whose `points` and `bounds`
-            attributes contain either datetime.datetime instances or
-            cftime.datetime instances (depending on the calendar).
-
-        .. deprecated:: 2.0.0
-
-            The option `iris.FUTURE.cell_datetime_objects` is deprecated and
-            will be removed in a future release; it is now set to True by
-            default. Please update your code to support using cells as
-            datetime objects.
-
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
@@ -1348,18 +1333,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.has_bounds():
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
-        if iris.FUTURE.cell_datetime_objects:
-            if self.units.is_time_reference():
-                point = self.units.num2date(point)
-                if bound is not None:
-                    bound = self.units.num2date(bound)
-        else:
-            wmsg = ("disabling cells as datetime objects is deprecated "
-                    "behaviour. "
-                    "Please update your code to support using cells as "
-                    "datetime objects."
-                    "See the userguide section 2.2.1 for examples of this.")
-            warn_deprecated(wmsg)
+        if self.units.is_time_reference():
+            point = self.units.num2date(point)
+            if bound is not None:
+                bound = self.units.num2date(bound)
 
         return Cell(point, bound)
 
@@ -1448,22 +1425,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
             This method only works for coordinates with ``coord.ndim == 1``.
 
-        .. note::
-
-            If `iris.FUTURE.clip_latitudes` is True, then this method
-            will clip the coordinate bounds to the range [-90, 90] when:
-
-            - it is a `latitude` or `grid_latitude` coordinate,
-            - the units are degrees,
-            - all the points are in the range [-90, 90].
-
-        .. deprecated:: 2.0.0
-
-            The `iris.FUTURE.clip_latitudes` option is now deprecated
-            and is set to True by default. Please remove code which
-            relies on coordinate bounds being outside the range
-            [-90, 90].
-
         """
         # XXX Consider moving into DimCoord
         # ensure we have monotonic points
@@ -1499,18 +1460,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if iris.FUTURE.clip_latitudes:
-            if (self.name() in ('latitude', 'grid_latitude') and
-                    self.units == 'degree'):
-                points = self.points
-                if (points >= -90).all() and (points <= 90).all():
-                    np.clip(bounds, -90, 90, out=bounds)
-        else:
-            wmsg = ("guessing latitude bounds outside of [-90, 90] is "
-                    "deprecated behaviour. "
-                    "All latitude points will be clipped to the range "
-                    "[-90, 90].")
-            warn_deprecated(wmsg)
+        if (self.name() in ('latitude', 'grid_latitude') and
+                self.units == 'degree'):
+            points = self.points
+            if (points >= -90).all() and (points <= 90).all():
+                np.clip(bounds, -90, 90, out=bounds)
 
         return bounds
 
@@ -1543,22 +1497,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Unevenly spaced values, such from a wrapped longitude range, can
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
-
-        .. note::
-
-            If `iris.FUTURE.clip_latitudes` is True, then this method
-            will clip the coordinate bounds to the range [-90, 90] when:
-
-            - it is a `latitude` or `grid_latitude` coordinate,
-            - the units are degrees,
-            - all the points are in the range [-90, 90].
-
-        .. deprecated:: 2.0.0
-
-            The `iris.FUTURE.clip_latitudes` option is now deprecated
-            and is set to True by default. Please remove code which
-            relies on coordinate bounds being outside the range
-            [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+from unittest import skip
 
 import warnings
 
@@ -30,6 +31,7 @@ from iris import Future
 
 
 class Test___setattr__(tests.IrisTest):
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_valid_clip_latitudes(self):
         future = Future()
         new_value = not future.clip_latitudes
@@ -43,24 +45,14 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaises(AttributeError):
             future.numberwang = 7
 
-    def test_netcdf_promote(self):
-        future = Future()
-        exp_emsg = "'Future' property 'netcdf_promote' is deprecated"
-        with self.assertWarnsRegexp(exp_emsg):
-            future.netcdf_promote = True
-
-    def test_invalid_netcdf_promote(self):
-        future = Future()
-        exp_emsg = "'Future' property 'netcdf_promote' has been deprecated"
-        with self.assertRaisesRegexp(AttributeError, exp_emsg):
-            future.netcdf_promote = False
-
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_netcdf_no_unlimited(self):
         future = Future()
         exp_emsg = "'Future' property 'netcdf_no_unlimited' is deprecated"
         with self.assertWarnsRegexp(exp_emsg):
             future.netcdf_no_unlimited = True
 
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_invalid_netcdf_no_unlimited(self):
         future = Future()
         exp_emsg = \
@@ -68,6 +60,7 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaisesRegexp(AttributeError, exp_emsg):
             future.netcdf_no_unlimited = False
 
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_cell_datetime_objects(self):
         future = Future()
         new_value = not future.cell_datetime_objects
@@ -80,6 +73,8 @@ class Test___setattr__(tests.IrisTest):
 
 
 class Test_context(tests.IrisTest):
+    # Many of these tests will not work until another flag is put into Future.
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_no_args(self):
         # Catch the deprecation when explicitly setting `cell_datetime_objects`
         # as the test is still useful even though the Future property is
@@ -94,6 +89,7 @@ class Test_context(tests.IrisTest):
                 self.assertTrue(future.cell_datetime_objects)
             self.assertFalse(future.cell_datetime_objects)
 
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_with_arg(self):
         # Catch the deprecation when explicitly setting `cell_datetime_objects`
         # as the test is still useful even though the Future property is
@@ -115,6 +111,7 @@ class Test_context(tests.IrisTest):
                 # exception we're looking for.
                 pass
 
+    @skip("This flag has been removed. Test kept as a future template.")
     def test_exception(self):
         # Check that an interrupted context block restores the initial state.
         class LocalTestException(Exception):

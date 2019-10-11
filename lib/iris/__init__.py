@@ -137,8 +137,7 @@ AttributeConstraint = iris._constraints.AttributeConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, cell_datetime_objects=True, netcdf_promote=True,
-                 netcdf_no_unlimited=True, clip_latitudes=True):
+    def __init__(self):
         """
         A container for run-time options controls.
 
@@ -150,76 +149,29 @@ class Future(threading.local):
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
-        .. deprecated:: 2.0.0
+        .. note::
 
-            The option `cell_datetime_objects` is deprecated and will be
-            removed in a future release. `cell_datetime_objects` is set
-            to True by default and should not be altered.
-
-            The option `cell_datetime_objects` controlled whether the
-            :meth:`iris.coords.Coord.cell()` method would return time
-            coordinate values as simple numbers or as time objects with
-            attributes for year, month, day, etc.
-
-            Cells are now represented as time objects by default, allowing
-            you to express time constraints using a simpler syntax. For
-            example::
-
-                # To select all data defined at midday.
-                Constraint(time=lambda cell: cell.point.hour == 12)
-
-                # To ignore the 29th of February.
-                Constraint(time=lambda cell: cell.point.day != 29 and
-                                             cell.point.month != 2)
-
-            For more details, see :ref:`using-time-constraints`.
-
-        .. deprecated:: 2.0.0
-
-            The option `netcdf_promote` is deprecated and will be removed in a
-            future release and the deprecated code paths this option used to
-            toggle have been removed.
-
-            The option `netcdf_promote` controlled whether the netCDF loader
-            exposed variables that defined reference surfaces for
-            dimensionless vertical coordinates as independent Cubes.
-
-        .. deprecated:: 2.0.0
-
-            The option `netcdf_no_unlimited` is deprecated and will be removed
-            in a future release. The deprecated code paths this option used to
-            toggle have been removed.
-
-            The option `netcdf_no_unlimited` changed the behaviour of the
-            netCDF saver regarding unlimited dimensions. The netCDF saver now
-            sets no dimensions to unlimited.
-
-        .. deprecated:: 2.0.0
-
-            The option `clip_latitudes` is deprecated and will be removed in a
-            future release. `clip_latitudes` is set to True by default and
-            should not be altered.
-
-            The option `clip_latitudes` controlled whether the
-            :meth:`iris.coords.Coord.guess_bounds()` method would limit the
-            guessed bounds to [-90, 90] for latitudes.
+            iris.FUTURE.cell_datetime_objects has been removed from the
+            code and is left in only as a template for when flags are added
+            to Future.
 
         """
-        self.__dict__['cell_datetime_objects'] = cell_datetime_objects
-        self.__dict__['netcdf_promote'] = netcdf_promote
-        self.__dict__['netcdf_no_unlimited'] = netcdf_no_unlimited
-        self.__dict__['clip_latitudes'] = clip_latitudes
+        # The flag 'cell_datetime_objects' has been removed, it has been
+        # left in some comments as a template for future reference when
+        # adding flags to Future.
+        #
+        # self.__dict__['cell_datetime_objects'] = cell_datetime_objects
+        pass
 
     def __repr__(self):
-        msg = ('Future(cell_datetime_objects={}, netcdf_promote={}, '
-               'netcdf_no_unlimited={}, clip_latitudes={})')
-        return msg.format(self.cell_datetime_objects, self.netcdf_promote,
-                          self.netcdf_no_unlimited, self.clip_latitudes)
 
-    deprecated_options = {'cell_datetime_objects': 'warning',
-                          'netcdf_no_unlimited': 'error',
-                          'netcdf_promote': 'error',
-                          'clip_latitudes': 'warning'}
+        # msg = ('Future(cell_datetime_objects={})')
+        # return msg.format(self.cell_datetime_objects)
+        msg = ('Future()')
+        return msg.format()
+
+    # deprecated_options = {'cell_datetime_objects': 'warning',}
+    deprecated_options = {}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
@@ -253,6 +205,12 @@ class Future(threading.local):
         For example::
             with iris.FUTURE.context(cell_datetime_objects=False):
                 # ... code that expects numbers and not datetimes
+
+        .. note::
+
+            iris.FUTURE.cell_datetime_objects has been removed from the
+            code and is left in only as a template for when flags are added
+            to Future.
 
         """
         # Save the current context
