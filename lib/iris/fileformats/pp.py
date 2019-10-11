@@ -522,43 +522,7 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-def _make_flag_getter(value):
-    def getter(self):
-        warn_deprecated('The `flag` attributes are deprecated - please use '
-                        'integer bitwise operators instead.')
-        return int(bool(self._value & value))
-    return getter
-
-
-def _make_flag_setter(value):
-    def setter(self, flag):
-        warn_deprecated('The `flag` attributes are deprecated - please use '
-                        'integer bitwise operators instead.')
-        if not isinstance(flag, bool):
-            raise TypeError('Can only set bits to True or False')
-        if flag:
-            self._value |= value
-        else:
-            self._value &= ~value
-    return setter
-
-
-class _FlagMetaclass(type):
-    NUM_BITS = 18
-
-    def __new__(cls, classname, bases, class_dict):
-        for i in range(cls.NUM_BITS):
-            value = 2 ** i
-            name = 'flag{}'.format(value)
-            class_dict[name] = property(_make_flag_getter(value),
-                                        _make_flag_setter(value))
-        class_dict['NUM_BITS'] = cls.NUM_BITS
-        return type.__new__(cls, classname, bases, class_dict)
-
-
-class _LBProc(six.with_metaclass(_FlagMetaclass, SplittableInt)):
-    # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
-    # properties.
+class _LBProc(SplittableInt):
     def __init__(self, value):
         """
         Args:
