@@ -25,7 +25,6 @@ import six
 import iris.tests as tests
 
 import cftime
-import types
 from unittest import mock
 
 import cf_units

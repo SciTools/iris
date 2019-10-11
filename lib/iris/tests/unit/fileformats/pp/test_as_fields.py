@@ -23,8 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from unittest import mock
-
 from iris.coords import DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp

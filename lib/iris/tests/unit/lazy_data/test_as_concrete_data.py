@@ -23,8 +23,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from unittest import mock
-
 import numpy as np
 import numpy.ma as ma
 
