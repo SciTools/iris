@@ -72,9 +72,6 @@ class Test_co_realise_cubes(tests.IrisTest):
         self.assertTrue(cube_inner.has_lazy_data())
 
     def test_combined_access(self):
-        import dask
-        from distutils.version import StrictVersion as Version
-
         wrapped_array = ArrayAccessCounter(np.arange(3.))
         lazy_array = as_lazy_data(wrapped_array)
         derived_a = lazy_array + 1
@@ -84,17 +81,7 @@ class Test_co_realise_cubes(tests.IrisTest):
         cube_b = Cube(derived_b)
         cube_c = Cube(derived_c)
         co_realise_cubes(cube_a, cube_b, cube_c)
-        # Though used more than once, the source data should only get fetched
-        # once by dask.
-        if Version(dask.__version__) < Version('2.0.0'):
-            self.assertEqual(wrapped_array.access_count, 1)
-        else:
-            # dask 2+, now performs an initial data access with no data payload
-            # to ascertain the metadata associated with the dask.array, thus
-            # accounting for one additional access to the data from the
-            # perspective of this particular unit test.
-            # See dask.array.utils.meta_from_array
-            self.assertEqual(wrapped_array.access_count, 2)
+        self.assertEqual(wrapped_array.access_count, 2)
 
 
 if __name__ == '__main__':
