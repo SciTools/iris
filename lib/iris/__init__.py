@@ -144,33 +144,32 @@ class Future(threading.local):
         To adjust the values simply update the relevant attribute from
         within your code. For example::
 
-            iris.FUTURE.cell_datetime_objects = False
+            iris.FUTURE.example_future_flag = False
 
         If Iris code is executed with multiple threads, note the values of
         these options are thread-specific.
 
         .. note::
 
-            iris.FUTURE.cell_datetime_objects has been removed from the
-            code and is left in only as a template for when flags are added
-            to Future.
+            iris.FUTURE.example_future_flag does not exist. It is provided
+            as an example because there are currently no flags in
+            iris.Future.
 
         """
-        # The flag 'cell_datetime_objects' has been removed, it has been
-        # left in some comments as a template for future reference when
-        # adding flags to Future.
+        # The flag 'example_future_flag' is provided as a future reference
+        # for the structure of this class.
         #
-        # self.__dict__['cell_datetime_objects'] = cell_datetime_objects
+        # self.__dict__['example_future_flag'] = example_future_flag
         pass
 
     def __repr__(self):
 
-        # msg = ('Future(cell_datetime_objects={})')
-        # return msg.format(self.cell_datetime_objects)
+        # msg = ('Future(example_future_flag={})')
+        # return msg.format(self.example_future_flag)
         msg = ('Future()')
         return msg.format()
 
-    # deprecated_options = {'cell_datetime_objects': 'warning',}
+    # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options = {}
 
     def __setattr__(self, name, value):
@@ -203,14 +202,14 @@ class Future(threading.local):
         statement, the previous state is restored.
 
         For example::
-            with iris.FUTURE.context(cell_datetime_objects=False):
-                # ... code that expects numbers and not datetimes
+            with iris.FUTURE.context(example_future_flag=False):
+                # ... code that expects some past behaviour
 
         .. note::
 
-            iris.FUTURE.cell_datetime_objects has been removed from the
-            code and is left in only as a template for when flags are added
-            to Future.
+            iris.FUTURE.example_future_flag does not exist and is
+            provided only as an example since there are currently no
+            flags in Future.
 
         """
         # Save the current context

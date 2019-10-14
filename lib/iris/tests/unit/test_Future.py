@@ -30,6 +30,17 @@ import warnings
 from iris import Future
 
 
+def patched_future(value=True, error=False):
+    # This ensures that there exists a flag in Future to test against.
+    future = Future()
+    future.__dict__['example_future_flag'] = value
+    if error:
+        future.deprecated_options['example_future_flag'] = 'error'
+    else:
+        future.deprecated_options['example_future_flag'] = 'warning'
+    return future
+
+
 class Test___setattr__(tests.IrisTest):
     @skip("This flag has been removed. Test kept as a future template.")
     def test_valid_clip_latitudes(self):
@@ -39,6 +50,27 @@ class Test___setattr__(tests.IrisTest):
         with self.assertWarnsRegexp(msg):
             future.clip_latitudes = new_value
         self.assertEqual(future.clip_latitudes, new_value)
+
+    def test_deprecated_warning(self):
+        future = patched_future()
+        new_value = not future.example_future_flag
+        msg = "'Future' property 'example_future_flag' is deprecated"
+        with self.assertWarnsRegexp(msg):
+            future.example_future_flag = new_value
+        self.assertEqual(future.example_future_flag, new_value)
+
+    def test_deprecated_error_warning(self):
+        future = patched_future(error=True)
+        exp_emsg = "'Future' property 'example_future_flag' is deprecated"
+        with self.assertWarnsRegexp(exp_emsg):
+            future.example_future_flag = True
+
+    def test_invalid_deprecated_error(self):
+        future = patched_future(error=True)
+        exp_emsg = \
+            "'Future' property 'example_future_flag' has been deprecated"
+        with self.assertRaisesRegexp(AttributeError, exp_emsg):
+            future.example_future_flag = False
 
     def test_invalid_attribute(self):
         future = Future()
@@ -89,6 +121,21 @@ class Test_context(tests.IrisTest):
                 self.assertTrue(future.cell_datetime_objects)
             self.assertFalse(future.cell_datetime_objects)
 
+    def test_generic_no_args(self):
+        # While Future has no properties, it is necessary to patch Future in
+        # order for these tests to work. This test is not a precise emulation
+        # of the test it is replacing, but ought to cover most of the same
+        # behaviour while Future is empty.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = patched_future(value=False)
+            self.assertFalse(future.example_future_flag)
+            with future.context():
+                self.assertFalse(future.example_future_flag)
+                future.example_future_flag = True
+                self.assertTrue(future.example_future_flag)
+            self.assertFalse(future.example_future_flag)
+
     @skip("This flag has been removed. Test kept as a future template.")
     def test_with_arg(self):
         # Catch the deprecation when explicitly setting `cell_datetime_objects`
@@ -101,6 +148,20 @@ class Test_context(tests.IrisTest):
             with future.context(cell_datetime_objects=True):
                 self.assertTrue(future.cell_datetime_objects)
             self.assertFalse(future.cell_datetime_objects)
+
+    def test_generic_with_arg(self):
+        # While Future has no properties, it is necessary to patch Future in
+        # order for these tests to work. This test is not a precise emulation
+        # of the test it is replacing, but ought to cover most of the same
+        # behaviour while Future is empty.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = patched_future(value=False)
+            self.assertFalse(future.example_future_flag)
+            self.assertFalse(future.example_future_flag)
+            with future.context(example_future_flag=True):
+                self.assertTrue(future.example_future_flag)
+            self.assertFalse(future.example_future_flag)
 
     def test_invalid_arg(self):
         future = Future()
@@ -129,6 +190,25 @@ class Test_context(tests.IrisTest):
             except LocalTestException:
                 pass
             self.assertEqual(future.cell_datetime_objects, False)
+
+    def test_generic_exception(self):
+        # Check that an interrupted context block restores the initial state.
+        class LocalTestException(Exception):
+            pass
+
+        # While Future has no properties, it is necessary to patch Future in
+        # order for these tests to work. This test is not a precise emulation
+        # of the test it is replacing, but ought to cover most of the same
+        # behaviour while Future is empty.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            future = patched_future(value=False)
+            try:
+                with future.context(example_future_flag=True):
+                    raise LocalTestException()
+            except LocalTestException:
+                pass
+            self.assertEqual(future.example_future_flag, False)
 
 
 if __name__ == "__main__":
