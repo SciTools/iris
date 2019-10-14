@@ -131,6 +131,39 @@ class Test_name(tests.IrisTest):
             self.cf_var.name(default="_nope", token=True)
 
 
+class Test_names(tests.IrisTest):
+    def setUp(self):
+        self.cf_var = CFVariableMixin()
+        self.cf_var.standard_name = None
+        self.cf_var.long_name = None
+        self.cf_var.var_name = None
+        self.cf_var.attributes = dict()
+
+    def test_standard_name(self):
+        standard_name = 'air_temperature'
+        self.cf_var.standard_name = standard_name
+        expected = (standard_name, None, None, '')
+        self.assertEqual(expected, self.cf_var.names)
+
+    def test_long_name(self):
+        long_name = 'air temperature'
+        self.cf_var.long_name = long_name
+        expected = (None, long_name, None, '')
+        self.assertEqual(expected, self.cf_var.names)
+
+    def test_var_name(self):
+        var_name = 'atemp'
+        self.cf_var.var_name = var_name
+        expected = (None, None, var_name, '')
+        self.assertEqual(expected, self.cf_var.names)
+
+    def test_STASH(self):
+        stash = 'm01s16i203'
+        self.cf_var.attributes = dict(STASH=stash)
+        expected = (None, None, None, stash)
+        self.assertEqual(expected, self.cf_var.names)
+
+
 class Test_standard_name__setter(tests.IrisTest):
     def test_valid_standard_name(self):
         cf_var = CFVariableMixin()

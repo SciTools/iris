@@ -128,7 +128,7 @@ class Constraint:
         """
         match = True
         if self._name:
-            match = self._name == cube.name()
+            match = self._name in cube.names
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match
@@ -490,3 +490,63 @@ class AttributeConstraint(Constraint):
 
     def __repr__(self):
         return "AttributeConstraint(%r)" % self._attributes
+
+
+class NameConstraint(Constraint):
+    """
+    Provides a simple Cube name based :class:`Constraint`, which matches
+    against each of the names provided, which may be either standard name,
+    long name, NetCDF variable name and/or the STASH from the attributes
+    dictionary.
+
+    The name constraint will only succeed if all of the provided names match.
+
+    """
+    def __init__(self, **names):
+        """
+        Example usage::
+
+            iris.NameConstraint(long_name='air temp')
+
+            iris.NameConstraint(standard_name='air_temperature',
+                                STASH=lambda stash: stash.item == 203
+
+            .. note:: Name constraint names are case sensitive.
+
+        """
+        self._names = names
+        super(NameConstraint, self).__init__(cube_func=self._cube_func)
+
+    def _cube_func(self, cube):
+        def matcher(target, value):
+            if callable(value):
+                result = value(target)
+            else:
+                result = value == target
+            return result
+
+        match = True
+        for name, value in self._names.items():
+            if name == 'standard_name':
+                match = matcher(cube.standard_name, value)
+                if match is False:
+                    break
+            if name == 'long_name':
+                match = matcher(cube.long_name, value)
+                if match is False:
+                    break
+            if name == 'var_name':
+                match = matcher(cube.var_name, value)
+                if match is False:
+                    break
+            if name == 'STASH':
+                match = matcher(cube.attributes.get('STASH'), value)
+                if match is False:
+                    break
+        return match
+
+    def __repr__(self):
+        names = []
+        for name, value in self._names.items():
+            names.append('{}={!r}'.format(name, value))
+        return '{}({})'.format(self.__class__.__name__, ', '.join(names))

@@ -181,6 +181,20 @@ class CFVariableMixin:
 
         return result
 
+    @property
+    def names(self):
+        """
+        A tuple containing all of the metadata names. This includes the
+        standard name, long name, NetCDF variable name, and attributes
+        STASH name.
+
+        """
+        standard_name = self.standard_name
+        long_name = self.long_name
+        var_name = self.var_name
+        stash_name = str(self.attributes.get('STASH', ''))
+        return (standard_name, long_name, var_name, stash_name)
+
     def rename(self, name):
         """
         Changes the human-readable name.
