@@ -1,0 +1,3 @@
+* The deprecated :class:`iris.Future` flags `cell_date_time_objects`,
+  `netcfd_promote`, `netcdf_no_unlimited` and `clip_latitudes` have
+  been removed.
