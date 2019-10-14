@@ -1,0 +1,2 @@
+* The deprecated attributes `flag1`, `flag2` etc. have been removed from
+  :attr:`iris.fileformats.pp.PPField.lbproc`.
