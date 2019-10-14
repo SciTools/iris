@@ -412,7 +412,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
         self.assertIsNotNone(result)
 
         # Match - callable.
-        kwargs = dict(STASH=lambda stash: stash.item==4)
+        kwargs = dict(STASH=lambda stash: stash.item == 4)
         constraint = NameConstraint(**kwargs)
         result = self.cube.extract(constraint)
         self.assertIsNotNone(result)
