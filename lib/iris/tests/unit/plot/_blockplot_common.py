@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,9 +23,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
-from iris.tests import mock
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import MixinCoords
 

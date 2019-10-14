@@ -25,6 +25,7 @@ import iris.tests as tests
 
 import numpy as np
 import os
+from unittest import mock
 
 from cf_units import Unit
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -34,7 +35,6 @@ import iris.fileformats.pp
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 from iris.exceptions import IgnoreCubeException
-from iris.tests import mock
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.util
 

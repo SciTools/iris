@@ -24,8 +24,9 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest.mock import Mock
+
 import numpy as np
-from mock import Mock
 
 from cartopy.crs import Geostationary, NearsidePerspective
 from iris.plot import _check_geostationary_coords_and_convert

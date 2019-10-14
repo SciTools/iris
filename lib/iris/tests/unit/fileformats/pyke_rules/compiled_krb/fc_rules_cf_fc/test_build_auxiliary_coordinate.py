@@ -27,13 +27,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 from iris.coords import AuxCoord
 from iris.fileformats.cf import CFVariable
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_auxiliary_coordinate
-from iris.tests import mock
 
 
 # from iris.tests.unit.fileformats.pyke_rules.compiled_krb\

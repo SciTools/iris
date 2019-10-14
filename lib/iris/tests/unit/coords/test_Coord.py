@@ -23,6 +23,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
+from unittest import mock
 import warnings
 
 import dask.array as da
@@ -31,7 +32,6 @@ import six
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
-from iris.tests import mock
 from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
 

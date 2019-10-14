@@ -27,12 +27,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 from iris.cube import Cube
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_cube_metadata
-from iris.tests import mock
 
 
 def _make_engine(global_attributes=None, standard_name=None, long_name=None):

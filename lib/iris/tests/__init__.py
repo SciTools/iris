@@ -53,15 +53,11 @@ import shutil
 import subprocess
 import sys
 import unittest
+from unittest import mock
 import threading
 import warnings
 import xml.dom.minidom
 import zlib
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 import filelock
 import numpy as np

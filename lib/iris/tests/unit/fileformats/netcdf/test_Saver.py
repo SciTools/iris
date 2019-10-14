@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 from contextlib import contextmanager
+from unittest import mock
 
 import netCDF4 as nc
 import numpy as np
@@ -40,7 +41,6 @@ from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
-from iris.tests import mock
 import iris.tests.stock as stock
 
 

@@ -27,12 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import io
+from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
 
 import iris.fileformats.pp as pp
-from iris.tests import mock
 
 
 class Test__data_bytes_to_shaped_array__lateral_boundary_compression(

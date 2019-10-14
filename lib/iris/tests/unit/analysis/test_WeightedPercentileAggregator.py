@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,12 +26,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 from iris.analysis import WeightedPercentileAggregator, _weighted_percentile
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.tests import mock
 
 
 class Test(tests.IrisTest):

@@ -27,11 +27,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import iris
 from iris.coord_systems import Geostationary
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_geostationary_coordinate_system
-from iris.tests import mock
 
 
 class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):

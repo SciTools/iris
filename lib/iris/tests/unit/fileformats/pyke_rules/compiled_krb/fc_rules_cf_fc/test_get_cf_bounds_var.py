@@ -27,11 +27,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
 
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     get_cf_bounds_var, CF_ATTR_BOUNDS, CF_ATTR_CLIMATOLOGY
-
-from iris.tests import mock
 
 
 class TestGetCFBoundsVar(tests.IrisTest):

@@ -29,6 +29,7 @@ from itertools import repeat
 import os.path
 import shutil
 import tempfile
+from unittest import mock
 import warnings
 
 import netCDF4 as nc
@@ -41,7 +42,6 @@ from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import Saver
 from iris.fileformats.netcdf import UnknownCellMethodWarning
-from iris.tests import mock
 import iris.tests.stock as stock
 
 

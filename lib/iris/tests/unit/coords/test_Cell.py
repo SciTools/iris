@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,12 +24,12 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import datetime
-import numpy as np
+from unittest import mock
 
+import numpy as np
 import cftime
 
 from iris.coords import Cell
-from iris.tests import mock
 from iris.time import PartialDateTime
 
 

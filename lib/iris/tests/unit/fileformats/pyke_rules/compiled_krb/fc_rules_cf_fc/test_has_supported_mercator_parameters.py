@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -28,12 +28,13 @@ import warnings
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 import six
 
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     has_supported_mercator_parameters
-from iris.tests import mock
 
 
 def _engine(cf_grid_var, cf_name):

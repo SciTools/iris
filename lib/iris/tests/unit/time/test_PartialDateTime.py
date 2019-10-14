@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,10 +26,10 @@ import iris.tests as tests
 
 import datetime
 import operator
+from unittest import mock
 
 import cftime
 
-from iris.tests import mock
 from iris.time import PartialDateTime
 
 

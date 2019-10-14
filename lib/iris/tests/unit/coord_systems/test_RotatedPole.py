@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,10 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import cartopy
 import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from iris.tests import mock
 
 
 class Test_init(tests.IrisTest):

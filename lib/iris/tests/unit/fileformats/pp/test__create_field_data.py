@@ -23,10 +23,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 import iris.fileformats.pp as pp
-from iris.tests import mock
 
 
 class Test__create_field_data(tests.IrisTest):

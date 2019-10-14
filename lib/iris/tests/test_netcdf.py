@@ -32,6 +32,7 @@ import os.path
 import shutil
 import stat
 import tempfile
+from unittest import mock
 
 import netCDF4 as nc
 import numpy as np
@@ -44,7 +45,6 @@ import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
-from iris.tests import mock
 import iris.tests.stock as stock
 from iris._lazy_data import is_lazy_data
 

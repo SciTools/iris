@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,6 +24,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 import iris.tests.stock
 
+from unittest import mock
+
 from cf_units import Unit
 import numpy as np
 
@@ -32,7 +34,6 @@ from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
 import iris.exceptions
 from iris.fileformats.pp import STASH
-from iris.tests import mock
 
 
 class Test_concatenate_cube(tests.IrisTest):
