@@ -42,15 +42,6 @@ def patched_future(value=True, error=False):
 
 
 class Test___setattr__(tests.IrisTest):
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_valid_clip_latitudes(self):
-        future = Future()
-        new_value = not future.clip_latitudes
-        msg = "'Future' property 'clip_latitudes' is deprecated"
-        with self.assertWarnsRegexp(msg):
-            future.clip_latitudes = new_value
-        self.assertEqual(future.clip_latitudes, new_value)
-
     def test_deprecated_warning(self):
         future = patched_future()
         new_value = not future.example_future_flag
@@ -77,50 +68,8 @@ class Test___setattr__(tests.IrisTest):
         with self.assertRaises(AttributeError):
             future.numberwang = 7
 
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_netcdf_no_unlimited(self):
-        future = Future()
-        exp_emsg = "'Future' property 'netcdf_no_unlimited' is deprecated"
-        with self.assertWarnsRegexp(exp_emsg):
-            future.netcdf_no_unlimited = True
-
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_invalid_netcdf_no_unlimited(self):
-        future = Future()
-        exp_emsg = \
-            "'Future' property 'netcdf_no_unlimited' has been deprecated"
-        with self.assertRaisesRegexp(AttributeError, exp_emsg):
-            future.netcdf_no_unlimited = False
-
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_cell_datetime_objects(self):
-        future = Future()
-        new_value = not future.cell_datetime_objects
-        with warnings.catch_warnings(record=True) as warn:
-            warnings.simplefilter('always')
-            future.cell_datetime_objects = new_value
-        self.assertEqual(future.cell_datetime_objects, new_value)
-        exp_wmsg = "'Future' property 'cell_datetime_objects' is deprecated"
-        six.assertRegex(self, str(warn[0]), exp_wmsg)
-
 
 class Test_context(tests.IrisTest):
-    # Many of these tests will not work until another flag is put into Future.
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_no_args(self):
-        # Catch the deprecation when explicitly setting `cell_datetime_objects`
-        # as the test is still useful even though the Future property is
-        # deprecated.
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            future = Future(cell_datetime_objects=False)
-            self.assertFalse(future.cell_datetime_objects)
-            with future.context():
-                self.assertFalse(future.cell_datetime_objects)
-                future.cell_datetime_objects = True
-                self.assertTrue(future.cell_datetime_objects)
-            self.assertFalse(future.cell_datetime_objects)
-
     def test_generic_no_args(self):
         # While Future has no properties, it is necessary to patch Future in
         # order for these tests to work. This test is not a precise emulation
@@ -135,19 +84,6 @@ class Test_context(tests.IrisTest):
                 future.example_future_flag = True
                 self.assertTrue(future.example_future_flag)
             self.assertFalse(future.example_future_flag)
-
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_with_arg(self):
-        # Catch the deprecation when explicitly setting `cell_datetime_objects`
-        # as the test is still useful even though the Future property is
-        # deprecated.
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            future = Future(cell_datetime_objects=False)
-            self.assertFalse(future.cell_datetime_objects)
-            with future.context(cell_datetime_objects=True):
-                self.assertTrue(future.cell_datetime_objects)
-            self.assertFalse(future.cell_datetime_objects)
 
     def test_generic_with_arg(self):
         # While Future has no properties, it is necessary to patch Future in
@@ -171,25 +107,6 @@ class Test_context(tests.IrisTest):
                 # will (assuming it's working!) have already raised the
                 # exception we're looking for.
                 pass
-
-    @skip("This flag has been removed. Test kept as a future template.")
-    def test_exception(self):
-        # Check that an interrupted context block restores the initial state.
-        class LocalTestException(Exception):
-            pass
-
-        # Catch the deprecation when explicitly setting `cell_datetime_objects`
-        # as the test is still useful even though the Future property is
-        # deprecated.
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            future = Future(cell_datetime_objects=False)
-            try:
-                with future.context(cell_datetime_objects=True):
-                    raise LocalTestException()
-            except LocalTestException:
-                pass
-            self.assertEqual(future.cell_datetime_objects, False)
 
     def test_generic_exception(self):
         # Check that an interrupted context block restores the initial state.
