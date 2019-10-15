@@ -466,7 +466,7 @@ class AttributeConstraint(Constraint):
 
         """
         self._attributes = attributes
-        Constraint.__init__(self, cube_func=self._cube_func)
+        super().__init__(cube_func=self._cube_func)
 
     def _cube_func(self, cube):
         match = True
@@ -518,7 +518,7 @@ class NameConstraint(Constraint):
 
         """
         self._names = names
-        super(NameConstraint, self).__init__(cube_func=self._cube_func)
+        super().__init__(cube_func=self._cube_func)
 
     def _cube_func(self, cube):
         def matcher(target, value):
