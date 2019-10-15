@@ -35,7 +35,8 @@ class Constraint:
         Args:
 
         * name:   string or None
-            If a string, it is used as the name to match against Cube.name().
+            If a string, it is used as the name to match against the
+            `~iris.cube.Cube.names` property.
         * cube_func:   callable or None
             If a callable, it must accept a Cube as its first and only argument
             and return either True or False.
