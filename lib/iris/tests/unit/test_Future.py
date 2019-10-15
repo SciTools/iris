@@ -30,34 +30,43 @@ import warnings
 from iris import Future
 
 
-def patched_future(value=True, error=False):
-    # This ensures that there exists a flag in Future to test against.
-    future = Future()
+def patched_future(value=False, deprecated=False, error=False):
+
+    class LocalFuture(Future):
+        # Modified Future class, with controlled deprecation options.
+        #
+        # NOTE: it is necessary to subclass this in order to modify the
+        # 'deprecated_options' property, because we don't want to modify the
+        # class variable of the actual Future class !
+        deprecated_options = {}
+        if deprecated:
+            if error:
+                deprecated_options['example_future_flag'] = 'error'
+            else:
+                deprecated_options['example_future_flag'] = 'warning'
+
+    future = LocalFuture()
     future.__dict__['example_future_flag'] = value
-    if error:
-        future.deprecated_options['example_future_flag'] = 'error'
-    else:
-        future.deprecated_options['example_future_flag'] = 'warning'
     return future
 
 
 class Test___setattr__(tests.IrisTest):
-    def test_deprecated_warning(self):
+    def test_valid_setting(self):
         future = patched_future()
         new_value = not future.example_future_flag
-        msg = "'Future' property 'example_future_flag' is deprecated"
-        with self.assertWarnsRegexp(msg):
+        with warnings.catch_warnings():
+            warnings.simplefilter('error')  # Check no warning emitted !
             future.example_future_flag = new_value
         self.assertEqual(future.example_future_flag, new_value)
 
-    def test_deprecated_error_warning(self):
-        future = patched_future(error=True)
-        exp_emsg = "'Future' property 'example_future_flag' is deprecated"
-        with self.assertWarnsRegexp(exp_emsg):
-            future.example_future_flag = True
+    def test_deprecated_warning(self):
+        future = patched_future(deprecated=True, error=False)
+        msg = "'Future' property 'example_future_flag' is deprecated"
+        with self.assertWarnsRegexp(msg):
+            future.example_future_flag = False
 
-    def test_invalid_deprecated_error(self):
-        future = patched_future(error=True)
+    def test_deprecated_error(self):
+        future = patched_future(deprecated=True, error=True)
         exp_emsg = \
             "'Future' property 'example_future_flag' has been deprecated"
         with self.assertRaisesRegexp(AttributeError, exp_emsg):
