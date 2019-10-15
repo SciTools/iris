@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,9 +25,10 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import iris
 import iris.fileformats.cf as cf
-from iris.tests import mock
 
 
 class TestCaching(tests.IrisTest):

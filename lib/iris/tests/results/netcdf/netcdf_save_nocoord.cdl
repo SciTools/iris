@@ -15,5 +15,5 @@ variables:
 		temp3:units = "K" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

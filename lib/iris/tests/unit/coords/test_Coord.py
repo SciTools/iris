@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 """Unit tests for the :class:`iris.coords.Coord` class."""
-
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
@@ -24,14 +23,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 
 import collections
-import mock
+from unittest import mock
 import warnings
 
+import dask.array as da
 import numpy as np
+import six
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
-from iris.tests import mock
 from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
 
@@ -279,6 +279,13 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             self.assertArrayEqual(collapsed_coord.bounds,
                                   [[coord.bounds.min(), coord.bounds.max()]])
 
+    def test_lazy_points(self):
+        # Lazy points should stay lazy after collapse.
+        coord = AuxCoord(points=da.from_array(np.arange(5), chunks=5))
+        collapsed_coord = coord.collapsed()
+        self.assertTrue(collapsed_coord.has_lazy_bounds())
+        self.assertTrue(collapsed_coord.has_lazy_points())
+
     def test_numeric_nd(self):
         coord = AuxCoord(points=np.array([[1, 2, 4, 5],
                                           [4, 5, 7, 8],
@@ -303,9 +310,46 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
                                                                 [4, 10],
                                                                 [5, 11]]))
 
-    def test_lazy_nd_bounds(self):
-        import dask.array as da
+    def test_numeric_nd_bounds_all(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
 
+        collapsed_coord = coord.collapsed()
+        self.assertArrayEqual(collapsed_coord.points, np.array([55]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2, 112]]))
+
+    def test_numeric_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
+        collapsed_coord = coord.collapsed(1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
+
+    def test_numeric_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
+        # ... and the other..
+        collapsed_coord = coord.collapsed(0)
+        self.assertArrayEqual(
+            collapsed_coord.points, np.array([40, 50, 60, 70]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2, 82],
+                                                                [8,  92],
+                                                                [18, 102],
+                                                                [28, 112]]))
+
+    def test_numeric_nd_bounds_last(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_real)
+        # ... and again with -ve dimension specification.
+        collapsed_coord = coord.collapsed(-1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
+
+    def test_lazy_nd_bounds_all(self):
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
@@ -319,8 +363,39 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         self.assertArrayEqual(collapsed_coord.points, np.array([55]))
         self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
 
+    def test_lazy_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed(1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
+
+    def test_lazy_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed(0)
+        self.assertArrayEqual(
+            collapsed_coord.points, np.array([40, 50, 60, 70]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2, 82],
+                                                                [8,  92],
+                                                                [18, 102],
+                                                                [28, 112]]))
+
+    def test_lazy_nd_bounds_last(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
+
+        collapsed_coord = coord.collapsed(-1)
+        self.assertArrayEqual(collapsed_coord.points, np.array([15,  55,  95]))
+        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2,  32],
+                                                                [38,  72],
+                                                                [78, 112]]))
+
     def test_lazy_nd_points_and_bounds(self):
-        import dask.array as da
 
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
@@ -711,6 +786,71 @@ class Test___str__(tests.IrisTest):
         expected = repr(coord)
         result = coord.__str__()
         self.assertEqual(expected, result)
+
+
+class TestClimatology(tests.IrisTest):
+    # Variety of tests for the climatological property of a coord.
+    # Only using AuxCoord since there is no different behaviour between Aux
+    # and DimCoords for this property.
+
+    def test_create(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        self.assertTrue(coord.climatological)
+
+    def test_create_no_bounds_no_set(self):
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
+            AuxCoord(points=[0, 1], units='days since 1970-01-01',
+                     climatological=True)
+
+    def test_create_no_time_no_set(self):
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                     climatological=True)
+
+    def test_absent(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        self.assertFalse(coord.climatological)
+
+    def test_absent_no_bounds_no_set(self):
+        coord = AuxCoord(points=[0, 1], units='days since 1970-01-01')
+        with six.assertRaisesRegex(self, ValueError,
+                                   'Cannot set.*no bounds exist'):
+            coord.climatological = True
+
+    def test_absent_no_time_no_set(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
+        emsg = 'Cannot set climatological .* valid time reference units.*'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            coord.climatological = True
+
+    def test_absent_no_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1])
+        coord.climatological = False
+        self.assertFalse(coord.climatological)
+
+    def test_bounds_set(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01')
+        coord.climatological = True
+        self.assertTrue(coord.climatological)
+
+    def test_bounds_unset(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        coord.climatological = False
+        self.assertFalse(coord.climatological)
+
+    def test_remove_bounds(self):
+        coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
+                         units='days since 1970-01-01',
+                         climatological=True)
+        coord.bounds = None
+        self.assertFalse(coord.climatological)
 
 
 if __name__ == '__main__':

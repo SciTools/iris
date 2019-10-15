@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -18,6 +18,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -28,6 +29,7 @@ from itertools import repeat
 import os.path
 import shutil
 import tempfile
+from unittest import mock
 import warnings
 
 import netCDF4 as nc
@@ -40,7 +42,6 @@ from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import Saver
 from iris.fileformats.netcdf import UnknownCellMethodWarning
-from iris.tests import mock
 import iris.tests.stock as stock
 
 
@@ -273,6 +274,101 @@ class TestCellMeasures(tests.IrisTest):
                          '    x         x') in printed)
 
 
+@tests.skip_data
+class TestCMIP6VolcelloLoad(tests.IrisTest):
+    def setUp(self):
+        self.fname = tests.get_data_path(
+            ('NetCDF', 'volcello',
+             'volcello_Ofx_CESM2_deforest-globe_r1i1p1f1_gn.nc'))
+
+    def test_cmip6_volcello_load_issue_3367(self):
+        # Ensure that reading a file which references itself in
+        # `cell_measures` can be read. At the same time, ensure that we
+        # still receive a warning about other variables mentioned in
+        # `cell_measures` i.e. a warning should be raised about missing
+        # areacello.
+        areacello_str = "areacello" if six.PY3 else u"areacello"
+        volcello_str = "volcello" if six.PY3 else u"volcello"
+        expected_msg = "Missing CF-netCDF measure variable %r, " \
+                       "referenced by netCDF variable %r" \
+                       % (areacello_str, volcello_str)
+
+        with mock.patch('warnings.warn') as warn:
+            # ensure file loads without failure
+            cube = iris.load_cube(self.fname)
+            warn.assert_has_calls([mock.call(expected_msg)])
+
+        # extra check to ensure correct variable was found
+        assert cube.standard_name == 'ocean_volume'
+
+
+class TestSelfReferencingVarLoad(tests.IrisTest):
+    def setUp(self):
+        self.temp_dir_path = os.path.join(tempfile.mkdtemp(),
+                                          'issue_3367_volcello_test_file.nc')
+        dataset = nc.Dataset(self.temp_dir_path, 'w')
+
+        dataset.createDimension('lat', 4)
+        dataset.createDimension('lon', 5)
+        dataset.createDimension('lev', 3)
+
+        latitudes = dataset.createVariable('lat', np.float64, ('lat',))
+        longitudes = dataset.createVariable('lon', np.float64, ('lon',))
+        levels = dataset.createVariable('lev', np.float64, ('lev',))
+        volcello = dataset.createVariable('volcello', np.float32,
+                                          ('lat', 'lon', 'lev'))
+
+        latitudes.standard_name = 'latitude'
+        latitudes.units = 'degrees_north'
+        latitudes.axis = 'Y'
+        latitudes[:] = np.linspace(-90, 90, 4)
+
+        longitudes.standard_name = 'longitude'
+        longitudes.units = 'degrees_east'
+        longitudes.axis = 'X'
+        longitudes[:] = np.linspace(0, 360, 5)
+
+        levels.standard_name = 'olevel'
+        levels.units = 'centimeters'
+        levels.positive = 'down'
+        levels.axis = 'Z'
+        levels[:] = np.linspace(0, 10**5, 3)
+
+        volcello.id = 'volcello'
+        volcello.out_name = 'volcello'
+        volcello.standard_name = 'ocean_volume'
+        volcello.units = 'm3'
+        volcello.realm = 'ocean'
+        volcello.frequency = 'fx'
+        volcello.cell_measures = 'area: areacello volume: volcello'
+        volcello = np.arange(4*5*3).reshape((4, 5, 3))
+
+        dataset.close()
+
+    def test_self_referencing_load_issue_3367(self):
+        # Ensure that reading a file which references itself in
+        # `cell_measures` can be read. At the same time, ensure that we
+        # still receive a warning about other variables mentioned in
+        # `cell_measures` i.e. a warning should be raised about missing
+        # areacello.
+        areacello_str = "areacello" if six.PY3 else u"areacello"
+        volcello_str = "volcello" if six.PY3 else u"volcello"
+        expected_msg = "Missing CF-netCDF measure variable %r, " \
+                       "referenced by netCDF variable %r" \
+                       % (areacello_str, volcello_str)
+
+        with mock.patch('warnings.warn') as warn:
+            # ensure file loads without failure
+            cube = iris.load_cube(self.temp_dir_path)
+            warn.assert_called_with(expected_msg)
+
+        # extra check to ensure correct variable was found
+        assert cube.standard_name == 'ocean_volume'
+
+    def tearDown(self):
+        os.remove(self.temp_dir_path)
+
+
 class TestCellMethod_unknown(tests.IrisTest):
     def test_unknown_method(self):
         cube = Cube([1, 2], long_name='odd_phenomenon')
@@ -427,6 +523,16 @@ class TestScalarCube(tests.IrisTest):
             iris.save(cube, fout)
             scalar_cube = iris.load_cube(fout)
             self.assertEqual(scalar_cube.name(), 'scalar_cube')
+
+
+class TestStandardName(tests.IrisTest):
+    def test_standard_name_roundtrip(self):
+        standard_name = 'air_temperature detection_minimum'
+        cube = iris.cube.Cube(1, standard_name=standard_name)
+        with self.temp_filename(suffix='.nc') as fout:
+            iris.save(cube, fout)
+            detection_limit_cube = iris.load_cube(fout)
+            self.assertEqual(detection_limit_cube.standard_name, standard_name)
 
 
 if __name__ == "__main__":

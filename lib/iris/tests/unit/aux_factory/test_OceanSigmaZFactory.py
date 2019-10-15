@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,12 +27,13 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 from cf_units import Unit
 import numpy as np
 
 from iris.aux_factory import OceanSigmaZFactory
 from iris.coords import AuxCoord, DimCoord
-from iris.tests import mock
 
 
 class Test___init__(tests.IrisTest):

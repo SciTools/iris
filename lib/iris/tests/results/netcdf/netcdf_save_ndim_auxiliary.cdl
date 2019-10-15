@@ -49,5 +49,5 @@ variables:
 		:history = "Thu Nov 29 10:45:50 2012: /project/ukmo/rhel6/nco/bin/ncks -d time,0,3 new_rotPole_precipitation.nc small_rotPole_precipitation.nc" ;
 		:institution = "DMI" ;
 		:source = "HIRHAM" ;
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

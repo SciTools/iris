@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float32" standard_name="wind_speed" units="m s-1" var_name="wind_speed">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
     </attributes>
     <coords>
       <coord>

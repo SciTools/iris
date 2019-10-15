@@ -47,5 +47,5 @@ variables:
 
 // global attributes:
 		:source = "Data from Met Office Unified Model" ;
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -24,12 +24,14 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+import six
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
 import numpy as np
+import numpy.ma as ma
 
 from iris.tests.unit.coords import (CoordTestMixin,
                                     lazyness_string,
@@ -40,15 +42,15 @@ from iris.coords import DimCoord
 
 class DimCoordTestMixin(CoordTestMixin):
     # Define a 1-D default array shape.
-    def setupTestArrays(self, shape=(3, )):
-        super(DimCoordTestMixin, self).setupTestArrays(shape)
+    def setupTestArrays(self, shape=(3, ), masked=False):
+        super(DimCoordTestMixin, self).setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, DimCoordTestMixin):
     # Test for DimCoord creation, with various combinations of points and
     # bounds = real / lazy / None.
     def setUp(self):
-        self.setupTestArrays()
+        self.setupTestArrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
         for (coord, points_type_name, bounds_type_name) in \
@@ -78,7 +80,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         bds_shape = list(self.bds_real.shape)
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
-        msg = 'The shape of the bounds array should be'
+        msg = "The shape of the 'unknown' DimCoord bounds array should be"
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord(self.pts_real, bounds=bds_wrong)
 
@@ -86,6 +88,78 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         msg = 'must be strictly monotonic'
         with self.assertRaisesRegexp(ValueError, msg):
             DimCoord([1, 2, 0, 3])
+
+    def test_no_masked_pts_real(self):
+        data = self.no_masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = DimCoord(data)
+        self.assertFalse(coord.has_lazy_points())
+        self.assertFalse(ma.isMaskedArray(coord.points))
+        self.assertEqual(ma.count_masked(coord.points), 0)
+
+    def test_no_masked_pts_lazy(self):
+        data = self.no_masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = DimCoord(data)
+        # DimCoord always realises its points.
+        self.assertFalse(coord.has_lazy_points())
+        self.assertFalse(ma.isMaskedArray(coord.points))
+
+    def test_masked_pts_real(self):
+        data = self.masked_pts_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        emsg = 'points array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(data)
+
+    def test_masked_pts_lazy(self):
+        data = self.masked_pts_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        emsg = 'points array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(data)
+
+    def test_no_masked_bds_real(self):
+        data = self.no_masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertEqual(ma.count_masked(data), 0)
+        coord = DimCoord(self.pts_real, bounds=data)
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertFalse(ma.isMaskedArray(coord.bounds))
+        self.assertEqual(ma.count_masked(coord.bounds), 0)
+
+    def test_no_masked_bds_lazy(self):
+        data = self.no_masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertEqual(ma.count_masked(computed), 0)
+        coord = DimCoord(self.pts_real, bounds=data)
+        # DimCoord always realises its bounds.
+        self.assertFalse(coord.has_lazy_bounds())
+        self.assertFalse(ma.isMaskedArray(coord.bounds))
+
+    def test_masked_bds_real(self):
+        data = self.masked_bds_real
+        self.assertTrue(ma.isMaskedArray(data))
+        self.assertTrue(ma.count_masked(data))
+        emsg = 'bounds array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(self.pts_real, bounds=data)
+
+    def test_masked_bds_lazy(self):
+        data = self.masked_bds_lazy
+        computed = data.compute()
+        self.assertTrue(ma.isMaskedArray(computed))
+        self.assertTrue(ma.count_masked(computed))
+        emsg = 'bounds array must not be masked'
+        with six.assertRaisesRegex(self, TypeError, emsg):
+            DimCoord(self.pts_real, bounds=data)
 
 
 class Test_core_points(tests.IrisTest, DimCoordTestMixin):
@@ -452,7 +526,7 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
-        msg = 'The shape of the bounds array should be'
+        msg = "The shape of the 'unknown' DimCoord bounds array should be"
         with self.assertRaisesRegexp(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
         self.assertArrayEqual(coord.bounds, self.bds_real)

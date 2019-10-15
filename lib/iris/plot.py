@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -741,7 +741,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     _string_coord_axis_tick_labels(string_axes, axes)
 
     # Invert y-axis if necessary.
-    _invert_yaxis(v_object)
+    _invert_yaxis(v_object, axes)
 
     return result
 
@@ -821,6 +821,21 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     return new_kwargs
 
 
+def _check_geostationary_coords_and_convert(x, y, kwargs):
+    # Geostationary stores projected coordinates as scanning angles (
+    # radians), in line with CF definition (this behaviour is unique to
+    # Geostationary). Before plotting, must be converted by multiplying by
+    # satellite height.
+    x, y = (i.copy() for i in (x, y))
+    transform = kwargs.get('transform')
+    if isinstance(transform, cartopy.crs.Geostationary):
+        satellite_height = transform.proj4_params['h']
+        for i in (x, y):
+            i *= satellite_height
+
+    return x, y
+
+
 def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
                 *args, **kwargs):
     """
@@ -873,11 +888,18 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
+        if '_v_data' in kwargs:
+            v_data = kwargs['_v_data']
+            v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
+            kwargs['_v_data'] = v_data
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
     kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord,
                                                        kwargs)
+
+    # Make Geostationary coordinates plot-able.
+    x, y = _check_geostationary_coords_and_convert(x, y, kwargs)
 
     if arg_func is not None:
         new_args, kwargs = arg_func(x, y, data, *args, **kwargs)

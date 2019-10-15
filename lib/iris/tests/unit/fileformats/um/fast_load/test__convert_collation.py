@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import cf_units
 import cftime
 import numpy as np
@@ -34,7 +36,6 @@ import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
-from iris.tests import mock
 
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)

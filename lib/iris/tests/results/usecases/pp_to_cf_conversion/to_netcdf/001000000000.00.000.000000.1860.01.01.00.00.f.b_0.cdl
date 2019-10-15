@@ -38,5 +38,5 @@ variables:
 	double time_bnds(bnds) ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

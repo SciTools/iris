@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# (C) British Crown Copyright 2015 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -72,18 +72,6 @@ class Tests(tests.IrisTest):
         self.measure.data = new_vals
         self.assertArrayEqual(self.measure.data, new_vals)
 
-    def test_set_data__int__lazy(self):
-        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.int32))
-        exp_emsg = "Cannot create cell measure with lazy data of type int32"
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
-            self.measure.data = new_vals
-
-    def test_set_data__uint__lazy(self):
-        new_vals = as_lazy_data(np.array((1, 2, 3, 4), dtype=np.uint32))
-        exp_emsg = "Cannot create cell measure with lazy data of type uint32"
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
-            self.measure.data = new_vals
-
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
         msg = 'New data shape must match existing data shape.'
@@ -132,6 +120,9 @@ class Tests(tests.IrisTest):
                     "units=Unit('m^2'), long_name='measured_area', "
                     "var_name='area', attributes={'notes': '1m accuracy'})")
         self.assertEqual(self.measure.__repr__(), expected)
+
+    def test__eq__(self):
+        self.assertEqual(self.measure, self.measure)
 
 if __name__ == '__main__':
     tests.main()

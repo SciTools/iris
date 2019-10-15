@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -16,11 +16,11 @@
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.
 #
 # DO NOT EDIT: AUTO-GENERATED
-# Created on 01 June 2018 13:06 from 
+# Created on 22 May 2019 12:05 from 
 # http://www.metarelate.net/metOcean
-# at commit c07efb7ba0442332cbd5514c9d661c4f84a635c6
+# at commit a3649e942198f014f0258d926678dbbff616feae
 
-# https://github.com/metarelate/metOcean/commit/c07efb7ba0442332cbd5514c9d661c4f84a635c6
+# https://github.com/metarelate/metOcean/commit/a3649e942198f014f0258d926678dbbff616feae
 
 """
 Provides UM/CF phenomenon translations.
@@ -720,7 +720,7 @@ STASH_TO_CF = {
     'm01s16i202': CFName('geopotential_height', None, 'm'),
     'm01s16i203': CFName('air_temperature', None, 'K'),
     'm01s16i204': CFName('relative_humidity', None, '%'),
-    'm01s16i205': CFName(None, 'wet_bulb_potential_temperature', 'K'),
+    'm01s16i205': CFName('wet_bulb_potential_temperature', None, 'K'),
     'm01s16i222': CFName('air_pressure_at_sea_level', None, 'Pa'),
     'm01s16i224': CFName(None, 'square_of_height', 'm2'),
     'm01s16i255': CFName('geopotential_height', None, 'm'),

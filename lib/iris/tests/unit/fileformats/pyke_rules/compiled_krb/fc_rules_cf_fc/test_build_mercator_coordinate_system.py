@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,13 +27,14 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 
 import iris
 from iris.coord_systems import Mercator
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_mercator_coordinate_system
-from iris.tests import mock
 
 
 class TestBuildMercatorCoordinateSystem(tests.IrisTest):

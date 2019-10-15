@@ -25,13 +25,13 @@ from copy import deepcopy
 import os
 from types import GeneratorType
 import unittest
+from unittest import mock
 
 import cftime
 from numpy.testing import assert_array_equal
 
 import iris.fileformats
 import iris.fileformats.pp as pp
-from iris.tests import mock
 import iris.util
 
 @tests.skip_data

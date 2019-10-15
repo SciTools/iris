@@ -50,7 +50,11 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import collections
+from collections import OrderedDict
+try:  # Python 3
+    from collections.abc import Iterable
+except ImportError:  # Python 2.7
+    from collections import Iterable
 from functools import wraps
 
 import dask.array as da
@@ -62,7 +66,7 @@ import scipy.stats.mstats
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (EXTRAPOLATION_MODES,
                                           RectilinearInterpolator)
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, CurvilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
 import iris._lazy_data
@@ -715,7 +719,7 @@ class PercentileAggregator(_Aggregator):
         names = [coord.name() for coord in coords]
         coord_name = '{}_over_{}'.format(self.name(), '_'.join(names))
 
-        if not isinstance(points, collections.Iterable):
+        if not isinstance(points, Iterable):
             points = [points]
 
         # Decorate a collapsed cube with a scalar additive coordinate
@@ -764,7 +768,7 @@ class PercentileAggregator(_Aggregator):
         points = kwargs[self._args[0]]
         shape = ()
 
-        if not isinstance(points, collections.Iterable):
+        if not isinstance(points, Iterable):
             points = [points]
 
         points = np.array(points)
@@ -1089,7 +1093,7 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
 
     # Ensure to unflatten any leading dimensions.
     if shape:
-        if not isinstance(percent, collections.Iterable):
+        if not isinstance(percent, Iterable):
             percent = [percent]
         percent = np.array(percent)
         # Account for the additive dimension.
@@ -1207,7 +1211,7 @@ def _weighted_percentile(data, axis, weights, percent, returned=False,
 
     # Ensure to unflatten any leading dimensions.
     if shape:
-        if not isinstance(percent, collections.Iterable):
+        if not isinstance(percent, Iterable):
             percent = [percent]
         percent = np.array(percent)
         # Account for the additive dimension.
@@ -1486,7 +1490,7 @@ This aggregator handles masked data.
 
 
 MEAN = WeightedAggregator('mean', ma.average,
-                          lazy_func=_build_dask_mdtol_function(da.mean))
+                          lazy_func=_build_dask_mdtol_function(da.ma.average))
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1526,7 +1530,7 @@ To compute a weighted area average::
 
 .. note::
 
-    Lazy operation is supported, via :func:`dask.array.nanmean`.
+    Lazy operation is supported, via :func:`dask.array.ma.average`.
 
 This aggregator handles masked data.
 
@@ -1877,10 +1881,10 @@ class _Groupby(object):
         self.coords = []
         self._groupby_coords = []
         self._shared_coords = []
-        self._slices_by_key = collections.OrderedDict()
+        self._slices_by_key = OrderedDict()
         self._stop = None
         # Ensure group-by coordinates are iterable.
-        if not isinstance(groupby_coords, collections.Iterable):
+        if not isinstance(groupby_coords, Iterable):
             raise TypeError('groupby_coords must be a '
                             '`collections.Iterable` type.')
 
@@ -1891,7 +1895,7 @@ class _Groupby(object):
         # coordinates.
         if shared_coords is not None:
             # Ensure shared coordinates are iterable.
-            if not isinstance(shared_coords, collections.Iterable):
+            if not isinstance(shared_coords, Iterable):
                 raise TypeError('shared_coords must be a '
                                 '`collections.Iterable` type.')
             # Add valid shared coordinates.
@@ -2556,3 +2560,67 @@ class UnstructuredNearest(object):
         from iris.analysis.trajectory import \
             UnstructuredNearestNeigbourRegridder
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
+
+
+class PointInCell(object):
+    """
+    This class describes the point-in-cell regridding scheme for use
+    typically with :meth:`iris.cube.Cube.regrid()`.
+
+    The PointInCell regridder can regrid data from a source grid of any
+    dimensionality and in any coordinate system.
+    The location of each source point is specified by X and Y coordinates
+    mapped over the same cube dimensions, aka "grid dimensions" : the grid may
+    have any dimensionality.  The X and Y coordinates must also have the same,
+    defined coord_system.
+    The weights, if specified, must have the same shape as the X and Y
+    coordinates.
+    The output grid can be any 'normal' XY grid, specified by *separate* X
+    and Y coordinates :  That is, X and Y have two different cube dimensions.
+    The output X and Y coordinates must also have a common, specified
+    coord_system.
+
+    """
+    def __init__(self, weights=None):
+        """
+        Point-in-cell regridding scheme suitable for regridding over one
+        or more orthogonal coordinates.
+
+        Optional Args:
+
+        * weights:
+            A :class:`numpy.ndarray` instance that defines the weights
+            for the grid cells of the source grid. Must have the same shape
+            as the data of the source grid.
+            If unspecified, equal weighting is assumed.
+
+        """
+        self.weights = weights
+
+    def regridder(self, src_grid, target_grid):
+        """
+        Creates a point-in-cell regridder to perform regridding from the
+        source grid to the target grid.
+
+        Typically you should use :meth:`iris.cube.Cube.regrid` for
+        regridding a cube. There are, however, some situations when
+        constructing your own regridder is preferable. These are detailed in
+        the :ref:`user guide <caching_a_regridder>`.
+
+        Args:
+
+        * src_grid:
+            The :class:`~iris.cube.Cube` defining the source grid.
+        * target_grid:
+            The :class:`~iris.cube.Cube` defining the target grid.
+
+        Returns:
+            A callable with the interface:
+
+                `callable(cube)`
+
+            where `cube` is a cube with the same grid as `src_grid`
+            that is to be regridded to the `target_grid`.
+
+        """
+        return CurvilinearRegridder(src_grid, target_grid, self.weights)

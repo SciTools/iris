@@ -17,5 +17,5 @@ variables:
 		time_0:standard_name = "time" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

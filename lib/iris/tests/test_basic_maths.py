@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -291,15 +291,17 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
 
     def test_ifunc_init_fail(self):
+        import six
 
         # should fail because 'blah' is a string not a python function
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
                           lambda cube: cf_units.Unit('1'))
 
-        # should fail because math.sqrt is built-in function, which can not be
-        # used in inspect.getargspec
-        self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
-                          lambda cube: cf_units.Unit('1'))
+        if six.PY2:
+            # should fail because math.sqrt is built-in function, which cannot
+            # be used in inspect.getargspec
+            self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
+                              lambda cube: cf_units.Unit('1'))
 
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
@@ -594,14 +596,13 @@ class TestIFunc(tests.IrisTest):
         def vec_mag_data_func(u_data, v_data):
             return np.sqrt( u_data**2 + v_data**2 )
 
-        vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func, lambda a,b: (a + b).units)
+        vec_mag_ifunc = iris.analysis.maths.IFunc(vec_mag_data_func,
+                                                  lambda a, b: (a + b).units)
         b2 = vec_mag_ifunc(a, c)
 
         self.assertArrayAlmostEqual(b.data, b2.data)
 
-        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum,
-                   lambda a: a.units
-                   )
+        cs_ifunc = iris.analysis.maths.IFunc(np.cumsum, lambda a: a.units)
 
         b = cs_ifunc(a, axis=1)
         ans = a.data.copy()

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017 - 2018, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,8 +27,9 @@ from functools import wraps
 
 import dask
 import dask.array as da
-import dask.context
-from dask.local import get_sync as dget_sync
+import dask.config
+import dask.utils
+
 import numpy as np
 import numpy.ma as ma
 
@@ -58,26 +59,104 @@ def is_lazy_data(data):
     return result
 
 
-# A magic value, chosen to minimise chunk creation time and chunk processing
-# time within dask.
-_MAX_CHUNK_SIZE = 8 * 1024 * 1024 * 2
+def _optimum_chunksize(chunks, shape,
+                       limit=None,
+                       dtype=np.dtype('f4')):
+    """
+    Reduce or increase an initial chunk shape to get close to a chosen ideal
+    size, while prioritising the splitting of the earlier (outer) dimensions
+    and keeping intact the later (inner) ones.
 
+    Args:
 
-def _limited_shape(shape):
-    # Reduce a shape to less than a default overall number-of-points, reducing
-    # earlier dimensions preferentially.
-    # Note: this is only a heuristic, assuming that earlier dimensions are
-    # 'outer' storage dimensions -- not *always* true, even for NetCDF data.
-    shape = list(shape)
-    i_reduce = 0
-    while np.prod(shape) > _MAX_CHUNK_SIZE:
-        factor = np.ceil(np.prod(shape) / _MAX_CHUNK_SIZE)
-        new_dim = int(shape[i_reduce] / factor)
-        if new_dim < 1:
-            new_dim = 1
-        shape[i_reduce] = new_dim
-        i_reduce += 1
-    return tuple(shape)
+    * chunks (tuple of int, or None):
+        Pre-existing chunk shape of the target data : None if unknown.
+    * shape (tuple of int):
+        The full array shape of the target data.
+    * limit (int):
+        The 'ideal' target chunk size, in bytes.  Default from dask.config.
+    * dtype (np.dtype):
+        Numpy dtype of target data.
+
+    Returns:
+    * chunk (tuple of int):
+        The proposed shape of one full chunk.
+
+    .. note::
+        The purpose of this is very similar to
+        `dask.array.core.normalize_chunks`, when called as
+        `(chunks='auto', shape, dtype=dtype, previous_chunks=chunks, ...)`.
+        Except, the operation here is optimised specifically for a 'c-like'
+        dimension order, i.e. outer dimensions first, as for netcdf variables.
+        So if, in future, this policy can be implemented in dask, then we would
+        prefer to replace this function with a call to that one.
+        Accordingly, the arguments roughly match 'normalize_chunks', except
+        that we don't support the alternative argument forms of that routine.
+        The return value, however, is a single 'full chunk', rather than a
+        complete chunking scheme : so an equivalent code usage could be
+        "chunks = [c[0] for c in normalise_chunks('auto', ...)]".
+
+    """
+    # Set the chunksize limit.
+    if limit is None:
+        # Fetch the default 'optimal' chunksize from the dask config.
+        limit = dask.config.get('array.chunk-size')
+        # Convert to bytes
+        limit = dask.utils.parse_bytes(limit)
+
+    point_size_limit = limit / dtype.itemsize
+
+    # Create result chunks, starting with a copy of the input.
+    result = list(chunks)
+
+    if np.prod(result) < point_size_limit:
+        # If size is less than maximum, expand the chunks, multiplying later
+        # (i.e. inner) dims first.
+        i_expand = len(shape) - 1
+        while np.prod(result) < point_size_limit and i_expand >= 0:
+            factor = np.floor(point_size_limit * 1.0 / np.prod(result))
+            new_dim = result[i_expand] * int(factor)
+            if new_dim >= shape[i_expand]:
+                # Clip to dim size : chunk dims must not exceed the full shape.
+                new_dim = shape[i_expand]
+            else:
+                # 'new_dim' is less than the relevant dim of 'shape' -- but it
+                # is also the largest possible multiple of the input-chunks,
+                # within the size limit.
+                # So : 'i_expand' is the outer (last) dimension over which we
+                # will multiply the input chunks, and 'new_dim' is a value that
+                # ensures the fewest possible chunks within that dim.
+
+                # Now replace 'new_dim' with the value **closest to equal-size
+                # chunks**, for the same (minimum) number of chunks.
+                # More-equal chunks are practically better.
+                # E.G. : "divide 8 into multiples of 2, with a limit of 7",
+                # produces new_dim=6, which would mean chunks of sizes (6, 2).
+                # But (4, 4) is clearly better for memory and time cost.
+
+                # Calculate how many (expanded) chunks fit into this dimension.
+                dim_chunks = np.ceil(shape[i_expand] * 1. / new_dim)
+                # Get "ideal" (equal) size for that many chunks.
+                ideal_equal_chunk_size = shape[i_expand] / dim_chunks
+                # Use the nearest whole multiple of input chunks >= ideal.
+                new_dim = int(result[i_expand] *
+                              np.ceil(ideal_equal_chunk_size /
+                                      result[i_expand]))
+
+            result[i_expand] = new_dim
+            i_expand -= 1
+    else:
+        # Similarly, reduce if too big, reducing earlier (outer) dims first.
+        i_reduce = 0
+        while np.prod(result) > point_size_limit:
+            factor = np.ceil(np.prod(result) / point_size_limit)
+            new_dim = int(result[i_reduce] / factor)
+            if new_dim < 1:
+                new_dim = 1
+            result[i_reduce] = new_dim
+            i_reduce += 1
+
+    return tuple(result)
 
 
 def as_lazy_data(data, chunks=None, asarray=False):
@@ -86,29 +165,41 @@ def as_lazy_data(data, chunks=None, asarray=False):
 
     Args:
 
-    * data:
-        An array. This will be converted to a dask array.
+    * data (array-like):
+        An indexable object with 'shape', 'dtype' and 'ndim' properties.
+        This will be converted to a dask array.
 
     Kwargs:
 
-    * chunks:
-        Describes how the created dask array should be split up. Defaults to a
-        value first defined in biggus (being `8 * 1024 * 1024 * 2`).
-        For more information see
-        http://dask.pydata.org/en/latest/array-creation.html#chunks.
+    * chunks (list of int):
+        If present, a source chunk shape, e.g. for a chunked netcdf variable.
 
-    * asarray:
+    * asarray (bool):
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
 
     Returns:
         The input array converted to a dask array.
 
+    .. note::
+        The result chunk size is a multiple of 'chunks', if given, up to the
+        dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
+        or the full data shape if that is smaller.
+        If 'chunks' is not given, the result has chunks of the full data shape,
+        but reduced by a factor if that exceeds the dask default chunksize.
+
     """
     if chunks is None:
-        # Default to the shape of the wrapped array-like,
-        # but reduce it if larger than a default maximum size.
-        chunks = _limited_shape(data.shape)
+        # No existing chunks : Make a chunk the shape of the entire input array
+        # (but we will subdivide it if too big).
+        chunks = list(data.shape)
+
+    # Adjust chunk size for better dask performance,
+    # NOTE: but only if no shape dimension is zero, so that we can handle the
+    # PPDataProxy of "raw" landsea-masked fields, which have a shape of (0, 0).
+    if all(elem > 0 for elem in data.shape):
+        # Expand or reduce the basic chunk shape to an optimum size.
+        chunks = _optimum_chunksize(chunks, shape=data.shape, dtype=data.dtype)
 
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,10 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import collections
+try:  # Python 3
+    from collections.abc import Iterable, Mapping
+except ImportError:  # Python 2.7
+    from collections import Iterable, Mapping
 import operator
 
 import numpy as np
@@ -98,7 +101,7 @@ class Constraint(object):
             raise TypeError('cube_func must be None or callable, got %r'
                             % cube_func)
         if not (coord_values is None or isinstance(coord_values,
-                                                   collections.Mapping)):
+                                                   Mapping)):
             raise TypeError('coord_values must be None or a '
                             'collections.Mapping, got %r' % coord_values)
 
@@ -258,7 +261,7 @@ class _CoordConstraint(object):
         try_quick = False
         if callable(self._coord_thing):
             call_func = self._coord_thing
-        elif (isinstance(self._coord_thing, collections.Iterable) and
+        elif (isinstance(self._coord_thing, Iterable) and
                 not isinstance(self._coord_thing,
                                (six.string_types, iris.coords.Cell))):
             desired_values = list(self._coord_thing)

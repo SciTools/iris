@@ -24,7 +24,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractproperty
-import collections
+from collections import namedtuple
+try:  # Python 3
+    from collections.abc import Iterator
+except ImportError:  # Python 2.7
+    from collections import Iterator
 import copy
 from itertools import chain
 from six.moves import zip_longest
@@ -48,10 +52,11 @@ from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
 
 
-class CoordDefn(collections.namedtuple('CoordDefn',
-                                       ['standard_name', 'long_name',
-                                        'var_name', 'units',
-                                        'attributes', 'coord_system'])):
+class CoordDefn(namedtuple('CoordDefn',
+                           ['standard_name', 'long_name',
+                            'var_name', 'units',
+                            'attributes', 'coord_system',
+                            'climatological'])):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
     :class:`AuxCoord` based on its metadata.
@@ -86,11 +91,11 @@ class CoordDefn(collections.namedtuple('CoordDefn',
         return _sort_key(self) < _sort_key(other)
 
 
-class CoordExtent(collections.namedtuple('_CoordExtent', ['name_or_coord',
-                                                          'minimum',
-                                                          'maximum',
-                                                          'min_inclusive',
-                                                          'max_inclusive'])):
+class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
+                                              'minimum',
+                                              'maximum',
+                                              'min_inclusive',
+                                              'max_inclusive'])):
     """Defines a range of values for a coordinate."""
 
     def __new__(cls, name_or_coord, minimum, maximum,
@@ -139,8 +144,8 @@ BOUND_POSITION_END = 1
 
 
 # Private named tuple class for coordinate groups.
-_GroupbyItem = collections.namedtuple('GroupbyItem',
-                                      'groupby_point, groupby_slice')
+_GroupbyItem = namedtuple('GroupbyItem',
+                          'groupby_point, groupby_slice')
 
 
 def _get_2d_coord_bound_grid(bounds):
@@ -184,7 +189,7 @@ def _get_2d_coord_bound_grid(bounds):
     return result
 
 
-class Cell(collections.namedtuple('Cell', ['point', 'bound'])):
+class Cell(namedtuple('Cell', ['point', 'bound'])):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -444,8 +449,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     _MODE_RDIV: '/'}
 
     def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None):
+                 var_name=None, units='1', bounds=None,
+                 attributes=None, coord_system=None,
+                 climatological=False):
 
         """
         Constructs a single coordinate.
@@ -473,13 +479,23 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             points.shape + (n,). For example, a 1d coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
+            Note if the data is a climatology, `climatological`
+            should be set.
         * attributes
             A dictionary containing other cf and user-defined attributes.
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
-
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
+            '<coordinate-name>_climatology' in place of a standard bounds
+            attribute and bounds variable.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
         """
         #: CF standard name of the quantity that the coordinate represents.
         self.standard_name = standard_name
@@ -505,6 +521,7 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         self._bounds_dm = None
         self.points = points
         self.bounds = bounds
+        self.climatological = climatological
 
     def __getitem__(self, keys):
         """
@@ -593,7 +610,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             kwargs['circular'] = getattr(coord, 'circular', False)
         return cls(**kwargs)
 
-    def _sanitise_array(self, src, ndmin):
+    @staticmethod
+    def _sanitise_array(src, ndmin):
         if _lazy.is_lazy_data(src):
             # Lazy data : just ensure ndmin requirement.
             ndims_missing = ndmin - src.ndim
@@ -609,17 +627,20 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             result = np.require(src, requirements='W')
             # Ensure the array has enough dimensions.
             # NB. Returns the *same object* if result.ndim >= ndmin
-            result = np.array(result, ndmin=ndmin, copy=False)
+            func = ma.array if ma.isMaskedArray(result) else np.array
+            result = func(result, ndmin=ndmin, copy=False)
             # We don't need to copy the data, but we do need to have our
             # own view so we can control the shape, etc.
             result = result.view()
         return result
 
-    def _points_getter(self):
+    @property
+    def points(self):
         """The coordinate points values as a NumPy array."""
         return self._points_dm.data.view()
 
-    def _points_setter(self, points):
+    @points.setter
+    def points(self, points):
         # Set the points to a new array - as long as it's the same shape.
 
         # Ensure points has an ndmin of 1 and is either a numpy or lazy array.
@@ -633,9 +654,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         else:
             self._points_dm.data = points
 
-    points = property(_points_getter, _points_setter)
-
-    def _bounds_getter(self):
+    @property
+    def bounds(self):
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -649,10 +669,12 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             bounds = self._bounds_dm.data.view()
         return bounds
 
-    def _bounds_setter(self, bounds):
+    @bounds.setter
+    def bounds(self, bounds):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
+            self._climatological = False
         else:
             bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
@@ -665,7 +687,34 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             else:
                 self._bounds_dm.data = bounds
 
-    bounds = property(_bounds_getter, _bounds_setter)
+    @property
+    def climatological(self):
+        """
+        A boolean that controls whether the coordinate is a climatological
+        time axis, in which case the bounds represent a climatological period
+        rather than a normal period.
+
+        Always reads as False if there are no bounds.
+        On set, the input value is cast to a boolean, exceptions raised
+        if units are not time units or if there are no bounds.
+        """
+        return self._climatological if self.has_bounds() else False
+
+    @climatological.setter
+    def climatological(self, value):
+        # Ensure the bounds are a compatible shape.
+        value = bool(value)
+        if value:
+            if not self.units.is_time_reference():
+                emsg = ("Cannot set climatological coordinate, does not have"
+                        " valid time reference units, got {!r}.")
+                raise TypeError(emsg.format(self.units))
+
+            if not self.has_bounds():
+                emsg = "Cannot set climatological coordinate, no bounds exist."
+                raise ValueError(emsg)
+
+        self._climatological = value
 
     def lazy_points(self):
         """
@@ -758,6 +807,9 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             fmt += ', attributes={self.attributes}'
         if self.coord_system:
             fmt += ', coord_system={self.coord_system}'
+        if self.climatological:
+            fmt += ', climatological={' \
+                   'self.climatological}'
         result = fmt.format(self=self)
         return result
 
@@ -837,7 +889,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
-                         self.units, self.attributes, self.coord_system)
+                         self.units, self.attributes, self.coord_system,
+                         self.climatological)
         return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1268,21 +1321,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         """
         Return the single :class:`Cell` instance which results from slicing the
         points/bounds with the given index.
-
-        .. note::
-
-            If `iris.FUTURE.cell_datetime_objects` is True, then this
-            method will return Cell objects whose `points` and `bounds`
-            attributes contain either datetime.datetime instances or
-            cftime.datetime instances (depending on the calendar).
-
-        .. deprecated:: 2.0.0
-
-            The option `iris.FUTURE.cell_datetime_objects` is deprecated and
-            will be removed in a future release; it is now set to True by
-            default. Please update your code to support using cells as
-            datetime objects.
-
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
@@ -1295,18 +1333,10 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.has_bounds():
             bound = tuple(np.array(self.bounds[index], ndmin=1).flatten())
 
-        if iris.FUTURE.cell_datetime_objects:
-            if self.units.is_time_reference():
-                point = self.units.num2date(point)
-                if bound is not None:
-                    bound = self.units.num2date(bound)
-        else:
-            wmsg = ("disabling cells as datetime objects is deprecated "
-                    "behaviour. "
-                    "Please update your code to support using cells as "
-                    "datetime objects."
-                    "See the userguide section 2.2.1 for examples of this.")
-            warn_deprecated(wmsg)
+        if self.units.is_time_reference():
+            point = self.units.num2date(point)
+            if bound is not None:
+                bound = self.units.num2date(bound)
 
         return Cell(point, bound)
 
@@ -1356,16 +1386,22 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
                     'Metadata may not be fully descriptive for {!r}.'
                 warnings.warn(msg.format(self.name()))
 
-            # Determine the array library for stacking
-            al = da if self.has_bounds() \
-                and _lazy.is_lazy_data(self.core_bounds()) else np
+            if self.has_bounds():
+                item = self.core_bounds()
+                if dims_to_collapse is not None:
+                    # Express main dims_to_collapse as non-negative integers
+                    # and add the last (bounds specific) dimension.
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse) + (-1,)
+            else:
+                item = self.core_points()
 
-            item = al.concatenate(self.core_bounds()) if self.has_bounds() \
-                else self.core_points()
+            # Determine the array library for stacking
+            al = da if _lazy.is_lazy_data(item) else np
 
             # Calculate the bounds and points along the right dims
             bounds = al.stack([item.min(axis=dims_to_collapse),
-                               item.max(axis=dims_to_collapse)]).T
+                               item.max(axis=dims_to_collapse)], axis=-1)
             points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
 
             # Create the new collapsed coordinate.
@@ -1388,22 +1424,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         .. note::
 
             This method only works for coordinates with ``coord.ndim == 1``.
-
-        .. note::
-
-            If `iris.FUTURE.clip_latitudes` is True, then this method
-            will clip the coordinate bounds to the range [-90, 90] when:
-
-            - it is a `latitude` or `grid_latitude` coordinate,
-            - the units are degrees,
-            - all the points are in the range [-90, 90].
-
-        .. deprecated:: 2.0.0
-
-            The `iris.FUTURE.clip_latitudes` option is now deprecated
-            and is set to True by default. Please remove code which
-            relies on coordinate bounds being outside the range
-            [-90, 90].
 
         """
         # XXX Consider moving into DimCoord
@@ -1440,18 +1460,11 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if iris.FUTURE.clip_latitudes:
-            if (self.name() in ('latitude', 'grid_latitude') and
-                    self.units == 'degree'):
-                points = self.points
-                if (points >= -90).all() and (points <= 90).all():
-                    np.clip(bounds, -90, 90, out=bounds)
-        else:
-            wmsg = ("guessing latitude bounds outside of [-90, 90] is "
-                    "deprecated behaviour. "
-                    "All latitude points will be clipped to the range "
-                    "[-90, 90].")
-            warn_deprecated(wmsg)
+        if (self.name() in ('latitude', 'grid_latitude') and
+                self.units == 'degree'):
+            points = self.points
+            if (points >= -90).all() and (points <= 90).all():
+                np.clip(bounds, -90, 90, out=bounds)
 
         return bounds
 
@@ -1484,22 +1497,6 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
             Unevenly spaced values, such from a wrapped longitude range, can
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
-
-        .. note::
-
-            If `iris.FUTURE.clip_latitudes` is True, then this method
-            will clip the coordinate bounds to the range [-90, 90] when:
-
-            - it is a `latitude` or `grid_latitude` coordinate,
-            - the units are degrees,
-            - all the points are in the range [-90, 90].
-
-        .. deprecated:: 2.0.0
-
-            The `iris.FUTURE.clip_latitudes` option is now deprecated
-            and is set to True by default. Please remove code which
-            relies on coordinate bounds being outside the range
-            [-90, 90].
 
         """
         self.bounds = self._guess_bounds(bound_position)
@@ -1656,6 +1653,8 @@ class Coord(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if self.var_name:
             element.setAttribute('var_name', str(self.var_name))
         element.setAttribute('units', repr(self.units))
+        if self.climatological:
+            element.setAttribute('climatological', str(self.climatological))
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
@@ -1784,18 +1783,21 @@ class DimCoord(Coord):
                    coord_system=coord_system, circular=circular)
 
     def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None, attributes=None,
-                 coord_system=None, circular=False):
+                 var_name=None, units='1', bounds=None,
+                 attributes=None, coord_system=None, circular=False,
+                 climatological=False):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
 
         """
-        super(DimCoord, self).__init__(points, standard_name=standard_name,
-                                       long_name=long_name, var_name=var_name,
-                                       units=units, bounds=bounds,
-                                       attributes=attributes,
-                                       coord_system=coord_system)
+        super(DimCoord, self).__init__(
+            points, standard_name=standard_name,
+            long_name=long_name, var_name=var_name,
+            units=units, bounds=bounds,
+            attributes=attributes,
+            coord_system=coord_system,
+            climatological=climatological)
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
@@ -1869,30 +1871,40 @@ class DimCoord(Coord):
         Confirm that a new set of coord points adheres to the requirements for
         :class:`~iris.coords.DimCoord` points, being:
             * points are scalar or 1D,
-            * points are numeric, and
+            * points are numeric,
+            * points are not masked, and
             * points are monotonic.
 
         """
         if points.ndim not in (0, 1):
-            raise ValueError(
-                'The points array must be scalar or 1-dimensional.')
+            emsg = 'The {!r} {} points array must be scalar or 1-dimensional.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         if not np.issubdtype(points.dtype, np.number):
-            raise ValueError('The points array must be numeric.')
+            emsg = 'The {!r} {} points array must be numeric.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        if ma.is_masked(points):
+            emsg = 'A {!r} {} points array must not be masked.'
+            raise TypeError(emsg.format(self.name(), self.__class__.__name__))
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
-            raise ValueError('The points array must be strictly monotonic.')
+            emsg = 'The {!r} {} points array must be strictly monotonic.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
 
-    def _points_setter(self, points):
+    @Coord.points.setter
+    def points(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
         # can make it read-only.
         points = _lazy.as_concrete_data(points)
-        points = np.array(points)
+        # Make sure that we have an array (any type of array).
+        points = np.asanyarray(points)
 
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
+        # Cast to a numpy array for masked arrays with no mask.
+        points = np.array(points)
 
-        # Invoke the generic points setter.
-        super(DimCoord, self)._points_setter(points)
+        # Call the parent points setter.
+        super(DimCoord, self.__class__).points.fset(self, points)
 
         if self._points_dm is not None:
             # Re-fetch the core array, as the super call may replace it.
@@ -1902,27 +1914,32 @@ class DimCoord(Coord):
             # Make the array read-only.
             points.flags.writeable = False
 
-    points = property(Coord._points_getter, _points_setter)
-
     def _new_bounds_requirements(self, bounds):
         """
         Confirm that a new set of coord bounds adheres to the requirements for
         :class:`~iris.coords.DimCoord` bounds, being:
             * bounds are compatible in shape with the points
-            * bounds are numeric, and
+            * bounds are numeric,
+            * bounds are not masked, and
             * bounds are monotonic in the first dimension.
 
         """
         # Ensure the bounds are a compatible shape.
         if self.shape != bounds.shape[:-1] and \
                 not (self.shape == (1,) and bounds.ndim == 1):
-            raise ValueError(
-                "The shape of the bounds array should be "
-                "points.shape + (n_bounds,)")
-        # Checks for numeric and monotonic.
+            emsg = ('The shape of the {!r} {} bounds array should be '
+                    'points.shape + (n_bounds)')
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        # Checks for numeric.
         if not np.issubdtype(bounds.dtype, np.number):
-            raise ValueError('The bounds array must be numeric.')
+            emsg = 'The {!r} {} bounds array must be numeric.'
+            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+        # Check not masked.
+        if ma.is_masked(bounds):
+            emsg = 'A {!r} {} bounds array must not be masked.'
+            raise TypeError(emsg.format(self.name(), self.__class__.__name__))
 
+        # Check bounds are monotonic.
         if bounds.ndim > 1:
             n_bounds = bounds.shape[-1]
             n_points = bounds.shape[0]
@@ -1933,25 +1950,33 @@ class DimCoord(Coord):
                     monotonic, direction = iris.util.monotonic(
                         bounds[:, b_index], strict=True, return_direction=True)
                     if not monotonic:
-                        raise ValueError('The bounds array must be strictly '
-                                         'monotonic.')
+                        emsg = ('The {!r} {} bounds array must be strictly '
+                                'monotonic.')
+                        raise ValueError(emsg.format(self.name(),
+                                                     self.__class__.__name__))
                     directions.add(direction)
 
                 if len(directions) != 1:
-                    raise ValueError('The direction of monotonicity must be '
-                                     'consistent across all bounds')
+                    emsg = ('The direction of monotonicity for {!r} {} must '
+                            'be consistent across all bounds.')
+                    raise ValueError(emsg.format(self.name(),
+                                                 self.__class__.__name__))
 
-    def _bounds_setter(self, bounds):
+    @Coord.bounds.setter
+    def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
             bounds = _lazy.as_concrete_data(bounds)
-            bounds = np.array(bounds)
+            # Make sure we have an array (any type of array).
+            bounds = np.asanyarray(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
             self._new_bounds_requirements(bounds)
+            # Cast to a numpy array for masked arrays with no mask.
+            bounds = np.array(bounds)
 
-        # Invoke the generic bounds setter.
-        super(DimCoord, self)._bounds_setter(bounds)
+        # Call the parent bounds setter.
+        super(DimCoord, self.__class__).bounds.fset(self, bounds)
 
         if self._bounds_dm is not None:
             # Re-fetch the core array, as the super call may replace it.
@@ -1960,8 +1985,6 @@ class DimCoord(Coord):
 
             # Ensure the array is read-only.
             bounds.flags.writeable = False
-
-    bounds = property(Coord._bounds_getter, _bounds_setter)
 
     def is_monotonic(self):
         return True
@@ -2016,13 +2039,13 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         Kwargs:
 
         * standard_name:
-            CF standard name of the coordinate.
+            CF standard name of the cell measure.
         * long_name:
-            Descriptive name of the coordinate.
+            Descriptive name of the cell measure.
         * var_name:
-            The netCDF variable name for the coordinate.
+            The netCDF variable name for the cell measure.
         * units
-            The :class:`~cf_units.Unit` of the coordinate's values.
+            The :class:`~cf_units.Unit` of the cell measure's values.
             Can be a string, which will be converted to a Unit object.
         * attributes
             A dictionary containing other CF and user-defined attributes.
@@ -2031,16 +2054,16 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
             are the only valid entries.
 
         """
-        #: CF standard name of the quantity that the coordinate represents.
+        #: CF standard name of the quantity that the cell measure represents.
         self.standard_name = standard_name
 
-        #: Descriptive name of the coordinate.
+        #: Descriptive name of the cell measure.
         self.long_name = long_name
 
-        #: The netCDF variable name for the coordinate.
+        #: The netCDF variable name for the cell measure.
         self.var_name = var_name
 
-        #: Unit of the quantity that the coordinate represents.
+        #: Unit of the quantity that the cell measure represents.
         self.units = units
 
         #: Other attributes, including user specified attributes that
@@ -2070,11 +2093,6 @@ class CellMeasure(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if data is None:
             raise ValueError('The data payload of a CellMeasure may not be '
                              'None; it must be a numpy array or equivalent.')
-        if _lazy.is_lazy_data(data) and data.dtype.kind in 'biu':
-            # Non-floating cell measures are not valid up to CF v1.7
-            msg = ('Cannot create cell measure with lazy data of type {}, as '
-                   'integer types are not currently supported.')
-            raise ValueError(msg.format(data.dtype))
         if data.shape == ():
             # If we have a scalar value, promote the shape from () to (1,).
             # NOTE: this way also *realises* it.  Don't think that matters.
@@ -2237,16 +2255,18 @@ class CellMethod(iris.util._OrderedHashable):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
+        default_name = CFVariableMixin._DEFAULT_NAME
         _coords = []
         if coords is None:
             pass
         elif isinstance(coords, Coord):
-            _coords.append(coords.name())
+            _coords.append(coords.name(token=True))
         elif isinstance(coords, six.string_types):
-            _coords.append(coords)
+            _coords.append(CFVariableMixin.token(coords) or default_name)
         else:
-            normalise = (lambda coord: coord.name() if
-                         isinstance(coord, Coord) else coord)
+            normalise = (lambda coord: coord.name(token=True) if
+                         isinstance(coord, Coord) else
+                         CFVariableMixin.token(coord) or default_name)
             _coords.extend([normalise(coord) for coord in coords])
 
         _intervals = []
@@ -2315,7 +2335,7 @@ class CellMethod(iris.util._OrderedHashable):
 
 
 # See Coord.cells() for the description/context.
-class _CellIterator(collections.Iterator):
+class _CellIterator(Iterator):
     def __init__(self, coord):
         self._coord = coord
         if coord.ndim != 1:
@@ -2331,7 +2351,7 @@ class _CellIterator(collections.Iterator):
 
 
 # See ExplicitCoord._group() for the description/context.
-class _GroupIterator(collections.Iterator):
+class _GroupIterator(Iterator):
     def __init__(self, points):
         self._points = points
         self._start = 0

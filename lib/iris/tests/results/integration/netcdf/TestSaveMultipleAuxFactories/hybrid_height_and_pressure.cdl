@@ -74,5 +74,5 @@ variables:
 
 // global attributes:
 		:source = "Iris test case" ;
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }

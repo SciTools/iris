@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -26,6 +26,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import numpy as np
 from cf_units import Unit, CALENDAR_GREGORIAN, CALENDAR_360_DAY
 from cftime import datetime as nc_datetime
@@ -35,7 +37,6 @@ import iris
 from iris.fileformats.pp_load_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
 from iris.coords import CellMethod, DimCoord, AuxCoord
-from iris.tests import mock
 from iris.tests.unit.fileformats import TestField
 
 

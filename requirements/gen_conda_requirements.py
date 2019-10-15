@@ -23,7 +23,7 @@ REQS_DIR = os.path.dirname(__file__)
 CONDA_PATTERN = '#conda:'
 
 
-def read_conda_reqs(fname, options):
+def read_conda_reqs(fname):
     lines = []
     with open(fname, 'r') as fh:
         for line in fh:
@@ -31,33 +31,19 @@ def read_conda_reqs(fname, options):
             if CONDA_PATTERN in line:
                 line_start = line.index(CONDA_PATTERN) + len(CONDA_PATTERN)
                 line = line[line_start:].strip()
-                if 'only python=2' in line:
-                    if 'python=2' in options:
-                        line = line.replace('(only python=2)', '')
-                        lines.append(line)
-                    else:
-                        continue
-                else:
-                    lines.append(line)
-            else:
-                lines.append(line)
+            lines.append(line)
     return lines
 
 
-def compute_requirements(requirement_names=('core', ), options=None):
+def compute_requirements(requirement_names=('core', )):
     conda_reqs_lines = []
-
-    if 'python=2' in options:
-        conda_reqs_lines.append('python=2.*')
-    else:
-        conda_reqs_lines.append('# Python 3 conda configuration')
 
     for req_name in requirement_names:
         fname = os.path.join(REQS_DIR, '{}.txt'.format(req_name))
         if not os.path.exists(fname):
             raise RuntimeError('Unable to find the requirements file for {} '
                                'in {}'.format(req_name, fname))
-        conda_reqs_lines.extend(read_conda_reqs(fname, options))
+        conda_reqs_lines.extend(read_conda_reqs(fname))
         conda_reqs_lines.append('')
 
     return conda_reqs_lines
@@ -70,9 +56,6 @@ def main():
             "--groups", nargs='*', default=[],
             help=("Gather requirements for these given named groups "
                   "(as found in the requirements/ folder)"))
-    parser.add_argument(
-            "--py2", action="store_true",
-            help="Build the conda requirements for a python 2 installation")
 
     args = parser.parse_args()
 
@@ -80,11 +63,7 @@ def main():
     requirement_names.insert(0, 'core')
     requirement_names.insert(0, 'setup')
 
-    options = []
-    if args.py2:
-        options.append('python=2')
-
-    print('\n'.join(compute_requirements(requirement_names, options)))
+    print('\n'.join(compute_requirements(requirement_names)))
 
 
 if __name__ == '__main__':

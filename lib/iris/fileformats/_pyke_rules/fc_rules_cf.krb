@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -193,6 +193,47 @@ fc_provides_grid_mapping_albers_equal_area
         python coordinate_system = build_albers_equal_area_coordinate_system(engine, cf_grid_var)
         python engine.provides['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, albers_equal_area)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a vertical perspective.
+#
+# Purpose:
+#   Creates the vertical perspective coordinate system.
+#
+fc_provides_grid_mapping_vertical_perspective
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping, CF_GRID_MAPPING_VERTICAL)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = \
+            build_vertical_perspective_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, vertical_perspective)
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a grid_mapping() case specific fact
+#   has been asserted that refers to a geostationary.
+#
+# Purpose:
+#   Creates the geostationary coordinate system.
+#
+fc_provides_grid_mapping_geostationary
+    foreach
+        facts_cf.grid_mapping($grid_mapping)
+        check is_grid_mapping(engine, $grid_mapping,
+            CF_GRID_MAPPING_GEOSTATIONARY)
+    assert
+        python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
+        python coordinate_system = \
+            build_geostationary_coordinate_system(engine, cf_grid_var)
+        python engine.provides['coordinate_system'] = coordinate_system
+        facts_cf.provides(coordinate_system, geostationary)
         python engine.rule_triggered.add(rule.name)
 
 
@@ -834,6 +875,85 @@ fc_build_coordinate_projection_y_albers_equal_area
 
 #
 # Context:
+#   This rule will trigger iff a projection_x_coordinate coordinate exists and
+#   a vertical perspective coordinate system exists.
+#
+# Purpose:
+#   Add the projection_x_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_x_vertical_perspective
+    foreach
+        facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, vertical_perspective)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_X,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a projection_y_coordinate coordinate exists and
+#   a vertical perspective coordinate system exists.
+#
+# Purpose:
+#   Add the projection_y_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_y_vertical_perspective
+    foreach
+        facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, vertical_perspective)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_Y,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+#
+# Context:
+#   This rule will trigger iff a projection_x_coordinate coordinate exists and
+#   a geostationary coordinate system exists.
+#
+# Purpose:
+#   Add the projection_x_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_x_geostationary
+    foreach
+        facts_cf.provides(coordinate, projection_x_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, geostationary)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_X,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
+#   This rule will trigger iff a projection_y_coordinate coordinate exists and
+#   a geostationary coordinate system exists.
+#
+# Purpose:
+#   Add the projection_y_coordinate coordinate into the cube.
+#
+fc_build_coordinate_projection_y_geostationary
+    foreach
+        facts_cf.provides(coordinate, projection_y_coordinate, $coordinate)
+        facts_cf.provides(coordinate_system, geostationary)
+    assert
+        python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
+        python build_dimension_coordinate(engine, cf_coord_var,
+                                          coord_name=CF_VALUE_STD_NAME_PROJ_Y,
+                                          coord_system=engine.provides['coordinate_system'])
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
 #   This rule will trigger iff a CF time coordinate exists.
 #
 # Purpose:
@@ -1075,6 +1195,7 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.util
+    from iris._cube_coord_common import get_valid_standard_name
     from iris._lazy_data import as_lazy_data
 
 
@@ -1119,6 +1240,7 @@ fc_extras
     CF_GRID_MAPPING_STEREO = 'stereographic'
     CF_GRID_MAPPING_TRANSVERSE = 'transverse_mercator'
     CF_GRID_MAPPING_VERTICAL = 'vertical_perspective'
+    CF_GRID_MAPPING_GEOSTATIONARY = 'geostationary'
 
     #
     # CF Attribute Names.
@@ -1144,6 +1266,8 @@ fc_extras
     CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN = 'scale_factor_at_central_meridian'
     CF_ATTR_GRID_LON_OF_CENT_MERIDIAN = 'longitude_of_central_meridian'
     CF_ATTR_GRID_STANDARD_PARALLEL = 'standard_parallel'
+    CF_ATTR_GRID_PERSPECTIVE_HEIGHT = 'perspective_point_height'
+    CF_ATTR_GRID_SWEEP_ANGLE_AXIS = 'sweep_angle_axis'
     CF_ATTR_POSITIVE = 'positive'
     CF_ATTR_STD_NAME = 'standard_name'
     CF_ATTR_LONG_NAME = 'long_name'
@@ -1186,9 +1310,9 @@ fc_extras
         cube.long_name = long_name
 
         if standard_name is not None:
-            if standard_name in iris.std_names.STD_NAMES:
-                cube.standard_name = standard_name
-            else:
+            try:
+                cube.standard_name = get_valid_standard_name(standard_name)
+            except ValueError:
                 if cube.long_name is not None:
                     cube.attributes['invalid_standard_name'] = standard_name
                 else:
@@ -1478,6 +1602,73 @@ fc_extras
         return cs
 
     ################################################################################
+    def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
+        """
+        Create a vertical perspective coordinate system from the CF-netCDF
+        grid mapping variable.
+
+        """
+        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        longitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None)
+        perspective_point_height = getattr(
+            cf_grid_var, CF_ATTR_GRID_PERSPECTIVE_HEIGHT, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+
+        ellipsoid = None
+        if major is not None or minor is not None or \
+                inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor,
+                                                  inverse_flattening)
+
+        cs = iris.coord_systems.VerticalPerspective(
+            latitude_of_projection_origin, longitude_of_projection_origin,
+            perspective_point_height, false_easting, false_northing, ellipsoid)
+
+        return cs
+
+    ################################################################################
+    def build_geostationary_coordinate_system(engine, cf_grid_var):
+        """
+        Create a geostationary coordinate system from the CF-netCDF
+        grid mapping variable.
+
+        """
+        major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
+
+        latitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None)
+        longitude_of_projection_origin = getattr(
+            cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None)
+        perspective_point_height = getattr(
+            cf_grid_var, CF_ATTR_GRID_PERSPECTIVE_HEIGHT, None)
+        false_easting = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
+        false_northing = getattr(
+            cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+        sweep_angle_axis = getattr(
+            cf_grid_var, CF_ATTR_GRID_SWEEP_ANGLE_AXIS, None)
+
+        ellipsoid = None
+        if major is not None or minor is not None or \
+                inverse_flattening is not None:
+            ellipsoid = iris.coord_systems.GeogCS(major, minor,
+                                                  inverse_flattening)
+
+        cs = iris.coord_systems.Geostationary(
+            latitude_of_projection_origin, longitude_of_projection_origin,
+            perspective_point_height, sweep_angle_axis, false_easting,
+            false_northing, ellipsoid)
+
+        return cs
+
+    ################################################################################
     def get_attr_units(cf_var, attributes):
         attr_units = getattr(cf_var, CF_ATTR_UNITS, cf_units._UNIT_DIMENSIONLESS)
         if not attr_units:
@@ -1523,7 +1714,9 @@ fc_extras
         cf_name = str(cf_coord_var.cf_name)
 
         if standard_name is not None:
-            if standard_name not in iris.std_names.STD_NAMES:
+            try:
+                standard_name = get_valid_standard_name(standard_name)
+            except ValueError:
                 if long_name is not None:
                     attributes['invalid_standard_name'] = standard_name
                     if coord_name is not None:
@@ -1536,7 +1729,7 @@ fc_extras
                         standard_name = coord_name
                     else:
                         standard_name = None
-                        long_name = standard_name
+
         else:
             if coord_name is not None:
                 standard_name = coord_name
@@ -1564,6 +1757,7 @@ fc_extras
         # variable is missing, as that will already have been done by
         # iris.fileformats.cf.
         cf_bounds_var = None
+        climatological = False
         if attr_bounds is not None:
             bounds_vars = cf_coord_var.cf_group.bounds
             if attr_bounds in bounds_vars:
@@ -1572,13 +1766,14 @@ fc_extras
             climatology_vars = cf_coord_var.cf_group.climatology
             if attr_climatology in climatology_vars:
                 cf_bounds_var = climatology_vars[attr_climatology]
+                climatological = True
 
         if attr_bounds is not None and attr_climatology is not None:
             warnings.warn('Ignoring climatology in favour of bounds attribute '
                           'on NetCDF variable {!r}.'.format(
                           cf_coord_var.cf_name))
 
-        return cf_bounds_var
+        return cf_bounds_var, climatological
 
 
     ################################################################################
@@ -1627,7 +1822,8 @@ fc_extras
             warnings.warn(msg.format(str(cf_coord_var.cf_name)))
 
         # Get any coordinate bounds.
-        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
+        cf_bounds_var, climatological = get_cf_bounds_var(
+            cf_coord_var)
         if cf_bounds_var is not None:
             bounds_data = cf_bounds_var[:]
             # Gracefully fill bounds masked array.
@@ -1673,7 +1869,9 @@ fc_extras
                                          bounds=bounds_data,
                                          attributes=attributes,
                                          coord_system=coord_system,
-                                         circular=circular)
+                                         circular=circular,
+                                         climatological=
+                                             climatological)
         except ValueError as e_msg:
             # Attempt graceful loading.
             coord = iris.coords.AuxCoord(points_data,
@@ -1683,7 +1881,9 @@ fc_extras
                                          units=attr_units,
                                          bounds=bounds_data,
                                          attributes=attributes,
-                                         coord_system=coord_system)
+                                         coord_system=coord_system,
+                                         climatological=
+                                             climatological)
             cube.add_aux_coord(coord, data_dims)
             msg = 'Failed to create {name!r} dimension coordinate: {error}\n' \
                   'Gracefully creating {name!r} auxiliary coordinate instead.'
@@ -1719,7 +1919,8 @@ fc_extras
             points_data = _get_cf_var_data(cf_coord_var, engine.filename)
 
         # Get any coordinate bounds.
-        cf_bounds_var = get_cf_bounds_var(cf_coord_var)
+        cf_bounds_var, climatological = get_cf_bounds_var(
+            cf_coord_var)
         if cf_bounds_var is not None:
             bounds_data = _get_cf_var_data(cf_bounds_var, engine.filename)
 
@@ -1755,7 +1956,9 @@ fc_extras
                                      units=attr_units,
                                      bounds=bounds_data,
                                      attributes=attributes,
-                                     coord_system=coord_system)
+                                     coord_system=coord_system,
+                                     climatological=
+                                         climatological)
 
         # Add it to the cube
         cube.add_aux_coord(coord, data_dims)

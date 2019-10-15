@@ -167,6 +167,25 @@ class MixinVectorPlotCases(object):
             self.plot('2d_rotated', u_cube, v_cube,
                       coords=('longitude', 'latitude'))
 
+    def test_circular_longitude(self):
+        # Test circular longitude does not cause a crash.
+        res = 5
+        lat = DimCoord(np.arange(-90, 91, res), 'latitude',
+                       units='degrees_north')
+        lon = DimCoord(np.arange(0, 360, res), 'longitude',
+                       units='degrees_east', circular=True)
+        nlat = len(lat.points)
+        nlon = len(lon.points)
+        u_arr = np.ones((nlat, nlon))
+        v_arr = np.ones((nlat, nlon))
+        u_cube = Cube(u_arr, dim_coords_and_dims=[(lat, 0), (lon, 1)],
+                      standard_name='eastward_wind')
+        v_cube = Cube(v_arr, dim_coords_and_dims=[(lat, 0), (lon, 1)],
+                      standard_name='northward_wind')
+
+        self.plot('circular', u_cube, v_cube,
+                  coords=('longitude', 'latitude'))
+
 
 class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
     def setUp(self):

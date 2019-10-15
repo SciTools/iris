@@ -391,7 +391,7 @@ class RectilinearInterpolator(object):
         # after the resampling.
         try:
             new_coord = coord.copy(new_points)
-        except ValueError:
+        except (ValueError, TypeError):
             aux_coord = AuxCoord.from_coord(coord)
             new_coord = aux_coord.copy(new_points)
         return new_coord

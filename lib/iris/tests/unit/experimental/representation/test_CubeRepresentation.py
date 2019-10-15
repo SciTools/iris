@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017 - 2018, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -291,6 +291,21 @@ class Test__make_row(tests.IrisTest):
 
 
 @tests.skip_data
+class Test__expand_last_cell(tests.IrisTest):
+    def setUp(self):
+        self.cube = stock.simple_3d()
+        self.representer = CubeRepresentation(self.cube)
+        self.representer._get_bits(self.representer._get_lines())
+        col_span = self.representer.ndims
+        self.row = self.representer._make_row('title', body='first',
+                                              col_span=col_span)
+
+    def test_add_line(self):
+        cell = self.representer._expand_last_cell(self.row[-2], 'second')
+        self.assertIn('first<br>second', cell)
+
+
+@tests.skip_data
 class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
@@ -311,6 +326,14 @@ class Test__make_content(tests.IrisTest):
         not_included.pop(not_included.index('Dimension coordinates:'))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
+
+    def test_handle_newline(self):
+        cube = self.cube
+        cube.attributes['lines'] = 'first\nsecond'
+        representer = CubeRepresentation(cube)
+        representer._get_bits(representer._get_lines())
+        result = representer._make_content()
+        self.assertIn('first<br>second', result)
 
 
 @tests.skip_data

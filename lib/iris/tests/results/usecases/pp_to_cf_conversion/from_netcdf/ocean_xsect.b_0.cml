@@ -2,7 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float32" standard_name="sea_water_potential_temperature" units="degC" var_name="sea_water_potential_temperature">
     <attributes>
-      <attribute name="Conventions" value="CF-1.5"/>
+      <attribute name="Conventions" value="CF-1.7"/>
       <attribute name="STASH" value="m02s00i101"/>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>

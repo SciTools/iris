@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,7 +25,7 @@ To manage a collection of FormatSpecifications for loading::
     import matplotlib.pyplot as plt
     fagent = fp.FormatAgent()
     png_spec = fp.FormatSpecification('PNG image', fp.MagicNumber(8),
-                                      0x89504E470D0A1A0A, 
+                                      0x89504E470D0A1A0A,
                                       handler=lambda filename: plt.imread(filename),
                                       priority=5
                                       )
@@ -55,7 +55,10 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-import collections
+try:  # Python 3
+    from collections.abc import Callable
+except ImportError:  # Python 2.7
+    from collections import Callable
 import functools
 import os
 import struct
@@ -126,12 +129,12 @@ class FormatAgent(object):
                 if buffer_obj is not None and buffer_obj.tell() != 0:
                     # reset the buffer if tell != 0
                     buffer_obj.seek(0)
- 
+
                 element_cache[repr(fmt_elem)] = \
                     fmt_elem.get_element(basename, buffer_obj)
 
             # If we have a callable object, then call it and tests its result, otherwise test using basic equality
-            if isinstance(fmt_elem_value, collections.Callable):
+            if isinstance(fmt_elem_value, Callable):
                 matches = fmt_elem_value(element_cache[repr(fmt_elem)])
             elif element_cache[repr(fmt_elem)] == fmt_elem_value:
                 matches = True
@@ -255,14 +258,14 @@ class FileElement(object):
 
         """
         self.requires_fh = requires_fh
-    
+
     def get_element(self, basename, file_handle):
         """Called when identifying the element of a file that this FileElement is representing."""
         raise NotImplementedError("get_element must be defined in a subclass")
-        
+
     def __hash__(self):
         return hash(repr(self))
-    
+
     def __repr__(self):
         return '{}()'.format(self.__class__.__name__)
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -25,6 +25,7 @@ import six
 import iris.tests as tests
 
 from contextlib import contextmanager
+from unittest import mock
 
 import netCDF4 as nc
 import numpy as np
@@ -35,15 +36,19 @@ from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (GeogCS, TransverseMercator, RotatedGeogCS,
                                 LambertConformal, Mercator, Stereographic,
                                 LambertAzimuthalEqualArea,
-                                AlbersEqualArea)
+                                AlbersEqualArea, VerticalPerspective,
+                                Geostationary)
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
-from iris.tests import mock
 import iris.tests.stock as stock
 
 
 class Test_write(tests.IrisTest):
+    # -------------------------------------------------------------------------
+    # It is not considered necessary to have integration tests for saving
+    # EVERY coordinate system. A subset are tested below.
+    # -------------------------------------------------------------------------
     def _transverse_mercator_cube(self, ellipsoid=None):
         data = np.arange(12).reshape(3, 4)
         cube = Cube(data, 'air_pressure_anomaly')
@@ -162,16 +167,16 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube('>f4')
-        with mock.patch('iris.fileformats.netcdf.netCDF4') as api:
-            with Saver('/dummy/path', 'NETCDF4') as saver:
-                saver.write(cube, zlib=True)
+        api = self.patch('iris.fileformats.netcdf.netCDF4')
+        with Saver('/dummy/path', 'NETCDF4') as saver:
+            saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
-        create_var_calls = mock.call.createVariable(
+        create_var_call = mock.call(
             'air_pressure_anomaly', np.dtype('float32'), ['dim0', 'dim1'],
             fill_value=None, shuffle=True, least_significant_digit=None,
             contiguous=False, zlib=True, fletcher32=False,
-            endian='native', complevel=4, chunksizes=None).call_list()
-        dataset.assert_has_calls(create_var_calls)
+            endian='native', complevel=4, chunksizes=None)
+        self.assertIn(create_var_call, dataset.createVariable.call_args_list)
 
     def test_least_significant_digit(self):
         cube = Cube(np.array([1.23, 4.56, 7.89]),
@@ -246,6 +251,66 @@ class Test_write(tests.IrisTest):
             res = ds.getncattr('dimensions')
             ds.close()
             self.assertEqual(res, 'something something_else')
+
+    def test_with_climatology(self):
+        cube = stock.climatology_3d()
+        with self.temp_filename('.nc') as nc_path:
+            with Saver(nc_path, 'NETCDF4') as saver:
+                saver.write(cube)
+            self.assertCDL(nc_path)
+
+
+class Test__create_cf_bounds(tests.IrisTest):
+    def _check_bounds_setting(self, climatological=False):
+        # Generic test that can run with or without a climatological coord.
+        cube = stock.climatology_3d()
+        coord = cube.coord('time').copy()
+        # Over-write original value from stock.climatology_3d with test value.
+        coord.climatological = \
+            climatological
+
+        # Set up expected strings.
+        if climatological:
+            property_name = 'climatology'
+            varname_extra = 'climatology'
+        else:
+            property_name = 'bounds'
+            varname_extra = 'bnds'
+        boundsvar_name = 'time_' + varname_extra
+
+        # Set up arguments for testing _create_cf_bounds.
+        saver = mock.MagicMock(spec=Saver)
+        # NOTE: 'saver' must have spec=Saver to fake isinstance(save, Saver),
+        # so it can pass as 'self' in the call to _create_cf_cbounds.
+        # Mock a '_dataset' property; not automatic because 'spec=Saver'.
+        saver._dataset = mock.MagicMock()
+        # Mock the '_ensure_valid_dtype' method to return an object with a
+        # suitable 'shape' and 'dtype'.
+        saver._ensure_valid_dtype.return_value = mock.Mock(
+            shape=coord.bounds.shape, dtype=coord.bounds.dtype)
+        var = mock.MagicMock(spec=nc.Variable)
+
+        # Make the main call.
+        Saver._create_cf_bounds(saver, coord, var, 'time')
+
+        # Test the call of _setncattr in _create_cf_bounds.
+        setncattr_call = mock.call(property_name,
+                                   boundsvar_name.encode(encoding='ascii'))
+        self.assertEqual(setncattr_call, var.setncattr.call_args)
+
+        # Test the call of createVariable in _create_cf_bounds.
+        dataset = saver._dataset
+        expected_dimensions = var.dimensions + ('bnds',)
+        create_var_call = mock.call(
+            boundsvar_name, coord.bounds.dtype,
+            expected_dimensions)
+        self.assertEqual(create_var_call, dataset.createVariable.call_args)
+
+    def test_set_bounds_default(self):
+        self._check_bounds_setting(climatological=False)
+
+    def test_set_bounds_climatology(self):
+        self._check_bounds_setting(climatological=True)
 
 
 class Test_write__valid_x_cube_attributes(tests.IrisTest):
@@ -804,6 +869,71 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                     'semi_minor_axis': 6356256.909,
                     'longitude_of_prime_meridian': 0,
                     }
+        self._test(coord_system, expected)
+
+    def test_vp_cs(self):
+        latitude_of_projection_origin = 1.0
+        longitude_of_projection_origin = 2.0
+        perspective_point_height = 2000000.0
+        false_easting = 100.0
+        false_northing = 200.0
+
+        semi_major_axis = 6377563.396
+        semi_minor_axis = 6356256.909
+        ellipsoid = GeogCS(semi_major_axis, semi_minor_axis)
+
+        coord_system = VerticalPerspective(
+            latitude_of_projection_origin=latitude_of_projection_origin,
+            longitude_of_projection_origin=longitude_of_projection_origin,
+            perspective_point_height=perspective_point_height,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = {
+            'grid_mapping_name': b'vertical_perspective',
+            'latitude_of_projection_origin': latitude_of_projection_origin,
+            'longitude_of_projection_origin': longitude_of_projection_origin,
+            'perspective_point_height': perspective_point_height,
+            'false_easting': false_easting,
+            'false_northing': false_northing,
+            'semi_major_axis': semi_major_axis,
+            'semi_minor_axis': semi_minor_axis,
+            'longitude_of_prime_meridian': 0,
+        }
+        self._test(coord_system, expected)
+
+    def test_geo_cs(self):
+        latitude_of_projection_origin = 0.0
+        longitude_of_projection_origin = 2.0
+        perspective_point_height = 2000000.0
+        sweep_angle_axis = 'x'
+        false_easting = 100.0
+        false_northing = 200.0
+
+        semi_major_axis = 6377563.396
+        semi_minor_axis = 6356256.909
+        ellipsoid = GeogCS(semi_major_axis, semi_minor_axis)
+
+        coord_system = Geostationary(
+            latitude_of_projection_origin=latitude_of_projection_origin,
+            longitude_of_projection_origin=longitude_of_projection_origin,
+            perspective_point_height=perspective_point_height,
+            sweep_angle_axis=sweep_angle_axis,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            ellipsoid=ellipsoid)
+        expected = {
+            'grid_mapping_name': b'geostationary',
+            'latitude_of_projection_origin': latitude_of_projection_origin,
+            'longitude_of_projection_origin': longitude_of_projection_origin,
+            'perspective_point_height': perspective_point_height,
+            'sweep_angle_axis': sweep_angle_axis,
+            'false_easting': false_easting,
+            'false_northing': false_northing,
+            'semi_major_axis': semi_major_axis,
+            'semi_minor_axis': semi_minor_axis,
+            'longitude_of_prime_meridian': 0,
+        }
         self._test(coord_system, expected)
 
 

@@ -26,11 +26,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import re
+import warnings
 
 import cf_units
 import numpy as np
 
-from iris._deprecation import warn_deprecated
 import iris.cube
 import iris.coords
 import iris.coord_systems
@@ -85,14 +85,16 @@ def _construct_midpoint_coord(coord, circular=None):
 
     """
     if circular and not hasattr(coord, 'circular'):
-        raise ValueError('Cannot produce circular midpoint from a coord '
-                         'without the circular attribute')
+        msg = ("Cannot produce a circular midpoint for the '{}' coord, "
+               "which does not have a 'circular' attribute.")
+        raise ValueError(msg.format(coord.name()))
 
     if circular is None:
         circular = getattr(coord, 'circular', False)
     elif circular != getattr(coord, 'circular', False):
-        warn_deprecated('circular flag and Coord.circular attribute do '
-                        'not match')
+        msg = ("Construction coordinate midpoints for the '{}' coordinate, "
+               "though it has the attribute 'circular'={}.")
+        warnings.warn(msg.format(circular, coord.circular, coord.name()))
 
     if coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(coord)

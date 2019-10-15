@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -27,13 +27,13 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
-from iris.tests import mock
 
 
 class MyProxy(object):
     def __init__(self, a):
         self.shape = a.shape
         self.dtype = a.dtype
+        self.ndim = a.ndim
         self.a = a
 
     def __getitem__(self, keys):

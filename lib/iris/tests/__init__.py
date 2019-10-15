@@ -53,15 +53,11 @@ import shutil
 import subprocess
 import sys
 import unittest
+from unittest import mock
 import threading
 import warnings
 import xml.dom.minidom
 import zlib
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 import filelock
 import numpy as np
@@ -361,6 +357,12 @@ class IrisTest_nometa(unittest.TestCase):
         # Ingest the CDL for comparison, excluding first line.
         lines = cdl.decode('ascii').splitlines()
         lines = lines[1:]
+
+        # Ignore any lines of the general form "... :_NCProperties = ..."
+        # (an extra global attribute, displayed by older versions of ncdump).
+        re_ncprop = re.compile('^\s*:_NCProperties *=')
+        lines = [line for line in lines
+                 if not re_ncprop.match(line)]
 
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.

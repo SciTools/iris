@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -30,7 +30,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractmethod
-from collections import Iterable, MutableMapping
+
+try:  # Python 3
+    from collections.abc import Iterable, MutableMapping
+except ImportError:  # Python 2.7
+    from collections import Iterable, MutableMapping
 import os
 import re
 import warnings
@@ -791,7 +795,8 @@ class CFMeasureVariable(CFVariable):
                     measure = match_group['lhs']
                     variable_name = match_group['rhs']
 
-                    if variable_name not in ignore:
+                    var_matches_nc = variable_name != nc_var_name
+                    if variable_name not in ignore and var_matches_nc:
                         if variable_name not in variables:
                             if warn:
                                 message = 'Missing CF-netCDF measure variable %r, referenced by netCDF variable %r'

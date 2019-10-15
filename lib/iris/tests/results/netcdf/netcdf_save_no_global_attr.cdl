@@ -44,5 +44,5 @@ variables:
 		temp3_0:h = "v" ;
 
 // global attributes:
-		:Conventions = "CF-1.5" ;
+		:Conventions = "CF-1.7" ;
 }
