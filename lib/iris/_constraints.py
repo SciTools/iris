@@ -511,7 +511,10 @@ class NameConstraint(Constraint):
             iris.NameConstraint(standard_name='air_temperature',
                                 STASH=lambda stash: stash.item == 203
 
-            .. note:: Name constraint names are case sensitive.
+            .. note::
+
+                Name constraint names are case sensitive i.e., use the
+                ``STASH`` keyword argument and not ``stash``.
 
         """
         self._names = names
