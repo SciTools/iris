@@ -13,6 +13,7 @@ import operator
 
 import numpy as np
 
+from iris._cube_coord_common import CFVariableMixin
 import iris.coords
 import iris.exceptions
 
@@ -129,7 +130,8 @@ class Constraint:
         """
         match = True
         if self._name:
-            match = self._name in cube.names
+            match = (self._name in cube.names or
+                     self._name == CFVariableMixin._DEFAULT_NAME)
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match

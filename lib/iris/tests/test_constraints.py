@@ -334,6 +334,17 @@ class TestCubeExtract__names(TestMixin, tests.IrisTest):
         self.assertIsNotNone(result)
         self.assertEqual(str(result.attributes['STASH']), self.stash)
 
+    def test_unknown(self):
+        # Clear the cube metadata.
+        self.cube.standard_name = None
+        self.cube.long_name = None
+        self.cube.var_name = None
+        self.cube.attributes = None
+        # Extract the unknown cube.
+        constraint = iris.Constraint('unknown')
+        result = self.cube.extract(constraint)
+        self.assertIsNotNone(result)
+
 
 @tests.skip_data
 class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
