@@ -24,7 +24,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
-from unittest import skip
 
 import datetime
 from unittest import mock
@@ -61,7 +60,7 @@ def _mock_gribapi_fetch(message, key):
     if key in message:
         return message[key]
     else:
-        raise _mock_gribapi.GribInternalError
+        raise _mock_gribapi.errors.GribInternalError
 
 
 def _mock_gribapi__grib_is_missing(grib_message, keyname):
@@ -84,13 +83,13 @@ def _mock_gribapi__grib_get_native_type(grib_message, keyname):
     """
     if keyname in grib_message:
         return type(grib_message[keyname])
-    raise _mock_gribapi.GribInternalError(keyname)
+    raise _mock_gribapi.errors.GribInternalError(keyname)
 
 
 if tests.GRIB_AVAILABLE:
     # Construct a mock object to mimic the gribapi for GribWrapper testing.
     _mock_gribapi = mock.Mock(spec=gribapi)
-    _mock_gribapi.GribInternalError = Exception
+    _mock_gribapi.errors.GribInternalError = Exception
 
     _mock_gribapi.grib_get_long = mock.Mock(side_effect=_mock_gribapi_fetch)
     _mock_gribapi.grib_get_string = mock.Mock(side_effect=_mock_gribapi_fetch)
@@ -270,7 +269,6 @@ class TestGribTimecodes(tests.IrisTest):
     # Test groups of testcases for various time-units and grib-editions.
     # Format: (edition, code, expected-exception,
     #          equivalent-seconds, description-string)
-    @skip('iris-grib is currently causing errors')
     def test_timeunits_common(self):
         tests = (
             (1, 0, None, 60.0, 'minutes'),
@@ -289,7 +287,6 @@ class TestGribTimecodes(tests.IrisTest):
             'indicatorOfUnitOfTimeRange : {code}'.format(code=code)
         )
 
-    @skip('iris-grib is currently causing errors')
     def test_timeunits_grib1_specific(self):
         tests = (
             (1, 13, None, 0.25 * _hour_secs, '15 minutes'),
@@ -299,7 +296,6 @@ class TestGribTimecodes(tests.IrisTest):
         )
         TestGribTimecodes._run_timetests(self, tests)
 
-    @skip('iris-grib is currently causing errors')
     def test_timeunits_calendar(self):
         tests = (
             (1, 3, TestGribTimecodes._err_bad_timeunit(3), 0.0, 'months'),
@@ -310,7 +306,6 @@ class TestGribTimecodes(tests.IrisTest):
         )
         TestGribTimecodes._run_timetests(self, tests)
 
-    @skip('iris-grib is currently causing errors')
     def test_timeunits_invalid(self):
         tests = (
             (1, 111, TestGribTimecodes._err_bad_timeunit(111), 1.0, '??'),
@@ -375,7 +370,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         grib.edition = 1
         return grib
 
-    @skip('iris-grib is currently causing errors')
     def test_grib1_unknownparam(self):
         grib = self.mock_grib()
         grib.table2Version = 0
@@ -385,7 +379,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, None)
         self.assertEqual(cube.units, cf_units.Unit("???"))
 
-    @skip('iris-grib is currently causing errors')
     def test_grib1_unknown_local_param(self):
         grib = self.mock_grib()
         grib.table2Version = 128
@@ -395,7 +388,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, 'UNKNOWN LOCAL PARAM 999.128')
         self.assertEqual(cube.units, cf_units.Unit("???"))
 
-    @skip('iris-grib is currently causing errors')
     def test_grib1_unknown_standard_param(self):
         grib = self.mock_grib()
         grib.table2Version = 1
@@ -414,7 +406,6 @@ class TestGrib1LoadPhenomenon(TestGribSimple):
         self.assertEqual(cube.long_name, None)
         self.assertEqual(cube.units, cf_units.Unit(units_str))
 
-    @skip('iris-grib is currently causing errors')
     def test_grib1_known_standard_params(self):
         # at present, there are just a very few of these
         self.known_grib1(11, 'air_temperature', 'kelvin')
