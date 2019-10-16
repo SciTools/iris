@@ -64,7 +64,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.mathmpl',
-              'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
 
               # better class documentation

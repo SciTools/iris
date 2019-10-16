@@ -205,12 +205,12 @@ Finally, the cube we have created needs to be given a suitable name::
 The result could now be plotted using the guidance provided in the 
 :doc:`plotting_a_cube` section.
 
-.. htmlonly::
+.. only:: html
 
     A very similar example to this can be found in 
     :doc:`/examples/Meteorology/deriving_phenomena`.
 
-.. latexonly::
+.. only:: latex
 
     A very similar example to this can be found in the examples section, 
     with the title "Deriving Exner Pressure and Air Temperature".
