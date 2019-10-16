@@ -23,6 +23,7 @@ Definitions of how Iris objects should be represented.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from html import escape
 import re
 
 
@@ -96,7 +97,7 @@ class CubeRepresentation(object):
     def __init__(self, cube):
         self.cube = cube
         self.cube_id = id(self.cube)
-        self.cube_str = str(self.cube)
+        self.cube_str = escape(str(self.cube))
 
         self.str_headings = {
             'Dimension coordinates:': None,
@@ -115,9 +116,9 @@ class CubeRepresentation(object):
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
 
-        self.name = self.cube.name().title().replace('_', ' ')
-        self.names = self._dim_names()
-        self.units = self.cube.units
+        self.name = escape(self.cube.name().title().replace('_', ' '))
+        self.names = [escape(dim_name) for dim_name in self._dim_names()]
+        self.units = escape(str(self.cube.units))
 
     def _get_dim_names(self):
         """
@@ -401,6 +402,7 @@ class CubeListRepresentation(object):
         for i, cube in enumerate(self.cubelist):
             title = '{i}: {summary}'.format(i=i,
                                             summary=cube.summary(shorten=True))
+            title = escape(title)
             content = cube._repr_html_()
             html.append(self._accordian_panel.format(uid=self.cubelist_id,
                                                      title=title,
