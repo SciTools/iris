@@ -101,11 +101,10 @@ install:
   - python setup.py --quiet install
 
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-# TODO: uncomment and address the 5 failures and 10 errors in iris-grib.
-#  - if [[ "${TEST_MINIMAL}" != true ]]; then
-#        conda install --quiet -n ${ENV_NAME} python-eccodes;
-#        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
-#    fi
+  - if [[ "${TEST_MINIMAL}" != true ]]; then
+        conda install --quiet -n ${ENV_NAME} python-eccodes;
+        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
+    fi
 
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
