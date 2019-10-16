@@ -522,85 +522,6 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-def _make_flag_getter(value):
-    def getter(self):
-        warn_deprecated('The `flag` attributes are deprecated - please use '
-                        'integer bitwise operators instead.')
-        return int(bool(self._value & value))
-    return getter
-
-
-def _make_flag_setter(value):
-    def setter(self, flag):
-        warn_deprecated('The `flag` attributes are deprecated - please use '
-                        'integer bitwise operators instead.')
-        if not isinstance(flag, bool):
-            raise TypeError('Can only set bits to True or False')
-        if flag:
-            self._value |= value
-        else:
-            self._value &= ~value
-    return setter
-
-
-class _FlagMetaclass(type):
-    NUM_BITS = 18
-
-    def __new__(cls, classname, bases, class_dict):
-        for i in range(cls.NUM_BITS):
-            value = 2 ** i
-            name = 'flag{}'.format(value)
-            class_dict[name] = property(_make_flag_getter(value),
-                                        _make_flag_setter(value))
-        class_dict['NUM_BITS'] = cls.NUM_BITS
-        return type.__new__(cls, classname, bases, class_dict)
-
-
-class _LBProc(six.with_metaclass(_FlagMetaclass, SplittableInt)):
-    # Use a metaclass to define the `flag1`, `flag2`, `flag4, etc.
-    # properties.
-    def __init__(self, value):
-        """
-        Args:
-
-        * value (int):
-            The initial value which will determine the flags.
-
-        """
-        value = int(value)
-        if value < 0:
-            raise ValueError('Negative numbers not supported with '
-                             'splittable integers object')
-        self._value = value
-
-    def __setattr__(self, name, value):
-        object.__setattr__(self, name, value)
-
-    def __iadd__(self, value):
-        self._value += value
-        return self
-
-    def __and__(self, value):
-        return self._value & value
-
-    def __iand__(self, value):
-        self._value &= value
-        return self
-
-    def __ior__(self, value):
-        self._value |= value
-        return self
-
-    def __int__(self):
-        return self._value
-
-    def __repr__(self):
-        return '_LBProc({})'.format(self._value)
-
-    def __str__(self):
-        return str(self._value)
-
-
 class PPDataProxy(object):
     """A reference to the data payload of a single PP field."""
 
@@ -1038,8 +959,9 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     @lbproc.setter
     def lbproc(self, value):
-        if not isinstance(value, _LBProc):
-            value = _LBProc(value)
+        value = int(value)
+        if value < 0:
+            raise ValueError('PPField.lbproc cannot be a negative number.')
         self._lbproc = value
 
     @property

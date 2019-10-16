@@ -1,0 +1,2 @@
+* :attr:`iris.fileformats.pp.PPField.lbproc` is now an `int`. The
+  deprecated attributes `flag1`, `flag2` etc. have been removed from it.
