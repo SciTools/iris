@@ -8,7 +8,7 @@ cartopy
 cf-units>=2
 cftime
 dask[array]>=1.2.0  #conda: dask>=1.2.0
-matplotlib>=2,<3
+matplotlib
 netcdf4
 numpy>=1.14
 scipy
