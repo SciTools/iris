@@ -192,7 +192,9 @@ class CFVariableMixin:
         standard_name = self.standard_name
         long_name = self.long_name
         var_name = self.var_name
-        stash_name = str(self.attributes.get('STASH', ''))
+        stash_name = self.attributes.get('STASH')
+        if stash_name is not None:
+            stash_name = str(stash_name)
         return (standard_name, long_name, var_name, stash_name)
 
     def rename(self, name):

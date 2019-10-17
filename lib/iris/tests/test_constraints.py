@@ -473,6 +473,15 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
         result = self.cube.extract(constraint)
         self.assertIsNone(result)
 
+    def test_unknown(self):
+        self.cube.standard_name = None
+        self.cube.long_name = None
+        self.cube.var_name = None
+        self.cube.attributes = None
+        constraint = NameConstraint(None, None, None, None)
+        result = self.cube.extract(constraint)
+        self.assertIsNotNone(result)
+
 
 @tests.skip_data
 class TestCubeExtract(TestMixin, tests.IrisTest):

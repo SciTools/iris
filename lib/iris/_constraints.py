@@ -505,7 +505,8 @@ class NameConstraint(Constraint):
     The name constraint will only succeed if all of the provided names match.
 
     """
-    def __init__(self, **names):
+    def __init__(self, standard_name='none', long_name='none',
+                 var_name='none', STASH='none'):
         """
         Example usage::
 
@@ -520,7 +521,11 @@ class NameConstraint(Constraint):
                 ``STASH`` keyword argument and not ``stash``.
 
         """
-        self._names = names
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.var_name = var_name
+        self.STASH = STASH
+        self._names = ('standard_name', 'long_name', 'var_name', 'STASH')
         super().__init__(cube_func=self._cube_func)
 
     def _cube_func(self, cube):
@@ -532,27 +537,24 @@ class NameConstraint(Constraint):
             return result
 
         match = True
-        for name, value in self._names.items():
-            if name == 'standard_name':
-                match = matcher(cube.standard_name, value)
-                if match is False:
-                    break
-            if name == 'long_name':
-                match = matcher(cube.long_name, value)
-                if match is False:
-                    break
-            if name == 'var_name':
-                match = matcher(cube.var_name, value)
-                if match is False:
-                    break
-            if name == 'STASH':
-                match = matcher(cube.attributes.get('STASH'), value)
-                if match is False:
-                    break
+        for name in self._names:
+            if name == 'STASH' and self.STASH != 'none':
+                match = matcher(cube.attributes.get('STASH'), self.STASH)
+            else:
+                expected = getattr(self, name)
+                if expected != 'none':
+                    actual = getattr(cube, name)
+                    match = matcher(actual, expected)
+            # This is a short-cut match.
+            if match is False:
+                break
+
         return match
 
     def __repr__(self):
         names = []
-        for name, value in self._names.items():
-            names.append('{}={!r}'.format(name, value))
+        for name in self._names:
+            value = getattr(self, name)
+            if value != 'none':
+                names.append('{}={!r}'.format(name, value))
         return '{}({})'.format(self.__class__.__name__, ', '.join(names))
