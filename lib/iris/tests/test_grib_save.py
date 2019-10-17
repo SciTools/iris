@@ -20,7 +20,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
-from unittest import skip
 
 import os
 import datetime
@@ -45,7 +44,6 @@ class TestLoadSave(tests.TestGribMessage):
     def setUp(self):
         self.skip_keys = []
 
-    @skip('iris-grib is currently causing failures')
     def test_latlon_forecast_plev(self):
         source_grib = tests.get_data_path(("GRIB", "uk_t", "uk_t.grib2"))
         cubes = iris.load(source_grib)
@@ -58,6 +56,10 @@ class TestLoadSave(tests.TestGribMessage):
                             'shapeOfTheEarth': (0, 1),
                             'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
+                            'scaledValueOfEarthMajorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                            'scaledValueOfEarthMinorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMinorAxis': (MDI, 0),
                             'typeOfGeneratingProcess': (0, 255),
                             'generatingProcessIdentifier': (128, 255),
                             }
@@ -65,7 +67,6 @@ class TestLoadSave(tests.TestGribMessage):
                                              expect_diffs, self.skip_keys,
                                              skip_sections=[2])
 
-    @skip('iris-grib is currently causing failures')
     def test_rotated_latlon(self):
         source_grib = tests.get_data_path(("GRIB", "rotated_nae_t",
                                            "sensible_pole.grib2"))
@@ -79,6 +80,10 @@ class TestLoadSave(tests.TestGribMessage):
                             'shapeOfTheEarth': (0, 1),
                             'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
+                            'scaledValueOfEarthMajorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                            'scaledValueOfEarthMinorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMinorAxis': (MDI, 0),
                             'longitudeOfLastGridPoint': (392109982, 32106370),
                             'latitudeOfLastGridPoint': (19419996, 19419285),
                             'typeOfGeneratingProcess': (0, 255),
@@ -88,7 +93,6 @@ class TestLoadSave(tests.TestGribMessage):
                                              expect_diffs, self.skip_keys,
                                              skip_sections=[2])
 
-    @skip('iris-grib is currently causing failures')
     def test_time_mean(self):
         # This test for time-mean fields also tests negative forecast time.
         source_grib = tests.get_data_path(("GRIB", "time_processed",
@@ -101,6 +105,10 @@ class TestLoadSave(tests.TestGribMessage):
                         'shapeOfTheEarth': (0, 1),
                         'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                 6367470),
+                        'scaledValueOfEarthMajorAxis': (MDI, 0),
+                        'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                        'scaledValueOfEarthMinorAxis': (MDI, 0),
+                        'scaleFactorOfEarthMinorAxis': (MDI, 0),
                         'longitudeOfLastGridPoint': (356249908, 356249809),
                         'latitudeOfLastGridPoint': (-89999938, -89999944),
                         'typeOfGeneratingProcess': (0, 255),
