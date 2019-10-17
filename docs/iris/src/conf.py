@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -64,7 +64,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               'sphinx.ext.intersphinx',
               'matplotlib.sphinxext.mathmpl',
-              'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
 
               # better class documentation
