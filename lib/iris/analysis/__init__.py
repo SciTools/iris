@@ -1080,7 +1080,7 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
     # Perform the percentile calculation.
     if fast_percentile_method:
         msg = 'Cannot use fast np.percentile method with masked array.'
-        if ma.isMaskedArray(data):
+        if ma.is_masked(data):
             raise TypeError(msg)
         result = np.percentile(data, percent, axis=-1)
         result = result.T
@@ -1090,6 +1090,8 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
                                                **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+    else:
+        result = ma.MaskedArray(result)
 
     # Ensure to unflatten any leading dimensions.
     if shape:
