@@ -2266,7 +2266,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             scalar_cell_measures = [cm for cm in self.cell_measures()
                                     if cm.shape == (1,)]
             if scalar_cell_measures:
-                summary += '\n    Scalar cell measures:\n'
+                summary += '\n     Scalar cell measures:\n'
                 scalar_cms = ['          {}'.format(cm.name())
                               for cm in scalar_cell_measures]
                 summary += '\n'.join(scalar_cms)

@@ -92,13 +92,18 @@ class CubeRepresentation(object):
             'Dimension coordinates:': None,
             'Auxiliary coordinates:': None,
             'Derived coordinates:': None,
+            'Cell Measures:': None,
+            'Ancillary Datasets:': None,
             'Scalar coordinates:': None,
+            'Invalid coordinates:': None,
+            'Scalar cell measures:': None,
             'Attributes:': None,
             'Cell methods:': None,
         }
         self.dim_desc_coords = ['Dimension coordinates:',
                                 'Auxiliary coordinates:',
-                                'Derived coordinates:']
+                                'Derived coordinates:',
+                                'Cell Measures:']
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
