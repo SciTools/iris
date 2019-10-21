@@ -31,7 +31,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # Import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
-from unittest import skip
 
 import iris
 import iris.exceptions
@@ -132,7 +131,7 @@ class TestBasicLoad(tests.GraphicsTest):
             ("GRIB", "reduced", "reduced_ll.grib1")))
         self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
 
-    @skip('iris-grib is currently causing failures')
+    @tests.skip_grib_fail
     def test_reduced_gg(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "reduced", "reduced_gg.grib2")))
