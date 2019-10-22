@@ -950,12 +950,11 @@ class IrisTest_nometa(unittest.TestCase):
 _PRINT_TEST_TIMINGS = bool(int(os.environ.get('IRIS_TEST_TIMINGS', 0)))
 
 
-def _method_path(meth):
-    cls = meth.im_class
+def _method_path(meth, cls):
     return '.'.join([cls.__module__, cls.__name__, meth.__name__])
 
 
-def _testfunction_timing_decorator(fn):
+def _testfunction_timing_decorator(fn, cls):
     # Function decorator for making a testcase print its execution time.
     @functools.wraps(fn)
     def inner(*args, **kwargs):
@@ -966,7 +965,7 @@ def _testfunction_timing_decorator(fn):
             end_time = datetime.datetime.now()
             elapsed_time = (end_time - start_time).total_seconds()
             msg = '\n  TEST TIMING -- "{}" took : {:12.6f} sec.'
-            name = _method_path(fn)
+            name = _method_path(fn, cls)
             print(msg.format(name, elapsed_time))
         return result
     return inner
@@ -980,7 +979,7 @@ def iristest_timing_decorator(cls):
         for attr_name in attr_names:
             attr = getattr(cls, attr_name)
             if callable(attr) and attr_name.startswith('test'):
-                attr = _testfunction_timing_decorator(attr)
+                attr = _testfunction_timing_decorator(attr, cls)
                 setattr(cls, attr_name, attr)
     return cls
 
