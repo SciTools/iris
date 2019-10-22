@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -56,6 +56,10 @@ class TestLoadSave(tests.TestGribMessage):
                             'shapeOfTheEarth': (0, 1),
                             'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
+                            'scaledValueOfEarthMajorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                            'scaledValueOfEarthMinorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMinorAxis': (MDI, 0),
                             'typeOfGeneratingProcess': (0, 255),
                             'generatingProcessIdentifier': (128, 255),
                             }
@@ -76,6 +80,10 @@ class TestLoadSave(tests.TestGribMessage):
                             'shapeOfTheEarth': (0, 1),
                             'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                     6367470),
+                            'scaledValueOfEarthMajorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                            'scaledValueOfEarthMinorAxis': (MDI, 0),
+                            'scaleFactorOfEarthMinorAxis': (MDI, 0),
                             'longitudeOfLastGridPoint': (392109982, 32106370),
                             'latitudeOfLastGridPoint': (19419996, 19419285),
                             'typeOfGeneratingProcess': (0, 255),
@@ -97,6 +105,10 @@ class TestLoadSave(tests.TestGribMessage):
                         'shapeOfTheEarth': (0, 1),
                         'scaledValueOfRadiusOfSphericalEarth': (MDI,
                                                                 6367470),
+                        'scaledValueOfEarthMajorAxis': (MDI, 0),
+                        'scaleFactorOfEarthMajorAxis': (MDI, 0),
+                        'scaledValueOfEarthMinorAxis': (MDI, 0),
+                        'scaleFactorOfEarthMinorAxis': (MDI, 0),
                         'longitudeOfLastGridPoint': (356249908, 356249809),
                         'latitudeOfLastGridPoint': (-89999938, -89999944),
                         'typeOfGeneratingProcess': (0, 255),
