@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -49,6 +49,7 @@ class TestImport(tests.IrisTest):
         cube = load_cube(path)
         self.assertCMLApproxData(cube)
 
+    @tests.skip_grib_fail
     def test_gdt90_with_bitmap(self):
         path = tests.get_data_path(('GRIB', 'umukv', 'ukv_chan9.grib2'))
         cube = load_cube(path)
@@ -280,6 +281,7 @@ class TestGDT40(tests.IrisTest):
         cube = load_cube(path)
         self.assertCMLApproxData(cube)
 
+    @tests.skip_grib_fail
     def test_reduced(self):
         path = tests.get_data_path(('GRIB', 'reduced', 'reduced_gg.grib2'))
         cube = load_cube(path)
