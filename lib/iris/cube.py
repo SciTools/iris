@@ -2148,7 +2148,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                         for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
-                            char = 'x'
+                            char = 'x' if dim in dims else '-'
                             line = '{pad:{width}}{char}'.format(pad=' ',
                                                                 width=width,
                                                                 char=char)
