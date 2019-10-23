@@ -1899,6 +1899,7 @@ def cubelike_array_as_cube(
 
     return result
 
+
 def attach_cube_as_aux_coord(parent_cube, daughter_cube):
     # Preliminary...
     # It insists on parent cube coords matching the daughter coords.
@@ -1968,4 +1969,3 @@ def attach_cube_as_aux_coord(parent_cube, daughter_cube):
     # Add the daughter_coord into the parent cube.
     parent_cube.add_aux_coord(new_coord,
                               parent_dims)
-
