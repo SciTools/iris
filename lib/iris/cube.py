@@ -2203,7 +2203,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 ancillary_variable_summary, cube_header = vector_summary(
                     [], cube_header, max_line_offset,
                     ancillary_variables=vector_ancillary_variables)
-                summary += '\n     Ancillary Datasets:\n'
+                summary += '\n     Ancillary Variables:\n'
                 summary += '\n'.join(ancillary_variable_summary)
 
             #

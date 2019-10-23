@@ -143,7 +143,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             values, keys)
 
         # Copy values after indexing to avoid making metadata that is a
-        # view on another metadata.
+        # view on another metadata. This will not realise lazy data.
         values = values.copy()
 
         # If the metadata is a coordinate and it has bounds, repeat the above
@@ -676,10 +676,9 @@ class AncillaryVariable(_DimensionalMetadata):
             A dictionary containing other cf and user-defined attributes.
 
         """
-        super(AncillaryVariable, self).__init__(
-            values=data, standard_name=standard_name,
-            long_name=long_name, var_name=var_name,
-            units=units, attributes=attributes)
+        super().__init__(values=data, standard_name=standard_name,
+                         long_name=long_name, var_name=var_name,
+                         units=units, attributes=attributes)
 
     @property
     def data(self):
@@ -704,7 +703,7 @@ class AncillaryVariable(_DimensionalMetadata):
             A lazy array, representing the ancillary variable data array.
 
         """
-        return super(AncillaryVariable, self)._lazy_values()
+        return super()._lazy_values()
 
     def core_data(self):
         """
@@ -712,7 +711,7 @@ class AncillaryVariable(_DimensionalMetadata):
         NumPy array or a dask array.
 
         """
-        return super(AncillaryVariable, self)._core_values()
+        return super()._core_values()
 
     def has_lazy_data(self):
         """
@@ -720,7 +719,7 @@ class AncillaryVariable(_DimensionalMetadata):
         is a lazy dask array or not.
 
         """
-        return super(AncillaryVariable, self)._has_lazy_values()
+        return super()._has_lazy_values()
 
 
 class CellMeasure(AncillaryVariable):
@@ -761,10 +760,9 @@ class CellMeasure(AncillaryVariable):
             are the only valid entries.
 
         """
-        super(CellMeasure, self).__init__(
-            data=data, standard_name=standard_name,
-            long_name=long_name, var_name=var_name,
-            units=units, attributes=attributes)
+        super().__init__(data=data, standard_name=standard_name,
+                         long_name=long_name, var_name=var_name,
+                         units=units, attributes=attributes)
 
         #: String naming the measure type.
         self.measure = measure
@@ -1233,9 +1231,9 @@ class Coord(_DimensionalMetadata):
             from NetCDF.
             Always False if no bounds exist.
         """
-        super(Coord, self).__init__(values=points, standard_name=standard_name,
-                                    long_name=long_name, var_name=var_name,
-                                    units=units, attributes=attributes)
+        super().__init__(values=points, standard_name=standard_name,
+                         long_name=long_name, var_name=var_name,
+                         units=units, attributes=attributes)
 
         #: Relevant coordinate system (if any).
         self.coord_system = coord_system
@@ -1269,7 +1267,7 @@ class Coord(_DimensionalMetadata):
             raise ValueError('If bounds are specified, points must also be '
                              'specified')
 
-        new_coord = super(Coord, self).copy(values=points)
+        new_coord = super().copy(values=points)
         if points is not None:
             # Regardless of whether bounds are provided as an argument, new
             # points will result in new bounds, discarding those copied from
@@ -1380,7 +1378,7 @@ class Coord(_DimensionalMetadata):
             A lazy array, representing the coord points array.
 
         """
-        return super(Coord, self)._lazy_values()
+        return super()._lazy_values()
 
     def lazy_bounds(self):
         """
@@ -1409,7 +1407,7 @@ class Coord(_DimensionalMetadata):
         or a dask array.
 
         """
-        return super(Coord, self)._core_values()
+        return super()._core_values()
 
     def core_bounds(self):
         """
@@ -1430,7 +1428,7 @@ class Coord(_DimensionalMetadata):
         lazy dask array or not.
 
         """
-        return super(Coord, self)._has_lazy_values()
+        return super()._has_lazy_values()
 
     def has_lazy_bounds(self):
         """
@@ -1444,7 +1442,7 @@ class Coord(_DimensionalMetadata):
         return result
 
     def _repr_other_metadata(self):
-        result = super(Coord, self)._repr_other_metadata()
+        result = super()._repr_other_metadata()
         if self.coord_system:
             result += ', coord_system={}'.format(self.coord_system)
         if self.climatological:
@@ -1482,7 +1480,7 @@ class Coord(_DimensionalMetadata):
         :attr:`~iris.coords.Coord.bounds` by 180.0/:math:`\pi`.
 
         """
-        super(Coord, self).convert_units(unit=unit)
+        super().convert_units(unit=unit)
 
     def cells(self):
         """
@@ -1699,8 +1697,7 @@ class Coord(_DimensionalMetadata):
         """
         compatible = False
         if (self.coord_system == other.coord_system):
-            compatible = super(Coord, self).is_compatible(other=other,
-                                                          ignore=ignore)
+            compatible = super().is_compatible(other=other, ignore=ignore)
 
         return compatible
 
@@ -2116,7 +2113,7 @@ class Coord(_DimensionalMetadata):
         """Return a DOM element describing this Coord."""
         # Create the XML element as the camelCaseEquivalent of the
         # class name
-        element = super(Coord, self).xml_element(doc=doc)
+        element = super().xml_element(doc=doc)
 
         if hasattr(self.points, 'to_xml_attr'):
             element.setAttribute('points', self.points.to_xml_attr())
@@ -2200,13 +2197,12 @@ class DimCoord(Coord):
         read-only points and bounds.
 
         """
-        super(DimCoord, self).__init__(
-            points, standard_name=standard_name,
-            long_name=long_name, var_name=var_name,
-            units=units, bounds=bounds,
-            attributes=attributes,
-            coord_system=coord_system,
-            climatological=climatological)
+        super().__init__(points, standard_name=standard_name,
+                         long_name=long_name, var_name=var_name,
+                         units=units, bounds=bounds,
+                         attributes=attributes,
+                         coord_system=coord_system,
+                         climatological=climatological)
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
@@ -2218,7 +2214,7 @@ class DimCoord(Coord):
         Used if copy.deepcopy is called on a coordinate.
 
         """
-        new_coord = copy.deepcopy(super(DimCoord, self), memo)
+        new_coord = copy.deepcopy(super(), memo)
         # Ensure points and bounds arrays are read-only.
         new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
@@ -2226,7 +2222,7 @@ class DimCoord(Coord):
         return new_coord
 
     def copy(self, points=None, bounds=None):
-        new_coord = super(DimCoord, self).copy(points=points, bounds=bounds)
+        new_coord = super().copy(points=points, bounds=bounds)
         # Make the arrays read-only.
         new_coord._values_dm.data.flags.writeable = False
         if bounds is not None:
@@ -2253,7 +2249,7 @@ class DimCoord(Coord):
     __hash__ = Coord.__hash__
 
     def __getitem__(self, key):
-        coord = super(DimCoord, self).__getitem__(key)
+        coord = super().__getitem__(key)
         coord.circular = self.circular and coord.shape == self.shape
         return coord
 
@@ -2399,7 +2395,7 @@ class DimCoord(Coord):
 
     def xml_element(self, doc):
         """Return DOM element describing this :class:`iris.coords.DimCoord`."""
-        element = super(DimCoord, self).xml_element(doc)
+        element = super().xml_element(doc)
         if self.circular:
             element.setAttribute('circular', str(self.circular))
         return element
