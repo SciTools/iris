@@ -411,8 +411,6 @@ class Test_summary(tests.IrisTest):
         self.cube = Cube(0)
 
     def test_cell_datetime_objects(self):
-        # Check the scalar coordinate summary still works even when
-        # iris.FUTURE.cell_datetime_objects is True.
         self.cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
         summary = self.cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
