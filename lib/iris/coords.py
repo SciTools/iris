@@ -92,6 +92,13 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             A dictionary containing other cf and user-defined attributes.
 
         """
+        # Note: this class includes bounds handling code for convenience, but
+        # this can only run within instances which are also Coords, because
+        # only they may actually have bounds.  This parent class has no
+        # bounds-related getter/setter properties, and no bounds keywords in
+        # its __init__ or __copy__ methods.  The only bounds-related behaviour
+        # it provides is a 'has_bounds()' method, which always returns False.
+
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
 
@@ -111,6 +118,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Set up DataManager attributes and values.
         self._values_dm = None
         self._values = values
+        self._bounds_dm = None  # Only ever set on Coord-derived instances.
 
     def __getitem__(self, keys):
         """
@@ -124,6 +132,9 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             indexing.
 
         """
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
+
         # Fetch the values.
         values = self._values_dm.core_data()
 
@@ -137,20 +148,15 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         # If the metadata is a coordinate and it has bounds, repeat the above
         # with the bounds.
-        if isinstance(self, Coord):
-            if self.has_bounds():
-                bounds = self._bounds_dm.core_data()
-                _, bounds = iris.util._slice_data_with_keys(bounds, keys)
-                bounds = bounds.copy()
-            else:
-                bounds = None
-
-            copy_args = dict(points=values, bounds=bounds)
-        else:
-            copy_args = dict(values=values)
+        copy_args = {}
+        if self.has_bounds():
+            bounds = self._bounds_dm.core_data()
+            _, bounds = iris.util._slice_data_with_keys(bounds, keys)
+            # Pass into the copy method : for Coords, it has a 'bounds' key.
+            copy_args['bounds'] = bounds.copy()
 
         # The new metadata is a copy of the old one with replaced content.
-        new_metadata = self.copy(**copy_args)
+        new_metadata = self.copy(values, **copy_args)
 
         return new_metadata
 
@@ -166,6 +172,8 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             copied.
 
         """
+        # Note: this is overridden in Coord subclasses, to add bounds handling
+        # and a 'bounds' keyword.
         new_metadata = copy.deepcopy(self)
         if values is not None:
             new_metadata._values_dm = None
@@ -262,6 +270,8 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
                                                **kwargs)
 
     def __str__(self):
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
         if self.units.is_time_reference():
             fmt = '{cls}({values}{bounds}' \
                   ', standard_name={self.standard_name!r}' \
@@ -289,6 +299,8 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return result
 
     def __repr__(self):
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
         fmt = '{cls}({self._values!r}{bounds}' \
               ', standard_name={self.standard_name!r}, units={self.units!r}' \
               '{other_metadata})'
@@ -302,6 +314,9 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return result
 
     def __eq__(self, other):
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
+
         eq = NotImplemented
         # If the other object has a means of getting its definition, then do
         # the  comparison, otherwise return a NotImplemented to let Python try
@@ -310,9 +325,19 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             # metadata comparison
             eq = self._as_defn() == other._as_defn()
             # data values comparison
-            if eq:
+            if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(self._values, other._values,
                                            withnans=True)
+
+            # Also consider bounds, if we have them.
+            # (N.B. though only Coords can ever actually *have* bounds).
+            if eq and eq is not NotImplemented:
+                if self.has_bounds() and other.has_bounds():
+                    eq = iris.util.array_equal(self.bounds, other.bounds,
+                                               withnans=True)
+                else:
+                    eq = not self.has_bounds() and not other.has_bounds()
+
         return eq
 
     def __ne__(self, other):
@@ -352,23 +377,47 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
             object would represent "10 kilometers".
 
         """
-        result = NotImplemented
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
 
-        if isinstance(other, (int, float, np.number)):
-            values = self._values_dm.core_data()
+        if (isinstance(other, _DimensionalMetadata) or
+                not isinstance(other, (int, float, np.number))):
 
-            if mode_constant == self._MODE_ADD:
-                new_values = values + other
-            elif mode_constant == self._MODE_SUB:
-                new_values = values - other
-            elif mode_constant == self._MODE_MUL:
-                new_values = values * other
-            elif mode_constant == self._MODE_DIV:
-                new_values = values / other
-            elif mode_constant == self._MODE_RDIV:
-                new_values = other / values
+            def typename(obj):
+                if isinstance(obj, Coord):
+                    result = 'Coord'
+                else:
+                    # We don't really expect this, but do something anyway.
+                    result = self.__class__.__name__
+                return result
 
+            emsg = '{selftype} {operator} {othertype}'.format(
+                selftype=typename(self),
+                operator=self._MODE_SYMBOL[mode_constant],
+                othertype=typename(other))
+            raise iris.exceptions.NotYetImplementedError(emsg)
+
+        else:
+            # 'Other' is an array type : adjust points, and bounds if any.
+            result = NotImplemented
+
+            def op(values):
+                if mode_constant == self._MODE_ADD:
+                    new_values = values + other
+                elif mode_constant == self._MODE_SUB:
+                    new_values = values - other
+                elif mode_constant == self._MODE_MUL:
+                    new_values = values * other
+                elif mode_constant == self._MODE_DIV:
+                    new_values = values / other
+                elif mode_constant == self._MODE_RDIV:
+                    new_values = other / values
+                return new_values
+
+            new_values = op(self._values_dm.core_data())
             result = self.copy(new_values)
+            if self.has_bounds():
+                result.bounds = op(self._bounds_dm.core_data())
 
         return result
 
@@ -403,12 +452,18 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         return self * other
 
     def __neg__(self):
-        return self.copy(-self._core_values())
+        values = -self._core_values()
+        copy_args = {}
+        if self.has_bounds():
+            copy_args['bounds'] = -self.core_bounds()
+        return self.copy(values, **copy_args)
 
     def convert_units(self, unit):
         """Change the units, converting the values of the metadata."""
         # If the coord has units convert the values in points (and bounds if
         # present).
+        # Note: this method includes bounds handling code, but it only runs
+        # within Coord type instances, as only these allow bounds to be set.
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
                 'Cannot convert from unknown units. '
@@ -1396,17 +1451,6 @@ class Coord(_DimensionalMetadata):
             result += ', climatological={}'.format(self.climatological)
         return result
 
-    def __eq__(self, other):
-        eq = super(Coord, self).__eq__(other=other)
-
-        if eq and eq is not NotImplemented:
-            if self.has_bounds() and other.has_bounds():
-                eq = iris.util.array_equal(self.bounds, other.bounds,
-                                           withnans=True)
-            else:
-                eq = self.bounds is None and other.bounds is None
-        return eq
-
     def _as_defn(self):
         defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
                          self.units, self.attributes, self.coord_system,
@@ -1421,39 +1465,6 @@ class Coord(_DimensionalMetadata):
     # Fixing it will require changing those uses.  See #962 and #1772.
     def __hash__(self):
         return hash(id(self))
-
-    def __binary_operator__(self, other, mode_constant):
-        if isinstance(other, Coord):
-            emsg = 'coord {} coord'.format(
-                self._MODE_SYMBOL[mode_constant])
-            raise iris.exceptions.NotYetImplementedError(emsg)
-
-        new_coord = super(Coord, self).__binary_operator__(
-            other=other, mode_constant=mode_constant)
-
-        if new_coord is not NotImplemented:
-            if self.has_bounds():
-                bounds = self._bounds_dm.core_data()
-
-                if mode_constant == self._MODE_ADD:
-                    new_bounds = bounds + other
-                elif mode_constant == self._MODE_SUB:
-                    new_bounds = bounds - other
-                elif mode_constant == self._MODE_MUL:
-                    new_bounds = bounds * other
-                elif mode_constant == self._MODE_DIV:
-                    new_bounds = bounds / other
-                elif mode_constant == self._MODE_RDIV:
-                    new_bounds = other / bounds
-
-            else:
-                new_bounds = None
-            new_coord.bounds = new_bounds
-        return new_coord
-
-    def __neg__(self):
-        return self.copy(-self.core_points(),
-                         -self.core_bounds() if self.has_bounds() else None)
 
     def convert_units(self, unit):
         """
