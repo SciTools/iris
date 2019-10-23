@@ -425,14 +425,15 @@ class Test_summary(tests.IrisTest):
         self.assertIn(str_value, summary)
 
     def test_ancillary_variable(self):
-        cube = Cube(np.arange(6).reshape(2,3))
-        av = AncillaryVariable([1,2], 'status_flag')
+        cube = Cube(np.arange(6).reshape(2, 3))
+        av = AncillaryVariable([1, 2], 'status_flag')
         cube.add_ancillary_variable(av, 0)
         expected_summary = \
             'unknown / (unknown)                 (-- : 2; -- : 3)\n' \
             '     Ancillary Variables:\n' \
             '          status_flag                   x       -'
         self.assertEqual(cube.summary(), expected_summary)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
