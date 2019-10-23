@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# (C) British Crown Copyright 2010 - 2019, Met Office
 #
 # This file is part of Iris.
 #
@@ -40,6 +40,11 @@ class CoordinateNotFoundError(KeyError):
 
 class CellMeasureNotFoundError(KeyError):
     """Raised when a search yields no cell measures."""
+    pass
+
+
+class AncillaryVariableNotFoundError(KeyError):
+    """Raised when a search yields no ancillary variables."""
     pass
 
 

@@ -739,7 +739,7 @@ class Test_convert_units(tests.IrisTest):
     def test_convert_unknown_units(self):
         coord = iris.coords.AuxCoord(1, units='unknown')
         emsg = ('Cannot convert from unknown units. '
-                'The "coord.units" attribute may be set directly.')
+                'The "units" attribute may be set directly.')
         with self.assertRaisesRegexp(UnitConversionError, emsg):
             coord.convert_units('degrees')
 
