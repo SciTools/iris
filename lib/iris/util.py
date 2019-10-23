@@ -1920,7 +1920,7 @@ def attach_cube_as_aux_coord(parent_cube, daughter_cube):
     # matching ones in the parent cube, to construct a list of parent cube
     # dimensions for the new aux-coord.
     n_daughter_dims = daughter_cube.ndim
-    dims_to_do = np.range(n_daughter_dims)
+    dims_to_do = list(range(n_daughter_dims))
     parent_dim_assignments = [None] * n_daughter_dims
     while dims_to_do:
         # Identify the first remaining unmapped dimension that comes to hand.
@@ -1949,7 +1949,7 @@ def attach_cube_as_aux_coord(parent_cube, daughter_cube):
         parent_coord = parent_coords[0]
 
         # Fill in the parent-dimensions map for each dimension of this coord.
-        daughter_dims = daughter_cube.coord_dims(coord)
+        daughter_dims = daughter_cube.coord_dims(daughter_coord)
         parent_dims = parent_cube.coord_dims(parent_coord)
         for daughter_dim, parent_dim in zip(daughter_dims, parent_dims):
             existing_dim_mapping = parent_dim_assignments[daughter_dim]
