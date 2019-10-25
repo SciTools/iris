@@ -27,7 +27,7 @@ are licensed under the UK's Open Government Licence:
 
 .. admonition:: Documentation, example and data license
  
-    Copyright Iris Contributors.
+    (C) British Crown Copyright 2019.
     
     You may use and re-use the information featured on this website (not including logos) free of 
     charge in any format or medium, under the terms of the 
