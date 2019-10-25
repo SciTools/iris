@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #
@@ -38,7 +38,7 @@ import xml.etree.ElementTree as ET
 
 
 STD_VALUES_FILE_TEMPLATE = '''
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #

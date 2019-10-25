@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #
@@ -39,7 +39,7 @@ from translator import (FORMAT_URIS, FieldcodeCFMappings, StashCFNameMappings,
                         CFConstrainedGRIB1LocalParamMappings,
                         CFGRIB2ParamMappings, CFGRIB1LocalParamMappings)
 
-HEADER = """# (C) British Crown Copyright 2013 - {year}, Met Office
+HEADER = """# Copyright Iris Contributors
 #
 # This file is part of {name}.
 #

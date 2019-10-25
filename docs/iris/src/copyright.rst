@@ -2,19 +2,18 @@
 Iris copyright, licensing and contributors
 ==========================================
 
-.. |copy|   unicode:: U+000A9 .. COPYRIGHT SIGN
-
 Iris code
 ---------
 
-All Iris source code, unless explicitly stated, is |copy| ``British Crown copyright, 2014`` and 
-is licensed under the **GNU Lesser General Public License** as published by the
-Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+All Iris source code, unless explicitly stated, is ``Copyright Iris
+Contributors`` and is licensed under the **GNU Lesser General Public
+License** as published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
 You should find all source files with the following header:
 
 .. admonition:: Code License
 
-    |copy| British Crown Copyright 2010 - 2014, Met Office
+    Copyright Iris Contributors
     
     This file is part of Iris.
     
@@ -40,7 +39,7 @@ are licensed under the UK's Open Government Licence:
 
 .. admonition:: Documentation, example and data license
  
-    |copy| British Crown copyright, 2014.
+    Copyright Iris Contributors.
     
     You may use and re-use the information featured on this website (not including logos) free of 
     charge in any format or medium, under the terms of the 

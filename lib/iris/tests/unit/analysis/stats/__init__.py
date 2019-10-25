@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #

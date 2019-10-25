@@ -1,6 +1,6 @@
 ..
     ##########################################################################
-    (C) British Crown Copyright 2010 - 2012, Met Office
+    Copyright Iris Contributors
     
     This file is part of Iris.
     

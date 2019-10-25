@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #

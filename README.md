@@ -117,4 +117,4 @@ of its [GNU LGPLv3 license](COPYING.LESSER).
 # Contributing
 Information on how to contribute can be found in the [Iris developer guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html).
 
-(C) British Crown Copyright 2010 - 2019, Met Office
+Copyright Iris Contributors

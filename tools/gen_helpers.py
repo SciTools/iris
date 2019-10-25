@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2015, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #
@@ -23,7 +23,7 @@ import os
 import os.path
 
 HEADER = \
-    '''# (C) British Crown Copyright 2013 - {}, Met Office
+    '''# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #
@@ -100,7 +100,7 @@ project = u'Iris'
 # define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
 upper_copy_year = datetime.datetime.now().year
-copyright = u'British Crown Copyright 2010 - {}, Met Office'.format(upper_copy_year)
+copyright = u'Copyright Iris Contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
