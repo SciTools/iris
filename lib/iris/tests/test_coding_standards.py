@@ -36,7 +36,7 @@ import iris
 
 
 LICENSE_TEMPLATE = """
-# (C) British Crown Copyright {YEARS}, Met Office
+# Copyright Iris Contributors
 #
 # This file is part of Iris.
 #
@@ -54,9 +54,8 @@ LICENSE_TEMPLATE = """
 # along with Iris.  If not, see <http://www.gnu.org/licenses/>.""".strip()
 
 
-LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE).replace('\{YEARS\}', '(.*?)')
 # Add shebang possibility to the LICENSE_RE_PATTERN
-LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_RE_PATTERN
+LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_TEMPLATE
 LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 
 
@@ -215,32 +214,6 @@ class TestCodeFormat(tests.IrisTest):
 
 
 class TestLicenseHeaders(tests.IrisTest):
-    @staticmethod
-    def years_of_license_in_file(fh):
-        """
-        Using :data:`LICENSE_RE` look for the years defined in the license
-        header of the given file handle.
-
-        If the license cannot be found in the given fh, None will be returned,
-        else a tuple of (start_year, end_year) will be returned.
-
-        """
-        license_matches = LICENSE_RE.match(fh.read())
-        if not license_matches:
-            # no license found in file.
-            return None
-
-        years = license_matches.groups()[-1]
-        if len(years) == 4:
-            start_year = end_year = int(years)
-        elif len(years) == 11:
-            start_year, end_year = int(years[:4]), int(years[7:])
-        else:
-            fname = getattr(fh, 'name', 'unknown filename')
-            raise ValueError("Unexpected year(s) string in {}'s copyright "
-                             "notice: {!r}".format(fname, years))
-        return (start_year, end_year)
-
     @staticmethod
     def whatchanged_parse(whatchanged_output):
         """
