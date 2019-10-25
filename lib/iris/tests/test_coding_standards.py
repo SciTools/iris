@@ -22,41 +22,15 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else
 import iris.tests as tests
 
-from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
 from itertools import chain
 import os
 import re
-import subprocess
 
 import pep8
 
 import iris
-
-
-LICENSE_TEMPLATE = """
-# Copyright Iris Contributors
-#
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.""".strip()
-
-
-# Add shebang possibility to the LICENSE_RE_PATTERN
-LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_TEMPLATE
-LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
@@ -211,109 +185,6 @@ class TestCodeFormat(tests.IrisTest):
                           'files they pointed to either passed the PEP8 tests '
                           'or do not point to a file:\n  '
                           '{}'.format('\n  '.join(unexpectedly_good)))
-
-
-class TestLicenseHeaders(tests.IrisTest):
-    @staticmethod
-    def whatchanged_parse(whatchanged_output):
-        """
-        Returns a generator of tuples of data parsed from
-        "git whatchanged --pretty='TIME:%at". The tuples are of the form
-        ``(filename, last_commit_datetime)``
-
-        Sample input::
-
-            ['TIME:1366884020', '',
-             ':000000 100644 0000000... 5862ced... A\tlib/iris/cube.py']
-
-        """
-        dt = None
-        for line in whatchanged_output:
-            if not line.strip():
-                continue
-            elif line.startswith('TIME:'):
-                dt = datetime.fromtimestamp(int(line[5:]))
-            else:
-                # Non blank, non date, line -> must be the lines
-                # containing the file info.
-                fname = ' '.join(line.split('\t')[1:])
-                yield fname, dt
-
-    @staticmethod
-    def last_change_by_fname():
-        """
-        Return a dictionary of all the files under git which maps to
-        the datetime of their last modification in the git history.
-
-        .. note::
-
-            This function raises a ValueError if the repo root does
-            not have a ".git" folder. If git is not installed on the system,
-            or cannot be found by subprocess, an IOError may also be raised.
-
-        """
-        # Check the ".git" folder exists at the repo dir.
-        if not os.path.isdir(os.path.join(IRIS_REPO_DIRPATH, '.git')):
-            msg = '{} is not a git repository.'
-            raise ValueError(msg.format(IRIS_REPO_DIRPATH))
-
-        # Call "git whatchanged" to get the details of all the files and when
-        # they were last changed.
-        output = subprocess.check_output(['git', 'whatchanged',
-                                          "--pretty=TIME:%ct"],
-                                         cwd=IRIS_REPO_DIRPATH)
-
-        output = output.decode().split('\n')
-        res = {}
-        for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
-            if fname not in res or dt > res[fname]:
-                res[fname] = dt
-
-        return res
-
-    def test_license_headers(self):
-        exclude_patterns = ('setup.py',
-                            'build/*',
-                            'dist/*',
-                            'docs/iris/example_code/*/*.py',
-                            'docs/iris/src/developers_guide/documenting/*.py',
-                            'docs/iris/src/sphinxext/gen_gallery.py',
-                            'docs/iris/src/userguide/plotting_examples/*.py',
-                            'docs/iris/src/userguide/regridding_plots/*.py',
-                            'docs/iris/src/developers_guide/gitwash_dumper.py',
-                            'docs/iris/build/*',
-                            'lib/iris/analysis/_scipy_interpolate.py',
-                            'lib/iris/fileformats/_pyke_rules/*')
-
-        try:
-            last_change_by_fname = self.last_change_by_fname()
-        except ValueError as err:
-            # Caught the case where this is not a git repo.
-            msg = ('Iris installation did not look like a git repo?'
-                   '\nERR = {}\n\n')
-            return self.skipTest(msg.format(str(err)))
-
-        failed = False
-        for fname, last_change in sorted(last_change_by_fname.items()):
-            full_fname = os.path.join(IRIS_REPO_DIRPATH, fname)
-            if full_fname.endswith('.py') and os.path.isfile(full_fname) and \
-                    not any(fnmatch(fname, pat) for pat in exclude_patterns):
-                with open(full_fname) as fh:
-                    years = TestLicenseHeaders.years_of_license_in_file(fh)
-                    if years is None:
-                        print('The file {} has no valid header license and '
-                              'has not been excluded from the license header '
-                              'test.'.format(fname))
-                        failed = True
-                    elif last_change.year > years[1]:
-                        print('The file header at {} is out of date. The last'
-                              ' commit was in {}, but the copyright states it'
-                              ' was {}.'.format(fname, last_change.year,
-                                                years[1]))
-                        failed = True
-
-        if failed:
-            raise ValueError('There were license header failures. See stdout.')
 
 
 class TestFutureImports(tests.IrisTest):
