@@ -23,17 +23,11 @@ import pep8
 import iris
 
 
-LICENSE_TEMPLATE = """
-# Copyright Iris Contributors
+LICENSE_TEMPLATE = \
+"""# Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See LICENSE in the root of the repository for full licensing details.""".strip()
-
-
-# Add shebang possibility to the LICENSE_RE_PATTERN
-LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_TEMPLATE
-LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
-
+# See LICENSE in the root of the repository for full licensing details."""
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
@@ -275,17 +269,10 @@ class TestLicenseHeaders(tests.IrisTest):
             if full_fname.endswith('.py') and os.path.isfile(full_fname) and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
                 with open(full_fname) as fh:
-                    years = TestLicenseHeaders.years_of_license_in_file(fh)
-                    if years is None:
-                        print('The file {} has no valid header license and '
-                              'has not been excluded from the license header '
-                              'test.'.format(fname))
-                        failed = True
-                    elif last_change.year > years[1]:
-                        print('The file header at {} is out of date. The last'
-                              ' commit was in {}, but the copyright states it'
-                              ' was {}.'.format(fname, last_change.year,
-                                                years[1]))
+                    content = fh.read()
+                    if not content.startswith(LICENSE_TEMPLATE):
+                        print('The file {} does not start with the required '
+                              'license header.'.format(fname))
                         failed = True
 
         if failed:
