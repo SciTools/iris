@@ -157,8 +157,8 @@ def compile_pyke_rules(cmd, directory):
 def copy_copyright(cmd, directory):
     # Copy the COPYRIGHT information into the package root
     iris_build_dir = os.path.join(directory, 'iris')
-    for fname in ['COPYING', 'COPYING.LESSER']:
-        copyfile(fname, os.path.join(iris_build_dir, fname))
+    fname = 'LICENSE'
+    copyfile(fname, os.path.join(iris_build_dir, fname))
 
 
 def build_std_names(cmd, directory):
