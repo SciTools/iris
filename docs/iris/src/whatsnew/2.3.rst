@@ -11,7 +11,7 @@ Iris 2.3.0 Features
 ===================
 .. _showcase:
 
-.. admonition:: Increased Support for CF 1.7
+.. admonition:: Support for CF 1.7
 
   We have introduced several changes that contribute to Iris's support for
   the CF Conventions, including some CF 1.7 additions. We are now able to
@@ -24,7 +24,7 @@ Iris 2.3.0 Features
   You can read more about each of these below.
 
   Additionally, the conventions attribute, added by Iris when saving to
-  NetCDF, has been updated to "CF-1.7", accordingly.
+  NetCDF, has been updated to ``CF-1.7``, accordingly.
 
 .. _climatological:
 .. admonition:: Climatological Coordinate Support
