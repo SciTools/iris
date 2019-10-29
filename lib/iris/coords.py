@@ -658,7 +658,7 @@ class AncillaryVariable(_DimensionalMetadata):
 
         Args:
 
-        * values:
+        * data:
             The values of the ancillary variable.
 
         Kwargs:
