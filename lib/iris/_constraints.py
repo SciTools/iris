@@ -513,7 +513,7 @@ class NameConstraint(Constraint):
             iris.NameConstraint(long_name='air temp')
 
             iris.NameConstraint(standard_name='air_temperature',
-                                STASH=lambda stash: stash.item == 203
+                                STASH=lambda stash: stash.item == 203)
 
             .. note::
 
