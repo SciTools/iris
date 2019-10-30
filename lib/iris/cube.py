@@ -2182,7 +2182,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 cell_measure_summary, cube_header = vector_summary(
                     [], cube_header, max_line_offset,
                     cell_measures=vector_cell_measures)
-                summary += '\n     Cell Measures:\n'
+                summary += '\n     Cell measures:\n'
                 summary += '\n'.join(cell_measure_summary)
 
             #
@@ -2192,7 +2192,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 ancillary_variable_summary, cube_header = vector_summary(
                     [], cube_header, max_line_offset,
                     ancillary_variables=vector_ancillary_variables)
-                summary += '\n     Ancillary Variables:\n'
+                summary += '\n     Ancillary variables:\n'
                 summary += '\n'.join(ancillary_variable_summary)
 
             #

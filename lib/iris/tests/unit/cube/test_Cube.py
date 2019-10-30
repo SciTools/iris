@@ -417,7 +417,7 @@ class Test_summary(tests.IrisTest):
         cube.add_ancillary_variable(av, 0)
         expected_summary = \
             'unknown / (unknown)                 (-- : 2; -- : 3)\n' \
-            '     Ancillary Variables:\n' \
+            '     Ancillary variables:\n' \
             '          status_flag                   x       -'
         self.assertEqual(cube.summary(), expected_summary)
 
