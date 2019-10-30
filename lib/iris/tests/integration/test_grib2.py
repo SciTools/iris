@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Integration tests for loading and saving GRIB2 files."""
 
 from __future__ import (absolute_import, division, print_function)
@@ -49,6 +38,7 @@ class TestImport(tests.IrisTest):
         cube = load_cube(path)
         self.assertCMLApproxData(cube)
 
+    @tests.skip_grib_fail
     def test_gdt90_with_bitmap(self):
         path = tests.get_data_path(('GRIB', 'umukv', 'ukv_chan9.grib2'))
         cube = load_cube(path)
@@ -280,6 +270,7 @@ class TestGDT40(tests.IrisTest):
         cube = load_cube(path)
         self.assertCMLApproxData(cube)
 
+    @tests.skip_grib_fail
     def test_reduced(self):
         path = tests.get_data_path(('GRIB', 'reduced', 'reduced_gg.grib2'))
         cube = load_cube(path)

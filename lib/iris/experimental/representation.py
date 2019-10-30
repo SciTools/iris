@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2018 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Definitions of how Iris objects should be represented.
@@ -23,6 +12,7 @@ Definitions of how Iris objects should be represented.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
+from html import escape
 import re
 
 
@@ -96,7 +86,7 @@ class CubeRepresentation(object):
     def __init__(self, cube):
         self.cube = cube
         self.cube_id = id(self.cube)
-        self.cube_str = str(self.cube)
+        self.cube_str = escape(str(self.cube))
 
         self.str_headings = {
             'Dimension coordinates:': None,
@@ -115,9 +105,9 @@ class CubeRepresentation(object):
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
 
-        self.name = self.cube.name().title().replace('_', ' ')
-        self.names = self._dim_names()
-        self.units = self.cube.units
+        self.name = escape(self.cube.name().title().replace('_', ' '))
+        self.names = [escape(dim_name) for dim_name in self._dim_names()]
+        self.units = escape(str(self.cube.units))
 
     def _get_dim_names(self):
         """
@@ -401,6 +391,7 @@ class CubeListRepresentation(object):
         for i, cube in enumerate(self.cubelist):
             title = '{i}: {summary}'.format(i=i,
                                             summary=cube.summary(shorten=True))
+            title = escape(title)
             content = cube._repr_html_()
             html.append(self._accordian_panel.format(uid=self.cubelist_id,
                                                      title=title,

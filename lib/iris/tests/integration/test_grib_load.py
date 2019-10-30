@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Integration tests for grib2 file loading.
 
@@ -131,6 +120,7 @@ class TestBasicLoad(tests.GraphicsTest):
             ("GRIB", "reduced", "reduced_ll.grib1")))
         self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
 
+    @tests.skip_grib_fail
     def test_reduced_gg(self):
         cube = iris.load_cube(tests.get_data_path(
             ("GRIB", "reduced", "reduced_gg.grib2")))

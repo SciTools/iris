@@ -1,23 +1,13 @@
-# (C) British Crown Copyright 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from html import escape
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -44,6 +34,7 @@ class Test_make_content(tests.IrisTest):
     def setUp(self):
         self.cubes = CubeList([stock.simple_3d(),
                                stock.lat_lon_cube()])
+        self.cubes[0].rename('name & <html>')
         self.representer = CubeListRepresentation(self.cubes)
         self.content = self.representer.make_content()
 
@@ -53,17 +44,18 @@ class Test_make_content(tests.IrisTest):
     def test_summary_lines(self):
         names = [c.name() for c in self.cubes]
         for name, content in zip(names, self.content):
+            name = escape(name)
             self.assertIn(name, content)
 
     def test__cube_name_summary_consistency(self):
         # Just check the first cube in the CubeList.
         single_cube_html = self.content[0]
         first_contents_line = single_cube_html.split('\n')[1]
-        # Get the cube name out of the repr html...
-        cube_name = first_contents_line.split('>0: ')[1].split('/')[0]
-        # ... and prettify it (to be the same as in the following cube repr).
+        # Get a "prettified" cube name, as it should be in the cubelist repr.
+        cube_name = self.cubes[0].name()
         pretty_cube_name = cube_name.strip().replace('_', ' ').title()
-        self.assertIn(pretty_cube_name, single_cube_html)
+        pretty_escaped_name = escape(pretty_cube_name)
+        self.assertIn(pretty_escaped_name, single_cube_html)
 
 
 @tests.skip_data

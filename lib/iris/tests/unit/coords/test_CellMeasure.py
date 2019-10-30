@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2015 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the :class:`iris.coords.CellMeasure` class."""
 
 from __future__ import (absolute_import, division, print_function)
@@ -74,7 +63,7 @@ class Tests(tests.IrisTest):
 
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
-        msg = 'New data shape must match existing data shape.'
+        msg = 'Require data with shape.'
         with self.assertRaisesRegexp(ValueError, msg):
             self.measure.data = new_vals
 
@@ -123,6 +112,7 @@ class Tests(tests.IrisTest):
 
     def test__eq__(self):
         self.assertEqual(self.measure, self.measure)
+
 
 if __name__ == '__main__':
     tests.main()

@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2017, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Provides testing capabilities for installed copies of Iris.
 
@@ -27,41 +16,6 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import multiprocessing
 import os
 import sys
-
-
-def failed_images_html():
-    """
-    Generates HTML which shows the image failures side-by-side
-    when viewed in a web browser.
-    """
-    from iris.tests.idiff import step_over_diffs
-
-    data_uri_template = '<img alt="{alt}" src="data:image/png;base64,{img}">'
-
-    def image_as_base64(fname):
-        with open(fname, "rb") as fh:
-            return fh.read().encode("base64").replace("\n", "")
-
-    html = ['<!DOCTYPE html>', '<html>', '<body>']
-    rdir = os.path.join(os.path.dirname(__file__), os.path.pardir,
-                        'result_image_comparison')
-    if not os.access(rdir, os.W_OK):
-        rdir = os.path.join(os.getcwd(), 'iris_image_test_output')
-
-    for expected, actual, diff in step_over_diffs(rdir, 'similar', False):
-        expected_html = data_uri_template.format(
-            alt='expected', img=image_as_base64(expected))
-        actual_html = data_uri_template.format(
-            alt='actual', img=image_as_base64(actual))
-        diff_html = data_uri_template.format(
-            alt='diff', img=image_as_base64(diff))
-
-        html.extend([expected, '<br>',
-                     expected_html, actual_html, diff_html,
-                     '<br><hr>'])
-
-    html.extend(['</body>', '</html>'])
-    return '\n'.join(html)
 
 
 # NOTE: Do not inherit from object as distutils does not like it.
@@ -84,12 +38,9 @@ class TestRunner():
         ('num-processors=', 'p', 'The number of processors used for running '
                                  'the tests.'),
         ('create-missing', 'm', 'Create missing test result files.'),
-        ('print-failed-images', 'f', 'Print HTML encoded version of failed '
-                                     'images.'),
     ]
     boolean_options = ['no-data', 'system-tests', 'stop', 'example-tests',
-                       'default-tests', 'coding-tests', 'create-missing',
-                       'print-failed-images']
+                       'default-tests', 'coding-tests', 'create-missing']
 
     def initialize_options(self):
         self.no_data = False
@@ -100,7 +51,6 @@ class TestRunner():
         self.coding_tests = False
         self.num_processors = None
         self.create_missing = False
-        self.print_failed_images = False
 
     def finalize_options(self):
         # These enviroment variables will be propagated to all the
@@ -185,6 +135,4 @@ class TestRunner():
             #   word Mixin.
             result &= nose.run(argv=args)
         if result is False:
-            if self.print_failed_images:
-                print(failed_images_html())
             exit(1)

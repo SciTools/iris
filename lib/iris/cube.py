@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Classes for representing multi-dimensional data with metadata.
@@ -692,7 +681,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                  var_name=None, units=None, attributes=None,
                  cell_methods=None, dim_coords_and_dims=None,
                  aux_coords_and_dims=None, aux_factories=None,
-                 cell_measures_and_dims=None):
+                 cell_measures_and_dims=None,
+                 ancillary_variables_and_dims=None):
         """
         Creates a cube with data and optional metadata.
 
@@ -739,6 +729,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             :mod:`iris.aux_factory`.
         * cell_measures_and_dims
             A list of CellMeasures with dimension mappings.
+        * ancillary_variables_and_dims
+            A list of AncillaryVariables with dimension mappings.
 
         For example::
             >>> from iris.coords import DimCoord
@@ -787,6 +779,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Cell Measures
         self._cell_measures_and_dims = []
 
+        # Ancillary Variables
+        self._ancillary_variables_and_dims = []
+
         identities = set()
         if dim_coords_and_dims:
             dims = set()
@@ -815,6 +810,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if cell_measures_and_dims:
             for cell_measure, dims in cell_measures_and_dims:
                 self.add_cell_measure(cell_measure, dims)
+
+        if ancillary_variables_and_dims:
+            for ancillary_variable, dims in ancillary_variables_and_dims:
+                self.add_ancillary_variable(ancillary_variable, dims)
 
     @property
     def metadata(self):
@@ -1049,6 +1048,34 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         self._cell_measures_and_dims.sort(key=lambda cm_dims:
                                           (cm_dims[0]._as_defn(), cm_dims[1]))
 
+    def add_ancillary_variable(self, ancillary_variable, data_dims=None):
+        """
+        Adds a CF ancillary variable to the cube.
+
+        Args:
+
+        * ancillary_variable
+            The :class:`iris.coords.AncillaryVariable` instance to be added to
+            the cube
+
+        Kwargs:
+        * data_dims
+            Integer or iterable of integers giving the data dimensions spanned
+            by the ancillary variable.
+
+        Raises a ValueError if an ancillary variable with identical metadata
+        already exists on the cube.
+        """
+        if self.ancillary_variables(ancillary_variable):
+            raise ValueError('Duplicate ancillary variables not permitted')
+
+        data_dims = self._check_multi_dim_metadata(ancillary_variable,
+                                                   data_dims)
+        self._ancillary_variables_and_dims.append([ancillary_variable,
+                                                   data_dims])
+        self._ancillary_variables_and_dims.sort(
+            key=lambda av_dims: (av_dims[0]._as_defn(), av_dims[1]))
+
     def add_dim_coord(self, dim_coord, data_dim):
         """
         Add a CF coordinate to the cube.
@@ -1168,6 +1195,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                         dim in self._cell_measures_and_dims
                                         if cell_measure_ is not cell_measure]
 
+    def remove_ancillary_variable(self, ancillary_variable):
+
+        """
+        Removes an ancillary variable from the cube.
+
+        Args:
+
+        * ancillary_variable (AncillaryVariable)
+            The AncillaryVariable to remove from the cube.
+
+        """
+        self._ancillary_variables_and_dims = [
+            [ancillary_variable_, dim] for ancillary_variable_, dim in
+            self._ancillary_variables_and_dims
+            if ancillary_variable_ is not ancillary_variable]
+
     def replace_coord(self, new_coord):
         """
         Replace the coordinate whose metadata matches the given coordinate.
@@ -1242,6 +1285,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         if not matches:
             raise iris.exceptions.CellMeasureNotFoundError(cell_measure.name())
+
+        return matches[0]
+
+    def ancillary_variable_dims(self, ancillary_variable):
+        """
+        Returns a tuple of the data dimensions relevant to the given
+        AncillaryVariable.
+
+        * ancillary_variable
+            The AncillaryVariable to look for.
+
+        """
+        # Search for existing ancillary variable (object) on the cube, faster
+        # lookup than equality - makes no functional difference.
+        matches = [dims for av, dims in self._ancillary_variables_and_dims
+                   if av is ancillary_variable]
+
+        if not matches:
+            raise iris.exceptions.AncillaryVariableNotFoundError(
+                ancillary_variable.name())
 
         return matches[0]
 
@@ -1623,6 +1686,84 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return cell_measures[0]
 
+    def ancillary_variables(self, name_or_ancillary_variable=None):
+        """
+        Return a list of ancillary variable in this cube fitting the given
+        criteria.
+
+        Kwargs:
+
+        * name_or_ancillary_variable
+            Either
+
+            (a) a :attr:`standard_name`, :attr:`long_name`, or
+            :attr:`var_name`. Defaults to value of `default`
+            (which itself defaults to `unknown`) as defined in
+            :class:`iris._cube_coord_common.CFVariableMixin`.
+
+            (b) a ancillary_variable instance with metadata equal to that of
+            the desired ancillary_variables.
+
+        See also
+        :meth:`Cube.ancillary_variable()<iris.cube.Cube.ancillary_variable>`.
+
+        """
+        name = None
+
+        if isinstance(name_or_ancillary_variable, six.string_types):
+            name = name_or_ancillary_variable
+        else:
+            ancillary_variable = name_or_ancillary_variable
+        ancillary_variables = []
+        for av, _ in self._ancillary_variables_and_dims:
+            if name is not None:
+                if av.name() == name:
+                    ancillary_variables.append(av)
+            elif ancillary_variable is not None:
+                if av == ancillary_variable:
+                    ancillary_variables.append(av)
+            else:
+                ancillary_variables.append(av)
+        return ancillary_variables
+
+    def ancillary_variable(self, name_or_ancillary_variable=None):
+        """
+        Return a single ancillary_variable given the same arguments as
+        :meth:`Cube.ancillary_variables`.
+
+        .. note::
+
+            If the arguments given do not result in precisely 1
+            ancillary_variable being matched, an
+            :class:`iris.exceptions.AncillaryVariableNotFoundError` is raised.
+
+        .. seealso::
+
+            :meth:`Cube.ancillary_variables()<iris.cube.Cube.ancillary_variables>`
+            for full keyword documentation.
+
+        """
+        ancillary_variables = self.ancillary_variables(
+            name_or_ancillary_variable)
+
+        if len(ancillary_variables) > 1:
+            msg = ('Expected to find exactly 1 ancillary_variable, but found '
+                   '{}. They were: {}.')
+            msg = msg.format(len(ancillary_variables), ', '.join(anc_var.name()
+                             for anc_var in ancillary_variables))
+            raise iris.exceptions.AncillaryVariableNotFoundError(msg)
+        elif len(ancillary_variables) == 0:
+            if isinstance(name_or_ancillary_variable, six.string_types):
+                bad_name = name_or_ancillary_variable
+            else:
+                bad_name = (name_or_ancillary_variable and
+                            name_or_ancillary_variable.name()) or ''
+            msg = 'Expected to find exactly 1 {!s} ancillary_variable, but ' \
+                  'found none.'.format(bad_name)
+            raise iris.exceptions.AncillaryVariableNotFoundError(msg)
+
+        return ancillary_variables[0]
+
     @property
     def cell_methods(self):
         """
@@ -1892,6 +2033,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             vector_cell_measures = [cm for cm in self.cell_measures()
                                     if cm.shape != (1,)]
 
+            # Ancillary Variables
+            vector_ancillary_variables = [av for av in
+                                          self.ancillary_variables()]
+
             # Determine the cube coordinates that don't describe the cube and
             # are most likely erroneous.
             vector_coords = vector_dim_coords + vector_aux_coords + \
@@ -1916,7 +2061,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Generate textual summary of cube vector coordinates.
             #
             def vector_summary(vector_coords, cube_header, max_line_offset,
-                               cell_measures=None):
+                               cell_measures=None, ancillary_variables=None):
                 """
                 Generates a list of suitably aligned strings containing coord
                 names and dimensions indicated by one or more 'x' symbols.
@@ -1929,6 +2074,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 """
                 if cell_measures is None:
                     cell_measures = []
+                if ancillary_variables is None:
+                    ancillary_variables = []
                 vector_summary = []
                 vectors = []
 
@@ -1939,9 +2086,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 # Generate basic textual summary for each vector coordinate
                 # - WITHOUT dimension markers.
-                for coord in vector_coords + cell_measures:
+                for dim_meta in (
+                        vector_coords + cell_measures + ancillary_variables):
                     vector_summary.append('%*s%s' % (
-                        indent, ' ', iris.util.clip_string(coord.name())))
+                        indent, ' ', iris.util.clip_string(dim_meta.name())))
                 min_alignment = min(alignment)
 
                 # Determine whether the cube header requires realignment
@@ -1968,10 +2116,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             vector_summary[index] += line
                     vectors = vectors + vector_coords
                 if cell_measures:
-                    # Generate full textual summary for each vector coordinate
-                    # - WITH dimension markers.
-                    for index, coord in enumerate(cell_measures):
-                        dims = self.cell_measure_dims(coord)
+                    # Generate full textual summary for each vector cell
+                    # measure - WITH dimension markers.
+                    for index, cell_measure in enumerate(cell_measures):
+                        dims = self.cell_measure_dims(cell_measure)
 
                         for dim in range(len(self.shape)):
                             width = alignment[dim] - len(vector_summary[index])
@@ -1981,6 +2129,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                                                 char=char)
                             vector_summary[index] += line
                     vectors = vectors + cell_measures
+                if ancillary_variables:
+                    # Generate full textual summary for each vector ancillary
+                    # variable - WITH dimension markers.
+                    for index, av in enumerate(ancillary_variables):
+                        dims = self.ancillary_variable_dims(av)
+
+                        for dim in range(len(self.shape)):
+                            width = alignment[dim] - len(vector_summary[index])
+                            char = 'x' if dim in dims else '-'
+                            line = '{pad:{width}}{char}'.format(pad=' ',
+                                                                width=width,
+                                                                char=char)
+                            vector_summary[index] += line
+                    vectors = vectors + ancillary_variables
                 # Interleave any extra lines that are needed to distinguish
                 # the coordinates.
                 vector_summary = self._summary_extra(vectors,
@@ -2020,8 +2182,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 cell_measure_summary, cube_header = vector_summary(
                     [], cube_header, max_line_offset,
                     cell_measures=vector_cell_measures)
-                summary += '\n     Cell Measures:\n'
+                summary += '\n     Cell measures:\n'
                 summary += '\n'.join(cell_measure_summary)
+
+            #
+            # Generate summary of cube ancillary variables attribute
+            #
+            if vector_ancillary_variables:
+                ancillary_variable_summary, cube_header = vector_summary(
+                    [], cube_header, max_line_offset,
+                    ancillary_variables=vector_ancillary_variables)
+                summary += '\n     Ancillary variables:\n'
+                summary += '\n'.join(ancillary_variable_summary)
 
             #
             # Generate textual summary of cube scalar coordinates.
@@ -2840,6 +3012,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                                              self._aux_coords_and_dims))
         self._cell_measures_and_dims = list(map(remap_cube_metadata,
                                                 self._cell_measures_and_dims))
+        self._ancillary_variables_and_dims = list(map(
+            remap_cube_metadata, self._ancillary_variables_and_dims))
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """

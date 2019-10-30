@@ -1,23 +1,13 @@
-# (C) British Crown Copyright 2018, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Integration tests for cube html representation."""
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
+from html import escape
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -136,12 +126,12 @@ class TestScalarCube(tests.IrisTest):
 
     def test_header__name(self):
         header = self.representer._make_header()
-        expected_name = self.cube.name().title().replace('_', ' ')
+        expected_name = escape(self.cube.name().title().replace('_', ' '))
         self.assertIn(expected_name, header)
 
     def test_header__units(self):
         header = self.representer._make_header()
-        expected_units = self.cube.units.symbol
+        expected_units = escape(self.cube.units.symbol)
         self.assertIn(expected_units, header)
 
     def test_header__scalar_str(self):
@@ -160,9 +150,9 @@ class TestScalarCube(tests.IrisTest):
         # Check a specific scalar coord is present in the main content.
         content = self.representer._make_content()
         expected_coord = self.cube.coords()[0]
-        expected_coord_name = expected_coord.name()
+        expected_coord_name = escape(expected_coord.name())
         self.assertIn(expected_coord_name, content)
-        expected_coord_val = str(expected_coord.points[0])
+        expected_coord_val = escape(str(expected_coord.points[0]))
         self.assertIn(expected_coord_val, content)
 
     def test_content__attributes(self):

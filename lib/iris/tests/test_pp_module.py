@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2013 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -117,14 +106,6 @@ class TestPPHeaderDerived(tests.IrisTest):
         self.pp.lbtim.ib = 9
         self.assertEqual(self.pp.lbtim.ib, 9)
         self.assertEqual(self.pp.lbtim[1], 9)
-        
-    def test_lbproc_access(self):
-        # lbproc == 65539
-        with mock.patch('warnings.warn') as warn:
-            self.assertEqual(self.pp.lbproc.flag1, 1)
-            self.assertEqual(self.pp.lbproc.flag65536, 1)
-            self.assertEqual(self.pp.lbproc.flag131072, 0)
-        self.assertEqual(warn.call_count, 3)
     
     def test_set_lbuser(self):
         self.pp.stash = 'm02s12i003'
@@ -167,13 +148,6 @@ class TestPPField_GlobalTemperature(IrisPPTest):
     def test_lbtim_access(self):
         self.assertEqual(self.r[0].lbtim[0], 2)
         self.assertEqual(self.r[0].lbtim.ic, 2)
-    
-    def test_lbproc_access(self):
-        with mock.patch('warnings.warn') as warn:
-            self.assertEqual(self.r[0].lbproc.flag1, 0)
-            self.assertEqual(self.r[0].lbproc.flag65536, 0)
-            self.assertEqual(self.r[0].lbproc.flag131072, 0)
-        self.assertEqual(warn.call_count, 3)
 
     def test_t1_t2_access(self):
         self.assertEqual(self.r[0].t1.timetuple(),

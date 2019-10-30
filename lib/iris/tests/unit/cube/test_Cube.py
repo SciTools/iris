@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2013 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Unit tests for the `iris.cube.Cube` class."""
 
 from __future__ import (absolute_import, division, print_function)
@@ -39,8 +28,9 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord, CellMeasure
+from iris.coords import AuxCoord, DimCoord, CellMeasure, AncillaryVariable
 from iris.exceptions import (CoordinateNotFoundError, CellMeasureNotFoundError,
+                             AncillaryVariableNotFoundError,
                              UnitConversionError)
 from iris._lazy_data import as_lazy_data
 import iris.tests.stock as stock
@@ -411,8 +401,6 @@ class Test_summary(tests.IrisTest):
         self.cube = Cube(0)
 
     def test_cell_datetime_objects(self):
-        # Check the scalar coordinate summary still works even when
-        # iris.FUTURE.cell_datetime_objects is True.
         self.cube.add_aux_coord(AuxCoord(42, units='hours since epoch'))
         summary = self.cube.summary()
         self.assertIn('1970-01-02 18:00:00', summary)
@@ -422,6 +410,16 @@ class Test_summary(tests.IrisTest):
         self.cube.add_aux_coord(AuxCoord(str_value))
         summary = self.cube.summary()
         self.assertIn(str_value, summary)
+
+    def test_ancillary_variable(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        av = AncillaryVariable([1, 2], 'status_flag')
+        cube.add_ancillary_variable(av, 0)
+        expected_summary = \
+            'unknown / (unknown)                 (-- : 2; -- : 3)\n' \
+            '     Ancillary variables:\n' \
+            '          status_flag                   x       -'
+        self.assertEqual(cube.summary(), expected_summary)
 
 
 class Test_is_compatible(tests.IrisTest):
@@ -1670,6 +1668,15 @@ class Test_add_metadata(tests.IrisTest):
         cube.add_cell_measure(a_cell_measure, [0, 1])
         self.assertEqual(cube.cell_measure('area'), a_cell_measure)
 
+    def test_add_ancillary_variable(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        ancillary_variable = AncillaryVariable(
+            data=np.arange(6).reshape(2, 3),
+            long_name='detection quality')
+        cube.add_ancillary_variable(ancillary_variable, [0, 1])
+        self.assertEqual(cube.ancillary_variable('detection quality'),
+                         ancillary_variable)
+
     def test_add_valid_aux_factory(self):
         cube = Cube(np.arange(8).reshape(2, 2, 2))
         delta = AuxCoord(points=[0, 1], long_name='delta', units='m')
@@ -1712,6 +1719,10 @@ class Test_remove_metadata(tests.IrisTest):
                                           measure='area')
         cube.add_cell_measure(a_cell_measure, [0, 1])
         cube.add_cell_measure(self.b_cell_measure, [0, 1])
+        ancillary_variable = AncillaryVariable(
+            data=np.arange(6).reshape(2, 3),
+            long_name='Quality of Detection')
+        cube.add_ancillary_variable(ancillary_variable, [0, 1])
         self.cube = cube
 
     def test_remove_dim_coord(self):
@@ -1735,6 +1746,11 @@ class Test_remove_metadata(tests.IrisTest):
     def test_fail_remove_cell_measure_by_name(self):
         with self.assertRaises(CellMeasureNotFoundError):
             self.cube.remove_cell_measure('notarea')
+
+    def test_remove_ancilliary_variable(self):
+        self.cube.remove_ancillary_variable(
+            self.cube.ancillary_variable('Quality of Detection'))
+        self.assertEqual(self.cube._ancillary_variables_and_dims, [])
 
 
 class Test__getitem_CellMeasure(tests.IrisTest):
@@ -1765,6 +1781,50 @@ class Test__getitem_CellMeasure(tests.IrisTest):
         self.assertEqual(len(result.cell_measures()), 1)
         self.assertEqual(result.shape,
                          result.cell_measures()[0].data.shape)
+
+
+class TestAncillaryVariables(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(10 * np.arange(6).reshape(2, 3))
+        self.ancill_var = AncillaryVariable(
+            np.arange(6).reshape(2, 3),
+            standard_name='number_of_observations', units='1')
+        cube.add_ancillary_variable(self.ancill_var, [0, 1])
+        self.cube = cube
+
+    def test_get_ancillary_variable(self):
+        ancill_var = self.cube.ancillary_variable('number_of_observations')
+        self.assertEqual(ancill_var, self.ancill_var)
+
+    def test_get_ancillary_variables(self):
+        ancill_vars = self.cube.ancillary_variables('number_of_observations')
+        self.assertEqual(len(ancill_vars), 1)
+        self.assertEqual(ancill_vars[0], self.ancill_var)
+
+    def test_get_ancillary_variable_obj(self):
+        ancill_vars = self.cube.ancillary_variables(self.ancill_var)
+        self.assertEqual(len(ancill_vars), 1)
+        self.assertEqual(ancill_vars[0], self.ancill_var)
+
+    def test_fail_get_ancillary_variables(self):
+        with self.assertRaises(AncillaryVariableNotFoundError):
+            self.cube.ancillary_variable('other_ancill_var')
+
+    def test_fail_get_ancillary_variables_obj(self):
+        ancillary_variable = self.ancill_var.copy()
+        ancillary_variable.long_name = 'Number of observations at site'
+        with self.assertRaises(AncillaryVariableNotFoundError):
+            self.cube.ancillary_variable(ancillary_variable)
+
+    def test_ancillary_variable_dims(self):
+        ancill_var_dims = self.cube.ancillary_variable_dims(self.ancill_var)
+        self.assertEqual(ancill_var_dims, (0, 1))
+
+    def test_fail_ancill_variable_dims(self):
+        ancillary_variable = self.ancill_var.copy()
+        ancillary_variable.long_name = 'Number of observations at site'
+        with self.assertRaises(AncillaryVariableNotFoundError):
+            self.cube.ancillary_variable_dims(ancillary_variable)
 
 
 class TestCellMeasures(tests.IrisTest):
@@ -1885,6 +1945,14 @@ class Test_transpose(tests.IrisTest):
         self.cube.transpose()
         self.assertEqual(self.cube._cell_measures_and_dims,
                          [(area_cm, (2, 0))])
+
+    def test_ancillary_variables(self):
+        ancill_var = AncillaryVariable(data=np.arange(8).reshape(2, 4),
+                                       long_name='instrument error')
+        self.cube.add_ancillary_variable(ancill_var, (1, 2))
+        self.cube.transpose()
+        self.assertEqual(self.cube._ancillary_variables_and_dims,
+                         [(ancill_var, (1, 0))])
 
 
 class Test_convert_units(tests.IrisTest):

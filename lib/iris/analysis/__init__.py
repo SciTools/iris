@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 A package providing :class:`iris.cube.Cube` analysis support.
 
@@ -1080,7 +1069,7 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
     # Perform the percentile calculation.
     if fast_percentile_method:
         msg = 'Cannot use fast np.percentile method with masked array.'
-        if ma.isMaskedArray(data):
+        if ma.is_masked(data):
             raise TypeError(msg)
         result = np.percentile(data, percent, axis=-1)
         result = result.T
@@ -1090,6 +1079,8 @@ def _percentile(data, axis, percent, fast_percentile_method=False,
                                                **kwargs)
     if not ma.isMaskedArray(data) and not ma.is_masked(result):
         result = np.asarray(result)
+    else:
+        result = ma.MaskedArray(result)
 
     # Ensure to unflatten any leading dimensions.
     if shape:

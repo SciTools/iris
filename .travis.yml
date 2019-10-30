@@ -101,11 +101,12 @@ install:
   - python setup.py --quiet install
 
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-# TODO: uncomment and address the 5 failures and 10 errors in iris-grib.
-#  - if [[ "${TEST_MINIMAL}" != true ]]; then
-#        conda install --quiet -n ${ENV_NAME} python-eccodes;
-#        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
-#    fi
+  # test against the latest version of python-eccodes.
+  # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
+  - if [[ "${TEST_MINIMAL}" != true ]]; then
+        conda install --quiet -n ${ENV_NAME} python-eccodes=0.9.3;
+        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
+    fi
 
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
@@ -115,11 +116,11 @@ script:
   - >
     if [[ ${TEST_TARGET} == 'default' ]]; then
       export IRIS_REPO_DIR=${INSTALL_DIR};
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      python -m iris.tests.runner --default-tests --system-tests;
     fi
 
   - if [[ ${TEST_TARGET} == 'example' ]]; then
-      python -m iris.tests.runner --example-tests --print-failed-images;
+      python -m iris.tests.runner --example-tests;
     fi
 
   # A call to check "whatsnew" contributions are valid, because the Iris test

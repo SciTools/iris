@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Provides testing capabilities and customisations specific to Iris.
 
@@ -950,12 +939,11 @@ class IrisTest_nometa(unittest.TestCase):
 _PRINT_TEST_TIMINGS = bool(int(os.environ.get('IRIS_TEST_TIMINGS', 0)))
 
 
-def _method_path(meth):
-    cls = meth.im_class
+def _method_path(meth, cls):
     return '.'.join([cls.__module__, cls.__name__, meth.__name__])
 
 
-def _testfunction_timing_decorator(fn):
+def _testfunction_timing_decorator(fn, cls):
     # Function decorator for making a testcase print its execution time.
     @functools.wraps(fn)
     def inner(*args, **kwargs):
@@ -966,7 +954,7 @@ def _testfunction_timing_decorator(fn):
             end_time = datetime.datetime.now()
             elapsed_time = (end_time - start_time).total_seconds()
             msg = '\n  TEST TIMING -- "{}" took : {:12.6f} sec.'
-            name = _method_path(fn)
+            name = _method_path(fn, cls)
             print(msg.format(name, elapsed_time))
         return result
     return inner
@@ -980,7 +968,7 @@ def iristest_timing_decorator(cls):
         for attr_name in attr_names:
             attr = getattr(cls, attr_name)
             if callable(attr) and attr_name.startswith('test'):
-                attr = _testfunction_timing_decorator(attr)
+                attr = _testfunction_timing_decorator(attr, cls)
                 setattr(cls, attr_name, attr)
     return cls
 
@@ -1204,6 +1192,12 @@ def skip_plot(fn):
 skip_grib = unittest.skipIf(not GRIB_AVAILABLE,
                             'Test(s) require "iris-grib" package, '
                             'which is not available.')
+
+
+# TODO: remove these skips when iris-grib is fixed
+skip_grib_fail = unittest.skipIf(True,
+                                 'Test(s) are failing due to known problems '
+                                 'with "iris-grib".')
 
 
 skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,

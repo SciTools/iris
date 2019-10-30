@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 
 from __future__ import (absolute_import, division, print_function)
@@ -631,7 +620,7 @@ class TestGetterSetter(tests.IrisTest):
 
         # set bounds from non-numpy pair.
         # First reset the underlying shape of the coordinate.
-        coord._points_dm = DataManager(1)
+        coord._values_dm = DataManager(1)
         coord.points = 1
         coord.bounds = [123, 456]
         self.assertEqual(coord.shape, (1, ))
@@ -639,7 +628,7 @@ class TestGetterSetter(tests.IrisTest):
 
         # set bounds from non-numpy pairs
         # First reset the underlying shape of the coord's points and bounds.
-        coord._points_dm = DataManager(np.arange(3))
+        coord._values_dm = DataManager(np.arange(3))
         coord.bounds = None
         coord.bounds = [[123, 456], [234, 567], [345, 678]]
         self.assertEqual(coord.shape, (3, ))
