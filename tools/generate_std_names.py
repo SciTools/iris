@@ -1,4 +1,4 @@
-# Copyright Iris Contributors
+# Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
@@ -27,7 +27,7 @@ import xml.etree.ElementTree as ET
 
 
 STD_VALUES_FILE_TEMPLATE = '''
-# Copyright Iris Contributors
+# Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full

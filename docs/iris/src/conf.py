@@ -1,4 +1,4 @@
-# Copyright Iris Contributors
+# Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
@@ -89,7 +89,7 @@ project = u'Iris'
 # define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
 upper_copy_year = datetime.datetime.now().year
-copyright = u'Copyright Iris Contributors'
+copyright = u'Copyright Iris contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
