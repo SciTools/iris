@@ -25,6 +25,9 @@ pip-cache
 .tox
 .pytest_cache
 
+# asv environments, results
+.asv
+
 #Translations
 *.mo
 
