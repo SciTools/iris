@@ -112,7 +112,7 @@ are available in [INSTALL](INSTALL).
 # Copyright and licence
 
 Iris may be freely distributed, modified and used commercially under the terms
-of its [GNU LGPLv3 license](LICENSE).
+of its [GNU LGPLv3 license](COPYING.LESSER).
 
 # Contributing
 Information on how to contribute can be found in the [Iris developer guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html).
