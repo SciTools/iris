@@ -1,7 +1,8 @@
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Defines a Trajectory class, and a routine to extract a sub-cube along a
 trajectory.

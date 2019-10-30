@@ -1,7 +1,8 @@
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 A script to convert the standard names information from the provided XML
 file into a Python dictionary format.
@@ -29,7 +30,8 @@ STD_VALUES_FILE_TEMPLATE = '''
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 This file contains a dictionary of standard value names that are mapped
 to another dictionary of other standard name attributes. Currently only

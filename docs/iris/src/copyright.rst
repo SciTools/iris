@@ -16,7 +16,8 @@ You should find all source files with the following header:
     Copyright Iris Contributors
     
     This file is part of Iris and is released under the LGPL license.
-    See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+    See COPYING and COPYING.LESSER in the root of the repository for full
+    licensing details.
 
 
 Iris documentation and examples

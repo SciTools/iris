@@ -1,7 +1,8 @@
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 r"""
 The purpose of this module is to provide utilities for the identification
 of multi-dimensional structure in a flat sequence of homogeneous objects.

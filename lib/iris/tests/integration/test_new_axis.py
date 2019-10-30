@@ -1,7 +1,8 @@
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """Integration tests for :func:`iris.util.new_axis`."""
 
 from __future__ import (absolute_import, division, print_function)

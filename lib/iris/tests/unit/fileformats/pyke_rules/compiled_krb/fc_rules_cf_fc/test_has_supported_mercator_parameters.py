@@ -1,7 +1,8 @@
 # Copyright Iris Contributors
 #
 # This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
 fc_rules_cf_fc.has_supported_mercator_parameters`.
