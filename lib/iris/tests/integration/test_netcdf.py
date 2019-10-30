@@ -258,7 +258,7 @@ class TestCellMeasures(tests.IrisTest):
     def test_print(self):
         cube = iris.load_cube(self.fname)
         printed = cube.__str__()
-        self.assertTrue(('\n     Cell Measures:\n          cell_area'
+        self.assertTrue(('\n     Cell measures:\n          cell_area'
                          '                           -         -    '
                          '    x         x') in printed)
 
