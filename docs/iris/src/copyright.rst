@@ -2,34 +2,22 @@
 Iris copyright, licensing and contributors
 ==========================================
 
-.. |copy|   unicode:: U+000A9 .. COPYRIGHT SIGN
-
 Iris code
 ---------
 
-All Iris source code, unless explicitly stated, is |copy| ``British Crown copyright, 2014`` and 
-is licensed under the **GNU Lesser General Public License** as published by the
-Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+All Iris source code, unless explicitly stated, is ``Copyright Iris
+contributors`` and is licensed under the **GNU Lesser General Public
+License** as published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
 You should find all source files with the following header:
 
 .. admonition:: Code License
 
-    |copy| British Crown Copyright 2010 - 2014, Met Office
+    Copyright Iris contributors
     
-    This file is part of Iris.
-    
-    Iris is free software: you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the
-    Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-    
-    Iris is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-    
-    You should have received a copy of the GNU Lesser General Public License
-    along with Iris.  If not, see `<http://www.gnu.org/licenses/>`_. 
+    This file is part of Iris and is released under the LGPL license.
+    See COPYING and COPYING.LESSER in the root of the repository for full
+    licensing details.
 
 
 Iris documentation and examples
@@ -40,7 +28,7 @@ are licensed under the UK's Open Government Licence:
 
 .. admonition:: Documentation, example and data license
  
-    |copy| British Crown copyright, 2014.
+    (C) British Crown Copyright 2019.
     
     You may use and re-use the information featured on this website (not including logos) free of 
     charge in any format or medium, under the terms of the 

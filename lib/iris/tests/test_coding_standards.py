@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2013 - 2019, Met Office
+# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
@@ -35,30 +24,12 @@ import pep8
 import iris
 
 
-LICENSE_TEMPLATE = """
-# (C) British Crown Copyright {YEARS}, Met Office
+LICENSE_TEMPLATE = \
+    """# Copyright Iris contributors
 #
-# This file is part of Iris.
-#
-# Iris is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Iris is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Iris.  If not, see <http://www.gnu.org/licenses/>.""".strip()
-
-
-LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE).replace('\{YEARS\}', '(.*?)')
-# Add shebang possibility to the LICENSE_RE_PATTERN
-LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_RE_PATTERN
-LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
-
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details."""
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
@@ -216,32 +187,6 @@ class TestCodeFormat(tests.IrisTest):
 
 class TestLicenseHeaders(tests.IrisTest):
     @staticmethod
-    def years_of_license_in_file(fh):
-        """
-        Using :data:`LICENSE_RE` look for the years defined in the license
-        header of the given file handle.
-
-        If the license cannot be found in the given fh, None will be returned,
-        else a tuple of (start_year, end_year) will be returned.
-
-        """
-        license_matches = LICENSE_RE.match(fh.read())
-        if not license_matches:
-            # no license found in file.
-            return None
-
-        years = license_matches.groups()[-1]
-        if len(years) == 4:
-            start_year = end_year = int(years)
-        elif len(years) == 11:
-            start_year, end_year = int(years[:4]), int(years[7:])
-        else:
-            fname = getattr(fh, 'name', 'unknown filename')
-            raise ValueError("Unexpected year(s) string in {}'s copyright "
-                             "notice: {!r}".format(fname, years))
-        return (start_year, end_year)
-
-    @staticmethod
     def whatchanged_parse(whatchanged_output):
         """
         Returns a generator of tuples of data parsed from
@@ -326,17 +271,10 @@ class TestLicenseHeaders(tests.IrisTest):
             if full_fname.endswith('.py') and os.path.isfile(full_fname) and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
                 with open(full_fname) as fh:
-                    years = TestLicenseHeaders.years_of_license_in_file(fh)
-                    if years is None:
-                        print('The file {} has no valid header license and '
-                              'has not been excluded from the license header '
-                              'test.'.format(fname))
-                        failed = True
-                    elif last_change.year > years[1]:
-                        print('The file header at {} is out of date. The last'
-                              ' commit was in {}, but the copyright states it'
-                              ' was {}.'.format(fname, last_change.year,
-                                                years[1]))
+                    content = fh.read()
+                    if not content.startswith(LICENSE_TEMPLATE):
+                        print('The file {} does not start with the required '
+                              'license header.'.format(fname))
                         failed = True
 
         if failed:
