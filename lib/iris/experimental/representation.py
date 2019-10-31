@@ -92,10 +92,9 @@ class CubeRepresentation(object):
             'Dimension coordinates:': None,
             'Auxiliary coordinates:': None,
             'Derived coordinates:': None,
-            'Cell Measures:': None,
-            'Ancillary Datasets:': None,
+            'Cell measures:': None,
+            'Ancillary variables:': None,
             'Scalar coordinates:': None,
-            'Invalid coordinates:': None,
             'Scalar cell measures:': None,
             'Attributes:': None,
             'Cell methods:': None,
@@ -103,8 +102,8 @@ class CubeRepresentation(object):
         self.dim_desc_coords = ['Dimension coordinates:',
                                 'Auxiliary coordinates:',
                                 'Derived coordinates:',
-                                'Cell Measures:',
-                                'Ancillary Datasets:']
+                                'Cell measures:',
+                                'Ancillary variables:']
 
         self.two_cell_headers = ['Scalar coordinates:',
                                  'Attributes:']
