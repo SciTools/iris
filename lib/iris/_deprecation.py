@@ -7,8 +7,8 @@
 Utilities for producing runtime deprecation messages.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import warnings
@@ -18,6 +18,7 @@ from iris.exceptions import IrisError
 
 class IrisDeprecation(UserWarning):
     """An Iris deprecation warning."""
+
     pass
 
 
@@ -63,8 +64,9 @@ class ClassWrapperSameDocstring(type):
         parent_class = bases[0]
 
         # Copy the original class docstring.
-        class_dict['__doc__'] = parent_class.__doc__
+        class_dict["__doc__"] = parent_class.__doc__
 
         # Return the result.
         return super(ClassWrapperSameDocstring, metacls).__new__(
-            metacls, classname, bases, class_dict)
+            metacls, classname, bases, class_dict
+        )

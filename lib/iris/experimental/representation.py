@@ -9,8 +9,8 @@ Definitions of how Iris objects should be represented.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 from html import escape
 import re
@@ -89,23 +89,25 @@ class CubeRepresentation(object):
         self.cube_str = escape(str(self.cube))
 
         self.str_headings = {
-            'Dimension coordinates:': None,
-            'Auxiliary coordinates:': None,
-            'Derived coordinates:': None,
-            'Scalar coordinates:': None,
-            'Attributes:': None,
-            'Cell methods:': None,
+            "Dimension coordinates:": None,
+            "Auxiliary coordinates:": None,
+            "Derived coordinates:": None,
+            "Scalar coordinates:": None,
+            "Attributes:": None,
+            "Cell methods:": None,
         }
-        self.dim_desc_coords = ['Dimension coordinates:',
-                                'Auxiliary coordinates:',
-                                'Derived coordinates:']
+        self.dim_desc_coords = [
+            "Dimension coordinates:",
+            "Auxiliary coordinates:",
+            "Derived coordinates:",
+        ]
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
         self.scalar_cube = self.shapes == ()
         self.ndims = self.cube.ndim
 
-        self.name = escape(self.cube.name().title().replace('_', ' '))
+        self.name = escape(self.cube.name().title().replace("_", " "))
         self.names = [escape(dim_name) for dim_name in self._dim_names()]
         self.units = escape(str(self.cube.units))
 
@@ -123,23 +125,24 @@ class CubeRepresentation(object):
         # Add the dim_coord names that participate in the associated data
         # dimensions.
         for dim in range(len(self.cube.shape)):
-            dim_coords = self.cube.coords(contains_dimension=dim,
-                                          dim_coords=True)
+            dim_coords = self.cube.coords(
+                contains_dimension=dim, dim_coords=True
+            )
             if dim_coords:
                 dim_names[dim] = dim_coords[0].name()
             else:
-                dim_names[dim] = '--'
+                dim_names[dim] = "--"
         return dim_names
 
     def _dim_names(self):
         if self.scalar_cube:
-            dim_names = ['(scalar cube)']
+            dim_names = ["(scalar cube)"]
         else:
             dim_names = self._get_dim_names()
         return dim_names
 
     def _get_lines(self):
-        return self.cube_str.split('\n')
+        return self.cube_str.split("\n")
 
     def _get_bits(self, bits):
         """
@@ -147,12 +150,12 @@ class CubeRepresentation(object):
         being converted into table rows.
 
         """
-        left_indent = re.split(r'\w+', bits[1])[0]
+        left_indent = re.split(r"\w+", bits[1])[0]
 
         # Get heading indices within the printout.
         start_inds = []
         for hdg in self.str_headings.keys():
-            heading = '{}{}'.format(left_indent, hdg)
+            heading = "{}{}".format(left_indent, hdg)
             try:
                 start_ind = bits.index(heading)
             except ValueError:
@@ -166,9 +169,9 @@ class CubeRepresentation(object):
         for i0, i1 in zip(start_inds[:-1], start_inds[1:]):
             str_heading_name = bits[i0].strip()
             if i1 != 0:
-                content = bits[i0 + 1: i1]
+                content = bits[i0 + 1 : i1]
             else:
-                content = bits[i0 + 1:]
+                content = bits[i0 + 1 :]
             self.str_headings[str_heading_name] = content
 
     def _make_header(self):
@@ -179,26 +182,30 @@ class CubeRepresentation(object):
 
         """
         # Header row.
-        tlc_template = \
+        tlc_template = (
             '<th class="iris iris-word-cell">{self.name} ({self.units})</th>'
+        )
         top_left_cell = tlc_template.format(self=self)
         cells = ['<tr class="iris">', top_left_cell]
         for dim_name in self.names:
             cells.append(
-                '<th class="iris iris-word-cell">{}</th>'.format(dim_name))
-        cells.append('</tr>')
-        return '\n'.join(cell for cell in cells)
+                '<th class="iris iris-word-cell">{}</th>'.format(dim_name)
+            )
+        cells.append("</tr>")
+        return "\n".join(cell for cell in cells)
 
     def _make_shapes_row(self):
         """Add a row to show data / dimensions shape."""
-        title_cell = \
+        title_cell = (
             '<td class="iris-word-cell iris-subheading-cell">Shape</td>'
+        )
         cells = ['<tr class="iris">', title_cell]
         for shape in self.shapes:
             cells.append(
-                '<td class="iris iris-inclusion-cell">{}</td>'.format(shape))
-        cells.append('</tr>')
-        return '\n'.join(cell for cell in cells)
+                '<td class="iris iris-inclusion-cell">{}</td>'.format(shape)
+            )
+        cells.append("</tr>")
+        return "\n".join(cell for cell in cells)
 
     def _make_row(self, title, body=None, col_span=0):
         """
@@ -215,43 +222,54 @@ class CubeRepresentation(object):
 
         """
         row = ['<tr class="iris">']
-        template = '    <td{html_cls}>{content}</td>'
+        template = "    <td{html_cls}>{content}</td>"
         if body is None:
             # This is a title row.
             # Strip off the trailing ':' from the title string.
             title = title.strip()[:-1]
             row.append(
-                template.format(html_cls=' class="iris-title iris-word-cell"',
-                                content=title))
+                template.format(
+                    html_cls=' class="iris-title iris-word-cell"',
+                    content=title,
+                )
+            )
             # Add blank cells for the rest of the rows.
             for _ in range(self.ndims):
-                row.append(template.format(html_cls=' class="iris-title"',
-                                           content=''))
+                row.append(
+                    template.format(html_cls=' class="iris-title"', content="")
+                )
         else:
             # This is not a title row.
             # Deal with name of coord/attr etc. first.
-            sub_title = '\t{}'.format(title)
-            row.append(template.format(
-                html_cls=' class="iris-word-cell iris-subheading-cell"',
-                content=sub_title))
+            sub_title = "\t{}".format(title)
+            row.append(
+                template.format(
+                    html_cls=' class="iris-word-cell iris-subheading-cell"',
+                    content=sub_title,
+                )
+            )
             # One further item or more than that?
             if col_span != 0:
-                html_cls = ' class="{}" colspan="{}"'.format('iris-word-cell',
-                                                             col_span)
+                html_cls = ' class="{}" colspan="{}"'.format(
+                    "iris-word-cell", col_span
+                )
                 row.append(template.format(html_cls=html_cls, content=body))
             else:
                 # "Inclusion" - `x` or `-`.
                 for itm in body:
-                    row.append(template.format(
-                        html_cls=' class="iris-inclusion-cell"',
-                        content=itm))
-        row.append('</tr>')
+                    row.append(
+                        template.format(
+                            html_cls=' class="iris-inclusion-cell"',
+                            content=itm,
+                        )
+                    )
+        row.append("</tr>")
         return row
 
     def _expand_last_cell(self, element, body):
-        '''Expand an element containing a cell by adding a new line.'''
-        split_point = element.index('</td>')
-        element = element[:split_point] + '<br>' + body + element[split_point:]
+        """Expand an element containing a cell by adding a new line."""
+        split_point = element.index("</td>")
+        element = element[:split_point] + "<br>" + body + element[split_point:]
         return element
 
     def _make_content(self):
@@ -263,12 +281,12 @@ class CubeRepresentation(object):
                 for line in v:
                     # Add every other row in the sub-heading.
                     if k in self.dim_desc_coords:
-                        body = re.findall(r'[\w-]+', line)
+                        body = re.findall(r"[\w-]+", line)
                         title = body.pop(0)
                         colspan = 0
                     else:
                         try:
-                            split_point = line.index(':')
+                            split_point = line.index(":")
                         except ValueError:
                             # When a line exists in v without a ':', we expect
                             # that this is due to the value of some attribute
@@ -283,11 +301,12 @@ class CubeRepresentation(object):
                             continue
                         else:
                             title = line[:split_point].strip()
-                            body = line[split_point + 2:].strip()
+                            body = line[split_point + 2 :].strip()
                         colspan = self.ndims
                     elements.extend(
-                        self._make_row(title, body=body, col_span=colspan))
-        return '\n'.join(element for element in elements)
+                        self._make_row(title, body=body, col_span=colspan)
+                    )
+        return "\n".join(element for element in elements)
 
     def repr_html(self):
         """The `repr` interface for Jupyter."""
@@ -296,7 +315,7 @@ class CubeRepresentation(object):
 
         # Check if we have a scalar cube.
         if self.scalar_cube:
-            shape = ''
+            shape = ""
             # We still need a single content column!
             self.ndims = 1
         else:
@@ -307,15 +326,14 @@ class CubeRepresentation(object):
         # If we only have a single line `cube_str` we have no coords / attrs!
         # We need to handle this case specially.
         if len(lines) == 1:
-            content = ''
+            content = ""
         else:
             self._get_bits(lines)
             content = self._make_content()
 
-        return self._template.format(header=header,
-                                     id=self.cube_id,
-                                     shape=shape,
-                                     content=content)
+        return self._template.format(
+            header=header, id=self.cube_id, shape=shape, content=content
+        )
 
 
 class CubeListRepresentation(object):
@@ -389,17 +407,21 @@ class CubeListRepresentation(object):
     def make_content(self):
         html = []
         for i, cube in enumerate(self.cubelist):
-            title = '{i}: {summary}'.format(i=i,
-                                            summary=cube.summary(shorten=True))
+            title = "{i}: {summary}".format(
+                i=i, summary=cube.summary(shorten=True)
+            )
             title = escape(title)
             content = cube._repr_html_()
-            html.append(self._accordian_panel.format(uid=self.cubelist_id,
-                                                     title=title,
-                                                     content=content))
+            html.append(
+                self._accordian_panel.format(
+                    uid=self.cubelist_id, title=title, content=content
+                )
+            )
         return html
 
     def repr_html(self):
         contents = self.make_content()
-        contents_str = '\n'.join(contents)
-        return self._template.format(uid=self.cubelist_id,
-                                     contents=contents_str)
+        contents_str = "\n".join(contents)
+        return self._template.format(
+            uid=self.cubelist_id, contents=contents_str
+        )

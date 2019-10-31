@@ -8,8 +8,8 @@ Management of common state and behaviour for cube and coordinate data.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import copy
@@ -55,8 +55,10 @@ class DataManager(object):
 
         """
         name = type(self).__name__
-        emsg = ('Shallow-copy of {!r} is not permitted. Use '
-                'copy.deepcopy() or {}.copy() instead.')
+        emsg = (
+            "Shallow-copy of {!r} is not permitted. Use "
+            "copy.deepcopy() or {}.copy() instead."
+        )
         raise copy.Error(emsg.format(name, name))
 
     def __deepcopy__(self, memo):
@@ -131,7 +133,7 @@ class DataManager(object):
         Returns an string representation of the instance.
 
         """
-        fmt = '{cls}({data!r})'
+        fmt = "{cls}({data!r})"
         result = fmt.format(data=self.core_data(), cls=type(self).__name__)
 
         return result
@@ -144,10 +146,11 @@ class DataManager(object):
         # Ensure there is a valid data state.
         is_lazy = self._lazy_array is not None
         is_real = self._real_array is not None
-        emsg = 'Unexpected data state, got {}lazy and {}real data.'
+        emsg = "Unexpected data state, got {}lazy and {}real data."
         state = is_lazy ^ is_real
-        assert state, emsg.format('' if is_lazy else 'no ',
-                                  '' if is_real else 'no ')
+        assert state, emsg.format(
+            "" if is_lazy else "no ", "" if is_real else "no "
+        )
 
     def _deepcopy(self, memo, data=None):
         """
@@ -185,7 +188,7 @@ class DataManager(object):
                 # without copying it.
             result = DataManager(data)
         except ValueError as error:
-            emsg = 'Cannot copy {!r} - {}'
+            emsg = "Cannot copy {!r} - {}"
             raise ValueError(emsg.format(type(self).__name__, error))
 
         return result
@@ -208,11 +211,13 @@ class DataManager(object):
                 # Reset the lazy data and the realised dtype.
                 self._lazy_array = None
             except MemoryError:
-                emsg = ('Failed to realise the lazy data as there was not '
-                        'enough memory available.\n'
-                        'The data shape would have been {!r} with {!r}.\n '
-                        'Consider freeing up variables or indexing the data '
-                        'before trying again.')
+                emsg = (
+                    "Failed to realise the lazy data as there was not "
+                    "enough memory available.\n"
+                    "The data shape would have been {!r} with {!r}.\n "
+                    "Consider freeing up variables or indexing the data "
+                    "before trying again."
+                )
                 raise MemoryError(emsg.format(self.shape, self.dtype))
 
         # Check the manager contract, as the managed data has changed.
@@ -238,20 +243,21 @@ class DataManager(object):
 
         """
         # Ensure we have numpy-like data.
-        if not (hasattr(data, 'shape') and hasattr(data, 'dtype')):
+        if not (hasattr(data, "shape") and hasattr(data, "dtype")):
             data = np.asanyarray(data)
 
         # Determine whether the class instance has been created,
         # as this method is called from within the __init__.
-        init_done = (self._lazy_array is not None or
-                     self._real_array is not None)
+        init_done = (
+            self._lazy_array is not None or self._real_array is not None
+        )
 
         if init_done and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
             if self.shape or data.shape != (1,):
-                emsg = 'Require data with shape {!r}, got {!r}.'
+                emsg = "Require data with shape {!r}, got {!r}."
                 raise ValueError(emsg.format(self.shape, data.shape))
 
         # Set lazy or real data, and reset the other.

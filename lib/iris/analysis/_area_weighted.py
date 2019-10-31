@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import numpy as np
 
@@ -56,7 +56,7 @@ class AreaWeightedRegridder(object):
         self._target_grid = snapshot_grid(target_grid_cube)
         # Missing data tolerance.
         if not (0 <= mdtol <= 1):
-            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
+            msg = "Value for mdtol must be in range 0 - 1, got {}."
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 
@@ -96,7 +96,10 @@ class AreaWeightedRegridder(object):
 
         """
         if get_xy_dim_coords(cube) != self._src_grid:
-            raise ValueError('The given cube is not defined on the same '
-                             'source grid as this regridder.')
+            raise ValueError(
+                "The given cube is not defined on the same "
+                "source grid as this regridder."
+            )
         return eregrid.regrid_area_weighted_rectilinear_src_and_grid(
-            cube, self._target_grid_cube, mdtol=self._mdtol)
+            cube, self._target_grid_cube, mdtol=self._mdtol
+        )

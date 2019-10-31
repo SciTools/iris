@@ -8,8 +8,8 @@ Routines for putting data on new strata (aka. isosurfaces), often in the
 Z direction.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 from functools import partial
 import six
@@ -131,8 +131,10 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     try:
         cube_data, src_data = np.broadcast_arrays(cube.data, src_data)
     except ValueError:
-        emsg = ('Cannot broadcast the cube and src_levels with '
-                'shapes {} and {}.')
+        emsg = (
+            "Cannot broadcast the cube and src_levels with "
+            "shapes {} and {}."
+        )
         raise ValueError(emsg.format(cube.shape, src_data.shape))
 
     tgt_levels = np.asarray(tgt_levels)
@@ -155,16 +157,19 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
         try:
             np.broadcast_arrays(np.empty(data_shape), np.empty(target_shape))
         except ValueError:
-            emsg = ('Cannot broadcast the cube and tgt_levels with '
-                    'shapes {} and {}, whilst ignoring axis of interpolation.')
+            emsg = (
+                "Cannot broadcast the cube and tgt_levels with "
+                "shapes {} and {}, whilst ignoring axis of interpolation."
+            )
             raise ValueError(emsg.format(cube_data.shape, tgt_levels.shape))
         # Calculate the dimensions over the cube that the tgt_levels span.
         tgt_aux_dims = list(range(cube_data.ndim))[dim_delta:]
 
     if interpolator is None:
         # Use the default stratify interpolator.
-        interpolator = partial(stratify.interpolate,
-                               interpolation='linear', extrapolation='nan')
+        interpolator = partial(
+            stratify.interpolate, interpolation="linear", extrapolation="nan"
+        )
 
     # Now perform the interpolation.
     new_data = interpolator(tgt_levels, src_data, cube_data, axis=axis)
@@ -176,11 +181,13 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     # to the result cube.
     _copy_coords_without_z_dim(cube, result, axis)
 
-    kwargs = dict(standard_name=src_levels.standard_name,
-                  long_name=src_levels.long_name,
-                  var_name=src_levels.var_name,
-                  units=src_levels.units,
-                  attributes=src_levels.attributes)
+    kwargs = dict(
+        standard_name=src_levels.standard_name,
+        long_name=src_levels.long_name,
+        var_name=src_levels.var_name,
+        units=src_levels.units,
+        attributes=src_levels.attributes,
+    )
 
     # Add our new interpolated coordinate to the result cube.
     try:

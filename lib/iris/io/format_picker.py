@@ -40,8 +40,8 @@ The calling sequence of handler is dependent on the function given in the origin
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 try:  # Python 3
@@ -71,6 +71,7 @@ class FormatAgent(object):
         agent = FormatAgent(NetCDF_specification)
 
     """
+
     def __init__(self, format_specs=None):
         """ """
         self._format_specs = list(format_specs or [])
@@ -82,11 +83,13 @@ class FormatAgent(object):
         self._format_specs.sort()
 
     def __repr__(self):
-        return 'FormatAgent(%r)' % self._format_specs
+        return "FormatAgent(%r)" % self._format_specs
 
     def __str__(self):
-        prefix = ' * ' if len(self._format_specs) > 1 else ''
-        return prefix + '\n * '.join(['%s' % format_spec for format_spec in self._format_specs])
+        prefix = " * " if len(self._format_specs) > 1 else ""
+        return prefix + "\n * ".join(
+            ["%s" % format_spec for format_spec in self._format_specs]
+        )
 
     def get_spec(self, basename, buffer_obj):
         """
@@ -119,8 +122,9 @@ class FormatAgent(object):
                     # reset the buffer if tell != 0
                     buffer_obj.seek(0)
 
-                element_cache[repr(fmt_elem)] = \
-                    fmt_elem.get_element(basename, buffer_obj)
+                element_cache[repr(fmt_elem)] = fmt_elem.get_element(
+                    basename, buffer_obj
+                )
 
             # If we have a callable object, then call it and tests its result, otherwise test using basic equality
             if isinstance(fmt_elem_value, Callable):
@@ -137,10 +141,12 @@ class FormatAgent(object):
         for key, value in six.iteritems(element_cache):
             value = str(value)
             if len(value) > 50:
-                value = value[:50] + '...'
+                value = value[:50] + "..."
             printable_values[key] = value
-        msg = ('No format specification could be found for the given buffer.'
-               ' File element cache:\n {}'.format(printable_values))
+        msg = (
+            "No format specification could be found for the given buffer."
+            " File element cache:\n {}".format(printable_values)
+        )
         raise ValueError(msg)
 
 
@@ -153,8 +159,16 @@ class FormatSpecification(object):
     a FileElement, such as filename extension or 32-bit magic number, with an associated value for format identification.
 
     """
-    def __init__(self, format_name, file_element, file_element_value,
-                 handler=None, priority=0, constraint_aware_handler=False):
+
+    def __init__(
+        self,
+        format_name,
+        file_element,
+        file_element_value,
+        handler=None,
+        priority=0,
+        constraint_aware_handler=False,
+    ):
         """
         Constructs a new FormatSpecification given the format_name and particular FileElements
 
@@ -172,8 +186,10 @@ class FormatSpecification(object):
 
         """
         if not isinstance(file_element, FileElement):
-            raise ValueError('file_element must be an instance of FileElement, got %r' % file_element)
-
+            raise ValueError(
+                "file_element must be an instance of FileElement, got %r"
+                % file_element
+            )
 
         self._file_element = file_element
         self._file_element_value = file_element_value
@@ -225,11 +241,20 @@ class FormatSpecification(object):
 
     def __repr__(self):
         # N.B. loader is not always going to provide a nice repr if it is a lambda function, hence a prettier version is available in __str__
-        return 'FormatSpecification(%r, %r, %r, handler=%r, priority=%s)' % (self._format_name, self._file_element,
-                                                                            self._file_element_value, self.handler, self.priority)
+        return "FormatSpecification(%r, %r, %r, handler=%r, priority=%s)" % (
+            self._format_name,
+            self._file_element,
+            self._file_element_value,
+            self.handler,
+            self.priority,
+        )
 
     def __str__(self):
-        return '%s%s (priority %s)' % (self.name, ' (no handler available)' if self.handler is None else '',  self.priority)
+        return "%s%s (priority %s)" % (
+            self.name,
+            " (no handler available)" if self.handler is None else "",
+            self.priority,
+        )
 
 
 class FileElement(object):
@@ -237,6 +262,7 @@ class FileElement(object):
     Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
 
     """
+
     def __init__(self, requires_fh=True):
         """
         Constructs a new file element, which may require a file buffer.
@@ -256,11 +282,12 @@ class FileElement(object):
         return hash(repr(self))
 
     def __repr__(self):
-        return '{}()'.format(self.__class__.__name__)
+        return "{}()".format(self.__class__.__name__)
 
 
 class MagicNumber(FileElement):
     """A :class:`FileElement` that returns a byte sequence in the file."""
+
     len_formats = {4: ">L", 8: ">Q"}
 
     def __init__(self, num_bytes, offset=None):
@@ -282,17 +309,19 @@ class MagicNumber(FileElement):
         return result
 
     def __repr__(self):
-        return 'MagicNumber({}, {})'.format(self._num_bytes, self._offset)
+        return "MagicNumber({}, {})".format(self._num_bytes, self._offset)
 
 
 class FileExtension(FileElement):
     """A :class:`FileElement` that returns the extension from the filename."""
+
     def get_element(self, basename, file_handle):
         return os.path.splitext(basename)[1]
 
 
 class LeadingLine(FileElement):
     """A :class:`FileElement` that returns the first line from the file."""
+
     def get_element(self, basename, file_handle):
         return file_handle.readline()
 
@@ -303,9 +332,9 @@ class UriProtocol(FileElement):
     using :func:`~iris.io.decode_uri`.
 
     """
+
     def __init__(self):
         FileElement.__init__(self, requires_fh=False)
 
     def get_element(self, basename, file_handle):
         return iris.io.decode_uri(basename)[0]
-

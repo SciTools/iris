@@ -11,8 +11,8 @@ Various utilities related to geometric operations.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import warnings
 
@@ -35,19 +35,21 @@ def _extract_relevant_cube_slice(cube, geometry):
     """
 
     # Validate the input parameters
-    if not cube.coords(axis='x') or not cube.coords(axis='y'):
-        raise ValueError('The cube must contain x and y axes.')
+    if not cube.coords(axis="x") or not cube.coords(axis="y"):
+        raise ValueError("The cube must contain x and y axes.")
 
-    x_coords = cube.coords(axis='x')
-    y_coords = cube.coords(axis='y')
+    x_coords = cube.coords(axis="x")
+    y_coords = cube.coords(axis="y")
     if len(x_coords) != 1 or len(y_coords) != 1:
-        raise ValueError('The cube must contain one, and only one, coordinate '
-                         'for each of the x and y axes.')
+        raise ValueError(
+            "The cube must contain one, and only one, coordinate "
+            "for each of the x and y axes."
+        )
 
     x_coord = x_coords[0]
     y_coord = y_coords[0]
     if not (x_coord.has_bounds() and y_coord.has_bounds()):
-        raise ValueError('Both horizontal coordinates must have bounds.')
+        raise ValueError("Both horizontal coordinates must have bounds.")
 
     if x_coord.ndim != 1:
         raise iris.exceptions.CoordinateMultiDimError(x_coord)
@@ -59,8 +61,8 @@ def _extract_relevant_cube_slice(cube, geometry):
     y_bounds = y_coord.bounds
 
     # identify ascending/descending coordinate dimensions
-    x_ascending = x_coord.points[1] - x_coord.points[0] > 0.
-    y_ascending = y_coord.points[1] - y_coord.points[0] > 0.
+    x_ascending = x_coord.points[1] - x_coord.points[0] > 0.0
+    y_ascending = y_coord.points[1] - y_coord.points[0] > 0.0
 
     # identify upper/lower bounds of coordinate dimensions
     x_bounds_lower = x_bounds[:, 0] if x_ascending else x_bounds[:, 1]
@@ -74,32 +76,40 @@ def _extract_relevant_cube_slice(cube, geometry):
         x_min_ix = np.where(x_bounds_lower <= x_min_geom)[0]
         x_min_ix = x_min_ix[np.argmax(x_bounds_lower[x_min_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "lower end.", UserWarning)
+        warnings.warn(
+            "The geometry exceeds the cube's x dimension at the " "lower end.",
+            UserWarning,
+        )
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
 
     try:
         x_max_ix = np.where(x_bounds_upper >= x_max_geom)[0]
         x_max_ix = x_max_ix[np.argmin(x_bounds_upper[x_max_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's x dimension at the "
-                      "upper end.", UserWarning)
+        warnings.warn(
+            "The geometry exceeds the cube's x dimension at the " "upper end.",
+            UserWarning,
+        )
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
 
     try:
         y_min_ix = np.where(y_bounds_lower <= y_min_geom)[0]
         y_min_ix = y_min_ix[np.argmax(y_bounds_lower[y_min_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "lower end.", UserWarning)
+        warnings.warn(
+            "The geometry exceeds the cube's y dimension at the " "lower end.",
+            UserWarning,
+        )
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
 
     try:
         y_max_ix = np.where(y_bounds_upper >= y_max_geom)[0]
         y_max_ix = y_max_ix[np.argmin(y_bounds_upper[y_max_ix])]
     except ValueError:
-        warnings.warn("The geometry exceeds the cube's y dimension at the "
-                      "upper end.", UserWarning)
+        warnings.warn(
+            "The geometry exceeds the cube's y dimension at the " "upper end.",
+            UserWarning,
+        )
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
 
     # extract coordinate values at these indices
@@ -116,16 +126,18 @@ def _extract_relevant_cube_slice(cube, geometry):
     bnds_ix = x_min_ix, y_min_ix, x_max_ix, y_max_ix
 
     # cut the relevant part from the original cube
-    coord_constr = {x_coord.name(): lambda x: x_min <= x.point <= x_max,
-                    y_coord.name(): lambda y: y_min <= y.point <= y_max}
+    coord_constr = {
+        x_coord.name(): lambda x: x_min <= x.point <= x_max,
+        y_coord.name(): lambda y: y_min <= y.point <= y_max,
+    }
     constraint = iris.Constraint(coord_values=coord_constr)
     subcube = cube.extract(constraint)
 
     if subcube is None:
         return None
     else:
-        x_coord = subcube.coord(axis='x')
-        y_coord = subcube.coord(axis='y')
+        x_coord = subcube.coord(axis="x")
+        y_coord = subcube.coord(axis="y")
         return subcube, x_coord, y_coord, bnds_ix
 
 
