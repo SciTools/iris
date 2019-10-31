@@ -5,7 +5,7 @@
     "repo": "..",
     "environment_type": "conda",
     "show_commit_url": "http://github.com/scitools/iris/commit/",
-    "pythons": ["2.7", "3.6", "3.7"],
+    //"pythons": ["2.7", "3.6", "3.7"],
     "conda_channels": ["conda-forge", "defaults"],
     "matrix": {
         "cartopy": [],
@@ -17,10 +17,15 @@
         "netcdf4": [],
         "numpy": [],
         "scipy": [],
+
+        "setuptools": [],
+        "pyke": [],
+        "six": [],
+
         "nose": [],
         "pep8": [],
         "filelock": [],
-        "imagehash": ["4"],
+        "imagehash": [],
         "requests": []
     },
 
@@ -28,5 +33,6 @@
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
 
-    // see https://asv.readthedocs.io/en/stable/asv.conf.json.html for details on what can be included in this file
+    // See https://asv.readthedocs.io/en/stable/asv.conf.json.html for
+    // details on what can be included in this file.
 }
