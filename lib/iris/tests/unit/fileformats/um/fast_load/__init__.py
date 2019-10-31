@@ -7,5 +7,3 @@
 Unit tests for the module :mod:`iris.fileformats.um._fast_load`.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa

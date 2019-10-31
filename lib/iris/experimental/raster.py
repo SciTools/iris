@@ -14,8 +14,6 @@ TODO: If this module graduates from experimental the (optional) GDAL
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import numpy as np
 import numpy.ma as ma
 from osgeo import gdal, osr

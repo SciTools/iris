@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from datetime import datetime
 import os
 import os.path

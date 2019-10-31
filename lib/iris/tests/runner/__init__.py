@@ -7,5 +7,3 @@
 Empty file to allow import.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa

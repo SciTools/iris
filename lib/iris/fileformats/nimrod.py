@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Provides NIMROD file format capabilities."""
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import glob

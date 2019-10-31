@@ -7,5 +7,3 @@
 Experimental code is tested in this package.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa

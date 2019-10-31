@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for :func:`iris.fileformats.dot._dot_path`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

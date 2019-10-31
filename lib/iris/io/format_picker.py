@@ -39,8 +39,6 @@ The calling sequence of handler is dependent on the function given in the origin
 
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 try:  # Python 3

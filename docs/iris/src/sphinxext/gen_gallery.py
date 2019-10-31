@@ -6,8 +6,6 @@
 Generate a thumbnail gallery of examples.
 '''
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import os
 import glob
 import re

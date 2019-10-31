@@ -5,8 +5,6 @@
 # licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 
 import warnings
 

@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """A module to provide an optimal array structure calculation."""
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import itertools

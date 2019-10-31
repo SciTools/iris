@@ -6,8 +6,6 @@
 
 """Unit tests for the `iris.analysis.cartography._quadrant_area` function"""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 

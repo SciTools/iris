@@ -18,8 +18,6 @@ Where <summary> can be any valid chars, and
 <date> is in the style "2001-Jan-23".
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import datetime
 from glob import glob
 import os

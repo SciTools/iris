@@ -9,8 +9,6 @@ metOcean mapping translations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from datetime import datetime
 import os.path
 import requests

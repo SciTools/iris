@@ -7,8 +7,6 @@
 Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import os

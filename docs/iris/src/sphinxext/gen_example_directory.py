@@ -9,8 +9,6 @@
 Generate the rst files for the examples
 '''
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import os
 import re
 import shutil

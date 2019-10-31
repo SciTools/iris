@@ -10,8 +10,6 @@ See also: http://pandas.pydata.org/
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import datetime
 
 import cf_units

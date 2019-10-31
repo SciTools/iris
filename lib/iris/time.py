@@ -8,8 +8,6 @@ Time handling.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import functools
 
 

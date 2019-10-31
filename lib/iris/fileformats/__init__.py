@@ -8,8 +8,6 @@ A package for converting cubes to and from specific file formats.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from iris.io.format_picker import (FileExtension, FormatAgent,
                                    FormatSpecification, MagicNumber,
                                    UriProtocol, LeadingLine)

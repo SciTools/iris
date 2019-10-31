@@ -8,8 +8,6 @@ Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

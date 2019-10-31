@@ -16,8 +16,6 @@ as obtained from:
     http://cf-pcmdi.llnl.gov/documents/cf-standard-names
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import argparse

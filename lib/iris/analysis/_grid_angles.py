@@ -8,8 +8,6 @@ Code to implement vector rotation by angles, and inferring gridcell angles
 from coordinate points and bounds.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import numpy as np
 
 import cartopy.crs as ccrs

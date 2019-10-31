@@ -11,8 +11,6 @@ Other types of UM file may fail to load correctly (or at all).
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from iris.fileformats._ff import FF2PP
 from iris.fileformats.pp import _load_cubes_variable_loader

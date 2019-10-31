@@ -10,8 +10,6 @@ to run the example tests.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import contextlib
 import os.path
 import warnings

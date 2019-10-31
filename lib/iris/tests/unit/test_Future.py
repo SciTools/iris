@@ -5,8 +5,12 @@
 # licensing details.
 """Unit tests for the `iris.Future` class."""
 
+<<<<<<< HEAD
 import six
 from six.moves import (filter, input, map, range, zip)  # noqa
+=======
+from __future__ import (absolute_import, division, print_function)
+>>>>>>> Removed unused six imports.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

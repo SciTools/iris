@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from sphinx.ext import autodoc
 from sphinx.ext.autodoc import *
 from sphinx.util import force_decode

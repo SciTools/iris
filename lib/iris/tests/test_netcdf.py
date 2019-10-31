@@ -7,8 +7,6 @@
 Test CF-NetCDF file loading and saving.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # Import iris tests first so that some things can be initialised before

@@ -13,8 +13,6 @@ The documentation for this file format can be found
 `here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import calendar

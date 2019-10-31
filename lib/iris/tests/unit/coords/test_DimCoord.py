@@ -10,8 +10,6 @@ Note: a lot of these methods are actually defined by the :class:`Coord` class,
 but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before

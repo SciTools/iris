@@ -13,8 +13,6 @@ References:
 [NUG] NetCDF User's Guide, http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractmethod

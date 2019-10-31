@@ -7,8 +7,6 @@
 Utilities for producing runtime deprecation messages.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 import warnings
 

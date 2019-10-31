@@ -1,6 +1,4 @@
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import iris
 import iris.plot as iplt
 import matplotlib.pyplot as plt

@@ -13,8 +13,6 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import cf_units
 import matplotlib.pyplot as plt
 

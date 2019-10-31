@@ -22,7 +22,6 @@ to the pp "as_pairs" functions.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from contextlib import contextmanager
 import threading

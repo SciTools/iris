@@ -29,8 +29,6 @@ defined by :mod:`ConfigParser`.
 
 ----------
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 from six.moves import configparser
 

@@ -8,8 +8,6 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import iris.tests as tests
 import iris.tests.stock as stock
 import iris.analysis.cartography

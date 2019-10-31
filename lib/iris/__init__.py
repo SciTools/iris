@@ -84,8 +84,6 @@ All the load functions share very similar arguments:
                 cube.add_aux_coord(experiment_coord)
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import contextlib

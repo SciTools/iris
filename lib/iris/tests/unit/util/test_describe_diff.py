@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Test function :func:`iris.util.describe_diff`."""
-
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # import iris tests first so that some things can be initialised before

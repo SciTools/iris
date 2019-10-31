@@ -8,8 +8,6 @@ Test the :func:`iris.experimental.ugrid.ugrid` function.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import iris.tests as tests
 
 import unittest
