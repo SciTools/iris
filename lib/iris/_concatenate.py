@@ -122,16 +122,14 @@ class _CoordMetaData(namedtuple('CoordMetaData',
             else:
                 order = _DECREASING
             kwargs['order'] = order
-        metadata = super(_CoordMetaData, cls).__new__(cls, defn, dims,
-                                                      points_dtype,
-                                                      bounds_dtype,
-                                                      kwargs)
+        metadata = super().__new__(cls, defn, dims, points_dtype,
+                                   bounds_dtype, kwargs)
         return metadata
 
     __slots__ = ()
 
     def __hash__(self):
-        return super(_CoordMetaData, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         result = NotImplemented

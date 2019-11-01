@@ -178,7 +178,7 @@ class MixinVectorPlotCases(object):
 
 class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
     def setUp(self):
-        super(TestQuiver, self).setUp()
+        super().setUp()
 
     def plot_function_to_test(self):
         return quiver

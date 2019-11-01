@@ -100,7 +100,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
 @tests.skip_plot
 class TestLabels(tests.GraphicsTest):
     def setUp(self):
-        super(TestLabels, self).setUp()
+        super().setUp()
         self.theta = _load_theta()
 
     def _slice(self, coords):
@@ -203,7 +203,7 @@ class TestLabels(tests.GraphicsTest):
 @tests.skip_plot
 class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
     def setUp(self):
-        super(TestTimeReferenceUnitsLabels, self).setUp()
+        super().setUp()
         path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         self.cube = iris.load_cube(path)[:, 0, 0]
 

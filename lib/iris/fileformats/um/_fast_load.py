@@ -62,7 +62,7 @@ class FieldCollation(BasicFieldCollation):
             The path of the file the collation is loaded from.
 
         """
-        super(FieldCollation, self).__init__(fields)
+        super().__init__(fields)
         self._load_filepath = filepath
 
     @property

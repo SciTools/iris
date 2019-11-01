@@ -31,7 +31,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestColorBarCreation(tests.GraphicsTest):
     def setUp(self):
-        super(TestColorBarCreation, self).setUp()
+        super().setUp()
         self.draw_functions = (contour, contourf, pcolormesh, pcolor)
         self.cube = iris.tests.stock.lat_lon_cube()
         self.cube.coord('longitude').guess_bounds()

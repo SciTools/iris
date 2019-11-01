@@ -32,7 +32,7 @@ class TestFastCallbackLocationInfo(Mixin_FieldTest, tests.IrisTest):
 
     def setUp(self):
         # Call parent setup.
-        super(TestFastCallbackLocationInfo, self).setUp()
+        super().setUp()
 
         # Create a basic load test case.
         self.callback_collations = []

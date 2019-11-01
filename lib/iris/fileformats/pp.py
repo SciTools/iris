@@ -262,7 +262,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         model = cls._validate_member('model', model, 1, 99)
         section = cls._validate_member('section', section, 0, 99)
         item = cls._validate_member('item', item, 1, 999)
-        return super(STASH, cls).__new__(cls, model, section, item)
+        return super().__new__(cls, model, section, item)
 
     @staticmethod
     def from_msi(msi):
@@ -318,13 +318,13 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         return '?' not in str(self)
 
     def __hash__(self):
-        return super(STASH, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         if isinstance(other, six.string_types):
-            return super(STASH, self).__eq__(STASH.from_msi(other))
+            return super().__eq__(STASH.from_msi(other))
         else:
-            return super(STASH, self).__eq__(other)
+            return super().__eq__(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)

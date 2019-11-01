@@ -20,7 +20,7 @@ from iris.tests.stock import simple_2d, lat_lon_cube
 @tests.skip_plot
 class TestGraphicStringCoord(tests.GraphicsTest):
     def setUp(self):
-        super(TestGraphicStringCoord, self).setUp()
+        super().setUp()
         self.cube = simple_2d(with_bounds=True)
         self.cube.add_aux_coord(AuxCoord(list('abcd'),
                                          long_name='str_coord'), 1)

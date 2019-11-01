@@ -57,15 +57,15 @@ class TestGribMessage(Common, tests.IrisTest):
     # see https://github.com/SciTools/iris/pull/2608
     @unittest.expectedFailure
     def test_protocol_0(self):
-        super(TestGribMessage, self).test_protocol_0()
+        super().test_protocol_0()
 
     @unittest.expectedFailure
     def test_protocol_1(self):
-        super(TestGribMessage, self).test_protocol_1()
+        super().test_protocol_1()
 
     @unittest.expectedFailure
     def test_protocol_2(self):
-        super(TestGribMessage, self).test_protocol_2()
+        super().test_protocol_2()
 
     def test(self):
         # Check that a GribMessage pickles without errors.

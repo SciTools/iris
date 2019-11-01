@@ -32,7 +32,7 @@ from iris.coords import DimCoord
 class DimCoordTestMixin(CoordTestMixin):
     # Define a 1-D default array shape.
     def setupTestArrays(self, shape=(3, ), masked=False):
-        super(DimCoordTestMixin, self).setupTestArrays(shape, masked=masked)
+        super().setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, DimCoordTestMixin):
