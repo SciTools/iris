@@ -88,7 +88,7 @@ class EncodableMap(object):
                                         self.targetmsg.format(**self.targetid))
 
 
-class Mappings(ABCMeta, object):
+class Mappings(object, metaclass=ABCMeta):
     """
     Abstract base class to support the encoding of specific metarelate
     mapping translations.

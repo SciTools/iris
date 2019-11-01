@@ -17,7 +17,7 @@ import cartopy
 import cartopy.crs as ccrs
 
 
-class CoordSystem(ABCMeta, object):
+class CoordSystem(object, metaclass=ABCMeta):
     """
     Abstract base class for coordinate systems.
 

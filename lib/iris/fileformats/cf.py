@@ -67,7 +67,7 @@ def _is_str_dtype(var):
 
 
 ################################################################################
-class CFVariable(ABCMeta, object):
+class CFVariable(object, metaclass=ABCMeta):
     """Abstract base class wrapper for a CF-netCDF variable."""
 
     #: Name of the netCDF variable attribute that identifies this

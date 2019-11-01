@@ -972,7 +972,7 @@ class _TestTimingsMetaclass(type):
         return result
 
 
-class IrisTest(_TestTimingsMetaclass, IrisTest_nometa):
+class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
     # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
     # metaclass that enables test timings output.
     # This means that all subclasses also get the timing behaviour.
