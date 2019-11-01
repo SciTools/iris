@@ -1,0 +1,10 @@
+linters:
+    flake8:
+        python: 3
+        config: ./.flake8
+
+files:
+    ignore:
+        - 'lib/iris/fileformats/um_cf_map.py'
+        - 'lib/iris/fileformats/_ff_cross_references.py'
+        - 'lib/iris/std_names.py'
