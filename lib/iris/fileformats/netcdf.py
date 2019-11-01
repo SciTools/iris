@@ -469,7 +469,7 @@ def _pyke_stats(engine, cf_name):
 def _set_attributes(attributes, key, value):
     """Set attributes dictionary, converting unicode strings appropriately."""
 
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         try:
             attributes[str(key)] = str(value)
         except UnicodeEncodeError:
@@ -2327,7 +2327,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
             else:
                 msg = "The argument to packing must contain the key 'dtype'."
                 raise ValueError(msg)
-        elif (isinstance(p, six.text_type) or isinstance(p, type) or
+        elif (isinstance(p, str) or isinstance(p, type) or
               isinstance(p, str)):
             pdtype = np.dtype(p)  # Does nothing if it's already a numpy dtype
             if pdtype.kind != 'i' and pdtype.kind != 'u':

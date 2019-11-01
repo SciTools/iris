@@ -2276,7 +2276,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if self.attributes:
                 attribute_lines = []
                 for name, value in sorted(self.attributes.items()):
-                    value = iris.util.clip_string(six.text_type(value))
+                    value = iris.util.clip_string(str(value))
                     line = u'{pad:{width}}{name}: {value}'.format(pad=' ',
                                                                   width=indent,
                                                                   name=name,

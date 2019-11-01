@@ -288,7 +288,7 @@ class TestCubeStringRepresentations(IrisDotTest):
     def test_basic_0d_cube(self):
         self.assertString(repr(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__repr__.txt'))
-        self.assertString(six.text_type(self.cube_2d[0, 0]),
+        self.assertString(str(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__unicode__.txt'))
         self.assertString(str(self.cube_2d[0, 0]),
                           ('cdm', 'str_repr', '0d_cube.__str__.txt'))
@@ -371,7 +371,7 @@ class TestCubeStringRepresentations(IrisDotTest):
 
     def test_unicode_attribute(self):
         self.assertString(
-            six.text_type(self.unicode_cube),
+            str(self.unicode_cube),
             ('cdm', 'str_repr', 'unicode_attribute.__unicode__.txt'))
 
 
