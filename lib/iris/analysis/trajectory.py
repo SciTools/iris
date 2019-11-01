@@ -9,8 +9,8 @@ trajectory.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import math
@@ -30,6 +30,7 @@ from iris.util import _meshgrid
 class _Segment(object):
     """A single trajectory line segment: Two points, as described in the
     Trajectory class."""
+
     def __init__(self, p0, p1):
         # check keys
         if sorted(p0.keys()) != sorted(p1.keys()):
@@ -76,8 +77,10 @@ class Trajectory(object):
         self.sample_count = sample_count
 
         # create line segments from the waypoints
-        segments = [_Segment(self.waypoints[i], self.waypoints[i+1])
-                    for i in range(len(self.waypoints) - 1)]
+        segments = [
+            _Segment(self.waypoints[i], self.waypoints[i + 1])
+            for i in range(len(self.waypoints) - 1)
+        ]
 
         # calculate our total length
         self.length = sum([seg.length for seg in segments])
@@ -104,22 +107,25 @@ class Trajectory(object):
 
             # how far through the segment is our sample point?
             seg_start_len = len_accum - cur_seg.length
-            seg_frac = (sample_at_len-seg_start_len) / cur_seg.length
+            seg_frac = (sample_at_len - seg_start_len) / cur_seg.length
 
             # sample each coordinate in this segment, to create a new
             # sampled point
             new_sampled_point = {}
             for key in cur_seg.pts[0].keys():
                 seg_coord_delta = cur_seg.pts[1][key] - cur_seg.pts[0][key]
-                new_sampled_point.update({key: cur_seg.pts[0][key] +
-                                         seg_frac*seg_coord_delta})
+                new_sampled_point.update(
+                    {key: cur_seg.pts[0][key] + seg_frac * seg_coord_delta}
+                )
 
             # add this new sampled point
             self.sampled_points.append(new_sampled_point)
 
     def __repr__(self):
-        return 'Trajectory(%s, sample_count=%s)' % (self.waypoints,
-                                                    self.sample_count)
+        return "Trajectory(%s, sample_count=%s)" % (
+            self.waypoints,
+            self.sample_count,
+        )
 
     def _get_interp_points(self):
         """
@@ -131,8 +137,10 @@ class Trajectory(object):
             `:func:`~iris.analysis.trajectory.interpolate`.
 
         """
-        points = {k: [point_dict[k] for point_dict in self.sampled_points]
-                  for k in self.sampled_points[0].keys()}
+        points = {
+            k: [point_dict[k] for point_dict in self.sampled_points]
+            for k in self.sampled_points[0].keys()
+        }
         return [(k, v) for k, v in points.items()]
 
     def _src_cube_anon_dims(self, cube):
@@ -177,13 +185,16 @@ class Trajectory(object):
         if len(interpolated_cube.dim_coords) < interpolated_cube.ndim:
             # Add a new coord `index` to describe the new dimension created by
             # interpolating.
-            index_coord = iris.coords.DimCoord(range(self.sample_count),
-                                               long_name='index')
+            index_coord = iris.coords.DimCoord(
+                range(self.sample_count), long_name="index"
+            )
             # Make sure anonymous dims in `cube` do not mistakenly get labelled
             # as the new `index` dimension created by interpolating.
             src_anon_dims = self._src_cube_anon_dims(cube)
             interp_anon_dims = self._src_cube_anon_dims(interpolated_cube)
-            anon_dim_index, = list(set(interp_anon_dims) - set(src_anon_dims))
+            (anon_dim_index,) = list(
+                set(interp_anon_dims) - set(src_anon_dims)
+            )
             # Add the new coord to the interpolated cube.
             interpolated_cube.add_dim_coord(index_coord, anon_dim_index)
         return interpolated_cube
@@ -232,7 +243,7 @@ def interpolate(cube, sample_points, method=None):
     trajectory_size = len(values)
     for coord, values in sample_points[1:]:
         if len(values) != trajectory_size:
-            raise ValueError('Lengths of coordinate values are inconsistent.')
+            raise ValueError("Lengths of coordinate values are inconsistent.")
 
     # Which dimensions are we squishing into the last dimension?
     squish_my_dims = set()
@@ -244,8 +255,11 @@ def interpolate(cube, sample_points, method=None):
     # Derive the new cube's shape by filtering out all the dimensions we're
     # about to sample,
     # and then adding a new dimension to accommodate all the sample points.
-    remaining = [(dim, size) for dim, size in enumerate(cube.shape) if dim
-                 not in squish_my_dims]
+    remaining = [
+        (dim, size)
+        for dim, size in enumerate(cube.shape)
+        if dim not in squish_my_dims
+    ]
     new_data_shape = [size for dim, size in remaining]
     new_data_shape.append(trajectory_size)
 
@@ -285,13 +299,15 @@ def interpolate(cube, sample_points, method=None):
         src_dims = cube.coord_dims(coord)
         if not squish_my_dims.isdisjoint(src_dims):
             points = np.array([coord.points.flatten()[0]] * trajectory_size)
-            new_coord = iris.coords.AuxCoord(points,
-                                             standard_name=coord.standard_name,
-                                             long_name=coord.long_name,
-                                             units=coord.units,
-                                             bounds=None,
-                                             attributes=coord.attributes,
-                                             coord_system=coord.coord_system)
+            new_coord = iris.coords.AuxCoord(
+                points,
+                standard_name=coord.standard_name,
+                long_name=coord.long_name,
+                units=coord.units,
+                bounds=None,
+                attributes=coord.attributes,
+                coord_system=coord.coord_system,
+            )
             new_cube.add_aux_coord(new_coord, trajectory_dim)
             coord_mapping[id(coord)] = new_coord
 
@@ -302,8 +318,10 @@ def interpolate(cube, sample_points, method=None):
     for coord, values in sample_points:
         if coord.ndim > 1:
             if method == "linear":
-                msg = "Cannot currently perform linear interpolation for " \
-                      "multi-dimensional coordinates."
+                msg = (
+                    "Cannot currently perform linear interpolation for "
+                    "multi-dimensional coordinates."
+                )
                 raise iris.exceptions.CoordinateMultiDimError(msg)
             method = "nearest"
             break
@@ -320,14 +338,16 @@ def interpolate(cube, sample_points, method=None):
                     if len(column_coord.points) != 1:
                         msg = "Expected to find exactly one point. Found {}."
                         raise Exception(msg.format(column_coord.points))
-                    new_cube.coord(column_coord.name()).points[i] = \
-                        column_coord.points[0]
+                    new_cube.coord(column_coord.name()).points[
+                        i
+                    ] = column_coord.points[0]
 
     elif method == "nearest":
         # Use a cache with _nearest_neighbour_indices_ndcoords()
         cache = {}
         column_indexes = _nearest_neighbour_indices_ndcoords(
-            cube, sample_points, cache=cache)
+            cube, sample_points, cache=cache
+        )
 
         # Construct "fancy" indexes, so we can create the result data array in
         # a single numpy indexing operation.
@@ -338,8 +358,7 @@ def interpolate(cube, sample_points, method=None):
         n_index_length = len(column_indexes[0])
         dims_reduced = [False] * n_index_length
         for i_ind in range(n_index_length):
-            contents = [column_index[i_ind]
-                        for column_index in column_indexes]
+            contents = [column_index[i_ind] for column_index in column_indexes]
             each_used = [content != slice(None) for content in contents]
             if np.all(each_used):
                 # This dimension is addressed : use a list of indices.
@@ -358,8 +377,10 @@ def interpolate(cube, sample_points, method=None):
                 region_slice = slice(None)
             else:
                 # Should really never happen, if _ndcoords is right.
-                msg = ('Internal error in trajectory interpolation : point '
-                       'selection indices should all have the same form.')
+                msg = (
+                    "Internal error in trajectory interpolation : point "
+                    "selection indices should all have the same form."
+                )
                 raise ValueError(msg)
 
             fancy_source_indices.append(fancy_index)
@@ -380,12 +401,14 @@ def interpolate(cube, sample_points, method=None):
         # Make a list of dims with the reduced ones last.
         dims_reduced = np.array(dims_reduced)
         dims_order = np.arange(n_index_length)
-        dims_order = np.concatenate((dims_order[~dims_reduced],
-                                     dims_order[dims_reduced]))
+        dims_order = np.concatenate(
+            (dims_order[~dims_reduced], dims_order[dims_reduced])
+        )
         # Rearrange the data dimensions and the fancy indices into that order.
         source_data = source_data.transpose(dims_order)
-        fancy_source_indices = [fancy_source_indices[i_dim]
-                                for i_dim in dims_order]
+        fancy_source_indices = [
+            fancy_source_indices[i_dim] for i_dim in dims_order
+        ]
 
         # Apply the fancy indexing to get all the result data points.
         source_data = source_data[tuple(fancy_source_indices)]
@@ -405,20 +428,25 @@ def interpolate(cube, sample_points, method=None):
         # TODO: maybe this should be fixed -- i.e. to preserve input dtype ??
 
         # Fill in the empty squashed (non derived) coords.
-        column_coords = [coord
-                         for coord in cube.dim_coords + cube.aux_coords
-                         if not squish_my_dims.isdisjoint(
-                             cube.coord_dims(coord))]
-        new_cube_coords = [new_cube.coord(column_coord.name())
-                           for column_coord in column_coords]
+        column_coords = [
+            coord
+            for coord in cube.dim_coords + cube.aux_coords
+            if not squish_my_dims.isdisjoint(cube.coord_dims(coord))
+        ]
+        new_cube_coords = [
+            new_cube.coord(column_coord.name())
+            for column_coord in column_coords
+        ]
         all_point_indices = np.array(column_indexes)
         single_point_test_cube = cube[column_indexes[0]]
         for new_cube_coord, src_coord in zip(new_cube_coords, column_coords):
             # Check structure of the indexed coord (at one selected point).
             point_coord = single_point_test_cube.coord(src_coord)
             if len(point_coord.points) != 1:
-                msg = ('Coord {} at one x-y position has the shape {}, '
-                       'instead of being a single point. ')
+                msg = (
+                    "Coord {} at one x-y position has the shape {}, "
+                    "instead of being a single point. "
+                )
                 raise ValueError(msg.format(src_coord.name(), src_coord.shape))
 
             # Work out which indices apply to the input coord.
@@ -426,12 +454,15 @@ def interpolate(cube, sample_points, method=None):
             # single point for each coord, but this is very inefficient.
             # So here, we translate cube indexes into *coord* indexes.
             src_coord_dims = cube.coord_dims(src_coord)
-            fancy_coord_index_arrays = [list(all_point_indices[:, src_dim])
-                                        for src_dim in src_coord_dims]
+            fancy_coord_index_arrays = [
+                list(all_point_indices[:, src_dim])
+                for src_dim in src_coord_dims
+            ]
 
             # Fill the new coord with all the correct points from the old one.
             new_cube_coord.points = src_coord.points[
-                tuple(fancy_coord_index_arrays)]
+                tuple(fancy_coord_index_arrays)
+            ]
             # NOTE: the new coords do *not* have bounds.
 
     return new_cube
@@ -525,8 +556,10 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
         try:
             coord, value = sample_points[0]
         except (KeyError, ValueError):
-            emsg = ('Sample points must be a list of '
-                    '(coordinate, value) pairs, got {!r}.')
+            emsg = (
+                "Sample points must be a list of "
+                "(coordinate, value) pairs, got {!r}."
+            )
             raise TypeError(emsg.format(sample_points))
 
     # Convert names to coords in sample_point and reformat sample point values
@@ -538,8 +571,10 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     for coord, value in sample_points:
         coord = cube.coord(coord)
         if id(coord) not in ok_coord_ids:
-            msg = ('Invalid sample coordinate {!r}: derived coordinates are'
-                   ' not allowed.'.format(coord.name()))
+            msg = (
+                "Invalid sample coordinate {!r}: derived coordinates are"
+                " not allowed.".format(coord.name())
+            )
             raise ValueError(msg)
         sample_point_coords.append(coord)
         sample_point_coord_names.append(coord.name())
@@ -548,7 +583,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
 
     coord_point_lens = np.array([len(value) for value in coord_values])
     if not np.all(coord_point_lens == coord_point_lens[0]):
-        msg = 'All coordinates must have the same number of sample points.'
+        msg = "All coordinates must have the same number of sample points."
         raise ValueError(msg)
 
     coord_values = np.array(coord_values)
@@ -573,31 +608,37 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             sample_space_cube.remove_coord(coord)
 
     # Order the sample point coords according to the sample space cube coords.
-    sample_space_coord_names = \
-        [coord.name() for coord in sample_space_cube.coords()]
-    new_order = [sample_space_coord_names.index(name)
-                 for name in sample_point_coord_names]
+    sample_space_coord_names = [
+        coord.name() for coord in sample_space_cube.coords()
+    ]
+    new_order = [
+        sample_space_coord_names.index(name)
+        for name in sample_point_coord_names
+    ]
     coord_values = np.array([coord_values[i] for i in new_order])
     sample_point_coord_names = [sample_point_coord_names[i] for i in new_order]
 
-    sample_space_coords = \
+    sample_space_coords = (
         sample_space_cube.dim_coords + sample_space_cube.aux_coords
-    sample_space_coords_and_dims = \
-        [(coord, sample_space_cube.coord_dims(coord))
-         for coord in sample_space_coords]
+    )
+    sample_space_coords_and_dims = [
+        (coord, sample_space_cube.coord_dims(coord))
+        for coord in sample_space_coords
+    ]
 
     if cache is not None and cube in cache:
         kdtree = cache[cube]
     else:
         # Create a "sample space position" for each
         # `datum.sample_space_data_positions[coord_index][datum_index]`.
-        sample_space_data_positions = \
-            np.empty((len(sample_space_coords_and_dims),
-                      sample_space_cube.data.size),
-                     dtype=float)
+        sample_space_data_positions = np.empty(
+            (len(sample_space_coords_and_dims), sample_space_cube.data.size),
+            dtype=float,
+        )
         for d, ndi in enumerate(np.ndindex(sample_space_cube.data.shape)):
-            for c, (coord, coord_dims) in \
-                    enumerate(sample_space_coords_and_dims):
+            for c, (coord, coord_dims) in enumerate(
+                sample_space_coords_and_dims
+            ):
                 # Index of this datum along this coordinate (could be nD).
                 if coord_dims:
                     keys = tuple(ndi[ind] for ind in coord_dims)
@@ -607,9 +648,9 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
                 sample_space_data_positions[c][d] = coord.points[keys]
 
         # Convert to cartesian coordinates. Flatten for kdtree compatibility.
-        cartesian_space_data_coords = \
-            _cartesian_sample_points(sample_space_data_positions,
-                                     sample_point_coord_names)
+        cartesian_space_data_coords = _cartesian_sample_points(
+            sample_space_data_positions, sample_point_coord_names
+        )
 
         # Create a kdtree for the nearest-distance lookup to these 3d points.
         kdtree = cKDTree(cartesian_space_data_coords)
@@ -624,14 +665,16 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     # If there is no latlon within the coordinate there will be no change.
     # Otherwise, geographic latlon is replaced with cartesian xyz.
     cartesian_sample_points = _cartesian_sample_points(
-        coord_values, sample_point_coord_names)
+        coord_values, sample_point_coord_names
+    )
 
     # Use kdtree to get the nearest sourcepoint index for each target point.
     _, datum_index_lists = kdtree.query(cartesian_sample_points)
 
     # Convert flat indices back into multidimensional sample-space indices.
     sample_space_dimension_indices = np.unravel_index(
-        datum_index_lists, sample_space_cube.data.shape)
+        datum_index_lists, sample_space_cube.data.shape
+    )
     # Convert this from "pointwise list of index arrays for each dimension",
     # to "list of cube indices for each point".
     sample_space_ndis = np.array(sample_space_dimension_indices).transpose()
@@ -669,6 +712,7 @@ class UnstructuredNearestNeigbourRegridder(object):
     regridding scheme.
 
     """
+
     # TODO: cache the necessary bits of the operation so re-use can actually
     # be more efficient.
     def __init__(self, src_cube, target_grid_cube):
@@ -722,15 +766,18 @@ class UnstructuredNearestNeigbourRegridder(object):
         tgt_x_coord, tgt_y_coord = snapshot_grid(target_grid_cube)
 
         # Check that the source has unique X and Y coords over common dims.
-        if (not src_cube.coords(axis='x') or not src_cube.coords(axis='y')):
-            msg = 'Source cube must have X- and Y-axis coordinates.'
+        if not src_cube.coords(axis="x") or not src_cube.coords(axis="y"):
+            msg = "Source cube must have X- and Y-axis coordinates."
             raise ValueError(msg)
-        src_x_coord = src_cube.coord(axis='x')
-        src_y_coord = src_cube.coord(axis='y')
-        if (src_cube.coord_dims(src_x_coord) !=
-                src_cube.coord_dims(src_y_coord)):
-            msg = ('Source cube X and Y coordinates must have the same '
-                   'cube dimensions.')
+        src_x_coord = src_cube.coord(axis="x")
+        src_y_coord = src_cube.coord(axis="y")
+        if src_cube.coord_dims(src_x_coord) != src_cube.coord_dims(
+            src_y_coord
+        ):
+            msg = (
+                "Source cube X and Y coordinates must have the same "
+                "cube dimensions."
+            )
             raise ValueError(msg)
 
         # Record *copies* of the original grid coords, in the desired
@@ -743,16 +790,22 @@ class UnstructuredNearestNeigbourRegridder(object):
         coords_all = [src_x_coord, src_y_coord, tgt_x_coord, tgt_y_coord]
         cs = coords_all[0].coord_system
         if not all(coord.coord_system == cs for coord in coords_all):
-            msg = ('Source and target cube X and Y coordinates must all have '
-                   'the same coordinate system.')
+            msg = (
+                "Source and target cube X and Y coordinates must all have "
+                "the same coordinate system."
+            )
             raise ValueError(msg)
 
         # Check *all* X and Y coords are lats+lons, if any are.
-        latlons = ['latitude' in coord.name() or 'longitude' in coord.name()
-                   for coord in coords_all]
+        latlons = [
+            "latitude" in coord.name() or "longitude" in coord.name()
+            for coord in coords_all
+        ]
         if any(latlons) and not all(latlons):
-            msg = ('If any X and Y coordinates are latitudes/longitudes, '
-                   'then they all must be.')
+            msg = (
+                "If any X and Y coordinates are latitudes/longitudes, "
+                "then they all must be."
+            )
             raise ValueError(msg)
 
         self.grid_is_latlon = any(latlons)
@@ -761,18 +814,25 @@ class UnstructuredNearestNeigbourRegridder(object):
             # N.B. already copied the target grid, so the result matches that.
             for coord in coords_all:
                 try:
-                    coord.convert_units('degrees')
+                    coord.convert_units("degrees")
                 except ValueError:
-                    msg = ('Coordinate {!r} has units of {!r}, which does not '
-                           'convert to "degrees".')
-                    raise ValueError(msg.format(coord.name(),
-                                                str(coord.units)))
+                    msg = (
+                        "Coordinate {!r} has units of {!r}, which does not "
+                        'convert to "degrees".'
+                    )
+                    raise ValueError(
+                        msg.format(coord.name(), str(coord.units))
+                    )
         else:
             # Check that source and target have the same X and Y units.
-            if (src_x_coord.units != tgt_x_coord.units or
-                    src_y_coord.units != tgt_y_coord.units):
-                msg = ('Source and target cube X and Y coordinates must '
-                       'have the same units.')
+            if (
+                src_x_coord.units != tgt_x_coord.units
+                or src_y_coord.units != tgt_y_coord.units
+            ):
+                msg = (
+                    "Source and target cube X and Y coordinates must "
+                    "have the same units."
+                )
                 raise ValueError(msg)
 
         # Record the resulting grid shape.
@@ -781,8 +841,10 @@ class UnstructuredNearestNeigbourRegridder(object):
         # Calculate sample points as 2d arrays, like broadcast (NY,1)*(1,NX).
         x_2d, y_2d = _meshgrid(tgt_x_coord.points, tgt_y_coord.points)
         # Cast as a "trajectory", to suit the method used.
-        self.trajectory = ((tgt_x_coord.name(), x_2d.flatten()),
-                           (tgt_y_coord.name(), y_2d.flatten()))
+        self.trajectory = (
+            (tgt_x_coord.name(), x_2d.flatten()),
+            (tgt_y_coord.name(), y_2d.flatten()),
+        )
 
     def __call__(self, src_cube):
         # Check the source cube X and Y coords match the original.
@@ -791,24 +853,30 @@ class UnstructuredNearestNeigbourRegridder(object):
         # for the 'interpolate' call, we may need more checks here.
 
         # Check the given cube against the original.
-        x_cos = src_cube.coords(axis='x')
-        y_cos = src_cube.coords(axis='y')
-        if (not x_cos or not y_cos or
-                y_cos != [self.src_grid_coords[0]] or
-                x_cos != [self.src_grid_coords[1]]):
-            msg = ('The given cube is not defined on the same source '
-                   'grid as this regridder.')
+        x_cos = src_cube.coords(axis="x")
+        y_cos = src_cube.coords(axis="y")
+        if (
+            not x_cos
+            or not y_cos
+            or y_cos != [self.src_grid_coords[0]]
+            or x_cos != [self.src_grid_coords[1]]
+        ):
+            msg = (
+                "The given cube is not defined on the same source "
+                "grid as this regridder."
+            )
             raise ValueError(msg)
 
         # Convert source XY coordinates to degrees if required.
         if self.grid_is_latlon:
             src_cube = src_cube.copy()
-            src_cube.coord(axis='x').convert_units('degrees')
-            src_cube.coord(axis='y').convert_units('degrees')
+            src_cube.coord(axis="x").convert_units("degrees")
+            src_cube.coord(axis="y").convert_units("degrees")
 
         # Get the basic interpolated results.
-        result_trajectory_cube = interpolate(src_cube, self.trajectory,
-                                             method='nearest')
+        result_trajectory_cube = interpolate(
+            src_cube, self.trajectory, method="nearest"
+        )
 
         # Reconstruct this as a cube "like" the source data.
         # TODO: handle all aux-coords, cell measures ??

@@ -13,8 +13,8 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 
 def concatenate(cubes):
@@ -31,7 +31,8 @@ def concatenate(cubes):
     """
     raise Exception(
         'The function "iris.experimental.concatenate.concatenate" has been '
-        'moved, and is now a CubeList instance method.'
-        '\nPlease replace '
+        "moved, and is now a CubeList instance method."
+        "\nPlease replace "
         '"iris.experimental.concatenate.concatenate(<cubes>)" with '
-        '"iris.cube.CubeList(<cubes>).concatenate()".')
+        '"iris.cube.CubeList(<cubes>).concatenate()".'
+    )

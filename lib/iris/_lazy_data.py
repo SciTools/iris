@@ -9,8 +9,8 @@ Routines for lazy data handling.
 To avoid replicating implementation-dependent test and conversion code.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 from functools import wraps
 
@@ -28,11 +28,13 @@ def non_lazy(func):
     Turn a lazy function into a function that returns a result immediately.
 
     """
+
     @wraps(func)
     def inner(*args, **kwargs):
         """Immediately return the results of a lazy function."""
         result = func(*args, **kwargs)
         return dask.compute(result)[0]
+
     return inner
 
 
@@ -44,13 +46,11 @@ def is_lazy_data(data):
     We determine this by checking for a "compute" property.
 
     """
-    result = hasattr(data, 'compute')
+    result = hasattr(data, "compute")
     return result
 
 
-def _optimum_chunksize(chunks, shape,
-                       limit=None,
-                       dtype=np.dtype('f4')):
+def _optimum_chunksize(chunks, shape, limit=None, dtype=np.dtype("f4")):
     """
     Reduce or increase an initial chunk shape to get close to a chosen ideal
     size, while prioritising the splitting of the earlier (outer) dimensions
@@ -89,7 +89,7 @@ def _optimum_chunksize(chunks, shape,
     # Set the chunksize limit.
     if limit is None:
         # Fetch the default 'optimal' chunksize from the dask config.
-        limit = dask.config.get('array.chunk-size')
+        limit = dask.config.get("array.chunk-size")
         # Convert to bytes
         limit = dask.utils.parse_bytes(limit)
 
@@ -124,13 +124,14 @@ def _optimum_chunksize(chunks, shape,
                 # But (4, 4) is clearly better for memory and time cost.
 
                 # Calculate how many (expanded) chunks fit into this dimension.
-                dim_chunks = np.ceil(shape[i_expand] * 1. / new_dim)
+                dim_chunks = np.ceil(shape[i_expand] * 1.0 / new_dim)
                 # Get "ideal" (equal) size for that many chunks.
                 ideal_equal_chunk_size = shape[i_expand] / dim_chunks
                 # Use the nearest whole multiple of input chunks >= ideal.
-                new_dim = int(result[i_expand] *
-                              np.ceil(ideal_equal_chunk_size /
-                                      result[i_expand]))
+                new_dim = int(
+                    result[i_expand]
+                    * np.ceil(ideal_equal_chunk_size / result[i_expand])
+                )
 
             result[i_expand] = new_dim
             i_expand -= 1
@@ -224,8 +225,9 @@ def _co_realise_lazy_arrays(arrays):
             # Convert any masked constants into NumPy masked arrays.
             # NOTE: in this case, also apply the original lazy-array dtype, as
             # masked constants *always* have dtype float64.
-            real_out = ma.masked_array(real_out.data, mask=real_out.mask,
-                                       dtype=lazy_in.dtype)
+            real_out = ma.masked_array(
+                real_out.data, mask=real_out.mask, dtype=lazy_in.dtype
+            )
         results.append(real_out)
     return results
 
@@ -248,7 +250,7 @@ def as_concrete_data(data):
 
     """
     if is_lazy_data(data):
-        data, = _co_realise_lazy_arrays([data])
+        (data,) = _co_realise_lazy_arrays([data])
 
     return data
 
@@ -276,8 +278,9 @@ def multidim_lazy_stack(stack):
         result = da.stack(list(stack))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack([multidim_lazy_stack(subarray)
-                           for subarray in stack])
+        result = da.stack(
+            [multidim_lazy_stack(subarray) for subarray in stack]
+        )
     return result
 
 

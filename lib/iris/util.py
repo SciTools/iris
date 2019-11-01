@@ -8,8 +8,8 @@ Miscellaneous utility functions.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 try:  # Python 3
@@ -82,8 +82,10 @@ def broadcast_to_shape(array, shape, dim_map):
         # We must check for this condition here because we cannot rely on
         # getting an error from numpy if the dim_map argument is not the
         # correct length, we might just get a segfault.
-        raise ValueError('dim_map must have an entry for every '
-                         'dimension of the input array')
+        raise ValueError(
+            "dim_map must have an entry for every "
+            "dimension of the input array"
+        )
 
     def _broadcast_helper(a):
         strides = [0] * len(shape)
@@ -91,7 +93,7 @@ def broadcast_to_shape(array, shape, dim_map):
             if shape[dim] != a.shape[idim]:
                 # We'll get garbage values if the dimensions of array are not
                 # those indicated by shape.
-                raise ValueError('shape and array are not compatible')
+                raise ValueError("shape and array are not compatible")
             strides[dim] = a.strides[idim]
         return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
@@ -157,7 +159,7 @@ def delta(ndarray, dimension, circular=False):
         if not isinstance(circular, bool):
             result = np.where(ndarray[last_element] >= _delta[last_element])[0]
             _delta[last_element] -= circular
-            _delta[last_element][result] += 2*circular
+            _delta[last_element][result] += 2 * circular
 
         np.subtract(_delta, ndarray, _delta)
     else:
@@ -203,31 +205,35 @@ def describe_diff(cube_a, cube_b, output_file=None):
         output_file = sys.stdout
 
     if cube_a.is_compatible(cube_b):
-        output_file.write('Cubes are compatible\n')
+        output_file.write("Cubes are compatible\n")
     else:
         common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
         for key in common_keys:
             if np.any(cube_a.attributes[key] != cube_b.attributes[key]):
-                output_file.write('"%s" cube_a attribute value "%s" is not '
-                                  'compatible with cube_b '
-                                  'attribute value "%s"\n'
-                                  % (key,
-                                     cube_a.attributes[key],
-                                     cube_b.attributes[key]))
+                output_file.write(
+                    '"%s" cube_a attribute value "%s" is not '
+                    "compatible with cube_b "
+                    'attribute value "%s"\n'
+                    % (key, cube_a.attributes[key], cube_b.attributes[key])
+                )
 
         if cube_a.name() != cube_b.name():
-            output_file.write('cube_a name "%s" is not compatible '
-                              'with cube_b name "%s"\n'
-                              % (cube_a.name(), cube_b.name()))
+            output_file.write(
+                'cube_a name "%s" is not compatible '
+                'with cube_b name "%s"\n' % (cube_a.name(), cube_b.name())
+            )
 
         if cube_a.units != cube_b.units:
             output_file.write(
                 'cube_a units "%s" are not compatible with cube_b units "%s"\n'
-                % (cube_a.units, cube_b.units))
+                % (cube_a.units, cube_b.units)
+            )
 
         if cube_a.cell_methods != cube_b.cell_methods:
-            output_file.write('Cell methods\n%s\nand\n%s\nare not compatible\n'
-                              % (cube_a.cell_methods, cube_b.cell_methods))
+            output_file.write(
+                "Cell methods\n%s\nand\n%s\nare not compatible\n"
+                % (cube_a.cell_methods, cube_b.cell_methods)
+            )
 
 
 def guess_coord_axis(coord):
@@ -248,17 +254,24 @@ def guess_coord_axis(coord):
     """
     axis = None
 
-    if coord.standard_name in ('longitude', 'grid_longitude',
-                               'projection_x_coordinate'):
-        axis = 'X'
-    elif coord.standard_name in ('latitude', 'grid_latitude',
-                                 'projection_y_coordinate'):
-        axis = 'Y'
-    elif (coord.units.is_convertible('hPa') or
-          coord.attributes.get('positive') in ('up', 'down')):
-        axis = 'Z'
+    if coord.standard_name in (
+        "longitude",
+        "grid_longitude",
+        "projection_x_coordinate",
+    ):
+        axis = "X"
+    elif coord.standard_name in (
+        "latitude",
+        "grid_latitude",
+        "projection_y_coordinate",
+    ):
+        axis = "Y"
+    elif coord.units.is_convertible("hPa") or coord.attributes.get(
+        "positive"
+    ) in ("up", "down"):
+        axis = "Z"
     elif coord.units.is_time_reference():
-        axis = 'T'
+        axis = "T"
 
     return axis
 
@@ -310,17 +323,26 @@ def rolling_window(a, window=1, step=1, axis=-1):
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
     num_windows = (a.shape[axis] - window + step) // step
-    shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1:]
-    strides = (a.strides[:axis] + (step * a.strides[axis], a.strides[axis]) +
-               a.strides[axis + 1:])
+    shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1 :]
+    strides = (
+        a.strides[:axis]
+        + (step * a.strides[axis], a.strides[axis])
+        + a.strides[axis + 1 :]
+    )
     rw = np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
     if ma.isMaskedArray(a):
         mask = ma.getmaskarray(a)
-        strides = (mask.strides[:axis] +
-                   (step * mask.strides[axis], mask.strides[axis]) +
-                   mask.strides[axis + 1:])
-        rw = ma.array(rw, mask=np.lib.stride_tricks.as_strided(
-            mask, shape=shape, strides=strides))
+        strides = (
+            mask.strides[:axis]
+            + (step * mask.strides[axis], mask.strides[axis])
+            + mask.strides[axis + 1 :]
+        )
+        rw = ma.array(
+            rw,
+            mask=np.lib.stride_tricks.as_strided(
+                mask, shape=shape, strides=strides
+            ),
+        )
     return rw
 
 
@@ -347,11 +369,11 @@ def array_equal(array1, array2, withnans=False):
     """
     array1, array2 = np.asarray(array1), np.asarray(array2)
 
-    eq = (array1.shape == array2.shape)
+    eq = array1.shape == array2.shape
     if eq:
-        eqs = (array1 == array2)
+        eqs = array1 == array2
 
-        if withnans and (array1.dtype.kind == 'f' or array2.dtype.kind == 'f'):
+        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
             if not np.all(nans1 == nans2):
                 eq = False  # simply fail
@@ -470,8 +492,10 @@ def reverse(cube_or_array, coords_or_dims):
     index = [slice(None, None)] * cube_or_array.ndim
 
     if isinstance(coords_or_dims, iris.cube.Cube):
-        raise TypeError('coords_or_dims must be int, str, coordinate or '
-                        'sequence of these.  Got cube.')
+        raise TypeError(
+            "coords_or_dims must be int, str, coordinate or "
+            "sequence of these.  Got cube."
+        )
 
     if iris.cube._is_single_item(coords_or_dims):
         coords_or_dims = [coords_or_dims]
@@ -482,22 +506,29 @@ def reverse(cube_or_array, coords_or_dims):
             axes.add(coord_or_dim)
         elif isinstance(cube_or_array, np.ndarray):
             raise TypeError(
-                'To reverse an array, provide an int or sequence of ints.')
+                "To reverse an array, provide an int or sequence of ints."
+            )
         else:
             try:
                 axes.update(cube_or_array.coord_dims(coord_or_dim))
             except AttributeError:
-                raise TypeError('coords_or_dims must be int, str, coordinate '
-                                'or sequence of these.')
+                raise TypeError(
+                    "coords_or_dims must be int, str, coordinate "
+                    "or sequence of these."
+                )
 
     axes = np.array(list(axes), ndmin=1)
     if axes.ndim != 1 or axes.size == 0:
-        raise ValueError('Reverse was expecting a single axis or a 1d array '
-                         'of axes, got %r' % axes)
-    if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim-1:
-        raise ValueError('An axis value out of range for the number of '
-                         'dimensions from the given array (%s) was received. '
-                         'Got: %r' % (cube_or_array.ndim, axes))
+        raise ValueError(
+            "Reverse was expecting a single axis or a 1d array "
+            "of axes, got %r" % axes
+        )
+    if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim - 1:
+        raise ValueError(
+            "An axis value out of range for the number of "
+            "dimensions from the given array (%s) was received. "
+            "Got: %r" % (cube_or_array.ndim, axes)
+        )
 
     for axis in axes:
         index[axis] = slice(None, None, -1)
@@ -533,11 +564,13 @@ def monotonic(array, strict=False, return_direction=False):
 
     """
     if array.ndim != 1 or len(array) <= 1:
-        raise ValueError('The array to check must be 1 dimensional and have '
-                         'more than 1 element.')
+        raise ValueError(
+            "The array to check must be 1 dimensional and have "
+            "more than 1 element."
+        )
 
     if ma.isMaskedArray(array) and ma.count_masked(array) != 0:
-        raise ValueError('The array to check contains missing data.')
+        raise ValueError("The array to check contains missing data.")
 
     # Identify the directions of the largest/most-positive and
     # smallest/most-negative steps.
@@ -549,9 +582,11 @@ def monotonic(array, strict=False, return_direction=False):
     if strict:
         monotonic = sign_max_d == sign_min_d and sign_max_d != 0
     else:
-        monotonic = (sign_min_d < 0 and sign_max_d <= 0) or \
-                    (sign_max_d > 0 and sign_min_d >= 0) or \
-                    (sign_min_d == sign_max_d == 0)
+        monotonic = (
+            (sign_min_d < 0 and sign_max_d <= 0)
+            or (sign_max_d > 0 and sign_min_d >= 0)
+            or (sign_min_d == sign_max_d == 0)
+        )
 
     if return_direction:
         if sign_max_d == 0:
@@ -595,10 +630,13 @@ def column_slices_generator(full_slice, ndims):
     # Get all of the dimensions for which a tuple of indices were provided
     # (numpy.ndarrays are treated in the same way tuples in this case)
     def is_tuple_style_index(key):
-        return (isinstance(key, tuple) or
-                (isinstance(key, np.ndarray) and key.ndim == 1))
-    tuple_indices = [i for i, key in enumerate(full_slice)
-                     if is_tuple_style_index(key)]
+        return isinstance(key, tuple) or (
+            isinstance(key, np.ndarray) and key.ndim == 1
+        )
+
+    tuple_indices = [
+        i for i, key in enumerate(full_slice) if is_tuple_style_index(key)
+    ]
 
     # stg1: Take a copy of the full_slice specification, turning all tuples
     # into a full slice
@@ -617,8 +655,9 @@ def column_slices_generator(full_slice, ndims):
         # currently have
         spanning_slice_with_tuple = [slice(None, None)] * _count_current_dim
         # Replace the slice(None, None) with our current tuple
-        spanning_slice_with_tuple[dimension_mapping[tuple_index]] = \
-            full_slice[tuple_index]
+        spanning_slice_with_tuple[dimension_mapping[tuple_index]] = full_slice[
+            tuple_index
+        ]
 
         # if we just have [(0, 1)] turn it into [(0, 1), ...] as this is
         # Numpy's syntax.
@@ -645,9 +684,9 @@ def _build_full_slice_given_keys(keys, ndim):
 
     # catch the case where an extra Ellipsis has been provided which can be
     # discarded iff len(keys)-1 == ndim
-    if len(keys)-1 == ndim and \
-            Ellipsis in filter(lambda obj:
-                               not isinstance(obj, np.ndarray), keys):
+    if len(keys) - 1 == ndim and Ellipsis in filter(
+        lambda obj: not isinstance(obj, np.ndarray), keys
+    ):
         keys = list(keys)
         is_ellipsis = [key is Ellipsis for key in keys]
         keys.pop(is_ellipsis.index(True))
@@ -659,9 +698,10 @@ def _build_full_slice_given_keys(keys, ndim):
         keys = keys[:-1]
 
     if len(keys) > ndim:
-        raise IndexError('More slices requested than dimensions. Requested '
-                         '%r, but there were only %s dimensions.' %
-                         (keys, ndim))
+        raise IndexError(
+            "More slices requested than dimensions. Requested "
+            "%r, but there were only %s dimensions." % (keys, ndim)
+        )
 
     # For each dimension get the slice which has been requested.
     # If no slice provided, then default to the whole dimension
@@ -672,13 +712,17 @@ def _build_full_slice_given_keys(keys, ndim):
 
             # replace any subsequent Ellipsis objects in keys with
             # slice(None, None) as per Numpy
-            keys = keys[:i] + tuple([slice(None, None) if key is Ellipsis
-                                    else key for key in keys[i:]])
+            keys = keys[:i] + tuple(
+                [
+                    slice(None, None) if key is Ellipsis else key
+                    for key in keys[i:]
+                ]
+            )
 
             # iterate over the remaining keys in reverse to fill in
             # the gaps from the right hand side
             for j, key in enumerate(keys[:i:-1]):
-                full_slice[-j-1] = key
+                full_slice[-j - 1] = key
 
             # we've finished with i now so stop the iteration
             break
@@ -687,8 +731,12 @@ def _build_full_slice_given_keys(keys, ndim):
 
     # remove any tuples on dimensions, turning them into numpy array's for
     # consistent behaviour
-    full_slice = tuple([np.array(key, ndmin=1) if isinstance(key, tuple)
-                        else key for key in full_slice])
+    full_slice = tuple(
+        [
+            np.array(key, ndmin=1) if isinstance(key, tuple) else key
+            for key in full_slice
+        ]
+    )
     return full_slice
 
 
@@ -733,7 +781,7 @@ def _slice_data_with_keys(data, keys):
         data = data[this_slice]
         if data.ndim > 0 and min(data.shape) < 1:
             # Disallow slicings where a dimension has no points, like "[5:5]".
-            raise IndexError('Cannot index with zero length slice.')
+            raise IndexError("Cannot index with zero length slice.")
 
     return dims_mapping, data
 
@@ -752,27 +800,32 @@ def _wrap_function_for_method(function, docstring=None):
     # NB. The first argument is replaced with "self".
     args, varargs, varkw, defaults = inspect.getargspec(function)
     if defaults is None:
-        basic_args = ['self'] + args[1:]
+        basic_args = ["self"] + args[1:]
         default_args = []
         simple_default_args = []
     else:
         cutoff = -len(defaults)
-        basic_args = ['self'] + args[1:cutoff]
-        default_args = ['%s=%r' % pair
-                        for pair in zip(args[cutoff:], defaults)]
+        basic_args = ["self"] + args[1:cutoff]
+        default_args = [
+            "%s=%r" % pair for pair in zip(args[cutoff:], defaults)
+        ]
         simple_default_args = args[cutoff:]
-    var_arg = [] if varargs is None else ['*' + varargs]
-    var_kw = [] if varkw is None else ['**' + varkw]
-    arg_source = ', '.join(basic_args + default_args + var_arg + var_kw)
-    simple_arg_source = ', '.join(basic_args + simple_default_args +
-                                  var_arg + var_kw)
-    source = ('def %s(%s):\n    return function(%s)' %
-              (function.__name__, arg_source, simple_arg_source))
+    var_arg = [] if varargs is None else ["*" + varargs]
+    var_kw = [] if varkw is None else ["**" + varkw]
+    arg_source = ", ".join(basic_args + default_args + var_arg + var_kw)
+    simple_arg_source = ", ".join(
+        basic_args + simple_default_args + var_arg + var_kw
+    )
+    source = "def %s(%s):\n    return function(%s)" % (
+        function.__name__,
+        arg_source,
+        simple_arg_source,
+    )
 
     # Compile the wrapper function
     # NB. There's an outstanding bug with "exec" where the locals and globals
     # dictionaries must be the same if we're to get closure behaviour.
-    my_locals = {'function': function}
+    my_locals = {"function": function}
     exec(source, my_locals, my_locals)
 
     # Update the docstring if required, and return the modified function
@@ -802,32 +855,37 @@ class _MetaOrderedHashable(abc.ABCMeta):
     def __new__(cls, name, bases, namespace):
         # We only want to modify concrete classes that have defined the
         # "_names" property.
-        if '_names' in namespace and \
-                not isinstance(namespace['_names'], abc.abstractproperty):
-            args = ', '.join(namespace['_names'])
+        if "_names" in namespace and not isinstance(
+            namespace["_names"], abc.abstractproperty
+        ):
+            args = ", ".join(namespace["_names"])
 
             # Ensure the class has a constructor with explicit arguments.
-            if '__init__' not in namespace:
+            if "__init__" not in namespace:
                 # Create a default __init__ method for the class
-                method_source = ('def __init__(self, %s):\n '
-                                 'self._init_from_tuple((%s,))' % (args, args))
+                method_source = (
+                    "def __init__(self, %s):\n "
+                    "self._init_from_tuple((%s,))" % (args, args)
+                )
                 exec(method_source, namespace)
 
             # Ensure the class has a "helper constructor" with explicit
             # arguments.
-            if '_init' not in namespace:
+            if "_init" not in namespace:
                 # Create a default _init method for the class
-                method_source = ('def _init(self, %s):\n '
-                                 'self._init_from_tuple((%s,))' % (args, args))
+                method_source = (
+                    "def _init(self, %s):\n "
+                    "self._init_from_tuple((%s,))" % (args, args)
+                )
                 exec(method_source, namespace)
 
         return super(_MetaOrderedHashable, cls).__new__(
-            cls, name, bases, namespace)
+            cls, name, bases, namespace
+        )
 
 
 @functools.total_ordering
-class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
-                                          Hashable)):
+class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable, Hashable)):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 
@@ -861,10 +919,11 @@ class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
 
     def __repr__(self):
         class_name = type(self).__name__
-        attributes = ', '.join('%s=%r' % (name, value)
-                               for (name, value)
-                               in zip(self._names, self._as_tuple()))
-        return '%s(%s)' % (class_name, attributes)
+        attributes = ", ".join(
+            "%s=%r" % (name, value)
+            for (name, value) in zip(self._names, self._as_tuple())
+        )
+        return "%s(%s)" % (class_name, attributes)
 
     def _as_tuple(self):
         return tuple(getattr(self, name) for name in self._names)
@@ -872,12 +931,14 @@ class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
     # Prevent attribute updates
 
     def __setattr__(self, name, value):
-        raise AttributeError('Instances of %s are immutable' %
-                             type(self).__name__)
+        raise AttributeError(
+            "Instances of %s are immutable" % type(self).__name__
+        )
 
     def __delattr__(self, name):
-        raise AttributeError('Instances of %s are immutable' %
-                             type(self).__name__)
+        raise AttributeError(
+            "Instances of %s are immutable" % type(self).__name__
+        )
 
     # Provide hash semantics
 
@@ -888,8 +949,10 @@ class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
         return hash(self._identity())
 
     def __eq__(self, other):
-        return (isinstance(other, type(self)) and
-                self._identity() == other._identity())
+        return (
+            isinstance(other, type(self))
+            and self._identity() == other._identity()
+        )
 
     def __ne__(self, other):
         # Since we've defined __eq__ we should also define __ne__.
@@ -904,7 +967,7 @@ class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
             return NotImplemented
 
 
-def create_temp_filename(suffix=''):
+def create_temp_filename(suffix=""):
     """Return a temporary file name.
 
     Args:
@@ -986,18 +1049,22 @@ def format_array(arr):
     ffunc = str
     formatArray = np.core.arrayprint._formatArray
     max_line_len = 50
-    legacy = '1.13'
+    legacy = "1.13"
     if arr.size > summary_threshold:
-        summary_insert = '...'
+        summary_insert = "..."
     options = np.get_printoptions()
-    options['legacy'] = legacy
+    options["legacy"] = legacy
     with _printopts_context(**options):
         result = formatArray(
-            arr, ffunc, max_line_len,
-            next_line_prefix='\t\t', separator=', ',
+            arr,
+            ffunc,
+            max_line_len,
+            next_line_prefix="\t\t",
+            separator=", ",
             edge_items=edge_items,
             summary_insert=summary_insert,
-            legacy=legacy)
+            legacy=legacy,
+        )
 
     return result
 
@@ -1078,8 +1145,9 @@ def new_axis(src_cube, scalar_coord=None):
         new_cube.add_dim_coord(coord.copy(), coord_dims)
 
     nonderived_coords = src_cube.dim_coords + src_cube.aux_coords
-    coord_mapping = {id(old_co): new_cube.coord(old_co)
-                     for old_co in nonderived_coords}
+    coord_mapping = {
+        id(old_co): new_cube.coord(old_co) for old_co in nonderived_coords
+    }
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
@@ -1131,9 +1199,11 @@ def as_compatible_shape(src_cube, target_cube):
                 dim_mapping[dim_from] = None
 
     if len(dim_mapping) != target_cube.ndim:
-        raise ValueError('Insufficient or conflicting coordinate '
-                         'metadata. Cannot infer dimension mapping '
-                         'to restore cube dimensions.')
+        raise ValueError(
+            "Insufficient or conflicting coordinate "
+            "metadata. Cannot infer dimension mapping "
+            "to restore cube dimensions."
+        )
 
     new_shape = [1] * target_cube.ndim
     for dim_from, dim_to in six.iteritems(dim_mapping):
@@ -1161,8 +1231,11 @@ def as_compatible_shape(src_cube, target_cube):
     def add_coord(coord):
         """Closure used to add a suitably reshaped coord to new_cube."""
         all_dims = target_cube.coord_dims(coord)
-        src_dims = [dim for dim in src_cube.coord_dims(coord) if
-                    src_cube.shape[dim] > 1]
+        src_dims = [
+            dim
+            for dim in src_cube.coord_dims(coord)
+            if src_cube.shape[dim] > 1
+        ]
         mapped_dims = [reverse_mapping[dim] for dim in src_dims]
         length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
         dims = length1_dims + mapped_dims
@@ -1219,8 +1292,9 @@ def squeeze(cube):
 
     """
 
-    slices = [0 if cube.shape[dim] == 1 else slice(None)
-              for dim in range(cube.ndim)]
+    slices = [
+        0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)
+    ]
 
     squeezed = cube[tuple(slices)]
 
@@ -1339,8 +1413,9 @@ def unify_time_units(cubes):
     for cube in cubes:
         for time_coord in cube.coords():
             if time_coord.units.is_time_reference():
-                epoch = epochs.setdefault(time_coord.units.calendar,
-                                          time_coord.units.origin)
+                epoch = epochs.setdefault(
+                    time_coord.units.calendar, time_coord.units.origin
+                )
                 new_unit = cf_units.Unit(epoch, time_coord.units.calendar)
                 time_coord.convert_units(new_unit)
 
@@ -1382,8 +1457,7 @@ def _is_circular(points, modulus, bounds=None):
             last_bound = bounds[-1, 1] % modulus
 
         if first_bound is not None and last_bound is not None:
-            circular = np.allclose(first_bound, last_bound,
-                                   rtol=1.0e-5)
+            circular = np.allclose(first_bound, last_bound, rtol=1.0e-5)
     else:
         # set circular if points are regular and last+1 ~= first
         if len(points) > 1:
@@ -1394,16 +1468,16 @@ def _is_circular(points, modulus, bounds=None):
             if diff_approx_equal:
                 circular_value = (points[-1] + diff) % modulus
                 try:
-                    np.testing.assert_approx_equal(points[0],
-                                                   circular_value,
-                                                   significant=4)
+                    np.testing.assert_approx_equal(
+                        points[0], circular_value, significant=4
+                    )
                     circular = True
                 except AssertionError:
                     if points[0] == 0:
                         try:
-                            np.testing.assert_approx_equal(modulus,
-                                                           circular_value,
-                                                           significant=4)
+                            np.testing.assert_approx_equal(
+                                modulus, circular_value, significant=4
+                            )
                             circular = True
                         except AssertionError:
                             pass
@@ -1465,9 +1539,11 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
-        msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type six.string_types or "
-               "iris.coords.Coord.")
+        msg = (
+            "Don't know how to handle coordinate of type {}. "
+            "Ensure all coordinates are of type six.string_types or "
+            "iris.coords.Coord."
+        )
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)
 
@@ -1476,30 +1552,37 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         return
 
     if aux_coord not in cube.aux_coords:
-        msg = ("Attempting to promote an AuxCoord ({}) "
-               "which does not exist in the cube.")
+        msg = (
+            "Attempting to promote an AuxCoord ({}) "
+            "which does not exist in the cube."
+        )
         msg = msg.format(aux_coord.name())
         raise ValueError(msg)
 
     coord_dim = cube.coord_dims(aux_coord)
 
     if len(coord_dim) != 1:
-        msg = ("Attempting to promote an AuxCoord ({}) "
-               "which is associated with {} dimensions.")
+        msg = (
+            "Attempting to promote an AuxCoord ({}) "
+            "which is associated with {} dimensions."
+        )
         msg = msg.format(aux_coord.name(), len(coord_dim))
         raise ValueError(msg)
 
     try:
         dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
     except ValueError as valerr:
-        msg = ("Attempt to promote an AuxCoord ({}) fails "
-               "when attempting to create a DimCoord from the "
-               "AuxCoord because: {}")
+        msg = (
+            "Attempt to promote an AuxCoord ({}) fails "
+            "when attempting to create a DimCoord from the "
+            "AuxCoord because: {}"
+        )
         msg = msg.format(aux_coord.name(), str(valerr))
         raise ValueError(msg)
 
-    old_dim_coord = cube.coords(dim_coords=True,
-                                contains_dimension=coord_dim[0])
+    old_dim_coord = cube.coords(
+        dim_coords=True, contains_dimension=coord_dim[0]
+    )
 
     if len(old_dim_coord) == 1:
         demote_dim_coord_to_aux_coord(cube, old_dim_coord[0])
@@ -1565,9 +1648,11 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type
-        msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type six.string_types or "
-               "iris.coords.Coord.")
+        msg = (
+            "Don't know how to handle coordinate of type {}. "
+            "Ensure all coordinates are of type six.string_types or "
+            "iris.coords.Coord."
+        )
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)
 
@@ -1646,12 +1731,19 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         iplt.pcolormesh(masked_cube_slice)
 
     """
-    lats_and_lons = ['latitude', 'grid_latitude',
-                     'longitude', 'grid_longitude']
-    spatial_coords = [coord for coord in cube.aux_coords if
-                      coord.name() in lats_and_lons]
-    dim_err_msg = 'Discontiguity searches are currently only supported for ' \
-                  '2-dimensional coordinates.'
+    lats_and_lons = [
+        "latitude",
+        "grid_latitude",
+        "longitude",
+        "grid_longitude",
+    ]
+    spatial_coords = [
+        coord for coord in cube.aux_coords if coord.name() in lats_and_lons
+    ]
+    dim_err_msg = (
+        "Discontiguity searches are currently only supported for "
+        "2-dimensional coordinates."
+    )
     if len(spatial_coords) != 2:
         raise NotImplementedError(dim_err_msg)
 
@@ -1662,7 +1754,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         else:
             span = set(cube.coord_dims(coord))
         if not span:
-            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            msg = "The coordinate {!r} doesn't span a data dimension."
             raise ValueError(msg.format(coord.name()))
 
     # Check that the 2d coordinate arrays are the same shape as each other
@@ -1673,14 +1765,17 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     bad_points_boolean = np.zeros(spatial_coords[0].points.shape, dtype=bool)
 
     for coord in spatial_coords:
-        _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(rtol=rel_tol,
-                                                               atol=abs_tol)
+        _, (diffs_x, diffs_y) = coord._discontiguity_in_bounds(
+            rtol=rel_tol, atol=abs_tol
+        )
 
-        bad_points_boolean[:, :-1] = np.logical_or(bad_points_boolean[:, :-1],
-                                                   diffs_x)
+        bad_points_boolean[:, :-1] = np.logical_or(
+            bad_points_boolean[:, :-1], diffs_x
+        )
         # apply mask for y-direction discontiguities:
-        bad_points_boolean[:-1, :] = np.logical_or(bad_points_boolean[:-1, :],
-                                                   diffs_y)
+        bad_points_boolean[:-1, :] = np.logical_or(
+            bad_points_boolean[:-1, :], diffs_y
+        )
     return bad_points_boolean
 
 

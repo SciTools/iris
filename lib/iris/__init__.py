@@ -85,8 +85,8 @@ All the load functions share very similar arguments:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import contextlib
@@ -110,13 +110,23 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = '3.0.dev0'
+__version__ = "3.0.dev0"
 
 # Restrict the names imported when using "from iris import *"
-__all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
-           'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
-           'site_configuration', 'Future', 'FUTURE',
-           'IrisDeprecation']
+__all__ = [
+    "load",
+    "load_cube",
+    "load_cubes",
+    "load_raw",
+    "save",
+    "Constraint",
+    "AttributeConstraint",
+    "sample_data_path",
+    "site_configuration",
+    "Future",
+    "FUTURE",
+    "IrisDeprecation",
+]
 
 
 Constraint = iris._constraints.Constraint
@@ -155,7 +165,7 @@ class Future(threading.local):
 
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = ('Future()')
+        msg = "Future()"
         return msg.format()
 
     # deprecated_options = {'example_future_flag': 'warning',}
@@ -164,16 +174,20 @@ class Future(threading.local):
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
             level = self.deprecated_options[name]
-            if level == 'error' and not value:
-                emsg = ("setting the 'Future' property {prop!r} has been "
-                        "deprecated to be removed in a future release, and "
-                        "deprecated {prop!r} behaviour has been removed. "
-                        "Please remove code that sets this property.")
+            if level == "error" and not value:
+                emsg = (
+                    "setting the 'Future' property {prop!r} has been "
+                    "deprecated to be removed in a future release, and "
+                    "deprecated {prop!r} behaviour has been removed. "
+                    "Please remove code that sets this property."
+                )
                 raise AttributeError(emsg.format(prop=name))
             else:
-                msg = ("setting the 'Future' property {!r} is deprecated "
-                       "and will be removed in a future release. "
-                       "Please remove code that sets this property.")
+                msg = (
+                    "setting the 'Future' property {!r} is deprecated "
+                    "and will be removed in a future release. "
+                    "Please remove code that sets this property."
+                )
                 warn_deprecated(msg.format(name))
         if name not in self.__dict__:
             msg = "'Future' object has no attribute {!r}".format(name)
@@ -239,18 +253,18 @@ def _generate_cubes(uris, callback, constraints):
     # Create list of tuples relating schemes to part names
     uri_tuples = sorted(iris.io.decode_uri(uri) for uri in uris)
 
-    for scheme, groups in (itertools.groupby(uri_tuples, key=lambda x: x[0])):
+    for scheme, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == 'file':
+        if scheme == "file":
             part_names = [x[1] for x in groups]
             for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
-        elif scheme in ['http', 'https']:
-            urls = [':'.join(x) for x in groups]
+        elif scheme in ["http", "https"]:
+            urls = [":".join(x) for x in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
         else:
-            raise ValueError('Iris cannot handle the URI scheme: %s' % scheme)
+            raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)
 
 
 def _load_collection(uris, constraints=None, callback=None):
@@ -259,7 +273,8 @@ def _load_collection(uris, constraints=None, callback=None):
         result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
-            "The file appears empty or incomplete: {!r}".format(str(e)))
+            "The file appears empty or incomplete: {!r}".format(str(e))
+        )
     return result
 
 
@@ -316,7 +331,7 @@ def load_cube(uris, constraint=None, callback=None):
     """
     constraints = iris._constraints.list_of_constraints(constraint)
     if len(constraints) != 1:
-        raise ValueError('only a single constraint is allowed')
+        raise ValueError("only a single constraint is allowed")
 
     cubes = _load_collection(uris, constraints, callback).cubes()
 
@@ -325,7 +340,7 @@ def load_cube(uris, constraint=None, callback=None):
     except iris.exceptions.MergeError as e:
         raise iris.exceptions.ConstraintMismatchError(str(e))
     except ValueError:
-        raise iris.exceptions.ConstraintMismatchError('no cubes found')
+        raise iris.exceptions.ConstraintMismatchError("no cubes found")
 
     return cube
 
@@ -361,9 +376,9 @@ def load_cubes(uris, constraints=None, callback=None):
     # Make sure we have exactly one merged cube per constraint
     bad_pairs = [pair for pair in collection.pairs if len(pair) != 1]
     if bad_pairs:
-        fmt = '   {} -> {} cubes'
+        fmt = "   {} -> {} cubes"
         bits = [fmt.format(pair.constraint, len(pair)) for pair in bad_pairs]
-        msg = '\n' + '\n'.join(bits)
+        msg = "\n" + "\n".join(bits)
         raise iris.exceptions.ConstraintMismatchError(msg)
 
     return collection.cubes()
@@ -399,6 +414,7 @@ def load_raw(uris, constraints=None, callback=None):
 
     """
     from iris.fileformats.um._fast_load import _raw_structured_loading
+
     with _raw_structured_loading():
         return _load_collection(uris, constraints, callback).cubes()
 
@@ -419,18 +435,24 @@ def sample_data_path(*path_to_join):
     """
     target = os.path.join(*path_to_join)
     if os.path.isabs(target):
-        raise ValueError('Absolute paths, such as {!r}, are not supported.\n'
-                         'NB. This function is only for locating files in the '
-                         'iris sample data collection. It is not needed or '
-                         'appropriate for general file access.'.format(target))
+        raise ValueError(
+            "Absolute paths, such as {!r}, are not supported.\n"
+            "NB. This function is only for locating files in the "
+            "iris sample data collection. It is not needed or "
+            "appropriate for general file access.".format(target)
+        )
     if iris_sample_data is not None:
         target = os.path.join(iris_sample_data.path, target)
     else:
-        raise ImportError("Please install the 'iris-sample-data' package to "
-                          "access sample data.")
+        raise ImportError(
+            "Please install the 'iris-sample-data' package to "
+            "access sample data."
+        )
     if not glob.glob(target):
-        raise ValueError('Sample data file(s) at {!r} not found.\n'
-                         'NB. This function is only for locating files in the '
-                         'iris sample data collection. It is not needed or '
-                         'appropriate for general file access.'.format(target))
+        raise ValueError(
+            "Sample data file(s) at {!r} not found.\n"
+            "NB. This function is only for locating files in the "
+            "iris sample data collection. It is not needed or "
+            "appropriate for general file access.".format(target)
+        )
     return target

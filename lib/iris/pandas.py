@@ -10,8 +10,8 @@ See also: http://pandas.pydata.org/
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import datetime
 
@@ -21,6 +21,7 @@ import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas
+
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
@@ -54,11 +55,12 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
             points = units.date2num(points)
 
     points = np.array(points)
-    if (np.issubdtype(points.dtype, np.number) and
-            iris.util.monotonic(points, strict=True)):
-                coord = DimCoord(points, units=units)
-                coord.rename(name)
-                cube.add_dim_coord(coord, dim)
+    if np.issubdtype(points.dtype, np.number) and iris.util.monotonic(
+        points, strict=True
+    ):
+        coord = DimCoord(points, units=units)
+        coord.rename(name)
+        cube.add_dim_coord(coord, dim)
     else:
         coord = AuxCoord(points, units=units)
         coord.rename(name)
@@ -91,21 +93,29 @@ def as_cube(pandas_array, copy=True, calendars=None):
     """
     calendars = calendars or {}
     if pandas_array.ndim not in [1, 2]:
-        raise ValueError("Only 1D or 2D Pandas arrays "
-                         "can currently be conveted to Iris cubes.")
+        raise ValueError(
+            "Only 1D or 2D Pandas arrays "
+            "can currently be conveted to Iris cubes."
+        )
 
     # Make the copy work consistently across NumPy 1.6 and 1.7.
     # (When 1.7 takes a copy it preserves the C/Fortran ordering, but
     # 1.6 doesn't. Since we don't care about preserving the order we can
     # just force it back to C-order.)
-    order = 'C' if copy else 'A'
+    order = "C" if copy else "A"
     data = np.array(pandas_array, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
-    _add_iris_coord(cube, "index", pandas_array.index, 0,
-                    calendars.get(0, None))
+    _add_iris_coord(
+        cube, "index", pandas_array.index, 0, calendars.get(0, None)
+    )
     if pandas_array.ndim == 2:
-        _add_iris_coord(cube, "columns", pandas_array.columns.values, 1,
-                        calendars.get(1, None))
+        _add_iris_coord(
+            cube,
+            "columns",
+            pandas_array.columns.values,
+            1,
+            calendars.get(1, None),
+        )
     return cube
 
 
@@ -130,8 +140,9 @@ def _assert_shared(np_obj, pandas_obj):
     base = _get_base(values)
     np_base = _get_base(np_obj)
     if base is not np_base:
-        msg = ('Pandas {} does not share memory'
-               .format(type(pandas_obj).__name__))
+        msg = "Pandas {} does not share memory".format(
+            type(pandas_obj).__name__
+        )
         raise AssertionError(msg)
 
 
@@ -159,7 +170,7 @@ def as_series(cube, copy=True):
     if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
-        data = data.astype('f').filled(np.nan)
+        data = data.astype("f").filled(np.nan)
     elif copy:
         data = data.copy()
 
@@ -205,7 +216,7 @@ def as_data_frame(cube, copy=True):
     if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
-        data = data.astype('f').filled(np.nan)
+        data = data.astype("f").filled(np.nan)
     elif copy:
         data = data.copy()
 

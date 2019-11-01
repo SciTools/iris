@@ -14,8 +14,8 @@ The documentation for this file format can be found
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import calendar
@@ -37,8 +37,20 @@ X_SIZE = 4320
 Y_SIZE = 2160
 
 
-month_numbers = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-                 "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+month_numbers = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
 
 
 class ABFField(object):
@@ -48,6 +60,7 @@ class ABFField(object):
     Capable of creating a :class:`~iris.cube.Cube`.
 
     """
+
     def __init__(self, filename):
         """
         Create an ABFField object from the given filename.
@@ -63,13 +76,15 @@ class ABFField(object):
         """
         basename = os.path.basename(filename)
         if len(basename) != 24:
-            raise ValueError("ABFField expects a filename of 24 characters: "
-                             "{}".format(basename))
+            raise ValueError(
+                "ABFField expects a filename of 24 characters: "
+                "{}".format(basename)
+            )
         self._filename = filename
 
     def __getattr__(self, key):
         # Do we need to load now?
-        if key == 'data' and 'data' not in self.__dict__:
+        if key == "data" and "data" not in self.__dict__:
             self._read()
         try:
             return self.__dict__[key]
@@ -88,7 +103,7 @@ class ABFField(object):
         self.month = month_numbers[self.month]
 
         # Data is 8 bit bigendian.
-        data = np.fromfile(self._filename, dtype='>u1').reshape(X_SIZE, Y_SIZE)
+        data = np.fromfile(self._filename, dtype=">u1").reshape(X_SIZE, Y_SIZE)
         # Iris' preferred dimensional ordering is (y,x).
         data = data.transpose()
         # Flip, for a positive step through the Y dimension.
@@ -120,13 +135,19 @@ class ABFField(object):
 
         llcs = GeogCS(semi_major_axis=6378137.0, semi_minor_axis=6356752.31424)
 
-        x_coord = DimCoord(np.arange(X_SIZE) * step + (step / 2) - 180,
-                           standard_name="longitude", units="degrees",
-                           coord_system=llcs)
+        x_coord = DimCoord(
+            np.arange(X_SIZE) * step + (step / 2) - 180,
+            standard_name="longitude",
+            units="degrees",
+            coord_system=llcs,
+        )
 
-        y_coord = DimCoord(np.arange(Y_SIZE) * step + (step / 2) - 90,
-                           standard_name="latitude",  units="degrees",
-                           coord_system=llcs)
+        y_coord = DimCoord(
+            np.arange(Y_SIZE) * step + (step / 2) - 90,
+            standard_name="latitude",
+            units="degrees",
+            coord_system=llcs,
+        )
 
         x_coord.guess_bounds()
         y_coord.guess_bounds()
@@ -142,8 +163,9 @@ class ABFField(object):
             start = 16
             end = calendar.monthrange(self.year, self.month)[1]
         else:
-            raise iris.exceptions.TranslationError("Unknown period: "
-                                                   "{}".format(self.period))
+            raise iris.exceptions.TranslationError(
+                "Unknown period: " "{}".format(self.period)
+            )
 
         start = datetime.date(year=self.year, month=self.month, day=start)
         end = datetime.date(year=self.year, month=self.month, day=end)
@@ -155,9 +177,14 @@ class ABFField(object):
         end = end.toordinal() - 1
 
         # TODO: Should we put the point in the middle of the period instead?
-        cube.add_aux_coord(AuxCoord(start, standard_name="time",
-                                    units="days since 0001-01-01",
-                                    bounds=[start, end]))
+        cube.add_aux_coord(
+            AuxCoord(
+                start,
+                standard_name="time",
+                units="days since 0001-01-01",
+                bounds=[start, end],
+            )
+        )
 
         # TODO: Do they only come from Boston?
         # Attributes.

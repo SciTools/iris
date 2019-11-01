@@ -8,8 +8,8 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 from collections import defaultdict, namedtuple
@@ -33,7 +33,7 @@ from iris.util import guess_coord_axis, array_equal
 
 
 # Restrict the names imported from this namespace.
-__all__ = ['concatenate']
+__all__ = ["concatenate"]
 
 # Direction of dimension coordinate value order.
 _CONSTANT = 0
@@ -41,8 +41,7 @@ _DECREASING = -1
 _INCREASING = 1
 
 
-class _CoordAndDims(namedtuple('CoordAndDims',
-                               ['coord', 'dims'])):
+class _CoordAndDims(namedtuple("CoordAndDims", ["coord", "dims"])):
     """
     Container for a coordinate and the associated data dimension(s)
     spanned over a :class:`iris.cube.Cube`.
@@ -61,9 +60,12 @@ class _CoordAndDims(namedtuple('CoordAndDims',
     __slots__ = ()
 
 
-class _CoordMetaData(namedtuple('CoordMetaData',
-                                ['defn', 'dims', 'points_dtype',
-                                 'bounds_dtype', 'kwargs'])):
+class _CoordMetaData(
+    namedtuple(
+        "CoordMetaData",
+        ["defn", "dims", "points_dtype", "bounds_dtype", "kwargs"],
+    )
+):
     """
     Container for the metadata that defines a dimension or auxiliary
     coordinate.
@@ -87,6 +89,7 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         A dictionary of key/value pairs required to define a coordinate.
 
     """
+
     def __new__(cls, coord, dims):
         """
         Create a new :class:`_CoordMetaData` instance.
@@ -105,14 +108,13 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         """
         defn = coord._as_defn()
         points_dtype = coord.points.dtype
-        bounds_dtype = coord.bounds.dtype if coord.bounds is not None \
-            else None
+        bounds_dtype = coord.bounds.dtype if coord.bounds is not None else None
         kwargs = {}
         # Add scalar flag metadata.
-        kwargs['scalar'] = coord.points.size == 1
+        kwargs["scalar"] = coord.points.size == 1
         # Add circular flag metadata for dimensional coordinates.
-        if hasattr(coord, 'circular'):
-            kwargs['circular'] = coord.circular
+        if hasattr(coord, "circular"):
+            kwargs["circular"] = coord.circular
         if isinstance(coord, iris.coords.DimCoord):
             # Mix the monotonic ordering into the metadata.
             if coord.points[0] == coord.points[-1]:
@@ -121,11 +123,10 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                 order = _INCREASING
             else:
                 order = _DECREASING
-            kwargs['order'] = order
-        metadata = super(_CoordMetaData, cls).__new__(cls, defn, dims,
-                                                      points_dtype,
-                                                      bounds_dtype,
-                                                      kwargs)
+            kwargs["order"] = order
+        metadata = super(_CoordMetaData, cls).__new__(
+            cls, defn, dims, points_dtype, bounds_dtype, kwargs
+        )
         return metadata
 
     __slots__ = ()
@@ -138,7 +139,7 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         if isinstance(other, _CoordMetaData):
             sprops, oprops = self._asdict(), other._asdict()
             # Ignore "kwargs" meta-data for the first comparison.
-            sprops['kwargs'] = oprops['kwargs'] = None
+            sprops["kwargs"] = oprops["kwargs"] = None
             result = sprops == oprops
             if result:
                 skwargs, okwargs = self.kwargs.copy(), other.kwargs.copy()
@@ -146,11 +147,11 @@ class _CoordMetaData(namedtuple('CoordMetaData',
                 # The monotonic "order" must be _INCREASING or _DECREASING if
                 # the DimCoord is NOT "scalar". Otherwise, if the DimCoord is
                 # "scalar" then the "order" must be _CONSTANT.
-                if skwargs['scalar'] or okwargs['scalar']:
+                if skwargs["scalar"] or okwargs["scalar"]:
                     # We don't care about the monotonic "order" given that
                     # at least one coordinate is a scalar coordinate.
-                    skwargs['scalar'] = okwargs['scalar'] = None
-                    skwargs['order'] = okwargs['order'] = None
+                    skwargs["scalar"] = okwargs["scalar"] = None
+                    skwargs["order"] = okwargs["order"] = None
                 result = skwargs == okwargs
         return result
 
@@ -165,8 +166,7 @@ class _CoordMetaData(namedtuple('CoordMetaData',
         return self.defn.name()
 
 
-class _SkeletonCube(namedtuple('SkeletonCube',
-                               ['signature', 'data'])):
+class _SkeletonCube(namedtuple("SkeletonCube", ["signature", "data"])):
     """
     Basis of a source-cube, containing the associated coordinate metadata,
     coordinates and cube data payload.
@@ -184,8 +184,7 @@ class _SkeletonCube(namedtuple('SkeletonCube',
     __slots__ = ()
 
 
-class _Extent(namedtuple('Extent',
-                         ['min', 'max'])):
+class _Extent(namedtuple("Extent", ["min", "max"])):
     """
     Container representing the limits of a one-dimensional extent/range.
 
@@ -202,8 +201,7 @@ class _Extent(namedtuple('Extent',
     __slots__ = ()
 
 
-class _CoordExtent(namedtuple('CoordExtent',
-                              ['points', 'bounds'])):
+class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     """
     Container representing the points and bounds extent of a one dimensional
     coordinate.
@@ -257,8 +255,9 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(cube, axis, error_on_mismatch,
-                                             check_aux_coords)
+            registered = proto_cube.register(
+                cube, axis, error_on_mismatch, check_aux_coords
+            )
             if registered:
                 axis = proto_cube.axis
                 break
@@ -293,6 +292,7 @@ class _CubeSignature(object):
     on its metadata, coordinates and cell_measures.
 
     """
+
     def __init__(self, cube):
         """
         Represents the cube metadata and associated coordinate metadata that
@@ -337,9 +337,11 @@ class _CubeSignature(object):
         # Coordinate sort function - by guessed coordinate axis, then
         # by coordinate definition, then by dimensions, in ascending order.
         def key_func(coord):
-            return (axes.get(guess_coord_axis(coord), len(axes) + 1),
-                    coord._as_defn(),
-                    cube.coord_dims(coord))
+            return (
+                axes.get(guess_coord_axis(coord), len(axes) + 1),
+                coord._as_defn(),
+                cube.coord_dims(coord),
+            )
 
         for coord in sorted(cube.aux_coords, key=key_func):
             dims = cube.coord_dims(coord)
@@ -374,24 +376,26 @@ class _CubeSignature(object):
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
         if len(self_dict) == 0:
-            self_dict = {'< None >': None}
+            self_dict = {"< None >": None}
         if len(other_dict) == 0:
-            other_dict = {'< None >': None}
+            other_dict = {"< None >": None}
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())
 
         # Compare coord metadata.
         if len(self_names) != len(other_names) or self_names != other_names:
-            result = ('', ', '.join(self_names), ', '.join(other_names))
+            result = ("", ", ".join(self_names), ", ".join(other_names))
         else:
             diff_names = []
             for self_key, self_value in six.iteritems(self_dict):
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)
-            result = (' metadata',
-                      ', '.join(diff_names),
-                      ', '.join(diff_names))
+            result = (
+                " metadata",
+                ", ".join(diff_names),
+                ", ".join(diff_names),
+            )
         return result
 
     def match(self, other, error_on_mismatch):
@@ -420,45 +424,59 @@ class _CubeSignature(object):
            Boolean. True if and only if this _CubeSignature matches the other.
 
         """
-        msg_template = '{}{} differ: {} != {}'
+        msg_template = "{}{} differ: {} != {}"
         msgs = []
 
         # Check cube definitions.
         if self.defn != other.defn:
             # Note that the case of different phenomenon names is dealt
             # with in :meth:`iris.cube.CubeList.concatenate_cube()`.
-            msg = 'Cube metadata differs for phenomenon: {}'
+            msg = "Cube metadata differs for phenomenon: {}"
             msgs.append(msg.format(self.defn.name()))
 
         # Check dim coordinates.
         if self.dim_metadata != other.dim_metadata:
-            differences = self._coordinate_differences(other, 'dim_metadata')
-            msgs.append(msg_template.format('Dimension coordinates',
-                                            *differences))
+            differences = self._coordinate_differences(other, "dim_metadata")
+            msgs.append(
+                msg_template.format("Dimension coordinates", *differences)
+            )
         # Check aux coordinates.
         if self.aux_metadata != other.aux_metadata:
-            differences = self._coordinate_differences(other, 'aux_metadata')
-            msgs.append(msg_template.format('Auxiliary coordinates',
-                                            *differences))
+            differences = self._coordinate_differences(other, "aux_metadata")
+            msgs.append(
+                msg_template.format("Auxiliary coordinates", *differences)
+            )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            differences = self._coordinate_differences(other, 'scalar_coords')
-            msgs.append(msg_template.format('Scalar coordinates',
-                                            *differences))
+            differences = self._coordinate_differences(other, "scalar_coords")
+            msgs.append(
+                msg_template.format("Scalar coordinates", *differences)
+            )
         # Check ndim.
         if self.ndim != other.ndim:
-            msgs.append(msg_template.format('Data dimensions', '',
-                                            self.ndim, other.ndim))
+            msgs.append(
+                msg_template.format(
+                    "Data dimensions", "", self.ndim, other.ndim
+                )
+            )
         # Check data type.
         if self.data_type != other.data_type:
-            msgs.append(msg_template.format('Data types', '',
-                                            self.data_type, other.data_type))
+            msgs.append(
+                msg_template.format(
+                    "Data types", "", self.data_type, other.data_type
+                )
+            )
 
         # Check _cell_measures_and_dims
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
-            msgs.append(msg_template.format('CellMeasures', '',
-                                            self.cell_measures_and_dims,
-                                            other.cell_measures_and_dims))
+            msgs.append(
+                msg_template.format(
+                    "CellMeasures",
+                    "",
+                    self.cell_measures_and_dims,
+                    other.cell_measures_and_dims,
+                )
+            )
 
         match = not bool(msgs)
         if error_on_mismatch and not match:
@@ -472,6 +490,7 @@ class _CoordSignature(object):
     on its coordinates.
 
     """
+
     def __init__(self, cube_signature):
         """
         Represents the coordinate metadata required to identify suitable
@@ -488,8 +507,10 @@ class _CoordSignature(object):
         self.dim_coords = cube_signature.dim_coords
         self.dim_mapping = cube_signature.dim_mapping
         self.dim_extents = []
-        self.dim_order = [metadata.kwargs['order']
-                          for metadata in cube_signature.dim_metadata]
+        self.dim_order = [
+            metadata.kwargs["order"]
+            for metadata in cube_signature.dim_metadata
+        ]
 
         # Calculate the extents for each dimensional coordinate.
         self._calculate_extents()
@@ -569,16 +590,20 @@ class _CoordSignature(object):
             if order == _CONSTANT or order == _INCREASING:
                 points = _Extent(coord.points[0], coord.points[-1])
                 if coord.bounds is not None:
-                    bounds = (_Extent(coord.bounds[0, 0], coord.bounds[-1, 0]),
-                              _Extent(coord.bounds[0, 1], coord.bounds[-1, 1]))
+                    bounds = (
+                        _Extent(coord.bounds[0, 0], coord.bounds[-1, 0]),
+                        _Extent(coord.bounds[0, 1], coord.bounds[-1, 1]),
+                    )
                 else:
                     bounds = None
             else:
                 # The order must be decreasing ...
                 points = _Extent(coord.points[-1], coord.points[0])
                 if coord.bounds is not None:
-                    bounds = (_Extent(coord.bounds[-1, 0], coord.bounds[0, 0]),
-                              _Extent(coord.bounds[-1, 1], coord.bounds[0, 1]))
+                    bounds = (
+                        _Extent(coord.bounds[-1, 0], coord.bounds[0, 0]),
+                        _Extent(coord.bounds[-1, 1], coord.bounds[0, 1]),
+                    )
                 else:
                     bounds = None
 
@@ -591,6 +616,7 @@ class _ProtoCube(object):
     common dimension.
 
     """
+
     def __init__(self, cube):
         """
         Create a new _ProtoCube from the given cube and record the cube
@@ -643,8 +669,10 @@ class _ProtoCube(object):
 
             # Sequence the skeleton segments into the correct order
             # pending concatenation.
-            skeletons.sort(key=lambda skeleton: skeleton.signature.dim_extents,
-                           reverse=(order == _DECREASING))
+            skeletons.sort(
+                key=lambda skeleton: skeleton.signature.dim_extents,
+                reverse=(order == _DECREASING),
+            )
 
             # Concatenate the new dimension coordinate.
             dim_coords_and_dims = self._build_dim_coordinates()
@@ -657,13 +685,17 @@ class _ProtoCube(object):
 
             # Build the new cube.
             kwargs = cube_signature.defn._asdict()
-            new_cm_and_dims = [(deepcopy(cm), dims) for cm, dims
-                               in self._cube._cell_measures_and_dims]
-            cube = iris.cube.Cube(data,
-                                  dim_coords_and_dims=dim_coords_and_dims,
-                                  aux_coords_and_dims=aux_coords_and_dims,
-                                  cell_measures_and_dims=new_cm_and_dims,
-                                  **kwargs)
+            new_cm_and_dims = [
+                (deepcopy(cm), dims)
+                for cm, dims in self._cube._cell_measures_and_dims
+            ]
+            cube = iris.cube.Cube(
+                data,
+                dim_coords_and_dims=dim_coords_and_dims,
+                aux_coords_and_dims=aux_coords_and_dims,
+                cell_measures_and_dims=new_cm_and_dims,
+                **kwargs,
+            )
         else:
             # There are no other source-cubes to concatenate
             # with this proto-cube.
@@ -671,8 +703,9 @@ class _ProtoCube(object):
 
         return cube
 
-    def register(self, cube, axis=None, error_on_mismatch=False,
-                 check_aux_coords=False):
+    def register(
+        self, cube, axis=None, error_on_mismatch=False, check_aux_coords=False
+    ):
         """
         Determine whether the given source-cube is suitable for concatenation
         with this :class:`_ProtoCube`.
@@ -698,8 +731,10 @@ class _ProtoCube(object):
         """
         # Verify and assert the nominated axis.
         if axis is not None and self.axis is not None and self.axis != axis:
-            msg = 'Nominated axis [{}] is not equal ' \
-                'to negotiated axis [{}]'.format(axis, self.axis)
+            msg = (
+                "Nominated axis [{}] is not equal "
+                "to negotiated axis [{}]".format(axis, self.axis)
+            )
             raise ValueError(msg)
 
         # Check for compatible cube signatures.
@@ -710,25 +745,31 @@ class _ProtoCube(object):
         if match:
             coord_signature = _CoordSignature(cube_signature)
             candidate_axis = self._coord_signature.candidate_axis(
-                coord_signature)
-            match = candidate_axis is not None and \
-                (candidate_axis == axis or axis is None)
+                coord_signature
+            )
+            match = candidate_axis is not None and (
+                candidate_axis == axis or axis is None
+            )
 
         # Check for compatible coordinate extents.
         if match:
             dim_ind = self._coord_signature.dim_mapping.index(candidate_axis)
-            match = self._sequence(coord_signature.dim_extents[dim_ind],
-                                   candidate_axis)
+            match = self._sequence(
+                coord_signature.dim_extents[dim_ind], candidate_axis
+            )
 
         # Check for compatible AuxCoords.
         if match:
             if check_aux_coords:
                 for coord_a, coord_b in zip(
-                        self._cube_signature.aux_coords_and_dims,
-                        cube_signature.aux_coords_and_dims):
+                    self._cube_signature.aux_coords_and_dims,
+                    cube_signature.aux_coords_and_dims,
+                ):
                     # AuxCoords that span the candidate axis can difffer
-                    if (candidate_axis not in coord_a.dims or
-                            candidate_axis not in coord_b.dims):
+                    if (
+                        candidate_axis not in coord_a.dims
+                        or candidate_axis not in coord_b.dims
+                    ):
                         if not coord_a == coord_b:
                             match = False
 
@@ -793,15 +834,19 @@ class _ProtoCube(object):
             if self.axis in dims:
                 # Concatenate the points together.
                 dim = dims.index(self.axis)
-                points = [skton.signature.aux_coords_and_dims[i].coord.points
-                          for skton in skeletons]
+                points = [
+                    skton.signature.aux_coords_and_dims[i].coord.points
+                    for skton in skeletons
+                ]
                 points = np.concatenate(tuple(points), axis=dim)
 
                 # Concatenate the bounds together.
                 bnds = None
                 if coord.has_bounds():
-                    bnds = [skton.signature.aux_coords_and_dims[i].coord.bounds
-                            for skton in skeletons]
+                    bnds = [
+                        skton.signature.aux_coords_and_dims[i].coord.bounds
+                        for skton in skeletons
+                    ]
                     bnds = np.concatenate(tuple(bnds), axis=dim)
 
                 # Generate the associated coordinate metadata.
@@ -814,11 +859,13 @@ class _ProtoCube(object):
                     # Attempt to create a DimCoord, otherwise default to
                     # an AuxCoord on failure.
                     try:
-                        coord = iris.coords.DimCoord(points, bounds=bnds,
-                                                     **kwargs)
+                        coord = iris.coords.DimCoord(
+                            points, bounds=bnds, **kwargs
+                        )
                     except ValueError:
-                        coord = iris.coords.AuxCoord(points, bounds=bnds,
-                                                     **kwargs)
+                        coord = iris.coords.AuxCoord(
+                            points, bounds=bnds, **kwargs
+                        )
 
             aux_coords_and_dims.append((coord.copy(), dims))
 
@@ -857,24 +904,28 @@ class _ProtoCube(object):
         axis = self.axis
         dim_ind = self._cube_signature.dim_mapping.index(axis)
         metadata = self._cube_signature.dim_metadata[dim_ind]
-        defn, circular = metadata.defn, metadata.kwargs['circular']
+        defn, circular = metadata.defn, metadata.kwargs["circular"]
 
         # Concatenate the points together for the nominated dimension.
-        points = [skeleton.signature.dim_coords[dim_ind].points
-                  for skeleton in skeletons]
+        points = [
+            skeleton.signature.dim_coords[dim_ind].points
+            for skeleton in skeletons
+        ]
         points = np.concatenate(tuple(points))
 
         # Concatenate the bounds together for the nominated dimension.
         bounds = None
         if self._cube_signature.dim_coords[dim_ind].has_bounds():
-            bounds = [skeleton.signature.dim_coords[dim_ind].bounds
-                      for skeleton in skeletons]
+            bounds = [
+                skeleton.signature.dim_coords[dim_ind].bounds
+                for skeleton in skeletons
+            ]
             bounds = np.concatenate(tuple(bounds))
 
         # Populate the new dimension coordinate with the concatenated
         # points, bounds and associated metadata.
         kwargs = defn._asdict()
-        kwargs['circular'] = circular
+        kwargs["circular"] = circular
         dim_coord = iris.coords.DimCoord(points, bounds=bounds, **kwargs)
 
         # Generate all the dimension coordinates for the new concatenated cube.
@@ -911,8 +962,10 @@ class _ProtoCube(object):
 
         # Add the new extent to the current extents collection.
         dim_ind = self._coord_signature.dim_mapping.index(axis)
-        dim_extents = [skeleton.signature.dim_extents[dim_ind]
-                       for skeleton in self._skeletons]
+        dim_extents = [
+            skeleton.signature.dim_extents[dim_ind]
+            for skeleton in self._skeletons
+        ]
         dim_extents.append(extent)
 
         # Sort into the appropriate dimension order.

@@ -13,8 +13,8 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import cf_units
 import matplotlib.pyplot as plt
@@ -28,24 +28,28 @@ def _use_symbol(units):
     # For non-time units use the shortest unit representation.
     # E.g. prefer 'K' over 'kelvin', but not '0.0174532925199433 rad'
     # over 'degrees'
-    return (not units.is_time() and
-            not units.is_time_reference() and
-            len(units.symbol) < len(str(units)))
+    return (
+        not units.is_time()
+        and not units.is_time_reference()
+        and len(units.symbol) < len(str(units))
+    )
 
 
 def _title(cube_or_coord, with_units):
     if cube_or_coord is None or isinstance(cube_or_coord, int):
-        title = ''
+        title = ""
     else:
-        title = cube_or_coord.name().replace('_', ' ').capitalize()
+        title = cube_or_coord.name().replace("_", " ").capitalize()
         units = cube_or_coord.units
-        if with_units and not (units.is_unknown() or
-                               units.is_no_unit() or
-                               units == cf_units.Unit('1')):
+        if with_units and not (
+            units.is_unknown()
+            or units.is_no_unit()
+            or units == cf_units.Unit("1")
+        ):
 
             if _use_symbol(units):
                 units = units.symbol
-            title += ' / {}'.format(units)
+            title += " / {}".format(units)
 
     return title
 
@@ -60,11 +64,13 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
 
     if result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
-        bar = plt.colorbar(result, orientation='horizontal',
-                           drawedges=draw_edges)
-        has_known_units = not (cube.units.is_unknown() or
-                               cube.units.is_no_unit())
-        if has_known_units and cube.units != cf_units.Unit('1'):
+        bar = plt.colorbar(
+            result, orientation="horizontal", drawedges=draw_edges
+        )
+        has_known_units = not (
+            cube.units.is_unknown() or cube.units.is_no_unit()
+        )
+        if has_known_units and cube.units != cf_units.Unit("1"):
             # Use shortest unit representation for anything other than time
             if _use_symbol(cube.units):
                 bar.set_label(cube.units.symbol)
@@ -77,7 +83,8 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         plot_defn = iplt._get_plot_defn(cube, mode, ndims)
     else:
         plot_defn = iplt._get_plot_defn_custom_coords_picked(
-            cube, coords, mode, ndims=ndims)
+            cube, coords, mode, ndims=ndims
+        )
 
     if ndims == 2:
         if not iplt._can_draw_map(plot_defn.coords):
@@ -87,8 +94,10 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         axes.set_xlabel(_title(plot_defn.coords[0], with_units=True))
         axes.set_ylabel(_title(cube, with_units=True))
     else:
-        msg = 'Unexpected number of dimensions ({}) given to ' \
-              '_label.'.format(ndims)
+        msg = (
+            "Unexpected number of dimensions ({}) given to "
+            "_label.".format(ndims)
+        )
         raise ValueError(msg)
 
 
@@ -107,30 +116,34 @@ def _get_titles(u_object, v_object):
     yunits = not v_object.units.is_time_reference()
     xlabel = _title(u_object, with_units=xunits)
     ylabel = _title(v_object, with_units=yunits)
-    title = ''
+    title = ""
     if u_object is None:
         title = _title(v_object, with_units=False)
-    elif isinstance(u_object, iris.cube.Cube) and \
-            not isinstance(v_object, iris.cube.Cube):
+    elif isinstance(u_object, iris.cube.Cube) and not isinstance(
+        v_object, iris.cube.Cube
+    ):
         title = _title(u_object, with_units=False)
-    elif isinstance(v_object, iris.cube.Cube) and \
-            not isinstance(u_object, iris.cube.Cube):
+    elif isinstance(v_object, iris.cube.Cube) and not isinstance(
+        u_object, iris.cube.Cube
+    ):
         title = _title(v_object, with_units=False)
     return xlabel, ylabel, title
 
 
 def _label_1d_plot(*args, **kwargs):
-    if len(args) > 1 and isinstance(args[1],
-                                    (iris.cube.Cube, iris.coords.Coord)):
+    if len(args) > 1 and isinstance(
+        args[1], (iris.cube.Cube, iris.coords.Coord)
+    ):
         xlabel, ylabel, title = _get_titles(*args[:2])
     else:
         xlabel, ylabel, title = _get_titles(None, args[0])
 
-    axes = kwargs.pop('axes', None)
+    axes = kwargs.pop("axes", None)
 
     if len(kwargs) != 0:
-        msg = 'Unexpected kwargs {} given to _label_1d_plot'.format(
-            kwargs.keys())
+        msg = "Unexpected kwargs {} given to _label_1d_plot".format(
+            kwargs.keys()
+        )
         raise ValueError(msg)
 
     if axes is None:
@@ -161,8 +174,8 @@ def contour(cube, *args, **kwargs):
     See :func:`iris.plot.contour` for details of valid keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    axes = kwargs.get('axes')
+    coords = kwargs.get("coords")
+    axes = kwargs.get("axes")
     result = iplt.contour(cube, *args, **kwargs)
     _label_with_points(cube, coords=coords, axes=axes)
     return result
@@ -188,14 +201,14 @@ def contourf(cube, *args, **kwargs):
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    axes = kwargs.get('axes')
+    coords = kwargs.get("coords")
+    axes = kwargs.get("axes")
     result = iplt.contourf(cube, *args, **kwargs)
     _label_with_points(cube, result, coords=coords, axes=axes)
     return result
 
 
-def outline(cube, coords=None, color='k', linewidth=None, axes=None):
+def outline(cube, coords=None, color="k", linewidth=None, axes=None):
     """
     Draws cell outlines on a labelled plot based on the given Cube.
 
@@ -216,8 +229,9 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
         width in patch.linewidth in matplotlibrc is used.
 
     """
-    result = iplt.outline(cube, color=color, linewidth=linewidth,
-                          coords=coords, axes=axes)
+    result = iplt.outline(
+        cube, color=color, linewidth=linewidth, coords=coords, axes=axes
+    )
 
     _label_with_bounds(cube, coords=coords, axes=axes)
     return result
@@ -230,8 +244,8 @@ def pcolor(cube, *args, **kwargs):
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    axes = kwargs.get('axes')
+    coords = kwargs.get("coords")
+    axes = kwargs.get("axes")
     result = iplt.pcolor(cube, *args, **kwargs)
     _label_with_bounds(cube, result, coords=coords, axes=axes)
     return result
@@ -244,8 +258,8 @@ def pcolormesh(cube, *args, **kwargs):
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    axes = kwargs.get('axes')
+    coords = kwargs.get("coords")
+    axes = kwargs.get("axes")
     result = iplt.pcolormesh(cube, *args, **kwargs)
     _label_with_bounds(cube, result, coords=coords, axes=axes)
     return result
@@ -258,8 +272,8 @@ def points(cube, *args, **kwargs):
     See :func:`iris.plot.points` for details of valid keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    axes = kwargs.get('axes')
+    coords = kwargs.get("coords")
+    axes = kwargs.get("axes")
     result = iplt.points(cube, *args, **kwargs)
     _label_with_points(cube, coords=coords, axes=axes)
     return result
@@ -274,7 +288,7 @@ def plot(*args, **kwargs):
     keyword arguments.
 
     """
-    axes = kwargs.get('axes')
+    axes = kwargs.get("axes")
     result = iplt.plot(*args, **kwargs)
     _label_1d_plot(*args, axes=axes)
     return result
@@ -289,7 +303,7 @@ def scatter(x, y, *args, **kwargs):
     keyword arguments.
 
     """
-    axes = kwargs.get('axes')
+    axes = kwargs.get("axes")
     result = iplt.scatter(x, y, *args, **kwargs)
     _label_1d_plot(x, y, axes=axes)
     return result
