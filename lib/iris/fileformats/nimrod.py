@@ -68,9 +68,7 @@ def _read_chars(infile, num):
     """Read characters from the (big-endian) file."""
     instr = infile.read(num)
     result = struct.unpack(">%ds" % num, instr)[0]
-    if six.PY3:
-        # For Python 3, convert raw bytes into a string.
-        result = result.decode()
+    result = result.decode()
     return result
 
 

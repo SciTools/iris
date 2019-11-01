@@ -332,7 +332,7 @@ class TestConstraints(TestMixin, tests.IrisTest):
 
         rt_l10 = repr(self.theta & self.level_10)
         expr = 'ConstraintCombination(%s, %s, <built-in function %s>)' % (
-            rt, rl10, '__and__' if six.PY2 else 'and_')
+            rt, rl10, 'and_')
         self.assertEqual(expr, rt_l10)
 
     def test_string_repr(self):

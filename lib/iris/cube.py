@@ -2301,11 +2301,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def __str__(self):
-        # six has a decorator for this bit, but it doesn't do errors='replace'.
-        if six.PY3:
-            return self.summary()
-        else:
-            return self.summary().encode(errors='replace')
+        return self.summary()
 
     def __unicode__(self):
         return self.summary()

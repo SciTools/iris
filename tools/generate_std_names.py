@@ -98,10 +98,7 @@ if __name__ == "__main__":
                         help='Path to resulting Python code')
     args = parser.parse_args()
 
-    if six.PY2:
-        encoding = {}
-    else:
-        encoding  = {'encoding': 'utf-8'}
+    encoding = {'encoding': 'utf-8'}
 
     with open(args.input, 'r', **encoding) as in_fh:
         with open(args.output, 'w', **encoding) as out_fh:

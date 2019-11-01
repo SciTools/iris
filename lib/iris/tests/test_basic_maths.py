@@ -277,17 +277,9 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
 
     def test_ifunc_init_fail(self):
-        import six
-
         # should fail because 'blah' is a string not a python function
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
                           lambda cube: cf_units.Unit('1'))
-
-        if six.PY2:
-            # should fail because math.sqrt is built-in function, which cannot
-            # be used in inspect.getargspec
-            self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
-                              lambda cube: cf_units.Unit('1'))
 
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,

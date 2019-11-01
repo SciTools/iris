@@ -275,8 +275,8 @@ class TestCMIP6VolcelloLoad(tests.IrisTest):
         # still receive a warning about other variables mentioned in
         # `cell_measures` i.e. a warning should be raised about missing
         # areacello.
-        areacello_str = "areacello" if six.PY3 else u"areacello"
-        volcello_str = "volcello" if six.PY3 else u"volcello"
+        areacello_str = "areacello"
+        volcello_str = "volcello"
         expected_msg = "Missing CF-netCDF measure variable %r, " \
                        "referenced by netCDF variable %r" \
                        % (areacello_str, volcello_str)
@@ -339,8 +339,8 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         # still receive a warning about other variables mentioned in
         # `cell_measures` i.e. a warning should be raised about missing
         # areacello.
-        areacello_str = "areacello" if six.PY3 else u"areacello"
-        volcello_str = "volcello" if six.PY3 else u"volcello"
+        areacello_str = "areacello"
+        volcello_str = "volcello"
         expected_msg = "Missing CF-netCDF measure variable %r, " \
                        "referenced by netCDF variable %r" \
                        % (areacello_str, volcello_str)

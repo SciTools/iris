@@ -63,8 +63,7 @@ reference_terms = dict(atmosphere_sigma_coordinate=['ps'],
 
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):
-    return ((six.PY2 and np.issubdtype(var.dtype, np.str_)) or
-            (six.PY3 and np.issubdtype(var.dtype, np.bytes_)))
+    return np.issubdtype(var.dtype, np.bytes_)
 
 
 ################################################################################
@@ -675,8 +674,7 @@ class CFLabelVariable(CFVariable):
         # i.e. a character variable that only has one dimension (the length of the string).
         if self.ndim == 1:
             label_string = b''.join(label_data).strip()
-            if six.PY3:
-                label_string = label_string.decode('utf8')
+            label_string = label_string.decode('utf8')
             data = np.array([label_string])
         else:
             # Determine the index of the string dimension.
@@ -684,7 +682,7 @@ class CFLabelVariable(CFVariable):
 
             # Calculate new label data shape (without string dimension) and create payload array.
             new_shape = tuple(dim_len for i, dim_len in enumerate(self.shape) if i != str_dim)
-            string_basetype = '|S%d' if six.PY2 else '|U%d'
+            string_basetype = '|U%d'
             string_dtype = string_basetype % self.shape[str_dim]
             data = np.empty(new_shape, dtype=string_dtype)
 
@@ -696,8 +694,7 @@ class CFLabelVariable(CFVariable):
                     label_index = index + (slice(None, None),)
 
                 label_string = b''.join(label_data[label_index]).strip()
-                if six.PY3:
-                    label_string = label_string.decode('utf8')
+                label_string = label_string.decode('utf8')
                 data[index] = label_string
 
         return data

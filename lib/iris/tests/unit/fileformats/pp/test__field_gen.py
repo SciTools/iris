@@ -35,10 +35,7 @@ class Test(tests.IrisTest):
                 np.fromfile.return_value = []
             return result
 
-        if six.PY3:
-            open_func = 'builtins.open'
-        else:
-            open_func = '__builtin__.open'
+        open_func = 'builtins.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
                 mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \

@@ -31,10 +31,7 @@ class TestSaveFields(tests.IrisTest):
         self.pp_field.save = asave
 
     def test_save(self):
-        if six.PY3:
-            open_func = 'builtins.open'
-        else:
-            open_func = '__builtin__.open'
+        open_func = 'builtins.open'
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp')
@@ -42,10 +39,7 @@ class TestSaveFields(tests.IrisTest):
         self.assertTrue(mock.call().write('saved') in m.mock_calls)
 
     def test_save_append(self):
-        if six.PY3:
-            open_func = 'builtins.open'
-        else:
-            open_func = '__builtin__.open'
+        open_func = 'builtins.open'
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
             pp.save_fields([self.pp_field], 'foo.pp', append=True)

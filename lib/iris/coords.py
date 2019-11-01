@@ -622,16 +622,9 @@ class _DimensionalMetadata(ABCMeta, CFVariableMixin):
         kind = dtype.kind
         if kind in 'SU':
             # Establish the basic type name for 'string' type data.
-            # N.B. this means "unicode" in Python3, and "str" in Python2.
             value_type_name = 'string'
-
-            # Override this if not the 'native' string type.
-            if six.PY3:
-                if kind == 'S':
-                    value_type_name = 'bytes'
-            else:
-                if kind == 'U':
-                    value_type_name = 'unicode'
+            if kind == 'S':
+                value_type_name = 'bytes'
         else:
             value_type_name = dtype.name
 
