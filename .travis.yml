@@ -103,7 +103,8 @@ install:
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   # test against the latest version of python-eccodes.
   # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
-  - if [[ "${TEST_MINIMAL}" != true ]]; then
+  - >
+    if [[ "${TEST_MINIMAL}" != true ]]; then
         conda install --quiet -n ${ENV_NAME} python-eccodes=0.9.3;
         conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
     fi
@@ -113,22 +114,22 @@ script:
   # the RC, so it's best to start each operation with an absolute cd.
   - export INSTALL_DIR=$(pwd)
 
-  - if [[ "${TEST_TARGET}" == 'default' ]]; then
-      export IRIS_REPO_DIR=${INSTALL_DIR};
-      python -m iris.tests.runner --default-tests --system-tests;
-    fi
-
-  - if [[ "${TEST_BLACK}" == 'true' ]]; then
+  - >
+    if [[ "${TEST_BLACK}" == 'true' ]]; then
       echo $(black --version);
-      ls -al;
-      echo "pwd=$(pwd)";
-      echo "INSTALL_DIR=${INSTALL_DIR}";
-      black --check -v ${INSTALL_DIR};
+      rm ${INSTALL_DIR}/.gitignore;
+      black --check ${INSTALL_DIR};
       RC=${?};
       if [[ ${RC} -ne 0 ]]; then
         black --diff ${INSTALL_DIR};
         (exit ${RC});
       fi;
+    fi
+
+  - >
+    if [[ "${TEST_TARGET}" == 'default' ]]; then
+      export IRIS_REPO_DIR=${INSTALL_DIR};
+      python -m iris.tests.runner --default-tests --system-tests;
     fi
 
   - if [[ "${TEST_TARGET}" == 'example' ]]; then
@@ -137,14 +138,16 @@ script:
 
   # A call to check "whatsnew" contributions are valid, because the Iris test
   # for it needs a *developer* install to be able to find the docs.
-  - if [[ "${TEST_TARGET}" == 'doctest' ]]; then
+  - >
+    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       python aggregate_directory.py --checkonly;
     fi
 
   # When pushing built docs, attempt to make a preliminary whatsnew by calling
   # 'aggregate_directory.py', before the build.
-  - if [[ "${PUSH_BUILT_DOCS}" == 'true' ]]; then
+  - >
+    if [[ "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       WHATSNEW=$(ls -d contributions_* 2>/dev/null);
       if [[ -n "${WHATSNEW}" ]]; then
@@ -169,7 +172,8 @@ script:
   # When we merge a change to SciTools/iris, we can push docs to github pages.
   # At present, only the Python 3.7 "doctest" job does this.
   # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
-  - if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
+  - >
+    if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html

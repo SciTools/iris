@@ -19,6 +19,8 @@ exclude = '''
     | dist
     | docs
     | etc
+    | iris_image_test_output
+    | results
     | tools
     | tests
   )/
