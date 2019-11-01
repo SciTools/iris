@@ -16,10 +16,11 @@ import six
 import iris.tests as tests
 
 import inspect
-import io
 
 import cf_units
 import numpy as np
+
+from io import StringIO
 
 import iris.analysis
 import iris.coords
@@ -153,7 +154,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
 
-        return_sio = io.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -167,7 +168,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
 
-        return_sio = io.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -179,7 +180,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         test_cube_a.standard_name = "relative_humidity"
 
-        return_sio = io.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -191,7 +192,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         test_cube_a.units = cf_units.Unit('m')
 
-        return_sio = io.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -201,7 +202,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
 
-        return_sio = io.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 

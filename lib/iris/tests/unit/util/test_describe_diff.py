@@ -10,9 +10,9 @@ import six
 # importing anything else
 import iris.tests as tests
 
-import io
-
 import numpy as np
+
+from io import StringIO
 
 import iris.cube
 from iris.util import describe_diff
@@ -24,7 +24,7 @@ class Test(iris.tests.IrisTest):
         self.cube_b = self.cube_a.copy()
 
     def _compare_result(self, cube_a, cube_b):
-        result_sio = io.StringIO()
+        result_sio = StringIO()
         describe_diff(cube_a, cube_b, output_file=result_sio)
         return result_sio.getvalue()
 
