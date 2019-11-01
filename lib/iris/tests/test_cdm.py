@@ -242,7 +242,7 @@ class TestCubeStringRepresentations(IrisDotTest):
         path = tests.get_data_path(('PP', 'simple_pp', 'global.pp'))
         self.cube_2d = iris.load_cube(path)
         # Generate the unicode cube up here now it's used in two tests.
-        unicode_str = chr(40960) + u'abcd' + chr(1972)
+        unicode_str = six.unichr(40960) + u'abcd' + six.unichr(1972)
         self.unicode_cube = iris.tests.stock.simple_1d()
         self.unicode_cube.attributes['source'] = unicode_str
 
