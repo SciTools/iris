@@ -13,7 +13,7 @@ from html import escape
 # importing anything else.
 import iris.tests as tests
 
-from iris.coords import CellMethod
+from iris.coords import CellMethod, CellMeasure, AncillaryVariable
 import iris.tests.stock as stock
 
 from iris.experimental.representation import CubeRepresentation
@@ -113,8 +113,14 @@ class Test__summary_content(tests.IrisTest):
 class Test__get_bits(tests.IrisTest):
     def setUp(self):
         self.cube = stock.realistic_4d()
-        cm = CellMethod('mean', 'time', '6hr')
-        self.cube.add_cell_method(cm)
+        cmth = CellMethod('mean', 'time', '6hr')
+        self.cube.add_cell_method(cmth)
+        cms = CellMeasure([0, 1, 2, 3, 4, 5], measure='area', long_name='foo')
+        self.cube.add_cell_measure(cms, 0)
+        avr = AncillaryVariable([0, 1, 2, 3, 4, 5], long_name='bar')
+        self.cube.add_ancillary_variable(avr, 0)
+        scms = CellMeasure([0], measure='area', long_name='baz')
+        self.cube.add_cell_measure(scms)
         self.representer = CubeRepresentation(self.cube)
         self.representer._get_bits(self.representer._get_lines())
 
@@ -138,10 +144,34 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__derivedcoords(self):
-        contents = self.representer.str_headings['Auxiliary coordinates:']
+        contents = self.representer.str_headings['Derived coordinates:']
         content_str = ','.join(content for content in contents)
         derived_coords = [c.name() for c in self.cube.derived_coords]
         for coord in derived_coords:
+            self.assertIn(coord, content_str)
+
+    def test_headings__cellmeasures(self):
+        contents = self.representer.str_headings['Cell measures:']
+        content_str = ','.join(content for content in contents)
+        cell_measures = [c.name() for c in self.cube.cell_measures()
+                         if c.shape != (1,)]
+        for coord in cell_measures:
+            self.assertIn(coord, content_str)
+
+    def test_headings__ancillaryvars(self):
+        contents = self.representer.str_headings['Ancillary variables:']
+        content_str = ','.join(content for content in contents)
+        ancillary_variables = [c.name() for c in
+                               self.cube.ancillary_variables()]
+        for coord in ancillary_variables:
+            self.assertIn(coord, content_str)
+
+    def test_headings__scalarcellmeasures(self):
+        contents = self.representer.str_headings['Scalar cell measures:']
+        content_str = ','.join(content for content in contents)
+        scalar_cell_measures = [c.name() for c in self.cube.cell_measures()
+                                if c.shape == (1,)]
+        for coord in scalar_cell_measures:
             self.assertIn(coord, content_str)
 
     def test_headings__scalarcoords(self):

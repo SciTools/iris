@@ -92,13 +92,21 @@ class CubeRepresentation(object):
             'Dimension coordinates:': None,
             'Auxiliary coordinates:': None,
             'Derived coordinates:': None,
+            'Cell measures:': None,
+            'Ancillary variables:': None,
             'Scalar coordinates:': None,
+            'Scalar cell measures:': None,
             'Attributes:': None,
             'Cell methods:': None,
         }
         self.dim_desc_coords = ['Dimension coordinates:',
                                 'Auxiliary coordinates:',
-                                'Derived coordinates:']
+                                'Derived coordinates:',
+                                'Cell measures:',
+                                'Ancillary variables:']
+
+        self.two_cell_headers = ['Scalar coordinates:',
+                                 'Attributes:']
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
@@ -266,7 +274,7 @@ class CubeRepresentation(object):
                         body = re.findall(r'[\w-]+', line)
                         title = body.pop(0)
                         colspan = 0
-                    else:
+                    elif k in self.two_cell_headers:
                         try:
                             split_point = line.index(':')
                         except ValueError:
@@ -284,6 +292,10 @@ class CubeRepresentation(object):
                         else:
                             title = line[:split_point].strip()
                             body = line[split_point + 2:].strip()
+                        colspan = self.ndims
+                    else:
+                        title = line.strip()
+                        body = ''
                         colspan = self.ndims
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan))
