@@ -59,7 +59,7 @@ class Test(tests.IrisTest):
         self.assertEqual(len(warn), 1)
         wmsg = ('LBLREC has a different value to the .* the header in the '
                 'file \(8 and 4\)\. Skipping .*')
-        six.assertRegex(self, str(warn[0].message), wmsg)
+        self.assertRegex(str(warn[0].message), wmsg)
 
     def test_read_headers_call(self):
         # Checks that the two calls to np.fromfile are called in the
