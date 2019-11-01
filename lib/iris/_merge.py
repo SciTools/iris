@@ -569,7 +569,7 @@ def _separable_pair(name, index):
         Boolean.
 
     """
-    items = index.values()
+    items = iter(index.values())
     reference = next(items)[name]
 
     return all([item[name] == reference for item in items])
