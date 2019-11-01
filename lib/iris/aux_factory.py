@@ -21,7 +21,7 @@ from iris._cube_coord_common import CFVariableMixin
 import iris.coords
 
 
-class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
+class AuxCoordFactory(ABCMeta, CFVariableMixin):
     """
     Represents a "factory" which can manufacture an additional auxiliary
     coordinate on demand, by combining the values of other coordinates.

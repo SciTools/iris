@@ -825,8 +825,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
 
 
 @functools.total_ordering
-class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
-                                          Hashable)):
+class _OrderedHashable(_MetaOrderedHashable, Hashable):
     """
     Convenience class for creating "immutable", hashable, and ordered classes.
 

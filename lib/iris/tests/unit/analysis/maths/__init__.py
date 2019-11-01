@@ -21,7 +21,7 @@ import iris.tests.stock as stock
 import iris.tests as tests
 
 
-class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticBroadcastingTestMixin(ABCMeta, object):
     # A framework for testing the broadcasting behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
     @abstractproperty
@@ -110,7 +110,7 @@ class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
                                   err_msg=msg.format(dim))
 
 
-class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticMaskingTestMixin(ABCMeta, object):
     # A framework for testing the mask handling behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
     @abstractproperty
@@ -185,8 +185,7 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         return reversed1, reversed2
 
 
-class CubeArithmeticMaskedConstantTestMixin(
-        six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticMaskedConstantTestMixin(ABCMeta, object):
 
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.

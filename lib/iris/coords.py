@@ -40,7 +40,7 @@ from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
 
 
-class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
+class _DimensionalMetadata(ABCMeta, CFVariableMixin):
     """
     Superclass for dimensional metadata.
 

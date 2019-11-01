@@ -30,7 +30,7 @@ def example_cube():
                           units='K', attributes={'mint': 'thin'})
 
 
-class Mixin_register(six.with_metaclass(abc.ABCMeta, object)):
+class Mixin_register(abc.ABCMeta, object):
     @property
     def cube1(self):
         return example_cube()

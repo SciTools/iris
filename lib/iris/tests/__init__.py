@@ -20,7 +20,6 @@ graphical test results.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 import codecs
 import collections
@@ -973,7 +972,7 @@ class _TestTimingsMetaclass(type):
         return result
 
 
-class IrisTest(six.with_metaclass(_TestTimingsMetaclass, IrisTest_nometa)):
+class IrisTest(_TestTimingsMetaclass, IrisTest_nometa):
     # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
     # metaclass that enables test timings output.
     # This means that all subclasses also get the timing behaviour.
