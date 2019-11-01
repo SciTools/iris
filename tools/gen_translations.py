@@ -9,7 +9,6 @@ metOcean mapping translations.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 from datetime import datetime
@@ -52,7 +51,6 @@ HEADER = """# Copyright Iris contributors
 # https://github.com/metarelate/metOcean/commit/{git_sha}
 {doc_string}
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple

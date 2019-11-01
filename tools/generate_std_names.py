@@ -17,7 +17,6 @@ as obtained from:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
@@ -51,7 +50,6 @@ Or for more control (e.g. to use an alternative XML file) via:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 

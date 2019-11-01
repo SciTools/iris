@@ -11,7 +11,6 @@ Other types of UM file may fail to load correctly (or at all).
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Publish the FF-replacement features here, and include documentation.

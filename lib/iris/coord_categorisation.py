@@ -16,7 +16,6 @@ All the functions provided here add a new coordinate to a cube.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 

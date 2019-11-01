@@ -8,7 +8,6 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
