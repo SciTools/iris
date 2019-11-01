@@ -10,9 +10,9 @@ repos:
     -   id: check-merge-conflict
         # Check for debugger imports and py37+ `breakpoint()` calls in python source.
     -   id: debug-statements
-        # This hook runs flake8.
-    -   id: flake8
-        args: [--config=./.flake8]
+#        # This hook runs flake8.
+#    -   id: flake8
+#        args: [--config=./.flake8]
         # Don't commit to master branch.
     -   id: no-commit-to-branch
 -   repo: https://github.com/psf/black
