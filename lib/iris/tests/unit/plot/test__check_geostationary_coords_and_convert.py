@@ -6,8 +6,8 @@
 """Unit tests for the `iris.plot._check_geostationary_coords_and_convert
 function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -26,7 +26,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
         geostationary_altitude = 35785831.0
         # proj4_params is the one attribute of the Geostationary class that
         # is needed for the function.
-        self.proj4_params = {'h': geostationary_altitude}
+        self.proj4_params = {"h": geostationary_altitude}
 
         # Simulate the maximum-dimension array that could be processed.
         a = np.linspace(0, 2, 6)
@@ -35,8 +35,9 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
 
         # Expected arrays if conversion takes place.
         self.x_converted, self.y_converted = (
-            i * geostationary_altitude for i in (self.x_original,
-                                                 self.y_original))
+            i * geostationary_altitude
+            for i in (self.x_original, self.y_original)
+        )
 
     def _test(self, geostationary=True):
         # Re-usable test for when Geostationary is present OR absent.
@@ -52,11 +53,11 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
         projection = Mock(spec=projection_spec)
         projection.proj4_params = self.proj4_params
         # Projection is looked for within a dictionary called kwargs.
-        kwargs = {'transform': projection}
+        kwargs = {"transform": projection}
 
-        x, y = _check_geostationary_coords_and_convert(self.x_original,
-                                                       self.y_original,
-                                                       kwargs)
+        x, y = _check_geostationary_coords_and_convert(
+            self.x_original, self.y_original, kwargs
+        )
         self.assertArrayEqual((x, y), target_tuple)
 
     def test_geostationary_present(self):

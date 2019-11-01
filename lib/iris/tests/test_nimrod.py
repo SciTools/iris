@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -28,9 +28,16 @@ class TestLoad(tests.IrisTest):
     @tests.skip_data
     def test_multi_field_load(self):
         # load a cube with two fields
-        cube = iris.load(tests.get_data_path(
-            ('NIMROD', 'uk2km', 'WO0000000003452',
-             '201007020900_u1096_ng_ey00_visibility0180_screen_2km')))
+        cube = iris.load(
+            tests.get_data_path(
+                (
+                    "NIMROD",
+                    "uk2km",
+                    "WO0000000003452",
+                    "201007020900_u1096_ng_ey00_visibility0180_screen_2km",
+                )
+            )
+        )
         self.assertCML(cube, ("nimrod", "load_2flds.cml"))
 
     def test_orography(self):

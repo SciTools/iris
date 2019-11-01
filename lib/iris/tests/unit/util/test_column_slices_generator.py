@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris.util.column_slices_generator`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -35,5 +35,5 @@ class Test_int_types(tests.IrisTest):
         self._test(np.int64(0))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

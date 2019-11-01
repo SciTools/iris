@@ -9,8 +9,8 @@ Test function
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -22,11 +22,12 @@ import numpy.ma as ma
 from iris.coords import DimCoord
 from iris.coord_systems import GeogCS
 from iris.cube import Cube
-from iris.experimental.regrid \
-    import regrid_area_weighted_rectilinear_src_and_grid as regrid
-from iris.tests.experimental.regrid.\
-    test_regrid_area_weighted_rectilinear_src_and_grid import \
-    _resampled_grid
+from iris.experimental.regrid import (
+    regrid_area_weighted_rectilinear_src_and_grid as regrid,
+)
+from iris.tests.experimental.regrid.test_regrid_area_weighted_rectilinear_src_and_grid import (
+    _resampled_grid,
+)
 
 
 class TestMdtol(tests.IrisTest):
@@ -35,18 +36,22 @@ class TestMdtol(tests.IrisTest):
         # A (3, 2, 4) cube with a masked element.
         cube = Cube(np.ma.arange(24, dtype=np.int32).reshape((3, 2, 4)))
         cs = GeogCS(6371229)
-        coord = DimCoord(points=np.array([-1, 0, 1], dtype=np.int32),
-                         standard_name='latitude',
-                         units='degrees',
-                         coord_system=cs)
+        coord = DimCoord(
+            points=np.array([-1, 0, 1], dtype=np.int32),
+            standard_name="latitude",
+            units="degrees",
+            coord_system=cs,
+        )
         cube.add_dim_coord(coord, 0)
-        coord = DimCoord(points=np.array([-1, 0, 1, 2], dtype=np.int32),
-                         standard_name='longitude',
-                         units='degrees',
-                         coord_system=cs)
+        coord = DimCoord(
+            points=np.array([-1, 0, 1, 2], dtype=np.int32),
+            standard_name="longitude",
+            units="degrees",
+            coord_system=cs,
+        )
         cube.add_dim_coord(coord, 2)
-        cube.coord('latitude').guess_bounds()
-        cube.coord('longitude').guess_bounds()
+        cube.coord("latitude").guess_bounds()
+        cube.coord("longitude").guess_bounds()
         cube.data[1, 1, 2] = ma.masked
         self.src_cube = cube
         # Create (7, 2, 9) grid cube.
@@ -146,23 +151,38 @@ class TestWrapAround(tests.IrisTest):
         source = Cube([[1]])
         cs = GeogCS(6371229)
 
-        bounds = np.array([[-91, 0]], dtype='float')
+        bounds = np.array([[-91, 0]], dtype="float")
         points = bounds.mean(axis=1)
-        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude',
-                             units='degrees', coord_system=cs)
+        lon_coord = DimCoord(
+            points,
+            bounds=bounds,
+            standard_name="longitude",
+            units="degrees",
+            coord_system=cs,
+        )
         source.add_aux_coord(lon_coord, 1)
 
-        bounds = np.array([[-90, 90]], dtype='float')
+        bounds = np.array([[-90, 90]], dtype="float")
         points = bounds.mean(axis=1)
-        lat_coord = DimCoord(points, bounds=bounds, standard_name='latitude',
-                             units='degrees', coord_system=cs)
+        lat_coord = DimCoord(
+            points,
+            bounds=bounds,
+            standard_name="latitude",
+            units="degrees",
+            coord_system=cs,
+        )
         source.add_aux_coord(lat_coord, 0)
 
         grid = Cube([[0]])
-        bounds = np.array([[270, 360]], dtype='float')
+        bounds = np.array([[270, 360]], dtype="float")
         points = bounds.mean(axis=1)
-        lon_coord = DimCoord(points, bounds=bounds, standard_name='longitude',
-                             units='degrees', coord_system=cs)
+        lon_coord = DimCoord(
+            points,
+            bounds=bounds,
+            standard_name="longitude",
+            units="degrees",
+            coord_system=cs,
+        )
         grid.add_aux_coord(lon_coord, 1)
         grid.add_aux_coord(lat_coord, 0)
 
@@ -171,5 +191,5 @@ class TestWrapAround(tests.IrisTest):
         self.assertArrayEqual(res.data, np.array([1.0]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

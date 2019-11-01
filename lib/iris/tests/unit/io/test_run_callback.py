@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.io.run_callback` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,16 +25,19 @@ class Test_run_callback(tests.IrisTest):
 
     def test_no_callback(self):
         # No callback results in the cube being returned.
-        self.assertEqual(iris.io.run_callback(None, self.cube, None, None),
-                         self.cube)
+        self.assertEqual(
+            iris.io.run_callback(None, self.cube, None, None), self.cube
+        )
 
     def test_ignore_cube(self):
         # Ignore cube should result in None being returned.
         def callback(cube, field, fname):
             raise iris.exceptions.IgnoreCubeException()
+
         cube = self.cube
-        self.assertEqual(iris.io.run_callback(callback, cube, None, None),
-                         None)
+        self.assertEqual(
+            iris.io.run_callback(callback, cube, None, None), None
+        )
 
     def test_callback_no_return(self):
         # Check that a callback not returning anything still results in the
@@ -43,16 +46,18 @@ class Test_run_callback(tests.IrisTest):
             pass
 
         cube = self.cube
-        self.assertEqual(iris.io.run_callback(callback, cube, None, None),
-                         cube)
+        self.assertEqual(
+            iris.io.run_callback(callback, cube, None, None), cube
+        )
 
     def test_bad_callback_return_type(self):
         # Check that a TypeError is raised with a bad callback return value.
         def callback(cube, field, fname):
             return iris.cube.CubeList()
-        with self.assertRaisesRegexp(TypeError,
-                                     'Callback function returned an '
-                                     'unhandled data type.'):
+
+        with self.assertRaisesRegexp(
+            TypeError, "Callback function returned an " "unhandled data type."
+        ):
             iris.io.run_callback(callback, None, None, None)
 
     def test_bad_signature(self):
@@ -60,10 +65,12 @@ class Test_run_callback(tests.IrisTest):
         # signature.
         def callback(cube):
             pass
-        with self.assertRaisesRegexp(TypeError,
-                                     # exactly == Py2, positional == Py3
-                                     'takes (exactly )?1 (positional )?'
-                                     'argument '):
+
+        with self.assertRaisesRegexp(
+            TypeError,
+            # exactly == Py2, positional == Py3
+            "takes (exactly )?1 (positional )?" "argument ",
+        ):
             iris.io.run_callback(callback, None, None, None)
 
     def test_callback_args(self):

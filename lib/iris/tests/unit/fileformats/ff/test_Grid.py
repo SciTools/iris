@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for :class:`iris.fileformat.ff.Grid`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -21,11 +21,20 @@ class Test___init__(tests.IrisTest):
     def test_attributes(self):
         # Ensure the constructor initialises all the grid's attributes
         # correctly, including unpacking values from the REAL constants.
-        reals = (mock.sentinel.ew, mock.sentinel.ns,
-                 mock.sentinel.first_lat, mock.sentinel.first_lon,
-                 mock.sentinel.pole_lat, mock.sentinel.pole_lon)
-        grid = Grid(mock.sentinel.column, mock.sentinel.row, reals,
-                    mock.sentinel.horiz_grid_type)
+        reals = (
+            mock.sentinel.ew,
+            mock.sentinel.ns,
+            mock.sentinel.first_lat,
+            mock.sentinel.first_lon,
+            mock.sentinel.pole_lat,
+            mock.sentinel.pole_lon,
+        )
+        grid = Grid(
+            mock.sentinel.column,
+            mock.sentinel.row,
+            reals,
+            mock.sentinel.horiz_grid_type,
+        )
         self.assertIs(grid.column_dependent_constants, mock.sentinel.column)
         self.assertIs(grid.row_dependent_constants, mock.sentinel.row)
         self.assertIs(grid.ew_spacing, mock.sentinel.ew)

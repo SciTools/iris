@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 from abc import ABCMeta, abstractproperty
@@ -47,7 +47,7 @@ class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def test_collapse_zeroth_dim(self):
         cube = stock.realistic_4d_no_derived()
-        other = cube.collapsed('time', MEAN)
+        other = cube.collapsed("time", MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
         # No modification to other.data is needed as numpy broadcasting
@@ -71,26 +71,26 @@ class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def test_collapse_last_dims(self):
         cube = stock.realistic_4d_no_derived()
-        other = cube.collapsed(['grid_latitude', 'grid_longitude'], MEAN)
+        other = cube.collapsed(["grid_latitude", "grid_longitude"], MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
         # Transpose the dimensions in self.cube that have been collapsed in
         # other to lie at the front, thereby enabling numpy broadcasting to
         # function when applying data operator. Finish by transposing back
         # again to restore order.
-        expected_data = self.data_op(cube.data.transpose((2, 3, 0, 1)),
-                                     other.data).transpose(2, 3, 0, 1)
+        expected_data = self.data_op(
+            cube.data.transpose((2, 3, 0, 1)), other.data
+        ).transpose(2, 3, 0, 1)
         self.assertMaskedArrayEqual(res.data, expected_data)
 
     def test_collapse_middle_dim(self):
         cube = stock.realistic_4d_no_derived()
-        other = cube.collapsed(['model_level_number'], MEAN)
+        other = cube.collapsed(["model_level_number"], MEAN)
         res = self.cube_func(cube, other)
         self.assertCML(res, checksum=False)
         # Add the collapsed dimension back in via np.newaxis to enable
         # numpy broadcasting to function.
-        expected_data = self.data_op(cube.data,
-                                     other.data[:, np.newaxis, ...])
+        expected_data = self.data_op(cube.data, other.data[:, np.newaxis, ...])
         self.assertMaskedArrayEqual(res.data, expected_data)
 
     def test_slice(self):
@@ -104,11 +104,11 @@ class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
             # Add the collapsed dimension back in via np.newaxis to enable
             # numpy broadcasting to function.
             keys[dim] = np.newaxis
-            expected_data = self.data_op(cube.data,
-                                         other.data[tuple(keys)])
-            msg = 'Problem broadcasting cubes when sliced on dimension {}.'
-            self.assertArrayEqual(res.data, expected_data,
-                                  err_msg=msg.format(dim))
+            expected_data = self.data_op(cube.data, other.data[tuple(keys)])
+            msg = "Problem broadcasting cubes when sliced on dimension {}."
+            self.assertArrayEqual(
+                res.data, expected_data, err_msg=msg.format(dim)
+            )
 
 
 class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
@@ -127,8 +127,8 @@ class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
 
     def _test_partial_mask(self, in_place):
         # Helper method for masked data tests.
-        dat_a = ma.array([2., 2., 2., 2.], mask=[1, 0, 1, 0])
-        dat_b = ma.array([2., 2., 2., 2.], mask=[1, 1, 0, 0])
+        dat_a = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 0, 1, 0])
+        dat_b = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 1, 0, 0])
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)
@@ -160,10 +160,10 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         # On this cube pair, the coordinates to perform operations on do not
         # match in either points array or name.
         data = np.zeros((3, 4))
-        a = DimCoord([1, 2, 3], long_name='a')
-        b = DimCoord([1, 2, 3, 4], long_name='b')
-        x = DimCoord([4, 5, 6], long_name='x')
-        y = DimCoord([5, 6, 7, 8], long_name='y')
+        a = DimCoord([1, 2, 3], long_name="a")
+        b = DimCoord([1, 2, 3, 4], long_name="b")
+        x = DimCoord([4, 5, 6], long_name="x")
+        y = DimCoord([5, 6, 7, 8], long_name="y")
 
         nomatch1 = Cube(data, dim_coords_and_dims=[(a, 0), (b, 1)])
         nomatch2 = Cube(data, dim_coords_and_dims=[(x, 0), (y, 1)])
@@ -175,10 +175,10 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.
         data = np.zeros((3, 4))
-        a1 = DimCoord([1, 2, 3], long_name='a')
-        b1 = DimCoord([1, 2, 3, 4], long_name='b')
-        a2 = DimCoord([3, 2, 1], long_name='a')
-        b2 = DimCoord([1, 2, 3, 4], long_name='b')
+        a1 = DimCoord([1, 2, 3], long_name="a")
+        b1 = DimCoord([1, 2, 3, 4], long_name="b")
+        a2 = DimCoord([3, 2, 1], long_name="a")
+        b2 = DimCoord([1, 2, 3, 4], long_name="b")
 
         reversed1 = Cube(data, dim_coords_and_dims=[(a1, 0), (b1, 1)])
         reversed2 = Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
@@ -187,8 +187,8 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
 
 
 class CubeArithmeticMaskedConstantTestMixin(
-        six.with_metaclass(ABCMeta, object)):
-
+    six.with_metaclass(ABCMeta, object)
+):
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.
         dtype = np.int64

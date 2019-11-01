@@ -5,5 +5,5 @@
 # licensing details.
 """Integration tests for :mod:`iris.fileformats.um` fast load functions."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa

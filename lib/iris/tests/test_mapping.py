@@ -7,8 +7,8 @@
 Tests map creation.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -30,9 +30,9 @@ if tests.MPL_AVAILABLE:
 
 
 # A specific cartopy Globe matching the iris RotatedGeogCS default.
-_DEFAULT_GLOBE = ccrs.Globe(semimajor_axis=6371229.0,
-                            semiminor_axis=6371229.0,
-                            ellipse=None)
+_DEFAULT_GLOBE = ccrs.Globe(
+    semimajor_axis=6371229.0, semiminor_axis=6371229.0, ellipse=None
+)
 
 
 @tests.skip_plot
@@ -54,19 +54,21 @@ class TestBasic(tests.GraphicsTest):
 
     def test_unmappable(self):
         cube = self.cube[0, 0]
-        cube.coord('grid_longitude').standard_name = None
+        cube.coord("grid_longitude").standard_name = None
         iplt.contourf(cube)
         self.check_graphic()
 
     def test_default_projection_and_extent(self):
-        self.assertEqual(iplt.default_projection(self.cube),
-                         ccrs.RotatedPole(357.5 - 180, 37.5,
-                                          globe=_DEFAULT_GLOBE))
+        self.assertEqual(
+            iplt.default_projection(self.cube),
+            ccrs.RotatedPole(357.5 - 180, 37.5, globe=_DEFAULT_GLOBE),
+        )
 
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(self.cube),
-            (3.59579163e+02, 3.59669159e+02, -1.28250003e-01, -3.82499993e-02),
-            decimal=3)
+            (3.59579163e02, 3.59669159e02, -1.28250003e-01, -3.82499993e-02),
+            decimal=3,
+        )
 
 
 @tests.skip_data
@@ -79,19 +81,23 @@ class TestUnmappable(tests.GraphicsTest):
         # Make a cube that can't be located on the globe.
         cube = iris.cube.Cube(src_cube.data)
         cube.add_dim_coord(
-            iris.coords.DimCoord(np.arange(96, dtype=np.float32) * 100,
-                                 long_name='x', units='m'),
-            1)
+            iris.coords.DimCoord(
+                np.arange(96, dtype=np.float32) * 100, long_name="x", units="m"
+            ),
+            1,
+        )
         cube.add_dim_coord(
-            iris.coords.DimCoord(np.arange(73, dtype=np.float32) * 100,
-                                 long_name='y', units='m'),
-            0)
-        cube.standard_name = 'air_temperature'
-        cube.units = 'K'
+            iris.coords.DimCoord(
+                np.arange(73, dtype=np.float32) * 100, long_name="y", units="m"
+            ),
+            0,
+        )
+        cube.standard_name = "air_temperature"
+        cube.units = "K"
         self.cube = cube
 
     def test_simple(self):
-        iplt.contourf(self.cube, coords=['y', 'x'])
+        iplt.contourf(self.cube, coords=["y", "x"])
         self.check_graphic()
 
 
@@ -101,7 +107,8 @@ class TestMappingSubRegion(tests.GraphicsTest):
     def setUp(self):
         super(TestMappingSubRegion, self).setUp()
         cube_path = tests.get_data_path(
-            ('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
+            ("PP", "aPProt1", "rotatedMHtimecube.pp")
+        )
         cube = iris.load_cube(cube_path)[0]
         # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
@@ -109,39 +116,41 @@ class TestMappingSubRegion(tests.GraphicsTest):
     def test_simple(self):
         # First sub-plot
         plt.subplot(221)
-        plt.title('Default')
+        plt.title("Default")
         iplt.contourf(self.cube)
         plt.gca().coastlines()
 
         # Second sub-plot
         plt.subplot(222, projection=ccrs.Mollweide(central_longitude=120))
-        plt.title('Molleweide')
+        plt.title("Molleweide")
         iplt.contourf(self.cube)
         plt.gca().coastlines()
 
         # Third sub-plot (the projection part is redundant, but a useful
         # test none-the-less)
         ax = plt.subplot(223, projection=iplt.default_projection(self.cube))
-        plt.title('Native')
+        plt.title("Native")
         iplt.contour(self.cube)
         ax.coastlines()
 
         # Fourth sub-plot
         ax = plt.subplot(2, 2, 4, projection=ccrs.PlateCarree())
-        plt.title('PlateCarree')
+        plt.title("PlateCarree")
         iplt.contourf(self.cube)
         ax.coastlines()
 
         self.check_graphic()
 
     def test_default_projection_and_extent(self):
-        self.assertEqual(iplt.default_projection(self.cube),
-                         ccrs.RotatedPole(357.5 - 180, 37.5,
-                                          globe=_DEFAULT_GLOBE))
+        self.assertEqual(
+            iplt.default_projection(self.cube),
+            ccrs.RotatedPole(357.5 - 180, 37.5, globe=_DEFAULT_GLOBE),
+        )
 
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(self.cube),
-            (313.01998901, 391.11999512, -22.48999977, 24.80999947))
+            (313.01998901, 391.11999512, -22.48999977, 24.80999947),
+        )
 
 
 @tests.skip_data
@@ -153,7 +162,8 @@ class TestLowLevel(tests.GraphicsTest):
         self.few = 4
         self.few_levels = list(range(280, 300, 5))
         self.many_levels = np.linspace(
-            self.cube.data.min(), self.cube.data.max(), 40)
+            self.cube.data.min(), self.cube.data.max(), 40
+        )
 
     def test_simple(self):
         iplt.contour(self.cube)
@@ -186,8 +196,8 @@ class TestBoundedCube(tests.GraphicsTest):
         # Add some bounds to this data (this will actually make the bounds
         # invalid as they will straddle the north pole and overlap on the
         # dateline, but that doesn't matter for this test.)
-        self.cube.coord('latitude').guess_bounds()
-        self.cube.coord('longitude').guess_bounds()
+        self.cube.coord("latitude").guess_bounds()
+        self.cube.coord("longitude").guess_bounds()
 
     def test_pcolormesh(self):
         # pcolormesh can only be drawn in native coordinates (or more
@@ -201,15 +211,19 @@ class TestBoundedCube(tests.GraphicsTest):
         self.check_graphic()
 
     def test_default_projection_and_extent(self):
-        self.assertEqual(iplt.default_projection(self.cube),
-                         ccrs.PlateCarree())
+        self.assertEqual(
+            iplt.default_projection(self.cube), ccrs.PlateCarree()
+        )
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(self.cube),
-            [0., 360., -89.99995422, 89.99998474])
+            [0.0, 360.0, -89.99995422, 89.99998474],
+        )
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(
-                self.cube, mode=iris.coords.BOUND_MODE),
-            [-1.875046, 358.124954, -90, 90])
+                self.cube, mode=iris.coords.BOUND_MODE
+            ),
+            [-1.875046, 358.124954, -90, 90],
+        )
 
 
 @tests.skip_data
@@ -217,17 +231,17 @@ class TestBoundedCube(tests.GraphicsTest):
 class TestLimitedAreaCube(tests.GraphicsTest):
     def setUp(self):
         super(TestLimitedAreaCube, self).setUp()
-        cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotated.pp'))
+        cube_path = tests.get_data_path(("PP", "aPProt1", "rotated.pp"))
         self.cube = iris.load_cube(cube_path)[::20, ::20]
-        self.cube.coord('grid_latitude').guess_bounds()
-        self.cube.coord('grid_longitude').guess_bounds()
+        self.cube.coord("grid_latitude").guess_bounds()
+        self.cube.coord("grid_longitude").guess_bounds()
 
     def test_pcolormesh(self):
         iplt.pcolormesh(self.cube)
         self.check_graphic()
 
     def test_grid(self):
-        iplt.pcolormesh(self.cube, facecolors='none', edgecolors='blue')
+        iplt.pcolormesh(self.cube, facecolors="none", edgecolors="blue")
         # the result is a graphic which has coloured edges. This is a mpl bug,
         # see https://github.com/matplotlib/matplotlib/issues/1302
         self.check_graphic()

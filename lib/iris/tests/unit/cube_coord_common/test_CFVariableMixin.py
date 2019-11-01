@@ -7,8 +7,8 @@
 Unit tests for the :class:`iris._cube_coord_common.CFVariableMixin`.
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -23,41 +23,41 @@ class Test_token(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_fail_leading_underscore(self):
-        result = CFVariableMixin.token('_nope')
+        result = CFVariableMixin.token("_nope")
         self.assertIsNone(result)
 
     def test_fail_leading_dot(self):
-        result = CFVariableMixin.token('.nope')
+        result = CFVariableMixin.token(".nope")
         self.assertIsNone(result)
 
     def test_fail_leading_plus(self):
-        result = CFVariableMixin.token('+nope')
+        result = CFVariableMixin.token("+nope")
         self.assertIsNone(result)
 
     def test_fail_leading_at(self):
-        result = CFVariableMixin.token('@nope')
+        result = CFVariableMixin.token("@nope")
         self.assertIsNone(result)
 
     def test_fail_space(self):
-        result = CFVariableMixin.token('nope nope')
+        result = CFVariableMixin.token("nope nope")
         self.assertIsNone(result)
 
     def test_fail_colon(self):
-        result = CFVariableMixin.token('nope:')
+        result = CFVariableMixin.token("nope:")
         self.assertIsNone(result)
 
     def test_pass_simple(self):
-        token = 'simple'
+        token = "simple"
         result = CFVariableMixin.token(token)
         self.assertEqual(result, token)
 
     def test_pass_leading_digit(self):
-        token = '123simple'
+        token = "123simple"
         result = CFVariableMixin.token(token)
         self.assertEqual(result, token)
 
     def test_pass_mixture(self):
-        token = 'S.imple@one+two_3'
+        token = "S.imple@one+two_3"
         result = CFVariableMixin.token(token)
         self.assertEqual(result, token)
 
@@ -74,31 +74,31 @@ class Test_name(tests.IrisTest):
         # bad token CFVariableMixin
         self.cf_bad = CFVariableMixin()
         self.cf_bad.standard_name = None
-        self.cf_bad.long_name = 'nope nope'
+        self.cf_bad.long_name = "nope nope"
         self.cf_bad.var_name = None
-        self.cf_bad.attributes = {'STASH': 'nope nope'}
+        self.cf_bad.attributes = {"STASH": "nope nope"}
 
     def test_standard_name(self):
-        token = 'air_temperature'
+        token = "air_temperature"
         self.cf_var.standard_name = token
         result = self.cf_var.name()
         self.assertEqual(result, token)
 
     def test_long_name(self):
-        token = 'long_name'
+        token = "long_name"
         self.cf_var.long_name = token
         result = self.cf_var.name()
         self.assertEqual(result, token)
 
     def test_var_name(self):
-        token = 'var_name'
+        token = "var_name"
         self.cf_var.var_name = token
         result = self.cf_var.name()
         self.assertEqual(result, token)
 
     def test_stash(self):
-        token = 'stash'
-        self.cf_var.attributes['STASH'] = token
+        token = "stash"
+        self.cf_var.attributes["STASH"] = token
         result = self.cf_var.name()
         self.assertEqual(result, token)
 
@@ -107,20 +107,20 @@ class Test_name(tests.IrisTest):
         self.assertEqual(result, self.default)
 
     def test_token_long_name(self):
-        token = 'long_name'
+        token = "long_name"
         self.cf_bad.long_name = token
         result = self.cf_bad.name(token=True)
         self.assertEqual(result, token)
 
     def test_token_var_name(self):
-        token = 'var_name'
+        token = "var_name"
         self.cf_bad.var_name = token
         result = self.cf_bad.name(token=True)
         self.assertEqual(result, token)
 
     def test_token_stash(self):
-        token = 'stash'
-        self.cf_bad.attributes['STASH'] = token
+        token = "stash"
+        self.cf_bad.attributes["STASH"] = token
         result = self.cf_bad.name(token=True)
         self.assertEqual(result, token)
 
@@ -129,22 +129,22 @@ class Test_name(tests.IrisTest):
         self.assertEqual(result, self.default)
 
     def test_fail_token_default(self):
-        emsg = 'Cannot retrieve a valid name token'
+        emsg = "Cannot retrieve a valid name token"
         with self.assertRaisesRegexp(ValueError, emsg):
-            self.cf_var.name(default='_nope', token=True)
+            self.cf_var.name(default="_nope", token=True)
 
 
 class Test_standard_name__setter(tests.IrisTest):
     def test_valid_standard_name(self):
         cf_var = CFVariableMixin()
-        cf_var.standard_name = 'air_temperature'
-        self.assertEqual(cf_var.standard_name, 'air_temperature')
+        cf_var.standard_name = "air_temperature"
+        self.assertEqual(cf_var.standard_name, "air_temperature")
 
     def test_invalid_standard_name(self):
         cf_var = CFVariableMixin()
         emsg = "'not_a_standard_name' is not a valid standard_name"
         with self.assertRaisesRegexp(ValueError, emsg):
-            cf_var.standard_name = 'not_a_standard_name'
+            cf_var.standard_name = "not_a_standard_name"
 
     def test_none_standard_name(self):
         cf_var = CFVariableMixin()
@@ -152,5 +152,5 @@ class Test_standard_name__setter(tests.IrisTest):
         self.assertIsNone(cf_var.standard_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

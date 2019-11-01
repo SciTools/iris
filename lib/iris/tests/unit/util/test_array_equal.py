@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris.util.array_equal`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -64,45 +64,45 @@ class Test(tests.IrisTest):
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_fully_masked_string_arrays(self):
-        array_a = ma.masked_array(['a', 'b', 'c'], mask=True)
-        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 1, 1])
+        array_a = ma.masked_array(["a", "b", "c"], mask=True)
+        array_b = ma.masked_array(["a", "b", "c"], mask=[1, 1, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_partially_masked_string_arrays(self):
-        array_a = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
-        array_b = ma.masked_array(['a', 'b', 'c'], mask=[1, 0, 1])
+        array_a = ma.masked_array(["a", "b", "c"], mask=[1, 0, 1])
+        array_b = ma.masked_array(["a", "b", "c"], mask=[1, 0, 1])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_string_arrays_equal(self):
-        array_a = np.array(['abc', 'def', 'efg'])
-        array_b = np.array(['abc', 'def', 'efg'])
+        array_a = np.array(["abc", "def", "efg"])
+        array_b = np.array(["abc", "def", "efg"])
         self.assertTrue(array_equal(array_a, array_b))
 
     def test_string_arrays_different_contents(self):
-        array_a = np.array(['abc', 'def', 'efg'])
-        array_b = np.array(['abc', 'de', 'efg'])
+        array_a = np.array(["abc", "def", "efg"])
+        array_b = np.array(["abc", "de", "efg"])
         self.assertFalse(array_equal(array_a, array_b))
 
     def test_string_arrays_subset(self):
-        array_a = np.array(['abc', 'def', 'efg'])
-        array_b = np.array(['abc', 'def'])
+        array_a = np.array(["abc", "def", "efg"])
+        array_b = np.array(["abc", "def"])
         self.assertFalse(array_equal(array_a, array_b))
         self.assertFalse(array_equal(array_b, array_a))
 
     def test_string_arrays_unequal_dimensionality(self):
-        array_a = np.array('abc')
-        array_b = np.array(['abc'])
-        array_c = np.array([['abc']])
+        array_a = np.array("abc")
+        array_b = np.array(["abc"])
+        array_c = np.array([["abc"]])
         self.assertFalse(array_equal(array_a, array_b))
         self.assertFalse(array_equal(array_b, array_a))
         self.assertFalse(array_equal(array_a, array_c))
         self.assertFalse(array_equal(array_b, array_c))
 
     def test_string_arrays_0d_and_scalar(self):
-        array_a = np.array('foobar')
-        self.assertTrue(array_equal(array_a, 'foobar'))
-        self.assertFalse(array_equal(array_a, 'foo'))
-        self.assertFalse(array_equal(array_a, 'foobar.'))
+        array_a = np.array("foobar")
+        self.assertTrue(array_equal(array_a, "foobar"))
+        self.assertFalse(array_equal(array_a, "foo"))
+        self.assertFalse(array_equal(array_a, "foobar."))
 
     def test_nan_equality_nan_ne_nan(self):
         array = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
@@ -124,5 +124,5 @@ class Test(tests.IrisTest):
         self.assertFalse(array_equal(array_a, array_b, withnans=True))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

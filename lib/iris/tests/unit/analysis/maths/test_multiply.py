@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the :func:`iris.analysis.maths.multiply` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -15,15 +15,19 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import multiply
-from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
-    CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
+from iris.tests.unit.analysis.maths import (
+    CubeArithmeticBroadcastingTestMixin,
+    CubeArithmeticCoordsTest,
+    CubeArithmeticMaskedConstantTestMixin,
+    CubeArithmeticMaskingTestMixin,
+)
 
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestBroadcasting(tests.IrisTest_nometa,
-                       CubeArithmeticBroadcastingTestMixin):
+class TestBroadcasting(
+    tests.IrisTest_nometa, CubeArithmeticBroadcastingTestMixin
+):
     @property
     def data_op(self):
         return operator.mul
@@ -57,8 +61,9 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
 
 
 @tests.iristest_timing_decorator
-class TestMaskedConstant(tests.IrisTest_nometa,
-                         CubeArithmeticMaskedConstantTestMixin):
+class TestMaskedConstant(
+    tests.IrisTest_nometa, CubeArithmeticMaskedConstantTestMixin
+):
     @property
     def data_op(self):
         return operator.mul

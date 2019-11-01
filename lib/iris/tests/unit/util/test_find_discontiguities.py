@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris.util.find_discontiguities"""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -35,8 +35,9 @@ class Test(tests.IrisTest):
         make_bounds_discontiguous_at_point(self.testcube_discontig, 3, 3)
         # Repeat that for a discontiguity in the grid 'Y' direction.
         self.testcube_discontig_along_y = full2d_global()
-        make_bounds_discontiguous_at_point(self.testcube_discontig_along_y,
-                                           2, 4, in_y=True)
+        make_bounds_discontiguous_at_point(
+            self.testcube_discontig_along_y, 2, 4, in_y=True
+        )
 
     def test_find_discontiguities(self):
         # Check that the mask we generate when making the discontiguity
@@ -84,5 +85,5 @@ class Test(tests.IrisTest):
         self.assertTrue(np.all(expected == returned))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

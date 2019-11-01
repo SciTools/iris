@@ -11,8 +11,8 @@ Provides test methods and classes common to
 :class:`~iris.tests.unit.coords.test_DimCoord`.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import dask.array as da
 import numpy as np
@@ -39,22 +39,26 @@ def setup_test_arrays(self, shape, masked=False):
     if masked:
         mpoints = ma.array(points)
         self.no_masked_pts_real = mpoints
-        self.no_masked_pts_lazy = da.from_array(mpoints, mpoints.shape,
-                                                asarray=False)
+        self.no_masked_pts_lazy = da.from_array(
+            mpoints, mpoints.shape, asarray=False
+        )
         mpoints = ma.array(mpoints, copy=True)
         mpoints[0] = ma.masked
         self.masked_pts_real = mpoints
-        self.masked_pts_lazy = da.from_array(mpoints, mpoints.shape,
-                                             asarray=False)
+        self.masked_pts_lazy = da.from_array(
+            mpoints, mpoints.shape, asarray=False
+        )
         mbounds = ma.array(bounds)
         self.no_masked_bds_real = mbounds
-        self.no_masked_bds_lazy = da.from_array(mbounds, mbounds.shape,
-                                                asarray=False)
+        self.no_masked_bds_lazy = da.from_array(
+            mbounds, mbounds.shape, asarray=False
+        )
         mbounds = ma.array(mbounds, copy=True)
         mbounds[0] = ma.masked
         self.masked_bds_real = mbounds
-        self.masked_bds_lazy = da.from_array(mbounds, mbounds.shape,
-                                             asarray=False)
+        self.masked_bds_lazy = da.from_array(
+            mbounds, mbounds.shape, asarray=False
+        )
 
 
 def is_real_data(array):
@@ -67,38 +71,43 @@ def arrays_share_data(a1, a2):
     # Check whether 2 real arrays with the same content view the same data.
     # For an ndarray x, x.base will either be None (if x owns its data) or a
     # reference to the array which owns its data (if x is a view).
-    return a1 is a2 or \
-           a1.base is a2 or \
-           a2.base is a1 or \
-           a1.base is a2.base and a1.base is not None
+    return (
+        a1 is a2
+        or a1.base is a2
+        or a2.base is a1
+        or a1.base is a2.base
+        and a1.base is not None
+    )
 
 
 def lazyness_string(data):
     # Represent the lazyness of an array as a string.
-    return 'lazy' if is_lazy_data(data) else 'real'
+    return "lazy" if is_lazy_data(data) else "real"
 
 
 def coords_all_dtypes_and_lazynesses(self, coord_class):
     # Generate coords with all possible types of points and bounds, and all
     # of the given dtypes.
-    points_types = ['real', 'lazy']
-    bounds_types = ['no', 'real', 'lazy']
+    points_types = ["real", "lazy"]
+    bounds_types = ["no", "real", "lazy"]
     # Test a few specific combinations of points+bounds dtypes, including
     # cases where they are different.
-    dtype_pairs = [(np.float64, np.float64),
-                   (np.int16, np.int16),
-                   (np.int16, np.float32),
-                   (np.float64, np.int32)]
+    dtype_pairs = [
+        (np.float64, np.float64),
+        (np.int16, np.int16),
+        (np.int16, np.float32),
+        (np.float64, np.int32),
+    ]
     for pts_dtype, bds_dtype in dtype_pairs:
         for points_type_name in points_types:
             for bounds_type_name in bounds_types:
                 pts = np.asarray(self.pts_real, dtype=pts_dtype)
                 bds = np.asarray(self.bds_real, dtype=bds_dtype)
-                if points_type_name == 'lazy':
+                if points_type_name == "lazy":
                     pts = da.from_array(pts, pts.shape)
-                if bounds_type_name == 'lazy':
+                if bounds_type_name == "lazy":
                     bds = da.from_array(bds, bds.shape)
-                elif bounds_type_name == 'no':
+                elif bounds_type_name == "no":
                     bds = None
                 coord = coord_class(pts, bounds=bds)
                 result = (coord, points_type_name, bounds_type_name)

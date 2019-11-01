@@ -6,8 +6,8 @@
 """Unit tests for the
 :func:`iris.analysis._scipy_interpolate._RegularGridInterpolator` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -26,13 +26,15 @@ class Test(tests.IrisTest):
         # Load a source cube, then generate an interpolator instance, calculate
         # the interpolation weights and set up a target grid.
         self.cube = stock.simple_2d()
-        x_points = self.cube.coord('bar').points
-        y_points = self.cube.coord('foo').points
-        self.interpolator = _RegularGridInterpolator([x_points, y_points],
-                                                     self.cube.data,
-                                                     method='linear',
-                                                     bounds_error=False,
-                                                     fill_value=None)
+        x_points = self.cube.coord("bar").points
+        y_points = self.cube.coord("foo").points
+        self.interpolator = _RegularGridInterpolator(
+            [x_points, y_points],
+            self.cube.data,
+            method="linear",
+            bounds_error=False,
+            fill_value=None,
+        )
         newx = x_points + 0.7
         newy = y_points + 0.7
 
@@ -46,8 +48,9 @@ class Test(tests.IrisTest):
         py_t = py_0 + 0.7
         dyt_0 = self._interpolate_point(py_t, py_0, py_1, d_0, d_1)
         dyt_1 = self._interpolate_point(py_t, py_0, py_1, d_2, d_3)
-        self.test_increment = self._interpolate_point(px_t, px_0, px_1,
-                                                      dyt_0, dyt_1)
+        self.test_increment = self._interpolate_point(
+            px_t, px_0, px_1, dyt_0, dyt_1
+        )
 
         xv, yv = np.meshgrid(newy, newx)
         self.tgrid = np.dstack((yv, xv))
@@ -55,14 +58,14 @@ class Test(tests.IrisTest):
 
     @staticmethod
     def _interpolate_point(p_t, p_0, p_1, d_0, d_1):
-        return d_0 + (d_1 - d_0)*((p_t - p_0)/(p_1 - p_0))
+        return d_0 + (d_1 - d_0) * ((p_t - p_0) / (p_1 - p_0))
 
     def test_compute_interp_weights(self):
         weights = self.weights
         self.assertIsInstance(weights, tuple)
         self.assertEqual(len(weights), 5)
         self.assertEqual(weights[0], self.tgrid.shape)
-        self.assertEqual(weights[1], 'linear')
+        self.assertEqual(weights[1], "linear")
         self.assertIsInstance(weights[2], csr_matrix)
 
     def test__evaluate_linear_sparse(self):

@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris._lazy data.lazy_elementwise`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -30,11 +30,12 @@ class Test_lazy_elementwise(tests.IrisTest):
         lazy_array = as_lazy_data(concrete_array)
         wrapped = lazy_elementwise(lazy_array, _test_elementwise_op)
         self.assertTrue(is_lazy_data(wrapped))
-        self.assertArrayAllClose(wrapped.compute(),
-                                 _test_elementwise_op(concrete_array))
+        self.assertArrayAllClose(
+            wrapped.compute(), _test_elementwise_op(concrete_array)
+        )
 
     def test_dtype_same(self):
-        concrete_array = np.array([3.], dtype=np.float16)
+        concrete_array = np.array([3.0], dtype=np.float16)
         lazy_array = as_lazy_data(concrete_array)
         wrapped = lazy_elementwise(lazy_array, _test_elementwise_op)
         self.assertTrue(is_lazy_data(wrapped))
@@ -50,5 +51,5 @@ class Test_lazy_elementwise(tests.IrisTest):
         self.assertEqual(wrapped.compute().dtype, wrapped.dtype)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

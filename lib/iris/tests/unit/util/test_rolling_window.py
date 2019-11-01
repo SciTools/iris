@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris.util.rolling_window`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -19,63 +19,82 @@ from iris.util import rolling_window
 
 
 class Test_rolling_window(tests.IrisTest):
-
     def test_1d(self):
         # 1-d array input
         a = np.array([0, 1, 2, 3, 4], dtype=np.int32)
-        expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]],
-                                   dtype=np.int32)
+        expected_result = np.array(
+            [[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32
+        )
         result = rolling_window(a, window=2)
         self.assertArrayEqual(result, expected_result)
 
     def test_2d(self):
         # 2-d array input
         a = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32)
-        expected_result = np.array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
-                                    [[5, 6, 7], [6, 7, 8], [7, 8, 9]]],
-                                   dtype=np.int32)
+        expected_result = np.array(
+            [
+                [[0, 1, 2], [1, 2, 3], [2, 3, 4]],
+                [[5, 6, 7], [6, 7, 8], [7, 8, 9]],
+            ],
+            dtype=np.int32,
+        )
         result = rolling_window(a, window=3, axis=1)
         self.assertArrayEqual(result, expected_result)
 
     def test_1d_masked(self):
         # 1-d masked array input
-        a = ma.array([0, 1, 2, 3, 4], mask=[0, 0, 1, 0, 0],
-                     dtype=np.int32)
-        expected_result = ma.array([[0, 1], [1, 2], [2, 3], [3, 4]],
-                                   mask=[[0, 0], [0, 1], [1, 0], [0, 0]],
-                                   dtype=np.int32)
+        a = ma.array([0, 1, 2, 3, 4], mask=[0, 0, 1, 0, 0], dtype=np.int32)
+        expected_result = ma.array(
+            [[0, 1], [1, 2], [2, 3], [3, 4]],
+            mask=[[0, 0], [0, 1], [1, 0], [0, 0]],
+            dtype=np.int32,
+        )
         result = rolling_window(a, window=2)
         self.assertMaskedArrayEqual(result, expected_result)
 
     def test_2d_masked(self):
         # 2-d masked array input
-        a = ma.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
-                     mask=[[0, 0, 1, 0, 0], [1, 0, 1, 0, 0]],
-                     dtype=np.int32)
-        expected_result = ma.array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
-                                    [[5, 6, 7], [6, 7, 8], [7, 8, 9]]],
-                                   mask=[[[0, 0, 1], [0, 1, 0], [1, 0, 0]],
-                                         [[1, 0, 1], [0, 1, 0], [1, 0, 0]]],
-                                   dtype=np.int32)
+        a = ma.array(
+            [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
+            mask=[[0, 0, 1, 0, 0], [1, 0, 1, 0, 0]],
+            dtype=np.int32,
+        )
+        expected_result = ma.array(
+            [
+                [[0, 1, 2], [1, 2, 3], [2, 3, 4]],
+                [[5, 6, 7], [6, 7, 8], [7, 8, 9]],
+            ],
+            mask=[
+                [[0, 0, 1], [0, 1, 0], [1, 0, 0]],
+                [[1, 0, 1], [0, 1, 0], [1, 0, 0]],
+            ],
+            dtype=np.int32,
+        )
         result = rolling_window(a, window=3, axis=1)
         self.assertMaskedArrayEqual(result, expected_result)
 
     def test_degenerate_mask(self):
         a = ma.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32)
-        expected_result = ma.array([[[0, 1, 2], [1, 2, 3], [2, 3, 4]],
-                                    [[5, 6, 7], [6, 7, 8], [7, 8, 9]]],
-                                   mask=[[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-                                         [[0, 0, 0], [0, 0, 0], [0, 0, 0]]],
-                                   dtype=np.int32)
+        expected_result = ma.array(
+            [
+                [[0, 1, 2], [1, 2, 3], [2, 3, 4]],
+                [[5, 6, 7], [6, 7, 8], [7, 8, 9]],
+            ],
+            mask=[
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            ],
+            dtype=np.int32,
+        )
         result = rolling_window(a, window=3, axis=1)
         self.assertMaskedArrayEqual(result, expected_result)
 
     def test_step(self):
         # step should control how far apart consecutive windows are
         a = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32)
-        expected_result = np.array([[[0, 1, 2], [2, 3, 4]],
-                                    [[5, 6, 7], [7, 8, 9]]],
-                                   dtype=np.int32)
+        expected_result = np.array(
+            [[[0, 1, 2], [2, 3, 4]], [[5, 6, 7], [7, 8, 9]]], dtype=np.int32
+        )
         result = rolling_window(a, window=3, step=2, axis=1)
         self.assertArrayEqual(result, expected_result)
 
@@ -99,5 +118,5 @@ class Test_rolling_window(tests.IrisTest):
             rolling_window(a, step=0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the :class:`iris.coord_systems.Geostationary` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -23,16 +23,18 @@ class Test(tests.IrisTest):
         self.latitude_of_projection_origin = 0.0
         self.longitude_of_projection_origin = 0.0
         self.perspective_point_height = 35785831.0
-        self.sweep_angle_axis = 'y'
+        self.sweep_angle_axis = "y"
         self.false_easting = 0.0
         self.false_northing = 0.0
 
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
-        self.globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                                semiminor_axis=self.semi_minor_axis,
-                                ellipse=None)
+        self.globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
 
         # Actual and expected coord system can be re-used for
         # Geostationary.test_crs_creation and test_projection_creation.
@@ -42,15 +44,17 @@ class Test(tests.IrisTest):
             false_easting=self.false_easting,
             false_northing=self.false_northing,
             globe=self.globe,
-            sweep_axis=self.sweep_angle_axis
+            sweep_axis=self.sweep_angle_axis,
         )
-        self.geo_cs = Geostationary(self.latitude_of_projection_origin,
-                                    self.longitude_of_projection_origin,
-                                    self.perspective_point_height,
-                                    self.sweep_angle_axis,
-                                    self.false_easting,
-                                    self.false_northing,
-                                    self.ellipsoid)
+        self.geo_cs = Geostationary(
+            self.latitude_of_projection_origin,
+            self.longitude_of_projection_origin,
+            self.perspective_point_height,
+            self.sweep_angle_axis,
+            self.false_easting,
+            self.false_northing,
+            self.ellipsoid,
+        )
 
     def test_crs_creation(self):
         res = self.geo_cs.as_cartopy_crs()
@@ -61,26 +65,31 @@ class Test(tests.IrisTest):
         self.assertEqual(res, self.expected)
 
     def test_non_zero_lat(self):
-        with six.assertRaisesRegex(self, ValueError, 'Non-zero latitude'):
-            Geostationary(0.1,
-                          self.longitude_of_projection_origin,
-                          self.perspective_point_height,
-                          self.sweep_angle_axis,
-                          self.false_easting,
-                          self.false_northing,
-                          self.ellipsoid)
+        with six.assertRaisesRegex(self, ValueError, "Non-zero latitude"):
+            Geostationary(
+                0.1,
+                self.longitude_of_projection_origin,
+                self.perspective_point_height,
+                self.sweep_angle_axis,
+                self.false_easting,
+                self.false_northing,
+                self.ellipsoid,
+            )
 
     def test_invalid_sweep(self):
         with six.assertRaisesRegex(
-                self, ValueError, 'Invalid sweep_angle_axis'):
-            Geostationary(self.latitude_of_projection_origin,
-                          self.longitude_of_projection_origin,
-                          self.perspective_point_height,
-                          'a',
-                          self.false_easting,
-                          self.false_northing,
-                          self.ellipsoid)
+            self, ValueError, "Invalid sweep_angle_axis"
+        ):
+            Geostationary(
+                self.latitude_of_projection_origin,
+                self.longitude_of_projection_origin,
+                self.perspective_point_height,
+                "a",
+                self.false_easting,
+                self.false_northing,
+                self.ellipsoid,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -9,8 +9,8 @@ Unit tests for
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,8 +25,9 @@ from iris.fileformats.pp_load_rules import _convert_scalar_pseudo_level_coords
 class Test(TestField):
     def test_valid(self):
         coords_and_dims = _convert_scalar_pseudo_level_coords(lbuser5=21)
-        self.assertEqual(coords_and_dims,
-                         [(DimCoord([21], long_name='pseudo_level'), None)])
+        self.assertEqual(
+            coords_and_dims, [(DimCoord([21], long_name="pseudo_level"), None)]
+        )
 
     def test_missing_indicator(self):
         coords_and_dims = _convert_scalar_pseudo_level_coords(lbuser5=0)

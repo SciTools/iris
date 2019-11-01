@@ -19,8 +19,8 @@ can accept.
     invokes the checking command directly.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first.
 import iris.tests as tests
@@ -44,15 +44,20 @@ class TestWhatsnewContribs(tests.IrisTest):
         # Construct path to docs 'whatsnew' directory.
         # Note: assume docs at "<install>/docs".
         whatsnew_dirpath = os.path.join(
-            install_dirpath, 'docs', 'iris', 'src', 'whatsnew')
+            install_dirpath, "docs", "iris", "src", "whatsnew"
+        )
 
         # Quietly ignore if the directory does not exist: It is only there in
         # in a developer installation, not a normal install.
         # Travis bypasses this problem by running the test directly.
         if os.path.exists(whatsnew_dirpath):
             # Run a 'check contributions' command in that directory.
-            cmd = [sys.executable, 'aggregate_directory.py', '--checkonly',
-                   '--quiet']
+            cmd = [
+                sys.executable,
+                "aggregate_directory.py",
+                "--checkonly",
+                "--quiet",
+            ]
             subprocess.check_call(cmd, cwd=whatsnew_dirpath)
 
 

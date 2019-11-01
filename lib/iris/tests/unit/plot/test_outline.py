@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.plot.outline` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -24,37 +24,39 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
-        iplt.outline(self.cube, coords=('bar', 'str_coord'))
-        self.assertBoundsTickLabels('yaxis')
+        iplt.outline(self.cube, coords=("bar", "str_coord"))
+        self.assertBoundsTickLabels("yaxis")
 
     def test_xaxis_labels(self):
-        iplt.outline(self.cube, coords=('str_coord', 'bar'))
-        self.assertBoundsTickLabels('xaxis')
+        iplt.outline(self.cube, coords=("str_coord", "bar"))
+        self.assertBoundsTickLabels("xaxis")
 
     def test_xaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_xlim(0, 3)
-        iplt.outline(self.cube, coords=('str_coord', 'bar'), axes=ax)
+        iplt.outline(self.cube, coords=("str_coord", "bar"), axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels('xaxis', ax)
+        self.assertPointsTickLabels("xaxis", ax)
 
     def test_yaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_ylim(0, 3)
-        iplt.outline(self.cube, axes=ax, coords=('bar', 'str_coord'))
+        iplt.outline(self.cube, axes=ax, coords=("bar", "str_coord"))
         plt.close(fig)
-        self.assertPointsTickLabels('yaxis', ax)
+        self.assertPointsTickLabels("yaxis", ax)
 
     def test_geoaxes_exception(self):
         import matplotlib.pyplot as plt
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        self.assertRaises(TypeError, iplt.outline,
-                          self.lat_lon_cube, axes=ax)
+        self.assertRaises(TypeError, iplt.outline, self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 
@@ -63,15 +65,15 @@ class TestCoords(tests.IrisTest, MixinCoords):
     def setUp(self):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=True)
-        coord = self.cube.coord('foo')
+        coord = self.cube.coord("foo")
         self.foo = coord.contiguous_bounds()
         self.foo_index = np.arange(coord.points.size + 1)
-        coord = self.cube.coord('bar')
+        coord = self.cube.coord("bar")
         self.bar = coord.contiguous_bounds()
         self.bar_index = np.arange(coord.points.size + 1)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.mpl_patch = self.patch('matplotlib.pyplot.pcolormesh')
+        self.mpl_patch = self.patch("matplotlib.pyplot.pcolormesh")
         self.draw_func = iplt.outline
 
 

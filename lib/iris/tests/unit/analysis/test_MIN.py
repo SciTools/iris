@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the :data:`iris.analysis.MIN` aggregator."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -24,14 +24,14 @@ from iris._lazy_data import as_lazy_data, is_lazy_data
 class Test_basics(tests.IrisTest):
     def setUp(self):
         data = np.array([1, 2, 3, 4, 5])
-        coord = DimCoord([6, 7, 8, 9, 10], long_name='foo')
+        coord = DimCoord([6, 7, 8, 9, 10], long_name="foo")
         self.cube = Cube(data)
         self.cube.add_dim_coord(coord, 0)
         self.lazy_cube = Cube(as_lazy_data(data))
         self.lazy_cube.add_dim_coord(coord, 0)
 
     def test_name(self):
-        self.assertEqual(MIN.name(), 'minimum')
+        self.assertEqual(MIN.name(), "minimum")
 
     def test_collapse(self):
         data = MIN.aggregate(self.cube.data, axis=0)
@@ -49,7 +49,7 @@ class Test_basics(tests.IrisTest):
 class Test_masked(tests.IrisTest):
     def setUp(self):
         self.cube = Cube(ma.masked_less([1, 2, 3, 4, 5], 3))
-        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
+        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
 
     def test_ma(self):
         data = MIN.aggregate(self.cube.data, axis=0)
@@ -60,7 +60,7 @@ class Test_lazy_masked(tests.IrisTest):
     def setUp(self):
         masked_data = ma.masked_less([1, 2, 3, 4, 5], 3)
         self.cube = Cube(as_lazy_data(masked_data))
-        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name='foo'), 0)
+        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
 
     def test_lazy_ma(self):
         lazy_data = MIN.lazy_aggregate(self.cube.lazy_data(), axis=0)
@@ -73,7 +73,7 @@ class Test_aggregate_shape(tests.IrisTest):
         shape = ()
         kwargs = dict()
         self.assertTupleEqual(MIN.aggregate_shape(**kwargs), shape)
-        kwargs = dict(wibble='wobble')
+        kwargs = dict(wibble="wobble")
         self.assertTupleEqual(MIN.aggregate_shape(**kwargs), shape)
 
 

@@ -9,8 +9,8 @@ function.
 
  """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -28,15 +28,15 @@ from iris.cube import Cube
 
 
 class Test(tests.IrisTest):
-
     def setUp(self):
-        x_coord = DimCoord([1.0, 3.0], 'longitude', bounds=[[0, 2], [2, 4]])
-        y_coord = DimCoord([1.0, 3.0], 'latitude', bounds=[[0, 2], [2, 4]])
+        x_coord = DimCoord([1.0, 3.0], "longitude", bounds=[[0, 2], [2, 4]])
+        y_coord = DimCoord([1.0, 3.0], "latitude", bounds=[[0, 2], [2, 4]])
         self.data = np.empty((4, 2, 2))
         dim_coords_and_dims = [(y_coord, (1,)), (x_coord, (2,))]
         self.cube = Cube(self.data, dim_coords_and_dims=dim_coords_and_dims)
-        self.geometry = shapely.geometry.Polygon([(3, 3), (3, 50), (50, 50),
-                                                  (50, 3)])
+        self.geometry = shapely.geometry.Polygon(
+            [(3, 3), (3, 50), (50, 50), (50, 3)]
+        )
 
     def test_no_overlap(self):
         geometry = shapely.geometry.Polygon([(4, 4), (4, 6), (6, 6), (6, 4)])
@@ -45,26 +45,30 @@ class Test(tests.IrisTest):
 
     def test_overlap(self):
         weights = geometry_area_weights(self.cube, self.geometry)
-        expected = np.repeat([[[0., 0.], [0., 1.]]], self.data.shape[0],
-                             axis=0)
+        expected = np.repeat(
+            [[[0.0, 0.0], [0.0, 1.0]]], self.data.shape[0], axis=0
+        )
         self.assertArrayEqual(weights, expected)
 
     def test_overlap_normalize(self):
-        weights = geometry_area_weights(self.cube, self.geometry,
-                                        normalize=True)
-        expected = np.repeat([[[0., 0.], [0., 0.25]]], self.data.shape[0],
-                             axis=0)
+        weights = geometry_area_weights(
+            self.cube, self.geometry, normalize=True
+        )
+        expected = np.repeat(
+            [[[0.0, 0.0], [0.0, 0.25]]], self.data.shape[0], axis=0
+        )
         self.assertArrayEqual(weights, expected)
 
     @tests.skip_data
     def test_distinct_xy(self):
         cube = stock.simple_pp()
         cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
+        lon = cube.coord("longitude")
+        lat = cube.coord("latitude")
         lon.guess_bounds()
         lat.guess_bounds()
         from iris.util import regular_step
+
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         minx = 3.7499990463256836
@@ -73,11 +77,14 @@ class Test(tests.IrisTest):
         maxy = 89.99998474121094
         geometry = shapely.geometry.box(minx, miny, maxx, maxy)
         weights = geometry_area_weights(cube, geometry)
-        target = np.array([
-            [0, quarter, quarter, 0],
-            [0, half, half, 0],
-            [0, quarter, quarter, 0],
-            [0, 0, 0, 0]])
+        target = np.array(
+            [
+                [0, quarter, quarter, 0],
+                [0, half, half, 0],
+                [0, quarter, quarter, 0],
+                [0, 0, 0, 0],
+            ]
+        )
         self.assertTrue(np.allclose(weights, target))
 
     @tests.skip_data
@@ -85,29 +92,34 @@ class Test(tests.IrisTest):
         # cases where geometry bnds are outside cube bnds correctly handled?
         cube = stock.simple_pp()
         cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
+        lon = cube.coord("longitude")
+        lat = cube.coord("latitude")
         lon.guess_bounds()
         lat.guess_bounds()
         from iris.util import regular_step
+
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         full = abs(regular_step(lon) * regular_step(lat))
         minx = 3.7499990463256836
         maxx = 13.12499619
-        maxx_overshoot = 15.
+        maxx_overshoot = 15.0
         miny = 84.99998474121094
         maxy = 89.99998474121094
         geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        geometry_overshoot = shapely.geometry.box(minx, miny, maxx_overshoot,
-                                                  maxy)
+        geometry_overshoot = shapely.geometry.box(
+            minx, miny, maxx_overshoot, maxy
+        )
         weights = geometry_area_weights(cube, geometry)
         weights_overshoot = geometry_area_weights(cube, geometry_overshoot)
-        target = np.array([
-            [0, quarter, half, half],
-            [0, half, full, full],
-            [0, quarter, half, half],
-            [0, 0, 0, 0]])
+        target = np.array(
+            [
+                [0, quarter, half, half],
+                [0, half, full, full],
+                [0, quarter, half, half],
+                [0, 0, 0, 0],
+            ]
+        )
         self.assertTrue(np.allclose(weights, target))
         self.assertTrue(np.allclose(weights_overshoot, target))
 
@@ -116,11 +128,12 @@ class Test(tests.IrisTest):
         # is UserWarning issued for out-of-bounds? results will be unexpected!
         cube = stock.simple_pp()
         cube = cube[:4, :4]
-        lon = cube.coord('longitude')
-        lat = cube.coord('latitude')
+        lon = cube.coord("longitude")
+        lat = cube.coord("latitude")
         lon.guess_bounds()
         lat.guess_bounds()
         from iris.util import regular_step
+
         quarter = abs(regular_step(lon) * regular_step(lat) * 0.25)
         half = abs(regular_step(lon) * regular_step(lat) * 0.5)
         top_cell_half = abs(regular_step(lon) * (90 - lat.bounds[0, 1]) * 0.5)
@@ -133,14 +146,20 @@ class Test(tests.IrisTest):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")  # always trigger all warnings
             weights = geometry_area_weights(cube, geometry)
-            self.assertEqual(str(w[-1].message), "The geometry exceeds the "
-                             "cube's y dimension at the upper end.")
+            self.assertEqual(
+                str(w[-1].message),
+                "The geometry exceeds the "
+                "cube's y dimension at the upper end.",
+            )
             self.assertTrue(issubclass(w[-1].category, UserWarning))
-        target = np.array([
-            [0, top_cell_half, top_cell_half, 0],
-            [0, half, half, 0],
-            [0, quarter, quarter, 0],
-            [0, 0, 0, 0]])
+        target = np.array(
+            [
+                [0, top_cell_half, top_cell_half, 0],
+                [0, half, half, 0],
+                [0, quarter, quarter, 0],
+                [0, 0, 0, 0],
+            ]
+        )
         self.assertTrue(np.allclose(weights, target))
 
     def test_shared_xy(self):

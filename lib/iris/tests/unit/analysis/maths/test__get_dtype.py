@@ -8,8 +8,8 @@ Unit tests for the function :func:`iris.analysis.maths._get_dtype`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -97,5 +97,5 @@ class Test(tests.IrisTest):
         self._check_call(dim_coord, dtype)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

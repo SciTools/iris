@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.config.NetCDF` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before
@@ -31,12 +31,12 @@ class Test(tests.IrisTest):
 
     def test_bad_value(self):
         # A bad value should be ignored and replaced with the default value.
-        bad_value = 'wibble'
+        bad_value = "wibble"
         with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter('always')
+            warnings.simplefilter("always")
             self.options.conventions_override = bad_value
         self.assertFalse(self.options.conventions_override)
-        exp_wmsg = 'Attempting to set invalid value {!r}'.format(bad_value)
+        exp_wmsg = "Attempting to set invalid value {!r}".format(bad_value)
         six.assertRegex(self, str(w[0].message), exp_wmsg)
 
     def test__contextmgr(self):
@@ -45,5 +45,5 @@ class Test(tests.IrisTest):
         self.assertFalse(self.options.conventions_override)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

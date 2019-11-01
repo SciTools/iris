@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris._lazy data.as_concrete_data`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -80,5 +80,5 @@ class Test_as_concrete_data(tests.IrisTest):
         self.assertMaskedArrayEqual(result, a)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

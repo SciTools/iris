@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save_pairs_from_cube` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -29,9 +29,8 @@ class TestSaveFields(tests.IrisTest):
 
     def test_field_coords(self):
         slices_and_fields = save_pairs_from_cube(
-            self.cube,
-            field_coords=['grid_longitude',
-                          'grid_latitude'])
+            self.cube, field_coords=["grid_longitude", "grid_latitude"]
+        )
         for aslice, field in slices_and_fields:
             self.assertEqual(aslice.shape, (11, 9))
             self.assertEqual(field.lbcode, 101)

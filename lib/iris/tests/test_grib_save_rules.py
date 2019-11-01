@@ -5,8 +5,8 @@
 # licensing details.
 """Integration tests for :mod:`iris_grib._save_rules`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -33,7 +33,9 @@ class Test_set_fixed_surfaces(tests.IrisTest):
     def test_altitude_point(self, mock_set):
         grib = None
         cube = iris.cube.Cube([1, 2, 3, 4, 5])
-        cube.add_aux_coord(iris.coords.AuxCoord([12345], "altitude", units="m"))
+        cube.add_aux_coord(
+            iris.coords.AuxCoord([12345], "altitude", units="m")
+        )
 
         grib_save_rules.set_fixed_surfaces(cube, grib)
 
@@ -80,7 +82,7 @@ class Test_phenomenon(tests.IrisTest):
         cube = iris.cube.Cube(np.array([1.0]))
         # Force reset of warnings registry to avoid suppression of
         # repeated warnings. warnings.resetwarnings() does not do this.
-        if hasattr(grib_save_rules, '__warningregistry__'):
+        if hasattr(grib_save_rules, "__warningregistry__"):
             grib_save_rules.__warningregistry__.clear()
         with warnings.catch_warnings():
             # This should issue a warning about unrecognised data
@@ -98,8 +100,9 @@ class Test_phenomenon(tests.IrisTest):
     @mock.patch.object(gribapi, "grib_set")
     def test_phenom_known_standard_name(self, mock_set):
         grib = None
-        cube = iris.cube.Cube(np.array([1.0]),
-                              standard_name='sea_surface_temperature')
+        cube = iris.cube.Cube(
+            np.array([1.0]), standard_name="sea_surface_temperature"
+        )
         grib_save_rules.set_discipline_and_parameter(cube, grib)
         mock_set.assert_any_call(grib, "discipline", 10)
         mock_set.assert_any_call(grib, "parameterCategory", 3)
@@ -108,8 +111,7 @@ class Test_phenomenon(tests.IrisTest):
     @mock.patch.object(gribapi, "grib_set")
     def test_phenom_known_long_name(self, mock_set):
         grib = None
-        cube = iris.cube.Cube(np.array([1.0]),
-                              long_name='cloud_mixing_ratio')
+        cube = iris.cube.Cube(np.array([1.0]), long_name="cloud_mixing_ratio")
         grib_save_rules.set_discipline_and_parameter(cube, grib)
         mock_set.assert_any_call(grib, "discipline", 0)
         mock_set.assert_any_call(grib, "parameterCategory", 1)
@@ -122,13 +124,12 @@ class Test_type_of_statistical_processing(tests.IrisTest):
     def test_stats_type_min(self, mock_set):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
-        time_unit = cf_units.Unit('hours since 1970-01-01 00:00:00')
-        time_coord = iris.coords.DimCoord([0.0],
-                                          bounds=[0.0, 1],
-                                          standard_name='time',
-                                          units=time_unit)
+        time_unit = cf_units.Unit("hours since 1970-01-01 00:00:00")
+        time_coord = iris.coords.DimCoord(
+            [0.0], bounds=[0.0, 1], standard_name="time", units=time_unit
+        )
         cube.add_aux_coord(time_coord, ())
-        cube.add_cell_method(iris.coords.CellMethod('maximum', time_coord))
+        cube.add_cell_method(iris.coords.CellMethod("maximum", time_coord))
         grib_save_rules.product_definition_template_8(cube, grib)
         mock_set.assert_any_call(grib, "typeOfStatisticalProcessing", 2)
 
@@ -136,13 +137,12 @@ class Test_type_of_statistical_processing(tests.IrisTest):
     def test_stats_type_max(self, mock_set):
         grib = None
         cube = iris.cube.Cube(np.array([1.0]))
-        time_unit = cf_units.Unit('hours since 1970-01-01 00:00:00')
-        time_coord = iris.coords.DimCoord([0.0],
-                                          bounds=[0.0, 1],
-                                          standard_name='time',
-                                          units=time_unit)
+        time_unit = cf_units.Unit("hours since 1970-01-01 00:00:00")
+        time_coord = iris.coords.DimCoord(
+            [0.0], bounds=[0.0, 1], standard_name="time", units=time_unit
+        )
         cube.add_aux_coord(time_coord, ())
-        cube.add_cell_method(iris.coords.CellMethod('minimum', time_coord))
+        cube.add_cell_method(iris.coords.CellMethod("minimum", time_coord))
         grib_save_rules.product_definition_template_8(cube, grib)
         mock_set.assert_any_call(grib, "typeOfStatisticalProcessing", 3)
 

@@ -8,8 +8,8 @@ Unit tests for :class:`iris.analysis.trajectory.Trajectory`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -26,45 +26,60 @@ from iris.tests.stock import simple_3d, simple_4d_with_hybrid_height
 class Test___init__(tests.IrisTest):
     def test_2_points(self):
         # basic 2-seg line along x
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 1, 'lon': 2}]
+        waypoints = [{"lat": 0, "lon": 0}, {"lat": 1, "lon": 2}]
         trajectory = Trajectory(waypoints, sample_count=5)
 
         self.assertEqual(trajectory.length, np.sqrt(5))
         self.assertEqual(trajectory.sample_count, 5)
-        self.assertEqual(trajectory.sampled_points,
-                         [{'lat': 0.0, 'lon': 0.0},
-                          {'lat': 0.25, 'lon': 0.5},
-                          {'lat': 0.5, 'lon': 1.0},
-                          {'lat': 0.75, 'lon': 1.5},
-                          {'lat': 1.0, 'lon': 2.0}])
+        self.assertEqual(
+            trajectory.sampled_points,
+            [
+                {"lat": 0.0, "lon": 0.0},
+                {"lat": 0.25, "lon": 0.5},
+                {"lat": 0.5, "lon": 1.0},
+                {"lat": 0.75, "lon": 1.5},
+                {"lat": 1.0, "lon": 2.0},
+            ],
+        )
 
     def test_3_points(self):
         # basic 2-seg line along x
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 0, 'lon': 1},
-                     {'lat': 0, 'lon': 2}]
+        waypoints = [
+            {"lat": 0, "lon": 0},
+            {"lat": 0, "lon": 1},
+            {"lat": 0, "lon": 2},
+        ]
         trajectory = Trajectory(waypoints, sample_count=21)
 
         self.assertEqual(trajectory.length, 2.0)
         self.assertEqual(trajectory.sample_count, 21)
-        self.assertEqual(trajectory.sampled_points[19],
-                         {'lat': 0.0, 'lon': 1.9000000000000001})
+        self.assertEqual(
+            trajectory.sampled_points[19],
+            {"lat": 0.0, "lon": 1.9000000000000001},
+        )
 
     def test_zigzag(self):
         # 4-seg m-shape
-        waypoints = [{'lat': 0, 'lon': 0}, {'lat': 1, 'lon': 1},
-                     {'lat': 0, 'lon': 2}, {'lat': 1, 'lon': 3},
-                     {'lat': 0, 'lon': 4}]
+        waypoints = [
+            {"lat": 0, "lon": 0},
+            {"lat": 1, "lon": 1},
+            {"lat": 0, "lon": 2},
+            {"lat": 1, "lon": 3},
+            {"lat": 0, "lon": 4},
+        ]
         trajectory = Trajectory(waypoints, sample_count=33)
 
         self.assertEqual(trajectory.length, 5.6568542494923806)
         self.assertEqual(trajectory.sample_count, 33)
-        self.assertEqual(trajectory.sampled_points[31],
-                         {'lat': 0.12499999999999989, 'lon': 3.875})
+        self.assertEqual(
+            trajectory.sampled_points[31],
+            {"lat": 0.12499999999999989, "lon": 3.875},
+        )
 
 
 class Test__get_interp_points(tests.IrisTest):
     def test_basic(self):
-        dim_names = 'lat'
+        dim_names = "lat"
         waypoints = [{dim_names: 0}, {dim_names: 1}]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
@@ -77,9 +92,11 @@ class Test__get_interp_points(tests.IrisTest):
         self.assertEqual(result[0][0], dim_names)
 
     def test_2d(self):
-        dim_names = ['lat', 'lon']
-        waypoints = [{dim_names[0]: 0, dim_names[1]: 0},
-                     {dim_names[0]: 1, dim_names[1]: 2}]
+        dim_names = ["lat", "lon"]
+        waypoints = [
+            {dim_names[0]: 0, dim_names[1]: 0},
+            {dim_names[0]: 1, dim_names[1]: 2},
+        ]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory._get_interp_points()
@@ -91,9 +108,11 @@ class Test__get_interp_points(tests.IrisTest):
         self.assertIn(result[1][0], dim_names)
 
     def test_3d(self):
-        dim_names = ['y', 'x', 'z']
-        waypoints = [{dim_names[0]: 0, dim_names[1]: 0, dim_names[2]: 2},
-                     {dim_names[0]: 1, dim_names[1]: 2, dim_names[2]: 10}]
+        dim_names = ["y", "x", "z"]
+        waypoints = [
+            {dim_names[0]: 0, dim_names[1]: 0, dim_names[2]: 2},
+            {dim_names[0]: 1, dim_names[1]: 2, dim_names[2]: 10},
+        ]
         sample_count = 5
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory._get_interp_points()
@@ -118,10 +137,12 @@ class Test_interpolate(tests.IrisTest):
     def test_cube__simple_3d(self):
         # Test that an 'index' coord is added to the resultant cube.
         cube = simple_3d()
-        waypoints = [{'latitude': 40, 'longitude': 40},
-                     {'latitude': 0, 'longitude': 0}]
+        waypoints = [
+            {"latitude": 40, "longitude": 40},
+            {"latitude": 0, "longitude": 0},
+        ]
         sample_count = 3
-        new_coord_name = 'index'
+        new_coord_name = "index"
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory.interpolate(cube)
 
@@ -137,11 +158,13 @@ class Test_interpolate(tests.IrisTest):
 
     def test_cube__anon_dim(self):
         cube = simple_4d_with_hybrid_height()
-        cube.remove_coord('model_level_number')  # Make cube dim 1 anonymous.
-        waypoints = [{'grid_latitude': 21, 'grid_longitude': 31},
-                     {'grid_latitude': 23, 'grid_longitude': 33}]
+        cube.remove_coord("model_level_number")  # Make cube dim 1 anonymous.
+        waypoints = [
+            {"grid_latitude": 21, "grid_longitude": 31},
+            {"grid_latitude": 23, "grid_longitude": 33},
+        ]
         sample_count = 4
-        new_coord_name = 'index'
+        new_coord_name = "index"
         trajectory = Trajectory(waypoints, sample_count=sample_count)
         result = trajectory.interpolate(cube)
 
@@ -160,9 +183,11 @@ class Test_interpolate(tests.IrisTest):
         # Test that :func:`iris.analysis.trajectory.interpolate` is called by
         # `Trajectory.interpolate`.
         cube = simple_3d()
-        to_patch = 'iris.analysis.trajectory.interpolate'
-        waypoints = [{'latitude': 40, 'longitude': 40},
-                     {'latitude': 0, 'longitude': 0}]
+        to_patch = "iris.analysis.trajectory.interpolate"
+        waypoints = [
+            {"latitude": 40, "longitude": 40},
+            {"latitude": 0, "longitude": 0},
+        ]
         sample_count = 3
         trajectory = Trajectory(waypoints, sample_count=sample_count)
 

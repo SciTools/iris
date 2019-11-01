@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save_fields` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before
@@ -21,7 +21,7 @@ import iris.fileformats.pp as pp
 
 
 def asave(afilehandle):
-    afilehandle.write('saved')
+    afilehandle.write("saved")
 
 
 class TestSaveFields(tests.IrisTest):
@@ -35,25 +35,25 @@ class TestSaveFields(tests.IrisTest):
 
     def test_save(self):
         if six.PY3:
-            open_func = 'builtins.open'
+            open_func = "builtins.open"
         else:
-            open_func = '__builtin__.open'
+            open_func = "__builtin__.open"
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], 'foo.pp')
-        self.assertTrue(mock.call('foo.pp', 'wb') in m.mock_calls)
-        self.assertTrue(mock.call().write('saved') in m.mock_calls)
+            pp.save_fields([self.pp_field], "foo.pp")
+        self.assertTrue(mock.call("foo.pp", "wb") in m.mock_calls)
+        self.assertTrue(mock.call().write("saved") in m.mock_calls)
 
     def test_save_append(self):
         if six.PY3:
-            open_func = 'builtins.open'
+            open_func = "builtins.open"
         else:
-            open_func = '__builtin__.open'
+            open_func = "__builtin__.open"
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], 'foo.pp', append=True)
-        self.assertTrue(mock.call('foo.pp', 'ab') in m.mock_calls)
-        self.assertTrue(mock.call().write('saved') in m.mock_calls)
+            pp.save_fields([self.pp_field], "foo.pp", append=True)
+        self.assertTrue(mock.call("foo.pp", "ab") in m.mock_calls)
+        self.assertTrue(mock.call().write("saved") in m.mock_calls)
 
 
 if __name__ == "__main__":

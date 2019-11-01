@@ -7,8 +7,8 @@
 Test coordinate categorisation function add_hour.
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -29,11 +29,14 @@ class Test_add_hour(tests.IrisTest):
         # use hour numbers as data values also (don't actually use this for
         # anything)
         cube = iris.cube.Cube(
-            hour_numbers, long_name='test cube', units='metres')
+            hour_numbers, long_name="test cube", units="metres"
+        )
 
         time_coord = iris.coords.DimCoord(
-            hour_numbers, standard_name='time',
-            units=cf_units.Unit('hours since epoch', 'gregorian'))
+            hour_numbers,
+            standard_name="time",
+            units=cf_units.Unit("hours since epoch", "gregorian"),
+        )
         cube.add_dim_coord(time_coord, 0)
 
         self.hour_numbers = hour_numbers
@@ -42,40 +45,41 @@ class Test_add_hour(tests.IrisTest):
 
     def test_bad_coord(self):
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            ccat.add_hour(self.cube, 'DOES NOT EXIST', name='my_hour')
+            ccat.add_hour(self.cube, "DOES NOT EXIST", name="my_hour")
 
     def test_explicit_result_name_specify_coord_by_name(self):
-        coord_name = 'my_hour'
-        msg = 'Missing/incorrectly named result for add_hour'
+        coord_name = "my_hour"
+        msg = "Missing/incorrectly named result for add_hour"
 
         # Specify source coordinate by name
         cube = self.cube
-        ccat.add_hour(cube, 'time', name=coord_name)
+        ccat.add_hour(cube, "time", name=coord_name)
         result_coords = cube.coords(coord_name)
         self.assertEqual(len(result_coords), 1, msg)
 
     def test_explicit_result_name_specify_coord_by_reference(self):
-        coord_name = 'my_hour'
-        msg = 'Missing/incorrectly named result for add_hour'
+        coord_name = "my_hour"
+        msg = "Missing/incorrectly named result for add_hour"
 
         # Specify source coordinate by coordinate reference
         cube = self.cube
-        time = cube.coord('time')
+        time = cube.coord("time")
         ccat.add_hour(cube, time, name=coord_name)
         result_coords = cube.coords(coord_name)
         self.assertEqual(len(result_coords), 1, msg)
 
     def test_basic(self):
-        coord_name = 'my_hour'
+        coord_name = "my_hour"
         cube = self.cube
         time_coord = self.time_coord
         expected_coord = iris.coords.AuxCoord(
-            self.hour_numbers % 24, long_name=coord_name)
+            self.hour_numbers % 24, long_name=coord_name
+        )
 
         ccat.add_hour(cube, time_coord, coord_name)
 
         self.assertEqual(cube.coord(coord_name), expected_coord)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

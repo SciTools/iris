@@ -5,8 +5,8 @@
 # licensing details.
 
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -20,11 +20,13 @@ from iris.coords import Cell
 class TestCells(tests.IrisTest):
     def setUp(self):
         self.cell1 = iris.coords.Cell(3, [2, 4])
-        self.cell2 = iris.coords.Cell(360., [350., 370.])
+        self.cell2 = iris.coords.Cell(360.0, [350.0, 370.0])
 
     def test_cell_from_coord(self):
         Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(np.arange(4) * 1.5, long_name='test', units='1')
+        coord = iris.coords.AuxCoord(
+            np.arange(4) * 1.5, long_name="test", units="1"
+        )
         self.assertEqual(Cell(point=0.0, bound=None), coord.cell(0))
         self.assertEqual(Cell(point=1.5, bound=None), coord.cell(1))
         self.assertEqual(Cell(point=4.5, bound=None), coord.cell(-1))
@@ -36,43 +38,56 @@ class TestCells(tests.IrisTest):
         self.assertEqual(Cell(point=1.5, bound=(0.75, 2.25)), coord.cell(1))
         self.assertEqual(Cell(point=4.5, bound=(3.75, 5.25)), coord.cell(-1))
         self.assertEqual(Cell(point=3.0, bound=(2.25, 3.75)), coord.cell(-2))
-        self.assertEqual(Cell(point=4.5, bound=(3.75, 5.25)), coord.cell(slice(-1, None)))
+        self.assertEqual(
+            Cell(point=4.5, bound=(3.75, 5.25)), coord.cell(slice(-1, None))
+        )
 
     def test_cell_from_multidim_coord(self):
         Cell = iris.coords.Cell
-        coord = iris.coords.AuxCoord(points=np.arange(12).reshape(3, 4), long_name='test', units='1',
-                                     bounds=np.arange(48).reshape(3, 4, 4))
+        coord = iris.coords.AuxCoord(
+            points=np.arange(12).reshape(3, 4),
+            long_name="test",
+            units="1",
+            bounds=np.arange(48).reshape(3, 4, 4),
+        )
         self.assertRaises(IndexError, coord.cell, 0)
-        self.assertEqual(Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3)))
+        self.assertEqual(
+            Cell(point=3, bound=(12, 13, 14, 15)), coord.cell((0, 3))
+        )
 
     def test_mod(self):
         # Check that applying the mod function is not modifying the original
-        c =  self.cell1 % 3
+        c = self.cell1 % 3
         self.assertNotEqual(c, self.cell1)
 
         c = self.cell2 % 360
-        self.assertEqual(str(c), 'Cell(point=0.0, bound=(350.0, 10.0))')
+        self.assertEqual(str(c), "Cell(point=0.0, bound=(350.0, 10.0))")
 
         c = self.cell2 % 359.13
-        self.assertEqual(str(c), 'Cell(point=0.8700000000000045, bound=(350.0, 10.870000000000005))')
+        self.assertEqual(
+            str(c),
+            "Cell(point=0.8700000000000045, bound=(350.0, 10.870000000000005))",
+        )
 
     def test_contains_point(self):
         c = iris.coords.Cell(359.5, (359.49951, 359.5004))
         self.assertTrue(c.contains_point(359.49951))
 
     def test_pointless(self):
-        self.assertRaises(ValueError, iris.coords.Cell, None, (359.49951, 359.5004))
+        self.assertRaises(
+            ValueError, iris.coords.Cell, None, (359.49951, 359.5004)
+        )
 
     def test_add(self):
         # Check that applying the mod function is not modifying the original
-        c =  self.cell1 + 3
+        c = self.cell1 + 3
         self.assertNotEqual(c, self.cell1)
 
         c = self.cell2 + 360
-        self.assertEqual(str(c), 'Cell(point=720.0, bound=(710.0, 730.0))')
+        self.assertEqual(str(c), "Cell(point=720.0, bound=(710.0, 730.0))")
 
         c = self.cell2 + 359.13
-        self.assertEqual(str(c), 'Cell(point=719.13, bound=(709.13, 729.13))')
+        self.assertEqual(str(c), "Cell(point=719.13, bound=(709.13, 729.13))")
 
     def test_in(self):
         c = iris.coords.Cell(4, None)
@@ -110,9 +125,11 @@ class TestCells(tests.IrisTest):
         self.assertFalse(self.d <= 1)
         self.assertTrue(self.d > 1)
         self.assertTrue(self.d < 2)
-        
+
         # Ensure the Cell's operators return NotImplemented.
-        class Terry(object): pass
+        class Terry(object):
+            pass
+
         self.assertEqual(self.d.__eq__(Terry()), NotImplemented)
         self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 
@@ -124,8 +141,14 @@ class TestCells(tests.IrisTest):
             self.assertEqual(cell, val)
 
     def test_numpy_float_equality(self):
-        dtypes = (np.float, np.float16, np.float32, np.float64,
-                  np.float128, np.double)
+        dtypes = (
+            np.float,
+            np.float16,
+            np.float32,
+            np.float64,
+            np.float128,
+            np.double,
+        )
         for dtype in dtypes:
             val = dtype(3.2)
             cell = iris.coords.Cell(val, None)
@@ -140,7 +163,6 @@ class TestCells(tests.IrisTest):
         self.assertFalse(self.e > 1.9)
         self.assertFalse(self.e < 1.9)
 
-
         self.assertFalse(self.e in [1.0, 3.5])
         self.assertTrue(self.e in [1.5, 1.9])
         self.assertTrue(self.e != 1)
@@ -154,18 +176,18 @@ class TestCells(tests.IrisTest):
         self.e = iris.coords.Cell(0.7, [1.1, 1.9])
         self.f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        self.assertFalse( self.e > self.f )
-        self.assertTrue( self.e <= self.f )
-        self.assertTrue( self.f >= self.e )
-        self.assertFalse( self.f < self.e )
+        self.assertFalse(self.e > self.f)
+        self.assertTrue(self.e <= self.f)
+        self.assertTrue(self.f >= self.e)
+        self.assertFalse(self.f < self.e)
 
         self.e = iris.coords.Cell(0.9, [2, 2.1])
         self.f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        self.assertTrue( self.e > self.f )
-        self.assertFalse( self.e <= self.f )
-        self.assertFalse( self.f >= self.e )
-        self.assertTrue( self.f < self.e )
+        self.assertTrue(self.e > self.f)
+        self.assertFalse(self.e <= self.f)
+        self.assertFalse(self.f >= self.e)
+        self.assertTrue(self.f < self.e)
 
     def test_cmp_contig(self):
         # Test cells that share an edge
@@ -179,14 +201,18 @@ class TestCells(tests.IrisTest):
 
     def test_overlap_order(self):
         # Test cells that overlap still sort correctly.
-        cells = [Cell(point=375804.0, bound=(375792.0, 375816.0)),
-                 Cell(point=375672.0, bound=(375660.0, 375684.0)),
-                 Cell(point=375792.0, bound=(375780.0, 375804.0)),
-                 Cell(point=375960.0, bound=(375948.0, 375972.0))]
-        sorted_cells = [Cell(point=375672.0, bound=(375660.0, 375684.0)),
-                        Cell(point=375792.0, bound=(375780.0, 375804.0)),
-                        Cell(point=375804.0, bound=(375792.0, 375816.0)),
-                        Cell(point=375960.0, bound=(375948.0, 375972.0))]
+        cells = [
+            Cell(point=375804.0, bound=(375792.0, 375816.0)),
+            Cell(point=375672.0, bound=(375660.0, 375684.0)),
+            Cell(point=375792.0, bound=(375780.0, 375804.0)),
+            Cell(point=375960.0, bound=(375948.0, 375972.0)),
+        ]
+        sorted_cells = [
+            Cell(point=375672.0, bound=(375660.0, 375684.0)),
+            Cell(point=375792.0, bound=(375780.0, 375804.0)),
+            Cell(point=375804.0, bound=(375792.0, 375816.0)),
+            Cell(point=375960.0, bound=(375948.0, 375972.0)),
+        ]
         self.assertEqual(sorted(cells), sorted_cells)
 
     def _check_permutations(self, a, b, a_lt_b, a_le_b, a_eq_b):

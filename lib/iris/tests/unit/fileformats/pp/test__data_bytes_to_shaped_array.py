@@ -8,8 +8,8 @@ Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -25,7 +25,8 @@ import iris.fileformats.pp as pp
 
 
 class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
-        tests.IrisTest):
+    tests.IrisTest
+):
     def setUp(self):
         self.data_shape = 30, 40
         y_halo, x_halo, rim = 2, 3, 4
@@ -35,16 +36,22 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
         decompressed *= np.arange(self.data_shape[1]) % 3 + 1
 
         decompressed_mask = np.zeros(self.data_shape, np.bool)
-        decompressed_mask[y_halo+rim:-(y_halo+rim),
-                          x_halo+rim:-(x_halo+rim)] = True
+        decompressed_mask[
+            y_halo + rim : -(y_halo + rim), x_halo + rim : -(x_halo + rim)
+        ] = True
 
-        self.decompressed = ma.masked_array(decompressed,
-                                            mask=decompressed_mask)
+        self.decompressed = ma.masked_array(
+            decompressed, mask=decompressed_mask
+        )
 
-        self.north = decompressed[-(y_halo+rim):, :]
-        self.east = decompressed[y_halo+rim:-(y_halo+rim), -(x_halo+rim):]
-        self.south = decompressed[:y_halo+rim, :]
-        self.west = decompressed[y_halo+rim:-(y_halo+rim), :x_halo+rim]
+        self.north = decompressed[-(y_halo + rim) :, :]
+        self.east = decompressed[
+            y_halo + rim : -(y_halo + rim), -(x_halo + rim) :
+        ]
+        self.south = decompressed[: y_halo + rim, :]
+        self.west = decompressed[
+            y_halo + rim : -(y_halo + rim), : x_halo + rim
+        ]
 
         # Get the bytes of the north, east, south, west arrays combined.
         buf = io.BytesIO()
@@ -58,11 +65,14 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
     def test_boundary_decompression(self):
         boundary_packing = mock.Mock(rim_width=4, x_halo=3, y_halo=2)
         lbpack = mock.Mock(n1=0)
-        r = pp._data_bytes_to_shaped_array(self.data_payload_bytes,
-                                           lbpack, boundary_packing,
-                                           self.data_shape,
-                                           self.decompressed.dtype,
-                                           -9223372036854775808)
+        r = pp._data_bytes_to_shaped_array(
+            self.data_payload_bytes,
+            lbpack,
+            boundary_packing,
+            self.data_shape,
+            self.decompressed.dtype,
+            -9223372036854775808,
+        )
         r = ma.masked_array(r, np.isnan(r), fill_value=-9223372036854775808)
         self.assertMaskedArrayEqual(r, self.decompressed)
 
@@ -71,29 +81,29 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
     def setUp(self):
         # Sets up some useful arrays for use with the land/sea mask
         # decompression.
-        self.land = np.array([[0, 1, 0, 0],
-                              [1, 0, 0, 0],
-                              [0, 0, 0, 1]], dtype=np.float64)
+        self.land = np.array(
+            [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]], dtype=np.float64
+        )
         sea = ~self.land.astype(np.bool)
         self.land_masked_data = np.array([1, 3, 4.5])
         self.sea_masked_data = np.array([1, 3, 4.5, -4, 5, 0, 1, 2, 3])
 
         # Compute the decompressed land mask data.
-        self.decomp_land_data = ma.masked_array([[0, 1, 0, 0],
-                                                 [3, 0, 0, 0],
-                                                 [0, 0, 0, 4.5]],
-                                                mask=sea,
-                                                dtype=np.float64)
+        self.decomp_land_data = ma.masked_array(
+            [[0, 1, 0, 0], [3, 0, 0, 0], [0, 0, 0, 4.5]],
+            mask=sea,
+            dtype=np.float64,
+        )
         # Compute the decompressed sea mask data.
-        self.decomp_sea_data = ma.masked_array([[1, -10, 3, 4.5],
-                                                [-10, -4, 5, 0],
-                                                [1, 2, 3, -10]],
-                                               mask=self.land,
-                                               dtype=np.float64)
+        self.decomp_sea_data = ma.masked_array(
+            [[1, -10, 3, 4.5], [-10, -4, 5, 0], [1, 2, 3, -10]],
+            mask=self.land,
+            dtype=np.float64,
+        )
 
-        self.land_mask = mock.Mock(data=self.land,
-                                   lbrow=self.land.shape[0],
-                                   lbnpt=self.land.shape[1])
+        self.land_mask = mock.Mock(
+            data=self.land, lbrow=self.land.shape[0], lbnpt=self.land.shape[1]
+        )
 
     def create_lbpack(self, value):
         name_mapping = dict(n5=slice(4, None), n4=3, n3=2, n2=1, n1=0)
@@ -101,13 +111,16 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
 
     def test_no_land_mask(self):
         # Check that without a mask, it returns the raw (compressed) data.
-        with mock.patch('numpy.frombuffer',
-                        return_value=np.arange(3)):
+        with mock.patch("numpy.frombuffer", return_value=np.arange(3)):
             result = pp._data_bytes_to_shaped_array(
                 mock.Mock(),
-                self.create_lbpack(120), None,
-                (3, 4), np.dtype('>f4'),
-                -999, mask=None)
+                self.create_lbpack(120),
+                None,
+                (3, 4),
+                np.dtype(">f4"),
+                -999,
+                mask=None,
+            )
             self.assertArrayAllClose(result, np.arange(3))
 
     def test_land_mask(self):
@@ -143,12 +156,16 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
     def check_read_data(self, field_data, lbpack, mask):
         # Calls pp._data_bytes_to_shaped_array with the necessary mocked
         # items, an lbpack instance, the correct data shape and mask instance.
-        with mock.patch('numpy.frombuffer', return_value=field_data):
-            data = pp._data_bytes_to_shaped_array(mock.Mock(),
-                                                  self.create_lbpack(lbpack),
-                                                  None,
-                                                  mask.shape, np.dtype('>f4'),
-                                                  -999, mask=mask)
+        with mock.patch("numpy.frombuffer", return_value=field_data):
+            data = pp._data_bytes_to_shaped_array(
+                mock.Mock(),
+                self.create_lbpack(lbpack),
+                None,
+                mask.shape,
+                np.dtype(">f4"),
+                -999,
+                mask=mask,
+            )
         return ma.masked_array(data, np.isnan(data), fill_value=-999)
 
 

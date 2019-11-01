@@ -13,8 +13,8 @@ Specifically, this module tests the following functions:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 # import iris tests first so that some things can be initialised before
@@ -50,7 +50,7 @@ class Test_is_regular(tests.IrisTest):
 
     def test_coord_with_string_points(self):
         # Check that a `TypeError` is captured.
-        coord = AuxCoord(['a', 'b', 'c'])
+        coord = AuxCoord(["a", "b", "c"])
         result = is_regular(coord)
         self.assertFalse(result)
 
@@ -67,20 +67,20 @@ class Test_regular_step(tests.IrisTest):
 
     def test_2d_coord(self):
         coord = AuxCoord(np.arange(8).reshape(2, 4))
-        exp_emsg = 'Expected 1D coord'
+        exp_emsg = "Expected 1D coord"
         with self.assertRaisesRegexp(CoordinateMultiDimError, exp_emsg):
             regular_step(coord)
 
     def test_scalar_coord(self):
         coord = DimCoord(5)
-        exp_emsg = 'non-scalar coord'
+        exp_emsg = "non-scalar coord"
         with self.assertRaisesRegexp(ValueError, exp_emsg):
             regular_step(coord)
 
     def test_coord_with_irregular_step(self):
-        name = 'latitude'
+        name = "latitude"
         coord = AuxCoord(np.array([2, 5, 1, 4]), standard_name=name)
-        exp_emsg = '{} is not regular'.format(name)
+        exp_emsg = "{} is not regular".format(name)
         with self.assertRaisesRegexp(CoordinateNotRegularError, exp_emsg):
             regular_step(coord)
 
@@ -101,5 +101,5 @@ class Test_points_step(tests.IrisTest):
         self.assertFalse(result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

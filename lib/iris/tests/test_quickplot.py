@@ -8,8 +8,8 @@ Tests the high-level plotting interface.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
@@ -29,18 +29,19 @@ def cache(fn, cache={}):
     def inner(*args, **kwargs):
         key = "result"
         if not cache:
-            cache[key] =  fn(*args, **kwargs)
+            cache[key] = fn(*args, **kwargs)
         return cache[key]
+
     return inner
 
 
 @cache
 def _load_theta():
-    path = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-    theta = iris.load_cube(path, 'air_potential_temperature')
+    path = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
+    theta = iris.load_cube(path, "air_potential_temperature")
 
     # Improve the unit
-    theta.units = 'K'
+    theta.units = "K"
 
     return theta
 
@@ -50,50 +51,67 @@ def _load_theta():
 class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
     def setUp(self):
         tests.GraphicsTest.setUp(self)
-        filename = tests.get_data_path(('PP', 'COLPEX', 'theta_and_orog_subset.pp'))
-        self.cube = test_plot.load_cube_once(filename, 'air_potential_temperature')
+        filename = tests.get_data_path(
+            ("PP", "COLPEX", "theta_and_orog_subset.pp")
+        )
+        self.cube = test_plot.load_cube_once(
+            filename, "air_potential_temperature"
+        )
 
         self.draw_module = iris.quickplot
-        self.contourf = test_plot.LambdaStr('iris.quickplot.contourf', lambda cube, *args, **kwargs:
-                                                  iris.quickplot.contourf(cube, *args, **kwargs))
-        self.contour = test_plot.LambdaStr('iris.quickplot.contour', lambda cube, *args, **kwargs:
-                                                  iris.quickplot.contour(cube, *args, **kwargs))
-        self.points = test_plot.LambdaStr('iris.quickplot.points', lambda cube, *args, **kwargs:
-                                                  iris.quickplot.points(cube, c=cube.data, *args, **kwargs))
-        self.plot = test_plot.LambdaStr('iris.quickplot.plot', lambda cube, *args, **kwargs:
-                                                  iris.quickplot.plot(cube, *args, **kwargs))
+        self.contourf = test_plot.LambdaStr(
+            "iris.quickplot.contourf",
+            lambda cube, *args, **kwargs: iris.quickplot.contourf(
+                cube, *args, **kwargs
+            ),
+        )
+        self.contour = test_plot.LambdaStr(
+            "iris.quickplot.contour",
+            lambda cube, *args, **kwargs: iris.quickplot.contour(
+                cube, *args, **kwargs
+            ),
+        )
+        self.points = test_plot.LambdaStr(
+            "iris.quickplot.points",
+            lambda cube, *args, **kwargs: iris.quickplot.points(
+                cube, c=cube.data, *args, **kwargs
+            ),
+        )
+        self.plot = test_plot.LambdaStr(
+            "iris.quickplot.plot",
+            lambda cube, *args, **kwargs: iris.quickplot.plot(
+                cube, *args, **kwargs
+            ),
+        )
 
-        self.results = {'yx': (
-                           [self.contourf, ['grid_latitude', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'grid_latitude']],
-                           [self.contour, ['grid_latitude', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'grid_latitude']],
-                           [self.points, ['grid_latitude', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'grid_latitude']],
-                           ),
-                       'zx': (
-                           [self.contourf, ['model_level_number', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'model_level_number']],
-                           [self.contour, ['model_level_number', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'model_level_number']],
-                           [self.points, ['model_level_number', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'model_level_number']],
-                           ),
-                        'tx': (
-                           [self.contourf, ['time', 'grid_longitude']],
-                           [self.contourf, ['grid_longitude', 'time']],
-                           [self.contour, ['time', 'grid_longitude']],
-                           [self.contour, ['grid_longitude', 'time']],
-                           [self.points, ['time', 'grid_longitude']],
-                           [self.points, ['grid_longitude', 'time']],
-                           ),
-                        'x': (
-                           [self.plot, ['grid_longitude']],
-                           ),
-                        'y': (
-                           [self.plot, ['grid_latitude']],
-                           ),
-                       }
+        self.results = {
+            "yx": (
+                [self.contourf, ["grid_latitude", "grid_longitude"]],
+                [self.contourf, ["grid_longitude", "grid_latitude"]],
+                [self.contour, ["grid_latitude", "grid_longitude"]],
+                [self.contour, ["grid_longitude", "grid_latitude"]],
+                [self.points, ["grid_latitude", "grid_longitude"]],
+                [self.points, ["grid_longitude", "grid_latitude"]],
+            ),
+            "zx": (
+                [self.contourf, ["model_level_number", "grid_longitude"]],
+                [self.contourf, ["grid_longitude", "model_level_number"]],
+                [self.contour, ["model_level_number", "grid_longitude"]],
+                [self.contour, ["grid_longitude", "model_level_number"]],
+                [self.points, ["model_level_number", "grid_longitude"]],
+                [self.points, ["grid_longitude", "model_level_number"]],
+            ),
+            "tx": (
+                [self.contourf, ["time", "grid_longitude"]],
+                [self.contourf, ["grid_longitude", "time"]],
+                [self.contour, ["time", "grid_longitude"]],
+                [self.contour, ["grid_longitude", "time"]],
+                [self.points, ["time", "grid_longitude"]],
+                [self.points, ["grid_longitude", "time"]],
+            ),
+            "x": ([self.plot, ["grid_longitude"]],),
+            "y": ([self.plot, ["grid_latitude"]],),
+        }
 
 
 @tests.skip_data
@@ -111,14 +129,16 @@ class TestLabels(tests.GraphicsTest):
 
     def _small(self):
         # Use a restricted size so we can make out the detail
-        cube = self._slice(['model_level_number', 'grid_longitude'])
+        cube = self._slice(["model_level_number", "grid_longitude"])
         return cube[:5, :5]
 
     def test_contour(self):
         qplt.contour(self._small())
         self.check_graphic()
 
-        qplt.contourf(self._small(), coords=['model_level_number', 'grid_longitude'])
+        qplt.contourf(
+            self._small(), coords=["model_level_number", "grid_longitude"]
+        )
         self.check_graphic()
 
     def test_contourf(self):
@@ -129,10 +149,14 @@ class TestLabels(tests.GraphicsTest):
 
         self.check_graphic()
 
-        qplt.contourf(self._small(), coords=['model_level_number', 'grid_longitude'])
+        qplt.contourf(
+            self._small(), coords=["model_level_number", "grid_longitude"]
+        )
         self.check_graphic()
 
-        qplt.contourf(self._small(), coords=['grid_longitude', 'model_level_number'])
+        qplt.contourf(
+            self._small(), coords=["grid_longitude", "model_level_number"]
+        )
         self.check_graphic()
 
     def test_contourf_axes_specified(self):
@@ -149,23 +173,23 @@ class TestLabels(tests.GraphicsTest):
         axes2 = plt.axes()
 
         # Add a title to the test axes.
-        plt.title('This should not be changed')
+        plt.title("This should not be changed")
         # Draw the contourf on a specific axes.
         qplt.contourf(self._small(), axes=axes1)
 
         # Ensure that the correct axes got the appropriate title.
-        self.assertEqual(axes2.get_title(), 'This should not be changed')
-        self.assertEqual(axes1.get_title(), 'Air potential temperature')
+        self.assertEqual(axes2.get_title(), "This should not be changed")
+        self.assertEqual(axes1.get_title(), "Air potential temperature")
 
         # Check that the axes labels were set correctly.
-        self.assertEqual(axes1.get_xlabel(), 'Grid longitude / degrees')
-        self.assertEqual(axes1.get_ylabel(), 'Altitude / m')
+        self.assertEqual(axes1.get_xlabel(), "Grid longitude / degrees")
+        self.assertEqual(axes1.get_ylabel(), "Altitude / m")
 
     def test_contourf_nameless(self):
         cube = self._small()
         cube.standard_name = None
-        cube.attributes['STASH'] = ''
-        qplt.contourf(cube, coords=['grid_longitude', 'model_level_number'])
+        cube.attributes["STASH"] = ""
+        qplt.contourf(cube, coords=["grid_longitude", "model_level_number"])
         self.check_graphic()
 
     def test_pcolor(self):
@@ -175,18 +199,18 @@ class TestLabels(tests.GraphicsTest):
     def test_pcolormesh(self):
         qplt.pcolormesh(self._small())
 
-        #cube = self._small()
-        #iplt.orography_at_bounds(cube)
+        # cube = self._small()
+        # iplt.orography_at_bounds(cube)
 
         self.check_graphic()
 
     def test_map(self):
-        cube = self._slice(['grid_latitude', 'grid_longitude'])
+        cube = self._slice(["grid_latitude", "grid_longitude"])
         qplt.contour(cube)
         self.check_graphic()
 
         # check that the result of adding 360 to the data is *almost* identically the same result
-        lon = cube.coord('grid_longitude')
+        lon = cube.coord("grid_longitude")
         lon.points = lon.points + 360
         qplt.contour(cube)
         self.check_graphic()
@@ -194,7 +218,7 @@ class TestLabels(tests.GraphicsTest):
     def test_alignment(self):
         cube = self._small()
         qplt.contourf(cube)
-        #qplt.outline(cube)
+        # qplt.outline(cube)
         qplt.points(cube)
         self.check_graphic()
 
@@ -204,18 +228,18 @@ class TestLabels(tests.GraphicsTest):
 class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
     def setUp(self):
         super(TestTimeReferenceUnitsLabels, self).setUp()
-        path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
+        path = tests.get_data_path(("PP", "aPProt1", "rotatedMHtimecube.pp"))
         self.cube = iris.load_cube(path)[:, 0, 0]
 
     def test_reference_time_units(self):
         # units should not be displayed for a reference time
-        qplt.plot(self.cube.coord('time'), self.cube)
+        qplt.plot(self.cube.coord("time"), self.cube)
         plt.gcf().autofmt_xdate()
         self.check_graphic()
 
     def test_not_reference_time_units(self):
         # units should be displayed for other time coordinates
-        qplt.plot(self.cube.coord('forecast_period'), self.cube)
+        qplt.plot(self.cube.coord("forecast_period"), self.cube)
         self.check_graphic()
 
 

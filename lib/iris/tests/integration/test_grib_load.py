@@ -14,8 +14,8 @@ The remainder of the old 'tests/test_grib_load.py' is now renamed as
 specific, and target the module 'iris_grib'.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else
@@ -30,65 +30,78 @@ from unittest import skipIf
 # Skip out some tests that fail now that grib edition 2 files no longer use
 # the GribWrapper.
 # TODO: either fix these problems, or remove the tests.
-skip_irisgrib_fails = skipIf(True,
-                             'Test(s) are not currently usable with the new '
-                             'grib 2 loader.')
+skip_irisgrib_fails = skipIf(
+    True, "Test(s) are not currently usable with the new " "grib 2 loader."
+)
 
 
 @tests.skip_data
 @tests.skip_grib
 class TestBasicLoad(tests.GraphicsTest):
     def test_load_rotated(self):
-        cubes = iris.load(tests.get_data_path(('GRIB', 'rotated_uk',
-                                               "uk_wrongparam.grib1")))
+        cubes = iris.load(
+            tests.get_data_path(("GRIB", "rotated_uk", "uk_wrongparam.grib1"))
+        )
         self.assertCML(cubes, ("grib_load", "rotated.cml"))
 
     def test_load_time_bound(self):
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
-                                               "time_bound.grib1")))
+        cubes = iris.load(
+            tests.get_data_path(("GRIB", "time_processed", "time_bound.grib1"))
+        )
         self.assertCML(cubes, ("grib_load", "time_bound_grib1.cml"))
 
     def test_load_time_processed(self):
-        cubes = iris.load(tests.get_data_path(('GRIB', "time_processed",
-                                               "time_bound.grib2")))
+        cubes = iris.load(
+            tests.get_data_path(("GRIB", "time_processed", "time_bound.grib2"))
+        )
         self.assertCML(cubes, ("grib_load", "time_bound_grib2.cml"))
 
     def test_load_3_layer(self):
-        cubes = iris.load(tests.get_data_path(('GRIB', "3_layer_viz",
-                                               "3_layer.grib2")))
+        cubes = iris.load(
+            tests.get_data_path(("GRIB", "3_layer_viz", "3_layer.grib2"))
+        )
         cubes = iris.cube.CubeList([cubes[1], cubes[0], cubes[2]])
         self.assertCML(cubes, ("grib_load", "3_layer.cml"))
 
     def test_load_masked(self):
         gribfile = tests.get_data_path(
-            ('GRIB', 'missing_values', 'missing_values.grib2'))
+            ("GRIB", "missing_values", "missing_values.grib2")
+        )
         cubes = iris.load(gribfile)
-        self.assertCML(cubes, ('grib_load', 'missing_values_grib2.cml'))
+        self.assertCML(cubes, ("grib_load", "missing_values_grib2.cml"))
 
     @skip_irisgrib_fails
     def test_y_fastest(self):
-        cubes = iris.load(tests.get_data_path(("GRIB", "y_fastest",
-                                               "y_fast.grib2")))
+        cubes = iris.load(
+            tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2"))
+        )
         self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
 
     def test_polar_stereo_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "polar_stereo", "ST4.2013052210.01h")))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "polar_stereo", "ST4.2013052210.01h"))
+        )
         self.assertCML(cube, ("grib_load", "polar_stereo_grib1.cml"))
 
     def test_polar_stereo_grib2_grid_definition(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "polar_stereo",
-             "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2")))
+        cube = iris.load_cube(
+            tests.get_data_path(
+                (
+                    "GRIB",
+                    "polar_stereo",
+                    "CMC_glb_TMP_ISBL_1015_ps30km_2013052000_P006.grib2",
+                )
+            )
+        )
         self.assertEqual(cube.shape, (200, 247))
-        pxc = cube.coord('projection_x_coordinate')
+        pxc = cube.coord("projection_x_coordinate")
         self.assertAlmostEqual(pxc.points.max(), 4769905.5125, places=4)
         self.assertAlmostEqual(pxc.points.min(), -2610094.4875, places=4)
-        pyc = cube.coord('projection_y_coordinate')
+        pyc = cube.coord("projection_y_coordinate")
         self.assertAlmostEqual(pyc.points.max(), -216.1459, places=4)
         self.assertAlmostEqual(pyc.points.min(), -5970216.1459, places=4)
         self.assertEqual(pyc.coord_system, pxc.coord_system)
-        self.assertEqual(pyc.coord_system.grid_mapping_name, 'stereographic')
+        self.assertEqual(pyc.coord_system.grid_mapping_name, "stereographic")
         self.assertEqual(pyc.coord_system.central_lat, 90.0)
         self.assertEqual(pyc.coord_system.central_lon, 249.0)
         self.assertEqual(pyc.coord_system.false_easting, 0.0)
@@ -96,34 +109,40 @@ class TestBasicLoad(tests.GraphicsTest):
         self.assertEqual(pyc.coord_system.true_scale_lat, 60.0)
 
     def test_lambert_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "lambert", "lambert.grib1")))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "lambert", "lambert.grib1"))
+        )
         self.assertCML(cube, ("grib_load", "lambert_grib1.cml"))
 
     def test_lambert_grib2(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "lambert", "lambert.grib2")))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "lambert", "lambert.grib2"))
+        )
         self.assertCML(cube, ("grib_load", "lambert_grib2.cml"))
 
     def test_regular_gg_grib1(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ('GRIB', 'gaussian', 'regular_gg.grib1')))
-        self.assertCML(cube, ('grib_load', 'regular_gg_grib1.cml'))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "gaussian", "regular_gg.grib1"))
+        )
+        self.assertCML(cube, ("grib_load", "regular_gg_grib1.cml"))
 
     def test_regular_gg_grib2(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ('GRIB', 'gaussian', 'regular_gg.grib2')))
-        self.assertCML(cube, ('grib_load', 'regular_gg_grib2.cml'))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "gaussian", "regular_gg.grib2"))
+        )
+        self.assertCML(cube, ("grib_load", "regular_gg_grib2.cml"))
 
     def test_reduced_ll(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "reduced", "reduced_ll.grib1")))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "reduced", "reduced_ll.grib1"))
+        )
         self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
 
     @tests.skip_grib_fail
     def test_reduced_gg(self):
-        cube = iris.load_cube(tests.get_data_path(
-            ("GRIB", "reduced", "reduced_gg.grib2")))
+        cube = iris.load_cube(
+            tests.get_data_path(("GRIB", "reduced", "reduced_gg.grib2"))
+        )
         self.assertCML(cube, ("grib_load", "reduced_gg_grib2.cml"))
 
 
@@ -132,8 +151,9 @@ class TestBasicLoad(tests.GraphicsTest):
 class TestIjDirections(tests.GraphicsTest):
     @staticmethod
     def _old_compat_load(name):
-        cube = iris.load(tests.get_data_path(('GRIB', 'ij_directions',
-                                              name)))[0]
+        cube = iris.load(tests.get_data_path(("GRIB", "ij_directions", name)))[
+            0
+        ]
         return [cube]
 
     def test_ij_directions_ipos_jpos(self):
@@ -158,8 +178,9 @@ class TestIjDirections(tests.GraphicsTest):
 class TestShapeOfEarth(tests.GraphicsTest):
     @staticmethod
     def _old_compat_load(name):
-        cube = iris.load(tests.get_data_path(('GRIB', 'shape_of_earth',
-                                              name)))[0]
+        cube = iris.load(
+            tests.get_data_path(("GRIB", "shape_of_earth", name))
+        )[0]
         return cube
 
     def test_shape_of_earth_basic(self):

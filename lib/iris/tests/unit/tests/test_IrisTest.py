@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the :mod:`iris.tests.IrisTest` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 # import iris tests first so that some things can be initialised before
@@ -70,8 +70,7 @@ class _MaskedArrayEquality(six.with_metaclass(ABCMeta, object)):
 
 
 @tests.iristest_timing_decorator
-class Test_assertMaskedArrayEqual(_MaskedArrayEquality,
-                                  tests.IrisTest_nometa):
+class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayEqual
@@ -93,7 +92,7 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
     def test_masked_nonmasked_different(self):
         arr1 = np.ma.masked_array([1, 2])
         arr2 = np.array([1, 3])
-        with self.assertRaisesRegexp(AssertionError, 'Arrays are not equal'):
+        with self.assertRaisesRegexp(AssertionError, "Arrays are not equal"):
             self.assertMaskedArrayEqual(arr1, arr2)
 
     def test_nonmasked_masked_same(self):
@@ -119,8 +118,9 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
 
 
 @tests.iristest_timing_decorator
-class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
-                                        tests.IrisTest_nometa):
+class Test_assertMaskedArrayAlmostEqual(
+    _MaskedArrayEquality, tests.IrisTest_nometa
+):
     @property
     def _func(self):
         return self.assertMaskedArrayAlmostEqual
@@ -132,5 +132,5 @@ class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
             self.assertMaskedArrayAlmostEqual(arr1, arr2, decimal=3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

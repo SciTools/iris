@@ -8,8 +8,8 @@ Unit tests for the :class:`iris._data_manager.DataManager`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -29,7 +29,7 @@ from iris._lazy_data import as_lazy_data
 class Test___copy__(tests.IrisTest):
     def test(self):
         dm = DataManager(np.array(0))
-        emsg = 'Shallow-copy of {!r} is not permitted.'
+        emsg = "Shallow-copy of {!r} is not permitted."
         name = type(dm).__name__
         with self.assertRaisesRegexp(copy.Error, emsg.format(name)):
             copy.copy(dm)
@@ -38,7 +38,7 @@ class Test___copy__(tests.IrisTest):
 class Test___deepcopy__(tests.IrisTest):
     def test(self):
         dm = DataManager(np.array(0))
-        method = 'iris._data_manager.DataManager._deepcopy'
+        method = "iris._data_manager.DataManager._deepcopy"
         return_value = mock.sentinel.return_value
         with mock.patch(method) as mocker:
             mocker.return_value = return_value
@@ -157,13 +157,13 @@ class Test___repr__(tests.IrisTest):
     def test_real(self):
         dm = DataManager(self.real_array)
         result = repr(dm)
-        expected = '{}({!r})'.format(self.name, self.real_array)
+        expected = "{}({!r})".format(self.name, self.real_array)
         self.assertEqual(result, expected)
 
     def test_lazy(self):
         dm = DataManager(self.lazy_array)
         result = repr(dm)
-        expected = '{}({!r})'.format(self.name, self.lazy_array)
+        expected = "{}({!r})".format(self.name, self.lazy_array)
         self.assertEqual(result, expected)
 
 
@@ -175,13 +175,13 @@ class Test__assert_axioms(tests.IrisTest):
 
     def test_array_none(self):
         self.dm._real_array = None
-        emsg = 'Unexpected data state, got no lazy and no real data'
+        emsg = "Unexpected data state, got no lazy and no real data"
         with self.assertRaisesRegexp(AssertionError, emsg):
             self.dm._assert_axioms()
 
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
-        emsg = 'Unexpected data state, got lazy and real data'
+        emsg = "Unexpected data state, got lazy and real data"
         with self.assertRaisesRegexp(AssertionError, emsg):
             self.dm._assert_axioms()
 
@@ -237,25 +237,25 @@ class Test__deepcopy(tests.IrisTest):
 
     def test_real_with_real_failure(self):
         dm = DataManager(self.real_array)
-        emsg = 'Cannot copy'
+        emsg = "Cannot copy"
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_real_with_lazy_failure(self):
         dm = DataManager(self.real_array)
-        emsg = 'Cannot copy'
+        emsg = "Cannot copy"
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
     def test_lazy_with_real_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
-        emsg = 'Cannot copy'
+        emsg = "Cannot copy"
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_lazy_with_lazy_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
-        emsg = 'Cannot copy'
+        emsg = "Cannot copy"
         with self.assertRaisesRegexp(ValueError, emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
@@ -309,7 +309,7 @@ class Test_data__getter(tests.IrisTest):
         self.assertArrayEqual(result, self.mask_array_masked)
 
     def test_with_real_masked_constant(self):
-        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype("f8"))
         masked_constant = masked_data[0]
         dm = DataManager(masked_constant)
         result = dm.data
@@ -413,7 +413,7 @@ class Test_data__setter(tests.IrisTest):
 
     def test_scalar_1d_to_zero_ndim_fail(self):
         dm = DataManager(np.array([123]))
-        emsg = 'Require data with shape \(1,\), got \(\).'
+        emsg = "Require data with shape \(1,\), got \(\)."
         with self.assertRaisesRegexp(ValueError, emsg):
             dm.data = 456
 
@@ -472,7 +472,7 @@ class Test_data__setter(tests.IrisTest):
         self.assertArrayEqual(dm.data, real_array)
 
     def test_real_masked_constant_to_array(self):
-        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype('f8'))
+        masked_data = ma.masked_array([666], mask=True, dtype=np.dtype("f8"))
         masked_constant = masked_data[0]
         dm = DataManager(masked_constant)
         self.assertIsInstance(dm._real_array, ma.MaskedArray)
@@ -484,16 +484,16 @@ class Test_data__setter(tests.IrisTest):
 
 class Test_dtype(tests.IrisTest):
     def setUp(self):
-        self.real_array = np.array(0, dtype=np.dtype('int64'))
-        self.lazy_array = as_lazy_data(np.array(0, dtype=np.dtype('float64')))
+        self.real_array = np.array(0, dtype=np.dtype("int64"))
+        self.lazy_array = as_lazy_data(np.array(0, dtype=np.dtype("float64")))
 
     def test_real_array(self):
         dm = DataManager(self.real_array)
-        self.assertEqual(dm.dtype, np.dtype('int64'))
+        self.assertEqual(dm.dtype, np.dtype("int64"))
 
     def test_lazy_array(self):
         dm = DataManager(self.lazy_array)
-        self.assertEqual(dm.dtype, np.dtype('float64'))
+        self.assertEqual(dm.dtype, np.dtype("float64"))
 
 
 class Test_ndim(tests.IrisTest):
@@ -536,7 +536,7 @@ class Test_shape(tests.IrisTest):
 
 class Test_copy(tests.IrisTest):
     def setUp(self):
-        self.method = 'iris._data_manager.DataManager._deepcopy'
+        self.method = "iris._data_manager.DataManager._deepcopy"
         self.data = mock.sentinel.data
         self.return_value = mock.sentinel.return_value
         self.memo = {}
@@ -598,5 +598,5 @@ class Test_lazy_data(tests.IrisTest):
         self.assertIs(result, dm._lazy_array)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

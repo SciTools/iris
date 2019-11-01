@@ -8,8 +8,8 @@ Unit tests for `iris.aux_factory.AuxCoordFactory`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -143,9 +143,10 @@ class Test__nd_bounds(tests.IrisTest):
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
     def setUp(self):
-        path = tests.get_data_path(['NetCDF', 'testing',
-                                    'small_theta_colpex.nc'])
-        self.cube = iris.load_cube(path, 'air_potential_temperature')
+        path = tests.get_data_path(
+            ["NetCDF", "testing", "small_theta_colpex.nc"]
+        )
+        self.cube = iris.load_cube(path, "air_potential_temperature")
 
     def _check_lazy(self):
         coords = self.cube.aux_coords + self.cube.derived_coords
@@ -164,5 +165,5 @@ class Test_lazy_aux_coords(tests.IrisTest):
         self._check_lazy()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

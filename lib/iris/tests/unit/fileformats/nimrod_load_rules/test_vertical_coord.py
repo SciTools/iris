@@ -9,8 +9,8 @@ function.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -18,20 +18,24 @@ import iris.tests as tests
 
 from unittest import mock
 
-from iris.fileformats.nimrod_load_rules import (vertical_coord,
-                                                NIMROD_DEFAULT,
-                                                TranslationWarning)
+from iris.fileformats.nimrod_load_rules import (
+    vertical_coord,
+    NIMROD_DEFAULT,
+    TranslationWarning,
+)
 from iris.fileformats.nimrod import NimrodField
 
 
 class Test(tests.IrisTest):
-    NIMROD_LOCATION = 'iris.fileformats.nimrod_load_rules'
+    NIMROD_LOCATION = "iris.fileformats.nimrod_load_rules"
 
     def setUp(self):
-        self.field = mock.Mock(vertical_coord_type=NIMROD_DEFAULT,
-                               int_mdi=mock.sentinel.int_mdi,
-                               field_code=mock.sentinel.field_code,
-                               spec=NimrodField)
+        self.field = mock.Mock(
+            vertical_coord_type=NIMROD_DEFAULT,
+            int_mdi=mock.sentinel.int_mdi,
+            field_code=mock.sentinel.field_code,
+            spec=NimrodField,
+        )
         self.cube = mock.Mock()
 
     def _call_vertical_coord(self, vertical_coord_type):
@@ -39,26 +43,27 @@ class Test(tests.IrisTest):
         vertical_coord(self.cube, self.field)
 
     def test_unhandled(self):
-        with mock.patch('warnings.warn') as warn:
+        with mock.patch("warnings.warn") as warn:
             self._call_vertical_coord(-1)
-        warn.assert_called_once_with("Vertical coord -1 not yet handled",
-                                     TranslationWarning)
+        warn.assert_called_once_with(
+            "Vertical coord -1 not yet handled", TranslationWarning
+        )
 
     def test_orography(self):
-        name = 'orography_vertical_coord'
-        with mock.patch(self.NIMROD_LOCATION + '.' + name) as orog:
+        name = "orography_vertical_coord"
+        with mock.patch(self.NIMROD_LOCATION + "." + name) as orog:
             self.field.field_code = 73
             self._call_vertical_coord(None)
         orog.assert_called_once_with(self.cube, self.field)
 
     def test_height(self):
-        name = 'height_vertical_coord'
-        with mock.patch(self.NIMROD_LOCATION + '.' + name) as height:
+        name = "height_vertical_coord"
+        with mock.patch(self.NIMROD_LOCATION + "." + name) as height:
             self._call_vertical_coord(0)
         height.assert_called_once_with(self.cube, self.field)
 
     def test_null(self):
-        with mock.patch('warnings.warn') as warn:
+        with mock.patch("warnings.warn") as warn:
             self._call_vertical_coord(NIMROD_DEFAULT)
             self._call_vertical_coord(self.field.int_mdi)
         self.assertEqual(warn.call_count, 0)

@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris.plot.pcolor` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -16,12 +16,16 @@ import numpy as np
 
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import TestGraphicStringCoord
-from iris.tests.unit.plot._blockplot_common import \
-    MixinStringCoordPlot, Mixin2dCoordsPlot, Mixin2dCoordsContigTol
+from iris.tests.unit.plot._blockplot_common import (
+    MixinStringCoordPlot,
+    Mixin2dCoordsPlot,
+    Mixin2dCoordsContigTol,
+)
 
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
+
     PLOT_FUNCTION_TO_TEST = iplt.pcolor
 
 

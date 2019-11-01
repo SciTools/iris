@@ -5,8 +5,8 @@
 # licensing details.
 """Test function :func:`iris.util._is_circular`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -23,9 +23,9 @@ class Test(tests.IrisTest):
         self.assertTrue(_is_circular(data, 360))
 
     def test_negative_diff(self):
-        data = (np.arange(96) * -3.749998) + 3.56249908e+02
+        data = (np.arange(96) * -3.749998) + 3.56249908e02
         self.assertTrue(_is_circular(data, 360))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

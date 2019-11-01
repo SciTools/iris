@@ -22,7 +22,6 @@ exclude = '''
     | iris_image_test_output
     | results
     | tools
-    | tests
   )/
   | _ff_cross_references.py  # auto-generated files
   | std_names.py
