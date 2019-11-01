@@ -1328,7 +1328,7 @@ class ProtoCube(object):
             axis_dict = {'T': 1, 'Z': 2, 'Y': 3, 'X': 4}
             axis_index = axis_dict.get(self._guess_axis(name), 0)
             # The middle element ensures sorting is the same as Python 2.
-            return (axis_index, not isinstance(name, six.integer_types), name)
+            return (axis_index, not isinstance(name, int), name)
         names = sorted(space, key=axis_and_name)
         dim_by_name = {}
 
