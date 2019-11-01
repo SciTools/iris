@@ -9,8 +9,8 @@
 # importing anything else.
 import iris.tests as tests
 
+import pickle
 import unittest
-import six.moves.cPickle as pickle
 
 import iris
 if tests.GRIB_AVAILABLE:
