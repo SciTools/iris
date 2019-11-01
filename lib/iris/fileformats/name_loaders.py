@@ -5,8 +5,6 @@
 # licensing details.
 """NAME file format loading functions."""
 
-import six
-
 import collections
 import datetime
 import re

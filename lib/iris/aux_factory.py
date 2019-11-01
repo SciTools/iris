@@ -8,8 +8,6 @@ Definitions of derived coordinates.
 
 """
 
-import six
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 import warnings
 

@@ -9,8 +9,6 @@ Classes for representing multi-dimensional data with metadata.
 
 """
 
-import six
-
 from collections import namedtuple, OrderedDict
 try:  # Python 3
     from collections.abc import (Iterable,

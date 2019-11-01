@@ -13,7 +13,12 @@ References:
 [NUG] NetCDF User's Guide, http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html
 
 """
+<<<<<<< HEAD
 import six
+=======
+
+from __future__ import (absolute_import, division, print_function)
+>>>>>>> Removed remaining six imports.
 
 from abc import ABCMeta, abstractmethod
 

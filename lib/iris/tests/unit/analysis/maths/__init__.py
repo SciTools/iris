@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-import six
-
 from abc import ABCMeta, abstractproperty
 
 import numpy as np

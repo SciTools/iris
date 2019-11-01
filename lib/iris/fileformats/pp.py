@@ -8,8 +8,6 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-import six
-
 import abc
 import collections
 from copy import deepcopy

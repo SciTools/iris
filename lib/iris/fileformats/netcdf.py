@@ -18,8 +18,11 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 from six.moves import zip_longest  # Previous line may not be tampered with!
 =======
 from __future__ import (absolute_import, division, print_function)
+<<<<<<< HEAD
 >>>>>>> Removed uses of six.moves.
 import six
+=======
+>>>>>>> Removed remaining six imports.
 
 import collections
 from itertools import repeat

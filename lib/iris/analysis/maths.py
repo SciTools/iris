@@ -12,7 +12,6 @@ Basic mathematical and statistical operations.
 import inspect
 import math
 import operator
-import six
 import warnings
 
 import cf_units

@@ -9,8 +9,6 @@ translations.
 
 """
 
-import six
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple
 import copy

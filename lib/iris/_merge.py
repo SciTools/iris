@@ -11,8 +11,6 @@ Typically the cube merge process is handled by
 
 """
 
-import six
-
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
 

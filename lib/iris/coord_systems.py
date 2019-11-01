@@ -7,7 +7,12 @@
 Definitions of coordinate systems.
 
 """
+<<<<<<< HEAD
 import six
+=======
+
+from __future__ import (absolute_import, division, print_function)
+>>>>>>> Removed remaining six imports.
 
 from abc import ABCMeta, abstractmethod
 import warnings

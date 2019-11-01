@@ -8,8 +8,6 @@ Miscellaneous utility functions.
 
 """
 
-import six
-
 try:  # Python 3
     from collections.abc import Hashable
 except ImportError:  # Python 2.7

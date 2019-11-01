@@ -8,8 +8,6 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-import six
-
 from abc import ABCMeta
 from collections import namedtuple
 try:  # Python 3

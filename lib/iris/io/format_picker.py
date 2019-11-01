@@ -39,7 +39,12 @@ The calling sequence of handler is dependent on the function given in the origin
 
 
 """
+<<<<<<< HEAD
 import six
+=======
+
+from __future__ import (absolute_import, division, print_function)
+>>>>>>> Removed remaining six imports.
 
 try:  # Python 3
     from collections.abc import Callable
