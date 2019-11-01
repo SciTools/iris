@@ -391,7 +391,7 @@ def load_pairs_from_fields(fields, converter):
 
 
 def load_cubes(filenames, user_callback, loader, filter_function=None):
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     def _generate_all_fields_and_filenames():

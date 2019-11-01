@@ -1267,7 +1267,7 @@ def file_is_newer_than(result_path, source_paths):
 
     """
     # Accept a string as a single source path
-    if isinstance(source_paths, six.string_types):
+    if isinstance(source_paths, str):
         source_paths = [source_paths]
     # Fix our chosen timestamp function
     file_date = os.path.getmtime
@@ -1458,14 +1458,14 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
     """
 
-    if isinstance(name_or_coord, six.string_types):
+    if isinstance(name_or_coord, str):
         aux_coord = cube.coord(name_or_coord)
     elif isinstance(name_or_coord, iris.coords.Coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
         msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type six.string_types or "
+               "Ensure all coordinates are of type str or "
                "iris.coords.Coord.")
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)
@@ -1558,14 +1558,14 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
     """
 
-    if isinstance(name_or_coord, six.string_types):
+    if isinstance(name_or_coord, str):
         dim_coord = cube.coord(name_or_coord)
     elif isinstance(name_or_coord, iris.coords.Coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type
         msg = ("Don't know how to handle coordinate of type {}. "
-               "Ensure all coordinates are of type six.string_types or "
+               "Ensure all coordinates are of type str or "
                "iris.coords.Coord.")
         msg = msg.format(type(name_or_coord))
         raise TypeError(msg)

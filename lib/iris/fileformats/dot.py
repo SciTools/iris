@@ -61,7 +61,7 @@ def save(cube, target):
     See also :func:`iris.io.save`.
 
     """
-    if isinstance(target, six.string_types):
+    if isinstance(target, str):
         dot_file = open(target, "wt")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" in target.mode:
@@ -73,7 +73,7 @@ def save(cube, target):
     try:
         dot_file.write(cube_text(cube))
     finally:
-        if isinstance(target, six.string_types):
+        if isinstance(target, str):
             dot_file.close()
 
 
@@ -99,7 +99,7 @@ def save_png(source, target, launch=False):
         # Create dot file
         dot_file_path = iris.util.create_temp_filename(".dot")
         save(source, dot_file_path)
-    elif isinstance(source, six.string_types):
+    elif isinstance(source, str):
         dot_file_path = source
     else:
         raise ValueError("Can only write dot png for a Cube or DOT file")
@@ -109,7 +109,7 @@ def save_png(source, target, launch=False):
         raise ValueError('Executable "dot" not found: '
                          'Review dot_path setting in site.cfg.')
     # To filename or open file handle?
-    if isinstance(target, six.string_types):
+    if isinstance(target, str):
         subprocess.call([_dot_path(), '-T', 'png', '-o', target,
                          dot_file_path])
     elif hasattr(target, "write"):

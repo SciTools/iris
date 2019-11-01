@@ -260,7 +260,7 @@ class _MergeTest(object):
         return str(arc.exception)
 
     def check_fail(self, *substrs):
-        if isinstance(substrs, six.string_types):
+        if isinstance(substrs, str):
             substrs = [substrs]
         msg = self.check_merge_fails_with_message()
         for substr in substrs:

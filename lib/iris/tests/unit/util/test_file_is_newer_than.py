@@ -7,7 +7,6 @@
 Test function :func:`iris.util.test_file_is_newer`.
 
 """
-import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -53,7 +52,7 @@ class TestFileIsNewer(tests.IrisTest):
         """Test expected result of executing with given args."""
         # Make args into full paths
         result_path = self._name2path(result_name)
-        if isinstance(source_names, six.string_types):
+        if isinstance(source_names, str):
             source_paths = self._name2path(source_names)
         else:
             source_paths = [self._name2path(name)

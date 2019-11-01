@@ -26,7 +26,7 @@ import iris.exceptions
 class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
     def __setitem__(self, key, value):
-        if not isinstance(key, six.string_types):
+        if not isinstance(key, str):
             raise ValueError("key is not a string")
         if key in self:
             raise ValueError("A saver already exists for", key)
@@ -382,11 +382,11 @@ def save(source, target, saver=None, **kwargs):
 
     """
     # Determine format from filename
-    if isinstance(target, six.string_types) and saver is None:
+    if isinstance(target, str) and saver is None:
         saver = find_saver(target)
     elif hasattr(target, 'name') and saver is None:
         saver = find_saver(target.name)
-    elif isinstance(saver, six.string_types):
+    elif isinstance(saver, str):
         saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")

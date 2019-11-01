@@ -688,7 +688,7 @@ def load_cubes(filenames, callback=None):
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:
@@ -728,7 +728,7 @@ def _bytes_if_ascii(string):
     be returned by the function unchanged.
 
     """
-    if isinstance(string, six.string_types):
+    if isinstance(string, str):
         try:
             return string.encode(encoding='ascii')
         except (AttributeError, UnicodeEncodeError):
@@ -2355,7 +2355,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         packspecs = packing
 
     # Make fill-value(s) into an iterable over cubes.
-    if isinstance(fill_value, six.string_types):
+    if isinstance(fill_value, str):
         # Strings are awkward -- handle separately.
         fill_values = repeat(fill_value)
     else:

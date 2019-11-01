@@ -229,7 +229,7 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, six.string_types):
+    if isinstance(uris, str):
         uris = [uris]
 
     # Group collections of uris by their iris handler

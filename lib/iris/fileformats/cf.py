@@ -102,7 +102,7 @@ class CFVariable(six.with_metaclass(ABCMeta, object)):
 
         if target is None:
             target = variables
-        elif isinstance(target, six.string_types):
+        elif isinstance(target, str):
             if target not in variables:
                 raise ValueError('Cannot identify unknown target CF-netCDF variable %r' % target)
             target = {target: variables[target]}
@@ -1078,7 +1078,7 @@ class CFReader(object):
                 cf_root_var = self.cf_group[cf_root]
                 name = cf_root_var.standard_name or cf_root_var.long_name
                 terms = reference_terms.get(name, [])
-                if isinstance(terms, six.string_types) or \
+                if isinstance(terms, str) or \
                         not isinstance(terms, Iterable):
                     terms = [terms]
                 cf_var_name = cf_var.cf_name

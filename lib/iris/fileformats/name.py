@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Provides NAME file format loading capabilities."""
-import six
 
 import iris.io
 
@@ -67,7 +66,7 @@ def load_cubes(filenames, callback):
          A generator of :class:`iris.cubes.Cube` instances.
 
     """
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:

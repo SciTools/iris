@@ -11,7 +11,6 @@ See also: :mod:`NumPy <numpy>`.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 import re
 import warnings
@@ -143,7 +142,7 @@ cube_delta(temperature_cube, 'pressure')
 
     """
     # handle the case where a user passes a coordinate name
-    if isinstance(coord, six.string_types):
+    if isinstance(coord, str):
         coord = cube.coord(coord)
 
     if coord.ndim != 1:
@@ -242,7 +241,7 @@ def differentiate(cube, coord_to_differentiate):
     # This operation results in a copy of the original cube.
     delta_cube = cube_delta(cube, coord_to_differentiate)
 
-    if isinstance(coord_to_differentiate, six.string_types):
+    if isinstance(coord_to_differentiate, str):
         coord = cube.coord(coord_to_differentiate)
     else:
         coord = coord_to_differentiate

@@ -13,7 +13,6 @@ The documentation for this file format can be found
 `here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
 
 """
-import six
 
 import calendar
 import datetime
@@ -180,7 +179,7 @@ def load_cubes(filespecs, callback=None):
         The resultant cubes may not be in the same order as in the file.
 
     """
-    if isinstance(filespecs, six.string_types):
+    if isinstance(filespecs, str):
         filespecs = [filespecs]
 
     for filespec in filespecs:

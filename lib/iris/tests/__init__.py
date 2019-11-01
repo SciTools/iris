@@ -176,7 +176,7 @@ def get_data_path(relative_path):
     as a string, or sequence of strings.
 
     """
-    if not isinstance(relative_path, six.string_types):
+    if not isinstance(relative_path, str):
         relative_path = os.path.join(*relative_path)
     test_data_dir = iris.config.TEST_DATA_DIR
     if test_data_dir is None:
@@ -186,7 +186,7 @@ def get_data_path(relative_path):
     if _EXPORT_DATAPATHS_FILE is not None:
         _EXPORT_DATAPATHS_FILE.write(data_path + '\n')
 
-    if isinstance(data_path, six.string_types) and not os.path.exists(data_path):
+    if isinstance(data_path, str) and not os.path.exists(data_path):
         # if the file is gzipped, ungzip it and return the path of the ungzipped
         # file.
         gzipped_fname = data_path + '.gz'
@@ -230,7 +230,7 @@ class IrisTest_nometa(unittest.TestCase):
         as a string, or sequence of strings.
 
         """
-        if not isinstance(relative_path, six.string_types):
+        if not isinstance(relative_path, str):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
@@ -329,7 +329,7 @@ class IrisTest_nometa(unittest.TestCase):
         # Convert the netCDF file to CDL file format.
         if flags is None:
             flags = []
-        elif isinstance(flags, six.string_types):
+        elif isinstance(flags, str):
             flags = flags.split()
         else:
             flags = list(map(str, flags))

@@ -494,7 +494,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, six.string_types):
+                if isinstance(ignore, str):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -1015,8 +1015,8 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                 return self.point == other
         elif isinstance(other, Cell):
             return (self.point == other.point) and (self.bound == other.bound)
-        elif (isinstance(other, six.string_types) and self.bound is None and
-              isinstance(self.point, six.string_types)):
+        elif (isinstance(other, str) and self.bound is None and
+              isinstance(self.point, str)):
             return self.point == other
         else:
             return NotImplemented
@@ -1760,17 +1760,16 @@ class Coord(_DimensionalMetadata):
             def serialize(x):
                 return '|'.join([str(i) for i in x.flatten()])
             bounds = None
-            string_type_fmt = 'S{}' if six.PY2 else 'U{}'
             if self.has_bounds():
                 shape = self._bounds_dm.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype(string_type_fmt.format(max(map(len, bounds))))
+                dtype = np.dtype('U{}'.format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
-            dtype = np.dtype(string_type_fmt.format(len(points)))
+            dtype = np.dtype('U{}'.format(len(points)))
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points, dtype=dtype),
                               bounds=bounds)
@@ -2389,7 +2388,7 @@ class CellMethod(iris.util._OrderedHashable):
             comments.
 
         """
-        if not isinstance(method, six.string_types):
+        if not isinstance(method, str):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
@@ -2399,7 +2398,7 @@ class CellMethod(iris.util._OrderedHashable):
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
-        elif isinstance(coords, six.string_types):
+        elif isinstance(coords, str):
             _coords.append(CFVariableMixin.token(coords) or default_name)
         else:
             normalise = (lambda coord: coord.name(token=True) if
@@ -2410,7 +2409,7 @@ class CellMethod(iris.util._OrderedHashable):
         _intervals = []
         if intervals is None:
             pass
-        elif isinstance(intervals, six.string_types):
+        elif isinstance(intervals, str):
             _intervals = [intervals]
         else:
             _intervals.extend(intervals)
@@ -2418,7 +2417,7 @@ class CellMethod(iris.util._OrderedHashable):
         _comments = []
         if comments is None:
             pass
-        elif isinstance(comments, six.string_types):
+        elif isinstance(comments, str):
             _comments = [comments]
         else:
             _comments.extend(comments)

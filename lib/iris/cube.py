@@ -336,7 +336,7 @@ class CubeList(list):
            over which to perform the extraction.
 
         """
-        if isinstance(coord_names, six.string_types):
+        if isinstance(coord_names, str):
             coord_names = [coord_names]
 
         def make_overlap_fn(coord_name):
@@ -633,7 +633,7 @@ def _is_single_item(testee):
     We count string types as 'single', also.
 
     """
-    return (isinstance(testee, six.string_types) or
+    return (isinstance(testee, str) or
             not isinstance(testee, Iterable))
 
 
@@ -746,7 +746,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         # Temporary error while we transition the API.
-        if isinstance(data, six.string_types):
+        if isinstance(data, str):
             raise TypeError('Invalid data type: {!r}.'.format(data))
 
         # Initialise the cube data manager.
@@ -884,7 +884,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, six.string_types):
+                if isinstance(ignore, str):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -1425,7 +1425,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         name = None
         coord = None
 
-        if isinstance(name_or_coord, six.string_types):
+        if isinstance(name_or_coord, str):
             name = name_or_coord
         else:
             coord = name_or_coord
@@ -1551,7 +1551,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         elif len(coords) == 0:
             _name = name_or_coord
             if name_or_coord is not None:
-                if not isinstance(name_or_coord, six.string_types):
+                if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
             bad_name = _name or standard_name or long_name or ''
             msg = 'Expected to find exactly 1 %s coordinate, but found ' \
@@ -1586,7 +1586,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The :class:`iris.coord_systems.CoordSystem` or None.
 
         """
-        if isinstance(spec, six.string_types) or spec is None:
+        if isinstance(spec, str) or spec is None:
             spec_name = spec
         else:
             msg = "type %s is not a subclass of CoordSystem" % spec
@@ -1632,7 +1632,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         name = None
 
-        if isinstance(name_or_cell_measure, six.string_types):
+        if isinstance(name_or_cell_measure, str):
             name = name_or_cell_measure
         else:
             cell_measure = name_or_cell_measure
@@ -1674,7 +1674,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                              ', '.join(cm.name() for cm in cell_measures))
             raise iris.exceptions.CellMeasureNotFoundError(msg)
         elif len(cell_measures) == 0:
-            if isinstance(name_or_cell_measure, six.string_types):
+            if isinstance(name_or_cell_measure, str):
                 bad_name = name_or_cell_measure
             else:
                 bad_name = (name_or_cell_measure and
@@ -1709,7 +1709,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         name = None
 
-        if isinstance(name_or_ancillary_variable, six.string_types):
+        if isinstance(name_or_ancillary_variable, str):
             name = name_or_ancillary_variable
         else:
             ancillary_variable = name_or_ancillary_variable
@@ -1752,7 +1752,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                              for anc_var in ancillary_variables))
             raise iris.exceptions.AncillaryVariableNotFoundError(msg)
         elif len(ancillary_variables) == 0:
-            if isinstance(name_or_ancillary_variable, six.string_types):
+            if isinstance(name_or_ancillary_variable, str):
                 bad_name = name_or_ancillary_variable
             else:
                 bad_name = (name_or_ancillary_variable and
@@ -2210,7 +2210,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     # Format cell depending on type of point and whether it
                     # has a bound.
                     coord_cell = coord.cell(0)
-                    if isinstance(coord_cell.point, six.string_types):
+                    if isinstance(coord_cell.point, str):
                         # Indent string type coordinates
                         coord_cell_split = [iris.util.clip_string(str(item))
                                             for item in
@@ -2816,13 +2816,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         coords = []
         for name_or_coord in names_or_coords:
-            if (isinstance(name_or_coord, six.string_types) or
+            if (isinstance(name_or_coord, str) or
                     isinstance(name_or_coord, iris.coords.Coord)):
                 coords.append(self.coord(name_or_coord))
             else:
                 # Don't know how to handle this type
                 msg = ("Don't know how to handle coordinate of type %s. "
-                       "Ensure all coordinates are of type six.string_types "
+                       "Ensure all coordinates are of type str "
                        "or iris.coords.Coord.") % (type(name_or_coord), )
                 raise TypeError(msg)
         return coords
@@ -3053,7 +3053,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if type(value) in (list, tuple):
                     delimiter = '[]' if isinstance(value, list) else '()'
                     value = ', '.join(("'%s'"
-                                       if isinstance(item, six.string_types)
+                                       if isinstance(item, str)
                                        else '%s') % (item, ) for item in value)
                     value = delimiter[0] + value + delimiter[1]
                 else:

@@ -83,7 +83,7 @@ class Constraint(object):
         :class:`iris.coords.Cell`.
 
         """
-        if not (name is None or isinstance(name, six.string_types)):
+        if not (name is None or isinstance(name, str)):
             raise TypeError('name must be None or string, got %r' % name)
         if not (cube_func is None or callable(cube_func)):
             raise TypeError('cube_func must be None or callable, got %r'
@@ -251,7 +251,7 @@ class _CoordConstraint(object):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, Iterable) and
                 not isinstance(self._coord_thing,
-                               (six.string_types, iris.coords.Cell))):
+                               (str, iris.coords.Cell))):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
             if coord.has_bounds():
@@ -421,7 +421,7 @@ def as_constraint(thing):
         return thing
     elif thing is None:
         return Constraint()
-    elif isinstance(thing, six.string_types):
+    elif isinstance(thing, str):
         return Constraint(thing)
     else:
         raise TypeError('%r cannot be cast to a constraint.' % thing)

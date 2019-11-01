@@ -214,7 +214,7 @@ def load_cubes(filenames, callback=None):
         The resultant cubes may not be in the same order as in the files.
 
     """
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:
