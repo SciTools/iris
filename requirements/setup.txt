@@ -3,4 +3,3 @@
 
 setuptools
 # pyke (not pip installable)  #conda: pyke
-six
