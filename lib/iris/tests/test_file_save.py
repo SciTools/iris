@@ -122,7 +122,7 @@ class TestSaveDot(TestSaveMethods):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = True)
 
     def test_bytesio(self):
-        sio = six.StringIO()
+        sio = io.StringIO
 
         # Save from dot direct
         dot.save(self.cube1, self.temp_filename1)
