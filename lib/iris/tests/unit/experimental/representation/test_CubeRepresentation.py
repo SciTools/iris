@@ -155,26 +155,29 @@ class Test__get_bits(tests.IrisTest):
             self.assertIn(coord, content_str)
 
     def test_headings__cellmeasures(self):
-        contents = self.representer.str_headings['Cell measures:']
-        content_str = ','.join(content for content in contents)
-        cell_measures = [c.name() for c in self.cube.cell_measures()
-                         if c.shape != (1,)]
+        contents = self.representer.str_headings["Cell measures:"]
+        content_str = ",".join(content for content in contents)
+        cell_measures = [
+            c.name() for c in self.cube.cell_measures() if c.shape != (1,)
+        ]
         for coord in cell_measures:
             self.assertIn(coord, content_str)
 
     def test_headings__ancillaryvars(self):
-        contents = self.representer.str_headings['Ancillary variables:']
-        content_str = ','.join(content for content in contents)
-        ancillary_variables = [c.name() for c in
-                               self.cube.ancillary_variables()]
+        contents = self.representer.str_headings["Ancillary variables:"]
+        content_str = ",".join(content for content in contents)
+        ancillary_variables = [
+            c.name() for c in self.cube.ancillary_variables()
+        ]
         for coord in ancillary_variables:
             self.assertIn(coord, content_str)
 
     def test_headings__scalarcellmeasures(self):
-        contents = self.representer.str_headings['Scalar cell measures:']
-        content_str = ','.join(content for content in contents)
-        scalar_cell_measures = [c.name() for c in self.cube.cell_measures()
-                                if c.shape == (1,)]
+        contents = self.representer.str_headings["Scalar cell measures:"]
+        content_str = ",".join(content for content in contents)
+        scalar_cell_measures = [
+            c.name() for c in self.cube.cell_measures() if c.shape == (1,)
+        ]
         for coord in scalar_cell_measures:
             self.assertIn(coord, content_str)
 

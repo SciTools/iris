@@ -315,7 +315,7 @@ class CubeRepresentation(object):
                         colspan = self.ndims
                     else:
                         title = line.strip()
-                        body = ''
+                        body = ""
                         colspan = self.ndims
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan)
