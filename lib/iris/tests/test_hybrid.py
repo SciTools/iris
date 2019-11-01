@@ -7,7 +7,6 @@
 Test the hybrid vertical coordinate representations.
 
 """
-import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -60,7 +59,7 @@ class TestRealistic4d(tests.GraphicsTest):
         # Check the factory now only has surface_altitude and delta dependencies.
         factory = cube.aux_factory(name='altitude')
         t = [key
-             for key, coord in six.iteritems(factory.dependencies)
+             for key, coord in factory.dependencies.items()
              if coord is not None]
         self.assertCountEqual(t, ['orography', 'delta'])
 
@@ -74,7 +73,7 @@ class TestRealistic4d(tests.GraphicsTest):
         # Check the factory now only has sigma and delta dependencies.
         factory = cube.aux_factory(name='altitude')
         t = [key
-             for key, coord in six.iteritems(factory.dependencies)
+             for key, coord in factory.dependencies.items()
              if coord is not None]
         self.assertCountEqual(t, ['sigma', 'delta'])
 

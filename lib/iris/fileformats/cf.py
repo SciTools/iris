@@ -257,7 +257,7 @@ class CFAncillaryDataVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF ancillary data variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for ancillary data variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -297,7 +297,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF auxiliary coordinate variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for auxiliary coordinate variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -339,7 +339,7 @@ class CFBoundaryVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF boundary variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for a boundary variable reference.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -407,7 +407,7 @@ class CFClimatologyVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF climatology variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for a climatology variable reference.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -471,7 +471,7 @@ class CFCoordinateVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF coordinate variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             if nc_var_name in ignore:
                 continue
             # String variables can't be coordinates
@@ -529,7 +529,7 @@ class _CFFormulaTermsVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF formula terms variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for formula terms variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -585,7 +585,7 @@ class CFGridMappingVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all grid mapping variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for a grid mapping variable reference.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -622,7 +622,7 @@ class CFLabelVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF label variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for label variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -771,7 +771,7 @@ class CFMeasureVariable(CFVariable):
         ignore, target = cls._identify_common(variables, ignore, target)
 
         # Identify all CF measure variables.
-        for nc_var_name, nc_var in six.iteritems(target):
+        for nc_var_name, nc_var in target.items():
             # Check for measure variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -811,7 +811,7 @@ class CFGroup(MutableMapping, object):
     def _cf_getter(self, cls):
         # Generate dictionary with dictionary comprehension.
         return {cf_name: cf_var
-                for cf_name, cf_var in six.iteritems(self._cf_variables)
+                for cf_name, cf_var in self._cf_variables.items()
                 if isinstance(cf_var, cls)}
 
     @property
@@ -848,7 +848,7 @@ class CFGroup(MutableMapping, object):
     def formula_terms(self):
         """Collection of CF-netCDF variables that participate in a CF-netCDF formula term."""
         return {cf_name: cf_var
-                for cf_name, cf_var in six.iteritems(self._cf_variables)
+                for cf_name, cf_var in self._cf_variables.items()
                 if cf_var.has_formula_terms()}
 
     @property
@@ -969,8 +969,8 @@ class CFReader(object):
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
 
-        for cf_var in six.itervalues(formula_terms):
-            for cf_root, cf_term in six.iteritems(cf_var.cf_terms_by_root):
+        for cf_var in formula_terms.values():
+            for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 # Ignore formula terms owned by a bounds variable.
                 if cf_root not in self.cf_group.bounds:
                     cf_name = cf_var.cf_name
@@ -1008,7 +1008,7 @@ class CFReader(object):
                                                target=cf_variable.cf_name,
                                                warn=False)
                 # Sanity check dimensionality coverage.
-                for cf_name, cf_var in six.iteritems(match):
+                for cf_name, cf_var in match.items():
                     if cf_var.spans(cf_variable):
                         cf_group[cf_name] = self.cf_group[cf_name]
                     else:
@@ -1038,7 +1038,7 @@ class CFReader(object):
                                     in coordinates_attr.split() if cf_name in
                                     self.cf_group.coordinates})
                 # Add appropriate formula terms.
-                for cf_var in six.itervalues(self.cf_group.formula_terms):
+                for cf_var in self.cf_group.formula_terms.values():
                     for cf_root in cf_var.cf_terms_by_root:
                         if (cf_root in cf_group and
                                 cf_var.cf_name not in cf_group):
@@ -1067,14 +1067,14 @@ class CFReader(object):
         # a subset of the dimensionality of the data variable.
         ignored = set()
 
-        for cf_variable in six.itervalues(self.cf_group):
+        for cf_variable in self.cf_group.values():
             _build(cf_variable)
 
         # Determine whether there are any formula terms that
         # may be promoted to a CFDataVariable and restrict promotion to only
         # those formula terms that are reference surface/phenomenon.
-        for cf_var in six.itervalues(self.cf_group.formula_terms):
-            for cf_root, cf_term in six.iteritems(cf_var.cf_terms_by_root):
+        for cf_var in self.cf_group.formula_terms.values():
+            for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 cf_root_var = self.cf_group[cf_root]
                 name = cf_root_var.standard_name or cf_root_var.long_name
                 terms = reference_terms.get(name, [])
@@ -1107,7 +1107,7 @@ class CFReader(object):
 
     def _reset(self):
         """Reset the attribute touch history of each variable."""
-        for nc_var_name in six.iterkeys(self._dataset.variables):
+        for nc_var_name in self._dataset.variables.keys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
     def __del__(self):

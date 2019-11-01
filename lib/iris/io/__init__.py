@@ -9,7 +9,6 @@ Provides an interface to manage URI scheme support in iris.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from collections import OrderedDict
 import glob
@@ -155,7 +154,7 @@ def expand_filespecs(file_specs):
 
     if not all(all_expanded):
         msg = "One or more of the files specified did not exist:"
-        for pattern, expanded in six.iteritems(glob_expanded):
+        for pattern, expanded in glob_expanded.items():
             if expanded:
                 msg += '\n    - "{}" matched {} file(s)'.format(pattern,
                                                                 len(expanded))

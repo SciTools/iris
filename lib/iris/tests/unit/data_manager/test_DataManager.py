@@ -17,7 +17,6 @@ from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
-import six
 
 from iris._data_manager import DataManager
 from iris._lazy_data import as_lazy_data
@@ -45,7 +44,7 @@ class Test___deepcopy__(tests.IrisTest):
             self.assertEqual(kwargs, dict())
             self.assertEqual(len(args), 2)
             expected = [return_value, [dm]]
-            for item in six.itervalues(args):
+            for item in args.values():
                 self.assertIn(item, expected)
         self.assertIs(result, return_value)
 

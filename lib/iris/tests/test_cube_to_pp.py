@@ -248,7 +248,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(bits) : [iris.fileformats.pp.lbproc_map[bit] for bit in bits] for bits in multiple_bit_values}
 
-        for lbproc, descriptions in six.iteritems(multiple_map):
+        for lbproc, descriptions in multiple_map.items():
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions
             

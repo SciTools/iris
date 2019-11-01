@@ -147,7 +147,7 @@ def negate_expectations(expectations):
             expected = not expected
         return expected
 
-    return {name: negate(value) for name, value in six.iteritems(expectations)}
+    return {name: negate(value) for name, value in expectations.items()}
 
 
 EQ_EXPECTATIONS = {'no_difference': True, 'item1_lo': False, 'item1_hi': False,

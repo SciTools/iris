@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -42,7 +40,7 @@ class TestImageFile(tests.IrisTest):
 
         # "imagerepo" maps key: list-of-uris. Put all the uris in one big set.
         tests_uris = set(itertools.chain.from_iterable(
-            six.itervalues(imagerepo)))
+            imagerepo.values()))
 
         missing_refs = list(tests_uris - reference_image_uris)
         n_missing_refs = len(missing_refs)

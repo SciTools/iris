@@ -7,7 +7,6 @@
 Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 
 """
-import six
 
 import os
 import subprocess
@@ -241,7 +240,7 @@ digraph CubeGraph{
     %(associations)s
 }
     '''
-    cube_attributes = list(sorted(six.iteritems(cube.attributes),
+    cube_attributes = list(sorted(cube.attributes.items(),
                                   key=lambda item: item[0]))
     cube_node = _dot_node(_GRAPH_INDENT, ':Cube', 'Cube', cube_attributes)
     res_string = template % {
@@ -278,7 +277,7 @@ def _coord_text(label, coord):
     attrs = [(name, getattr(coord, name)) for name in _dot_attrs]
 
     if coord.attributes:
-        custom_attrs = sorted(six.iteritems(coord.attributes), key=lambda item: item[0])
+        custom_attrs = sorted(coord.attributes.items(), key=lambda item: item[0])
         attrs.extend(custom_attrs)
 
     node = _dot_node(_SUBGRAPH_INDENT, label, coord.__class__.__name__, attrs)
@@ -298,7 +297,7 @@ def _coord_system_text(cs, uid):
 
     """
     attrs = []
-    for k, v in six.iteritems(cs.__dict__):
+    for k, v in cs.__dict__.items():
         if isinstance(v, iris.cube.Cube):
             attrs.append((k, 'defined'))
         else:

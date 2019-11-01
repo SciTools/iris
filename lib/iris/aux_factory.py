@@ -121,7 +121,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
         # Which dimensions are relevant?
         # e.g. If sigma -> [1] and orog -> [2, 3] then result = [1, 2, 3]
         derived_dims = set()
-        for coord in six.itervalues(self.dependencies):
+        for coord in self.dependencies.values():
             if coord:
                 derived_dims.update(coord_dims_func(coord))
 
@@ -144,7 +144,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         new_dependencies = {}
-        for key, coord in six.iteritems(self.dependencies):
+        for key, coord in self.dependencies.items():
             if coord:
                 coord = new_coord_mapping[id(coord)]
             new_dependencies[key] = coord
@@ -156,14 +156,14 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         """
         element = doc.createElement('coordFactory')
-        for key, coord in six.iteritems(self.dependencies):
+        for key, coord in self.dependencies.items():
             element.setAttribute(key, coord._xml_id())
         element.appendChild(self.make_coord().xml_element(doc))
         return element
 
     def _dependency_dims(self, coord_dims_func):
         dependency_dims = {}
-        for key, coord in six.iteritems(self.dependencies):
+        for key, coord in self.dependencies.items():
             if coord:
                 dependency_dims[key] = coord_dims_func(coord)
         return dependency_dims
@@ -261,7 +261,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             ndim = 1
 
         nd_points_by_key = {}
-        for key, coord in six.iteritems(self.dependencies):
+        for key, coord in self.dependencies.items():
             if coord:
                 # Get the points as consistent with the Cube.
                 nd_points = self._nd_points(coord, dependency_dims[key], ndim)
@@ -303,7 +303,7 @@ class AuxCoordFactory(six.with_metaclass(ABCMeta, CFVariableMixin)):
             ndim = 1
 
         nd_values_by_key = {}
-        for key, coord in six.iteritems(self.dependencies):
+        for key, coord in self.dependencies.items():
             if coord:
                 # Get the bounds or points as consistent with the Cube.
                 if coord.nbounds:

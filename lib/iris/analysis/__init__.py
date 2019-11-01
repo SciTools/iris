@@ -36,7 +36,6 @@ The gallery contains several interesting worked examples of how an
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from collections import OrderedDict
 try:  # Python 3
@@ -349,7 +348,7 @@ def coord_comparison(*cubes):
 
     # for convenience, turn all of the sets in the dictionary into lists,
     # sorted by the name of the group
-    for key, groups in six.iteritems(result):
+    for key, groups in result.items():
         result[key] = sorted(groups, key=lambda group: group.name())
 
     return result
@@ -1971,7 +1970,7 @@ class _Groupby(object):
                 # Calculate the new shared coordinates.
                 self._compute_shared_coords()
             # Generate the group-by slices/groups.
-            for groupby_slice in six.itervalues(self._slices_by_key):
+            for groupby_slice in self._slices_by_key.values():
                 yield groupby_slice
 
         return
@@ -1985,7 +1984,7 @@ class _Groupby(object):
         # Iterate over the ordered dictionary in order to reduce
         # multiple slices into a single tuple and collapse
         # all items from containing list.
-        for key, groupby_slices in six.iteritems(self._slices_by_key):
+        for key, groupby_slices in self._slices_by_key.items():
             if len(groupby_slices) > 1:
                 # Compress multiple slices into tuple representation.
                 groupby_indicies = []
@@ -2006,7 +2005,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a group-by slice that samples the first element from each group.
-        for key_slice in six.itervalues(self._slices_by_key):
+        for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
                 groupby_slice.append(key_slice[0])
             else:
@@ -2024,7 +2023,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a list of tuple group boundary indexes.
-        for key_slice in six.itervalues(self._slices_by_key):
+        for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
                 groupby_bounds.append((key_slice[0], key_slice[-1]))
             else:
@@ -2047,7 +2046,7 @@ class _Groupby(object):
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for key_slice in six.itervalues(self._slices_by_key):
+                    for key_slice in self._slices_by_key.values():
                         if isinstance(key_slice, slice):
                             indices = key_slice.indices(
                                 coord.points.shape[dim])

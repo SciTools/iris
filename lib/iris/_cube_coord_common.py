@@ -57,7 +57,7 @@ class LimitedAttributeDict(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
-        for key in six.iterkeys(self):
+        for key in self.keys():
             if key in self._forbidden_keys:
                 raise ValueError('%r is not a permitted attribute' % key)
 
@@ -65,7 +65,7 @@ class LimitedAttributeDict(dict):
         # Extend equality to allow for NumPy arrays.
         match = set(self.keys()) == set(other.keys())
         if match:
-            for key, value in six.iteritems(self):
+            for key, value in self.items():
                 match = value == other[key]
                 try:
                     match = bool(match)

@@ -131,7 +131,7 @@ class FormatAgent(object):
                 return format_spec
 
         printable_values = {}
-        for key, value in six.iteritems(element_cache):
+        for key, value in element_cache.items():
             value = str(value)
             if len(value) > 50:
                 value = value[:50] + '...'

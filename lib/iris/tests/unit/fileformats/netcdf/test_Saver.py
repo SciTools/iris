@@ -194,7 +194,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=None)
             ds = nc.Dataset(nc_path)
-            for dim in six.itervalues(ds.dimensions):
+            for dim in ds.dimensions.values():
                 self.assertFalse(dim.isunlimited())
             ds.close()
 

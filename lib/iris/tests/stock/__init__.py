@@ -9,7 +9,6 @@ A collection of routines which create standard Cubes for test purposes.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from datetime import datetime
 import os.path
@@ -467,7 +466,7 @@ def realistic_4d():
     # sort the arrays based on the order they were originally given.
     # The names given are of the form 'arr_1' or 'arr_10'
     _, arrays = zip(
-        *sorted(six.iteritems(r), key=lambda item: int(item[0][4:])))
+        *sorted(r.items(), key=lambda item: int(item[0][4:])))
 
     lat_pts, lat_bnds, lon_pts, lon_bnds, level_height_pts, \
         level_height_bnds, model_level_pts, sigma_pts, sigma_bnds, time_pts, \

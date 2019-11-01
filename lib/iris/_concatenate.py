@@ -9,7 +9,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from collections import defaultdict, namedtuple
 from copy import deepcopy
@@ -384,7 +383,7 @@ class _CubeSignature(object):
             result = ('', ', '.join(self_names), ', '.join(other_names))
         else:
             diff_names = []
-            for self_key, self_value in six.iteritems(self_dict):
+            for self_key, self_value in self_dict.items():
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)

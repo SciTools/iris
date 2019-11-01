@@ -9,7 +9,6 @@ Provides objects for building up expressions useful for pattern matching.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 try:  # Python 3
     from collections.abc import Iterable, Mapping
@@ -446,7 +445,7 @@ class AttributeConstraint(Constraint):
 
     def _cube_func(self, cube):
         match = True
-        for name, value in six.iteritems(self._attributes):
+        for name, value in self._attributes.items():
             if name in cube.attributes:
                 cube_attr = cube.attributes.get(name)
                 # if we have a callable, then call it with the value,

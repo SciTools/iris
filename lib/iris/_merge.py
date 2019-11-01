@@ -529,7 +529,7 @@ def build_indexes(positions):
     scalar_index_by_name = {name: {} for name in names}
 
     for position in positions:
-        for name, value in six.iteritems(position):
+        for name, value in position.items():
             name_index_by_scalar = scalar_index_by_name[name]
 
             if value in name_index_by_scalar:
@@ -569,7 +569,7 @@ def _separable_pair(name, index):
         Boolean.
 
     """
-    items = six.itervalues(index)
+    items = index.values()
     reference = next(items)[name]
 
     return all([item[name] == reference for item in items])
@@ -1375,7 +1375,7 @@ class ProtoCube(object):
 
                     def name_in_independents():
                         return any(name in independents
-                                   for independents in six.itervalues(space)
+                                   for independents in space.values()
                                    if independents is not None)
                     if len(cells) == 1 and not name_in_independents():
                         # A scalar coordinate not participating in a
@@ -1419,7 +1419,7 @@ class ProtoCube(object):
 
                 # Populate the points and bounds based on the appropriate
                 # function mapping.
-                temp = six.iteritems(function_matrix[name])
+                temp = function_matrix[name].items()
                 for function_independents, name_value in temp:
                     # Build the index (and cache it) for the auxiliary
                     # coordinate based on the associated independent

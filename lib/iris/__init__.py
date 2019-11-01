@@ -84,8 +84,6 @@ All the load functions share very similar arguments:
                 cube.add_aux_coord(experiment_coord)
 
 """
-import six
-
 import contextlib
 import glob
 import itertools
@@ -201,7 +199,7 @@ class Future(threading.local):
         # Save the current context
         current_state = self.__dict__.copy()
         # Update the state
-        for name, value in six.iteritems(kwargs):
+        for name, value in kwargs.items():
             setattr(self, name, value)
         try:
             yield

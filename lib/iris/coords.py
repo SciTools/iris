@@ -561,7 +561,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(six.iterkeys(self.attributes)):
+            for name in sorted(self.attributes.keys()):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 attribute_element.setAttribute('value',

@@ -9,7 +9,6 @@ Generalised mechanisms for metadata translation and cube construction.
 """
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 import collections
 import warnings
@@ -57,7 +56,7 @@ class ConcreteReferenceTarget(object):
             else:
                 final_cube = src_cube.copy()
                 attributes = self.transform(final_cube)
-                for name, value in six.iteritems(attributes):
+                for name, value in attributes.items():
                     setattr(final_cube, name, value)
                 self._final_cube = final_cube
 

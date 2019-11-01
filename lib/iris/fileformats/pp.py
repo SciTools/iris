@@ -1111,7 +1111,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # at the end of the data
         extra_items = []
         # iterate through all of the possible extra data fields
-        for ib, extra_data_attr_name in six.iteritems(EXTRA_DATA):
+        for ib, extra_data_attr_name in EXTRA_DATA.items():
             # try to get the extra data field, returning None if it doesn't
             # exist
             extra_elem = getattr(self, extra_data_attr_name, None)
