@@ -37,7 +37,7 @@ class TestGroupStructure_from_component_arrays(tests.IrisTest):
     def test_different_sizes(self):
         arrays = {'a': np.arange(6), 'b': np.arange(5)}
         msg = 'All array elements must have the same size.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             GroupStructure.from_component_arrays(arrays)
 
     def test_structure_creation(self):

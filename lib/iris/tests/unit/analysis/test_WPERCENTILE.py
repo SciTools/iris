@@ -21,18 +21,18 @@ class Test_aggregate(tests.IrisTest):
     def test_missing_mandatory_kwargs(self):
         emsg = "weighted_percentile aggregator requires " \
                ".* keyword argument 'percent'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             WPERCENTILE.aggregate('dummy', axis=0, weights=None)
         emsg = "weighted_percentile aggregator requires " \
                ".* keyword argument 'weights'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             WPERCENTILE.aggregate('dummy', axis=0, percent=50)
 
     def test_wrong_weights_shape(self):
         data = np.arange(11)
         weights = np.ones(10)
         emsg = "_weighted_percentile: weights wrong shape."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
 
     def test_1d_single(self):
@@ -182,20 +182,20 @@ class Test_aggregate_shape(tests.IrisTest):
                   ".* keyword argument 'percent'"
         emsg_wt = "weighted_percentile aggregator requires " \
                   ".* keyword argument 'weights'"
-        with self.assertRaisesRegexp(ValueError, emsg_pc):
+        with self.assertRaisesRegex(ValueError, emsg_pc):
             WPERCENTILE.aggregate_shape(weights=None)
-        with self.assertRaisesRegexp(ValueError, emsg_pc):
+        with self.assertRaisesRegex(ValueError, emsg_pc):
             kwargs = dict(weights=None)
             WPERCENTILE.aggregate_shape(**kwargs)
-        with self.assertRaisesRegexp(ValueError, emsg_pc):
+        with self.assertRaisesRegex(ValueError, emsg_pc):
             kwargs = dict(point=10)
             WPERCENTILE.aggregate_shape(**kwargs)
-        with self.assertRaisesRegexp(ValueError, emsg_wt):
+        with self.assertRaisesRegex(ValueError, emsg_wt):
             WPERCENTILE.aggregate_shape(percent=50)
-        with self.assertRaisesRegexp(ValueError, emsg_wt):
+        with self.assertRaisesRegex(ValueError, emsg_wt):
             kwargs = dict(percent=50)
             WPERCENTILE.aggregate_shape(**kwargs)
-        with self.assertRaisesRegexp(ValueError, emsg_wt):
+        with self.assertRaisesRegex(ValueError, emsg_wt):
             kwargs = dict(percent=50, weight=None)
             WPERCENTILE.aggregate_shape(**kwargs)
 

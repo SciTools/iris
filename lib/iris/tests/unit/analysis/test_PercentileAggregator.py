@@ -54,7 +54,7 @@ class Test_post_process(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
         aggregator = PercentileAggregator()
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             aggregator.aggregate('dummy', axis=0)
 
     def test_simple_single_point(self):

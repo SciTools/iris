@@ -90,7 +90,7 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
     def test_masked_nonmasked_different(self):
         arr1 = np.ma.masked_array([1, 2])
         arr2 = np.array([1, 3])
-        with self.assertRaisesRegexp(AssertionError, 'Arrays are not equal'):
+        with self.assertRaisesRegex(AssertionError, 'Arrays are not equal'):
             self.assertMaskedArrayEqual(arr1, arr2)
 
     def test_nonmasked_masked_same(self):

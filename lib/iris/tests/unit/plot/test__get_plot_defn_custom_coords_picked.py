@@ -70,7 +70,7 @@ class Test_get_plot_defn_custom_coords_picked(tests.IrisTest):
     def test_span_check(self):
         cube = hybrid_height()
         emsg = 'don\'t span the 2 data dimensions'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             iplt._get_plot_defn_custom_coords_picked(
                 cube, ('sigma', 'level_height'), POINT_MODE)
 

@@ -65,20 +65,20 @@ class Test_regular_step(tests.IrisTest):
     def test_2d_coord(self):
         coord = AuxCoord(np.arange(8).reshape(2, 4))
         exp_emsg = 'Expected 1D coord'
-        with self.assertRaisesRegexp(CoordinateMultiDimError, exp_emsg):
+        with self.assertRaisesRegex(CoordinateMultiDimError, exp_emsg):
             regular_step(coord)
 
     def test_scalar_coord(self):
         coord = DimCoord(5)
         exp_emsg = 'non-scalar coord'
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
+        with self.assertRaisesRegex(ValueError, exp_emsg):
             regular_step(coord)
 
     def test_coord_with_irregular_step(self):
         name = 'latitude'
         coord = AuxCoord(np.array([2, 5, 1, 4]), standard_name=name)
         exp_emsg = '{} is not regular'.format(name)
-        with self.assertRaisesRegexp(CoordinateNotRegularError, exp_emsg):
+        with self.assertRaisesRegex(CoordinateNotRegularError, exp_emsg):
             regular_step(coord)
 
 

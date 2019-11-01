@@ -67,11 +67,11 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_int_cube_float_cube(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.float_cube, self.op)
 
     def test_uint_cube_float_cube(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.uint_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
@@ -110,11 +110,11 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_uint_cube_int_cube(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_int_cube__scalar_float(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.scalar_float, self.op)
 
     def test_int_cube__int_array(self):
@@ -122,19 +122,19 @@ class Test(tests.IrisTest):
         self.assertIsNone(result)
 
     def test_int_cube__float_array(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.int_cube, self.float_data, self.op)
 
     def test_uint_cube__scalar_float(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.uint_cube, self.scalar_float, self.op)
 
     def test_uint_cube__int_array(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_uint_cube__float_array(self):
-        with self.assertRaisesRegexp(ArithmeticError, self.emsg):
+        with self.assertRaisesRegex(ArithmeticError, self.emsg):
             _inplace_common_checks(self.uint_cube, self.float_data, self.op)
 
 

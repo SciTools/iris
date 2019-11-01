@@ -67,7 +67,7 @@ class TestExpandFilespecs(tests.IrisTest):
 
     def test_no_files_found(self):
         msg = r'\/no_exist.txt\" didn\'t match any files'
-        with self.assertRaisesRegexp(IOError, msg):
+        with self.assertRaisesRegex(IOError, msg):
             iio.expand_filespecs([os.path.join(self.tmpdir, 'no_exist.txt')])
 
     def test_files_and_none(self):

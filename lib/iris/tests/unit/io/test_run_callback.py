@@ -47,7 +47,7 @@ class Test_run_callback(tests.IrisTest):
         # Check that a TypeError is raised with a bad callback return value.
         def callback(cube, field, fname):
             return iris.cube.CubeList()
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                                      'Callback function returned an '
                                      'unhandled data type.'):
             iris.io.run_callback(callback, None, None, None)
@@ -57,7 +57,7 @@ class Test_run_callback(tests.IrisTest):
         # signature.
         def callback(cube):
             pass
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                                      # exactly == Py2, positional == Py3
                                      'takes (exactly )?1 (positional )?'
                                      'argument '):

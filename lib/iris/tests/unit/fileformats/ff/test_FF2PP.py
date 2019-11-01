@@ -301,7 +301,7 @@ class Test__payload(tests.IrisTest):
         mock_field = _DummyField(lbext=10, lblrec=200, lbnrec=-1,
                                  raw_lbpack=1239,
                                  lbuser=[_INTEGER], boundary_packing=None)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 NotYetImplementedError,
                 'PP fields with LBPACK of 1239 are not supported.'):
             self._test(mock_field, None, None)
@@ -322,7 +322,7 @@ class Test__payload(tests.IrisTest):
                                  lbuser=[_REAL],
                                  # Anything not None will do here.
                                  boundary_packing=0)
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'packed LBC data is not supported'):
             self._test(mock_field, None, None)
 
@@ -414,14 +414,14 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
     def test__bad_lbtim(self):
         self.mock_field.lbtim = 717
         ff2pp = FF2PP('dummy_filename')
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'LBTIM of 717, expected only 0 or 11'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
         ff2pp = FF2PP('dummy_filename')
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'LBVC of 312, expected only 0 or 65'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
@@ -465,7 +465,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 100
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'hence >= 101'):
             _ = list(ff2pp._fields_over_all_levels(field))
@@ -474,7 +474,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 105
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'more than the total number of levels in the file = 3'):
             _ = list(ff2pp._fields_over_all_levels(field))

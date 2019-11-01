@@ -40,7 +40,7 @@ class TestSingleArg(tests.IrisTest):
 
     def test_bad_dimensions(self):
         points = np.array([[1, 2, 3], [4, 5, 6]])
-        with self.assertRaisesRegexp(ValueError, 'Length'):
+        with self.assertRaisesRegex(ValueError, 'Length'):
             _reshape_vector_args([(points, (0, 1, 2))])
 
     def test_scalar(self):

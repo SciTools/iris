@@ -149,7 +149,7 @@ class MixinVectorPlotCases(object):
                 coord.coord_system = patch_coord_system
         re_msg = ('Can only plot .* lat-lon projection, .* '
                   'This .* translates as Cartopy.*Mercator')
-        with self.assertRaisesRegexp(ValueError, re_msg):
+        with self.assertRaisesRegex(ValueError, re_msg):
             self.plot('2d_rotated', u_cube, v_cube,
                       coords=('longitude', 'latitude'))
 

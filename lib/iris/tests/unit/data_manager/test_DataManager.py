@@ -28,7 +28,7 @@ class Test___copy__(tests.IrisTest):
         dm = DataManager(np.array(0))
         emsg = 'Shallow-copy of {!r} is not permitted.'
         name = type(dm).__name__
-        with self.assertRaisesRegexp(copy.Error, emsg.format(name)):
+        with self.assertRaisesRegex(copy.Error, emsg.format(name)):
             copy.copy(dm)
 
 
@@ -173,13 +173,13 @@ class Test__assert_axioms(tests.IrisTest):
     def test_array_none(self):
         self.dm._real_array = None
         emsg = 'Unexpected data state, got no lazy and no real data'
-        with self.assertRaisesRegexp(AssertionError, emsg):
+        with self.assertRaisesRegex(AssertionError, emsg):
             self.dm._assert_axioms()
 
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
         emsg = 'Unexpected data state, got lazy and real data'
-        with self.assertRaisesRegexp(AssertionError, emsg):
+        with self.assertRaisesRegex(AssertionError, emsg):
             self.dm._assert_axioms()
 
 
@@ -235,25 +235,25 @@ class Test__deepcopy(tests.IrisTest):
     def test_real_with_real_failure(self):
         dm = DataManager(self.real_array)
         emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_real_with_lazy_failure(self):
         dm = DataManager(self.real_array)
         emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
     def test_lazy_with_real_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
         emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_lazy_with_lazy_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
         emsg = 'Cannot copy'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
 
@@ -411,7 +411,7 @@ class Test_data__setter(tests.IrisTest):
     def test_scalar_1d_to_zero_ndim_fail(self):
         dm = DataManager(np.array([123]))
         emsg = 'Require data with shape \(1,\), got \(\).'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             dm.data = 456
 
     def test_nd_real_to_nd_real(self):

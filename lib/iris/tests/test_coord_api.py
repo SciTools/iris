@@ -6,7 +6,6 @@
 
 
 from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -340,30 +339,30 @@ class TestDimCoordCreation(tests.IrisTest):
 
     def test_dim_coord_restrictions(self):
         # 1d
-        with self.assertRaisesRegexp(ValueError, 'must be scalar or 1-dim'):
+        with self.assertRaisesRegex(ValueError, 'must be scalar or 1-dim'):
             iris.coords.DimCoord([[1, 2, 3], [4, 5, 6]])
         # monotonic points
-        with self.assertRaisesRegexp(ValueError, 'must be strictly monotonic'):
+        with self.assertRaisesRegex(ValueError, 'must be strictly monotonic'):
             iris.coords.DimCoord([1, 2, 99, 4, 5])
         # monotonic bounds
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                                      'direction of monotonicity'):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # masked points
         emsg = 'points array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             iris.coords.DimCoord(ma.masked_array([0, 1, 2], mask=[0, 1, 0]))
         # masked bounds
         emsg = 'bounds array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             iris.coords.DimCoord([1], bounds=ma.masked_array([[0, 2]],
                                                              mask=True))
         # shapes of points and bounds
         msg = "The shape of the 'unknown' DimCoord bounds array should be"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             iris.coords.DimCoord([1, 2, 3], bounds=[0.5, 1.5, 2.5, 3.5])
         # another example of shapes of points and bounds
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             iris.coords.DimCoord([1, 2, 3], bounds=[[0.5, 1.5], [1.5, 2.5]])
 
         # numeric

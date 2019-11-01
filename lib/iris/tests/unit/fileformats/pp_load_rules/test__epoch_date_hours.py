@@ -128,7 +128,7 @@ class TestEpochHours__invalid_calendar(tests.IrisTest):
         # Test against a date with year=0, which requires calendar correction.
         test_date = nc_datetime(0, 1, 1)
         # Check that this causes an error.
-        with self.assertRaisesRegexp(ValueError, 'unrecognised calendar'):
+        with self.assertRaisesRegex(ValueError, 'unrecognised calendar'):
             epoch_hours_call(hrs_unit, test_date)
 
 

@@ -47,7 +47,7 @@ class Test(tests.IrisTest):
         cf_bounds_var = mock.Mock(dimensions=('foo', 'bar', 'nv'),
                                   cf_name='wibble_bnds')
         cf_coord_var = mock.Mock(dimensions=('x', 'y'), cf_name='wibble')
-        with self.assertRaisesRegexp(ValueError, 'dimension names'):
+        with self.assertRaisesRegex(ValueError, 'dimension names'):
             reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
 
 

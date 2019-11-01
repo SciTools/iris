@@ -57,11 +57,11 @@ class Test_post_process(tests.IrisTest):
         aggregator = WeightedPercentileAggregator()
         emsg = "weighted_percentile aggregator requires " \
                ".* keyword argument 'percent'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             aggregator.aggregate('dummy', axis=0, weights=None)
         emsg = "weighted_percentile aggregator requires " \
                ".* keyword argument 'weights'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             aggregator.aggregate('dummy', axis=0, percent=50)
 
     def test_simple_single_point(self):

@@ -98,7 +98,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         factory.rename('another altitude')
         cube.add_aux_factory(factory)
         with self.temp_filename(suffix='.nc') as filename, \
-                self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
+                self.assertRaisesRegex(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
     def test_hybrid_height_cubes(self):
@@ -121,7 +121,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         sa.points = sa.points * 10
         emsg = 'Unable to create dimensonless vertical coordinate.'
         with self.temp_filename('.nc') as fname, \
-                self.assertRaisesRegexp(ValueError, emsg):
+                self.assertRaisesRegex(ValueError, emsg):
             iris.save([hh1, hh2], fname)
 
 

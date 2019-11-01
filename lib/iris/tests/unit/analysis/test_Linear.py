@@ -49,7 +49,7 @@ class Test_extrapolation_mode(tests.IrisTest):
         self.check_mode('nanmask')
 
     def test_invalid(self):
-        with self.assertRaisesRegexp(ValueError, 'Extrapolation mode'):
+        with self.assertRaisesRegex(ValueError, 'Extrapolation mode'):
             Linear('bogus')
 
 

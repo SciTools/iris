@@ -48,7 +48,7 @@ class Test(tests.IrisTest):
     def test_coord_var_name_fail(self):
         token = 'var name'  # includes space
         emsg = 'is not a valid NetCDF variable name'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             Coord(1, var_name=token)
 
     def test_coord_stash(self):

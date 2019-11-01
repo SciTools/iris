@@ -19,7 +19,7 @@ class TestInvalidUnits(tests.IrisTest):
         cube.coord('longitude').guess_bounds()
         cube.coord('latitude').guess_bounds()
         cube.coord('latitude').units = None
-        with self.assertRaisesRegexp(ValueError, 'Units of degrees or '
+        with self.assertRaisesRegex(ValueError, 'Units of degrees or '
                                                  'radians required'):
             iris.analysis.cartography.area_weights(cube)
 
@@ -28,7 +28,7 @@ class TestInvalidUnits(tests.IrisTest):
         cube.coord('latitude').guess_bounds()
         cube.coord('longitude').guess_bounds()
         cube.coord('longitude').units = None
-        with self.assertRaisesRegexp(ValueError, 'Units of degrees or '
+        with self.assertRaisesRegex(ValueError, 'Units of degrees or '
                                                  'radians required'):
             iris.analysis.cartography.area_weights(cube)
 

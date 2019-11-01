@@ -111,12 +111,12 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1, 2])
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1:1])
 
     def test_2d_tuple(self):
@@ -269,12 +269,12 @@ class TestResults(tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1, 2], None, None)
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1:1], None, None)
 
     def test_2d_tuple(self):

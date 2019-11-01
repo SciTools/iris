@@ -72,7 +72,7 @@ class Test_optimal_array_structure(tests.IrisTest):
     def test_actuals_mismatch_fail(self):
         elements = [('a', np.array([1, 2, 4]))]
         actual_values = [('b', np.array([7, 3, 9]))]
-        with self.assertRaisesRegexp(ValueError, 'Names.* do not match.*'):
+        with self.assertRaisesRegex(ValueError, 'Names.* do not match.*'):
             shape, primaries, elems_and_dims = optimal_array_structure(
                 elements, actual_values)
 

@@ -21,13 +21,13 @@ from iris.time import PartialDateTime
 
 class Test___common_cmp__(tests.IrisTest):
     def assert_raises_on_comparison(self, cell, other, exception_type, regexp):
-        with self.assertRaisesRegexp(exception_type, regexp):
+        with self.assertRaisesRegex(exception_type, regexp):
             cell < other
-        with self.assertRaisesRegexp(exception_type, regexp):
+        with self.assertRaisesRegex(exception_type, regexp):
             cell <= other
-        with self.assertRaisesRegexp(exception_type, regexp):
+        with self.assertRaisesRegex(exception_type, regexp):
             cell > other
-        with self.assertRaisesRegexp(exception_type, regexp):
+        with self.assertRaisesRegex(exception_type, regexp):
             cell >= other
 
     def test_cftime_cell(self):
@@ -102,7 +102,7 @@ class Test___eq__(tests.IrisTest):
         cell = Cell(point=object(),
                     bound=[mock.Mock(timetuple=mock.Mock()),
                            mock.Mock(timetuple=mock.Mock())])
-        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
             cell == other
 
     def test_PartialDateTime_other(self):
@@ -119,13 +119,13 @@ class Test_contains_point(tests.IrisTest):
         cell = Cell(point=object(),
                     bound=[mock.Mock(timetuple=mock.Mock()),
                            mock.Mock(timetuple=mock.Mock())])
-        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
             cell.contains_point(point)
 
     def test_datetimelike_point(self):
         point = mock.Mock(timetuple=mock.Mock())
         cell = Cell(point=object(), bound=[object(), object()])
-        with self.assertRaisesRegexp(TypeError, 'bounded region for datetime'):
+        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
             cell.contains_point(point)
 
 

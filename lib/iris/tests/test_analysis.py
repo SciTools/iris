@@ -564,7 +564,7 @@ class TestAggregators(tests.IrisTest):
         cube = tests.stock.simple_3d_mask()
         msg = 'Cannot use fast np.percentile method with masked array.'
 
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, msg):
             cube.collapsed('wibble',
                            iris.analysis.PERCENTILE, percent=75,
                            fast_percentile_method=True)

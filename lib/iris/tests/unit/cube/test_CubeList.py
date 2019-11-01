@@ -49,7 +49,7 @@ class Test_concatenate_cube(tests.IrisTest):
 
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
-        with self.assertRaisesRegexp(ValueError, exc_regexp):
+        with self.assertRaisesRegex(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
 
 

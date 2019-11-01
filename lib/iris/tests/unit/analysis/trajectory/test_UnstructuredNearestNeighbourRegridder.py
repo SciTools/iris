@@ -108,31 +108,31 @@ class Test__init__(MixinExampleSetup, tests.IrisTest):
     def test_fail_no_src_x(self):
         self.src_cube.remove_coord('longitude')
         msg_re = 'Source cube must have X- and Y-axis coordinates'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_src_y(self):
         self.src_cube.remove_coord('latitude')
         msg_re = 'Source cube must have X- and Y-axis coordinates'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_bad_src_dims(self):
         self.src_cube = self.grid_cube
         msg_re = 'Source.*same cube dimensions'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_mixed_latlons(self):
         self.src_cube.coord('longitude').rename('projection_x_coordinate')
         msg_re = 'any.*latitudes/longitudes.*all must be'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_bad_latlon_units(self):
         self.grid_cube.coord('longitude').units = 'm'
         msg_re = 'does not convert to "degrees"'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_non_latlon_units_mismatch(self):
@@ -146,33 +146,33 @@ class Test__init__(MixinExampleSetup, tests.IrisTest):
         # Change one of the output units.
         self.grid_cube.coord(axis='x').units = '1'
         msg_re = 'Source and target.*must have the same units'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_tgt_x(self):
         self.grid_cube.remove_coord('longitude')
         msg_re = 'must contain a single 1D x coordinate'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_tgt_y(self):
         self.grid_cube.remove_coord('latitude')
         msg_re = 'must contain a single 1D y coordinate'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_src_cs_mismatch(self):
         cs = GeogCS(1000.0)
         self.src_cube.coord('latitude').coord_system = cs
         msg_re = 'must all have the same coordinate system'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_tgt_cs_mismatch(self):
         cs = GeogCS(1000.0)
         self.grid_cube.coord('latitude').coord_system = cs
         msg_re = 'x.*and y.*must have the same coordinate system'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_src_tgt_cs_mismatch(self):
@@ -180,7 +180,7 @@ class Test__init__(MixinExampleSetup, tests.IrisTest):
         self.src_cube.coord('latitude').coord_system = cs
         self.src_cube.coord('longitude').coord_system = cs
         msg_re = 'Source and target.*same coordinate system'
-        with self.assertRaisesRegexp(ValueError, msg_re):
+        with self.assertRaisesRegex(ValueError, msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
 
@@ -252,7 +252,7 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
         modified_src_cube.coord(axis='x').points = points
         gridder = unn_gridder(self.src_cube, self.grid_cube)
         msg = 'not defined on the same source grid'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             gridder(modified_src_cube)
 
     def test_transposed_source(self):

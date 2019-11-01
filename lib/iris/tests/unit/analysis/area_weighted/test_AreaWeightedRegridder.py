@@ -78,13 +78,13 @@ class Test(tests.IrisTest):
     def test_invalid_high_mdtol(self):
         src, target = self.grids()
         msg = 'mdtol must be in range 0 - 1'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             AreaWeightedRegridder(src, target, mdtol=1.2)
 
     def test_invalid_low_mdtol(self):
         src, target = self.grids()
         msg = 'mdtol must be in range 0 - 1'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             AreaWeightedRegridder(src, target, mdtol=-0.2)
 
     def test_mismatched_src_coord_systems(self):

@@ -144,7 +144,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegexp(UserWarning, msg):
+            with self.assertRaisesRegex(UserWarning, msg):
                 self.cube.coord('altitude')
 
 
@@ -224,7 +224,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegexp(UserWarning, msg):
+            with self.assertRaisesRegex(UserWarning, msg):
                 self.cube.coord('air_pressure')
 
 if __name__ == "__main__":

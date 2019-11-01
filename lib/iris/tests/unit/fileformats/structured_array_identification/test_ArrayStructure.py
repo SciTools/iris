@@ -179,7 +179,7 @@ class nd_array_and_dims_cases(object):
         orig = np.array([1, 1, 2, 2, 3, 3])
 
         msg = 'Original array and target shape do not match up.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             struct.nd_array_and_dims(orig, (2, 3, 2), order=self.order)
 
     def test_array_bigger_than_expected(self):

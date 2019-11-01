@@ -47,13 +47,13 @@ class TestIrisSampleData_path(tests.IrisTest):
 
     def test_file_not_found(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                                          'Sample data .* not found'):
                 sample_data_path('foo')
 
     def test_file_absolute(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
-            with self.assertRaisesRegexp(ValueError, 'Absolute path'):
+            with self.assertRaisesRegex(ValueError, 'Absolute path'):
                 sample_data_path(os.path.abspath('foo'))
 
     def test_glob_ok(self):
@@ -66,20 +66,20 @@ class TestIrisSampleData_path(tests.IrisTest):
 
     def test_glob_not_found(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                                          'Sample data .* not found'):
                 sample_data_path('foo.*')
 
     def test_glob_absolute(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
-            with self.assertRaisesRegexp(ValueError, 'Absolute path'):
+            with self.assertRaisesRegex(ValueError, 'Absolute path'):
                 sample_data_path(os.path.abspath('foo.*'))
 
 
 class TestIrisSampleDataMissing(tests.IrisTest):
     def test_no_iris_sample_data(self):
         self.patch('iris.iris_sample_data', None)
-        with self.assertRaisesRegexp(ImportError, 'Please install'):
+        with self.assertRaisesRegex(ImportError, 'Please install'):
             sample_data_path('')
 
 
