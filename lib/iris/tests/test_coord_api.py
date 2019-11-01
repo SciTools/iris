@@ -346,7 +346,7 @@ class TestDimCoordCreation(tests.IrisTest):
             iris.coords.DimCoord([1, 2, 99, 4, 5])
         # monotonic bounds
         with self.assertRaisesRegex(ValueError,
-                                     'direction of monotonicity'):
+                                    'direction of monotonicity'):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # masked points
         emsg = 'points array must not be masked'

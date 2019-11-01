@@ -786,7 +786,7 @@ class TestClimatology(tests.IrisTest):
 
     def test_create_no_bounds_no_set(self):
         with self.assertRaisesRegex(ValueError,
-                                   'Cannot set.*no bounds exist'):
+                                    'Cannot set.*no bounds exist'):
             AuxCoord(points=[0, 1], units='days since 1970-01-01',
                      climatological=True)
 
@@ -803,13 +803,13 @@ class TestClimatology(tests.IrisTest):
     def test_absent_no_bounds_no_set(self):
         coord = AuxCoord(points=[0, 1], units='days since 1970-01-01')
         with self.assertRaisesRegex(ValueError,
-                                   'Cannot set.*no bounds exist'):
+                                    'Cannot set.*no bounds exist'):
             coord.climatological = True
 
     def test_absent_no_time_no_set(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
         emsg = 'Cannot set climatological .* valid time reference units.*'
-        with self .assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             coord.climatological = True
 
     def test_absent_no_bounds_unset(self):

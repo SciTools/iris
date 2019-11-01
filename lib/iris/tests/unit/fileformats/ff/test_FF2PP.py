@@ -323,7 +323,7 @@ class Test__payload(tests.IrisTest):
                                  # Anything not None will do here.
                                  boundary_packing=0)
         with self.assertRaisesRegex(ValueError,
-                                     'packed LBC data is not supported'):
+                                    'packed LBC data is not supported'):
             self._test(mock_field, None, None)
 
     def test_lbc_cray(self):
@@ -415,14 +415,14 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         self.mock_field.lbtim = 717
         ff2pp = FF2PP('dummy_filename')
         with self.assertRaisesRegex(ValueError,
-                                     'LBTIM of 717, expected only 0 or 11'):
+                                    'LBTIM of 717, expected only 0 or 11'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
         ff2pp = FF2PP('dummy_filename')
         with self.assertRaisesRegex(ValueError,
-                                     'LBVC of 312, expected only 0 or 65'):
+                                    'LBVC of 312, expected only 0 or 65'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
 

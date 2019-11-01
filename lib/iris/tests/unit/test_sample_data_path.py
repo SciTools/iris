@@ -48,7 +48,7 @@ class TestIrisSampleData_path(tests.IrisTest):
     def test_file_not_found(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
             with self.assertRaisesRegex(ValueError,
-                                         'Sample data .* not found'):
+                                        'Sample data .* not found'):
                 sample_data_path('foo')
 
     def test_file_absolute(self):
@@ -67,7 +67,7 @@ class TestIrisSampleData_path(tests.IrisTest):
     def test_glob_not_found(self):
         with mock.patch('iris_sample_data.path', self.sample_dir):
             with self.assertRaisesRegex(ValueError,
-                                         'Sample data .* not found'):
+                                        'Sample data .* not found'):
                 sample_data_path('foo.*')
 
     def test_glob_absolute(self):

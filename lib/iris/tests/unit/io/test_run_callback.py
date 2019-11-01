@@ -48,8 +48,8 @@ class Test_run_callback(tests.IrisTest):
         def callback(cube, field, fname):
             return iris.cube.CubeList()
         with self.assertRaisesRegex(TypeError,
-                                     'Callback function returned an '
-                                     'unhandled data type.'):
+                                    'Callback function returned an '
+                                    'unhandled data type.'):
             iris.io.run_callback(callback, None, None, None)
 
     def test_bad_signature(self):
@@ -58,9 +58,9 @@ class Test_run_callback(tests.IrisTest):
         def callback(cube):
             pass
         with self.assertRaisesRegex(TypeError,
-                                     # exactly == Py2, positional == Py3
-                                     'takes (exactly )?1 (positional )?'
-                                     'argument '):
+                                    # exactly == Py2, positional == Py3
+                                    'takes (exactly )?1 (positional )?'
+                                    'argument '):
             iris.io.run_callback(callback, None, None, None)
 
     def test_callback_args(self):

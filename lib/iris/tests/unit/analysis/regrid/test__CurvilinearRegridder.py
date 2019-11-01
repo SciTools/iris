@@ -175,7 +175,7 @@ class Test___call____bad_src(tests.IrisTest):
 
     def test_bad_src_shape(self):
         with self.assertRaisesRegex(ValueError,
-                                     'not defined on the same source grid'):
+                                    'not defined on the same source grid'):
             self.regridder(self.src_grid[::2, ::2])
 
 
