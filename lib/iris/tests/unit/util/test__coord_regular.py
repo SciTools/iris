@@ -13,7 +13,6 @@ Specifically, this module tests the following functions:
 
 """
 
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests

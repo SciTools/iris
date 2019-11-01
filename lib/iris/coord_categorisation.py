@@ -16,7 +16,6 @@ All the functions provided here add a new coordinate to a cube.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import calendar
 import collections

@@ -8,7 +8,6 @@ Definitions of derived coordinates.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty

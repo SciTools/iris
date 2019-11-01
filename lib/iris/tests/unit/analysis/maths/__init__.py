@@ -5,7 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractproperty

@@ -9,7 +9,6 @@ Classes for representing multi-dimensional data with metadata.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from collections import namedtuple, OrderedDict

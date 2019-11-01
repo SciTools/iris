@@ -8,7 +8,6 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta
@@ -19,7 +18,6 @@ except ImportError:  # Python 2.7
     from collections import Iterator
 import copy
 from itertools import chain
-from six.moves import zip_longest
 import operator
 import warnings
 import zlib

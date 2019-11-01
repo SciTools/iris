@@ -6,8 +6,7 @@
 """Unit tests for the `iris.plot._get_plot_defn_custom_coords_picked`
 function."""
 
-
-# Import iris.tests first so that some things can be initialised before
+# import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 

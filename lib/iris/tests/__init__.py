@@ -19,7 +19,6 @@ graphical test results.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import codecs
 import collections

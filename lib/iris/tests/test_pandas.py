@@ -18,8 +18,7 @@ import matplotlib.units
 import netCDF4
 import numpy as np
 
-
-# Importing pandas has the side-effect of messing with the formatters
+# importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
 default_units_registry = copy.copy(matplotlib.units.registry)
 try:

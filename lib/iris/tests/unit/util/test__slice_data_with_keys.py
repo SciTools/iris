@@ -13,7 +13,6 @@ However, it is relatively simple to test multiple aspects of all three here
 in combination.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else

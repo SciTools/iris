@@ -13,8 +13,12 @@ Version 1.4, 27 February 2009.
 
 """
 
+<<<<<<< HEAD
 from six.moves import (filter, input, map, range, zip)  # noqa
 from six.moves import zip_longest  # Previous line may not be tampered with!
+=======
+from __future__ import (absolute_import, division, print_function)
+>>>>>>> Removed uses of six.moves.
 import six
 
 import collections

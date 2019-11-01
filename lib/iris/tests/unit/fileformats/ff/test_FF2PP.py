@@ -5,7 +5,6 @@
 # licensing details.
 """Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before

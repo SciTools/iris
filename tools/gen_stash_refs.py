@@ -22,8 +22,13 @@ Relates grid code and field code to the stash code.
 '''
 
 
+<<<<<<< HEAD
 CODE_PREAMBLE = ("from six.moves import "
                  "(filter, input, map, range, zip)  # noqa\n\n"
+=======
+CODE_PREAMBLE = ("\nfrom __future__ import "
+                 "(absolute_import, division, print_function)\n"
+>>>>>>> Removed uses of six.moves.
                  "from collections import namedtuple\n\n\n"
                  "Stash = namedtuple('Stash', "
                  "'grid_code field_code pseudo_level_type')\n\n\n")

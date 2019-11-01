@@ -11,7 +11,6 @@ Relates grid code and field code to the stash code.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 

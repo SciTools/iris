@@ -8,7 +8,6 @@ Generalised mechanisms for metadata translation and cube construction.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import collections
 import warnings

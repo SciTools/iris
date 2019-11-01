@@ -5,7 +5,6 @@
 # licensing details.
 """A collection of helpers for interpolation."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 from itertools import product

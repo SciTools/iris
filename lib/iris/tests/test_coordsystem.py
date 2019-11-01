@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 

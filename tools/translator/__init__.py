@@ -9,13 +9,12 @@ translations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple
 import copy
-from six.moves.queue import Queue
+from queue import Queue
 import re
 from threading import Thread
 import warnings

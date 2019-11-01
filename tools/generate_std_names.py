@@ -48,7 +48,6 @@ Or for more control (e.g. to use an alternative XML file) via:
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 
 STD_NAMES = '''.lstrip()

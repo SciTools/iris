@@ -9,7 +9,6 @@ color map meta-data mappings.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from functools import wraps
 import os

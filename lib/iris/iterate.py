@@ -8,7 +8,6 @@ Cube functions for iteration in step.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 try:  # Python 3
     from collections.abc import Iterator

@@ -8,7 +8,6 @@ Routines for putting data on new strata (aka. isosurfaces), often in the
 Z direction.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from functools import partial
 

@@ -8,7 +8,6 @@ Statistical operations between cubes.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
 import numpy.ma as ma

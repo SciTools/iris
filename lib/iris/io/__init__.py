@@ -8,7 +8,6 @@ Provides an interface to manage URI scheme support in iris.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import OrderedDict
 import glob

@@ -8,7 +8,6 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import os
 import warnings

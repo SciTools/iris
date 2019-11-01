@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py

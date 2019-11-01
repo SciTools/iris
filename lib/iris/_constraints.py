@@ -8,7 +8,6 @@ Provides objects for building up expressions useful for pattern matching.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 try:  # Python 3
     from collections.abc import Iterable, Mapping

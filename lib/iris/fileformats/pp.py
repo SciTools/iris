@@ -8,7 +8,6 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 import abc

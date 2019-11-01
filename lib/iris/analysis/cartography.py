@@ -8,7 +8,6 @@ Various utilities and numeric transformations relevant to cartography.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 import copy

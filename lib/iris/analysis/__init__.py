@@ -35,7 +35,6 @@ The gallery contains several interesting worked examples of how an
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import OrderedDict
 try:  # Python 3

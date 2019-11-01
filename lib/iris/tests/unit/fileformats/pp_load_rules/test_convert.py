@@ -5,7 +5,6 @@
 # licensing details.
 """Unit tests for :func:`iris.fileformats.pp_load_rules.convert`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before

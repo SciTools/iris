@@ -8,7 +8,6 @@ A collection of routines which create standard Cubes for test purposes.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from datetime import datetime
 import os.path

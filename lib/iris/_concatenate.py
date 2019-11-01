@@ -8,7 +8,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import defaultdict, namedtuple
 from copy import deepcopy

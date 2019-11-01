@@ -49,7 +49,6 @@ HEADER = """# Copyright Iris contributors
 # https://github.com/metarelate/metOcean/commit/{git_sha}
 {doc_string}
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 

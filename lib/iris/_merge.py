@@ -11,7 +11,6 @@ Typically the cube merge process is handled by
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from collections import namedtuple, OrderedDict

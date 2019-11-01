@@ -8,7 +8,6 @@ Support for conservative regridding via ESMPy.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import cartopy.crs as ccrs
 import numpy as np

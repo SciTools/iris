@@ -5,7 +5,6 @@
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 # Import iris.tests first so that some things can be initialised before

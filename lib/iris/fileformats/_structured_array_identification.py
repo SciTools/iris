@@ -43,7 +43,6 @@ An example using numpy arrays:
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from collections import namedtuple
 

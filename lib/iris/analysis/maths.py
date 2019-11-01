@@ -8,7 +8,6 @@ Basic mathematical and statistical operations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import inspect
 import math
