@@ -3,6 +3,7 @@ class ExampleClass(object):
     Class Summary
 
     """
+
     def __init__(self, arg1, arg2):
         """
         Purpose section description.
@@ -21,9 +22,9 @@ class ExampleClass(object):
 
         """
         self.a = arg1
-        'Attribute arg1 docstring.'
+        "Attribute arg1 docstring."
         self.b = arg2
-        'Attribute arg2 docstring.'
+        "Attribute arg2 docstring."
 
     @property
     def square(self):
@@ -34,4 +35,4 @@ class ExampleClass(object):
             int.
 
         """
-        return self.a*self.a
+        return self.a * self.a

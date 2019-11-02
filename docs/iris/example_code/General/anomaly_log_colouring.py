@@ -37,24 +37,25 @@ import matplotlib.colors as mcols
 
 def main():
     # Load a sample air temperatures sequence.
-    file_path = iris.sample_data_path('E1_north_america.nc')
+    file_path = iris.sample_data_path("E1_north_america.nc")
     temperatures = iris.load_cube(file_path)
 
     # Create a year-number coordinate from the time information.
-    iris.coord_categorisation.add_year(temperatures, 'time')
+    iris.coord_categorisation.add_year(temperatures, "time")
 
     # Create a sample anomaly field for one chosen year, by extracting that
     # year and subtracting the time mean.
     sample_year = 1982
     year_temperature = temperatures.extract(iris.Constraint(year=sample_year))
-    time_mean = temperatures.collapsed('time', iris.analysis.MEAN)
+    time_mean = temperatures.collapsed("time", iris.analysis.MEAN)
     anomaly = year_temperature - time_mean
 
     # Construct a plot title string explaining which years are involved.
-    years = temperatures.coord('year').points
-    plot_title = 'Temperature anomaly'
-    plot_title += '\n{} differences from {}-{} average.'.format(
-        sample_year, years[0], years[-1])
+    years = temperatures.coord("year").points
+    plot_title = "Temperature anomaly"
+    plot_title += "\n{} differences from {}-{} average.".format(
+        sample_year, years[0], years[-1]
+    )
 
     # Define scaling levels for the logarithmic colouring.
     minimum_log_level = 0.1
@@ -63,13 +64,15 @@ def main():
     # Use a standard colour map which varies blue-white-red.
     # For suitable options, see the 'Diverging colormaps' section in:
     # http://matplotlib.org/examples/color/colormaps_reference.html
-    anom_cmap = 'bwr'
+    anom_cmap = "bwr"
 
     # Create a 'logarithmic' data normalization.
-    anom_norm = mcols.SymLogNorm(linthresh=minimum_log_level,
-                                 linscale=0,
-                                 vmin=-maximum_scale_level,
-                                 vmax=maximum_scale_level)
+    anom_norm = mcols.SymLogNorm(
+        linthresh=minimum_log_level,
+        linscale=0,
+        vmin=-maximum_scale_level,
+        vmax=maximum_scale_level,
+    )
     # Setting "linthresh=minimum_log_level" makes its non-logarithmic
     # data range equal to our 'zero band'.
     # Setting "linscale=0" maps the whole zero band to the middle colour value
@@ -82,18 +85,18 @@ def main():
     mesh = iplt.pcolormesh(anomaly, cmap=anom_cmap, norm=anom_norm)
 
     # Add a colourbar, with extensions to show handling of out-of-range values.
-    bar = plt.colorbar(mesh, orientation='horizontal', extend='both')
+    bar = plt.colorbar(mesh, orientation="horizontal", extend="both")
 
     # Set some suitable fixed "logarithmic" colourbar tick positions.
     tick_levels = [-3, -1, -0.3, 0.0, 0.3, 1, 3]
     bar.set_ticks(tick_levels)
 
     # Modify the tick labels so that the centre one shows "+/-<minumum-level>".
-    tick_levels[3] = r'$\pm${:g}'.format(minimum_log_level)
+    tick_levels[3] = r"$\pm${:g}".format(minimum_log_level)
     bar.set_ticklabels(tick_levels)
 
     # Label the colourbar to show the units.
-    bar.set_label('[{}, log scale]'.format(anomaly.units))
+    bar.set_label("[{}, log scale]".format(anomaly.units))
 
     # Add coastlines and a title.
     plt.gca().coastlines()
@@ -103,5 +106,5 @@ def main():
     iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

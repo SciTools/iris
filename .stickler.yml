@@ -10,6 +10,8 @@ files:
         - 'lib/iris/std_names.py'
         - 'lib/iris/fileformats/*.py'
         - 'lib/iris/analysis/*.py'
+        - 'lib/iris/palette.py'
+        - 'lib/iris/plot.py'
         - 'lib/iris/tests/*.py'
         - 'lib/iris/tests/experimental/*.py'
         - 'lib/iris/tests/experimental/regrid/*.py'

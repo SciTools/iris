@@ -43,17 +43,17 @@ def low_pass_weights(window, cutoff):
     w = np.zeros([nwts])
     n = nwts // 2
     w[n] = 2 * cutoff
-    k = np.arange(1., n)
+    k = np.arange(1.0, n)
     sigma = np.sin(np.pi * k / n) * n / (np.pi * k)
-    firstfactor = np.sin(2. * np.pi * cutoff * k) / (np.pi * k)
-    w[n-1:0:-1] = firstfactor * sigma
-    w[n+1:-1] = firstfactor * sigma
+    firstfactor = np.sin(2.0 * np.pi * cutoff * k) / (np.pi * k)
+    w[n - 1 : 0 : -1] = firstfactor * sigma
+    w[n + 1 : -1] = firstfactor * sigma
     return w[1:-1]
 
 
 def main():
     # Load the monthly-valued Southern Oscillation Index (SOI) time-series.
-    fname = iris.sample_data_path('SOI_Darwin.nc')
+    fname = iris.sample_data_path("SOI_Darwin.nc")
     soi = iris.load_cube(fname)
 
     # Window length for filters.
@@ -61,36 +61,52 @@ def main():
 
     # Construct 2-year (24-month) and 7-year (84-month) low pass filters
     # for the SOI data which is monthly.
-    wgts24 = low_pass_weights(window, 1. / 24.)
-    wgts84 = low_pass_weights(window, 1. / 84.)
+    wgts24 = low_pass_weights(window, 1.0 / 24.0)
+    wgts84 = low_pass_weights(window, 1.0 / 84.0)
 
     # Apply each filter using the rolling_window method used with the weights
     # keyword argument. A weighted sum is required because the magnitude of
     # the weights are just as important as their relative sizes.
-    soi24 = soi.rolling_window('time',
-                               iris.analysis.SUM,
-                               len(wgts24),
-                               weights=wgts24)
-    soi84 = soi.rolling_window('time',
-                               iris.analysis.SUM,
-                               len(wgts84),
-                               weights=wgts84)
+    soi24 = soi.rolling_window(
+        "time", iris.analysis.SUM, len(wgts24), weights=wgts24
+    )
+    soi84 = soi.rolling_window(
+        "time", iris.analysis.SUM, len(wgts84), weights=wgts84
+    )
 
     # Plot the SOI time series and both filtered versions.
     plt.figure(figsize=(9, 4))
-    iplt.plot(soi, color='0.7', linewidth=1., linestyle='-',
-              alpha=1., label='no filter')
-    iplt.plot(soi24, color='b', linewidth=2., linestyle='-',
-              alpha=.7, label='2-year filter')
-    iplt.plot(soi84, color='r', linewidth=2., linestyle='-',
-              alpha=.7, label='7-year filter')
+    iplt.plot(
+        soi,
+        color="0.7",
+        linewidth=1.0,
+        linestyle="-",
+        alpha=1.0,
+        label="no filter",
+    )
+    iplt.plot(
+        soi24,
+        color="b",
+        linewidth=2.0,
+        linestyle="-",
+        alpha=0.7,
+        label="2-year filter",
+    )
+    iplt.plot(
+        soi84,
+        color="r",
+        linewidth=2.0,
+        linestyle="-",
+        alpha=0.7,
+        label="7-year filter",
+    )
     plt.ylim([-4, 4])
-    plt.title('Southern Oscillation Index (Darwin Only)')
-    plt.xlabel('Time')
-    plt.ylabel('SOI')
+    plt.title("Southern Oscillation Index (Darwin Only)")
+    plt.xlabel("Time")
+    plt.ylabel("SOI")
     plt.legend(fontsize=10)
     iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

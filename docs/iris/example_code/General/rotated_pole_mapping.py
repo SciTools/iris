@@ -22,13 +22,13 @@ import iris.analysis.cartography
 
 def main():
     # Load some test data.
-    fname = iris.sample_data_path('rotated_pole.nc')
+    fname = iris.sample_data_path("rotated_pole.nc")
     air_pressure = iris.load_cube(fname)
 
     # Plot #1: Point plot showing data values & a colorbar
     plt.figure()
     points = qplt.points(air_pressure, c=air_pressure.data)
-    cb = plt.colorbar(points, orientation='horizontal')
+    cb = plt.colorbar(points, orientation="horizontal")
     cb.set_label(air_pressure.units)
     plt.gca().coastlines()
     iplt.show()
@@ -48,8 +48,8 @@ def main():
 
     # For the purposes of this example, add some bounds to the latitude
     # and longitude
-    air_pressure.coord('grid_latitude').guess_bounds()
-    air_pressure.coord('grid_longitude').guess_bounds()
+    air_pressure.coord("grid_latitude").guess_bounds()
+    air_pressure.coord("grid_longitude").guess_bounds()
 
     # Plot #4: Block plot
     plt.figure()
@@ -60,5 +60,5 @@ def main():
     iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

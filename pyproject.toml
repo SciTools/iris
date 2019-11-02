@@ -17,12 +17,12 @@ exclude = '''
     | build
     | compiled_krb
     | dist
-    | docs
     | etc
     | iris_image_test_output
-    | results
+    | sphinxext
     | tools
   )/
+  | gitwash_dumper.py
   | _ff_cross_references.py  # auto-generated files
   | std_names.py
   | um_cf_map.py

@@ -4,5 +4,5 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa

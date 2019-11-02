@@ -38,40 +38,43 @@ def limit_colorbar_ticks(contour_object):
 
 
 def main():
-    fname = iris.sample_data_path('colpex.pp')
+    fname = iris.sample_data_path("colpex.pp")
 
     # The list of phenomena of interest
-    phenomena = ['air_potential_temperature', 'air_pressure']
+    phenomena = ["air_potential_temperature", "air_pressure"]
 
     # Define the constraint on standard name and model level
-    constraints = [iris.Constraint(phenom, model_level_number=1) for
-                   phenom in phenomena]
+    constraints = [
+        iris.Constraint(phenom, model_level_number=1) for phenom in phenomena
+    ]
 
-    air_potential_temperature, air_pressure = iris.load_cubes(fname,
-                                                              constraints)
+    air_potential_temperature, air_pressure = iris.load_cubes(
+        fname, constraints
+    )
 
     # Define a coordinate which represents 1000 hPa
-    p0 = coords.AuxCoord(1000, long_name='P0', units='hPa')
+    p0 = coords.AuxCoord(1000, long_name="P0", units="hPa")
     # Convert reference pressure 'p0' into the same units as 'air_pressure'
     p0.convert_units(air_pressure.units)
 
     # Calculate Exner pressure
     exner_pressure = (air_pressure / p0) ** (287.05 / 1005.0)
     # Set the name (the unit is scalar)
-    exner_pressure.rename('exner_pressure')
+    exner_pressure.rename("exner_pressure")
 
     # Calculate air_temp
     air_temperature = exner_pressure * air_potential_temperature
     # Set the name (the unit is K)
-    air_temperature.rename('air_temperature')
+    air_temperature.rename("air_temperature")
 
     # Now create an iterator which will give us lat lon slices of
     # exner pressure and air temperature in the form
     # (exner_slice, air_temp_slice).
-    lat_lon_slice_pairs = iris.iterate.izip(exner_pressure,
-                                            air_temperature,
-                                            coords=['grid_latitude',
-                                                    'grid_longitude'])
+    lat_lon_slice_pairs = iris.iterate.izip(
+        exner_pressure,
+        air_temperature,
+        coords=["grid_latitude", "grid_longitude"],
+    )
 
     # For the purposes of this example, we only want to demonstrate the first
     # plot.
@@ -92,5 +95,5 @@ def main():
         iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

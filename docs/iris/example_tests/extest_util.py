@@ -10,8 +10,8 @@ to run the example tests.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 import contextlib
 import os.path
@@ -26,10 +26,13 @@ import iris.plot as iplt
 import iris.quickplot as qplt
 
 
-EXAMPLE_DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                 'example_code')
-EXAMPLE_DIRECTORIES = [os.path.join(EXAMPLE_DIRECTORY, the_dir)
-                       for the_dir in os.listdir(EXAMPLE_DIRECTORY)]
+EXAMPLE_DIRECTORY = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "example_code"
+)
+EXAMPLE_DIRECTORIES = [
+    os.path.join(EXAMPLE_DIRECTORY, the_dir)
+    for the_dir in os.listdir(EXAMPLE_DIRECTORY)
+]
 
 
 @contextlib.contextmanager
@@ -55,6 +58,7 @@ def show_replaced_by_check_graphic(test_case):
     method on the given test_case (iris.tests.IrisTest.check_graphic).
 
     """
+
     def replacement_show():
         # form a closure on test_case and tolerance
         test_case.check_graphic()

@@ -4,20 +4,23 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import Iris tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (add_examples_to_path,
-                          show_replaced_by_check_graphic,
-                          fail_any_deprecation_warnings)
+from .extest_util import (
+    add_examples_to_path,
+    show_replaced_by_check_graphic,
+    fail_any_deprecation_warnings,
+)
 
 
 class TestAnomalyLogColouring(tests.GraphicsTest):
     """Test the anomaly colouring example code."""
+
     def test_anomaly_log_colouring(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
@@ -26,5 +29,5 @@ class TestAnomalyLogColouring(tests.GraphicsTest):
                 anomaly_log_colouring.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

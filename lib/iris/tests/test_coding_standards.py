@@ -83,7 +83,6 @@ class StandardReportWithExclusions(pep8.StandardReport):
 
     if DOCS_DIRS:
         expected_bad_docs_files = [
-            "*/src/conf.py",
             "*/src/developers_guide/gitwash_dumper.py",
         ]
 
