@@ -9,7 +9,6 @@ from six.moves import filter, input, map, range, zip  # noqa
 import six
 
 import re
-import string
 
 import cf_units
 

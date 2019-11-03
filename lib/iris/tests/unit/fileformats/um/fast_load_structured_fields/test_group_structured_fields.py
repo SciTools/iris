@@ -18,9 +18,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import numpy as np
-
-import iris
 from iris.fileformats.um._fast_load_structured_fields import (
     group_structured_fields,
 )

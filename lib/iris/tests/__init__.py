@@ -67,7 +67,6 @@ try:
     # Standardise the figure size across matplotlib versions.
     # This permits matplotlib png image comparison.
     matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
-    import matplotlib.testing.compare as mcompare
     import matplotlib.pyplot as plt
 except ImportError:
     MPL_AVAILABLE = False
@@ -75,7 +74,7 @@ else:
     MPL_AVAILABLE = True
 
 try:
-    from osgeo import gdal
+    from osgeo import gdal  # noqa
 except ImportError:
     GDAL_AVAILABLE = False
 else:
@@ -89,14 +88,14 @@ except ImportError:
     GRIB_AVAILABLE = False
 
 try:
-    import iris_sample_data
+    import iris_sample_data  # noqa
 except ImportError:
     SAMPLE_DATA_AVAILABLE = False
 else:
     SAMPLE_DATA_AVAILABLE = True
 
 try:
-    import nc_time_axis
+    import nc_time_axis  # noqa
 
     NC_TIME_AXIS_AVAILABLE = True
 except ImportError:
@@ -111,7 +110,7 @@ except requests.exceptions.ConnectionError:
     INET_AVAILABLE = False
 
 try:
-    import stratify
+    import stratify  # noqa
 
     STRATIFY_AVAILABLE = True
 except ImportError:
@@ -396,12 +395,12 @@ class IrisTest_nometa(unittest.TestCase):
 
         # Ignore any lines of the general form "... :_NCProperties = ..."
         # (an extra global attribute, displayed by older versions of ncdump).
-        re_ncprop = re.compile("^\s*:_NCProperties *=")
+        re_ncprop = re.compile(r"^\s*:_NCProperties *=")
         lines = [line for line in lines if not re_ncprop.match(line)]
 
         # Sort the dimensions (except for the first, which can be unlimited).
         # This gives consistent CDL across different platforms.
-        sort_key = lambda line: ("UNLIMITED" not in line, line)
+        sort_key = lambda line: ("UNLIMITED" not in line, line)  # noqa
         dimension_lines = slice(
             lines.index("dimensions:") + 1, lines.index("variables:")
         )

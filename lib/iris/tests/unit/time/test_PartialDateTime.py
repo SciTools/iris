@@ -260,12 +260,6 @@ class Test___gt__(tests.IrisTest, _Test_operator):
         self.assertFalse(pdt > other)
 
 
-class Test___le__(tests.IrisTest, _Test_operator):
-    def setUp(self):
-        self.op = operator.le
-        self.expected_value = negate_expectations(GT_EXPECTATIONS)
-
-
 class Test___lt__(tests.IrisTest, _Test_operator):
     def setUp(self):
         self.op = operator.lt

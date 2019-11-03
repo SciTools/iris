@@ -18,10 +18,9 @@ import iris.tests as tests
 
 import numpy as np
 
-import iris
 from iris.analysis import Nearest
 from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import DimCoord
 
 
 def grid_cube(xx, yy, data=None):

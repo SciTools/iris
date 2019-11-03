@@ -759,7 +759,6 @@ class RectilinearRegridder(object):
         # data (centred over the centre of the source data to allow
         # extrapolation where required).
         min_x, max_x = x_points.min(), x_points.max()
-        min_y, max_y = src_y_coord.points.min(), src_y_coord.points.max()
         if src_x_coord.units.modulus:
             modulus = src_x_coord.units.modulus
             offset = (max_x + min_x - modulus) * 0.5

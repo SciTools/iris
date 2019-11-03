@@ -29,18 +29,13 @@ import cftime
 import dask
 import dask.array as da
 
-from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
+from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP as lbproc_map  # noqa
 
-# NOTE: this is for backwards-compatitibility *ONLY*
-# We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (
-    LBPROC_PAIRS,
-    LBPROC_MAP as lbproc_map,
-)
 import iris.fileformats.rules
 import iris.coord_systems
 
@@ -283,7 +278,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
             raise TypeError("Expected STASH code MSI string, got %r" % (msi,))
 
         msi_match = re.match(
-            "^\s*m(\d+|\?+)s(\d+|\?+)i(\d+|\?+)\s*$", msi, re.IGNORECASE
+            r"^\s*m(\d+|\?+)s(\d+|\?+)i(\d+|\?+)\s*$", msi, re.IGNORECASE
         )
 
         if msi_match is None:
@@ -2064,7 +2059,7 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
 
 
 def load_pairs_from_fields(pp_fields):
-    """
+    r"""
     Convert an iterable of PP fields into an iterable of tuples of
     (Cubes, PPField).
 

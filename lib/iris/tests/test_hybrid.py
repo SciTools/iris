@@ -52,7 +52,7 @@ class TestRealistic4d(tests.GraphicsTest):
     def test_indexing(self):
         cube = self.cube[:, :, 0, 0]
         # Make sure the derived 'altitude' coordinate survived the indexing.
-        altitude = cube.coord("altitude")
+        cube.coord("altitude")
         self.assertCML(cube, ("derived", "column.cml"))
 
     def test_removing_sigma(self):
@@ -126,17 +126,17 @@ class TestRealistic4d(tests.GraphicsTest):
     def test_invalid_dependencies(self):
         # Must have either delta or orography
         with self.assertRaises(ValueError):
-            factory = HybridHeightFactory()
+            HybridHeightFactory()
         sigma = self.cube.coord("sigma")
         with self.assertRaises(ValueError):
-            factory = HybridHeightFactory(sigma=sigma)
+            HybridHeightFactory(sigma=sigma)
 
         # Orography must not have bounds
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
             with self.assertRaises(UserWarning):
-                factory = HybridHeightFactory(orography=sigma)
+                HybridHeightFactory(orography=sigma)
 
     def test_bounded_orography(self):
         # Start with everything normal
@@ -205,19 +205,17 @@ class TestHybridPressure(tests.IrisTest):
     def test_invalid_dependencies(self):
         # Must have either delta or surface_air_pressure
         with self.assertRaises(ValueError):
-            factory = HybridPressureFactory()
+            HybridPressureFactory()
         sigma = self.cube.coord("sigma")
         with self.assertRaises(ValueError):
-            factory = HybridPressureFactory(sigma=sigma)
+            HybridPressureFactory(sigma=sigma)
 
         # Surface pressure must not have bounds
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
             with self.assertRaises(UserWarning):
-                factory = HybridPressureFactory(
-                    sigma=sigma, surface_air_pressure=sigma
-                )
+                HybridPressureFactory(sigma=sigma, surface_air_pressure=sigma)
 
     def test_bounded_surface_pressure(self):
         # Start with everything normal

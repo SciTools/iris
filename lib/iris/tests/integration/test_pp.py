@@ -534,10 +534,6 @@ class TestSaveLBFT(tests.IrisTest):
         self.assertEqual(field.lbft, 4 * 24)
 
     def test_climatological_mean_multi_year_djf(self):
-        delta_start = 24
-        delta_mid = 36
-        delta_end = 369 * 24
-        ref_offset = 10 * 24
         cube = self.create_cube(24, 36, 369 * 24, 240, "djf")
         field = self.convert_cube_to_field(cube)
         self.assertEqual(field.lbft, 369 * 24)

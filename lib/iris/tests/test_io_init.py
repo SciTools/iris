@@ -27,9 +27,9 @@ class TestDecodeUri(tests.IrisTest):
                 "file",
                 "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
             ),
-            "C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp": (
+            r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp": (
                 "file",
-                "C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
             ),
             "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp": (
                 "file",

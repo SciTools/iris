@@ -12,10 +12,7 @@ import iris.tests as tests
 import iris.coords
 
 import os
-import subprocess
 import tempfile
-import types
-import warnings
 
 import netCDF4
 

@@ -25,13 +25,6 @@ import iris.exceptions
 import iris.tests.stock
 import iris.util
 
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import LogNorm
-    import iris.plot as iplt
-    import iris.quickplot as qplt
-
 if tests.GRIB_AVAILABLE:
     import gribapi
     import iris.fileformats
@@ -221,7 +214,7 @@ class TestGribTimecodes(tests.IrisTest):
                 if expected_error:
                     # Expect GribWrapper construction to fail.
                     with self.assertRaises(type(expected_error)) as ar_context:
-                        msg = iris_grib.GribWrapper(message)
+                        iris_grib.GribWrapper(message)
                     self.assertEqual(
                         ar_context.exception.args, expected_error.args
                     )
@@ -334,7 +327,7 @@ class TestGribTimecodes(tests.IrisTest):
             # Load the message from the file as a cube.
             cube_generator = iris_grib.load_cubes(temp_gribfile_path)
             with self.assertRaises(iris.exceptions.TranslationError) as te:
-                cube = next(cube_generator)
+                next(cube_generator)
             self.assertEqual(
                 "Product definition template [5]" " is not supported",
                 str(te.exception),

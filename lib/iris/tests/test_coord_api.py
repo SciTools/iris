@@ -13,8 +13,6 @@ import six
 # importing anything else
 import iris.tests as tests
 
-from xml.dom.minidom import Document
-
 import numpy as np
 import numpy.ma as ma
 
@@ -165,7 +163,6 @@ class TestCoordIntersection(tests.IrisTest):
 class TestXML(tests.IrisTest):
     def test_minimal(self):
         coord = iris.coords.DimCoord(np.arange(10, dtype=np.int32))
-        element = coord.xml_element(Document())
         self.assertXMLElement(coord, ("coord_api", "minimal.xml"))
 
     def test_complex(self):

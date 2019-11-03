@@ -32,7 +32,6 @@ import netCDF4
 import numpy as np
 import numpy.ma as ma
 
-from iris._deprecation import warn_deprecated
 import iris.util
 
 

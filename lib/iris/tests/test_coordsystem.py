@@ -13,7 +13,6 @@ import iris.tests as tests
 
 
 import cartopy.crs as ccrs
-import cf_units
 
 import iris.cube
 import iris.coords

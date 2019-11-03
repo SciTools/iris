@@ -12,9 +12,7 @@ from six.moves import filter, input, map, range, zip  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import contextmanager
 from unittest import mock
-import warnings
 
 import numpy as np
 

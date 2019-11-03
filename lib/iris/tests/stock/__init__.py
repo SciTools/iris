@@ -26,10 +26,8 @@ import iris.coords as icoords
 from iris.coords import DimCoord, AuxCoord, CellMethod
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from ._stock_2d_latlons import (
-    sample_2d_latlons,
-    make_bounds_discontiguous_at_point,
-)
+from ._stock_2d_latlons import sample_2d_latlons  # noqa
+from ._stock_2d_latlons import make_bounds_discontiguous_at_point  # noqa
 
 
 def lat_lon_cube():

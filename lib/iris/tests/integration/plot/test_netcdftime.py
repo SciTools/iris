@@ -28,7 +28,6 @@ if tests.NC_TIME_AXIS_AVAILABLE:
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
-    import matplotlib.pyplot as plt
     import iris.plot as iplt
 
 

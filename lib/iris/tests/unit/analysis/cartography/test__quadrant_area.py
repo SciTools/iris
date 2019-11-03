@@ -17,7 +17,6 @@ import iris.tests as tests
 import cf_units
 import numpy as np
 
-import iris
 from iris.analysis.cartography import _quadrant_area
 from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
 
@@ -116,7 +115,7 @@ class TestErrorHandling(tests.IrisTest):
 
     def _assert_error_on_malformed_bounds(self, lat_bnds, lon_bnds):
         with self.assertRaisesRegexp(
-            ValueError, "Bounds must be \[n,2\] array"
+            ValueError, r"Bounds must be \[n,2\] array"
         ):
             _quadrant_area(np.array(lat_bnds), np.array(lon_bnds), 1.0)
 

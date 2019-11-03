@@ -41,15 +41,6 @@ class TestMixin(object):
     def test_normal_cubes(self):
         cubes = iris.load(self._data_path)
         self.assertEqual(len(cubes), self._num_cubes)
-        names = [
-            "forecast_period",
-            "forecast_reference_time",
-            "level_height",
-            "model_level_number",
-            "sigma",
-            "source",
-        ]
-        axes = ["forecast_period", "rt", "z", "z", "z", "source"]
         self.assertCML(cubes, ["merge", self._prefix + ".cml"])
 
     def test_remerge(self):
@@ -274,7 +265,7 @@ class TestDataMergeCombos(tests.IrisTest):
             )
             self.assertMaskedArrayEqual(result.data, expected)
             self.assertEqual(result.dtype, self.dtype)
-            self._check_fill_value(result, fill1=fill1)
+            self._check_fill_value(result, fill1=fill)
 
     def test__masked_ndarray(self):
         for (lazy0, lazy1), (fill,) in self.mixed_combos:
@@ -395,7 +386,7 @@ class TestDataMerge(tests.IrisTest):
         cubes = iris.load_raw(data_path)
         # Force the source 2-D cubes to load their data before the merge
         for cube in cubes:
-            data = cube.data
+            cube.data
         cubes = cubes.merge()
         self.assertCML(cubes, ["merge", "theta.cml"])
 
@@ -677,7 +668,7 @@ class TestDimSelection(tests.IrisTest):
         self.assertIsInstance(cube.coord("b"), DimCoord)
         self.assertTrue(cube.coord("b") in cube.dim_coords)
 
-    def test_string_b_with_aux(self):
+    def test_string_b_with_dim(self):
         templates = ((0, "a"), (1, "b"), (2, "c"), (3, "d"))
         cubes = [self._make_cube(a, b, a_dim=True) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]

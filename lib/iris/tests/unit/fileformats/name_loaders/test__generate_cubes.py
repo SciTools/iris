@@ -17,7 +17,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import iris.cube
 from iris.fileformats.name_loaders import _generate_cubes, NAMECoord
 
 

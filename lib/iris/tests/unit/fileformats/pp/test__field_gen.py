@@ -61,8 +61,8 @@ class Test(tests.IrisTest):
             self.gen_fields([pp_field])
         self.assertEqual(len(warn), 1)
         wmsg = (
-            "LBLREC has a different value to the .* the header in the "
-            "file \(8 and 4\)\. Skipping .*"
+            r"LBLREC has a different value to the .* the header in the "
+            r"file \(8 and 4\)\. Skipping .*"
         )
         six.assertRegex(self, str(warn[0].message), wmsg)
 

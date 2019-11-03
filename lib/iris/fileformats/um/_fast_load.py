@@ -23,7 +23,6 @@ to the pp "as_pairs" functions.
 
 from __future__ import absolute_import, division, print_function
 from six.moves import filter, input, map, range, zip  # noqa
-import six
 
 from contextlib import contextmanager
 import threading
@@ -33,7 +32,6 @@ import numpy as np
 
 # Be minimal about what we import from iris, to avoid circular imports.
 # Below, other parts of iris.fileformats are accessed via deferred imports.
-import iris
 from iris.coords import DimCoord
 from iris.cube import CubeList
 from iris.exceptions import TranslationError

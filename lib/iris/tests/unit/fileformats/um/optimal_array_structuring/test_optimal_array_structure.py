@@ -20,7 +20,6 @@ import numpy as np
 
 from iris.fileformats.um._optimal_array_structuring import (
     optimal_array_structure,
-    _optimal_dimensioning_structure,
 )
 
 
@@ -53,7 +52,7 @@ class Test_optimal_array_structure(tests.IrisTest):
 
     def test_none(self):
         with self.assertRaises(IndexError):
-            result = optimal_array_structure([], [])
+            optimal_array_structure([], [])
 
     def test_one(self):
         # A single value does not make a dimension (no length-1 dims).

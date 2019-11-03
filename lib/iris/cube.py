@@ -33,7 +33,6 @@ except ImportError:  # Python 2.7
     )
 import copy
 from copy import deepcopy
-import datetime
 from functools import reduce, partial
 import operator
 import warnings

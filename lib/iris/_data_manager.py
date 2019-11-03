@@ -10,7 +10,6 @@ Management of common state and behaviour for cube and coordinate data.
 
 from __future__ import absolute_import, division, print_function
 from six.moves import filter, input, map, range, zip  # noqa
-import six
 
 import copy
 import numpy as np

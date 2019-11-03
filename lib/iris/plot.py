@@ -811,7 +811,7 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         fig = plt.gcf()
         if isinstance(ax, matplotlib.axes.SubplotBase):
-            new_ax = fig.add_subplot(
+            fig.add_subplot(
                 ax.get_subplotspec(),
                 projection=cartopy_proj,
                 title=ax.get_title(),
@@ -819,7 +819,7 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
                 ylabel=ax.get_ylabel(),
             )
         else:
-            new_ax = fig.add_axes(
+            fig.add_axes(
                 projection=cartopy_proj,
                 title=ax.get_title(),
                 xlabel=ax.get_xlabel(),

@@ -13,14 +13,13 @@ Other types of UM file may fail to load correctly (or at all).
 
 from __future__ import absolute_import, division, print_function
 from six.moves import filter, input, map, range, zip  # noqa
-import six
 
 from iris.fileformats._ff import FF2PP
 from iris.fileformats.pp import _load_cubes_variable_loader
 
 
 def um_to_pp(filename, read_data=False, word_depth=None):
-    """
+    r"""
     Extract individual PPFields from within a UM Fieldsfile-like file.
 
     Returns an iterator over the fields contained within the FieldsFile,

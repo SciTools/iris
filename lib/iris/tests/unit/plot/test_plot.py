@@ -22,7 +22,6 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
     import matplotlib.pyplot as plt
     from matplotlib.path import Path
-    import matplotlib.transforms as mtranforms
     import cartopy.mpl.geoaxes
     import cartopy.crs as ccrs
 

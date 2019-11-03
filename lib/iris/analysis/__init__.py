@@ -410,7 +410,7 @@ class _Aggregator(object):
     def __init__(
         self, cell_method, call_func, units_func=None, lazy_func=None, **kwargs
     ):
-        """
+        r"""
         Create an aggregator for the given :data:`call_func`.
 
         Args:

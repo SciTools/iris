@@ -18,7 +18,6 @@ import unittest
 import cf_units
 import cftime
 import matplotlib.units
-import netCDF4
 import numpy as np
 
 
@@ -143,7 +142,7 @@ class TestAsSeries(tests.IrisTest):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
         with self.assertRaises(ValueError):
-            series = iris.pandas.as_series(cube, copy=False)
+            iris.pandas.as_series(cube, copy=False)
 
 
 @skip_pandas
@@ -311,7 +310,7 @@ class TestAsDataFrame(tests.IrisTest):
         )
         cube = Cube(data, long_name="foo")
         with self.assertRaises(ValueError):
-            data_frame = iris.pandas.as_data_frame(cube, copy=False)
+            iris.pandas.as_data_frame(cube, copy=False)
 
     def test_copy_false_with_cube_view(self):
         data = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])

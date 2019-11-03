@@ -791,20 +791,20 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
         self.check_graphic()
 
     def run_tests(self, cube, results):
-        for draw_method, coords in results:
-            draw_method(cube, coords=coords)
+        for draw_method, rcoords in results:
+            draw_method(cube, coords=rcoords)
             try:
                 self.check_graphic()
             except AssertionError as err:
                 self.fail(
                     "Draw method %r failed with coords: %r. "
-                    "Assertion message: %s" % (draw_method, coords, err)
+                    "Assertion message: %s" % (draw_method, rcoords, err)
                 )
 
     def run_tests_1d(self, cube, results):
         # there is a different calling convention for 1d plots
-        for draw_method, coords in results:
-            draw_method(cube.coord(coords[0]), cube)
+        for draw_method, rcoords in results:
+            draw_method(cube.coord(rcoords[0]), cube)
             try:
                 self.check_graphic()
             except AssertionError as err:
@@ -812,7 +812,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
                     "Draw method {!r} failed with coords: {!r}. "
                     "Assertion message: {!s}"
                 )
-                self.fail(msg.format(draw_method, coords, err))
+                self.fail(msg.format(draw_method, rcoords, err))
 
     def test_yx(self):
         test_cube = self.cube[0, 0, :, :]

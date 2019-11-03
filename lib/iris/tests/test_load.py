@@ -31,7 +31,7 @@ class TestLoad(tests.IrisTest):
             tests.get_data_path(["PP", "_guaranteed_non_exist.pp"]),
         )
         with self.assertRaises(IOError) as error_trap:
-            cubes = iris.load(paths)
+            iris.load(paths)
         self.assertIn(
             "One or more of the files specified did not exist",
             str(error_trap.exception),
@@ -43,7 +43,7 @@ class TestLoad(tests.IrisTest):
             tests.get_data_path(["PP", "_guaranteed_non_exist_*.pp"]),
         )
         with self.assertRaises(IOError) as error_trap:
-            cubes = iris.load(paths)
+            iris.load(paths)
         self.assertIn(
             "One or more of the files specified did not exist",
             str(error_trap.exception),
@@ -72,7 +72,7 @@ class TestLoad(tests.IrisTest):
 class TestLoadCube(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        cube = iris.load_cube(paths)
+        iris.load_cube(paths)
 
     def test_not_enough(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)

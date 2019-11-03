@@ -31,7 +31,6 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._data_manager import DataManager
-from iris._deprecation import warn_deprecated
 import iris._lazy_data as _lazy
 import iris.aux_factory
 import iris.exceptions
@@ -1608,7 +1607,7 @@ class Coord(_DimensionalMetadata):
         return hash(id(self))
 
     def convert_units(self, unit):
-        """
+        r"""
         Change the coordinate's units, converting the values in its points
         and bounds arrays.
 

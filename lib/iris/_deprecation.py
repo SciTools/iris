@@ -9,11 +9,8 @@ Utilities for producing runtime deprecation messages.
 """
 from __future__ import absolute_import, division, print_function
 from six.moves import filter, input, map, range, zip  # noqa
-import six
 
 import warnings
-
-from iris.exceptions import IrisError
 
 
 class IrisDeprecation(UserWarning):

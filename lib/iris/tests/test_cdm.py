@@ -410,7 +410,7 @@ class TestCubeStringRepresentations(IrisDotTest):
     @contextmanager
     def unicode_encoding_change(self, new_encoding):
         default_encoding = sys.getdefaultencoding()
-        reload(sys).setdefaultencoding(new_encoding)
+        reload(sys).setdefaultencoding(new_encoding)  # noqa
         yield
         sys.setdefaultencoding(default_encoding)
         del sys.setdefaultencoding

@@ -32,7 +32,6 @@ import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
-from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.aux_factory import (
     HybridHeightFactory,
@@ -1164,7 +1163,7 @@ class Saver(object):
             val_attr_value = container.attributes.get(val_attr)
             if val_attr_value is not None:
                 val_attr_value = np.asarray(val_attr_value)
-                if data_dtype.itemsize is 1:
+                if data_dtype.itemsize == 1:
                     # Allow signed integral type
                     if val_attr_value.dtype.kind == "i":
                         continue

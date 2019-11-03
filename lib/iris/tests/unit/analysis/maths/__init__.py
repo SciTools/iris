@@ -19,7 +19,6 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 import iris.tests as tests
 import iris.tests.stock as stock
-import iris.tests as tests
 
 
 class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):

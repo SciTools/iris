@@ -15,14 +15,11 @@ from six.moves import filter, input, map, range, zip  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import contextmanager
-
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.cube import Cube, CubeList
-import iris.tests.stock
 
 from iris.analysis.trajectory import (
     UnstructuredNearestNeigbourRegridder as unn_gridder,
