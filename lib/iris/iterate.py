@@ -8,10 +8,7 @@ Cube functions for iteration in step.
 
 """
 
-try:  # Python 3
-    from collections.abc import Iterator
-except ImportError:  # Python 2.7
-    from collections import Iterator
+from collections.abc import Iterator
 import itertools
 import warnings
 

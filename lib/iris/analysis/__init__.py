@@ -36,10 +36,7 @@ The gallery contains several interesting worked examples of how an
 """
 
 from collections import OrderedDict
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2.7
-    from collections import Iterable
+from collections.abc import Iterable
 from functools import wraps
 
 import dask.array as da

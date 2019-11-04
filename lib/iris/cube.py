@@ -10,14 +10,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import namedtuple, OrderedDict
-try:  # Python 3
-    from collections.abc import (Iterable,
-                                 Container,
-                                 Mapping,
-                                 MutableMapping,
-                                 Iterator)
-except ImportError:  # Python 2.7
-    from collections import (Iterable,
+from collections.abc import (Iterable,
                              Container,
                              Mapping,
                              MutableMapping,

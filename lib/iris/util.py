@@ -8,10 +8,7 @@ Miscellaneous utility functions.
 
 """
 
-try:  # Python 3
-    from collections.abc import Hashable
-except ImportError:  # Python 2.7
-    from collections import Hashable
+from collections.abc import Hashable
 import abc
 from contextlib import contextmanager
 import copy

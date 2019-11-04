@@ -10,10 +10,7 @@ Definitions of coordinates and other dimensional metadata.
 
 from abc import ABCMeta
 from collections import namedtuple
-try:  # Python 3
-    from collections.abc import Iterator
-except ImportError:  # Python 2.7
-    from collections import Iterator
+from collections.abc import Iterator
 import copy
 from itertools import chain, zip_longest
 import operator
