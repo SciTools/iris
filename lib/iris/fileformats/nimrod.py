@@ -4,12 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Provides NIMROD file format capabilities."""
-<<<<<<< HEAD
-import six
-=======
-
-from __future__ import (absolute_import, division, print_function)
->>>>>>> Removed remaining six imports.
 
 import glob
 import numpy as np

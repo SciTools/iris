@@ -15,7 +15,7 @@ try:  # Python 3
 except ImportError:  # Python 2.7
     from collections import Iterator
 import copy
-from itertools import chain
+from itertools import chain, zip_longest
 import operator
 import warnings
 import zlib

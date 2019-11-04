@@ -19,10 +19,14 @@ from six.moves import zip_longest  # Previous line may not be tampered with!
 =======
 from __future__ import (absolute_import, division, print_function)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> Removed uses of six.moves.
 import six
 =======
 >>>>>>> Removed remaining six imports.
+=======
+from itertools import zip_longest  # Previous line may not be tampered with!
+>>>>>>> Removed uses of six.moves.
 
 import collections
 from itertools import repeat

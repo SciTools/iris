@@ -4,12 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the `iris.fileformats.pp._field_gen` function."""
-<<<<<<< HEAD
-import six
-=======
-
-from __future__ import (absolute_import, division, print_function)
->>>>>>> Removed remaining six imports.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
