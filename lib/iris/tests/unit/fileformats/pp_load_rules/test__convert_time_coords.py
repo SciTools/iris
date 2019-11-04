@@ -728,7 +728,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):
-    @unittest.skip("investigate failure")
+    @unittest.skip("#3508 investigate unit test failure")
     def test_t1_scalar_t2_list(self):
         lbtim = _lbtim(ib=3, ic=1)
         lbcode = _lbcode(1)
