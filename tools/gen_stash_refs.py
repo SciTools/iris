@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 import json
@@ -25,9 +24,7 @@ Relates grid code and field code to the stash code.
 '''
 
 
-CODE_PREAMBLE = ("\nfrom __future__ import "
-                 "(absolute_import, division, print_function)\n"
-                 "from six.moves import "
+CODE_PREAMBLE = ("from six.moves import "
                  "(filter, input, map, range, zip)  # noqa\n\n"
                  "from collections import namedtuple\n\n\n"
                  "Stash = namedtuple('Stash', "

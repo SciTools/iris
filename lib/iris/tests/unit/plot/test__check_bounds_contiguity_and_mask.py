@@ -6,7 +6,6 @@
 """Unit tests for the `iris.plot._check_bounds_contiguity_and_mask`
 function."""
 
-from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
