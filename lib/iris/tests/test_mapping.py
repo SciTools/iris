@@ -37,7 +37,7 @@ _DEFAULT_GLOBE = ccrs.Globe(semimajor_axis=6371229.0,
 @tests.skip_data
 class TestBasic(tests.GraphicsTest):
     def setUp(self):
-        super(TestBasic, self).setUp()
+        super().setUp()
         self.cube = iris.tests.stock.realistic_4d()
 
     def test_contourf(self):
@@ -71,7 +71,7 @@ class TestBasic(tests.GraphicsTest):
 @tests.skip_plot
 class TestUnmappable(tests.GraphicsTest):
     def setUp(self):
-        super(TestUnmappable, self).setUp()
+        super().setUp()
         src_cube = iris.tests.stock.global_pp()
 
         # Make a cube that can't be located on the globe.
@@ -97,7 +97,7 @@ class TestUnmappable(tests.GraphicsTest):
 @tests.skip_plot
 class TestMappingSubRegion(tests.GraphicsTest):
     def setUp(self):
-        super(TestMappingSubRegion, self).setUp()
+        super().setUp()
         cube_path = tests.get_data_path(
             ('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         cube = iris.load_cube(cube_path)[0]
@@ -146,7 +146,7 @@ class TestMappingSubRegion(tests.GraphicsTest):
 @tests.skip_plot
 class TestLowLevel(tests.GraphicsTest):
     def setUp(self):
-        super(TestLowLevel, self).setUp()
+        super().setUp()
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
         self.few_levels = list(range(280, 300, 5))
@@ -179,7 +179,7 @@ class TestLowLevel(tests.GraphicsTest):
 @tests.skip_plot
 class TestBoundedCube(tests.GraphicsTest):
     def setUp(self):
-        super(TestBoundedCube, self).setUp()
+        super().setUp()
         self.cube = iris.tests.stock.global_pp()
         # Add some bounds to this data (this will actually make the bounds
         # invalid as they will straddle the north pole and overlap on the
@@ -214,7 +214,7 @@ class TestBoundedCube(tests.GraphicsTest):
 @tests.skip_plot
 class TestLimitedAreaCube(tests.GraphicsTest):
     def setUp(self):
-        super(TestLimitedAreaCube, self).setUp()
+        super().setUp()
         cube_path = tests.get_data_path(('PP', 'aPProt1', 'rotated.pp'))
         self.cube = iris.load_cube(cube_path)[::20, ::20]
         self.cube.coord('grid_latitude').guess_bounds()

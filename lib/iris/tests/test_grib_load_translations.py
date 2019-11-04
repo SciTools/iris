@@ -353,7 +353,7 @@ class TestGribSimple(tests.IrisTest):
 class TestGrib1LoadPhenomenon(TestGribSimple):
     # Test recognition of grib phenomenon types.
     def mock_grib(self):
-        grib = super(TestGrib1LoadPhenomenon, self).mock_grib()
+        grib = super().mock_grib()
         grib.edition = 1
         return grib
 

@@ -30,7 +30,7 @@ from iris._lazy_data import as_lazy_data
 class AuxCoordTestMixin(CoordTestMixin):
     # Define a 2-D default array shape.
     def setupTestArrays(self, shape=(2, 3), masked=False):
-        super(AuxCoordTestMixin, self).setupTestArrays(shape, masked=masked)
+        super().setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, AuxCoordTestMixin):

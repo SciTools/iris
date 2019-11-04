@@ -27,7 +27,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
-        super(TestStringCoordPlot, self).setUp()
+        super().setUp()
         self.cube = self.cube[0, :]
         self.lat_lon_cube = self.lat_lon_cube[0, :]
 

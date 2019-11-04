@@ -817,8 +817,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
                                  'self._init_from_tuple((%s,))' % (args, args))
                 exec(method_source, namespace)
 
-        return super(_MetaOrderedHashable, cls).__new__(
-            cls, name, bases, namespace)
+        return super().__new__(cls, name, bases, namespace)
 
 
 @functools.total_ordering

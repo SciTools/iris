@@ -25,7 +25,7 @@ import iris.tests.stock
 @tests.skip_data
 class TestRealistic4d(tests.GraphicsTest):
     def setUp(self):
-        super(TestRealistic4d, self).setUp()
+        super().setUp()
         self.cube = iris.tests.stock.realistic_4d()
         self.altitude = self.cube.coord('altitude')
 

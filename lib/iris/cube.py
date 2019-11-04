@@ -227,7 +227,7 @@ class CubeList(list):
 
     def __getitem__(self, keys):
         """x.__getitem__(y) <==> x[y]"""
-        result = super(CubeList, self).__getitem__(keys)
+        result = super().__getitem__(keys)
         if isinstance(result, list):
             result = CubeList(result)
         return result
@@ -239,7 +239,7 @@ class CubeList(list):
         Use of negative indices is not supported.
 
         """
-        result = super(CubeList, self).__getslice__(start, stop)
+        result = super().__getslice__(start, stop)
         result = CubeList(result)
         return result
 

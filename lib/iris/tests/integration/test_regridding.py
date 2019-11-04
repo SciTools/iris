@@ -135,7 +135,7 @@ class TestZonalMean_global(tests.IrisTest):
 
 class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
     def setUp(self):
-        super(TestZonalMean_regional, self).setUp()
+        super().setUp()
 
         # Define a target grid and a target result (what we expect the
         # regridder to return).

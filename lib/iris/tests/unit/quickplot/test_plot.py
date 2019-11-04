@@ -17,7 +17,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
-        super(TestStringCoordPlot, self).setUp()
+        super().setUp()
         self.cube = self.cube[0, :]
 
     def test_yaxis_labels(self):

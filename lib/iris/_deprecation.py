@@ -63,5 +63,4 @@ class ClassWrapperSameDocstring(type):
         class_dict['__doc__'] = parent_class.__doc__
 
         # Return the result.
-        return super(ClassWrapperSameDocstring, metacls).__new__(
-            metacls, classname, bases, class_dict)
+        return super().__new__(metacls, classname, bases, class_dict)
