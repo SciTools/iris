@@ -14,6 +14,7 @@ The remainder of the old 'tests/test_grib_load.py' is now renamed as
 specific, and target the module 'iris_grib'.
 
 """
+
 # Import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests

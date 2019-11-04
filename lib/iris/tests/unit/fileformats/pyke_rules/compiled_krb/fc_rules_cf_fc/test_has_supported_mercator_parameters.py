@@ -8,6 +8,7 @@ Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
 fc_rules_cf_fc.has_supported_mercator_parameters`.
 
 """
+
 import warnings
 
 # import iris tests first so that some things can be initialised before

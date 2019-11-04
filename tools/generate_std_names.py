@@ -47,8 +47,6 @@ Or for more control (e.g. to use an alternative XML file) via:
 
 """
 
-
-
 STD_NAMES = '''.lstrip()
 
 

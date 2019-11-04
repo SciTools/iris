@@ -8,7 +8,6 @@ Provides UK Met Office Fields File (FF) format specific capabilities.
 
 """
 
-
 import os
 import warnings
 

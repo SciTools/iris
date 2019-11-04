@@ -205,7 +205,6 @@ See http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
 
 """
 
-
 def _convert_paths_to_patches():
     # Convert the symbols defined as lists-of-paths into patches.
     for code, symbol in CLOUD_COVER.items():

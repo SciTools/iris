@@ -11,7 +11,6 @@ Relates grid code and field code to the stash code.
 
 """
 
-
 from collections import namedtuple
 
 

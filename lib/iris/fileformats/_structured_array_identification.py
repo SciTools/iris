@@ -43,7 +43,6 @@ An example using numpy arrays:
 
 """
 
-
 from collections import namedtuple
 
 import numpy as np

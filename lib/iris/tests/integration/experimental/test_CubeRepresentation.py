@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Integration tests for cube html representation."""
+
 from html import escape
 
 # Import iris.tests first so that some things can be initialised before

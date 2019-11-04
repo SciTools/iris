@@ -8,7 +8,6 @@ Generalised mechanisms for metadata translation and cube construction.
 
 """
 
-
 import collections
 import warnings
 

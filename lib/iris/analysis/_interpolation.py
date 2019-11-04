@@ -5,7 +5,6 @@
 # licensing details.
 """A collection of helpers for interpolation."""
 
-
 from collections import namedtuple
 from itertools import product
 import operator

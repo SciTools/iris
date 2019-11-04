@@ -8,7 +8,6 @@ Support for conservative regridding via ESMPy.
 
 """
 
-
 import cartopy.crs as ccrs
 import numpy as np
 

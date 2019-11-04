@@ -8,7 +8,6 @@ Basic mathematical and statistical operations.
 
 """
 
-
 import inspect
 import math
 import operator

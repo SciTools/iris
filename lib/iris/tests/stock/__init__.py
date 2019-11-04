@@ -8,7 +8,6 @@ A collection of routines which create standard Cubes for test purposes.
 
 """
 
-
 from datetime import datetime
 import os.path
 

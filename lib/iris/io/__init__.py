@@ -8,7 +8,6 @@ Provides an interface to manage URI scheme support in iris.
 
 """
 
-
 from collections import OrderedDict
 import glob
 import os.path

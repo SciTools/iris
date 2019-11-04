@@ -19,7 +19,6 @@ graphical test results.
 
 """
 
-
 import codecs
 import collections
 import contextlib

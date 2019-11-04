@@ -8,7 +8,6 @@ Exceptions specific to the Iris package.
 
 """
 
-
 class IrisError(Exception):
     """Base class for errors in the Iris package."""
     pass

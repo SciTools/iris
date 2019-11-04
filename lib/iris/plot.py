@@ -11,7 +11,6 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
-
 import collections
 import datetime
 

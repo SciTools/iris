@@ -9,7 +9,6 @@ Definitions of how Iris objects should be represented.
 
 """
 
-
 from html import escape
 import re
 

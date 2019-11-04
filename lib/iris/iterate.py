@@ -8,7 +8,6 @@ Cube functions for iteration in step.
 
 """
 
-
 try:  # Python 3
     from collections.abc import Iterator
 except ImportError:  # Python 2.7

@@ -10,7 +10,6 @@ See also: :mod:`NumPy <numpy>`.
 
 """
 
-
 import re
 import warnings
 

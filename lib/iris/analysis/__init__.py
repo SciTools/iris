@@ -35,7 +35,6 @@ The gallery contains several interesting worked examples of how an
 
 """
 
-
 from collections import OrderedDict
 try:  # Python 3
     from collections.abc import Iterable

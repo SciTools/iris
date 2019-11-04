@@ -5,7 +5,6 @@
 # licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
-
 import warnings
 
 import cf_units

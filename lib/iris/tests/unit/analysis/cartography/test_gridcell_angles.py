@@ -8,6 +8,7 @@ Unit tests for the function
 :func:`iris.analysis.cartography.gridcell_angles`.
 
 """
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

@@ -21,7 +21,6 @@ to the pp "as_pairs" functions.
 
 """
 
-
 from contextlib import contextmanager
 import threading
 import os.path

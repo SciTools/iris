@@ -9,7 +9,6 @@ color map meta-data mappings.
 
 """
 
-
 from functools import wraps
 import os
 import os.path

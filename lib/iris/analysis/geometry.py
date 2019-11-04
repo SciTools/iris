@@ -11,7 +11,6 @@ Various utilities related to geometric operations.
 
 """
 
-
 import warnings
 
 from shapely.geometry import Polygon

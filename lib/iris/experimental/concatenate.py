@@ -13,7 +13,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-
 def concatenate(cubes):
     """
     Concatenate the provided cubes over common existing dimensions.

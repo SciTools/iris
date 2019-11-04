@@ -12,7 +12,6 @@ and provides creation of :class:`BasicFieldCollation` objects from lists of
 
 """
 
-
 import itertools
 
 import cftime

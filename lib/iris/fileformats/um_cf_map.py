@@ -16,7 +16,6 @@ Provides UM/CF phenomenon translations.
 
 """
 
-
 from collections import namedtuple
 
 
