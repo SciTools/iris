@@ -12,10 +12,7 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-try:  # Python 3
-    from collections.abc import Iterable, Mapping
-except ImportError:  # Python 2.7
-    from collections import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 import operator
 
 import numpy as np

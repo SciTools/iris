@@ -40,10 +40,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
 from collections import OrderedDict
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2.7
-    from collections import Iterable
+from collections.abc import Iterable
 from functools import wraps
 
 import dask.array as da

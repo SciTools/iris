@@ -11,10 +11,7 @@ Cube functions for iteration in step.
 from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 
-try:  # Python 3
-    from collections.abc import Iterator
-except ImportError:  # Python 2.7
-    from collections import Iterator
+from collections.abc import Iterator
 import itertools
 import warnings
 
