@@ -21,14 +21,9 @@
         "setuptools": [],
         "pyke": [],
         "six": [],
-
-        "nose": [],
-        "pep8": [],
-        "filelock": [],
-        "imagehash": [],
-        "requests": []
     },
 
+    "benchmark_dir": "lib/iris/tests/benchmarking",
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
