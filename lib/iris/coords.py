@@ -860,9 +860,8 @@ class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
             in the selection. Default is True.
 
         """
-        return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
-                                               maximum, min_inclusive,
-                                               max_inclusive)
+        return super().__new__(cls, name_or_coord, minimum, maximum,
+                               min_inclusive, max_inclusive)
 
     __slots__ = ()
 
@@ -979,7 +978,7 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                                  'length 1.')
             point = point[0]
 
-        return super(Cell, cls).__new__(cls, point, bound)
+        return super().__new__(cls, point, bound)
 
     def __mod__(self, mod):
         point = self.point
@@ -1000,7 +999,7 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super(Cell, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         """
