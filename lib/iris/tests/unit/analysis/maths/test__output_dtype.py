@@ -36,11 +36,6 @@ class Test(tests.IrisTest):
                                 np.multiply,
                                 np.power,
                                 np.floor_divide]
-        try:
-            self.same_result_ops.append(operator.div)
-        except AttributeError:
-            # operator.div doesn't exist in Python 3
-            pass
 
         self.unary_same_result_ops = [np.abs]
 

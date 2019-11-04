@@ -43,10 +43,7 @@ The calling sequence of handler is dependent on the function given in the origin
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
-try:  # Python 3
-    from collections.abc import Callable
-except ImportError:  # Python 2.7
-    from collections import Callable
+from collections.abc import Callable
 import functools
 import os
 import struct

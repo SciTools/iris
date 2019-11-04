@@ -27,10 +27,7 @@ class TestBroadcasting(tests.IrisTest_nometa,
                        CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
-        try:
-            return operator.div
-        except AttributeError:
-            return operator.truediv
+        return operator.truediv
 
     @property
     def cube_func(self):
@@ -41,10 +38,7 @@ class TestBroadcasting(tests.IrisTest_nometa,
 class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
-        try:
-            return operator.div
-        except AttributeError:
-            return operator.truediv
+        return operator.truediv
 
     @property
     def cube_func(self):

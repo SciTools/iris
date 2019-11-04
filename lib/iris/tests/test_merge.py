@@ -14,10 +14,7 @@ import six
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2.7
-    from collections import Iterable
+from collections.abc import Iterable
 import datetime
 import itertools
 import numpy as np
