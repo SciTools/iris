@@ -91,8 +91,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
 
     """
     def __new__(cls, stride, unique_ordered_values):
-        self = super(ArrayStructure, cls).__new__(cls, stride,
-                                                  unique_ordered_values)
+        self = super().__new__(cls, stride, unique_ordered_values)
         return self
 
     __slots__ = ()
@@ -107,7 +106,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
         return len(self.unique_ordered_values)
 
     def __hash__(self):
-        return super(ArrayStructure, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         stride = getattr(other, 'stride', None)

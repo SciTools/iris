@@ -132,8 +132,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
                 return self.file_errors
 
         # Otherwise call the superclass' method to print the bad results.
-        return super(StandardReportWithExclusions,
-                     self).get_file_results()
+        return super().get_file_results()
 
 
 class TestCodeFormat(tests.IrisTest):

@@ -365,7 +365,7 @@ class HybridHeightFactory(AuxCoordFactory):
             The coordinate providing the `orog` term.
 
         """
-        super(HybridHeightFactory, self).__init__()
+        super().__init__()
 
         if delta and delta.nbounds not in (0, 2):
             raise ValueError('Invalid delta coordinate: must have either 0 or'
@@ -520,7 +520,7 @@ class HybridPressureFactory(AuxCoordFactory):
             The coordinate providing the `ps` term.
 
         """
-        super(HybridPressureFactory, self).__init__()
+        super().__init__()
 
         # Check that provided coords meet necessary conditions.
         self._check_dependencies(delta, sigma, surface_air_pressure)
@@ -695,7 +695,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         either `eta`, or 'sigma' and `depth` and `depth_c` coordinates.
 
         """
-        super(OceanSigmaZFactory, self).__init__()
+        super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev)
@@ -954,7 +954,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                         (depth(j, i) + eta(n, j, i))
 
         """
-        super(OceanSigmaFactory, self).__init__()
+        super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(sigma, eta, depth)
@@ -1118,7 +1118,7 @@ class OceanSg1Factory(AuxCoordFactory):
             S(k,j,i) = depth_c * s(k) + (depth(j,i) - depth_c) * C(k)
 
         """
-        super(OceanSg1Factory, self).__init__()
+        super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, c, eta, depth, depth_c)
@@ -1307,7 +1307,7 @@ class OceanSFactory(AuxCoordFactory):
                    b * [tanh(a * (s(k) + 0.5)) / (2 * tanh(0.5*a)) - 0.5]
 
         """
-        super(OceanSFactory, self).__init__()
+        super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, eta, depth, a, b, depth_c)
@@ -1491,7 +1491,7 @@ class OceanSg2Factory(AuxCoordFactory):
                        (depth_c + depth(j,i))
 
         """
-        super(OceanSg2Factory, self).__init__()
+        super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, c, eta, depth, depth_c)

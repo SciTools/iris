@@ -523,8 +523,7 @@ class IrisTest_nometa(unittest.TestCase):
         """
         # Note: invoke via parent class to avoid recursion as, in Python 2,
         # "six.assertRaisesRegex" calls getattr(self, 'assertRaisesRegexp').
-        return six.assertRaisesRegex(super(IrisTest_nometa, self),
-                                     *args, **kwargs)
+        return six.assertRaisesRegex(super(), *args, **kwargs)
 
     @contextlib.contextmanager
     def _recordWarningMatches(self, expected_regexp=''):
