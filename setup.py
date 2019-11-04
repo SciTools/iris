@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from contextlib import contextmanager
 from distutils.util import convert_path
 import os
