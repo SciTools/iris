@@ -29,12 +29,6 @@ defined by :mod:`ConfigParser`.
 
 ----------
 """
-<<<<<<< HEAD
-from six.moves import configparser
-=======
-
-from __future__ import (absolute_import, division, print_function)
->>>>>>> Removed uses of six.moves.
 
 import configparser
 import contextlib
