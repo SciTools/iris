@@ -615,9 +615,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         kind = dtype.kind
         if kind in 'SU':
             # Establish the basic type name for 'string' type data.
-            value_type_name = 'string'
             if kind == 'S':
                 value_type_name = 'bytes'
+            else:
+                value_type_name = 'string'
         else:
             value_type_name = dtype.name
 
