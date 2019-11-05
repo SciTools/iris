@@ -5,7 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 from html import escape
 
 # Import iris.tests first so that some things can be initialised before

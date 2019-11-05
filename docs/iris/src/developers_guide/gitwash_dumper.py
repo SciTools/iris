@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 ''' Checkout gitwash repo into directory and do search replace on name '''
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import os
 from os.path import join as pjoin
 import shutil

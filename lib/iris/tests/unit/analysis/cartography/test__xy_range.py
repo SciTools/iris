@@ -9,8 +9,6 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import iris.tests as tests
 import iris.tests.stock as stock
 import numpy as np
@@ -22,7 +20,7 @@ class Test(tests.IrisTest):
         cube = stock.realistic_3d()
         cube.coord('grid_longitude').guess_bounds()
 
-        with self.assertRaisesRegexp(ValueError, 'bounds'):
+        with self.assertRaisesRegex(ValueError, 'bounds'):
             result_non_circ = _xy_range(cube)
 
     def test_non_circular(self):

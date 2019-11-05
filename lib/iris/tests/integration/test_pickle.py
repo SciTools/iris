@@ -5,14 +5,12 @@
 # licensing details.
 """Integration tests for pickling things."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+import pickle
 import unittest
-import six.moves.cPickle as pickle
 
 import iris
 if tests.GRIB_AVAILABLE:

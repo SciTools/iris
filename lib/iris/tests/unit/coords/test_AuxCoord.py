@@ -11,8 +11,6 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -97,7 +95,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
         msg = 'Bounds shape must be compatible with points shape'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             AuxCoord(self.pts_real, bounds=bds_wrong)
 
     def test_no_masked_pts_real(self):
@@ -575,7 +573,7 @@ class Test_points__setter(tests.IrisTest, AuxCoordTestMixin):
         # Setting real points requires matching shape.
         coord = AuxCoord([1.0, 2.0])
         msg = 'Require data with shape \(2,\), got \(3,\)'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
 
     def test_real_set_lazy(self):
@@ -651,7 +649,7 @@ class Test_bounds__setter(tests.IrisTest, AuxCoordTestMixin):
         # Setting real points requires matching shape.
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         msg = 'must be compatible with points shape'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
 
     def test_set_lazy_bounds(self):

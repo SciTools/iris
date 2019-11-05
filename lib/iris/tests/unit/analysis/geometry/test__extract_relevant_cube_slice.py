@@ -8,8 +8,6 @@ Unit tests for :func:`iris.analysis.geometry._extract_relevant_cube_slice`.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 

@@ -11,7 +11,6 @@ Provides test methods and classes common to
 :class:`~iris.tests.unit.coords.test_DimCoord`.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import dask.array as da
 import numpy as np

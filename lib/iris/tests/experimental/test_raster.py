@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import iris.tests as tests
 import iris
 

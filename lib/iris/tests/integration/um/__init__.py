@@ -4,5 +4,3 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Integration tests for :mod:`iris.fileformats.um` fast load functions."""
-
-from six.moves import (filter, input, map, range, zip)  # noqa

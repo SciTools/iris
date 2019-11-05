@@ -6,9 +6,6 @@
 """Unit tests for the `iris.plot._get_plot_defn_custom_coords_picked`
 function."""
 
-
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -72,7 +69,7 @@ class Test_get_plot_defn_custom_coords_picked(tests.IrisTest):
     def test_span_check(self):
         cube = hybrid_height()
         emsg = 'don\'t span the 2 data dimensions'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             iplt._get_plot_defn_custom_coords_picked(
                 cube, ('sigma', 'level_height'), POINT_MODE)
 

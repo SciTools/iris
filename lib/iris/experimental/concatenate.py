@@ -13,8 +13,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 
 def concatenate(cubes):
     """

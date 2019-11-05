@@ -5,8 +5,6 @@
 # licensing details.
 """Test function :func:`iris.util.new_axis`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -15,8 +13,6 @@ import iris.tests.stock as stock
 import copy
 import numpy as np
 import unittest
-
-import six
 
 import iris
 from iris._lazy_data import as_lazy_data
@@ -131,7 +127,7 @@ class Test(tests.IrisTest):
         # Addresses a former bug : https://github.com/SciTools/iris/pull/3263
         factory, = list(res.aux_factories)
         deps = factory.dependencies
-        for dep_name, dep_coord in six.iteritems(deps):
+        for dep_name, dep_coord in deps.items():
             coord_name = dep_coord.name()
             msg = ('Factory dependency {!r} is a coord named {!r}, '
                    'but it is *not* the coord of that name in the new cube.')

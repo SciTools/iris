@@ -1,6 +1,4 @@
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import matplotlib.cm as mpl_cm
 import matplotlib.pyplot as plt
 

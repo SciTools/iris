@@ -5,14 +5,13 @@
 # licensing details.
 """Test function :func:`iris.util.describe_diff`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
 
 import numpy as np
+
+from io import StringIO
 
 import iris.cube
 from iris.util import describe_diff
@@ -24,7 +23,7 @@ class Test(iris.tests.IrisTest):
         self.cube_b = self.cube_a.copy()
 
     def _compare_result(self, cube_a, cube_b):
-        result_sio = six.StringIO()
+        result_sio = StringIO()
         describe_diff(cube_a, cube_b, output_file=result_sio)
         return result_sio.getvalue()
 

@@ -5,9 +5,6 @@
 # licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -98,7 +95,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         factory.rename('another altitude')
         cube.add_aux_factory(factory)
         with self.temp_filename(suffix='.nc') as filename, \
-                self.assertRaisesRegexp(ValueError, 'multiple aux factories'):
+                self.assertRaisesRegex(ValueError, 'multiple aux factories'):
             iris.save(cube, filename)
 
     def test_hybrid_height_cubes(self):
@@ -121,7 +118,7 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         sa.points = sa.points * 10
         emsg = 'Unable to create dimensonless vertical coordinate.'
         with self.temp_filename('.nc') as fname, \
-                self.assertRaisesRegexp(ValueError, emsg):
+                self.assertRaisesRegex(ValueError, emsg):
             iris.save([hh1, hh2], fname)
 
 
@@ -275,8 +272,8 @@ class TestCMIP6VolcelloLoad(tests.IrisTest):
         # still receive a warning about other variables mentioned in
         # `cell_measures` i.e. a warning should be raised about missing
         # areacello.
-        areacello_str = "areacello" if six.PY3 else u"areacello"
-        volcello_str = "volcello" if six.PY3 else u"volcello"
+        areacello_str = "areacello"
+        volcello_str = "volcello"
         expected_msg = "Missing CF-netCDF measure variable %r, " \
                        "referenced by netCDF variable %r" \
                        % (areacello_str, volcello_str)
@@ -339,8 +336,8 @@ class TestSelfReferencingVarLoad(tests.IrisTest):
         # still receive a warning about other variables mentioned in
         # `cell_measures` i.e. a warning should be raised about missing
         # areacello.
-        areacello_str = "areacello" if six.PY3 else u"areacello"
-        volcello_str = "volcello" if six.PY3 else u"volcello"
+        areacello_str = "areacello"
+        volcello_str = "volcello"
         expected_msg = "Missing CF-netCDF measure variable %r, " \
                        "referenced by netCDF variable %r" \
                        % (areacello_str, volcello_str)

@@ -5,9 +5,6 @@
 # licensing details.
 """Provides NIMROD file format capabilities."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import glob
 import numpy as np
 import os
@@ -70,9 +67,7 @@ def _read_chars(infile, num):
     """Read characters from the (big-endian) file."""
     instr = infile.read(num)
     result = struct.unpack(">%ds" % num, instr)[0]
-    if six.PY3:
-        # For Python 3, convert raw bytes into a string.
-        result = result.decode()
+    result = result.decode()
     return result
 
 
@@ -216,7 +211,7 @@ def load_cubes(filenames, callback=None):
         The resultant cubes may not be in the same order as in the files.
 
     """
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:

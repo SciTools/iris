@@ -12,8 +12,6 @@ The system tests can be run with ``python setup.py test --system-tests``.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 
 import cf_units

@@ -11,8 +11,6 @@ Various utilities related to geometric operations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import warnings
 
 from shapely.geometry import Polygon

@@ -8,8 +8,6 @@ Test some key usages of :func:`iris.plot.quiver`.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -151,7 +149,7 @@ class MixinVectorPlotCases(object):
                 coord.coord_system = patch_coord_system
         re_msg = ('Can only plot .* lat-lon projection, .* '
                   'This .* translates as Cartopy.*Mercator')
-        with self.assertRaisesRegexp(ValueError, re_msg):
+        with self.assertRaisesRegex(ValueError, re_msg):
             self.plot('2d_rotated', u_cube, v_cube,
                       coords=('longitude', 'latitude'))
 

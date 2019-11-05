@@ -9,13 +9,10 @@ translations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import deque, namedtuple
 import copy
-from six.moves.queue import Queue
+from queue import Queue
 import re
 from threading import Thread
 import warnings
@@ -88,7 +85,7 @@ class EncodableMap(object):
                                         self.targetmsg.format(**self.targetid))
 
 
-class Mappings(six.with_metaclass(ABCMeta, object)):
+class Mappings(object, metaclass=ABCMeta):
     """
     Abstract base class to support the encoding of specific metarelate
     mapping translations.

@@ -13,7 +13,6 @@ However, it is relatively simple to test multiple aspects of all three here
 in combination.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -111,12 +110,12 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1, 2])
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1:1])
 
     def test_2d_tuple(self):
@@ -269,12 +268,12 @@ class TestResults(tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1, 2], None, None)
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1:1], None, None)
 
     def test_2d_tuple(self):

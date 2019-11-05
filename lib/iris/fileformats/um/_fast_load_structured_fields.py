@@ -12,8 +12,6 @@ and provides creation of :class:`BasicFieldCollation` objects from lists of
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import itertools
 
 import cftime

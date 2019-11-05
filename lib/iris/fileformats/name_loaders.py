@@ -5,9 +5,6 @@
 # licensing details.
 """NAME file format loading functions."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import collections
 import datetime
 import re
@@ -376,7 +373,7 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
         # Turn the dictionary of column headings with a list of header
         # information for each field into a dictionary of headings for
         # just this field.
-        field_headings = {k: v[i] for k, v in six.iteritems(column_headings)}
+        field_headings = {k: v[i] for k, v in column_headings.items()}
 
         # Make a cube.
         cube = iris.cube.Cube(data_array)
@@ -492,13 +489,13 @@ def _generate_cubes(header, column_headings, coords, data_arrays,
                     'Output format', ]
 
         # Add the Main Headings as attributes.
-        for key, value in six.iteritems(header):
+        for key, value in header.items():
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value
 
         # Add the Column Headings as attributes
-        for key, value in six.iteritems(field_headings):
+        for key, value in field_headings.items():
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value
@@ -1169,7 +1166,7 @@ def load_NAMEIII_trajectory(filename):
         cube = iris.cube.Cube(values, units=units)
         cube.rename(name)
         # Add the Main Headings as attributes.
-        for key, value in six.iteritems(header):
+        for key, value in header.items():
             if value is not None and value != '' and \
                     key not in headings:
                 cube.attributes[key] = value

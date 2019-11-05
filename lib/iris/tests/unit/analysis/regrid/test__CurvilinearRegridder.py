@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for :class:`iris.analysis._regrid.CurvilinearRegridder`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -34,11 +32,11 @@ class Test___init__(tests.IrisTest):
         self.weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
 
     def test_bad_src_type(self):
-        with self.assertRaisesRegexp(TypeError, "'src_grid_cube'"):
+        with self.assertRaisesRegex(TypeError, "'src_grid_cube'"):
             Regridder(self.bad, self.src_grid, self.weights)
 
     def test_bad_grid_type(self):
-        with self.assertRaisesRegexp(TypeError, "'target_grid_cube'"):
+        with self.assertRaisesRegex(TypeError, "'target_grid_cube'"):
             Regridder(self.src_grid, self.bad, self.weights)
 
 
@@ -170,12 +168,12 @@ class Test___call____bad_src(tests.IrisTest):
         self.regridder = Regridder(self.src_grid, self.src_grid, weights)
 
     def test_bad_src_type(self):
-        with self.assertRaisesRegexp(TypeError, 'must be a Cube'):
+        with self.assertRaisesRegex(TypeError, 'must be a Cube'):
             self.regridder(np.ones((3, 4)))
 
     def test_bad_src_shape(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     'not defined on the same source grid'):
+        with self.assertRaisesRegex(ValueError,
+                                    'not defined on the same source grid'):
             self.regridder(self.src_grid[::2, ::2])
 
 

@@ -13,12 +13,8 @@ Version 1.4, 27 February 2009.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-from six.moves import zip_longest  # Previous line may not be tampered with!
-import six
-
 import collections
-from itertools import repeat
+from itertools import repeat, zip_longest
 import os
 import os.path
 import re
@@ -395,7 +391,7 @@ class NetCDFDataProxy(object):
         return {attr: getattr(self, attr) for attr in self.__slots__}
 
     def __setstate__(self, state):
-        for key, value in six.iteritems(state):
+        for key, value in state.items():
             setattr(self, key, value)
 
 
@@ -404,35 +400,35 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     engine.provides['coordinates'] = []
 
     # Assert facts for CF coordinates.
-    for cf_name in six.iterkeys(cf_group.coordinates):
+    for cf_name in cf_group.coordinates.keys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'coordinate',
                                       (cf_name,))
 
     # Assert facts for CF auxiliary coordinates.
-    for cf_name in six.iterkeys(cf_group.auxiliary_coordinates):
+    for cf_name in cf_group.auxiliary_coordinates.keys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'auxiliary_coordinate',
                                       (cf_name,))
 
     # Assert facts for CF cell measures.
-    for cf_name in six.iterkeys(cf_group.cell_measures):
+    for cf_name in cf_group.cell_measures.keys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE,
                                       'cell_measure', (cf_name,))
 
     # Assert facts for CF grid_mappings.
-    for cf_name in six.iterkeys(cf_group.grid_mappings):
+    for cf_name in cf_group.grid_mappings.keys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'grid_mapping',
                                       (cf_name,))
 
     # Assert facts for CF labels.
-    for cf_name in six.iterkeys(cf_group.labels):
+    for cf_name in cf_group.labels.keys():
         engine.add_case_specific_fact(_PYKE_FACT_BASE, 'label',
                                       (cf_name,))
 
     # Assert facts for CF formula terms associated with the cf_group
     # of the CF data variable.
     formula_root = set()
-    for cf_var in six.itervalues(cf.cf_group.formula_terms):
-        for cf_root, cf_term in six.iteritems(cf_var.cf_terms_by_root):
+    for cf_var in cf.cf_group.formula_terms.values():
+        for cf_root, cf_term in cf_var.cf_terms_by_root.items():
             # Only assert this fact if the formula root variable is
             # defined in the CF group of the CF data variable.
             if cf_root in cf_group:
@@ -461,7 +457,7 @@ def _pyke_stats(engine, cf_name):
         print('Case Specific Facts:')
         kb_facts = engine.get_kb(_PYKE_FACT_BASE)
 
-        for key in six.iterkeys(kb_facts.entity_lists):
+        for key in kb_facts.entity_lists.keys():
             for arg in kb_facts.entity_lists[key].case_specific_facts:
                 print('\t%s%s' % (key, arg))
 
@@ -469,7 +465,7 @@ def _pyke_stats(engine, cf_name):
 def _set_attributes(attributes, key, value):
     """Set attributes dictionary, converting unicode strings appropriately."""
 
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         try:
             attributes[str(key)] = str(value)
         except UnicodeEncodeError:
@@ -688,7 +684,7 @@ def load_cubes(filenames, callback=None):
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:
@@ -728,7 +724,7 @@ def _bytes_if_ascii(string):
     be returned by the function unchanged.
 
     """
-    if isinstance(string, six.string_types):
+    if isinstance(string, str):
         try:
             return string.encode(encoding='ascii')
         except (AttributeError, UnicodeEncodeError):
@@ -998,7 +994,7 @@ class Saver(object):
         local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
 
         # Add global attributes taking into account local_keys.
-        global_attributes = {k: v for k, v in six.iteritems(cube.attributes)
+        global_attributes = {k: v for k, v in cube.attributes.items()
                              if (k not in local_keys and
                                  k.lower() != 'conventions')}
         self.update_global_attributes(global_attributes)
@@ -1235,7 +1231,7 @@ class Saver(object):
                 cf_var = self._dataset.variables[cf_name]
 
                 names = {key: self._name_coord_map.name(coord) for
-                         key, coord in six.iteritems(factory.dependencies)}
+                         key, coord in factory.dependencies.items()}
                 formula_terms = factory_defn.formula_terms_format.format(
                     **names)
                 std_name = factory_defn.std_name
@@ -2327,7 +2323,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
             else:
                 msg = "The argument to packing must contain the key 'dtype'."
                 raise ValueError(msg)
-        elif (isinstance(p, six.text_type) or isinstance(p, type) or
+        elif (isinstance(p, str) or isinstance(p, type) or
               isinstance(p, str)):
             pdtype = np.dtype(p)  # Does nothing if it's already a numpy dtype
             if pdtype.kind != 'i' and pdtype.kind != 'u':
@@ -2355,7 +2351,7 @@ def save(cube, filename, netcdf_format='NETCDF4', local_keys=None,
         packspecs = packing
 
     # Make fill-value(s) into an iterable over cubes.
-    if isinstance(fill_value, six.string_types):
+    if isinstance(fill_value, str):
         # Strings are awkward -- handle separately.
         fill_values = repeat(fill_value)
     else:

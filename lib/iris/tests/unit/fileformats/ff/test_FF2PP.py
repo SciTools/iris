@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -83,10 +80,7 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         grid.vectors = mock.Mock(return_value=(x, y))
         ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
-        if six.PY3:
-            open_func = 'builtins.open'
-        else:
-            open_func = '__builtin__.open'
+        open_func = 'builtins.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
                 mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \
@@ -301,7 +295,7 @@ class Test__payload(tests.IrisTest):
         mock_field = _DummyField(lbext=10, lblrec=200, lbnrec=-1,
                                  raw_lbpack=1239,
                                  lbuser=[_INTEGER], boundary_packing=None)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 NotYetImplementedError,
                 'PP fields with LBPACK of 1239 are not supported.'):
             self._test(mock_field, None, None)
@@ -322,8 +316,8 @@ class Test__payload(tests.IrisTest):
                                  lbuser=[_REAL],
                                  # Anything not None will do here.
                                  boundary_packing=0)
-        with self.assertRaisesRegexp(ValueError,
-                                     'packed LBC data is not supported'):
+        with self.assertRaisesRegex(ValueError,
+                                    'packed LBC data is not supported'):
             self._test(mock_field, None, None)
 
     def test_lbc_cray(self):
@@ -414,15 +408,15 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
     def test__bad_lbtim(self):
         self.mock_field.lbtim = 717
         ff2pp = FF2PP('dummy_filename')
-        with self.assertRaisesRegexp(ValueError,
-                                     'LBTIM of 717, expected only 0 or 11'):
+        with self.assertRaisesRegex(ValueError,
+                                    'LBTIM of 717, expected only 0 or 11'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
         ff2pp = FF2PP('dummy_filename')
-        with self.assertRaisesRegexp(ValueError,
-                                     'LBVC of 312, expected only 0 or 65'):
+        with self.assertRaisesRegex(ValueError,
+                                    'LBVC of 312, expected only 0 or 65'):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
 
@@ -465,7 +459,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 100
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'hence >= 101'):
             _ = list(ff2pp._fields_over_all_levels(field))
@@ -474,7 +468,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         ff2pp = FF2PP('dummy_filename')
         field = self.mock_field
         field.lbhem = 105
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'more than the total number of levels in the file = 3'):
             _ = list(ff2pp._fields_over_all_levels(field))

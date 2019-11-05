@@ -8,8 +8,6 @@ Cube functions for iteration in step.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from collections.abc import Iterator
 import itertools
 import warnings

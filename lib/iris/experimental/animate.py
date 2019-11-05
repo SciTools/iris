@@ -8,8 +8,6 @@ Wrapper for animating iris cubes using iris or matplotlib plotting functions
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import warnings
 
 import matplotlib.pyplot as plt

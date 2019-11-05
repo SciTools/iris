@@ -5,8 +5,6 @@
 # licensing details.
 """Integration tests for fast-loading FF and PP files."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -20,7 +18,6 @@ import os
 
 from cf_units import Unit
 import numpy as np
-import six
 
 import iris.coords
 from iris.coords import DimCoord, AuxCoord, CellMethod
@@ -107,7 +104,7 @@ class Mixin_FieldTest(object):
             # Get the 'length' of a control argument.
             if arg is None:
                 result = 0
-            elif isinstance(arg, six.string_types):
+            elif isinstance(arg, str):
                 result = len(arg)
             else:
                 result = 1
@@ -162,7 +159,7 @@ class Mixin_FieldTest(object):
             # First get a list of value indices from the argument.
             # Can be: a single index value; a list of indices; or a string.
             if (isinstance(arg, Iterable) and
-                    not isinstance(arg, six.string_types)):
+                    not isinstance(arg, str)):
                 # Can also just pass a simple iterable of values.
                 inds = [int(val) for val in arg]
             else:
@@ -172,7 +169,7 @@ class Mixin_FieldTest(object):
                 elif n_vals == 1:
                     inds = [int(arg)] * n_flds
                 else:
-                    assert isinstance(arg, six.string_types)
+                    assert isinstance(arg, str)
                     inds = [None if char == '-' else int(char)
                             for char in arg]
 

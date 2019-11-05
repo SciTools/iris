@@ -7,5 +7,3 @@
 Unit tests for the :mod:`iris.fileformats._pyke_rules.compiled_krb` module.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa

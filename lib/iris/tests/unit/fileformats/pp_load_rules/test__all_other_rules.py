@@ -8,8 +8,6 @@ Unit tests for the `iris.fileformats.pp_load_rules._all_other_rules` function.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

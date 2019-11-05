@@ -8,8 +8,6 @@ Experimental cube-adjusting functions to assist merge operations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import numpy as np
 
 

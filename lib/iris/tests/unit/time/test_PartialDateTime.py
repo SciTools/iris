@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.time.PartialDateTime` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -147,7 +144,7 @@ def negate_expectations(expectations):
             expected = not expected
         return expected
 
-    return {name: negate(value) for name, value in six.iteritems(expectations)}
+    return {name: negate(value) for name, value in expectations.items()}
 
 
 EQ_EXPECTATIONS = {'no_difference': True, 'item1_lo': False, 'item1_hi': False,

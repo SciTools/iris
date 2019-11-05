@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for :class:`iris.analysis._regrid.RectilinearRegridder`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -312,7 +310,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data = np.arange(12, dtype=np.float).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
-            with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            with self.assertRaisesRegex(ValueError, 'out of bounds'):
                 self._regrid(data, method, 'error')
 
     def test_error_maskedarray(self):
@@ -321,7 +319,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
-            with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            with self.assertRaisesRegex(ValueError, 'out of bounds'):
                 self._regrid(data, method, 'error')
 
     def test_mask_ndarray(self):
@@ -389,7 +387,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data = np.arange(12, dtype=np.float).reshape(3, 4)
         emsg = 'Invalid extrapolation mode'
         for method in self.methods:
-            with self.assertRaisesRegexp(ValueError, emsg):
+            with self.assertRaisesRegex(ValueError, emsg):
                 self._regrid(data, method, 'BOGUS')
 
     def test_method_result_types(self):
@@ -731,7 +729,7 @@ class Test___call____no_coord_systems(tests.IrisTest):
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
             emsg = 'matching coordinate metadata'
-            with self.assertRaisesRegexp(ValueError, emsg):
+            with self.assertRaisesRegex(ValueError, emsg):
                 regridder(src)
 
     def test_coord_metadata_mismatch(self):
@@ -895,14 +893,14 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         # Values irrelevant - the function raises an error.
         for method in self.methods:
             src = self._ndarray_cube(method)
-            with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            with self.assertRaisesRegex(ValueError, 'out of bounds'):
                 self._regrid(src, method, 'error')
 
     def test_error_maskedarray(self):
         # Values irrelevant - the function raises an error.
         for method in self.methods:
             src = self._masked_cube(method)
-            with self.assertRaisesRegexp(ValueError, 'out of bounds'):
+            with self.assertRaisesRegex(ValueError, 'out of bounds'):
                 self._regrid(src, method, 'error')
 
     def test_mask_ndarray(self):
@@ -960,7 +958,7 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         src = uk_cube()
         emsg = 'Invalid extrapolation mode'
         for method in self.methods:
-            with self.assertRaisesRegexp(ValueError, emsg):
+            with self.assertRaisesRegex(ValueError, emsg):
                 self._regrid(src, method, 'BOGUS')
 
 

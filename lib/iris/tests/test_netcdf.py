@@ -8,9 +8,6 @@ Test CF-NetCDF file loading and saving.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -696,11 +693,11 @@ class TestNetCDFSave(tests.IrisTest):
         aglobals = {'history': 'A long time ago...',
                     'title': 'Attribute test',
                     'foo': 'bar'}
-        for k, v in six.iteritems(aglobals):
+        for k, v in aglobals.items():
             self.cube.attributes[k] = v
         # Should be overriden.
         aover = {'Conventions': 'TEST'}
-        for k, v in six.iteritems(aover):
+        for k, v in aover.items():
             self.cube.attributes[k] = v
         # Should be data varible attributes.
         avars = {'standard_error_multiplier': 23,
@@ -709,7 +706,7 @@ class TestNetCDFSave(tests.IrisTest):
                  'flag_values': 'c',
                  'missing_value': 1.e20,
                  'STASH': iris.fileformats.pp.STASH(1, 2, 3)}
-        for k, v in six.iteritems(avars):
+        for k, v in avars.items():
             self.cube.attributes[k] = v
         with self.temp_filename(suffix='.nc') as filename:
             iris.save(self.cube, filename)
@@ -933,7 +930,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
         multiple_map = {bits: [iris.fileformats.pp.lbproc_map[bit] for
                                bit in bits] for bits in multiple_bit_values}
 
-        for bits, descriptions in six.iteritems(multiple_map):
+        for bits, descriptions in multiple_map.items():
 
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions

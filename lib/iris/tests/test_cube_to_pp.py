@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -248,7 +245,7 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
         # Maps lbproc value to the process flags that should be created
         multiple_map = {sum(bits) : [iris.fileformats.pp.lbproc_map[bit] for bit in bits] for bits in multiple_bit_values}
 
-        for lbproc, descriptions in six.iteritems(multiple_map):
+        for lbproc, descriptions in multiple_map.items():
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = descriptions
             
@@ -290,10 +287,7 @@ def fields_from_cube(cubes):
     to a temporary file, and then subsequently loading them again 
     """
     with tempfile.NamedTemporaryFile('w+b', suffix='.pp') as tmp_file:
-        if six.PY2:
-            fh = tmp_file.file
-        else:
-            fh = tmp_file
+        fh = tmp_file
         iris.save(cubes, fh, saver='pp')
         
         # make sure the fh is written to disk, and move it back to the

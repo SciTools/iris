@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
@@ -1085,7 +1083,7 @@ def _all_other_rules(f):
     if unhandled_lbproc:
         attributes["ukmo__process_flags"] = tuple(sorted(
             [name
-             for value, name in six.iteritems(LBPROC_MAP)
+             for value, name in LBPROC_MAP.items()
              if isinstance(value, int) and f.lbproc & value]))
 
     if (f.lbsrce % 10000) == 1111:

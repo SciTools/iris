@@ -4,5 +4,3 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the `iris.experimental.equalise_cubes` package."""
-
-from six.moves import (filter, input, map, range, zip)  # noqa

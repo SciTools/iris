@@ -9,9 +9,6 @@ trajectory.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import math
 
 import numpy as np
@@ -221,7 +218,7 @@ def interpolate(cube, sample_points, method=None):
     # Convert any coordinate names to coords
     points = []
     for coord, values in sample_points:
-        if isinstance(coord, six.string_types):
+        if isinstance(coord, str):
             coord = cube.coord(coord)
         points.append((coord, values))
     sample_points = points

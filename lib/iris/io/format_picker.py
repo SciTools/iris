@@ -40,9 +40,6 @@ The calling sequence of handler is dependent on the function given in the origin
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from collections.abc import Callable
 import functools
 import os
@@ -130,7 +127,7 @@ class FormatAgent(object):
                 return format_spec
 
         printable_values = {}
-        for key, value in six.iteritems(element_cache):
+        for key, value in element_cache.items():
             value = str(value)
             if len(value) > 50:
                 value = value[:50] + '...'

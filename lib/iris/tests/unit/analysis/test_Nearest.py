@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for :class:`iris.analysis.Nearest`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -25,7 +23,7 @@ def create_scheme(mode=None):
 
 class Test___init__(tests.IrisTest):
     def test_invalid(self):
-        with self.assertRaisesRegexp(ValueError, 'Extrapolation mode'):
+        with self.assertRaisesRegex(ValueError, 'Extrapolation mode'):
             Nearest('bogus')
 
 

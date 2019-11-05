@@ -5,8 +5,6 @@
 # licensing details.
 """Test function :func:`iris.util.reverse`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -27,21 +25,21 @@ class Test_array(tests.IrisTest):
         self.assertArrayEqual(a[:, ::-1], reverse(a, [1]))
 
         msg = 'Reverse was expecting a single axis or a 1d array *'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [])
 
         msg = 'An axis value out of range for the number of dimensions *'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, -1)
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, 10)
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [-1])
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [0, -1])
 
         msg = 'To reverse an array, provide an int *'
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, msg):
             reverse(a, 'latitude')
 
     def test_single_array(self):
@@ -52,20 +50,20 @@ class Test_array(tests.IrisTest):
         self.assertArrayEqual(a[..., ::-1], reverse(a, 2))
 
         msg = 'Reverse was expecting a single axis or a 1d array *'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [])
 
         msg = 'An axis value out of range for the number of dimensions *'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, -1)
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, 10)
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [-1])
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(a, [0, -1])
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 TypeError, 'To reverse an array, provide an int *'):
             reverse(a, 'latitude')
 
@@ -150,22 +148,22 @@ class Test_cube(tests.IrisTest):
             cube1_reverse_spanning.coord('spanning').points)
 
         msg = 'Expected to find exactly 1 latitude coordinate, but found none.'
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 iris.exceptions.CoordinateNotFoundError, msg):
             reverse(self.cube1, 'latitude')
 
         msg = 'Reverse was expecting a single axis or a 1d array *'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             reverse(self.cube1, [])
 
         msg = ('coords_or_dims must be int, str, coordinate or sequence of '
                'these.  Got cube.')
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, msg):
             reverse(self.cube1, self.cube1)
 
         msg = ('coords_or_dims must be int, str, coordinate or sequence of '
                'these.')
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, msg):
             reverse(self.cube1, 3.)
 
 

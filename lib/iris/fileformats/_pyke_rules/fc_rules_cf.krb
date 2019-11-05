@@ -1165,8 +1165,6 @@ fc_formula_terms
 
 
 fc_extras
-    import six
-
     import warnings
 
     import cf_units
@@ -1327,15 +1325,9 @@ fc_extras
             warnings.warn(message=msg, category=UnknownCellMethodWarning)
 
         # Set the cube global attributes.
-        for attr_name, attr_value in six.iteritems(cf_var.cf_group.global_attributes):
+        for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
             try:
-                if six.PY2 and isinstance(attr_value, six.text_type):
-                    try:
-                        cube.attributes[str(attr_name)] = str(attr_value)
-                    except UnicodeEncodeError:
-                        cube.attributes[str(attr_name)] = attr_value
-                else:
-                    cube.attributes[str(attr_name)] = attr_value
+                cube.attributes[str(attr_name)] = attr_value
             except ValueError as e:
                 msg = 'Skipping global attribute {!r}: {}'
                 warnings.warn(msg.format(attr_name, str(e)))
@@ -1674,10 +1666,7 @@ fc_extras
         # Using converted unicode message. Can be reverted with Python 3.
             msg = u'Ignoring netCDF variable {!r} invalid units {!r}'.format(
                 cf_var.cf_name, attr_units)
-            if six.PY3:
-                warnings.warn(msg)
-            else:
-                warnings.warn(msg.encode('ascii', errors='backslashreplace'))
+            warnings.warn(msg)
             attributes['invalid_units'] = attr_units
             attr_units = cf_units._UNKNOWN_UNIT_STRING
 

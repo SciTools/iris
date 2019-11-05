@@ -8,14 +8,12 @@ Test pickling of Iris objects.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
 
-import six.moves.cPickle as pickle
 import io
+import pickle
 
 import cf_units
 
@@ -26,7 +24,7 @@ from iris._lazy_data import as_concrete_data
 class TestPickle(tests.IrisTest):
     def pickle_then_unpickle(self, obj):
         """
-        Returns a generator of ("cpickle protocol number", object) tuples.
+        Returns a generator of ("pickle protocol number", object) tuples.
 
         """
         for protocol in range(1 + pickle.HIGHEST_PROTOCOL):

@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for :func:`iris.fileformats.pp_load_rules.convert`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -17,6 +14,7 @@ from unittest import mock
 
 import cf_units
 import numpy as np
+from types import MethodType
 
 from iris.fileformats.pp_load_rules import convert
 from iris.util import guess_coord_axis
@@ -167,7 +165,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
                            t1=cftime.datetime(2013, 1, 1, 12, 0, 0),
                            t2=cftime.datetime(2013, 1, 2, 12, 0, 0),
                            spec=PPField3)
-        f.time_unit = six.create_bound_method(PPField3.time_unit, f)
+        f.time_unit = MethodType(PPField3.time_unit, f)
         f.calendar = cf_units.CALENDAR_365_DAY
         (factories, references, standard_name, long_name, units,
          attributes, cell_methods, dim_coords_and_dims,

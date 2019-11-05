@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the :class:`iris.coords.CellMeasure` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -29,7 +27,7 @@ class Tests(tests.IrisTest):
 
     def test_invalid_measure(self):
         msg = "measure must be 'area' or 'volume', not length"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.measure.measure = 'length'
 
     def test_set_measure(self):
@@ -63,7 +61,7 @@ class Tests(tests.IrisTest):
     def test_data_different_shape(self):
         new_vals = np.array((1., 2., 3.))
         msg = 'Require data with shape.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.measure.data = new_vals
 
     def test_shape(self):

@@ -8,7 +8,6 @@ Extra stock routines for making and manipulating cubes with 2d coordinates,
 to mimic ocean grid data.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import numpy as np
 import numpy.ma as ma

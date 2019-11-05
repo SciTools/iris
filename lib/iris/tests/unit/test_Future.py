@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.Future` class."""
 
-import six
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -57,7 +54,7 @@ class Test___setattr__(tests.IrisTest):
         future = patched_future(deprecated=True, error=True)
         exp_emsg = \
             "'Future' property 'example_future_flag' has been deprecated"
-        with self.assertRaisesRegexp(AttributeError, exp_emsg):
+        with self.assertRaisesRegex(AttributeError, exp_emsg):
             future.example_future_flag = False
 
     def test_invalid_attribute(self):

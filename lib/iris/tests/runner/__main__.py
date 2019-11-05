@@ -8,8 +8,6 @@ Provides testing capabilities for installed copies of Iris.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import argparse
 
 from ._runner import TestRunner

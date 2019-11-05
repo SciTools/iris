@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import re
 import string
 
@@ -59,7 +56,7 @@ class LimitedAttributeDict(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
-        for key in six.iterkeys(self):
+        for key in self.keys():
             if key in self._forbidden_keys:
                 raise ValueError('%r is not a permitted attribute' % key)
 
@@ -67,7 +64,7 @@ class LimitedAttributeDict(dict):
         # Extend equality to allow for NumPy arrays.
         match = set(self.keys()) == set(other.keys())
         if match:
-            for key, value in six.iteritems(self):
+            for key, value in self.items():
                 match = value == other[key]
                 try:
                     match = bool(match)
@@ -179,7 +176,7 @@ class CFVariableMixin(object):
             self.long_name = None
         except ValueError:
             self.standard_name = None
-            self.long_name = six.text_type(name)
+            self.long_name = str(name)
 
         # Always clear var_name when renaming.
         self.var_name = None

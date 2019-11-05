@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.cube.CubeList` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -49,7 +47,7 @@ class Test_concatenate_cube(tests.IrisTest):
 
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
-        with self.assertRaisesRegexp(ValueError, exc_regexp):
+        with self.assertRaisesRegex(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
 
 

@@ -6,8 +6,6 @@
 
 """Unit tests for the `iris.analysis.cartography._quadrant_area` function"""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 
@@ -112,8 +110,8 @@ class TestErrorHandling(tests.IrisTest):
             [[0, 10, 20]])
 
     def _assert_error_on_malformed_bounds(self, lat_bnds, lon_bnds):
-        with self.assertRaisesRegexp(ValueError,
-                                     'Bounds must be \[n,2\] array'):
+        with self.assertRaisesRegex(ValueError,
+                                    r'Bounds must be \[n,2\] array'):
             _quadrant_area(np.array(lat_bnds),
                            np.array(lon_bnds),
                            1.)

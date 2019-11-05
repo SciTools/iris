@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -279,17 +277,9 @@ class TestBasicMaths(tests.IrisTest):
         self.assertCMLApproxData(b, ('analysis', 'apply_ifunc_frompyfunc.cml'))
 
     def test_ifunc_init_fail(self):
-        import six
-
         # should fail because 'blah' is a string not a python function
         self.assertRaises(TypeError, iris.analysis.maths.IFunc, 'blah',
                           lambda cube: cf_units.Unit('1'))
-
-        if six.PY2:
-            # should fail because math.sqrt is built-in function, which cannot
-            # be used in inspect.getargspec
-            self.assertRaises(TypeError, iris.analysis.maths.IFunc, math.sqrt,
-                              lambda cube: cf_units.Unit('1'))
 
         # should fail because np.frexp gives 2 arrays as output
         self.assertRaises(ValueError, iris.analysis.maths.IFunc, np.frexp,
@@ -697,9 +687,9 @@ class TestMathOperations(tests.IrisTest):
         # requirement.
         for test_op in self.iops:
             test_emsg = 'Cannot perform inplace'
-            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+            with self.assertRaisesRegex(ArithmeticError, test_emsg):
                 test_op(self.cube_1i, self.cube_2f)
-            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+            with self.assertRaisesRegex(ArithmeticError, test_emsg):
                 test_op(self.cube_1u, self.cube_2f)
 
     def test_operator__inplace__scalar_int(self):
@@ -725,9 +715,9 @@ class TestMathOperations(tests.IrisTest):
         scalar = 2.5
         for test_op in self.iops:
             test_emsg = 'Cannot perform inplace'
-            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+            with self.assertRaisesRegex(ArithmeticError, test_emsg):
                 test_op(self.cube_1i, scalar)
-            with self.assertRaisesRegexp(ArithmeticError, test_emsg):
+            with self.assertRaisesRegex(ArithmeticError, test_emsg):
                 test_op(self.cube_1u, scalar)
 
     def test_operator__scalar_float(self):
@@ -760,22 +750,22 @@ class TestMathOperations(tests.IrisTest):
             self.assertArrayAlmostEqual(result3.data, result4)
 
     def test_cube_itruediv__int(self):
-        with self.assertRaisesRegexp(ArithmeticError,
+        with self.assertRaisesRegex(ArithmeticError,
                                      'Cannot perform inplace division'):
             operator.itruediv(self.cube_1i, self.cube_2i)
 
     def test_cube_itruediv__uint(self):
-        with self.assertRaisesRegexp(ArithmeticError,
+        with self.assertRaisesRegex(ArithmeticError,
                                      'Cannot perform inplace division'):
             operator.itruediv(self.cube_1u, self.cube_2u)
 
     def test_int_cube_itruediv__scalar(self):
-        with self.assertRaisesRegexp(ArithmeticError,
+        with self.assertRaisesRegex(ArithmeticError,
                                      'Cannot perform inplace division'):
             operator.itruediv(self.cube_1i, 5)
 
     def test_uint_cube_itruediv__scalar(self):
-        with self.assertRaisesRegexp(ArithmeticError,
+        with self.assertRaisesRegex(ArithmeticError,
                                      'Cannot perform inplace division'):
             operator.itruediv(self.cube_1u, 5)
 

@@ -11,8 +11,6 @@ Currently relies on matplotlib for image processing so limited to PNG format.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import argparse
 import codecs
 import contextlib

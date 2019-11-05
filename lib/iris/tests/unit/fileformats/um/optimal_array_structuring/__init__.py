@@ -8,5 +8,3 @@ Unit tests for the module
 :mod:`iris.fileformats.um._optimal_array_structuring`.
 
 """
-
-from six.moves import (filter, input, map, range, zip)  # noqa

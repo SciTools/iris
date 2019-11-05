@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the :class:`iris.analysis.Aggregator` class instance."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -241,7 +239,7 @@ class Test_aggregate(tests.IrisTest):
     def test_no_lazy_func(self):
         dummy_agg = Aggregator('custom_op', lambda x: 1)
         expected = 'custom_op aggregator does not support lazy operation'
-        with self.assertRaisesRegexp(LazyAggregatorError, expected):
+        with self.assertRaisesRegex(LazyAggregatorError, expected):
             dummy_agg.lazy_aggregate(np.arange(10), axis=0)
 
 

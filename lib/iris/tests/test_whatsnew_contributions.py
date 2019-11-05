@@ -19,7 +19,6 @@ can accept.
     invokes the checking command directly.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first.
 import iris.tests as tests

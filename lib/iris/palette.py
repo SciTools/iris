@@ -9,9 +9,6 @@ color map meta-data mappings.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from functools import wraps
 import os
 import os.path
@@ -89,7 +86,7 @@ def _default_cmap_norm(args, kwargs):
 
             if len(cmaps) == 0:
                 # Check for a fuzzy match against a keyword.
-                for keyword in six.iterkeys(_CMAP_BY_KEYWORD):
+                for keyword in _CMAP_BY_KEYWORD.keys():
                     if keyword in std_name:
                         cmaps.update(_CMAP_BY_KEYWORD[keyword])
 

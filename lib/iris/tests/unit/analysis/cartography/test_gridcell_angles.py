@@ -8,7 +8,6 @@ Unit tests for the function
 :func:`iris.analysis.cartography.gridcell_angles`.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -240,21 +239,21 @@ class TestGridcellAngles(tests.IrisTest):
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
         co_y.units = 'm'
-        with self.assertRaisesRegexp(ValueError, 'must have angular units'):
+        with self.assertRaisesRegex(ValueError, 'must have angular units'):
             gridcell_angles(co_x, co_y)
 
     def test_fail_nonarraylike(self):
         # Check error with bad args.
         co_x, co_y = 1, 2
-        with self.assertRaisesRegexp(ValueError,
-                                     'must have array shape property'):
+        with self.assertRaisesRegex(ValueError,
+                                    'must have array shape property'):
             gridcell_angles(co_x, co_y)
 
     def test_fail_non2d_coords(self):
         # Check error with bad args.
         cube = lat_lon_cube()
-        with self.assertRaisesRegexp(ValueError,
-                                     'inputs must have 2-dimensional shape'):
+        with self.assertRaisesRegex(ValueError,
+                                    'inputs must have 2-dimensional shape'):
             gridcell_angles(cube)
 
     def test_fail_different_shapes(self):
@@ -262,15 +261,15 @@ class TestGridcellAngles(tests.IrisTest):
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
         co_y = co_y[1:]
-        with self.assertRaisesRegexp(ValueError, 'must have same shape'):
+        with self.assertRaisesRegex(ValueError, 'must have same shape'):
             gridcell_angles(co_x, co_y)
 
     def test_fail_different_coord_system(self):
         # Check error with mismatched coord systems.
         cube = sample_2d_latlons(regional=True, rotated=True)
         cube.coord(axis='x').coord_system = None
-        with self.assertRaisesRegexp(ValueError,
-                                     'must have same coordinate system'):
+        with self.assertRaisesRegex(ValueError,
+                                    'must have same coordinate system'):
             gridcell_angles(cube)
 
     def test_fail_cube_dims(self):
@@ -284,29 +283,29 @@ class TestGridcellAngles(tests.IrisTest):
                              bounds=bds.transpose((1, 0, 2)))
         cube.remove_coord(co_x)
         cube.add_aux_coord(co_new_x, (1, 0))
-        with self.assertRaisesRegexp(ValueError,
-                                     'must have the same cube dimensions'):
+        with self.assertRaisesRegex(ValueError,
+                                    'must have the same cube dimensions'):
             gridcell_angles(cube)
 
     def test_fail_coord_noncoord(self):
         # Check that passing a coord + an array gives an error.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
-        with self.assertRaisesRegexp(ValueError,
-                                     'is a Coordinate, but .* is not'):
+        with self.assertRaisesRegex(ValueError,
+                                    'is a Coordinate, but .* is not'):
             gridcell_angles(co_x, co_y.bounds)
 
     def test_fail_noncoord_coord(self):
         # Check that passing an array + a coord gives an error.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax)
                       for ax in ('x', 'y'))
-        with self.assertRaisesRegexp(ValueError,
-                                     'is a Coordinate, but .* is not'):
+        with self.assertRaisesRegex(ValueError,
+                                    'is a Coordinate, but .* is not'):
             gridcell_angles(co_x.points, co_y)
 
     def test_fail_bad_method(self):
-        with self.assertRaisesRegexp(ValueError,
-                                     'unrecognised cell_angle_boundpoints'):
+        with self.assertRaisesRegex(ValueError,
+                                    'unrecognised cell_angle_boundpoints'):
             self._check_multiple_orientations_and_latitudes(
                 method='something_unknown')
 

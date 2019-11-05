@@ -5,9 +5,6 @@
 # licensing details.
 """A module to provide an optimal array structure calculation."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import itertools
 
 import numpy as np
@@ -153,7 +150,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     # Filter out the trivial (scalar) ones.
     elements_and_dimensions = {
         name: (array, dims)
-        for name, (array, dims) in six.iteritems(elements_and_dimensions)
+        for name, (array, dims) in elements_and_dimensions.items()
         if len(dims)}
 
     # Make a list of 'primary' elements; i.e. those in the target structure.

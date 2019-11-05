@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.netcdf.Saver` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -196,7 +193,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, 'NETCDF4') as saver:
                 saver.write(cube, unlimited_dimensions=None)
             ds = nc.Dataset(nc_path)
-            for dim in six.itervalues(ds.dimensions):
+            for dim in ds.dimensions.values():
                 self.assertFalse(dim.isunlimited())
             ds.close()
 
@@ -597,7 +594,7 @@ class Test_check_attribute_compliance__valid_range(
     def test_valid_range_cannot_coerce(self):
         value = np.array([1.5, 2.5], dtype='float64')
         msg = '"valid_range" is not of a suitable value'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -629,7 +626,7 @@ class Test_check_attribute_compliance__valid_min(
     def test_valid_range_cannot_coerce(self):
         value = np.array(1.5, dtype='float64')
         msg = '"valid_min" is not of a suitable value'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -661,7 +658,7 @@ class Test_check_attribute_compliance__valid_max(
     def test_valid_range_cannot_coerce(self):
         value = np.array(2.5, dtype='float64')
         msg = '"valid_max" is not of a suitable value'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -682,7 +679,7 @@ class Test_check_attribute_compliance__exception_handlng(
         self.container.attributes['valid_min'] = [1]
         msg = 'Both "valid_range" and "valid_min"'
         with Saver(mock.Mock(), 'NETCDF4') as saver:
-            with self.assertRaisesRegexp(ValueError, msg):
+            with self.assertRaisesRegex(ValueError, msg):
                 saver.check_attribute_compliance(self.container, self.data)
 
 
@@ -940,7 +937,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
         # Test that the error is raised in the right place.
         with self.temp_filename('.nc') as nc_path:
             saver = Saver(nc_path, 'NETCDF4')
-            with self.assertRaisesRegexp(ValueError, self.exp_emsg):
+            with self.assertRaisesRegex(ValueError, self.exp_emsg):
                 saver._create_cf_cell_measure_variable(self.cube,
                                                        self.names_map,
                                                        self.cm)
@@ -949,7 +946,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
         # Test that the right error is raised by the saver pipeline.
         with self.temp_filename('.nc') as nc_path:
             with Saver(nc_path, 'NETCDF4') as saver:
-                with self.assertRaisesRegexp(ValueError, self.exp_emsg):
+                with self.assertRaisesRegex(ValueError, self.exp_emsg):
                     saver.write(self.cube)
 
 

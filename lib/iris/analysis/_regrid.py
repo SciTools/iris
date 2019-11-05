@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import copy
 import functools
 import warnings
@@ -848,7 +845,7 @@ class RectilinearRegridder(object):
         # Copy across any AuxFactory instances, and regrid their reference
         # surfaces where required.
         for factory in src.aux_factories:
-            for coord in six.itervalues(factory.dependencies):
+            for coord in factory.dependencies.values():
                 if coord is None:
                     continue
                 dims = src.coord_dims(coord)

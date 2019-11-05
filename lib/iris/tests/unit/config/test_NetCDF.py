@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.config.NetCDF` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -36,7 +33,7 @@ class Test(tests.IrisTest):
             self.options.conventions_override = bad_value
         self.assertFalse(self.options.conventions_override)
         exp_wmsg = 'Attempting to set invalid value {!r}'.format(bad_value)
-        six.assertRegex(self, str(w[0].message), exp_wmsg)
+        self.assertRegex(str(w[0].message), exp_wmsg)
 
     def test__contextmgr(self):
         with self.options.context(conventions_override=True):

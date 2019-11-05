@@ -5,9 +5,6 @@
 # licensing details.
 """Integration tests for :mod:`iris.analysis.trajectory`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -63,7 +60,7 @@ class TestColpex(tests.IrisTest):
     def _traj_to_sample_points(self, trajectory):
         sample_points = []
         src_points = trajectory.sampled_points
-        for name in six.iterkeys(src_points[0]):
+        for name in src_points[0].keys():
             values = [point[name] for point in src_points]
             sample_points.append((name, values))
         return sample_points

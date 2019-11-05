@@ -8,8 +8,6 @@ Test plot of time coord with non-gregorian calendar.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests

@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.fileformats` package."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import iris.tests as tests
 
 

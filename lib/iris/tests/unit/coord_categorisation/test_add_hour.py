@@ -7,8 +7,6 @@
 Test coordinate categorisation function add_hour.
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests

@@ -8,8 +8,6 @@ Exceptions specific to the Iris package.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 
 class IrisError(Exception):
     """Base class for errors in the Iris package."""

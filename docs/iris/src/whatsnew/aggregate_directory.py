@@ -19,7 +19,6 @@ Where <summary> can be any valid chars, and
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
 import datetime
 from glob import glob
 import os

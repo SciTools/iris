@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -570,9 +567,9 @@ class CheckForWarningsMetaclass(type):
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
-                                            tests.GraphicsTest_nometa,
-                                            SliceMixin)):
+class TestPcolorNoBounds(tests.GraphicsTest_nometa,
+                         SliceMixin,
+                         metaclass=CheckForWarningsMetaclass):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
@@ -586,9 +583,9 @@ class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestPcolormeshNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
-                                                tests.GraphicsTest_nometa,
-                                                SliceMixin)):
+class TestPcolormeshNoBounds(tests.GraphicsTest_nometa,
+                             SliceMixin,
+                             metaclass=CheckForWarningsMetaclass):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.

@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris._merge.ProtoCube` class."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -32,7 +29,7 @@ def example_cube():
                           units='K', attributes={'mint': 'thin'})
 
 
-class Mixin_register(six.with_metaclass(abc.ABCMeta, object)):
+class Mixin_register(object, metaclass=abc.ABCMeta):
     @property
     def cube1(self):
         return example_cube()
@@ -262,7 +259,7 @@ class _MergeTest(object):
         return str(arc.exception)
 
     def check_fail(self, *substrs):
-        if isinstance(substrs, six.string_types):
+        if isinstance(substrs, str):
             substrs = [substrs]
         msg = self.check_merge_fails_with_message()
         for substr in substrs:

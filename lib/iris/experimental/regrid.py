@@ -7,8 +7,6 @@
 Regridding functions.
 
 """
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from collections import namedtuple
 import copy
@@ -20,7 +18,6 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
-import six
 
 import iris.analysis.cartography
 from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
@@ -1077,7 +1074,7 @@ class _ProjectedUnstructuredRegridder(object):
         # Copy across any AuxFactory instances, and regrid their reference
         # surfaces where required.
         for factory in src.aux_factories:
-            for coord in six.itervalues(factory.dependencies):
+            for coord in factory.dependencies.values():
                 if coord is None:
                     continue
                 dims = src.coord_dims(coord)

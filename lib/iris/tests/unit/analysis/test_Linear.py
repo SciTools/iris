@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for :class:`iris.analysis.Linear`."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -51,7 +49,7 @@ class Test_extrapolation_mode(tests.IrisTest):
         self.check_mode('nanmask')
 
     def test_invalid(self):
-        with self.assertRaisesRegexp(ValueError, 'Extrapolation mode'):
+        with self.assertRaisesRegex(ValueError, 'Extrapolation mode'):
             Linear('bogus')
 
 

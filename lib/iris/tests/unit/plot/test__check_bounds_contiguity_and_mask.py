@@ -6,8 +6,6 @@
 """Unit tests for the `iris.plot._check_bounds_contiguity_and_mask`
 function."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -57,7 +55,7 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         data = ma.array(np.array([278, 300, 282]), mask=[1, 0, 0])
         msg = 'coordinate are not contiguous and data is not masked where ' \
               'the discontiguity occurs'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             _check_bounds_contiguity_and_mask(coord, data, atol=1e-3)
 
     def test_2d_contiguous(self):
@@ -92,7 +90,7 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         make_bounds_discontiguous_at_point(cube, 3, 4)
         msg = 'coordinate are not contiguous'
         cube.data[3, 4] = ma.nomask
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             _check_bounds_contiguity_and_mask(cube.coord('longitude'),
                                               cube.data)
 

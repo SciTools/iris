@@ -8,12 +8,9 @@ Basic mathematical and statistical operations.
 
 """
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import inspect
 import math
 import operator
-import six
 import warnings
 
 import cf_units
@@ -906,16 +903,11 @@ class IFunc(object):
         if hasattr(data_func, 'nin'):
             self.nin = data_func.nin
         else:
-            if six.PY2:
-                (args, _, _, defaults) = inspect.getargspec(data_func)
-                self.nin = len(args) - (
-                    len(defaults) if defaults is not None else 0)
-            else:
-                sig = inspect.signature(data_func)
-                args = [param for param in sig.parameters.values()
-                        if (param.kind != param.KEYWORD_ONLY and
-                            param.default is param.empty)]
-                self.nin = len(args)
+            sig = inspect.signature(data_func)
+            args = [param for param in sig.parameters.values()
+                    if (param.kind != param.KEYWORD_ONLY and
+                        param.default is param.empty)]
+            self.nin = len(args)
 
         if self.nin not in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class '

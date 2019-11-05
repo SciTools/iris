@@ -5,8 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import cftime
 import cf_units
 

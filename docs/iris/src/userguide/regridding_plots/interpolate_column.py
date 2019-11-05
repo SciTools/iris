@@ -1,6 +1,4 @@
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import iris
 import iris.quickplot as qplt
 import iris.analysis

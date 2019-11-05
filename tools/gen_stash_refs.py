@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import json
 import urllib
 import urllib2
@@ -23,10 +21,7 @@ Relates grid code and field code to the stash code.
 """
 '''
 
-
-CODE_PREAMBLE = ("from six.moves import "
-                 "(filter, input, map, range, zip)  # noqa\n\n"
-                 "from collections import namedtuple\n\n\n"
+CODE_PREAMBLE = ("from collections import namedtuple\n\n\n"
                  "Stash = namedtuple('Stash', "
                  "'grid_code field_code pseudo_level_type')\n\n\n")
 
