@@ -27,7 +27,7 @@ if tests.MPL_AVAILABLE:
 
 
 @tests.skip_plot
-class MixinVectorPlotCases(object):
+class MixinVectorPlotCases:
     """
     Test examples mixin, used by separate quiver + streamplot classes.
 

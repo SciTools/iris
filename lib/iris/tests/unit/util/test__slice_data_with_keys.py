@@ -24,7 +24,7 @@ from iris.util import _slice_data_with_keys
 from iris._lazy_data import as_lazy_data, as_concrete_data
 
 
-class DummyArray(object):
+class DummyArray:
     # A dummy array-like that records the keys of indexing calls.
     def __init__(self, shape, _indexing_record_list=None):
         self.shape = shape
@@ -45,7 +45,7 @@ class DummyArray(object):
                           _indexing_record_list=self._getitem_call_keys)
 
 
-class Indexer(object):
+class Indexer:
     # An object to make __getitem__ arglists from indexing operations.
     def __getitem__(self, keys):
         return keys
@@ -55,7 +55,7 @@ class Indexer(object):
 Index = Indexer()
 
 
-class MixinIndexingTest(object):
+class MixinIndexingTest:
     def check(self, shape, keys, expect_call_keys=None, expect_map=None):
         data = DummyArray(shape)
         dim_map, _ = _slice_data_with_keys(data, keys)

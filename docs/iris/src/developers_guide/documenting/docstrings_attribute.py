@@ -1,4 +1,4 @@
-class ExampleClass(object):
+class ExampleClass:
     """
     Class Summary
 

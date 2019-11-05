@@ -294,7 +294,7 @@ class TestSeriesAsCube(tests.IrisTest):
             tests.get_result_path(('pandas', 'as_cube', 'series_simple.cml')))
 
     def test_series_object(self):
-        class Thing(object):
+        class Thing:
             def __repr__(self):
                 return "A Thing"
         series = pandas.Series(

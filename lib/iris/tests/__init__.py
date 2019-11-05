@@ -984,7 +984,7 @@ class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
 get_result_path = IrisTest.get_result_path
 
 
-class GraphicsTestMixin(object):
+class GraphicsTestMixin:
 
     # nose directive: dispatch tests concurrently.
     _multiprocess_can_split_ = True

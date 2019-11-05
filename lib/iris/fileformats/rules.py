@@ -23,7 +23,7 @@ ReferenceTarget = collections.namedtuple('ReferenceTarget',
                                          ('name', 'transform'))
 
 
-class ConcreteReferenceTarget(object):
+class ConcreteReferenceTarget:
     """Everything you need to make a real Cube for a named reference."""
 
     def __init__(self, name, transform=None):

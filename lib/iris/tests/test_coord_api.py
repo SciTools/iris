@@ -879,7 +879,7 @@ class TestCoordCompatibility(tests.IrisTest):
 
 class TestAuxCoordEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object):
+        class Terry:
             pass
         aux = iris.coords.AuxCoord(0)
         self.assertIs(aux.__eq__(Terry()), NotImplemented)
@@ -888,7 +888,7 @@ class TestAuxCoordEquality(tests.IrisTest):
 
 class TestDimCoordEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object):
+        class Terry:
             pass
         dim = iris.coords.DimCoord(0)
         aux = iris.coords.AuxCoord(0)

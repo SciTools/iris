@@ -17,7 +17,7 @@ from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import MixinCoords
 
 
-class MixinStringCoordPlot(object):
+class MixinStringCoordPlot:
     # Mixin for common string-coord tests on pcolor/pcolormesh.
     # To use, make a class that inherits from this *and*
     # :class:`iris.tests.unit.plot.TestGraphicStringCoord`,
@@ -78,7 +78,7 @@ class Mixin2dCoordsPlot(MixinCoords):
         self.mpl_patch = self.patch(patch_target_name)
 
 
-class Mixin2dCoordsContigTol(object):
+class Mixin2dCoordsContigTol:
     # Mixin for contiguity tolerance argument to pcolor/pcolormesh.
     # To use, make a class that inherits from this *and*
     # :class:`iris.tests.IrisTest`,

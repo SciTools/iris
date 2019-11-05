@@ -49,7 +49,7 @@ import struct
 import iris.io
 
 
-class FormatAgent(object):
+class FormatAgent:
     """
     The FormatAgent class is the containing object which is responsible for identifying the format of a given file
     by interrogating its children FormatSpecification instances.
@@ -138,7 +138,7 @@ class FormatAgent(object):
 
 
 @functools.total_ordering
-class FormatSpecification(object):
+class FormatSpecification:
     """
     Provides the base class for file type definition.
 
@@ -225,7 +225,7 @@ class FormatSpecification(object):
         return '%s%s (priority %s)' % (self.name, ' (no handler available)' if self.handler is None else '',  self.priority)
 
 
-class FileElement(object):
+class FileElement:
     """
     Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
 

@@ -78,7 +78,7 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
 
 class TestEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object):
+        class Terry:
             pass
         cube = iris.cube.Cube(0)
         self.assertIs(cube.__eq__(Terry()), NotImplemented)

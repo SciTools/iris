@@ -16,7 +16,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.util import array_equal
 
 
-class DataManager(object):
+class DataManager:
     """
     Provides a well defined API for management of real or lazy data.
 

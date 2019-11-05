@@ -243,7 +243,7 @@ def parse_cell_methods(nc_cell_methods):
     return tuple(cell_methods)
 
 
-class CFNameCoordMap(object):
+class CFNameCoordMap:
     """Provide a simple CF name to CF coordinate mapping."""
 
     _Map = collections.namedtuple('_Map', ['name', 'coord'])
@@ -355,7 +355,7 @@ def _pyke_kb_engine():
     return engine
 
 
-class NetCDFDataProxy(object):
+class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
     __slots__ = ('shape', 'dtype', 'path', 'variable_name', 'fill_value')
@@ -742,7 +742,7 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-class _FillValueMaskCheckAndStoreTarget(object):
+class _FillValueMaskCheckAndStoreTarget:
     """
     To be used with da.store. Remembers whether any element was equal to a
     given value and whether it was masked, before passing the chunk to the
@@ -762,7 +762,7 @@ class _FillValueMaskCheckAndStoreTarget(object):
         self.target[keys] = arr
 
 
-class Saver(object):
+class Saver:
     """A manager for saving netcdf files."""
 
     def __init__(self, filename, netcdf_format):

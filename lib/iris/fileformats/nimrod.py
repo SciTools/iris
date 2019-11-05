@@ -71,7 +71,7 @@ def _read_chars(infile, num):
     return result
 
 
-class NimrodField(object):
+class NimrodField:
     """
     A data field from a NIMROD file.
 

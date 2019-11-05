@@ -246,7 +246,7 @@ class TestNetCDFLoad(tests.IrisTest):
 
 class TestNetCDFCRS(tests.IrisTest):
     def setUp(self):
-        class Var(object):
+        class Var:
             pass
 
         self.grid = Var()

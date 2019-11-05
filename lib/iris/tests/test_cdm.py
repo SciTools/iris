@@ -793,7 +793,7 @@ class TestCubeAPI(TestCube2d):
         self.assertEqual(self.t.cell_methods, ())
 
     def test_metadata_attrs(self):
-        class Metadata(object): pass
+        class Metadata: pass
         metadata = Metadata()
         metadata.standard_name = 'air_pressure'
         metadata.long_name = 'foo'
@@ -824,7 +824,7 @@ class TestCubeAPI(TestCube2d):
                                'units': '',
                                'attributes': {'random': '12'}}
         with self.assertRaises(TypeError):
-            class Metadata(object): pass
+            class Metadata: pass
             metadata = Metadata()
             metadata.standard_name = 'air_pressure'
             metadata.long_name = 'foo'

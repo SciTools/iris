@@ -60,7 +60,7 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'AreaWeighted', 'Nearest', 'UnstructuredNearest')
 
 
-class _CoordGroup(object):
+class _CoordGroup:
     """
     Represents a list of coordinates, one for each given cube. Which can be
     operated on conveniently.
@@ -349,7 +349,7 @@ def coord_comparison(*cubes):
     return result
 
 
-class _Aggregator(object):
+class _Aggregator:
     """
     The :class:`_Aggregator` base class provides common aggregation
     functionality.
@@ -1823,7 +1823,7 @@ Additional kwargs associated with the use of this aggregator:
 """
 
 
-class _Groupby(object):
+class _Groupby:
     """
     Convenience class to determine group slices over one or more group-by
     coordinates.
@@ -2149,7 +2149,7 @@ def clear_phenomenon_identity(cube):
 #
 ###############################################################################
 
-class Linear(object):
+class Linear:
     """
     This class describes the linear interpolation and regridding scheme for
     interpolating or regridding over one or more orthogonal coordinates,
@@ -2272,7 +2272,7 @@ class Linear(object):
                                     self._normalised_extrapolation_mode())
 
 
-class AreaWeighted(object):
+class AreaWeighted:
     """
     This class describes an area-weighted regridding scheme for regridding
     between 'ordinary' horizontal grids with separated X and Y coordinates in a
@@ -2342,7 +2342,7 @@ class AreaWeighted(object):
                                      mdtol=self.mdtol)
 
 
-class Nearest(object):
+class Nearest:
     """
     This class describes the nearest-neighbour interpolation and regridding
     scheme for interpolating or regridding over one or more orthogonal
@@ -2455,7 +2455,7 @@ class Nearest(object):
                                     self.extrapolation_mode)
 
 
-class UnstructuredNearest(object):
+class UnstructuredNearest:
     """
     This is a nearest-neighbour regridding scheme for regridding data whose
     horizontal (X- and Y-axis) coordinates are mapped to the *same* dimensions,
@@ -2546,7 +2546,7 @@ class UnstructuredNearest(object):
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
 
 
-class PointInCell(object):
+class PointInCell:
     """
     This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.

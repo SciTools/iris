@@ -173,7 +173,7 @@ class TestPPSave(tests.IrisTest, pp.PPTest):
         self.assertEqual(pp_field.lbtim.ic, 4)
 
 
-class FakePPEnvironment(object):
+class FakePPEnvironment:
     ''' fake a minimal PP environment for use in cross-section coords, as in PP save rules '''
     y = [1, 2, 3, 4]
     z = [111, 222, 333, 444]

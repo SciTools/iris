@@ -25,7 +25,7 @@ import iris.exceptions
 import iris.tests.stock
 
 
-class TestMixin(object):
+class TestMixin:
     """
     Mix-in class for attributes & utilities common to these test cases.
 

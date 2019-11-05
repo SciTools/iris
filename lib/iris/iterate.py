@@ -260,7 +260,7 @@ class _ZipSlicesIterator(Iterator):
     next = __next__
 
 
-class _CoordWrapper(object):
+class _CoordWrapper:
     """
     Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than

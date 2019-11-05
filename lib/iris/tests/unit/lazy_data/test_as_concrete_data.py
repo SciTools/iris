@@ -15,7 +15,7 @@ import numpy.ma as ma
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 
-class MyProxy(object):
+class MyProxy:
     def __init__(self, a):
         self.shape = a.shape
         self.dtype = a.dtype

@@ -326,7 +326,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         return not self.__eq__(other)
 
 
-class SplittableInt(object):
+class SplittableInt:
     """
     A class to hold integers which can easily get each decimal digit
     individually.
@@ -507,7 +507,7 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-class PPDataProxy(object):
+class PPDataProxy:
     """A reference to the data payload of a single PP field."""
 
     __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len',

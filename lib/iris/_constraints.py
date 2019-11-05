@@ -17,7 +17,7 @@ import iris.coords
 import iris.exceptions
 
 
-class Constraint(object):
+class Constraint:
     """
     Constraints are the mechanism by which cubes can be pattern matched and
     filtered according to specific criteria.
@@ -199,7 +199,7 @@ class ConstraintCombination(Constraint):
                              self.rhs._CIM_extract(cube))
 
 
-class _CoordConstraint(object):
+class _CoordConstraint:
     """Represents the atomic elements which might build up a Constraint."""
     def __init__(self, coord_name, coord_thing):
         """
@@ -280,7 +280,7 @@ class _CoordConstraint(object):
         return cube_cim
 
 
-class _ColumnIndexManager(object):
+class _ColumnIndexManager:
     """
     A class to represent column aligned slices which can be operated on
     using ``&``, ``|`` or ``^``.

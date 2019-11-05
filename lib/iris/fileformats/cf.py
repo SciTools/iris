@@ -901,7 +901,7 @@ class CFGroup(MutableMapping, object):
 
 
 ################################################################################
-class CFReader(object):
+class CFReader:
     """
     This class allows the contents of a netCDF file to be interpreted according
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.

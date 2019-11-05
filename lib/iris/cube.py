@@ -78,7 +78,7 @@ class CubeMetadata(namedtuple('CubeMetadata',
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
 
 
-class _CubeFilter(object):
+class _CubeFilter:
     """
     A constraint, paired with a list of cubes matching that constraint.
 
@@ -117,7 +117,7 @@ class _CubeFilter(object):
         return _CubeFilter(self.constraint, self.cubes.merge(unique))
 
 
-class _CubeFilterCollection(object):
+class _CubeFilterCollection:
     """
     A list of _CubeFilter instances.
 

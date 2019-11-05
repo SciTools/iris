@@ -415,7 +415,7 @@ def _date_series(src_cube):
 
 
 @tests.skip_plot
-class SliceMixin(object):
+class SliceMixin:
     """Mixin class providing tests for each 2-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
@@ -598,7 +598,7 @@ class TestPcolormeshNoBounds(tests.GraphicsTest_nometa,
 
 
 @tests.skip_plot
-class Slice1dMixin(object):
+class Slice1dMixin:
     """Mixin class providing tests for each 1-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
@@ -671,7 +671,7 @@ def load_cube_once(filename, constraint):
     return cube
 
 
-class LambdaStr(object):
+class LambdaStr:
     """Provides a callable function which has a sensible __repr__."""
     def __init__(self, repr, lambda_fn):
         self.repr = repr
