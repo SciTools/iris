@@ -308,6 +308,7 @@ def find_saver(filespec):
     return _savers[matches[0]] if matches else None
 
 
+@iris.cube.cube_attributes
 def save(source, target, saver=None, **kwargs):
     """
     Save one or more Cubes to file (or other writable).

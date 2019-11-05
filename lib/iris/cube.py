@@ -59,6 +59,23 @@ import iris.util
 __all__ = ['Cube', 'CubeList', 'CubeMetadata']
 
 
+def cube_attributes(func):
+    """
+    Wrap functions that operate on CubeLists so they produce a more informative
+    error message if they find an element that is not a cube.
+    """
+    def inner(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except AttributeError:
+            raise TypeError(
+                'Cubelist appears to contain objects that are not cubes')
+        else:
+            return result
+
+    return inner
+
+
 class CubeMetadata(namedtuple('CubeMetadata',
                               ['standard_name',
                                'long_name',
@@ -206,6 +223,7 @@ class CubeList(list):
                              'instances.')
         return cube_list
 
+    @cube_attributes
     def __str__(self):
         """Runs short :meth:`Cube.summary` on every cube."""
         result = ['%s: %s' % (i, cube.summary(shorten=True)) for i, cube in
@@ -216,10 +234,12 @@ class CubeList(list):
             result = '< No cubes >'
         return result
 
+    @cube_attributes
     def __repr__(self):
         """Runs repr on every cube."""
         return '[%s]' % ',\n'.join([repr(cube) for cube in self])
 
+    @cube_attributes
     def _repr_html_(self):
         from iris.experimental.representation import CubeListRepresentation
         representer = CubeListRepresentation(self)
@@ -247,6 +267,7 @@ class CubeList(list):
         result = CubeList(result)
         return result
 
+    @cube_attributes
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
         doc = Document()
@@ -263,6 +284,7 @@ class CubeList(list):
         # return our newly created XML string
         return doc.toprettyxml(indent="  ")
 
+    @cube_attributes
     def extract(self, constraints, strict=False):
         """
         Filter each of the cubes which can be filtered by the given
@@ -351,6 +373,7 @@ class CubeList(list):
 
         return self.extract(iris.Constraint(coord_values=coord_values))
 
+    @cube_attributes
     def merge_cube(self):
         """
         Return the merged contents of the :class:`CubeList` as a single
@@ -388,6 +411,7 @@ class CubeList(list):
         merged_cube, = proto_cube.merge()
         return merged_cube
 
+    @cube_attributes
     def merge(self, unique=True):
         """
         Returns the :class:`CubeList` resulting from merging this
@@ -476,6 +500,7 @@ class CubeList(list):
 
         return merged_cubes
 
+    @cube_attributes
     def concatenate_cube(self, check_aux_coords=True):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
@@ -521,6 +546,7 @@ class CubeList(list):
                                                              names[1]))
             raise iris.exceptions.ConcatenateError(msgs)
 
+    @cube_attributes
     def concatenate(self, check_aux_coords=True):
         """
         Concatenate the cubes over their common dimensions.
@@ -599,6 +625,7 @@ class CubeList(list):
         return iris._concatenate.concatenate(self,
                                              check_aux_coords=check_aux_coords)
 
+    @cube_attributes
     def realise_data(self):
         """
         Fetch 'real' data for all cubes, in a shared calculation.
