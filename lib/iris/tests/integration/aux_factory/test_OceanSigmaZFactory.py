@@ -9,7 +9,7 @@ Integratation tests for the
 
 """
 
-# import iris.tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 

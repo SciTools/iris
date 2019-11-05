@@ -8,7 +8,7 @@ Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
 
 """
 
-# import iris.tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 

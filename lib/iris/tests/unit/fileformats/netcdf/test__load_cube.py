@@ -5,7 +5,7 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.netcdf._load_cube` function."""
 
-# import iris.tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 

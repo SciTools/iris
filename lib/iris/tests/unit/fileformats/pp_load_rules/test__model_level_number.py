@@ -8,7 +8,7 @@ Unit tests for :func:`iris.fileformats.pp_load_rules._model_level_number`.
 
 """
 
-# import iris.tests first so that some things can be initialised before
+# Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
