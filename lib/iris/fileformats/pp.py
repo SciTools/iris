@@ -318,7 +318,7 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
 
     def __eq__(self, other):
         if isinstance(other, str):
-            return super(STASH, self).__eq__(STASH.from_msi(other))
+            return super().__eq__(STASH.from_msi(other))
         else:
             return super().__eq__(other)
 
