@@ -108,7 +108,8 @@ class TestCells(tests.IrisTest):
         self.assertTrue(self.d < 2)
         
         # Ensure the Cell's operators return NotImplemented.
-        class Terry: pass
+        class Terry:
+            pass
         self.assertEqual(self.d.__eq__(Terry()), NotImplemented)
         self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 
