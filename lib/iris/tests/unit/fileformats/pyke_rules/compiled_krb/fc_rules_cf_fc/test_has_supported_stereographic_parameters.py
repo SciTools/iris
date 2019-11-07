@@ -9,8 +9,6 @@ fc_rules_cf_fc.has_supported_stereographic_parameters`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 import warnings
 
 # import iris tests first so that some things can be initialised before
@@ -20,7 +18,6 @@ import iris.tests as tests
 from unittest import mock
 
 import numpy as np
-import six
 
 from iris.coord_systems import Stereographic
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
@@ -72,7 +69,7 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        six.assertRegex(self, str(warns[0]), 'Scale factor')
+        self.assertRegex(str(warns[0]), 'Scale factor')
 
 
 if __name__ == "__main__":

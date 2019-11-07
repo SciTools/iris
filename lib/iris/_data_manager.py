@@ -8,10 +8,6 @@ Management of common state and behaviour for cube and coordinate data.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import copy
 import numpy as np
 import numpy.ma as ma
@@ -20,7 +16,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.util import array_equal
 
 
-class DataManager(object):
+class DataManager:
     """
     Provides a well defined API for management of real or lazy data.
 

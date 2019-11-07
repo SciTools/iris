@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.plot` module."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -20,7 +17,7 @@ from iris.tests.stock import simple_2d, lat_lon_cube
 @tests.skip_plot
 class TestGraphicStringCoord(tests.GraphicsTest):
     def setUp(self):
-        super(TestGraphicStringCoord, self).setUp()
+        super().setUp()
         self.cube = simple_2d(with_bounds=True)
         self.cube.add_aux_coord(AuxCoord(list('abcd'),
                                          long_name='str_coord'), 1)
@@ -56,7 +53,7 @@ class TestGraphicStringCoord(tests.GraphicsTest):
 
 
 @tests.skip_plot
-class MixinCoords(object):
+class MixinCoords:
     """
     Mixin class of common plotting tests providing 2-dimensional
     permutations of coordinates and anonymous dimensions.

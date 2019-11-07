@@ -5,10 +5,6 @@
 # licensing details.
 
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -567,7 +563,7 @@ class TestAggregators(tests.IrisTest):
         cube = tests.stock.simple_3d_mask()
         msg = 'Cannot use fast np.percentile method with masked array.'
 
-        with self.assertRaisesRegexp(TypeError, msg):
+        with self.assertRaisesRegex(TypeError, msg):
             cube.collapsed('wibble',
                            iris.analysis.PERCENTILE, percent=75,
                            fast_percentile_method=True)

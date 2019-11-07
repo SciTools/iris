@@ -8,9 +8,6 @@ Unit tests for the :func:`iris._cube_coord_common.get_valid_standard_name`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -28,7 +25,7 @@ class Test(tests.IrisTest):
 
     def test_invalid_standard_name(self):
         name = 'not_a_standard_name'
-        with self.assertRaisesRegexp(ValueError, self.emsg.format(name)):
+        with self.assertRaisesRegex(ValueError, self.emsg.format(name)):
             get_valid_standard_name(name)
 
     def test_valid_standard_name_valid_modifier(self):
@@ -41,17 +38,17 @@ class Test(tests.IrisTest):
 
     def test_invalid_standard_name_valid_modifier(self):
         name = 'not_a_standard_name standard_error'
-        with self.assertRaisesRegexp(ValueError, self.emsg.format(name)):
+        with self.assertRaisesRegex(ValueError, self.emsg.format(name)):
             get_valid_standard_name(name)
 
     def test_valid_standard_invalid_name_modifier(self):
         name = 'air_temperature extra_names standard_error'
-        with self.assertRaisesRegexp(ValueError, self.emsg.format(name)):
+        with self.assertRaisesRegex(ValueError, self.emsg.format(name)):
             get_valid_standard_name(name)
 
     def test_valid_standard_valid_name_modifier_extra_names(self):
         name = 'air_temperature standard_error extra words'
-        with self.assertRaisesRegexp(ValueError, self.emsg.format(name)):
+        with self.assertRaisesRegex(ValueError, self.emsg.format(name)):
             get_valid_standard_name(name)
 
 

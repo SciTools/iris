@@ -5,10 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp._field_gen` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -38,10 +34,7 @@ class Test(tests.IrisTest):
                 np.fromfile.return_value = []
             return result
 
-        if six.PY3:
-            open_func = 'builtins.open'
-        else:
-            open_func = '__builtin__.open'
+        open_func = 'builtins.open'
         with mock.patch('numpy.fromfile', return_value=[0]), \
                 mock.patch(open_func), \
                 mock.patch('struct.unpack_from', return_value=[4]), \
@@ -62,7 +55,7 @@ class Test(tests.IrisTest):
         self.assertEqual(len(warn), 1)
         wmsg = ('LBLREC has a different value to the .* the header in the '
                 'file \(8 and 4\)\. Skipping .*')
-        six.assertRegex(self, str(warn[0].message), wmsg)
+        self.assertRegex(str(warn[0].message), wmsg)
 
     def test_read_headers_call(self):
         # Checks that the two calls to np.fromfile are called in the

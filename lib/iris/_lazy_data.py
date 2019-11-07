@@ -9,8 +9,6 @@ Routines for lazy data handling.
 To avoid replicating implementation-dependent test and conversion code.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from functools import wraps
 

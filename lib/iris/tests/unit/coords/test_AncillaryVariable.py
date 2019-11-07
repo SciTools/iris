@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :class:`iris.coords.AncillaryVariable` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -365,7 +362,7 @@ class Test_data__setter(tests.IrisTest, AncillaryVariableTestMixin):
         # Setting real data requires matching shape.
         ancill_var = AncillaryVariable([1.0, 2.0])
         msg = 'Require data with shape \(2,\), got \(3,\)'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             ancill_var.data = np.array([1.0, 2.0, 3.0])
 
     def test_real_set_lazy(self):

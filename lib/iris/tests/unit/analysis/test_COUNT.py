@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :data:`iris.analysis.COUNT` aggregator."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -36,15 +33,15 @@ class Test_basics(tests.IrisTest):
 
     def test_no_function(self):
         exp_emsg = r"function must be a callable. Got <.* 'NoneType'>"
-        with self.assertRaisesRegexp(TypeError, exp_emsg):
+        with self.assertRaisesRegex(TypeError, exp_emsg):
             COUNT.lazy_aggregate(self.lazy_cube.lazy_data(), axis=0)
 
     def test_not_callable(self):
-        with self.assertRaisesRegexp(TypeError, 'function must be a callable'):
+        with self.assertRaisesRegex(TypeError, 'function must be a callable'):
             COUNT.aggregate(self.cube.data, axis=0, function='wibble')
 
     def test_lazy_not_callable(self):
-        with self.assertRaisesRegexp(TypeError, 'function must be a callable'):
+        with self.assertRaisesRegex(TypeError, 'function must be a callable'):
             COUNT.lazy_aggregate(self.lazy_cube.lazy_data(),
                                  axis=0,
                                  function='wibble')

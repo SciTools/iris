@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import contextlib
 import os.path
 
@@ -14,7 +11,7 @@ import iris
 import iris.tests as tests
 
 
-class PPTest(object):
+class PPTest:
     """
     A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
 

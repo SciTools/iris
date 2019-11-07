@@ -1,5 +1,6 @@
 linters:
     flake8:
+        python: 3
 
 files:
     ignore:

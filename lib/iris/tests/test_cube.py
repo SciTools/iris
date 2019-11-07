@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -81,7 +78,7 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
 
 class TestEquality(tests.IrisTest):
     def test_not_implmemented(self):
-        class Terry(object):
+        class Terry:
             pass
         cube = iris.cube.Cube(0)
         self.assertIs(cube.__eq__(Terry()), NotImplemented)

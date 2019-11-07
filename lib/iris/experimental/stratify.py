@@ -8,11 +8,8 @@ Routines for putting data on new strata (aka. isosurfaces), often in the
 Z direction.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 from functools import partial
-import six
 
 import numpy as np
 import stratify
@@ -116,11 +113,11 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     if axis is None:
         axis = 0
 
-    if isinstance(axis, (six.string_types, Coord)):
+    if isinstance(axis, (str, Coord)):
         [axis] = cube.coord_dims(axis)
 
     # Get the source level data.
-    if isinstance(src_levels, six.string_types):
+    if isinstance(src_levels, str):
         src_data = cube.coord(src_levels).points
     elif isinstance(src_levels, Coord):
         src_data = src_levels.points

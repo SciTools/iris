@@ -14,8 +14,6 @@ The remainder of the old 'tests/test_grib_load.py' is now renamed as
 specific, and target the module 'iris_grib'.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else

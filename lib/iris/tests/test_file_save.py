@@ -8,14 +8,9 @@ Test the file saving mechanism.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import io
 import os
 import unittest
 
@@ -24,6 +19,8 @@ import iris.cube
 import iris.util
 import iris.fileformats.pp as pp
 import iris.fileformats.dot as dot
+
+from io import StringIO
 
 # Make a test skip decorator, for when DOT not available
 skip_dotpng = unittest.skipIf(
@@ -125,7 +122,7 @@ class TestSaveDot(TestSaveMethods):
             save_by_filehandle(self.temp_filename1, self.temp_filename2, self.cube1, dot.save, binary_mode = True)
 
     def test_bytesio(self):
-        sio = six.StringIO()
+        sio = StringIO()
 
         # Save from dot direct
         dot.save(self.cube1, self.temp_filename1)

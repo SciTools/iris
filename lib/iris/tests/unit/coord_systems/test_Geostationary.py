@@ -5,14 +5,9 @@
 # licensing details.
 """Unit tests for the :class:`iris.coord_systems.Geostationary` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-import six
 
 import cartopy.crs as ccrs
 from iris.coord_systems import GeogCS, Geostationary
@@ -61,7 +56,7 @@ class Test(tests.IrisTest):
         self.assertEqual(res, self.expected)
 
     def test_non_zero_lat(self):
-        with six.assertRaisesRegex(self, ValueError, 'Non-zero latitude'):
+        with self.assertRaisesRegex(ValueError, 'Non-zero latitude'):
             Geostationary(0.1,
                           self.longitude_of_projection_origin,
                           self.perspective_point_height,
@@ -71,8 +66,8 @@ class Test(tests.IrisTest):
                           self.ellipsoid)
 
     def test_invalid_sweep(self):
-        with six.assertRaisesRegex(
-                self, ValueError, 'Invalid sweep_angle_axis'):
+        with self.assertRaisesRegex(
+                ValueError, 'Invalid sweep_angle_axis'):
             Geostationary(self.latitude_of_projection_origin,
                           self.longitude_of_projection_origin,
                           self.perspective_point_height,

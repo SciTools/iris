@@ -9,8 +9,6 @@ Tests to check the validity of replacing
 "iris.cube.Cube.regrid(scheme=iris.analysis.Nearest())".
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -52,7 +50,7 @@ def _debug_data(cube, test_id):
         print(repr(data))
 
 
-class MixinCheckingCode(object):
+class MixinCheckingCode:
     def test_basic(self):
         src_x = [30., 40., 50.]
         dst_x = [32., 42.]

@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -297,7 +294,7 @@ class TestSeriesAsCube(tests.IrisTest):
             tests.get_result_path(('pandas', 'as_cube', 'series_simple.cml')))
 
     def test_series_object(self):
-        class Thing(object):
+        class Thing:
             def __repr__(self):
                 return "A Thing"
         series = pandas.Series(

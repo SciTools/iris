@@ -8,13 +8,9 @@ Basic mathematical and statistical operations.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import inspect
 import math
 import operator
-import six
 import warnings
 
 import cf_units
@@ -845,7 +841,7 @@ def _math_op_common(cube, operation_function, new_unit, new_dtype=None,
     return new_cube
 
 
-class IFunc(object):
+class IFunc:
     """
     :class:`IFunc` class for functions that can be applied to an iris cube.
     """
@@ -907,16 +903,11 @@ class IFunc(object):
         if hasattr(data_func, 'nin'):
             self.nin = data_func.nin
         else:
-            if six.PY2:
-                (args, _, _, defaults) = inspect.getargspec(data_func)
-                self.nin = len(args) - (
-                    len(defaults) if defaults is not None else 0)
-            else:
-                sig = inspect.signature(data_func)
-                args = [param for param in sig.parameters.values()
-                        if (param.kind != param.KEYWORD_ONLY and
-                            param.default is param.empty)]
-                self.nin = len(args)
+            sig = inspect.signature(data_func)
+            args = [param for param in sig.parameters.values()
+                    if (param.kind != param.KEYWORD_ONLY and
+                        param.default is param.empty)]
+            self.nin = len(args)
 
         if self.nin not in [1, 2]:
             msg = ('{} requires {} input data arrays, the IFunc class '

@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :data:`iris.analysis.RMS` aggregator."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -100,7 +97,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         weights = np.array([1, 4, 3, 2], dtype=np.float64)
         expected_rms = 8.0
         # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegexp(TypeError, 'unexpected keyword argument'):
+        with self.assertRaisesRegex(TypeError, 'unexpected keyword argument'):
             rms = RMS.lazy_aggregate(data, 0, weights=weights)
             self.assertAlmostEqual(rms, expected_rms)
 
@@ -110,7 +107,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         weights = as_lazy_data(np.array([1, 4, 3, 2], dtype=np.float64))
         expected_rms = 8.0
         # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegexp(TypeError, 'unexpected keyword argument'):
+        with self.assertRaisesRegex(TypeError, 'unexpected keyword argument'):
             rms = RMS.lazy_aggregate(data, 0, weights=weights)
             self.assertAlmostEqual(rms, expected_rms)
 
@@ -121,7 +118,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         weights = np.array([[1, 4, 3, 2], [2, 1, 1.5, 0.5]], dtype=np.float64)
         expected_rms = np.array([8.0, 16.0], dtype=np.float64)
         # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegexp(TypeError, 'unexpected keyword argument'):
+        with self.assertRaisesRegex(TypeError, 'unexpected keyword argument'):
             rms = RMS.lazy_aggregate(data, 1, weights=weights)
             self.assertArrayAlmostEqual(rms, expected_rms)
 
@@ -131,7 +128,7 @@ class Test_lazy_aggregate(tests.IrisTest):
         weights = np.ones_like(data)
         expected_rms = 4.5
         # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegexp(TypeError, 'unexpected keyword argument'):
+        with self.assertRaisesRegex(TypeError, 'unexpected keyword argument'):
             rms = RMS.lazy_aggregate(data, 0, weights=weights)
             self.assertAlmostEqual(rms, expected_rms)
 
@@ -153,7 +150,7 @@ class Test_lazy_aggregate(tests.IrisTest):
                             dtype=np.float64))
         weights = np.array([1, 4, 5, 3, 8, 2])
         expected_rms = 8.0
-        with self.assertRaisesRegexp(TypeError, 'unexpected keyword argument'):
+        with self.assertRaisesRegex(TypeError, 'unexpected keyword argument'):
             rms = RMS.lazy_aggregate(data, 0, weights=weights)
             self.assertAlmostEqual(rms, expected_rms)
 

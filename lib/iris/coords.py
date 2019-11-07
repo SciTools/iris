@@ -8,19 +8,11 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from abc import ABCMeta
 from collections import namedtuple
-try:  # Python 3
-    from collections.abc import Iterator
-except ImportError:  # Python 2.7
-    from collections import Iterator
+from collections.abc import Iterator
 import copy
-from itertools import chain
-from six.moves import zip_longest
+from itertools import chain, zip_longest
 import operator
 import warnings
 import zlib
@@ -41,7 +33,7 @@ from iris._cube_coord_common import CFVariableMixin
 from iris.util import points_step
 
 
-class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
+class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     """
     Superclass for dimensional metadata.
 
@@ -495,7 +487,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
             if ignore is not None:
-                if isinstance(ignore, six.string_types):
+                if isinstance(ignore, str):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
@@ -562,7 +554,7 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
 
         if self.attributes:
             attributes_element = doc.createElement('attributes')
-            for name in sorted(six.iterkeys(self.attributes)):
+            for name in sorted(self.attributes.keys()):
                 attribute_element = doc.createElement('attribute')
                 attribute_element.setAttribute('name', name)
                 attribute_element.setAttribute('value',
@@ -623,16 +615,10 @@ class _DimensionalMetadata(six.with_metaclass(ABCMeta, CFVariableMixin)):
         kind = dtype.kind
         if kind in 'SU':
             # Establish the basic type name for 'string' type data.
-            # N.B. this means "unicode" in Python3, and "str" in Python2.
-            value_type_name = 'string'
-
-            # Override this if not the 'native' string type.
-            if six.PY3:
-                if kind == 'S':
-                    value_type_name = 'bytes'
+            if kind == 'S':
+                value_type_name = 'bytes'
             else:
-                if kind == 'U':
-                    value_type_name = 'unicode'
+                value_type_name = 'string'
         else:
             value_type_name = dtype.name
 
@@ -860,9 +846,8 @@ class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
             in the selection. Default is True.
 
         """
-        return super(CoordExtent, cls).__new__(cls, name_or_coord, minimum,
-                                               maximum, min_inclusive,
-                                               max_inclusive)
+        return super().__new__(cls, name_or_coord, minimum, maximum,
+                               min_inclusive, max_inclusive)
 
     __slots__ = ()
 
@@ -979,7 +964,7 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                                  'length 1.')
             point = point[0]
 
-        return super(Cell, cls).__new__(cls, point, bound)
+        return super().__new__(cls, point, bound)
 
     def __mod__(self, mod):
         point = self.point
@@ -1000,7 +985,7 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
         return Cell(point, bound)
 
     def __hash__(self):
-        return super(Cell, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         """
@@ -1016,8 +1001,8 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                 return self.point == other
         elif isinstance(other, Cell):
             return (self.point == other.point) and (self.bound == other.bound)
-        elif (isinstance(other, six.string_types) and self.bound is None and
-              isinstance(self.point, six.string_types)):
+        elif (isinstance(other, str) and self.bound is None and
+              isinstance(self.point, str)):
             return self.point == other
         else:
             return NotImplemented
@@ -1761,17 +1746,16 @@ class Coord(_DimensionalMetadata):
             def serialize(x):
                 return '|'.join([str(i) for i in x.flatten()])
             bounds = None
-            string_type_fmt = 'S{}' if six.PY2 else 'U{}'
             if self.has_bounds():
                 shape = self._bounds_dm.shape[1:]
                 bounds = []
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype(string_type_fmt.format(max(map(len, bounds))))
+                dtype = np.dtype('U{}'.format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
-            dtype = np.dtype(string_type_fmt.format(len(points)))
+            dtype = np.dtype('U{}'.format(len(points)))
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points, dtype=dtype),
                               bounds=bounds)
@@ -2390,7 +2374,7 @@ class CellMethod(iris.util._OrderedHashable):
             comments.
 
         """
-        if not isinstance(method, six.string_types):
+        if not isinstance(method, str):
             raise TypeError("'method' must be a string - got a '%s'" %
                             type(method))
 
@@ -2400,7 +2384,7 @@ class CellMethod(iris.util._OrderedHashable):
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
-        elif isinstance(coords, six.string_types):
+        elif isinstance(coords, str):
             _coords.append(CFVariableMixin.token(coords) or default_name)
         else:
             normalise = (lambda coord: coord.name(token=True) if
@@ -2411,7 +2395,7 @@ class CellMethod(iris.util._OrderedHashable):
         _intervals = []
         if intervals is None:
             pass
-        elif isinstance(intervals, six.string_types):
+        elif isinstance(intervals, str):
             _intervals = [intervals]
         else:
             _intervals.extend(intervals)
@@ -2419,7 +2403,7 @@ class CellMethod(iris.util._OrderedHashable):
         _comments = []
         if comments is None:
             pass
-        elif isinstance(comments, six.string_types):
+        elif isinstance(comments, str):
             _comments = [comments]
         else:
             _comments.extend(comments)

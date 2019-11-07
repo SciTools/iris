@@ -8,9 +8,6 @@ Unit tests for :meth:`iris.analysis.trajectory.interpolate`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -29,7 +26,7 @@ class TestFailCases(tests.IrisTest):
         cube = iris.tests.stock.realistic_4d()
         sample_pts = [('altitude', [0, 10, 50])]
         msg = "'altitude'.*derived coordinates are not allowed"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             interpolate(cube, sample_pts, 'nearest')
 
         # Try to request unknown interpolation method.
@@ -37,7 +34,7 @@ class TestFailCases(tests.IrisTest):
         cube = iris.tests.stock.simple_2d()
         sample_point = [('x', 2.8)]
         msg = 'Unhandled interpolation.*linekar'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             interpolate(cube, sample_point, method="linekar")
 
 
@@ -152,7 +149,7 @@ class TestNearest(tests.IrisTest):
                            (0, 2))
         msg = ('Coord aux_0x at one x-y position has the shape.*'
                'instead of being a single point')
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             interpolate(cube, self.single_sample_point, method='nearest')
 
     def test_metadata(self):

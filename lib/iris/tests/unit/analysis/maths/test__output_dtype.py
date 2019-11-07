@@ -8,9 +8,6 @@ Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -37,11 +34,6 @@ class Test(tests.IrisTest):
                                 np.multiply,
                                 np.power,
                                 np.floor_divide]
-        try:
-            self.same_result_ops.append(operator.div)
-        except AttributeError:
-            # operator.div doesn't exist in Python 3
-            pass
 
         self.unary_same_result_ops = [np.abs]
 

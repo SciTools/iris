@@ -21,10 +21,6 @@ to the pp "as_pairs" functions.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from contextlib import contextmanager
 import threading
 import os.path
@@ -62,7 +58,7 @@ class FieldCollation(BasicFieldCollation):
             The path of the file the collation is loaded from.
 
         """
-        super(FieldCollation, self).__init__(fields)
+        super().__init__(fields)
         self._load_filepath = filepath
 
     @property

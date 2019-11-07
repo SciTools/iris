@@ -8,10 +8,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from collections import defaultdict, namedtuple
 from copy import deepcopy
 
@@ -122,16 +118,14 @@ class _CoordMetaData(namedtuple('CoordMetaData',
             else:
                 order = _DECREASING
             kwargs['order'] = order
-        metadata = super(_CoordMetaData, cls).__new__(cls, defn, dims,
-                                                      points_dtype,
-                                                      bounds_dtype,
-                                                      kwargs)
+        metadata = super().__new__(cls, defn, dims, points_dtype,
+                                   bounds_dtype, kwargs)
         return metadata
 
     __slots__ = ()
 
     def __hash__(self):
-        return super(_CoordMetaData, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
         result = NotImplemented
@@ -287,7 +281,7 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
     return concatenated_cubes
 
 
-class _CubeSignature(object):
+class _CubeSignature:
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its metadata, coordinates and cell_measures.
@@ -385,7 +379,7 @@ class _CubeSignature(object):
             result = ('', ', '.join(self_names), ', '.join(other_names))
         else:
             diff_names = []
-            for self_key, self_value in six.iteritems(self_dict):
+            for self_key, self_value in self_dict.items():
                 other_value = other_dict[self_key]
                 if self_value != other_value:
                     diff_names.append(self_key)
@@ -466,7 +460,7 @@ class _CubeSignature(object):
         return match
 
 
-class _CoordSignature(object):
+class _CoordSignature:
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its coordinates.
@@ -585,7 +579,7 @@ class _CoordSignature(object):
             self.dim_extents.append(_CoordExtent(points, bounds))
 
 
-class _ProtoCube(object):
+class _ProtoCube:
     """
     Framework for concatenating multiple source-cubes over one
     common dimension.

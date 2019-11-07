@@ -9,14 +9,11 @@ Definitions of how Iris objects should be represented.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from html import escape
 import re
 
 
-class CubeRepresentation(object):
+class CubeRepresentation:
     """
     Produce representations of a :class:`~iris.cube.Cube`.
 
@@ -330,7 +327,7 @@ class CubeRepresentation(object):
                                      content=content)
 
 
-class CubeListRepresentation(object):
+class CubeListRepresentation:
     _template = """
 <style>
     .accordion-{uid} {{

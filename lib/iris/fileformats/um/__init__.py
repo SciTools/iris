@@ -11,9 +11,6 @@ Other types of UM file may fail to load correctly (or at all).
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Publish the FF-replacement features here, and include documentation.
 from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
 from ._fast_load import structured_um_loading, FieldCollation

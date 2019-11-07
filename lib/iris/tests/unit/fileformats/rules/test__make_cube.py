@@ -5,14 +5,10 @@
 # licensing details.
 """Unit tests for :func:`iris.fileformats.rules._make_cube`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-import six
 from unittest import mock
 import warnings
 
@@ -57,7 +53,7 @@ class Test(tests.IrisTest):
         # Check warning was raised.
         self.assertEqual(len(warn), 1)
         exp_emsg = 'invalid units {!r}'.format(units)
-        six.assertRegex(self, str(warn[0]), exp_emsg)
+        self.assertRegex(str(warn[0]), exp_emsg)
 
 
 if __name__ == "__main__":

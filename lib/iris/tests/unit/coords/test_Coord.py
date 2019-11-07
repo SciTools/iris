@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the :class:`iris.coords.Coord` class."""
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -17,7 +15,6 @@ import warnings
 
 import dask.array as da
 import numpy as np
-import six
 
 import iris
 from iris.coords import DimCoord, AuxCoord, Coord
@@ -429,13 +426,13 @@ class Test_contiguous_bounds(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegexp(Warning, msg):
+            with self.assertRaisesRegex(Warning, msg):
                 coord.contiguous_bounds()
 
     def test_2d_coord_no_bounds_error(self):
         coord = AuxCoord(np.array([[0, 0], [5, 5]]), standard_name='latitude')
         emsg = 'Guessing bounds of 2D coords is not currently supported'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord.contiguous_bounds()
 
     def test__sanity_check_bounds_call(self):
@@ -680,7 +677,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
         coord = iris.coords.DimCoord([0, 1], standard_name='latitude')
         emsg = "Contiguous bounds are only defined for 1D coordinates with " \
                "2 bounds."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_1d_1_bounds(self):
@@ -688,7 +685,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
                                      bounds=np.array([[0], [1]]))
         emsg = "Contiguous bounds are only defined for 1D coordinates with " \
                "2 bounds."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_2d_4_bounds(self):
@@ -703,7 +700,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
                                      standard_name='latitude')
         emsg = "Contiguous bounds are only defined for 2D coordinates with " \
                "4 bounds."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_2d_2_bounds(self):
@@ -712,7 +709,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
             bounds=np.array([[[0, 1], [0, 1]], [[1, 2], [1, 2]]]))
         emsg = "Contiguous bounds are only defined for 2D coordinates with " \
                "4 bounds."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord._sanity_check_bounds()
 
     def test_coord_3d(self):
@@ -720,7 +717,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
                                      standard_name='height')
         emsg = "Contiguous bounds are not defined for coordinates with more " \
                "than 2 dimensions."
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             coord._sanity_check_bounds()
 
 
@@ -729,7 +726,7 @@ class Test_convert_units(tests.IrisTest):
         coord = iris.coords.AuxCoord(1, units='unknown')
         emsg = ('Cannot convert from unknown units. '
                 'The "units" attribute may be set directly.')
-        with self.assertRaisesRegexp(UnitConversionError, emsg):
+        with self.assertRaisesRegex(UnitConversionError, emsg):
             coord.convert_units('degrees')
 
 
@@ -789,14 +786,14 @@ class TestClimatology(tests.IrisTest):
         self.assertTrue(coord.climatological)
 
     def test_create_no_bounds_no_set(self):
-        with six.assertRaisesRegex(self, ValueError,
-                                   'Cannot set.*no bounds exist'):
+        with self.assertRaisesRegex(ValueError,
+                                    'Cannot set.*no bounds exist'):
             AuxCoord(points=[0, 1], units='days since 1970-01-01',
                      climatological=True)
 
     def test_create_no_time_no_set(self):
         emsg = 'Cannot set climatological .* valid time reference units.*'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]],
                      climatological=True)
 
@@ -806,14 +803,14 @@ class TestClimatology(tests.IrisTest):
 
     def test_absent_no_bounds_no_set(self):
         coord = AuxCoord(points=[0, 1], units='days since 1970-01-01')
-        with six.assertRaisesRegex(self, ValueError,
-                                   'Cannot set.*no bounds exist'):
+        with self.assertRaisesRegex(ValueError,
+                                    'Cannot set.*no bounds exist'):
             coord.climatological = True
 
     def test_absent_no_time_no_set(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
         emsg = 'Cannot set climatological .* valid time reference units.*'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             coord.climatological = True
 
     def test_absent_no_bounds_unset(self):

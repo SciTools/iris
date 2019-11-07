@@ -5,10 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from abc import ABCMeta, abstractproperty
 
 import numpy as np
@@ -22,7 +18,7 @@ import iris.tests.stock as stock
 import iris.tests as tests
 
 
-class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
     # A framework for testing the broadcasting behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
     @abstractproperty
@@ -111,7 +107,7 @@ class CubeArithmeticBroadcastingTestMixin(six.with_metaclass(ABCMeta, object)):
                                   err_msg=msg.format(dim))
 
 
-class CubeArithmeticMaskingTestMixin(six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
     # A framework for testing the mask handling behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
     @abstractproperty
@@ -186,8 +182,7 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
         return reversed1, reversed2
 
 
-class CubeArithmeticMaskedConstantTestMixin(
-        six.with_metaclass(ABCMeta, object)):
+class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
 
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.

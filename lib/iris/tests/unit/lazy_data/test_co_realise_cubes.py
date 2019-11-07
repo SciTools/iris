@@ -5,9 +5,6 @@
 # licensing details.
 """Test function :func:`iris._lazy data.co_realise_cubes`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -20,7 +17,7 @@ from iris._lazy_data import as_lazy_data
 from iris._lazy_data import co_realise_cubes
 
 
-class ArrayAccessCounter(object):
+class ArrayAccessCounter:
     def __init__(self, array):
         self.dtype = array.dtype
         self.shape = array.shape

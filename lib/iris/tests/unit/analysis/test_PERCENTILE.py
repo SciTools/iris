@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the :data:`iris.analysis.PERCENTILE` aggregator."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -21,7 +18,7 @@ from iris.analysis import PERCENTILE
 class Test_aggregate(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate('dummy', axis=0)
 
     def test_1d_single(self):
@@ -108,12 +105,12 @@ class Test_name(tests.IrisTest):
 class Test_aggregate_shape(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate_shape()
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             kwargs = dict()
             PERCENTILE.aggregate_shape(**kwargs)
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             kwargs = dict(point=10)
             PERCENTILE.aggregate_shape(**kwargs)
 

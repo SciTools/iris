@@ -7,9 +7,6 @@
 Utilities for producing runtime deprecation messages.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 import warnings
 
@@ -66,5 +63,4 @@ class ClassWrapperSameDocstring(type):
         class_dict['__doc__'] = parent_class.__doc__
 
         # Return the result.
-        return super(ClassWrapperSameDocstring, metacls).__new__(
-            metacls, classname, bases, class_dict)
+        return super().__new__(metacls, classname, bases, class_dict)

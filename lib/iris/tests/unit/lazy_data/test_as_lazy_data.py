@@ -5,9 +5,6 @@
 # licensing details.
 """Test the function :func:`iris._lazy data.as_lazy_data`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests

@@ -8,10 +8,6 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import abc
 import collections
 from copy import deepcopy
@@ -262,12 +258,12 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         model = cls._validate_member('model', model, 1, 99)
         section = cls._validate_member('section', section, 0, 99)
         item = cls._validate_member('item', item, 1, 999)
-        return super(STASH, cls).__new__(cls, model, section, item)
+        return super().__new__(cls, model, section, item)
 
     @staticmethod
     def from_msi(msi):
         """Convert a STASH code MSI string to a STASH instance."""
-        if not isinstance(msi, six.string_types):
+        if not isinstance(msi, str):
             raise TypeError('Expected STASH code MSI string, got %r' % (msi,))
 
         msi_match = re.match(
@@ -318,19 +314,19 @@ class STASH(collections.namedtuple('STASH', 'model section item')):
         return '?' not in str(self)
 
     def __hash__(self):
-        return super(STASH, self).__hash__()
+        return super().__hash__()
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
-            return super(STASH, self).__eq__(STASH.from_msi(other))
+        if isinstance(other, str):
+            return super().__eq__(STASH.from_msi(other))
         else:
-            return super(STASH, self).__eq__(other)
+            return super().__eq__(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
 
-class SplittableInt(object):
+class SplittableInt:
     """
     A class to hold integers which can easily get each decimal digit
     individually.
@@ -511,7 +507,7 @@ class SplittableInt(object):
         return self._compare(other, operator.ge)
 
 
-class PPDataProxy(object):
+class PPDataProxy:
     """A reference to the data payload of a single PP field."""
 
     __slots__ = ('shape', 'src_dtype', 'path', 'offset', 'data_len',
@@ -754,7 +750,7 @@ def _pp_attribute_names(header_defn):
     return normal_headers + special_headers + extra_data + special_attributes
 
 
-class PPField(six.with_metaclass(abc.ABCMeta, object)):
+class PPField(metaclass=abc.ABCMeta):
     """
     A generic class for PP fields - not specific to a particular
     header release number.
@@ -890,7 +886,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
 
     @stash.setter
     def stash(self, stash):
-        if isinstance(stash, six.string_types):
+        if isinstance(stash, str):
             self._stash = STASH.from_msi(stash)
         elif isinstance(stash, STASH):
             self._stash = stash
@@ -1112,13 +1108,13 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # at the end of the data
         extra_items = []
         # iterate through all of the possible extra data fields
-        for ib, extra_data_attr_name in six.iteritems(EXTRA_DATA):
+        for ib, extra_data_attr_name in EXTRA_DATA.items():
             # try to get the extra data field, returning None if it doesn't
             # exist
             extra_elem = getattr(self, extra_data_attr_name, None)
             if extra_elem is not None:
                 # The special case of character extra data must be caught
-                if isinstance(extra_elem, six.string_types):
+                if isinstance(extra_elem, str):
                     ia = len(extra_elem)
                     # pad any strings up to a multiple of PP_WORD_DEPTH
                     # (this length is # of bytes)
@@ -1230,7 +1226,7 @@ class PPField(six.with_metaclass(abc.ABCMeta, object)):
         # extra data elements
         for int_code, extra_data in extra_items:
             pp_file.write(struct.pack(">L", int(int_code)))
-            if isinstance(extra_data, six.string_types):
+            if isinstance(extra_data, str):
                 pp_file.write(struct.pack(">%ss" % len(extra_data),
                               extra_data.encode()))
             else:
@@ -1804,7 +1800,7 @@ def _convert_constraints(constraints):
             stashobj = con._attributes['STASH']
             if callable(stashobj):
                 call_func = stashobj
-            elif isinstance(stashobj, (six.string_types, STASH)):
+            elif isinstance(stashobj, (str, STASH)):
                 call_func = _make_func(stashobj)
             else:
                 raise TypeError("STASH constraints should be either a"
@@ -2202,7 +2198,7 @@ def save_fields(fields, target, append=False):
     #   LBTYP - Fields file field type code
     #   LBLEV - Fields file level code / hybrid height model level
 
-    if isinstance(target, six.string_types):
+    if isinstance(target, str):
         pp_file = open(target, "ab" if append else "wb")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
@@ -2217,5 +2213,5 @@ def save_fields(fields, target, append=False):
             # Write to file
             pp_field.save(pp_file)
     finally:
-        if isinstance(target, six.string_types):
+        if isinstance(target, str):
             pp_file.close()

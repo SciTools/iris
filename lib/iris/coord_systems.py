@@ -8,10 +8,6 @@ Definitions of coordinate systems.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from abc import ABCMeta, abstractmethod
 import warnings
 
@@ -20,7 +16,7 @@ import cartopy
 import cartopy.crs as ccrs
 
 
-class CoordSystem(six.with_metaclass(ABCMeta, object)):
+class CoordSystem(metaclass=ABCMeta):
     """
     Abstract base class for coordinate systems.
 

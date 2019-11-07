@@ -8,9 +8,6 @@ Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -67,7 +64,7 @@ class Test___init____validation(ThreeDimCube):
         # mapped to the same dimension.
         msg = 'Coordinates repeat a data dimension - '\
             'the interpolation would be over-specified'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             RectilinearInterpolator(self.cube, ['wibble', 'height'], LINEAR,
                                     EXTRAPOLATE)
 
@@ -79,7 +76,7 @@ class Test___init____validation(ThreeDimCube):
 
         msg = 'Coordinates repeat a data dimension - '\
             'the interpolation would be over-specified'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             RectilinearInterpolator(self.cube, ['wibble', 'scalar'], LINEAR,
                                     EXTRAPOLATE)
 
@@ -104,7 +101,7 @@ class Test___init____validation(ThreeDimCube):
             [0, 3, 2], long_name='non-monotonic'), 1)
         msg = ('Cannot interpolate over the non-monotonic coordinate '
                'non-monotonic.')
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             RectilinearInterpolator(self.cube, ['non-monotonic'], LINEAR,
                                     EXTRAPOLATE)
 
@@ -175,12 +172,12 @@ class Test___call___1D(ThreeDimCube):
         msg = 'One of the requested xi is out of bounds in dimension 0'
         interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
                                                extrapolation_mode='error')
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             interpolator([[-1]])
 
     def test_interpolate_data_unsupported_extrapolation(self):
         msg = "Extrapolation mode 'unsupported' not supported"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
                                     extrapolation_mode='unsupported')
 
@@ -189,7 +186,7 @@ class Test___call___1D(ThreeDimCube):
         # i.e. points given for two coordinates where there are only one
         # specified.
         msg = 'Expected sample points for 1 coordinates, got 2.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             self.interpolator([[1, 2], [1]])
 
     def test_interpolate_data_dtype_casting(self):
@@ -226,7 +223,7 @@ class Test___call___1D(ThreeDimCube):
         interpolator = RectilinearInterpolator(self.cube, ['latitude'], LINEAR,
                                                EXTRAPOLATE)
         msg = 'Currently only increasing data_dims is supported.'
-        with self.assertRaisesRegexp(NotImplementedError, msg):
+        with self.assertRaisesRegex(NotImplementedError, msg):
             interpolator([0])
 
 
@@ -407,7 +404,7 @@ class Test___call___2D(ThreeDimCube):
 
     def test_multi_dim_coord_interpolation(self):
         msg = 'Interpolation coords must be 1-d for rectilinear interpolation.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             interpolator = RectilinearInterpolator(self.cube, ['foo', 'bar'],
                                                    LINEAR, EXTRAPOLATE)
             interpolator([[15], [10]])

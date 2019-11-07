@@ -8,9 +8,6 @@ Tests the high-level plotting interface.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 import iris.tests.test_plot as test_plot
@@ -100,7 +97,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
 @tests.skip_plot
 class TestLabels(tests.GraphicsTest):
     def setUp(self):
-        super(TestLabels, self).setUp()
+        super().setUp()
         self.theta = _load_theta()
 
     def _slice(self, coords):
@@ -203,7 +200,7 @@ class TestLabels(tests.GraphicsTest):
 @tests.skip_plot
 class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
     def setUp(self):
-        super(TestTimeReferenceUnitsLabels, self).setUp()
+        super().setUp()
         path = tests.get_data_path(('PP', 'aPProt1', 'rotatedMHtimecube.pp'))
         self.cube = iris.load_cube(path)[:, 0, 0]
 

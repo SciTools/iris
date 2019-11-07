@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -407,7 +404,8 @@ class TestSplittableInt(tests.IrisTest):
             
 class TestSplittableIntEquality(tests.IrisTest):
     def test_not_implemented(self):
-        class Terry(object): pass
+        class Terry:
+            pass
         sin = pp.SplittableInt(0)
         self.assertIs(sin.__eq__(Terry()), NotImplemented)
         self.assertIs(sin.__ne__(Terry()), NotImplemented)
@@ -415,7 +413,8 @@ class TestSplittableIntEquality(tests.IrisTest):
 
 class TestPPDataProxyEquality(tests.IrisTest):
     def test_not_implemented(self):
-        class Terry(object): pass
+        class Terry:
+            pass
         pox = pp.PPDataProxy("john", "michael", "eric", "graham", "brian",
                              "spam", "beans", "eggs")
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
@@ -424,7 +423,8 @@ class TestPPDataProxyEquality(tests.IrisTest):
 
 class TestPPFieldEquality(tests.IrisTest):
     def test_not_implemented(self):
-        class Terry(object): pass
+        class Terry:
+            pass
         pox = pp.PPField3()
         self.assertIs(pox.__eq__(Terry()), NotImplemented)
         self.assertIs(pox.__ne__(Terry()), NotImplemented)

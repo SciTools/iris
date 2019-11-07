@@ -8,17 +8,10 @@ Test the cube merging mechanism.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2.7
-    from collections import Iterable
+from collections.abc import Iterable
 import datetime
 import itertools
 import numpy as np
@@ -32,7 +25,7 @@ import iris.exceptions
 import iris.tests.stock
 
 
-class TestMixin(object):
+class TestMixin:
     """
     Mix-in class for attributes & utilities common to these test cases.
 
@@ -383,7 +376,7 @@ class TestCombination(tests.IrisTest):
                                     long_name='y', units='1'), 0)
 
         for name, value in zip(['a', 'b', 'c', 'd'], [a, b, c, d]):
-            dtype = np.str if isinstance(value, six.string_types) else np.float32
+            dtype = np.str if isinstance(value, str) else np.float32
             cube.add_aux_coord(AuxCoord(np.array([value], dtype=dtype),
                                         long_name=name, units='1'))
 
@@ -449,7 +442,7 @@ class TestDimSelection(tests.IrisTest):
                                     long_name='y', units='1'), 0)
 
         for name, value, dim in zip(['a', 'b'], [a, b], [a_dim, b_dim]):
-            dtype = np.str if isinstance(value, six.string_types) else np.float32
+            dtype = np.str if isinstance(value, str) else np.float32
             ctype = DimCoord if dim else AuxCoord
             coord = ctype(np.array([value], dtype=dtype),
                           long_name=name, units='1')

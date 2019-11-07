@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.quickplot.scatter` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -20,7 +17,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def setUp(self):
-        super(TestStringCoordPlot, self).setUp()
+        super().setUp()
         self.cube = self.cube[0, :]
 
     def test_xaxis_labels(self):

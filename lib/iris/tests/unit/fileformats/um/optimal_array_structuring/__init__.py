@@ -8,6 +8,3 @@ Unit tests for the module
 :mod:`iris.fileformats.um._optimal_array_structuring`.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa

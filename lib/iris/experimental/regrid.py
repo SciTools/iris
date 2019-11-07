@@ -7,9 +7,6 @@
 Regridding functions.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
 
 from collections import namedtuple
 import copy
@@ -21,7 +18,6 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
-import six
 
 import iris.analysis.cartography
 from iris.analysis._interpolation import (get_xy_dim_coords, get_xy_coords,
@@ -827,7 +823,7 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     return result
 
 
-class PointInCell(object):
+class PointInCell:
     """
     This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.
@@ -861,7 +857,7 @@ class PointInCell(object):
             '"iris.analysis.PointInCell".')
 
 
-class _ProjectedUnstructuredRegridder(object):
+class _ProjectedUnstructuredRegridder:
     """
     This class provides regridding that uses scipy.interpolate.griddata.
 
@@ -1078,7 +1074,7 @@ class _ProjectedUnstructuredRegridder(object):
         # Copy across any AuxFactory instances, and regrid their reference
         # surfaces where required.
         for factory in src.aux_factories:
-            for coord in six.itervalues(factory.dependencies):
+            for coord in factory.dependencies.values():
                 if coord is None:
                     continue
                 dims = src.coord_dims(coord)
@@ -1167,7 +1163,7 @@ class _ProjectedUnstructuredRegridder(object):
         return new_cube
 
 
-class ProjectedUnstructuredLinear(object):
+class ProjectedUnstructuredLinear:
     """
     This class describes the linear regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.
@@ -1224,7 +1220,7 @@ class ProjectedUnstructuredLinear(object):
                                                'linear', self.projection)
 
 
-class ProjectedUnstructuredNearest(object):
+class ProjectedUnstructuredNearest:
     """
     This class describes the nearest regridding scheme which uses the
     scipy.interpolate.griddata to regrid unstructured data on to a grid.

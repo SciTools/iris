@@ -4,10 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -95,7 +91,7 @@ class TestMissingCS(tests.GraphicsTest):
 @tests.skip_data
 class TestHybridHeight(tests.GraphicsTest):
     def setUp(self):
-        super(TestHybridHeight, self).setUp()
+        super().setUp()
         self.cube = iris.tests.stock.realistic_4d()[0, :15, 0, :]
 
     def _check(self, plt_method, test_altitude=True):
@@ -147,7 +143,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
     # tests for iris.plot using multi-argument calling convention
 
     def setUp(self):
-        super(Test1dPlotMultiArgs, self).setUp()
+        super().setUp()
         self.cube1d = _load_4d_testcube()[0, :, 0, 0]
         self.draw_method = iplt.plot
 
@@ -242,7 +238,7 @@ class Test1dQuickplotPlotMultiArgs(Test1dPlotMultiArgs):
 @tests.skip_plot
 class Test1dScatter(tests.GraphicsTest):
     def setUp(self):
-        super(Test1dScatter, self).setUp()
+        super().setUp()
         self.cube = iris.load_cube(
             tests.get_data_path(('NAME', 'NAMEIII_trajectory.txt')),
             'Temperature')
@@ -419,7 +415,7 @@ def _date_series(src_cube):
 
 
 @tests.skip_plot
-class SliceMixin(object):
+class SliceMixin:
     """Mixin class providing tests for each 2-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
@@ -460,7 +456,7 @@ class SliceMixin(object):
 class TestContour(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contour routine."""
     def setUp(self):
-        super(TestContour, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.contour
 
@@ -469,7 +465,7 @@ class TestContour(tests.GraphicsTest, SliceMixin):
 class TestContourf(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.contourf routine."""
     def setUp(self):
-        super(TestContourf, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.contourf
 
@@ -478,7 +474,7 @@ class TestContourf(tests.GraphicsTest, SliceMixin):
 class TestPcolor(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolor routine."""
     def setUp(self):
-        super(TestPcolor, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolor
 
@@ -487,7 +483,7 @@ class TestPcolor(tests.GraphicsTest, SliceMixin):
 class TestPcolormesh(tests.GraphicsTest, SliceMixin):
     """Test the iris.plot.pcolormesh routine."""
     def setUp(self):
-        super(TestPcolormesh, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.pcolormesh
 
@@ -571,38 +567,38 @@ class CheckForWarningsMetaclass(type):
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestPcolorNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
-                                            tests.GraphicsTest_nometa,
-                                            SliceMixin)):
+class TestPcolorNoBounds(tests.GraphicsTest_nometa,
+                         SliceMixin,
+                         metaclass=CheckForWarningsMetaclass):
     """
     Test the iris.plot.pcolor routine on a cube with coordinates
     that have no bounds.
 
     """
     def setUp(self):
-        super(TestPcolorNoBounds, self).setUp()
+        super().setUp()
         self.wind = _load_wind_no_bounds()
         self.draw_method = iplt.pcolor
 
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestPcolormeshNoBounds(six.with_metaclass(CheckForWarningsMetaclass,
-                                                tests.GraphicsTest_nometa,
-                                                SliceMixin)):
+class TestPcolormeshNoBounds(tests.GraphicsTest_nometa,
+                             SliceMixin,
+                             metaclass=CheckForWarningsMetaclass):
     """
     Test the iris.plot.pcolormesh routine on a cube with coordinates
     that have no bounds.
 
     """
     def setUp(self):
-        super(TestPcolormeshNoBounds, self).setUp()
+        super().setUp()
         self.wind = _load_wind_no_bounds()
         self.draw_method = iplt.pcolormesh
 
 
 @tests.skip_plot
-class Slice1dMixin(object):
+class Slice1dMixin:
     """Mixin class providing tests for each 1-dimensional permutation of axes.
 
     Requires self.draw_method to be the relevant plotting function,
@@ -641,7 +637,7 @@ class Slice1dMixin(object):
 class TestPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.plot.plot routine."""
     def setUp(self):
-        super(TestPlot, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = iplt.plot
 
@@ -650,7 +646,7 @@ class TestPlot(tests.GraphicsTest, Slice1dMixin):
 class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
     """Test the iris.quickplot.plot routine."""
     def setUp(self):
-        super(TestQuickplotPlot, self).setUp()
+        super().setUp()
         self.wind = _load_4d_testcube()
         self.draw_method = qplt.plot
 
@@ -675,7 +671,7 @@ def load_cube_once(filename, constraint):
     return cube
 
 
-class LambdaStr(object):
+class LambdaStr:
     """Provides a callable function which has a sensible __repr__."""
     def __init__(self, repr, lambda_fn):
         self.repr = repr
@@ -692,7 +688,7 @@ class LambdaStr(object):
 @tests.skip_plot
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
-        super(TestPlotCoordinatesGiven, self).setUp()
+        super().setUp()
         filename = tests.get_data_path(('PP', 'COLPEX',
                                         'theta_and_orog_subset.pp'))
         self.cube = load_cube_once(filename, 'air_potential_temperature')
@@ -822,7 +818,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
 @tests.skip_plot
 class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
     def setUp(self):
-        super(TestPlotDimAndAuxCoordsKwarg, self).setUp()
+        super().setUp()
         filename = tests.get_data_path(('NetCDF', 'rotated', 'xy',
                                         'rotPole_landAreaFraction.nc'))
         self.cube = iris.load_cube(filename)
@@ -930,7 +926,7 @@ class TestPlotOtherCoordSystems(tests.GraphicsTest):
 @tests.skip_plot
 class TestPlotCitation(tests.GraphicsTest):
     def setUp(self):
-        super(TestPlotCitation, self).setUp()
+        super().setUp()
         self.figure = plt.figure()
         self.axes = self.figure.gca()
         self.text = ('Lorem ipsum dolor sit amet, consectetur adipiscing '

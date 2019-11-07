@@ -30,11 +30,7 @@ defined by :mod:`ConfigParser`.
 ----------
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-from six.moves import configparser
-
+import configparser
 import contextlib
 import os.path
 import sys
@@ -112,7 +108,7 @@ PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
 # Runtime options
 
 
-class NetCDF(object):
+class NetCDF:
     """Control Iris NetCDF options."""
 
     def __init__(self, conventions_override=None):
@@ -157,7 +153,7 @@ class NetCDF(object):
         msg = 'NetCDF options: {}.'
         # Automatically populate with all currently accepted kwargs.
         options = ['{}={}'.format(k, v)
-                   for k, v in six.iteritems(self.__dict__)]
+                   for k, v in self.__dict__.items()]
         joined = ', '.join(options)
         return msg.format(joined)
 
@@ -199,7 +195,7 @@ class NetCDF(object):
         # contextmanager block.
         starting_state = self.__dict__.copy()
         # Update the state to reflect the requested changes.
-        for name, value in six.iteritems(kwargs):
+        for name, value in kwargs.items():
             setattr(self, name, value)
         try:
             yield

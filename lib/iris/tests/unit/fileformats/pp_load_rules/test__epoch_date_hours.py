@@ -8,8 +8,6 @@ Unit tests for
 :func:`iris.fileformats.pp_load_rules._epoch_date_hours`.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -131,7 +129,7 @@ class TestEpochHours__invalid_calendar(tests.IrisTest):
         # Test against a date with year=0, which requires calendar correction.
         test_date = nc_datetime(0, 1, 1)
         # Check that this causes an error.
-        with self.assertRaisesRegexp(ValueError, 'unrecognised calendar'):
+        with self.assertRaisesRegex(ValueError, 'unrecognised calendar'):
             epoch_hours_call(hrs_unit, test_date)
 
 

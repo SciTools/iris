@@ -5,10 +5,6 @@
 # licensing details.
 """Unit tests for the :mod:`iris.tests.IrisTest` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -18,7 +14,7 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 
 
-class _MaskedArrayEquality(six.with_metaclass(ABCMeta, object)):
+class _MaskedArrayEquality(metaclass=ABCMeta):
     def setUp(self):
         self.arr1 = np.ma.array([1, 2, 3, 4], mask=[False, True, True, False])
         self.arr2 = np.ma.array([1, 3, 2, 4], mask=[False, True, True, False])
@@ -93,7 +89,7 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
     def test_masked_nonmasked_different(self):
         arr1 = np.ma.masked_array([1, 2])
         arr2 = np.array([1, 3])
-        with self.assertRaisesRegexp(AssertionError, 'Arrays are not equal'):
+        with self.assertRaisesRegex(AssertionError, 'Arrays are not equal'):
             self.assertMaskedArrayEqual(arr1, arr2)
 
     def test_nonmasked_masked_same(self):

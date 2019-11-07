@@ -17,10 +17,6 @@ as obtained from:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import argparse
 import pprint
 import xml.etree.ElementTree as ET
@@ -50,10 +46,6 @@ Or for more control (e.g. to use an alternative XML file) via:
     python tools/generate_std_names.py XML_FILE MODULE_FILE
 
 """
-
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 
 STD_NAMES = '''.lstrip()
 
@@ -85,7 +77,7 @@ def to_dict(infile, outfile):
     for section in process_name_table(tree, 'alias', 'entry_id'):
         aliases.update(section)
 
-    for key, valued in six.iteritems(aliases):
+    for key, valued in aliases.items():
         values.update({
                 key : {'canonical_units' : values.get(valued['entry_id']).get('canonical_units')}
             })
@@ -102,10 +94,7 @@ if __name__ == "__main__":
                         help='Path to resulting Python code')
     args = parser.parse_args()
 
-    if six.PY2:
-        encoding = {}
-    else:
-        encoding  = {'encoding': 'utf-8'}
+    encoding = {'encoding': 'utf-8'}
 
     with open(args.input, 'r', **encoding) as in_fh:
         with open(args.output, 'w', **encoding) as out_fh:

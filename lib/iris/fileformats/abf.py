@@ -14,10 +14,6 @@ The documentation for this file format can be found
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import calendar
 import datetime
 import glob
@@ -41,7 +37,7 @@ month_numbers = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
                  "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
 
 
-class ABFField(object):
+class ABFField:
     """
     A data field from an ABF (or ABL) file.
 
@@ -183,7 +179,7 @@ def load_cubes(filespecs, callback=None):
         The resultant cubes may not be in the same order as in the file.
 
     """
-    if isinstance(filespecs, six.string_types):
+    if isinstance(filespecs, str):
         filespecs = [filespecs]
 
     for filespec in filespecs:

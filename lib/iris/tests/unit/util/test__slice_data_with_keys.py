@@ -13,8 +13,6 @@ However, it is relatively simple to test multiple aspects of all three here
 in combination.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -26,7 +24,7 @@ from iris.util import _slice_data_with_keys
 from iris._lazy_data import as_lazy_data, as_concrete_data
 
 
-class DummyArray(object):
+class DummyArray:
     # A dummy array-like that records the keys of indexing calls.
     def __init__(self, shape, _indexing_record_list=None):
         self.shape = shape
@@ -47,7 +45,7 @@ class DummyArray(object):
                           _indexing_record_list=self._getitem_call_keys)
 
 
-class Indexer(object):
+class Indexer:
     # An object to make __getitem__ arglists from indexing operations.
     def __getitem__(self, keys):
         return keys
@@ -57,7 +55,7 @@ class Indexer(object):
 Index = Indexer()
 
 
-class MixinIndexingTest(object):
+class MixinIndexingTest:
     def check(self, shape, keys, expect_call_keys=None, expect_map=None):
         data = DummyArray(shape)
         dim_map, _ = _slice_data_with_keys(data, keys)
@@ -112,12 +110,12 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1, 2])
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check((3,), Index[1:1])
 
     def test_2d_tuple(self):
@@ -270,12 +268,12 @@ class TestResults(tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = 'More slices .* than dimensions'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1, 2], None, None)
 
     def test_fail_empty_slice(self):
         msg = 'Cannot index with zero length slice'
-        with self.assertRaisesRegexp(IndexError, msg):
+        with self.assertRaisesRegex(IndexError, msg):
             self.check([1, 2, 3], Index[1:1], None, None)
 
     def test_2d_tuple(self):

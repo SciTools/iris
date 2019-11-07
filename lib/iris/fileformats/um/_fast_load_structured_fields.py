@@ -12,9 +12,6 @@ and provides creation of :class:`BasicFieldCollation` objects from lists of
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import itertools
 
 import cftime
@@ -25,7 +22,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 
-class BasicFieldCollation(object):
+class BasicFieldCollation:
     """
     An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.

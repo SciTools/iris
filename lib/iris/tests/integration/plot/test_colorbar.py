@@ -9,9 +9,6 @@ Test interaction between :mod:`iris.plot` and
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -31,7 +28,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestColorBarCreation(tests.GraphicsTest):
     def setUp(self):
-        super(TestColorBarCreation, self).setUp()
+        super().setUp()
         self.draw_functions = (contour, contourf, pcolormesh, pcolor)
         self.cube = iris.tests.stock.lat_lon_cube()
         self.cube.coord('longitude').guess_bounds()

@@ -8,10 +8,6 @@ Test iris.util
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -20,6 +16,8 @@ import inspect
 
 import cf_units
 import numpy as np
+
+from io import StringIO
 
 import iris.analysis
 import iris.coords
@@ -153,7 +151,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d()
 
-        return_sio = six.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -167,7 +165,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.attributes['Conventions'] = 'CF-1.5'
         test_cube_b.attributes['Conventions'] = 'CF-1.6'
 
-        return_sio = six.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -179,7 +177,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         test_cube_a.standard_name = "relative_humidity"
 
-        return_sio = six.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -191,7 +189,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         test_cube_a.units = cf_units.Unit('m')
 
-        return_sio = six.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
@@ -201,7 +199,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a = stock.realistic_4d()
         test_cube_b = stock.realistic_4d().collapsed('model_level_number', iris.analysis.MEAN)
 
-        return_sio = six.StringIO()
+        return_sio = StringIO()
         iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 

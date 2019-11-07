@@ -8,8 +8,6 @@ Unit tests for the function
 :func:`iris.analysis.cartography.rotate_winds`.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -79,7 +77,7 @@ class TestPrerequisites(tests.IrisTest):
     def test_different_coord_systems(self):
         u, v = uv_cubes()
         v.coord('grid_latitude').coord_system = iris.coord_systems.GeogCS(1)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError, 'Coordinates differ between u and v cubes'):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
@@ -87,7 +85,7 @@ class TestPrerequisites(tests.IrisTest):
         u, v = uv_cubes()
         u.coord('grid_latitude').coord_system = iris.coord_systems.GeogCS(1)
         v.coord('grid_latitude').coord_system = iris.coord_systems.GeogCS(1)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'Coordinate systems of x and y coordinates differ'):
             rotate_winds(u, v, iris.coord_systems.OSGB())
@@ -97,7 +95,7 @@ class TestPrerequisites(tests.IrisTest):
         y = np.linspace(-23.6, 24.8, 5)
         u, _ = uv_cubes(x, y)
         _, v = uv_cubes(x[:-1], y)
-        with self.assertRaisesRegexp(ValueError, 'same shape'):
+        with self.assertRaisesRegex(ValueError, 'same shape'):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
     def test_xy_dimensionality(self):
@@ -112,7 +110,7 @@ class TestPrerequisites(tests.IrisTest):
             cube.remove_coord('grid_latitude')
             cube.add_aux_coord(lat_2d.copy(), (0, 1))
 
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
                 ValueError,
                 'x and y coordinates must have the same number of dimensions'):
             rotate_winds(u, v, iris.coord_systems.OSGB())
@@ -122,7 +120,7 @@ class TestPrerequisites(tests.IrisTest):
         y = np.linspace(-23.6, 24.8, 3)
         u, v = uv_cubes(x, y)
         v.transpose()
-        with self.assertRaisesRegexp(ValueError, 'Dimension mapping'):
+        with self.assertRaisesRegex(ValueError, 'Dimension mapping'):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
 

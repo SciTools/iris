@@ -9,10 +9,6 @@ trajectory.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import math
 
 import numpy as np
@@ -27,7 +23,7 @@ from iris.analysis._interpolation import snapshot_grid
 from iris.util import _meshgrid
 
 
-class _Segment(object):
+class _Segment:
     """A single trajectory line segment: Two points, as described in the
     Trajectory class."""
     def __init__(self, p0, p1):
@@ -45,7 +41,7 @@ class _Segment(object):
         self.length = math.sqrt(squares)
 
 
-class Trajectory(object):
+class Trajectory:
     """A series of given waypoints with pre-calculated sample points."""
 
     def __init__(self, waypoints, sample_count=10):
@@ -222,7 +218,7 @@ def interpolate(cube, sample_points, method=None):
     # Convert any coordinate names to coords
     points = []
     for coord, values in sample_points:
-        if isinstance(coord, six.string_types):
+        if isinstance(coord, str):
             coord = cube.coord(coord)
         points.append((coord, values))
     sample_points = points
@@ -660,7 +656,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     return result
 
 
-class UnstructuredNearestNeigbourRegridder(object):
+class UnstructuredNearestNeigbourRegridder:
     """
     Encapsulate the operation of :meth:`iris.analysis.trajectory.interpolate`
     with given source and target grids.

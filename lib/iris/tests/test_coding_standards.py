@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris.tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -133,8 +130,7 @@ class StandardReportWithExclusions(pep8.StandardReport):
                 return self.file_errors
 
         # Otherwise call the superclass' method to print the bad results.
-        return super(StandardReportWithExclusions,
-                     self).get_file_results()
+        return super().get_file_results()
 
 
 class TestCodeFormat(tests.IrisTest):
@@ -279,66 +275,6 @@ class TestLicenseHeaders(tests.IrisTest):
 
         if failed:
             raise ValueError('There were license header failures. See stdout.')
-
-
-class TestFutureImports(tests.IrisTest):
-    excluded = (
-        '*/iris/fileformats/_old_pp_packing.py',
-        '*/iris/fileformats/_pyke_rules/__init__.py',
-        '*/iris/fileformats/_pyke_rules/compiled_krb/__init__.py',
-        '*/iris/fileformats/_pyke_rules/compiled_krb/compiled_pyke_files.py',
-        '*/iris/fileformats/_pyke_rules/compiled_krb/fc_rules_cf_fc.py',
-        '*/docs/iris/example_code/*/*.py',
-        '*/docs/iris/src/examples/*/*.py',
-        '*/docs/iris/src/developers_guide/documenting/*.py',
-    )
-
-    future_imports_pattern = re.compile(
-        r"^from __future__ import \(absolute_import,\s*division,\s*"
-        r"print_function(,\s*unicode_literals)?\)$",
-        flags=re.MULTILINE)
-
-    six_import_pattern = re.compile(
-        r"^from six.moves import \(filter, input, map, range, zip\)  # noqa$",
-        flags=re.MULTILINE)
-
-    def test_future_imports(self):
-        # Tests that every single Python file includes the appropriate
-        # __future__ import to enforce consistent behaviour.
-        check_paths = [os.path.dirname(iris.__file__)]
-        if DOCS_DIRS:
-            check_paths.extend(DOCS_DIRS)
-
-        failed = False
-        for dirpath, _, files in chain.from_iterable(os.walk(path)
-                                                     for path in check_paths):
-            for fname in files:
-                full_fname = os.path.join(dirpath, fname)
-                if not full_fname.endswith('.py'):
-                    continue
-                if not os.path.isfile(full_fname):
-                    continue
-                if any(fnmatch(full_fname, pat) for pat in self.excluded):
-                    continue
-
-                with open(full_fname, "r") as fh:
-                    content = fh.read()
-
-                    if re.search(self.future_imports_pattern, content) is None:
-                        print('The file {} has no valid __future__ imports '
-                              'and has not been excluded from the imports '
-                              'test.'.format(full_fname))
-                        failed = True
-
-                    if re.search(self.six_import_pattern, content) is None:
-                        print('The file {} has no valid six import '
-                              'and has not been excluded from the imports '
-                              'test.'.format(full_fname))
-                        failed = True
-
-        if failed:
-            raise AssertionError('There were Python 3 compatibility import '
-                                 'check failures. See stdout.')
 
 
 if __name__ == '__main__':

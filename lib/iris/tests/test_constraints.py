@@ -8,10 +8,6 @@ Test the constrained cube loading mechanism.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -93,7 +89,7 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(len(sub_list), 0)
 
 
-class TestMixin(object):
+class TestMixin:
     """
     Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
 
@@ -333,7 +329,7 @@ class TestConstraints(TestMixin, tests.IrisTest):
 
         rt_l10 = repr(self.theta & self.level_10)
         expr = 'ConstraintCombination(%s, %s, <built-in function %s>)' % (
-            rt, rl10, '__and__' if six.PY2 else 'and_')
+            rt, rl10, 'and_')
         self.assertEqual(expr, rt_l10)
 
     def test_string_repr(self):

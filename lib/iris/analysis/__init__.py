@@ -35,15 +35,8 @@ The gallery contains several interesting worked examples of how an
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from collections import OrderedDict
-try:  # Python 3
-    from collections.abc import Iterable
-except ImportError:  # Python 2.7
-    from collections import Iterable
+from collections.abc import Iterable
 from functools import wraps
 
 import dask.array as da
@@ -67,7 +60,7 @@ __all__ = ('COUNT', 'GMEAN', 'HMEAN', 'MAX', 'MEAN', 'MEDIAN', 'MIN',
            'AreaWeighted', 'Nearest', 'UnstructuredNearest')
 
 
-class _CoordGroup(object):
+class _CoordGroup:
     """
     Represents a list of coordinates, one for each given cube. Which can be
     operated on conveniently.
@@ -350,13 +343,13 @@ def coord_comparison(*cubes):
 
     # for convenience, turn all of the sets in the dictionary into lists,
     # sorted by the name of the group
-    for key, groups in six.iteritems(result):
+    for key, groups in result.items():
         result[key] = sorted(groups, key=lambda group: group.name())
 
     return result
 
 
-class _Aggregator(object):
+class _Aggregator:
     """
     The :class:`_Aggregator` base class provides common aggregation
     functionality.
@@ -1830,7 +1823,7 @@ Additional kwargs associated with the use of this aggregator:
 """
 
 
-class _Groupby(object):
+class _Groupby:
     """
     Convenience class to determine group slices over one or more group-by
     coordinates.
@@ -1972,7 +1965,7 @@ class _Groupby(object):
                 # Calculate the new shared coordinates.
                 self._compute_shared_coords()
             # Generate the group-by slices/groups.
-            for groupby_slice in six.itervalues(self._slices_by_key):
+            for groupby_slice in self._slices_by_key.values():
                 yield groupby_slice
 
         return
@@ -1986,7 +1979,7 @@ class _Groupby(object):
         # Iterate over the ordered dictionary in order to reduce
         # multiple slices into a single tuple and collapse
         # all items from containing list.
-        for key, groupby_slices in six.iteritems(self._slices_by_key):
+        for key, groupby_slices in self._slices_by_key.items():
             if len(groupby_slices) > 1:
                 # Compress multiple slices into tuple representation.
                 groupby_indicies = []
@@ -2007,7 +2000,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a group-by slice that samples the first element from each group.
-        for key_slice in six.itervalues(self._slices_by_key):
+        for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
                 groupby_slice.append(key_slice[0])
             else:
@@ -2025,7 +2018,7 @@ class _Groupby(object):
 
         # Iterate over the ordered dictionary in order to construct
         # a list of tuple group boundary indexes.
-        for key_slice in six.itervalues(self._slices_by_key):
+        for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
                 groupby_bounds.append((key_slice[0], key_slice[-1]))
             else:
@@ -2048,7 +2041,7 @@ class _Groupby(object):
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for key_slice in six.itervalues(self._slices_by_key):
+                    for key_slice in self._slices_by_key.values():
                         if isinstance(key_slice, slice):
                             indices = key_slice.indices(
                                 coord.points.shape[dim])
@@ -2156,7 +2149,7 @@ def clear_phenomenon_identity(cube):
 #
 ###############################################################################
 
-class Linear(object):
+class Linear:
     """
     This class describes the linear interpolation and regridding scheme for
     interpolating or regridding over one or more orthogonal coordinates,
@@ -2279,7 +2272,7 @@ class Linear(object):
                                     self._normalised_extrapolation_mode())
 
 
-class AreaWeighted(object):
+class AreaWeighted:
     """
     This class describes an area-weighted regridding scheme for regridding
     between 'ordinary' horizontal grids with separated X and Y coordinates in a
@@ -2349,7 +2342,7 @@ class AreaWeighted(object):
                                      mdtol=self.mdtol)
 
 
-class Nearest(object):
+class Nearest:
     """
     This class describes the nearest-neighbour interpolation and regridding
     scheme for interpolating or regridding over one or more orthogonal
@@ -2462,7 +2455,7 @@ class Nearest(object):
                                     self.extrapolation_mode)
 
 
-class UnstructuredNearest(object):
+class UnstructuredNearest:
     """
     This is a nearest-neighbour regridding scheme for regridding data whose
     horizontal (X- and Y-axis) coordinates are mapped to the *same* dimensions,
@@ -2553,7 +2546,7 @@ class UnstructuredNearest(object):
         return UnstructuredNearestNeigbourRegridder(src_cube, target_grid)
 
 
-class PointInCell(object):
+class PointInCell:
     """
     This class describes the point-in-cell regridding scheme for use
     typically with :meth:`iris.cube.Cube.regrid()`.

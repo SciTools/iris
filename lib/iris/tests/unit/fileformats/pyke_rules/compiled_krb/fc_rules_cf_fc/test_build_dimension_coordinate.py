@@ -9,9 +9,6 @@ fc_rules_cf_fc.build_dimension_coordinate`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -26,7 +23,7 @@ from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_dimension_coordinate
 
 
-class RulesTestMixin(object):
+class RulesTestMixin:
     def setUp(self):
         # Create dummy pyke engine.
         self.engine = mock.Mock(

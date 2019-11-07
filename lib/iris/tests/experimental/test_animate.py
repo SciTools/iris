@@ -8,9 +8,6 @@ Test the animation of cubes within iris.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -29,7 +26,7 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class IntegrationTest(tests.GraphicsTest):
     def setUp(self):
-        super(IntegrationTest, self).setUp()
+        super().setUp()
         cube = iris.cube.Cube(np.arange(36, dtype=np.int32).reshape((3, 3, 4)))
         cs = GeogCS(6371229)
 

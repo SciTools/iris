@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -102,9 +99,9 @@ class TestPPStash(tests.IrisTest):
 
         for (test_value, reference) in test_values:
             msg = 'Expected STASH code .* {!r}'.format(test_value)
-            with self.assertRaisesRegexp(ValueError, msg):
+            with self.assertRaisesRegex(ValueError, msg):
                 test_value == iris.fileformats.pp.STASH(*reference)
-            with self.assertRaisesRegexp(ValueError, msg):
+            with self.assertRaisesRegex(ValueError, msg):
                 iris.fileformats.pp.STASH(*reference) == test_value
 
     def test_illegal_stash_type(self):
@@ -115,9 +112,9 @@ class TestPPStash(tests.IrisTest):
 
         for (test_value, reference) in test_values:
             msg = 'Expected STASH code .* {!r}'.format(test_value)
-            with self.assertRaisesRegexp(TypeError, msg):
+            with self.assertRaisesRegex(TypeError, msg):
                 iris.fileformats.pp.STASH.from_msi(test_value) == reference
-            with self.assertRaisesRegexp(TypeError, msg):
+            with self.assertRaisesRegex(TypeError, msg):
                 reference == iris.fileformats.pp.STASH.from_msi(test_value)
 
     def test_stash_lbuser(self):

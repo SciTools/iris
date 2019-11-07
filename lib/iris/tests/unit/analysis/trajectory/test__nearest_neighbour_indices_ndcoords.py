@@ -9,9 +9,6 @@ Unit tests for
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -130,7 +127,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_aux_coord(co_x, 1)
         sample_point = {'x': 2.8, 'y': 18.5}
         exp_emsg = 'must be a list of \(coordinate, value\) pairs'
-        with self.assertRaisesRegexp(TypeError, exp_emsg):
+        with self.assertRaisesRegex(TypeError, exp_emsg):
             nn_ndinds(cube, sample_point)
 
 

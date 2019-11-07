@@ -13,9 +13,6 @@ The original class is the baseclass of this, now renamed 'BasicFieldCollation'.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -32,7 +29,7 @@ class TestFastCallbackLocationInfo(Mixin_FieldTest, tests.IrisTest):
 
     def setUp(self):
         # Call parent setup.
-        super(TestFastCallbackLocationInfo, self).setUp()
+        super().setUp()
 
         # Create a basic load test case.
         self.callback_collations = []

@@ -7,9 +7,6 @@
 Unit tests for the :class:`iris._cube_coord_common.CFVariableMixin`.
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -130,7 +127,7 @@ class Test_name(tests.IrisTest):
 
     def test_fail_token_default(self):
         emsg = 'Cannot retrieve a valid name token'
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             self.cf_var.name(default='_nope', token=True)
 
 
@@ -143,7 +140,7 @@ class Test_standard_name__setter(tests.IrisTest):
     def test_invalid_standard_name(self):
         cf_var = CFVariableMixin()
         emsg = "'not_a_standard_name' is not a valid standard_name"
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             cf_var.standard_name = 'not_a_standard_name'
 
     def test_none_standard_name(self):

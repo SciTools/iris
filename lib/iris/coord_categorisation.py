@@ -16,10 +16,6 @@ All the functions provided here add a new coordinate to a cube.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import calendar
 import collections
 
@@ -54,7 +50,7 @@ def add_categorised_coord(cube, name, from_coord, category_function,
         units of the category value, typically 'no_unit' or '1'.
     """
     # Interpret coord, if given as a name
-    if isinstance(from_coord, six.string_types):
+    if isinstance(from_coord, str):
         from_coord = cube.coord(from_coord)
 
     if len(cube.coords(name)) > 0:
@@ -66,13 +62,12 @@ def add_categorised_coord(cube, name, from_coord, category_function,
     # Test whether the result contains strings. If it does we must manually
     # force the dtype because of a numpy bug (see numpy #3270 on GitHub).
     result = category_function(from_coord, from_coord.points.ravel()[0])
-    if isinstance(result, six.string_types):
+    if isinstance(result, str):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
-        # Use a common type for string arrays (N.B. limited to 64 chars)
-        all_cases_string_type = '|S64' if six.PY2 else '|U64'
 
         def vectorised_fn(*args):
-            return str_vectorised_fn(*args).astype(all_cases_string_type)
+            # Use a common type for string arrays (N.B. limited to 64 chars).
+            return str_vectorised_fn(*args).astype('|U64')
 
     else:
         vectorised_fn = np.vectorize(category_function)

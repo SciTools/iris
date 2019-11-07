@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.io.run_callback` function."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -50,9 +47,9 @@ class Test_run_callback(tests.IrisTest):
         # Check that a TypeError is raised with a bad callback return value.
         def callback(cube, field, fname):
             return iris.cube.CubeList()
-        with self.assertRaisesRegexp(TypeError,
-                                     'Callback function returned an '
-                                     'unhandled data type.'):
+        with self.assertRaisesRegex(TypeError,
+                                    'Callback function returned an '
+                                    'unhandled data type.'):
             iris.io.run_callback(callback, None, None, None)
 
     def test_bad_signature(self):
@@ -60,10 +57,8 @@ class Test_run_callback(tests.IrisTest):
         # signature.
         def callback(cube):
             pass
-        with self.assertRaisesRegexp(TypeError,
-                                     # exactly == Py2, positional == Py3
-                                     'takes (exactly )?1 (positional )?'
-                                     'argument '):
+        with self.assertRaisesRegex(TypeError,
+                                    'takes 1 positional argument '):
             iris.io.run_callback(callback, None, None, None)
 
     def test_callback_args(self):

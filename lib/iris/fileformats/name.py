@@ -5,10 +5,6 @@
 # licensing details.
 """Provides NAME file format loading capabilities."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import iris.io
 
 
@@ -70,7 +66,7 @@ def load_cubes(filenames, callback):
          A generator of :class:`iris.cubes.Cube` instances.
 
     """
-    if isinstance(filenames, six.string_types):
+    if isinstance(filenames, str):
         filenames = [filenames]
 
     for filename in filenames:

@@ -40,14 +40,7 @@ The calling sequence of handler is dependent on the function given in the origin
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
-try:  # Python 3
-    from collections.abc import Callable
-except ImportError:  # Python 2.7
-    from collections import Callable
+from collections.abc import Callable
 import functools
 import os
 import struct
@@ -56,7 +49,7 @@ import struct
 import iris.io
 
 
-class FormatAgent(object):
+class FormatAgent:
     """
     The FormatAgent class is the containing object which is responsible for identifying the format of a given file
     by interrogating its children FormatSpecification instances.
@@ -134,7 +127,7 @@ class FormatAgent(object):
                 return format_spec
 
         printable_values = {}
-        for key, value in six.iteritems(element_cache):
+        for key, value in element_cache.items():
             value = str(value)
             if len(value) > 50:
                 value = value[:50] + '...'
@@ -145,7 +138,7 @@ class FormatAgent(object):
 
 
 @functools.total_ordering
-class FormatSpecification(object):
+class FormatSpecification:
     """
     Provides the base class for file type definition.
 
@@ -232,7 +225,7 @@ class FormatSpecification(object):
         return '%s%s (priority %s)' % (self.name, ' (no handler available)' if self.handler is None else '',  self.priority)
 
 
-class FileElement(object):
+class FileElement:
     """
     Represents a specific aspect of a FileFormat which can be identified using the given element getter function.
 

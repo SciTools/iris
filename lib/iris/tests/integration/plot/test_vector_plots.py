@@ -8,9 +8,6 @@ Test some key usages of :func:`iris.plot.quiver`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -30,7 +27,7 @@ if tests.MPL_AVAILABLE:
 
 
 @tests.skip_plot
-class MixinVectorPlotCases(object):
+class MixinVectorPlotCases:
     """
     Test examples mixin, used by separate quiver + streamplot classes.
 
@@ -152,7 +149,7 @@ class MixinVectorPlotCases(object):
                 coord.coord_system = patch_coord_system
         re_msg = ('Can only plot .* lat-lon projection, .* '
                   'This .* translates as Cartopy.*Mercator')
-        with self.assertRaisesRegexp(ValueError, re_msg):
+        with self.assertRaisesRegex(ValueError, re_msg):
             self.plot('2d_rotated', u_cube, v_cube,
                       coords=('longitude', 'latitude'))
 
@@ -178,7 +175,7 @@ class MixinVectorPlotCases(object):
 
 class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
     def setUp(self):
-        super(TestQuiver, self).setUp()
+        super().setUp()
 
     def plot_function_to_test(self):
         return quiver

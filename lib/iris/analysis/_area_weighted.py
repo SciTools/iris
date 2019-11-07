@@ -4,9 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import numpy as np
 
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
@@ -14,7 +11,7 @@ import iris
 import iris.experimental.regrid as eregrid
 
 
-class AreaWeightedRegridder(object):
+class AreaWeightedRegridder:
     """
     This class provides support for performing area-weighted regridding.
 

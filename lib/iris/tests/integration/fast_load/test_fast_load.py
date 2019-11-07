@@ -5,9 +5,6 @@
 # licensing details.
 """Integration tests for fast-loading FF and PP files."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests
@@ -21,7 +18,6 @@ import os
 
 from cf_units import Unit
 import numpy as np
-import six
 
 import iris.coords
 from iris.coords import DimCoord, AuxCoord, CellMethod
@@ -35,7 +31,7 @@ import iris
 from iris.fileformats.um import structured_um_loading
 
 
-class Mixin_FieldTest(object):
+class Mixin_FieldTest:
     # A mixin providing common facilities for fast-load testing :
     #   * create 'raw' cubes to produce the desired PP fields in a test file.
     #   * save 'raw' cubes to temporary PP files that get deleted afterwards.
@@ -108,7 +104,7 @@ class Mixin_FieldTest(object):
             # Get the 'length' of a control argument.
             if arg is None:
                 result = 0
-            elif isinstance(arg, six.string_types):
+            elif isinstance(arg, str):
                 result = len(arg)
             else:
                 result = 1
@@ -163,7 +159,7 @@ class Mixin_FieldTest(object):
             # First get a list of value indices from the argument.
             # Can be: a single index value; a list of indices; or a string.
             if (isinstance(arg, Iterable) and
-                    not isinstance(arg, six.string_types)):
+                    not isinstance(arg, str)):
                 # Can also just pass a simple iterable of values.
                 inds = [int(val) for val in arg]
             else:
@@ -173,7 +169,7 @@ class Mixin_FieldTest(object):
                 elif n_vals == 1:
                     inds = [int(arg)] * n_flds
                 else:
-                    assert isinstance(arg, six.string_types)
+                    assert isinstance(arg, str)
                     inds = [None if char == '-' else int(char)
                             for char in arg]
 
@@ -249,7 +245,7 @@ class Mixin_FieldTest(object):
         return cubes
 
 
-class MixinBasic(object):
+class MixinBasic:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -294,7 +290,7 @@ class MixinBasic(object):
         self.assertEqual(results, expected)
 
 
-class MixinCallDetails(object):
+class MixinCallDetails:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -431,7 +427,7 @@ class MixinCallDetails(object):
         self.assertEqual(results, expected)
 
 
-class MixinDimsAndOrdering(object):
+class MixinDimsAndOrdering:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -511,7 +507,7 @@ class MixinDimsAndOrdering(object):
         self.assertEqual(results, expected)
 
 
-class MixinProblemCases(object):
+class MixinProblemCases:
     def test_FAIL_scalar_vector_concatenate(self):
         # Structured load can produce a scalar coordinate from one file, and a
         # matching vector one from another file, but these won't "combine".

@@ -5,9 +5,6 @@
 # licensing details.
 """Integration tests for regridding."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -138,7 +135,7 @@ class TestZonalMean_global(tests.IrisTest):
 
 class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
     def setUp(self):
-        super(TestZonalMean_regional, self).setUp()
+        super().setUp()
 
         # Define a target grid and a target result (what we expect the
         # regridder to return).

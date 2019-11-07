@@ -9,9 +9,6 @@ fc_rules_cf_fc.reorder_bounds_data`.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests
@@ -50,7 +47,7 @@ class Test(tests.IrisTest):
         cf_bounds_var = mock.Mock(dimensions=('foo', 'bar', 'nv'),
                                   cf_name='wibble_bnds')
         cf_coord_var = mock.Mock(dimensions=('x', 'y'), cf_name='wibble')
-        with self.assertRaisesRegexp(ValueError, 'dimension names'):
+        with self.assertRaisesRegex(ValueError, 'dimension names'):
             reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
 
 

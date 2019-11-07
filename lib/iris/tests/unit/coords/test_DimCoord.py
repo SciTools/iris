@@ -11,10 +11,6 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -32,7 +28,7 @@ from iris.coords import DimCoord
 class DimCoordTestMixin(CoordTestMixin):
     # Define a 1-D default array shape.
     def setupTestArrays(self, shape=(3, ), masked=False):
-        super(DimCoordTestMixin, self).setupTestArrays(shape, masked=masked)
+        super().setupTestArrays(shape, masked=masked)
 
 
 class Test__init__(tests.IrisTest, DimCoordTestMixin):
@@ -70,12 +66,12 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
         msg = "The shape of the 'unknown' DimCoord bounds array should be"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             DimCoord(self.pts_real, bounds=bds_wrong)
 
     def test_fail_nonmonotonic(self):
         msg = 'must be strictly monotonic'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             DimCoord([1, 2, 0, 3])
 
     def test_no_masked_pts_real(self):
@@ -102,7 +98,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         self.assertTrue(ma.isMaskedArray(data))
         self.assertTrue(ma.count_masked(data))
         emsg = 'points array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             DimCoord(data)
 
     def test_masked_pts_lazy(self):
@@ -111,7 +107,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         self.assertTrue(ma.isMaskedArray(computed))
         self.assertTrue(ma.count_masked(computed))
         emsg = 'points array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             DimCoord(data)
 
     def test_no_masked_bds_real(self):
@@ -138,7 +134,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         self.assertTrue(ma.isMaskedArray(data))
         self.assertTrue(ma.count_masked(data))
         emsg = 'bounds array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             DimCoord(self.pts_real, bounds=data)
 
     def test_masked_bds_lazy(self):
@@ -147,7 +143,7 @@ class Test__init__(tests.IrisTest, DimCoordTestMixin):
         self.assertTrue(ma.isMaskedArray(computed))
         self.assertTrue(ma.count_masked(computed))
         emsg = 'bounds array must not be masked'
-        with six.assertRaisesRegex(self, TypeError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             DimCoord(self.pts_real, bounds=data)
 
 
@@ -394,16 +390,16 @@ class Test_copy(tests.IrisTest, DimCoordTestMixin):
         coord2 = coord1.copy()
         msg = 'destination is read-only'
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord1.points[:] = 0
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord2.points[:] = 0
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord1.bounds[:] = 0
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord2.bounds[:] = 0
 
     def test_realdata_readonly(self):
@@ -416,12 +412,12 @@ class Test_copy(tests.IrisTest, DimCoordTestMixin):
 
             copied_points = copied_coord.core_points()
             expected_error_msg = 'output array is read-only'
-            with self.assertRaisesRegexp(ValueError, expected_error_msg):
+            with self.assertRaisesRegex(ValueError, expected_error_msg):
                 copied_points[:1] += 33
 
             if bounds_type_name != 'no':
                 copied_bounds = copied_coord.core_bounds()
-                with self.assertRaisesRegexp(ValueError, expected_error_msg):
+                with self.assertRaisesRegex(ValueError, expected_error_msg):
                     copied_bounds[:1] += 33
 
 
@@ -457,7 +453,7 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
         points = [1.0, 2.0]
         coord = DimCoord(points)
         msg = 'Require data with shape \(2,\), got \(3,\)'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
         self.assertArrayEqual(coord.points, points)
 
@@ -465,7 +461,7 @@ class Test_points__setter(tests.IrisTest, DimCoordTestMixin):
         # Setting real points requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = 'strictly monotonic'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.points = np.array([3.0, 1.0, 2.0])
         self.assertArrayEqual(coord.points, self.pts_real)
 
@@ -516,7 +512,7 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         # Setting real points requires matching shape.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = "The shape of the 'unknown' DimCoord bounds array should be"
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
         self.assertArrayEqual(coord.bounds, self.bds_real)
 
@@ -524,7 +520,7 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         # Setting real bounds requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = 'strictly monotonic'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             coord.bounds = np.array([[3.0, 2.0], [1.0, 0.0], [2.0, 1.0]])
         self.assertArrayEqual(coord.bounds, self.bds_real)
 

@@ -8,14 +8,11 @@ Time handling.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import functools
 
 
 @functools.total_ordering
-class PartialDateTime(object):
+class PartialDateTime:
     """
     A :class:`PartialDateTime` object specifies values for some subset of
     the calendar/time fields (year, month, hour, etc.) for comparing

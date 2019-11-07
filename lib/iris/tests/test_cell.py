@@ -4,10 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
@@ -112,7 +108,8 @@ class TestCells(tests.IrisTest):
         self.assertTrue(self.d < 2)
         
         # Ensure the Cell's operators return NotImplemented.
-        class Terry(object): pass
+        class Terry:
+            pass
         self.assertEqual(self.d.__eq__(Terry()), NotImplemented)
         self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 

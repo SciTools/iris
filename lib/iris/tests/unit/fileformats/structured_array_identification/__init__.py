@@ -8,6 +8,3 @@ Unit tests for the
 :mod:`iris.fileformats._structured_array_identification` module.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa

@@ -4,10 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import copy
 import functools
 import warnings
@@ -333,7 +329,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     return cube
 
 
-class CurvilinearRegridder(object):
+class CurvilinearRegridder:
     """
     This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
@@ -451,7 +447,7 @@ class CurvilinearRegridder(object):
         return result
 
 
-class RectilinearRegridder(object):
+class RectilinearRegridder:
     """
     This class provides support for performing nearest-neighbour or
     linear regridding between source and target grids.
@@ -849,7 +845,7 @@ class RectilinearRegridder(object):
         # Copy across any AuxFactory instances, and regrid their reference
         # surfaces where required.
         for factory in src.aux_factories:
-            for coord in six.itervalues(factory.dependencies):
+            for coord in factory.dependencies.values():
                 if coord is None:
                     continue
                 dims = src.coord_dims(coord)

@@ -19,10 +19,6 @@ graphical test results.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import codecs
 import collections
 import contextlib
@@ -177,7 +173,7 @@ def get_data_path(relative_path):
     as a string, or sequence of strings.
 
     """
-    if not isinstance(relative_path, six.string_types):
+    if not isinstance(relative_path, str):
         relative_path = os.path.join(*relative_path)
     test_data_dir = iris.config.TEST_DATA_DIR
     if test_data_dir is None:
@@ -187,7 +183,7 @@ def get_data_path(relative_path):
     if _EXPORT_DATAPATHS_FILE is not None:
         _EXPORT_DATAPATHS_FILE.write(data_path + '\n')
 
-    if isinstance(data_path, six.string_types) and not os.path.exists(data_path):
+    if isinstance(data_path, str) and not os.path.exists(data_path):
         # if the file is gzipped, ungzip it and return the path of the ungzipped
         # file.
         gzipped_fname = data_path + '.gz'
@@ -231,7 +227,7 @@ class IrisTest_nometa(unittest.TestCase):
         as a string, or sequence of strings.
 
         """
-        if not isinstance(relative_path, six.string_types):
+        if not isinstance(relative_path, str):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
@@ -330,7 +326,7 @@ class IrisTest_nometa(unittest.TestCase):
         # Convert the netCDF file to CDL file format.
         if flags is None:
             flags = []
-        elif isinstance(flags, six.string_types):
+        elif isinstance(flags, str):
             flags = flags.split()
         else:
             flags = list(map(str, flags))
@@ -512,20 +508,6 @@ class IrisTest_nometa(unittest.TestCase):
 
     def assertArrayEqual(self, a, b, err_msg=''):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
-
-    def assertRaisesRegexp(self, *args, **kwargs):
-        """
-        Emulate the old :meth:`unittest.TestCase.assertRaisesRegexp`.
-
-        Because the original function is now deprecated in Python 3.
-        Now calls :meth:`six.assertRaisesRegex()` (no final "p") instead.
-        It is the same, except for providing an additional 'msg' argument.
-
-        """
-        # Note: invoke via parent class to avoid recursion as, in Python 2,
-        # "six.assertRaisesRegex" calls getattr(self, 'assertRaisesRegexp').
-        return six.assertRaisesRegex(super(IrisTest_nometa, self),
-                                     *args, **kwargs)
 
     @contextlib.contextmanager
     def _recordWarningMatches(self, expected_regexp=''):
@@ -988,7 +970,7 @@ class _TestTimingsMetaclass(type):
         return result
 
 
-class IrisTest(six.with_metaclass(_TestTimingsMetaclass, IrisTest_nometa)):
+class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
     # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
     # metaclass that enables test timings output.
     # This means that all subclasses also get the timing behaviour.
@@ -1002,7 +984,7 @@ class IrisTest(six.with_metaclass(_TestTimingsMetaclass, IrisTest_nometa)):
 get_result_path = IrisTest.get_result_path
 
 
-class GraphicsTestMixin(object):
+class GraphicsTestMixin:
 
     # nose directive: dispatch tests concurrently.
     _multiprocess_can_split_ = True

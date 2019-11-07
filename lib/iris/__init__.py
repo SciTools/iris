@@ -85,10 +85,6 @@ All the load functions share very similar arguments:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 import contextlib
 import glob
 import itertools
@@ -204,7 +200,7 @@ class Future(threading.local):
         # Save the current context
         current_state = self.__dict__.copy()
         # Update the state
-        for name, value in six.iteritems(kwargs):
+        for name, value in kwargs.items():
             setattr(self, name, value)
         try:
             yield
@@ -232,7 +228,7 @@ else:
 
 def _generate_cubes(uris, callback, constraints):
     """Returns a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, six.string_types):
+    if isinstance(uris, str):
         uris = [uris]
 
     # Group collections of uris by their iris handler

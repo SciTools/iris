@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for :class:`iris.analysis.AreaWeighted`."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -46,12 +43,12 @@ class Test(tests.IrisTest):
 
     def test_invalid_high_mdtol(self):
         msg = 'mdtol must be in range 0 - 1'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             AreaWeighted(mdtol=1.2)
 
     def test_invalid_low_mdtol(self):
         msg = 'mdtol must be in range 0 - 1'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with self.assertRaisesRegex(ValueError, msg):
             AreaWeighted(mdtol=-0.2)
 
 

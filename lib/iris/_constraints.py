@@ -8,14 +8,7 @@ Provides objects for building up expressions useful for pattern matching.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
-try:  # Python 3
-    from collections.abc import Iterable, Mapping
-except ImportError:  # Python 2.7
-    from collections import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 import operator
 
 import numpy as np
@@ -24,7 +17,7 @@ import iris.coords
 import iris.exceptions
 
 
-class Constraint(object):
+class Constraint:
     """
     Constraints are the mechanism by which cubes can be pattern matched and
     filtered according to specific criteria.
@@ -84,7 +77,7 @@ class Constraint(object):
         :class:`iris.coords.Cell`.
 
         """
-        if not (name is None or isinstance(name, six.string_types)):
+        if not (name is None or isinstance(name, str)):
             raise TypeError('name must be None or string, got %r' % name)
         if not (cube_func is None or callable(cube_func)):
             raise TypeError('cube_func must be None or callable, got %r'
@@ -206,7 +199,7 @@ class ConstraintCombination(Constraint):
                              self.rhs._CIM_extract(cube))
 
 
-class _CoordConstraint(object):
+class _CoordConstraint:
     """Represents the atomic elements which might build up a Constraint."""
     def __init__(self, coord_name, coord_thing):
         """
@@ -252,7 +245,7 @@ class _CoordConstraint(object):
             call_func = self._coord_thing
         elif (isinstance(self._coord_thing, Iterable) and
                 not isinstance(self._coord_thing,
-                               (six.string_types, iris.coords.Cell))):
+                               (str, iris.coords.Cell))):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
             if coord.has_bounds():
@@ -287,7 +280,7 @@ class _CoordConstraint(object):
         return cube_cim
 
 
-class _ColumnIndexManager(object):
+class _ColumnIndexManager:
     """
     A class to represent column aligned slices which can be operated on
     using ``&``, ``|`` or ``^``.
@@ -422,7 +415,7 @@ def as_constraint(thing):
         return thing
     elif thing is None:
         return Constraint()
-    elif isinstance(thing, six.string_types):
+    elif isinstance(thing, str):
         return Constraint(thing)
     else:
         raise TypeError('%r cannot be cast to a constraint.' % thing)
@@ -447,7 +440,7 @@ class AttributeConstraint(Constraint):
 
     def _cube_func(self, cube):
         match = True
-        for name, value in six.iteritems(self._attributes):
+        for name, value in self._attributes.items():
             if name in cube.attributes:
                 cube_attr = cube.attributes.get(name)
                 # if we have a callable, then call it with the value,

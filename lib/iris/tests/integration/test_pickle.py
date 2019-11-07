@@ -5,15 +5,12 @@
 # licensing details.
 """Integration tests for pickling things."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
+import pickle
 import unittest
-import six.moves.cPickle as pickle
 
 import iris
 if tests.GRIB_AVAILABLE:
@@ -21,7 +18,7 @@ if tests.GRIB_AVAILABLE:
     from iris_grib.message import GribMessage
 
 
-class Common(object):
+class Common:
     def pickle_cube(self, protocol):
         # Ensure that data proxies are pickleable.
         cube = iris.load(self.path)[0]
@@ -57,15 +54,15 @@ class TestGribMessage(Common, tests.IrisTest):
     # see https://github.com/SciTools/iris/pull/2608
     @unittest.expectedFailure
     def test_protocol_0(self):
-        super(TestGribMessage, self).test_protocol_0()
+        super().test_protocol_0()
 
     @unittest.expectedFailure
     def test_protocol_1(self):
-        super(TestGribMessage, self).test_protocol_1()
+        super().test_protocol_1()
 
     @unittest.expectedFailure
     def test_protocol_2(self):
-        super(TestGribMessage, self).test_protocol_2()
+        super().test_protocol_2()
 
     def test(self):
         # Check that a GribMessage pickles without errors.

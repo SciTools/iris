@@ -5,9 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.cube.Cube` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -785,7 +782,7 @@ class Test_slices_over(tests.IrisTest):
             self.assertEqual(res_cube, expected)
 
     def test_1d_slice_nonexistent_dimension_given(self):
-        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+        with self.assertRaisesRegex(ValueError, 'iterator over a dimension'):
             res = self.cube.slices_over(self.cube.ndim + 1)
 
     def test_2d_slice_coord_given(self):
@@ -843,7 +840,7 @@ class Test_slices_over(tests.IrisTest):
             self.assertEqual(next(res), expected)
 
     def test_2d_slice_nonexistent_dimension_given(self):
-        with self.assertRaisesRegexp(ValueError, 'iterator over a dimension'):
+        with self.assertRaisesRegex(ValueError, 'iterator over a dimension'):
             res = self.cube.slices_over([0, self.cube.ndim + 1])
 
     def test_multidim_slice_coord_given(self):
@@ -1499,14 +1496,14 @@ class Test_regrid(tests.IrisTest):
         # Define a fake scheme and its associated regridder which just
         # capture their arguments and return them in place of the
         # regridded cube.
-        class FakeRegridder(object):
+        class FakeRegridder:
             def __init__(self, *args):
                 self.args = args
 
             def __call__(self, cube):
                 return self.args + (cube,)
 
-        class FakeScheme(object):
+        class FakeScheme:
             def regridder(self, src, target):
                 return FakeRegridder(self, src, target)
 
@@ -1699,7 +1696,7 @@ class Test_add_metadata(tests.IrisTest):
         factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orog)
         expected_error = ("foo coordinate for factory is not present on cube "
                           "bar")
-        with self.assertRaisesRegexp(ValueError, expected_error):
+        with self.assertRaisesRegex(ValueError, expected_error):
             cube.add_aux_factory(factory)
 
 
@@ -1920,7 +1917,7 @@ class Test_transpose(tests.IrisTest):
 
     def test_bad_transpose_order(self):
         exp_emsg = 'Incorrect number of dimensions'
-        with self.assertRaisesRegexp(ValueError, exp_emsg):
+        with self.assertRaisesRegex(ValueError, exp_emsg):
             self.cube.transpose([1])
 
     def test_dim_coords(self):
@@ -1960,7 +1957,7 @@ class Test_convert_units(tests.IrisTest):
         cube = iris.cube.Cube(1)
         emsg = ('Cannot convert from unknown units. '
                 'The "cube.units" attribute may be set directly.')
-        with self.assertRaisesRegexp(UnitConversionError, emsg):
+        with self.assertRaisesRegex(UnitConversionError, emsg):
             cube.convert_units('mm day-1')
 
     def test_preserves_lazy(self):

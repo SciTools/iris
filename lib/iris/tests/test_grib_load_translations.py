@@ -7,8 +7,6 @@
 Tests for specific implementation aspects of the grib loaders.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else
@@ -355,7 +353,7 @@ class TestGribSimple(tests.IrisTest):
 class TestGrib1LoadPhenomenon(TestGribSimple):
     # Test recognition of grib phenomenon types.
     def mock_grib(self):
-        grib = super(TestGrib1LoadPhenomenon, self).mock_grib()
+        grib = super().mock_grib()
         grib.edition = 1
         return grib
 

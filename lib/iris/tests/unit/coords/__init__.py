@@ -11,8 +11,6 @@ Provides test methods and classes common to
 :class:`~iris.tests.unit.coords.test_DimCoord`.
 
 """
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
 
 import dask.array as da
 import numpy as np
@@ -105,7 +103,7 @@ def coords_all_dtypes_and_lazynesses(self, coord_class):
                 yield result
 
 
-class CoordTestMixin(object):
+class CoordTestMixin:
     def setupTestArrays(self, shape=(3,), masked=False):
         setup_test_arrays(self, shape=shape, masked=masked)
 

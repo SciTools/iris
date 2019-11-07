@@ -8,9 +8,6 @@ Statistical operations between cubes.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 import numpy as np
 import numpy.ma as ma
 import iris

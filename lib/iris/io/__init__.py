@@ -8,10 +8,6 @@ Provides an interface to manage URI scheme support in iris.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-import six
-
 from collections import OrderedDict
 import glob
 import os.path
@@ -27,7 +23,7 @@ import iris.exceptions
 class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
     def __setitem__(self, key, value):
-        if not isinstance(key, six.string_types):
+        if not isinstance(key, str):
             raise ValueError("key is not a string")
         if key in self:
             raise ValueError("A saver already exists for", key)
@@ -156,7 +152,7 @@ def expand_filespecs(file_specs):
 
     if not all(all_expanded):
         msg = "One or more of the files specified did not exist:"
-        for pattern, expanded in six.iteritems(glob_expanded):
+        for pattern, expanded in glob_expanded.items():
             if expanded:
                 msg += '\n    - "{}" matched {} file(s)'.format(pattern,
                                                                 len(expanded))
@@ -383,11 +379,11 @@ def save(source, target, saver=None, **kwargs):
 
     """
     # Determine format from filename
-    if isinstance(target, six.string_types) and saver is None:
+    if isinstance(target, str) and saver is None:
         saver = find_saver(target)
     elif hasattr(target, 'name') and saver is None:
         saver = find_saver(target.name)
-    elif isinstance(saver, six.string_types):
+    elif isinstance(saver, str):
         saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")

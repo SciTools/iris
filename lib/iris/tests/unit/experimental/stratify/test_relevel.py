@@ -8,9 +8,6 @@ Unit tests for the :func:`iris.experimental.stratify.relevel` function.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -47,13 +44,13 @@ class Test(tests.IrisTest):
     def test_broadcast_fail_src_levels(self):
         emsg = 'Cannot broadcast the cube and src_levels'
         data = np.arange(60).reshape(3, 4, 5)
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             relevel(self.cube, AuxCoord(data), [1, 2, 3])
 
     def test_broadcast_fail_tgt_levels(self):
         emsg = 'Cannot broadcast the cube and tgt_levels'
         data = np.arange(60).reshape(3, 4, 5)
-        with self.assertRaisesRegexp(ValueError, emsg):
+        with self.assertRaisesRegex(ValueError, emsg):
             relevel(self.cube, self.coord, data)
 
     def test_standard_input(self):

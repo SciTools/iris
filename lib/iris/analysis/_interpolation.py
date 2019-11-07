@@ -5,9 +5,6 @@
 # licensing details.
 """A collection of helpers for interpolation."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
-
 from collections import namedtuple
 from itertools import product
 import operator
@@ -172,7 +169,7 @@ def snapshot_grid(cube):
     return x.copy(), y.copy()
 
 
-class RectilinearInterpolator(object):
+class RectilinearInterpolator:
     """
     This class provides support for performing nearest-neighbour or
     linear interpolation over one or more orthogonal dimensions.
