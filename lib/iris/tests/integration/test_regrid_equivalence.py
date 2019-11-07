@@ -50,7 +50,7 @@ def _debug_data(cube, test_id):
         print(repr(data))
 
 
-class MixinCheckingCode(object):
+class MixinCheckingCode:
     def test_basic(self):
         src_x = [30., 40., 50.]
         dst_x = [32., 42.]

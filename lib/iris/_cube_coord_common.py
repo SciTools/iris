@@ -100,7 +100,7 @@ class LimitedAttributeDict(dict):
         dict.update(self, other, **kwargs)
 
 
-class CFVariableMixin(object):
+class CFVariableMixin:
 
     _DEFAULT_NAME = 'unknown'  # the name default string
 

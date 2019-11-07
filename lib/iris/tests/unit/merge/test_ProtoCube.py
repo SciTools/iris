@@ -29,7 +29,7 @@ def example_cube():
                           units='K', attributes={'mint': 'thin'})
 
 
-class Mixin_register(object, metaclass=abc.ABCMeta):
+class Mixin_register(metaclass=abc.ABCMeta):
     @property
     def cube1(self):
         return example_cube()
@@ -246,7 +246,7 @@ class Test_register__data_dtype(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-class _MergeTest(object):
+class _MergeTest:
     # A mixin test class for common test methods implementation.
 
     # used by check routine: inheritors must implement it

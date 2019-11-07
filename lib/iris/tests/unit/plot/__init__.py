@@ -53,7 +53,7 @@ class TestGraphicStringCoord(tests.GraphicsTest):
 
 
 @tests.skip_plot
-class MixinCoords(object):
+class MixinCoords:
     """
     Mixin class of common plotting tests providing 2-dimensional
     permutations of coordinates and anonymous dimensions.

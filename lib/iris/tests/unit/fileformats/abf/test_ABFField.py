@@ -14,7 +14,7 @@ from unittest import mock
 from iris.fileformats.abf import ABFField
 
 
-class MethodCounter(object):
+class MethodCounter:
     def __init__(self, method_name):
         self.method_name = method_name
         self.count = 0

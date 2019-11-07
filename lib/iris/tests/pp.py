@@ -11,7 +11,7 @@ import iris
 import iris.tests as tests
 
 
-class PPTest(object):
+class PPTest:
     """
     A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
 

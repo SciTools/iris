@@ -63,7 +63,7 @@ def _is_str_dtype(var):
 
 
 ################################################################################
-class CFVariable(object, metaclass=ABCMeta):
+class CFVariable(metaclass=ABCMeta):
     """Abstract base class wrapper for a CF-netCDF variable."""
 
     #: Name of the netCDF variable attribute that identifies this
@@ -787,7 +787,7 @@ class CFMeasureVariable(CFVariable):
 
 
 ################################################################################
-class CFGroup(MutableMapping, object):
+class CFGroup(MutableMapping):
     """
     Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
     Conventions' variables and netCDF global attributes.
@@ -901,7 +901,7 @@ class CFGroup(MutableMapping, object):
 
 
 ################################################################################
-class CFReader(object):
+class CFReader:
     """
     This class allows the contents of a netCDF file to be interpreted according
     to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.

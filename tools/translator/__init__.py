@@ -38,7 +38,7 @@ class MappingEncodeWorker(WorkerThread):
         resource.encode(self.fuseki_process)
 
 
-class EncodableMap(object):
+class EncodableMap:
     """
     A metarelate mapping able to encode itself as a string for use in Iris,
     as defined by a translator Mappings subclass
@@ -85,7 +85,7 @@ class EncodableMap(object):
                                         self.targetmsg.format(**self.targetid))
 
 
-class Mappings(object, metaclass=ABCMeta):
+class Mappings(metaclass=ABCMeta):
     """
     Abstract base class to support the encoding of specific metarelate
     mapping translations.

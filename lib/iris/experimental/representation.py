@@ -13,7 +13,7 @@ from html import escape
 import re
 
 
-class CubeRepresentation(object):
+class CubeRepresentation:
     """
     Produce representations of a :class:`~iris.cube.Cube`.
 
@@ -327,7 +327,7 @@ class CubeRepresentation(object):
                                      content=content)
 
 
-class CubeListRepresentation(object):
+class CubeListRepresentation:
     _template = """
 <style>
     .accordion-{uid} {{

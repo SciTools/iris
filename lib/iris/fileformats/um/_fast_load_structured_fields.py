@@ -22,7 +22,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure
 
 
-class BasicFieldCollation(object):
+class BasicFieldCollation:
     """
     An object representing a group of UM fields with array structure that can
     be vectorized into a single cube.

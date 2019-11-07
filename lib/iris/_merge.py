@@ -1054,7 +1054,7 @@ def derive_space(groups, relation_matrix, positions, function_matrix=None):
     return space
 
 
-class ProtoCube(object):
+class ProtoCube:
     """
     Framework for merging source-cubes into one or more higher
     dimensional cubes.

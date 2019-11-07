@@ -156,7 +156,7 @@ def auto_palette(func):
     return wrapper_func
 
 
-class SymmetricNormalize(mpl_colors.Normalize, object):
+class SymmetricNormalize(mpl_colors.Normalize):
     """
     Provides a symmetric normalization class around a given pivot point.
     """

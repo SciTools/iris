@@ -18,7 +18,7 @@ if tests.GRIB_AVAILABLE:
     from iris_grib.message import GribMessage
 
 
-class Common(object):
+class Common:
     def pickle_cube(self, protocol):
         # Ensure that data proxies are pickleable.
         cube = iris.load(self.path)[0]

@@ -286,7 +286,7 @@ class ArrayStructure(namedtuple('ArrayStructure',
         return structure
 
 
-class GroupStructure(object):
+class GroupStructure:
     """
     The GroupStructure class represents a collection of array structures along
     with additional information such as the length of the arrays and the array

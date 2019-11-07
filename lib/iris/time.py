@@ -12,7 +12,7 @@ import functools
 
 
 @functools.total_ordering
-class PartialDateTime(object):
+class PartialDateTime:
     """
     A :class:`PartialDateTime` object specifies values for some subset of
     the calendar/time fields (year, month, hour, etc.) for comparing

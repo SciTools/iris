@@ -550,7 +550,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
                          'valid_netcdf')
 
 
-class _Common__check_attribute_compliance(object):
+class _Common__check_attribute_compliance:
     def setUp(self):
         self.container = mock.Mock(name='container', attributes={})
         self.data = np.array(1, dtype='int32')

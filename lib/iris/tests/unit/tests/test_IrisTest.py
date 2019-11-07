@@ -14,7 +14,7 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 
 
-class _MaskedArrayEquality(object, metaclass=ABCMeta):
+class _MaskedArrayEquality(metaclass=ABCMeta):
     def setUp(self):
         self.arr1 = np.ma.array([1, 2, 3, 4], mask=[False, True, True, False])
         self.arr2 = np.ma.array([1, 3, 2, 4], mask=[False, True, True, False])

@@ -23,7 +23,7 @@ from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     build_dimension_coordinate
 
 
-class RulesTestMixin(object):
+class RulesTestMixin:
     def setUp(self):
         # Create dummy pyke engine.
         self.engine = mock.Mock(

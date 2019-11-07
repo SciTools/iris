@@ -26,7 +26,7 @@ from iris.analysis.trajectory import \
     UnstructuredNearestNeigbourRegridder as unn_gridder
 
 
-class MixinExampleSetup(object):
+class MixinExampleSetup:
     # Common code for regridder test classes.
 
     def setUp(self):

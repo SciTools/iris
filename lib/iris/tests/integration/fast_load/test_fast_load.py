@@ -31,7 +31,7 @@ import iris
 from iris.fileformats.um import structured_um_loading
 
 
-class Mixin_FieldTest(object):
+class Mixin_FieldTest:
     # A mixin providing common facilities for fast-load testing :
     #   * create 'raw' cubes to produce the desired PP fields in a test file.
     #   * save 'raw' cubes to temporary PP files that get deleted afterwards.
@@ -245,7 +245,7 @@ class Mixin_FieldTest(object):
         return cubes
 
 
-class MixinBasic(object):
+class MixinBasic:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -290,7 +290,7 @@ class MixinBasic(object):
         self.assertEqual(results, expected)
 
 
-class MixinCallDetails(object):
+class MixinCallDetails:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -427,7 +427,7 @@ class MixinCallDetails(object):
         self.assertEqual(results, expected)
 
 
-class MixinDimsAndOrdering(object):
+class MixinDimsAndOrdering:
     # A mixin of tests that can be applied to *either* standard or fast load.
     # The "real" test classes must inherit this, and Mixin_FieldTest,
     # and define 'self.do_fast_loads' as True or False.
@@ -507,7 +507,7 @@ class MixinDimsAndOrdering(object):
         self.assertEqual(results, expected)
 
 
-class MixinProblemCases(object):
+class MixinProblemCases:
     def test_FAIL_scalar_vector_concatenate(self):
         # Structured load can produce a scalar coordinate from one file, and a
         # matching vector one from another file, but these won't "combine".

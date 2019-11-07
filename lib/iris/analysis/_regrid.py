@@ -329,7 +329,7 @@ def _regrid_weighted_curvilinear_to_rectilinear__perform(
     return cube
 
 
-class CurvilinearRegridder(object):
+class CurvilinearRegridder:
     """
     This class provides support for performing point-in-cell regridding
     between a curvilinear source grid and a rectilinear target grid.
@@ -447,7 +447,7 @@ class CurvilinearRegridder(object):
         return result
 
 
-class RectilinearRegridder(object):
+class RectilinearRegridder:
     """
     This class provides support for performing nearest-neighbour or
     linear regridding between source and target grids.

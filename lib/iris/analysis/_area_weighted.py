@@ -11,7 +11,7 @@ import iris
 import iris.experimental.regrid as eregrid
 
 
-class AreaWeightedRegridder(object):
+class AreaWeightedRegridder:
     """
     This class provides support for performing area-weighted regridding.
 

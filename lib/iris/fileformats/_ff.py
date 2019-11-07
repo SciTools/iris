@@ -113,7 +113,7 @@ REAL_POLE_LAT = 4
 REAL_POLE_LON = 5
 
 
-class Grid(object):
+class Grid:
     """
     An abstract class representing the default/file-level grid
     definition for a FieldsFile.
@@ -286,7 +286,7 @@ class ENDGame(ArakawaC):
         return y_p, y_v
 
 
-class FFHeader(object):
+class FFHeader:
     """
     A class to represent the FIXED_LENGTH_HEADER section of a FieldsFile.
 
@@ -417,7 +417,7 @@ class FFHeader(object):
         return grid
 
 
-class FF2PP(object):
+class FF2PP:
     """
     A class to extract the individual PPFields from within a FieldsFile.
 

@@ -1496,14 +1496,14 @@ class Test_regrid(tests.IrisTest):
         # Define a fake scheme and its associated regridder which just
         # capture their arguments and return them in place of the
         # regridded cube.
-        class FakeRegridder(object):
+        class FakeRegridder:
             def __init__(self, *args):
                 self.args = args
 
             def __call__(self, cube):
                 return self.args + (cube,)
 
-        class FakeScheme(object):
+        class FakeScheme:
             def regridder(self, src, target):
                 return FakeRegridder(self, src, target)
 

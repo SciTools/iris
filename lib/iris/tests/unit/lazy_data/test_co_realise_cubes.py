@@ -17,7 +17,7 @@ from iris._lazy_data import as_lazy_data
 from iris._lazy_data import co_realise_cubes
 
 
-class ArrayAccessCounter(object):
+class ArrayAccessCounter:
     def __init__(self, array):
         self.dtype = array.dtype
         self.shape = array.shape

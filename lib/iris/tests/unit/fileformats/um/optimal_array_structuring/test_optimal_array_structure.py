@@ -19,7 +19,7 @@ from iris.fileformats.um._optimal_array_structuring import \
     optimal_array_structure, _optimal_dimensioning_structure
 
 
-class Test__optimal_dimensioning_structure(object):
+class Test__optimal_dimensioning_structure:
     pass
 
 

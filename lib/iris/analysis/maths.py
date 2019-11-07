@@ -841,7 +841,7 @@ def _math_op_common(cube, operation_function, new_unit, new_dtype=None,
     return new_cube
 
 
-class IFunc(object):
+class IFunc:
     """
     :class:`IFunc` class for functions that can be applied to an iris cube.
     """

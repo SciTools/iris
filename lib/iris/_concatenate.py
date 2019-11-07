@@ -281,7 +281,7 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
     return concatenated_cubes
 
 
-class _CubeSignature(object):
+class _CubeSignature:
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its metadata, coordinates and cell_measures.
@@ -460,7 +460,7 @@ class _CubeSignature(object):
         return match
 
 
-class _CoordSignature(object):
+class _CoordSignature:
     """
     Template for identifying a specific type of :class:`iris.cube.Cube` based
     on its coordinates.
@@ -579,7 +579,7 @@ class _CoordSignature(object):
             self.dim_extents.append(_CoordExtent(points, bounds))
 
 
-class _ProtoCube(object):
+class _ProtoCube:
     """
     Framework for concatenating multiple source-cubes over one
     common dimension.

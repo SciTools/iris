@@ -128,7 +128,7 @@ class TestArrayStructure_from_array(tests.IrisTest):
             ArrayStructure.from_array(np.arange(12).reshape(3, 4))
 
 
-class nd_array_and_dims_cases(object):
+class nd_array_and_dims_cases:
     """
     Defines the test functionality for nd_array_and_dims. This class
     isn't actually the test case - see the C order and F order subclasses

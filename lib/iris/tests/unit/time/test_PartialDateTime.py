@@ -60,7 +60,7 @@ class Test_timetuple(tests.IrisTest):
         self.assertTrue(hasattr(pd, 'timetuple'))
 
 
-class _Test_operator(object):
+class _Test_operator:
     def test_invalid_type(self):
         pdt = PartialDateTime()
         with self.assertRaises(TypeError):

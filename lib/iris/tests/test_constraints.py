@@ -89,7 +89,7 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(len(sub_list), 0)
 
 
-class TestMixin(object):
+class TestMixin:
     """
     Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
 
