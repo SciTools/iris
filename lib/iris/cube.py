@@ -3963,7 +3963,7 @@ calendar='gregorian')
         return regridder(self)
 
 
-class ClassDict(MutableMapping, object):
+class ClassDict(MutableMapping):
     """
     A mapping that stores objects keyed on their superclasses and their names.
 

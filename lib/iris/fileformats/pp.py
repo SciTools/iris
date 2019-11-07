@@ -750,7 +750,7 @@ def _pp_attribute_names(header_defn):
     return normal_headers + special_headers + extra_data + special_attributes
 
 
-class PPField(object, metaclass=abc.ABCMeta):
+class PPField(metaclass=abc.ABCMeta):
     """
     A generic class for PP fields - not specific to a particular
     header release number.
