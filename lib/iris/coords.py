@@ -8,7 +8,7 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterator
 import copy
@@ -1282,6 +1282,7 @@ class Coord(_DimensionalMetadata):
 
     """
 
+    @abstractmethod
     def __init__(
         self,
         points,
@@ -2565,6 +2566,8 @@ class AuxCoord(Coord):
 
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     # Logically, :class:`Coord` is an abstract class and all actual coords must
     # be members of some concrete subclass, i.e. an :class:`AuxCoord` or
     # a :class:`DimCoord`.
