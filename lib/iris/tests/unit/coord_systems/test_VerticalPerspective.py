@@ -24,9 +24,11 @@ class Test(tests.IrisTest):
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
-        self.globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                                semiminor_axis=self.semi_minor_axis,
-                                ellipse=None)
+        self.globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
 
         # Actual and expected coord system can be re-used for
         # VerticalPerspective.test_crs_creation and test_projection_creation.
@@ -36,13 +38,16 @@ class Test(tests.IrisTest):
             satellite_height=self.perspective_point_height,
             false_easting=self.false_easting,
             false_northing=self.false_northing,
-            globe=self.globe)
-        self.vp_cs = VerticalPerspective(self.latitude_of_projection_origin,
-                                         self.longitude_of_projection_origin,
-                                         self.perspective_point_height,
-                                         self.false_easting,
-                                         self.false_northing,
-                                         self.ellipsoid)
+            globe=self.globe,
+        )
+        self.vp_cs = VerticalPerspective(
+            self.latitude_of_projection_origin,
+            self.longitude_of_projection_origin,
+            self.perspective_point_height,
+            self.false_easting,
+            self.false_northing,
+            self.ellipsoid,
+        )
 
     def test_crs_creation(self):
         res = self.vp_cs.as_cartopy_crs()
@@ -53,5 +58,5 @@ class Test(tests.IrisTest):
         self.assertEqual(res, self.expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

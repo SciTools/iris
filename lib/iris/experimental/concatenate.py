@@ -28,7 +28,8 @@ def concatenate(cubes):
     """
     raise Exception(
         'The function "iris.experimental.concatenate.concatenate" has been '
-        'moved, and is now a CubeList instance method.'
-        '\nPlease replace '
+        "moved, and is now a CubeList instance method."
+        "\nPlease replace "
         '"iris.experimental.concatenate.concatenate(<cubes>)" with '
-        '"iris.cube.CubeList(<cubes>).concatenate()".')
+        '"iris.cube.CubeList(<cubes>).concatenate()".'
+    )

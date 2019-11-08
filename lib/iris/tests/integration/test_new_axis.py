@@ -14,12 +14,11 @@ from iris.util import new_axis
 
 
 class Test(tests.IrisTest):
-
     @tests.skip_data
     def test_lazy_data(self):
-        filename = tests.get_data_path(('PP', 'globClim1', 'theta.pp'))
+        filename = tests.get_data_path(("PP", "globClim1", "theta.pp"))
         cube = iris.load_cube(filename)
-        new_cube = new_axis(cube, 'time')
+        new_cube = new_axis(cube, "time")
         self.assertTrue(cube.has_lazy_data())
         self.assertTrue(new_cube.has_lazy_data())
         self.assertEqual(new_cube.shape, (1,) + cube.shape)

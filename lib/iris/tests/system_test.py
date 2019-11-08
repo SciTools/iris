@@ -24,49 +24,63 @@ import iris.tests as tests
 
 
 class SystemInitialTest(tests.IrisTest):
-
     def system_test_supported_filetypes(self):
         nx, ny = 60, 60
-        data = np.arange(nx * ny, dtype='>f4').reshape(nx, ny)
+        data = np.arange(nx * ny, dtype=">f4").reshape(nx, ny)
 
-        laty = np.linspace(0, 59, ny).astype('f8')
-        lonx = np.linspace(30, 89, nx).astype('f8')
+        laty = np.linspace(0, 59, ny).astype("f8")
+        lonx = np.linspace(30, 89, nx).astype("f8")
 
-        horiz_cs = lambda : iris.coord_systems.GeogCS(6371229)
+        horiz_cs = lambda: iris.coord_systems.GeogCS(6371229)
 
-        cm = iris.cube.Cube(data, 'wind_speed', units='m s-1')
+        cm = iris.cube.Cube(data, "wind_speed", units="m s-1")
         cm.add_dim_coord(
-            iris.coords.DimCoord(laty, 'latitude', units='degrees',
-                                 coord_system=horiz_cs()),
-            0)
+            iris.coords.DimCoord(
+                laty, "latitude", units="degrees", coord_system=horiz_cs()
+            ),
+            0,
+        )
         cm.add_dim_coord(
-            iris.coords.DimCoord(lonx, 'longitude', units='degrees',
-                coord_system=horiz_cs()),
-            1)
-        cm.add_aux_coord(iris.coords.AuxCoord(np.array([9], 'i8'),
-                                              'forecast_period', units='hours'))
-        hours_since_epoch = cf_units.Unit('hours since epoch',
-                                           cf_units.CALENDAR_GREGORIAN)
-        cm.add_aux_coord(iris.coords.AuxCoord(np.array([3], 'i8'),
-                                              'time', units=hours_since_epoch))
-        cm.add_aux_coord(iris.coords.AuxCoord(np.array([99], 'i8'),
-                                              long_name='pressure', units='Pa'))
+            iris.coords.DimCoord(
+                lonx, "longitude", units="degrees", coord_system=horiz_cs()
+            ),
+            1,
+        )
+        cm.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([9], "i8"), "forecast_period", units="hours"
+            )
+        )
+        hours_since_epoch = cf_units.Unit(
+            "hours since epoch", cf_units.CALENDAR_GREGORIAN
+        )
+        cm.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([3], "i8"), "time", units=hours_since_epoch
+            )
+        )
+        cm.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.array([99], "i8"), long_name="pressure", units="Pa"
+            )
+        )
 
-        filetypes = ('.nc', '.pp')
+        filetypes = (".nc", ".pp")
         if tests.GRIB_AVAILABLE:
-            filetypes += ('.grib2',)
+            filetypes += (".grib2",)
         for filetype in filetypes:
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
 
             new_cube = iris.load_cube(saved_tmpfile)
-            self.assertCML(new_cube,
-                           ('system',
-                            'supported_filetype_%s.cml' % filetype))
+            self.assertCML(
+                new_cube, ("system", "supported_filetype_%s.cml" % filetype)
+            )
 
     @tests.skip_grib
     def system_test_grib_patch(self):
         import gribapi
+
         gm = gribapi.grib_new_from_samples("GRIB2")
         result = gribapi.grib_get_double(gm, "missingValue")
 
@@ -82,5 +96,5 @@ class SystemInitialTest(tests.IrisTest):
         import netCDF4
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

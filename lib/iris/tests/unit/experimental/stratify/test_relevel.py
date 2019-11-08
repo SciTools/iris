@@ -36,51 +36,46 @@ class Test(tests.IrisTest):
         self.src_levels = cube.copy()
         #: The data to interpolate.
         self.cube = cube.copy()
-        self.cube.rename('foobar')
+        self.cube.rename("foobar")
         self.cube *= 10
-        self.coord = self.src_levels.coord('wibble')
+        self.coord = self.src_levels.coord("wibble")
         self.axes = (self.coord, self.coord.name(), None, 0)
 
     def test_broadcast_fail_src_levels(self):
-        emsg = 'Cannot broadcast the cube and src_levels'
+        emsg = "Cannot broadcast the cube and src_levels"
         data = np.arange(60).reshape(3, 4, 5)
         with self.assertRaisesRegex(ValueError, emsg):
             relevel(self.cube, AuxCoord(data), [1, 2, 3])
 
     def test_broadcast_fail_tgt_levels(self):
-        emsg = 'Cannot broadcast the cube and tgt_levels'
+        emsg = "Cannot broadcast the cube and tgt_levels"
         data = np.arange(60).reshape(3, 4, 5)
         with self.assertRaisesRegex(ValueError, emsg):
             relevel(self.cube, self.coord, data)
 
     def test_standard_input(self):
         for axis in self.axes:
-            result = relevel(self.cube,
-                             self.src_levels,
-                             [-1, 0, 5.5],
-                             axis=axis)
-            assert_array_equal(result.data.flatten(),
-                               np.array([np.nan, 0, 55]))
-            expected = DimCoord([-1, 0, 5.5], units=1, long_name='thingness')
-            self.assertEqual(expected, result.coord('thingness'))
+            result = relevel(
+                self.cube, self.src_levels, [-1, 0, 5.5], axis=axis
+            )
+            assert_array_equal(
+                result.data.flatten(), np.array([np.nan, 0, 55])
+            )
+            expected = DimCoord([-1, 0, 5.5], units=1, long_name="thingness")
+            self.assertEqual(expected, result.coord("thingness"))
 
     def test_non_monotonic(self):
         for axis in self.axes:
-            result = relevel(self.cube,
-                             self.src_levels,
-                             [2, 3, 2],
-                             axis=axis)
-            assert_array_equal(result.data.flatten(),
-                               np.array([20, 30, np.nan]))
-            expected = AuxCoord([2, 3, 2], units=1, long_name='thingness')
-            self.assertEqual(result.coord('thingness'), expected)
+            result = relevel(self.cube, self.src_levels, [2, 3, 2], axis=axis)
+            assert_array_equal(
+                result.data.flatten(), np.array([20, 30, np.nan])
+            )
+            expected = AuxCoord([2, 3, 2], units=1, long_name="thingness")
+            self.assertEqual(result.coord("thingness"), expected)
 
     def test_static_level(self):
         for axis in self.axes:
-            result = relevel(self.cube,
-                             self.src_levels,
-                             [2, 2],
-                             axis=axis)
+            result = relevel(self.cube, self.src_levels, [2, 2], axis=axis)
             assert_array_equal(result.data.flatten(), np.array([20, 20]))
 
     def test_coord_input(self):
@@ -88,36 +83,40 @@ class Test(tests.IrisTest):
         source.metadata = self.src_levels.metadata
 
         for axis in self.axes:
-            result = relevel(self.cube,
-                             source,
-                             [0, 12, 13],
-                             axis=axis)
+            result = relevel(self.cube, source, [0, 12, 13], axis=axis)
             self.assertEqual(result.shape, (3, 1, 1))
             assert_array_equal(result.data.flatten(), [0, 120, np.nan])
 
     def test_custom_interpolator(self):
-        interpolator = partial(stratify.interpolate, interpolation='nearest')
+        interpolator = partial(stratify.interpolate, interpolation="nearest")
 
         for axis in self.axes:
-            result = relevel(self.cube,
-                             self.src_levels,
-                             [-1, 0, 6.5],
-                             axis=axis,
-                             interpolator=interpolator)
-            assert_array_equal(result.data.flatten(),
-                               np.array([np.nan, 0, 120]))
+            result = relevel(
+                self.cube,
+                self.src_levels,
+                [-1, 0, 6.5],
+                axis=axis,
+                interpolator=interpolator,
+            )
+            assert_array_equal(
+                result.data.flatten(), np.array([np.nan, 0, 120])
+            )
 
     def test_multi_dim_target_levels(self):
-        interpolator = partial(stratify.interpolate,
-                               interpolation='linear',
-                               extrapolation='linear')
+        interpolator = partial(
+            stratify.interpolate,
+            interpolation="linear",
+            extrapolation="linear",
+        )
 
         for axis in self.axes:
-            result = relevel(self.cube,
-                             self.src_levels,
-                             self.src_levels.data,
-                             axis=axis,
-                             interpolator=interpolator)
+            result = relevel(
+                self.cube,
+                self.src_levels,
+                self.src_levels.data,
+                axis=axis,
+                interpolator=interpolator,
+            )
             assert_array_equal(result.data.flatten(), np.array([0, 120]))
             self.assertCML(result)
 

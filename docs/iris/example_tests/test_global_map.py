@@ -8,13 +8,16 @@
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (add_examples_to_path,
-                          show_replaced_by_check_graphic,
-                          fail_any_deprecation_warnings)
+from .extest_util import (
+    add_examples_to_path,
+    show_replaced_by_check_graphic,
+    fail_any_deprecation_warnings,
+)
 
 
 class TestGlobalMap(tests.GraphicsTest):
     """Test the global_map example code."""
+
     def test_global_map(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
@@ -23,5 +26,5 @@ class TestGlobalMap(tests.GraphicsTest):
                 global_map.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -44,12 +44,23 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     _MODE_MUL = 3
     _MODE_DIV = 4
     _MODE_RDIV = 5
-    _MODE_SYMBOL = {_MODE_ADD: '+', _MODE_SUB: '-',
-                    _MODE_MUL: '*', _MODE_DIV: '/',
-                    _MODE_RDIV: '/'}
+    _MODE_SYMBOL = {
+        _MODE_ADD: "+",
+        _MODE_SUB: "-",
+        _MODE_MUL: "*",
+        _MODE_DIV: "/",
+        _MODE_RDIV: "/",
+    }
 
-    def __init__(self, values, standard_name=None, long_name=None,
-                 var_name=None, units='no-unit', attributes=None):
+    def __init__(
+        self,
+        values,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="no-unit",
+        attributes=None,
+    ):
         """
         Constructs a single dimensional metadata object.
 
@@ -120,8 +131,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         values = self._values_dm.core_data()
 
         # Index values with the keys.
-        _, values = iris.util._slice_data_with_keys(
-            values, keys)
+        _, values = iris.util._slice_data_with_keys(values, keys)
 
         # Copy values after indexing to avoid making metadata that is a
         # view on another metadata. This will not realise lazy data.
@@ -134,7 +144,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             bounds = self._bounds_dm.core_data()
             _, bounds = iris.util._slice_data_with_keys(bounds, keys)
             # Pass into the copy method : for Coords, it has a 'bounds' key.
-            copy_args['bounds'] = bounds.copy()
+            copy_args["bounds"] = bounds.copy()
 
         # The new metadata is a copy of the old one with replaced content.
         new_metadata = self.copy(values, **copy_args)
@@ -175,7 +185,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             # Real data : a few more things to do in this case.
             # Ensure the array is writeable.
             # NB. Returns the *same object* if src is already writeable.
-            result = np.require(src, requirements='W')
+            result = np.require(src, requirements="W")
             # Ensure the array has enough dimensions.
             # NB. Returns the *same object* if result.ndim >= ndmin
             func = ma.array if ma.isMaskedArray(result) else np.array
@@ -233,30 +243,32 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.has_lazy_data()
 
     def _repr_other_metadata(self):
-        fmt = ''
+        fmt = ""
         if self.long_name:
-            fmt = ', long_name={self.long_name!r}'
+            fmt = ", long_name={self.long_name!r}"
         if self.var_name:
-            fmt += ', var_name={self.var_name!r}'
+            fmt += ", var_name={self.var_name!r}"
         if len(self.attributes) > 0:
-            fmt += ', attributes={self.attributes}'
+            fmt += ", attributes={self.attributes}"
         result = fmt.format(self=self)
         return result
 
     def _str_dates(self, dates_as_numbers):
         date_obj_array = self.units.num2date(dates_as_numbers)
-        kwargs = {'separator': ', ', 'prefix': '      '}
-        return np.core.arrayprint.array2string(date_obj_array,
-                                               formatter={'all': str},
-                                               **kwargs)
+        kwargs = {"separator": ", ", "prefix": "      "}
+        return np.core.arrayprint.array2string(
+            date_obj_array, formatter={"all": str}, **kwargs
+        )
 
     def __str__(self):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
         if self.units.is_time_reference():
-            fmt = '{cls}({values}{bounds}' \
-                  ', standard_name={self.standard_name!r}' \
-                  ', calendar={self.units.calendar!r}{other_metadata})'
+            fmt = (
+                "{cls}({values}{bounds}"
+                ", standard_name={self.standard_name!r}"
+                ", calendar={self.units.calendar!r}{other_metadata})"
+            )
             if self.units.is_long_time_interval():
                 # A time unit with a long time interval ("months" or "years")
                 # cannot be converted to a date using `num2date` so gracefully
@@ -264,16 +276,20 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 values = self._values
             else:
                 values = self._str_dates(self._values)
-            bounds = ''
+            bounds = ""
             if self.has_bounds():
                 if self.units.is_long_time_interval():
                     bounds_vals = self.bounds
                 else:
                     bounds_vals = self._str_dates(self.bounds)
-                bounds = ', bounds={vals}'.format(vals=bounds_vals)
-            result = fmt.format(self=self, cls=type(self).__name__,
-                                values=values, bounds=bounds,
-                                other_metadata=self._repr_other_metadata())
+                bounds = ", bounds={vals}".format(vals=bounds_vals)
+            result = fmt.format(
+                self=self,
+                cls=type(self).__name__,
+                values=values,
+                bounds=bounds,
+                other_metadata=self._repr_other_metadata(),
+            )
         else:
             result = repr(self)
 
@@ -282,16 +298,21 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __repr__(self):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
-        fmt = '{cls}({self._values!r}{bounds}' \
-              ', standard_name={self.standard_name!r}, units={self.units!r}' \
-              '{other_metadata})'
-        bounds = ''
+        fmt = (
+            "{cls}({self._values!r}{bounds}"
+            ", standard_name={self.standard_name!r}, units={self.units!r}"
+            "{other_metadata})"
+        )
+        bounds = ""
         # if coordinate, handle the bounds
         if self.has_bounds():
-            bounds = ', bounds=' + repr(self.bounds)
-        result = fmt.format(self=self, cls=type(self).__name__,
-                            bounds=bounds,
-                            other_metadata=self._repr_other_metadata())
+            bounds = ", bounds=" + repr(self.bounds)
+        result = fmt.format(
+            self=self,
+            cls=type(self).__name__,
+            bounds=bounds,
+            other_metadata=self._repr_other_metadata(),
+        )
         return result
 
     def __eq__(self, other):
@@ -302,20 +323,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # If the other object has a means of getting its definition, then do
         # the  comparison, otherwise return a NotImplemented to let Python try
         # to resolve the operator elsewhere.
-        if hasattr(other, '_as_defn'):
+        if hasattr(other, "_as_defn"):
             # metadata comparison
             eq = self._as_defn() == other._as_defn()
             # data values comparison
             if eq and eq is not NotImplemented:
-                eq = iris.util.array_equal(self._values, other._values,
-                                           withnans=True)
+                eq = iris.util.array_equal(
+                    self._values, other._values, withnans=True
+                )
 
             # Also consider bounds, if we have them.
             # (N.B. though only Coords can ever actually *have* bounds).
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
-                    eq = iris.util.array_equal(self.bounds, other.bounds,
-                                               withnans=True)
+                    eq = iris.util.array_equal(
+                        self.bounds, other.bounds, withnans=True
+                    )
                 else:
                     eq = not self.has_bounds() and not other.has_bounds()
 
@@ -328,8 +351,13 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _as_defn(self):
-        defn = (self.standard_name, self.long_name, self.var_name,
-                self.units, self.attributes)
+        defn = (
+            self.standard_name,
+            self.long_name,
+            self.var_name,
+            self.units,
+            self.attributes,
+        )
 
         return defn
 
@@ -361,21 +389,23 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
-        if (isinstance(other, _DimensionalMetadata) or
-                not isinstance(other, (int, float, np.number))):
+        if isinstance(other, _DimensionalMetadata) or not isinstance(
+            other, (int, float, np.number)
+        ):
 
             def typename(obj):
                 if isinstance(obj, Coord):
-                    result = 'Coord'
+                    result = "Coord"
                 else:
                     # We don't really expect this, but do something anyway.
                     result = self.__class__.__name__
                 return result
 
-            emsg = '{selftype} {operator} {othertype}'.format(
+            emsg = "{selftype} {operator} {othertype}".format(
                 selftype=typename(self),
                 operator=self._MODE_SYMBOL[mode_constant],
-                othertype=typename(other))
+                othertype=typename(other),
+            )
             raise iris.exceptions.NotYetImplementedError(emsg)
 
         else:
@@ -436,7 +466,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         values = -self._core_values()
         copy_args = {}
         if self.has_bounds():
-            copy_args['bounds'] = -self.core_bounds()
+            copy_args["bounds"] = -self.core_bounds()
         return self.copy(values, **copy_args)
 
     def convert_units(self, unit):
@@ -447,8 +477,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # within Coord type instances, as only these allow bounds to be set.
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
-                'Cannot convert from unknown units. '
-                'The "units" attribute may be set directly.')
+                "Cannot convert from unknown units. "
+                'The "units" attribute may be set directly.'
+            )
 
         # Set up a delayed conversion for use if either values or bounds (if
         # present) are lazy.
@@ -461,15 +492,17 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             return old_unit.convert(values, new_unit)
 
         if self._has_lazy_values():
-            new_values = _lazy.lazy_elementwise(self._lazy_values(),
-                                                pointwise_convert)
+            new_values = _lazy.lazy_elementwise(
+                self._lazy_values(), pointwise_convert
+            )
         else:
             new_values = self.units.convert(self._values, unit)
         self._values = new_values
         if self.has_bounds():
             if self.has_lazy_bounds():
-                new_bounds = _lazy.lazy_elementwise(self.lazy_bounds(),
-                                                    pointwise_convert)
+                new_bounds = _lazy.lazy_elementwise(
+                    self.lazy_bounds(), pointwise_convert
+                )
             else:
                 new_bounds = self.units.convert(self.bounds, unit)
             self.bounds = new_bounds
@@ -481,8 +514,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         with another.
 
         """
-        compatible = (self.name() == other.name() and
-                      self.units == other.units)
+        compatible = self.name() == other.name() and self.units == other.units
 
         if compatible:
             common_keys = set(self.attributes).intersection(other.attributes)
@@ -538,27 +570,29 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         element_name = element_name[0].lower() + element_name[1:]
         element = doc.createElement(element_name)
 
-        element.setAttribute('id', self._xml_id())
+        element.setAttribute("id", self._xml_id())
 
         if self.standard_name:
-            element.setAttribute('standard_name', str(self.standard_name))
+            element.setAttribute("standard_name", str(self.standard_name))
         if self.long_name:
-            element.setAttribute('long_name', str(self.long_name))
+            element.setAttribute("long_name", str(self.long_name))
         if self.var_name:
-            element.setAttribute('var_name', str(self.var_name))
-        element.setAttribute('units', repr(self.units))
+            element.setAttribute("var_name", str(self.var_name))
+        element.setAttribute("units", repr(self.units))
         if isinstance(self, Coord):
             if self.climatological:
-                element.setAttribute('climatological',
-                                     str(self.climatological))
+                element.setAttribute(
+                    "climatological", str(self.climatological)
+                )
 
         if self.attributes:
-            attributes_element = doc.createElement('attributes')
+            attributes_element = doc.createElement("attributes")
             for name in sorted(self.attributes.keys()):
-                attribute_element = doc.createElement('attribute')
-                attribute_element.setAttribute('name', name)
-                attribute_element.setAttribute('value',
-                                               str(self.attributes[name]))
+                attribute_element = doc.createElement("attribute")
+                attribute_element.setAttribute("name", name)
+                attribute_element.setAttribute(
+                    "value", str(self.attributes[name])
+                )
                 attributes_element.appendChild(attribute_element)
             element.appendChild(attributes_element)
 
@@ -567,20 +601,21 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.appendChild(self.coord_system.xml_element(doc))
 
         # Add the values
-        element.setAttribute('value_type', str(self._value_type_name()))
-        element.setAttribute('shape', str(self.shape))
+        element.setAttribute("value_type", str(self._value_type_name()))
+        element.setAttribute("shape", str(self.shape))
 
         # The values are referred to "points" of a coordinate and "data"
         # otherwise.
         if isinstance(self, Coord):
-            values_term = 'points'
+            values_term = "points"
         else:
-            values_term = 'data'
-        if hasattr(self._values, 'to_xml_attr'):
+            values_term = "data"
+        if hasattr(self._values, "to_xml_attr"):
             element.setAttribute(values_term, self._values.to_xml_attr())
         else:
-            element.setAttribute(values_term,
-                                 iris.util.format_array(self._values))
+            element.setAttribute(
+                values_term, iris.util.format_array(self._values)
+            )
         return element
 
     def _xml_id_extra(self, unique_value):
@@ -588,22 +623,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     def _xml_id(self):
         # Returns a consistent, unique string identifier for this coordinate.
-        unique_value = b''
+        unique_value = b""
         if self.standard_name:
-            unique_value += self.standard_name.encode('utf-8')
-        unique_value += b'\0'
+            unique_value += self.standard_name.encode("utf-8")
+        unique_value += b"\0"
         if self.long_name:
-            unique_value += self.long_name.encode('utf-8')
-        unique_value += b'\0'
-        unique_value += str(self.units).encode('utf-8') + b'\0'
+            unique_value += self.long_name.encode("utf-8")
+        unique_value += b"\0"
+        unique_value += str(self.units).encode("utf-8") + b"\0"
         for k, v in sorted(self.attributes.items()):
-            unique_value += (str(k) + ':' + str(v)).encode('utf-8') + b'\0'
+            unique_value += (str(k) + ":" + str(v)).encode("utf-8") + b"\0"
         # Extra modifications to unique_value that are specialised in child
         # classes
         unique_value = self._xml_id_extra(unique_value)
         # Mask to ensure consistency across Python versions & platforms.
-        crc = zlib.crc32(unique_value) & 0xffffffff
-        return '%08x' % (crc, )
+        crc = zlib.crc32(unique_value) & 0xFFFFFFFF
+        return "%08x" % (crc,)
 
     def _value_type_name(self):
         """
@@ -613,12 +648,12 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """
         dtype = self._core_values().dtype
         kind = dtype.kind
-        if kind in 'SU':
+        if kind in "SU":
             # Establish the basic type name for 'string' type data.
-            if kind == 'S':
-                value_type_name = 'bytes'
+            if kind == "S":
+                value_type_name = "bytes"
             else:
-                value_type_name = 'string'
+                value_type_name = "string"
         else:
             value_type_name = dtype.name
 
@@ -626,8 +661,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
 
 class AncillaryVariable(_DimensionalMetadata):
-    def __init__(self, data, standard_name=None, long_name=None,
-                 var_name=None, units='no-unit', attributes=None):
+    def __init__(
+        self,
+        data,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="no-unit",
+        attributes=None,
+    ):
         """
         Constructs a single ancillary variable.
 
@@ -651,9 +693,14 @@ class AncillaryVariable(_DimensionalMetadata):
             A dictionary containing other cf and user-defined attributes.
 
         """
-        super().__init__(values=data, standard_name=standard_name,
-                         long_name=long_name, var_name=var_name,
-                         units=units, attributes=attributes)
+        super().__init__(
+            values=data,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            attributes=attributes,
+        )
 
     @property
     def data(self):
@@ -704,8 +751,17 @@ class CellMeasure(AncillaryVariable):
     Coordinate Reference System.
 
     """
-    def __init__(self, data, standard_name=None, long_name=None,
-                 var_name=None, units='1', attributes=None, measure=None):
+
+    def __init__(
+        self,
+        data,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="1",
+        attributes=None,
+        measure=None,
+    ):
 
         """
         Constructs a single cell measure.
@@ -735,9 +791,14 @@ class CellMeasure(AncillaryVariable):
             are the only valid entries.
 
         """
-        super().__init__(data=data, standard_name=standard_name,
-                         long_name=long_name, var_name=var_name,
-                         units=units, attributes=attributes)
+        super().__init__(
+            data=data,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            attributes=attributes,
+        )
 
         #: String naming the measure type.
         self.measure = measure
@@ -748,9 +809,10 @@ class CellMeasure(AncillaryVariable):
 
     @measure.setter
     def measure(self, measure):
-        if measure not in ['area', 'volume']:
-            raise ValueError("measure must be 'area' or 'volume', "
-                             "not {}".format(measure))
+        if measure not in ["area", "volume"]:
+            raise ValueError(
+                "measure must be 'area' or 'volume', " "not {}".format(measure)
+            )
         self._measure = measure
 
     def __str__(self):
@@ -758,24 +820,44 @@ class CellMeasure(AncillaryVariable):
         return result
 
     def __repr__(self):
-        fmt = ('{cls}({self.data!r}'
-               ', measure={self.measure}, standard_name={self.standard_name!r}'
-               ', units={self.units!r}{other_metadata})')
-        result = fmt.format(self=self, cls=type(self).__name__,
-                            other_metadata=self._repr_other_metadata())
+        fmt = (
+            "{cls}({self.data!r}"
+            ", measure={self.measure}, standard_name={self.standard_name!r}"
+            ", units={self.units!r}{other_metadata})"
+        )
+        result = fmt.format(
+            self=self,
+            cls=type(self).__name__,
+            other_metadata=self._repr_other_metadata(),
+        )
         return result
 
     def _as_defn(self):
-        defn = (self.standard_name, self.long_name, self.var_name,
-                self.units, self.attributes, self.measure)
+        defn = (
+            self.standard_name,
+            self.long_name,
+            self.var_name,
+            self.units,
+            self.attributes,
+            self.measure,
+        )
         return defn
 
 
-class CoordDefn(namedtuple('CoordDefn',
-                           ['standard_name', 'long_name',
-                            'var_name', 'units',
-                            'attributes', 'coord_system',
-                            'climatological'])):
+class CoordDefn(
+    namedtuple(
+        "CoordDefn",
+        [
+            "standard_name",
+            "long_name",
+            "var_name",
+            "units",
+            "attributes",
+            "coord_system",
+            "climatological",
+        ],
+    )
+):
     """
     Criterion for identifying a specific type of :class:`DimCoord` or
     :class:`AuxCoord` based on its metadata.
@@ -784,7 +866,7 @@ class CoordDefn(namedtuple('CoordDefn',
 
     __slots__ = ()
 
-    def name(self, default='unknown'):
+    def name(self, default="unknown"):
         """
         Returns a human-readable name.
 
@@ -801,24 +883,44 @@ class CoordDefn(namedtuple('CoordDefn',
 
         def _sort_key(defn):
             # Emulate Python 2 behaviour with None
-            return (defn.standard_name is not None, defn.standard_name,
-                    defn.long_name is not None, defn.long_name,
-                    defn.var_name is not None, defn.var_name,
-                    defn.units is not None, defn.units,
-                    defn.coord_system is not None, defn.coord_system)
+            return (
+                defn.standard_name is not None,
+                defn.standard_name,
+                defn.long_name is not None,
+                defn.long_name,
+                defn.var_name is not None,
+                defn.var_name,
+                defn.units is not None,
+                defn.units,
+                defn.coord_system is not None,
+                defn.coord_system,
+            )
 
         return _sort_key(self) < _sort_key(other)
 
 
-class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
-                                              'minimum',
-                                              'maximum',
-                                              'min_inclusive',
-                                              'max_inclusive'])):
+class CoordExtent(
+    namedtuple(
+        "_CoordExtent",
+        [
+            "name_or_coord",
+            "minimum",
+            "maximum",
+            "min_inclusive",
+            "max_inclusive",
+        ],
+    )
+):
     """Defines a range of values for a coordinate."""
 
-    def __new__(cls, name_or_coord, minimum, maximum,
-                min_inclusive=True, max_inclusive=True):
+    def __new__(
+        cls,
+        name_or_coord,
+        minimum,
+        maximum,
+        min_inclusive=True,
+        max_inclusive=True,
+    ):
         """
         Create a CoordExtent for the specified coordinate and range of
         values.
@@ -846,8 +948,9 @@ class CoordExtent(namedtuple('_CoordExtent', ['name_or_coord',
             in the selection. Default is True.
 
         """
-        return super().__new__(cls, name_or_coord, minimum, maximum,
-                               min_inclusive, max_inclusive)
+        return super().__new__(
+            cls, name_or_coord, minimum, maximum, min_inclusive, max_inclusive
+        )
 
     __slots__ = ()
 
@@ -862,8 +965,7 @@ BOUND_POSITION_END = 1
 
 
 # Private named tuple class for coordinate groups.
-_GroupbyItem = namedtuple('GroupbyItem',
-                          'groupby_point, groupby_slice')
+_GroupbyItem = namedtuple("GroupbyItem", "groupby_point, groupby_slice")
 
 
 def _get_2d_coord_bound_grid(bounds):
@@ -893,8 +995,10 @@ def _get_2d_coord_bound_grid(bounds):
     """
     # Check bds has the shape (ny, nx, 4)
     if not (bounds.ndim == 3 and bounds.shape[-1] == 4):
-        raise ValueError('Bounds for 2D coordinates must be 3-dimensional and '
-                         'have 4 bounds per point.')
+        raise ValueError(
+            "Bounds for 2D coordinates must be 3-dimensional and "
+            "have 4 bounds per point."
+        )
 
     bounds_shape = bounds.shape
     result = np.zeros((bounds_shape[0] + 1, bounds_shape[1] + 1))
@@ -907,7 +1011,7 @@ def _get_2d_coord_bound_grid(bounds):
     return result
 
 
-class Cell(namedtuple('Cell', ['point', 'bound'])):
+class Cell(namedtuple("Cell", ["point", "bound"])):
     """
     An immutable representation of a single cell of a coordinate, including the
     sample point and/or boundary position.
@@ -950,7 +1054,7 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
 
         """
         if point is None:
-            raise ValueError('Point must be defined.')
+            raise ValueError("Point must be defined.")
 
         if bound is not None:
             bound = tuple(bound)
@@ -960,8 +1064,9 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
 
         if isinstance(point, (tuple, list)):
             if len(point) != 1:
-                raise ValueError('Point may only be a list or tuple if it has '
-                                 'length 1.')
+                raise ValueError(
+                    "Point may only be a list or tuple if it has " "length 1."
+                )
             point = point[0]
 
         return super().__new__(cls, point, bound)
@@ -993,16 +1098,20 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
         compared.
 
         """
-        if isinstance(other, (int, float, np.number)) or \
-                hasattr(other, 'timetuple'):
+        if isinstance(other, (int, float, np.number)) or hasattr(
+            other, "timetuple"
+        ):
             if self.bound is not None:
                 return self.contains_point(other)
             else:
                 return self.point == other
         elif isinstance(other, Cell):
             return (self.point == other.point) and (self.bound == other.bound)
-        elif (isinstance(other, str) and self.bound is None and
-              isinstance(self.point, str)):
+        elif (
+            isinstance(other, str)
+            and self.bound is None
+            and isinstance(self.point, str)
+        ):
             return self.point == other
         else:
             return NotImplemented
@@ -1023,21 +1132,30 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
-        if not (isinstance(other, (int, float, np.number, Cell)) or
-                hasattr(other, 'timetuple')):
-            raise TypeError("Unexpected type of other "
-                            "{}.".format(type(other)))
-        if operator_method not in (operator.gt, operator.lt,
-                                   operator.ge, operator.le):
+        if not (
+            isinstance(other, (int, float, np.number, Cell))
+            or hasattr(other, "timetuple")
+        ):
+            raise TypeError(
+                "Unexpected type of other " "{}.".format(type(other))
+            )
+        if operator_method not in (
+            operator.gt,
+            operator.lt,
+            operator.ge,
+            operator.le,
+        ):
             raise ValueError("Unexpected operator_method")
 
         # Prevent silent errors resulting from missing cftime
         # behaviour.
-        if (isinstance(other, cftime.datetime) or
-                (isinstance(self.point, cftime.datetime) and
-                 not isinstance(other, iris.time.PartialDateTime))):
-            raise TypeError('Cannot determine the order of '
-                            'cftime.datetime objects')
+        if isinstance(other, cftime.datetime) or (
+            isinstance(self.point, cftime.datetime)
+            and not isinstance(other, iris.time.PartialDateTime)
+        ):
+            raise TypeError(
+                "Cannot determine the order of " "cftime.datetime objects"
+            )
 
         if isinstance(other, Cell):
             # Cell vs Cell comparison for providing a strict sort order
@@ -1077,8 +1195,9 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                         if self.bound[1] == other.bound[1]:
                             result = operator_method(self.point, other.point)
                         else:
-                            result = operator_method(self.bound[1],
-                                                     other.bound[1])
+                            result = operator_method(
+                                self.bound[1], other.bound[1]
+                            )
                     else:
                         result = operator_method(self.bound[0], other.bound[0])
         else:
@@ -1089,10 +1208,12 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
                 # - Simple matching
                 me = self.point
             else:
-                if hasattr(other, 'timetuple'):
-                    raise TypeError('Cannot determine whether a point lies '
-                                    'within a bounded region for '
-                                    'datetime-like objects.')
+                if hasattr(other, "timetuple"):
+                    raise TypeError(
+                        "Cannot determine whether a point lies "
+                        "within a bounded region for "
+                        "datetime-like objects."
+                    )
                 # Point-and-bound vs number
                 # - Match if "within" the Cell
                 if operator_method in [operator.gt, operator.le]:
@@ -1106,10 +1227,12 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
             try:
                 result = operator_method(me, other)
             except TypeError:
-                rop = {operator.lt: operator.gt,
-                       operator.gt: operator.lt,
-                       operator.le: operator.ge,
-                       operator.ge: operator.le}[operator_method]
+                rop = {
+                    operator.lt: operator.gt,
+                    operator.gt: operator.lt,
+                    operator.le: operator.ge,
+                    operator.ge: operator.le,
+                }[operator_method]
                 result = rop(other, me)
 
         return result
@@ -1142,11 +1265,14 @@ class Cell(namedtuple('Cell', ['point', 'bound'])):
 
         """
         if self.bound is None:
-            raise ValueError('Point cannot exist inside an unbounded cell.')
-        if hasattr(point, 'timetuple') or np.any([hasattr(val, 'timetuple') for
-                                                  val in self.bound]):
-            raise TypeError('Cannot determine whether a point lies within '
-                            'a bounded region for datetime-like objects.')
+            raise ValueError("Point cannot exist inside an unbounded cell.")
+        if hasattr(point, "timetuple") or np.any(
+            [hasattr(val, "timetuple") for val in self.bound]
+        ):
+            raise TypeError(
+                "Cannot determine whether a point lies within "
+                "a bounded region for datetime-like objects."
+            )
 
         return np.min(self.bound) <= point <= np.max(self.bound)
 
@@ -1156,10 +1282,19 @@ class Coord(_DimensionalMetadata):
     Superclass for coordinates.
 
     """
-    def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None,
-                 attributes=None, coord_system=None,
-                 climatological=False):
+
+    def __init__(
+        self,
+        points,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="1",
+        bounds=None,
+        attributes=None,
+        coord_system=None,
+        climatological=False,
+    ):
 
         """
         Constructs a single coordinate.
@@ -1205,9 +1340,14 @@ class Coord(_DimensionalMetadata):
             from NetCDF.
             Always False if no bounds exist.
         """
-        super().__init__(values=points, standard_name=standard_name,
-                         long_name=long_name, var_name=var_name,
-                         units=units, attributes=attributes)
+        super().__init__(
+            values=points,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            attributes=attributes,
+        )
 
         #: Relevant coordinate system (if any).
         self.coord_system = coord_system
@@ -1238,8 +1378,9 @@ class Coord(_DimensionalMetadata):
 
         """
         if points is None and bounds is not None:
-            raise ValueError('If bounds are specified, points must also be '
-                             'specified')
+            raise ValueError(
+                "If bounds are specified, points must also be " "specified"
+            )
 
         new_coord = super().copy(values=points)
         if points is not None:
@@ -1253,17 +1394,19 @@ class Coord(_DimensionalMetadata):
     @classmethod
     def from_coord(cls, coord):
         """Create a new Coord of this type, from the given coordinate."""
-        kwargs = {'points': coord.core_points(),
-                  'bounds': coord.core_bounds(),
-                  'standard_name': coord.standard_name,
-                  'long_name': coord.long_name,
-                  'var_name': coord.var_name,
-                  'units': coord.units,
-                  'attributes': coord.attributes,
-                  'coord_system': copy.deepcopy(coord.coord_system)}
+        kwargs = {
+            "points": coord.core_points(),
+            "bounds": coord.core_bounds(),
+            "standard_name": coord.standard_name,
+            "long_name": coord.long_name,
+            "var_name": coord.var_name,
+            "units": coord.units,
+            "attributes": coord.attributes,
+            "coord_system": copy.deepcopy(coord.coord_system),
+        }
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
-            kwargs['circular'] = getattr(coord, 'circular', False)
+            kwargs["circular"] = getattr(coord, "circular", False)
         return cls(**kwargs)
 
     @property
@@ -1299,10 +1442,13 @@ class Coord(_DimensionalMetadata):
         else:
             bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
-                raise ValueError("Bounds shape must be compatible with points "
-                                 "shape.")
-            if not self.has_bounds() \
-                    or self.core_bounds().shape != bounds.shape:
+                raise ValueError(
+                    "Bounds shape must be compatible with points " "shape."
+                )
+            if (
+                not self.has_bounds()
+                or self.core_bounds().shape != bounds.shape
+            ):
                 # Construct a new bounds DataManager.
                 self._bounds_dm = DataManager(bounds)
             else:
@@ -1327,8 +1473,10 @@ class Coord(_DimensionalMetadata):
         value = bool(value)
         if value:
             if not self.units.is_time_reference():
-                emsg = ("Cannot set climatological coordinate, does not have"
-                        " valid time reference units, got {!r}.")
+                emsg = (
+                    "Cannot set climatological coordinate, does not have"
+                    " valid time reference units, got {!r}."
+                )
                 raise TypeError(emsg.format(self.units))
 
             if not self.has_bounds():
@@ -1418,15 +1566,21 @@ class Coord(_DimensionalMetadata):
     def _repr_other_metadata(self):
         result = super()._repr_other_metadata()
         if self.coord_system:
-            result += ', coord_system={}'.format(self.coord_system)
+            result += ", coord_system={}".format(self.coord_system)
         if self.climatological:
-            result += ', climatological={}'.format(self.climatological)
+            result += ", climatological={}".format(self.climatological)
         return result
 
     def _as_defn(self):
-        defn = CoordDefn(self.standard_name, self.long_name, self.var_name,
-                         self.units, self.attributes, self.coord_system,
-                         self.climatological)
+        defn = CoordDefn(
+            self.standard_name,
+            self.long_name,
+            self.var_name,
+            self.units,
+            self.attributes,
+            self.coord_system,
+            self.climatological,
+        )
         return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -1471,20 +1625,26 @@ class Coord(_DimensionalMetadata):
     def _sanity_check_bounds(self):
         if self.ndim == 1:
             if self.nbounds != 2:
-                raise ValueError('Invalid operation for {!r}, with {} '
-                                 'bound(s). Contiguous bounds are only '
-                                 'defined for 1D coordinates with 2 '
-                                 'bounds.'.format(self.name(), self.nbounds))
+                raise ValueError(
+                    "Invalid operation for {!r}, with {} "
+                    "bound(s). Contiguous bounds are only "
+                    "defined for 1D coordinates with 2 "
+                    "bounds.".format(self.name(), self.nbounds)
+                )
         elif self.ndim == 2:
             if self.nbounds != 4:
-                raise ValueError('Invalid operation for {!r}, with {} '
-                                 'bound(s). Contiguous bounds are only '
-                                 'defined for 2D coordinates with 4 '
-                                 'bounds.'.format(self.name(), self.nbounds))
+                raise ValueError(
+                    "Invalid operation for {!r}, with {} "
+                    "bound(s). Contiguous bounds are only "
+                    "defined for 2D coordinates with 4 "
+                    "bounds.".format(self.name(), self.nbounds)
+                )
         else:
-            raise ValueError('Invalid operation for {!r}. Contiguous bounds '
-                             'are not defined for coordinates with more than '
-                             '2 dimensions.'.format(self.name()))
+            raise ValueError(
+                "Invalid operation for {!r}. Contiguous bounds "
+                "are not defined for coordinates with more than "
+                "2 dimensions.".format(self.name())
+            )
 
     def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
         """
@@ -1512,23 +1672,24 @@ class Coord(_DimensionalMetadata):
         self._sanity_check_bounds()
 
         if self.ndim == 1:
-            contiguous = np.allclose(self.bounds[1:, 0],
-                                     self.bounds[:-1, 1],
-                                     rtol=rtol, atol=atol)
+            contiguous = np.allclose(
+                self.bounds[1:, 0], self.bounds[:-1, 1], rtol=rtol, atol=atol
+            )
             diffs = np.abs(self.bounds[:-1, 1] - self.bounds[1:, 0])
 
         elif self.ndim == 2:
+
             def mod360_adjust(compare_axis):
                 bounds = self.bounds.copy()
 
-                if compare_axis == 'x':
+                if compare_axis == "x":
                     upper_bounds = bounds[:, :-1, 1]
                     lower_bounds = bounds[:, 1:, 0]
-                elif compare_axis == 'y':
+                elif compare_axis == "y":
                     upper_bounds = bounds[:-1, :, 3]
                     lower_bounds = bounds[1:, :, 0]
 
-                if self.name() in ['longitude', 'grid_longitude']:
+                if self.name() in ["longitude", "grid_longitude"]:
                     # If longitude, adjust for longitude wrapping
                     diffs = upper_bounds - lower_bounds
                     index = diffs > 180
@@ -1539,16 +1700,18 @@ class Coord(_DimensionalMetadata):
 
                 diffs_between_cells = np.abs(upper_bounds - lower_bounds)
                 cell_size = lower_bounds - upper_bounds
-                diffs_along_axis = diffs_between_cells > (atol +
-                                                          rtol * cell_size)
+                diffs_along_axis = diffs_between_cells > (
+                    atol + rtol * cell_size
+                )
 
-                points_close_enough = diffs_along_axis <= (atol +
-                                                           rtol * cell_size)
+                points_close_enough = diffs_along_axis <= (
+                    atol + rtol * cell_size
+                )
                 contiguous_along_axis = np.all(points_close_enough)
                 return diffs_along_axis, contiguous_along_axis
 
-            diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis='x')
-            diffs_along_y, match_cell_y1 = mod360_adjust(compare_axis='y')
+            diffs_along_x, match_cell_x1 = mod360_adjust(compare_axis="x")
+            diffs_along_y, match_cell_y1 = mod360_adjust(compare_axis="y")
 
             contiguous = match_cell_x1 and match_cell_y1
             diffs = (diffs_along_x, diffs_along_y)
@@ -1607,13 +1770,17 @@ class Coord(_DimensionalMetadata):
         """
         if not self.has_bounds():
             if self.ndim == 1:
-                warnings.warn('Coordinate {!r} is not bounded, guessing '
-                              'contiguous bounds.'.format(self.name()))
+                warnings.warn(
+                    "Coordinate {!r} is not bounded, guessing "
+                    "contiguous bounds.".format(self.name())
+                )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
-                raise ValueError('2D coordinate {!r} is not bounded. Guessing '
-                                 'bounds of 2D coords is not currently '
-                                 'supported.'.format(self.name()))
+                raise ValueError(
+                    "2D coordinate {!r} is not bounded. Guessing "
+                    "bounds of 2D coords is not currently "
+                    "supported.".format(self.name())
+                )
         else:
             self._sanity_check_bounds()
             bounds = self.bounds
@@ -1640,8 +1807,9 @@ class Coord(_DimensionalMetadata):
 
         if self.has_bounds():
             for b_index in range(self.nbounds):
-                if not iris.util.monotonic(self.bounds[..., b_index],
-                                           strict=True):
+                if not iris.util.monotonic(
+                    self.bounds[..., b_index], strict=True
+                ):
                     return False
 
         return True
@@ -1670,7 +1838,7 @@ class Coord(_DimensionalMetadata):
 
         """
         compatible = False
-        if (self.coord_system == other.coord_system):
+        if self.coord_system == other.coord_system:
             compatible = super().is_compatible(other=other, ignore=ignore)
 
         return compatible
@@ -1711,8 +1879,10 @@ class Coord(_DimensionalMetadata):
 
         point = tuple(np.array(self.points[index], ndmin=1).flatten())
         if len(point) != 1:
-            raise IndexError('The index %s did not uniquely identify a single '
-                             'point to create a cell with.' % (index, ))
+            raise IndexError(
+                "The index %s did not uniquely identify a single "
+                "point to create a cell with." % (index,)
+            )
 
         bound = None
         if self.has_bounds():
@@ -1733,10 +1903,11 @@ class Coord(_DimensionalMetadata):
         Replaces the points & bounds with a simple bounded region.
         """
         import dask.array as da
+
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
         if isinstance(dims_to_collapse, (int, np.integer)):
-            dims_to_collapse = (dims_to_collapse, )
+            dims_to_collapse = (dims_to_collapse,)
         if isinstance(dims_to_collapse, list):
             dims_to_collapse = tuple(dims_to_collapse)
 
@@ -1744,7 +1915,8 @@ class Coord(_DimensionalMetadata):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(x):
-                return '|'.join([str(i) for i in x.flatten()])
+                return "|".join([str(i) for i in x.flatten()])
+
             bounds = None
             if self.has_bounds():
                 shape = self._bounds_dm.shape[1:]
@@ -1752,22 +1924,27 @@ class Coord(_DimensionalMetadata):
                 for index in np.ndindex(shape):
                     index_slice = (slice(None),) + tuple(index)
                     bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype('U{}'.format(max(map(len, bounds))))
+                dtype = np.dtype("U{}".format(max(map(len, bounds))))
                 bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
             points = serialize(self.points)
-            dtype = np.dtype('U{}'.format(len(points)))
+            dtype = np.dtype("U{}".format(len(points)))
             # Create the new collapsed coordinate.
-            coord = self.copy(points=np.array(points, dtype=dtype),
-                              bounds=bounds)
+            coord = self.copy(
+                points=np.array(points, dtype=dtype), bounds=bounds
+            )
         else:
             # Collapse the coordinate by calculating the bounded extremes.
             if self.ndim > 1:
-                msg = 'Collapsing a multi-dimensional coordinate. ' \
-                    'Metadata may not be fully descriptive for {!r}.'
+                msg = (
+                    "Collapsing a multi-dimensional coordinate. "
+                    "Metadata may not be fully descriptive for {!r}."
+                )
                 warnings.warn(msg.format(self.name()))
             elif not self.is_contiguous():
-                msg = 'Collapsing a non-contiguous coordinate. ' \
-                    'Metadata may not be fully descriptive for {!r}.'
+                msg = (
+                    "Collapsing a non-contiguous coordinate. "
+                    "Metadata may not be fully descriptive for {!r}."
+                )
                 warnings.warn(msg.format(self.name()))
 
             if self.has_bounds():
@@ -1776,7 +1953,8 @@ class Coord(_DimensionalMetadata):
                     # Express main dims_to_collapse as non-negative integers
                     # and add the last (bounds specific) dimension.
                     dims_to_collapse = tuple(
-                        dim % self.ndim for dim in dims_to_collapse) + (-1,)
+                        dim % self.ndim for dim in dims_to_collapse
+                    ) + (-1,)
             else:
                 item = self.core_points()
 
@@ -1784,8 +1962,13 @@ class Coord(_DimensionalMetadata):
             al = da if _lazy.is_lazy_data(item) else np
 
             # Calculate the bounds and points along the right dims
-            bounds = al.stack([item.min(axis=dims_to_collapse),
-                               item.max(axis=dims_to_collapse)], axis=-1)
+            bounds = al.stack(
+                [
+                    item.min(axis=dims_to_collapse),
+                    item.max(axis=dims_to_collapse),
+                ],
+                axis=-1,
+            )
             points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
 
             # Create the new collapsed coordinate.
@@ -1813,21 +1996,25 @@ class Coord(_DimensionalMetadata):
         # XXX Consider moving into DimCoord
         # ensure we have monotonic points
         if not self.is_monotonic():
-            raise ValueError("Need monotonic points to generate bounds for %s"
-                             % self.name())
+            raise ValueError(
+                "Need monotonic points to generate bounds for %s" % self.name()
+            )
 
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
         if self.shape[0] < 2:
-            raise ValueError('Cannot guess bounds for a coordinate of length '
-                             '1.')
+            raise ValueError(
+                "Cannot guess bounds for a coordinate of length " "1."
+            )
 
         if self.has_bounds():
-            raise ValueError('Coord already has bounds. Remove the bounds '
-                             'before guessing new ones.')
+            raise ValueError(
+                "Coord already has bounds. Remove the bounds "
+                "before guessing new ones."
+            )
 
-        if getattr(self, 'circular', False):
+        if getattr(self, "circular", False):
             points = np.empty(self.shape[0] + 2)
             points[1:-1] = self.points
             direction = 1 if self.points[-1] > self.points[0] else -1
@@ -1844,8 +2031,10 @@ class Coord(_DimensionalMetadata):
 
         bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if (self.name() in ('latitude', 'grid_latitude') and
-                self.units == 'degree'):
+        if (
+            self.name() in ("latitude", "grid_latitude")
+            and self.units == "degree"
+        ):
             points = self.points
             if (points >= -90).all() and (points <= 90).all():
                 np.clip(bounds, -90, 90, out=bounds)
@@ -1900,8 +2089,10 @@ class Coord(_DimensionalMetadata):
 
         """
         if not self.is_compatible(other):
-            msg = 'The coordinates cannot be intersected. They are not ' \
-                  'compatible because of differing metadata.'
+            msg = (
+                "The coordinates cannot be intersected. They are not "
+                "compatible because of differing metadata."
+            )
             raise ValueError(msg)
 
         # Cache self.cells for speed. We can also use the index operation on a
@@ -1918,8 +2109,9 @@ class Coord(_DimensionalMetadata):
                 pass
 
         if return_indices is False and self_intersect_indices == []:
-            raise ValueError('No intersection between %s coords possible.' %
-                             self.name())
+            raise ValueError(
+                "No intersection between %s coords possible." % self.name()
+            )
 
         self_intersect_indices = np.array(self_intersect_indices)
 
@@ -1954,9 +2146,11 @@ class Coord(_DimensionalMetadata):
         points = self.points
         bounds = self.bounds if self.has_bounds() else np.array([])
         if self.ndim != 1:
-            raise ValueError('Nearest-neighbour is currently limited'
-                             ' to one-dimensional coordinates.')
-        do_circular = getattr(self, 'circular', False)
+            raise ValueError(
+                "Nearest-neighbour is currently limited"
+                " to one-dimensional coordinates."
+            )
+        do_circular = getattr(self, "circular", False)
         if do_circular:
             wrap_modulus = self.units.modulus
             # wrap 'point' to a range based on lowest points or bounds value.
@@ -1992,8 +2186,10 @@ class Coord(_DimensionalMetadata):
             bounds[0, 0] = min(point, bounds[0, 0])
             bounds[-1, 1] = max(point, bounds[-1, 1])
             # get index of first-occurring cell that contains the point
-            inside_cells = np.logical_and(point >= np.min(bounds, axis=1),
-                                          point <= np.max(bounds, axis=1))
+            inside_cells = np.logical_and(
+                point >= np.min(bounds, axis=1),
+                point <= np.max(bounds, axis=1),
+            )
             result_index = np.where(inside_cells)[0][0]
             # return the original index of the cell (before the bounds sort)
             result_index = sort_inds[result_index]
@@ -2026,24 +2222,25 @@ class Coord(_DimensionalMetadata):
         # class name
         element = super().xml_element(doc=doc)
 
-        if hasattr(self.points, 'to_xml_attr'):
-            element.setAttribute('points', self.points.to_xml_attr())
+        if hasattr(self.points, "to_xml_attr"):
+            element.setAttribute("points", self.points.to_xml_attr())
         else:
-            element.setAttribute('points', iris.util.format_array(self.points))
+            element.setAttribute("points", iris.util.format_array(self.points))
 
         # Add bounds handling
         if self.has_bounds():
-            if hasattr(self.bounds, 'to_xml_attr'):
-                element.setAttribute('bounds', self.bounds.to_xml_attr())
+            if hasattr(self.bounds, "to_xml_attr"):
+                element.setAttribute("bounds", self.bounds.to_xml_attr())
             else:
-                element.setAttribute('bounds',
-                                     iris.util.format_array(self.bounds))
+                element.setAttribute(
+                    "bounds", iris.util.format_array(self.bounds)
+                )
 
         return element
 
     def _xml_id_extra(self, unique_value):
         """Coord specific stuff for the xml id"""
-        unique_value += str(self.coord_system).encode('utf-8') + b'\0'
+        unique_value += str(self.coord_system).encode("utf-8") + b"\0"
         return unique_value
 
 
@@ -2052,10 +2249,22 @@ class DimCoord(Coord):
     A coordinate that is 1D, numeric, and strictly monotonic.
 
     """
+
     @classmethod
-    def from_regular(cls, zeroth, step, count, standard_name=None,
-                     long_name=None, var_name=None, units='1', attributes=None,
-                     coord_system=None, circular=False, with_bounds=False):
+    def from_regular(
+        cls,
+        zeroth,
+        step,
+        count,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="1",
+        attributes=None,
+        coord_system=None,
+        circular=False,
+        with_bounds=False,
+    ):
         """
         Create a :class:`DimCoord` with regularly spaced points, and
         optionally bounds.
@@ -2083,8 +2292,9 @@ class DimCoord(Coord):
         points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
         _, regular = points_step(points)
         if not regular:
-            points = (zeroth + step) + step * np.arange(count,
-                                                        dtype=np.float64)
+            points = (zeroth + step) + step * np.arange(
+                count, dtype=np.float64
+            )
         points.flags.writeable = False
 
         if with_bounds:
@@ -2094,26 +2304,47 @@ class DimCoord(Coord):
         else:
             bounds = None
 
-        return cls(points, standard_name=standard_name,
-                   long_name=long_name, var_name=var_name, units=units,
-                   bounds=bounds, attributes=attributes,
-                   coord_system=coord_system, circular=circular)
+        return cls(
+            points,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            bounds=bounds,
+            attributes=attributes,
+            coord_system=coord_system,
+            circular=circular,
+        )
 
-    def __init__(self, points, standard_name=None, long_name=None,
-                 var_name=None, units='1', bounds=None,
-                 attributes=None, coord_system=None, circular=False,
-                 climatological=False):
+    def __init__(
+        self,
+        points,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units="1",
+        bounds=None,
+        attributes=None,
+        coord_system=None,
+        circular=False,
+        climatological=False,
+    ):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
 
         """
-        super().__init__(points, standard_name=standard_name,
-                         long_name=long_name, var_name=var_name,
-                         units=units, bounds=bounds,
-                         attributes=attributes,
-                         coord_system=coord_system,
-                         climatological=climatological)
+        super().__init__(
+            points,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            bounds=bounds,
+            attributes=attributes,
+            coord_system=coord_system,
+            climatological=climatological,
+        )
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = bool(circular)
@@ -2145,8 +2376,9 @@ class DimCoord(Coord):
         # False.
         result = NotImplemented
         if isinstance(other, DimCoord):
-            result = (Coord.__eq__(self, other) and self.circular ==
-                      other.circular)
+            result = (
+                Coord.__eq__(self, other) and self.circular == other.circular
+            )
         return result
 
     # The __ne__ operator from Coord implements the not __eq__ method.
@@ -2170,8 +2402,9 @@ class DimCoord(Coord):
             bnds = coord.bounds.copy()
             bnds[0, 1] = coord.bounds[0, 0] + self.units.modulus
             coord.bounds = bnds
-            coord.points = np.array(np.sum(coord.bounds) * 0.5,
-                                    dtype=self.points.dtype)
+            coord.points = np.array(
+                np.sum(coord.bounds) * 0.5, dtype=self.points.dtype
+            )
         # XXX This isn't actually correct, but is ported from the old world.
         coord.circular = False
         return coord
@@ -2179,7 +2412,7 @@ class DimCoord(Coord):
     def _repr_other_metadata(self):
         result = Coord._repr_other_metadata(self)
         if self.circular:
-            result += ', circular=%r' % self.circular
+            result += ", circular=%r" % self.circular
         return result
 
     def _new_points_requirements(self, points):
@@ -2193,16 +2426,16 @@ class DimCoord(Coord):
 
         """
         if points.ndim not in (0, 1):
-            emsg = 'The {!r} {} points array must be scalar or 1-dimensional.'
+            emsg = "The {!r} {} points array must be scalar or 1-dimensional."
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         if not np.issubdtype(points.dtype, np.number):
-            emsg = 'The {!r} {} points array must be numeric.'
+            emsg = "The {!r} {} points array must be numeric."
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         if ma.is_masked(points):
-            emsg = 'A {!r} {} points array must not be masked.'
+            emsg = "A {!r} {} points array must not be masked."
             raise TypeError(emsg.format(self.name(), self.__class__.__name__))
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
-            emsg = 'The {!r} {} points array must be strictly monotonic.'
+            emsg = "The {!r} {} points array must be strictly monotonic."
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
 
     @Coord._values.setter
@@ -2240,18 +2473,21 @@ class DimCoord(Coord):
 
         """
         # Ensure the bounds are a compatible shape.
-        if self.shape != bounds.shape[:-1] and \
-                not (self.shape == (1,) and bounds.ndim == 1):
-            emsg = ('The shape of the {!r} {} bounds array should be '
-                    'points.shape + (n_bounds)')
+        if self.shape != bounds.shape[:-1] and not (
+            self.shape == (1,) and bounds.ndim == 1
+        ):
+            emsg = (
+                "The shape of the {!r} {} bounds array should be "
+                "points.shape + (n_bounds)"
+            )
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         # Checks for numeric.
         if not np.issubdtype(bounds.dtype, np.number):
-            emsg = 'The {!r} {} bounds array must be numeric.'
+            emsg = "The {!r} {} bounds array must be numeric."
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
         # Check not masked.
         if ma.is_masked(bounds):
-            emsg = 'A {!r} {} bounds array must not be masked.'
+            emsg = "A {!r} {} bounds array must not be masked."
             raise TypeError(emsg.format(self.name(), self.__class__.__name__))
 
         # Check bounds are monotonic.
@@ -2263,19 +2499,26 @@ class DimCoord(Coord):
                 directions = set()
                 for b_index in range(n_bounds):
                     monotonic, direction = iris.util.monotonic(
-                        bounds[:, b_index], strict=True, return_direction=True)
+                        bounds[:, b_index], strict=True, return_direction=True
+                    )
                     if not monotonic:
-                        emsg = ('The {!r} {} bounds array must be strictly '
-                                'monotonic.')
-                        raise ValueError(emsg.format(self.name(),
-                                                     self.__class__.__name__))
+                        emsg = (
+                            "The {!r} {} bounds array must be strictly "
+                            "monotonic."
+                        )
+                        raise ValueError(
+                            emsg.format(self.name(), self.__class__.__name__)
+                        )
                     directions.add(direction)
 
                 if len(directions) != 1:
-                    emsg = ('The direction of monotonicity for {!r} {} must '
-                            'be consistent across all bounds.')
-                    raise ValueError(emsg.format(self.name(),
-                                                 self.__class__.__name__))
+                    emsg = (
+                        "The direction of monotonicity for {!r} {} must "
+                        "be consistent across all bounds."
+                    )
+                    raise ValueError(
+                        emsg.format(self.name(), self.__class__.__name__)
+                    )
 
     @Coord.bounds.setter
     def bounds(self, bounds):
@@ -2308,7 +2551,7 @@ class DimCoord(Coord):
         """Return DOM element describing this :class:`iris.coords.DimCoord`."""
         element = super().xml_element(doc)
         if self.circular:
-            element.setAttribute('circular', str(self.circular))
+            element.setAttribute("circular", str(self.circular))
         return element
 
 
@@ -2322,6 +2565,7 @@ class AuxCoord(Coord):
         everything is inherited from :class:`Coord`.
 
     """
+
     # Logically, :class:`Coord` is an abstract class and all actual coords must
     # be members of some concrete subclass, i.e. an :class:`AuxCoord` or
     # a :class:`DimCoord`.
@@ -2337,7 +2581,7 @@ class CellMethod(iris.util._OrderedHashable):
     """
 
     # Declare the attribute names relevant to the _OrderedHashable behaviour.
-    _names = ('method', 'coord_names', 'intervals', 'comments')
+    _names = ("method", "coord_names", "intervals", "comments")
 
     #: The name of the operation that was applied. e.g. "mean", "max", etc.
     method = None
@@ -2375,8 +2619,9 @@ class CellMethod(iris.util._OrderedHashable):
 
         """
         if not isinstance(method, str):
-            raise TypeError("'method' must be a string - got a '%s'" %
-                            type(method))
+            raise TypeError(
+                "'method' must be a string - got a '%s'" % type(method)
+            )
 
         default_name = CFVariableMixin._DEFAULT_NAME
         _coords = []
@@ -2387,9 +2632,11 @@ class CellMethod(iris.util._OrderedHashable):
         elif isinstance(coords, str):
             _coords.append(CFVariableMixin.token(coords) or default_name)
         else:
-            normalise = (lambda coord: coord.name(token=True) if
-                         isinstance(coord, Coord) else
-                         CFVariableMixin.token(coord) or default_name)
+            normalise = (
+                lambda coord: coord.name(token=True)
+                if isinstance(coord, Coord)
+                else CFVariableMixin.token(coord) or default_name
+            )
             _coords.extend([normalise(coord) for coord in coords])
 
         _intervals = []
@@ -2413,8 +2660,9 @@ class CellMethod(iris.util._OrderedHashable):
     def __str__(self):
         """Return a custom string representation of CellMethod"""
         # Group related coord names intervals and comments together
-        cell_components = zip_longest(self.coord_names, self.intervals,
-                                      self.comments, fillvalue="")
+        cell_components = zip_longest(
+            self.coord_names, self.intervals, self.comments, fillvalue=""
+        )
 
         collection_summaries = []
         cm_summary = "%s: " % self.method
@@ -2439,19 +2687,19 @@ class CellMethod(iris.util._OrderedHashable):
         Return a dom element describing itself
 
         """
-        cellMethod_xml_element = doc.createElement('cellMethod')
-        cellMethod_xml_element.setAttribute('method', self.method)
+        cellMethod_xml_element = doc.createElement("cellMethod")
+        cellMethod_xml_element.setAttribute("method", self.method)
 
-        for coord_name, interval, comment in zip_longest(self.coord_names,
-                                                         self.intervals,
-                                                         self.comments):
-            coord_xml_element = doc.createElement('coord')
+        for coord_name, interval, comment in zip_longest(
+            self.coord_names, self.intervals, self.comments
+        ):
+            coord_xml_element = doc.createElement("coord")
             if coord_name is not None:
-                coord_xml_element.setAttribute('name', coord_name)
+                coord_xml_element.setAttribute("name", coord_name)
                 if interval is not None:
-                    coord_xml_element.setAttribute('interval', interval)
+                    coord_xml_element.setAttribute("interval", interval)
                 if comment is not None:
-                    coord_xml_element.setAttribute('comment', comment)
+                    coord_xml_element.setAttribute("comment", comment)
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element

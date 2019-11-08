@@ -42,8 +42,9 @@ def cop_metadata_callback(cube, field, filename):
     experiment_label = os.path.basename(containing_folder)
 
     # Create a coordinate with the experiment label in it
-    exp_coord = coords.AuxCoord(experiment_label, long_name='Experiment',
-                                units='no_unit')
+    exp_coord = coords.AuxCoord(
+        experiment_label, long_name="Experiment", units="no_unit"
+    )
 
     # and add it to the cube
     cube.add_aux_coord(exp_coord)
@@ -51,23 +52,97 @@ def cop_metadata_callback(cube, field, filename):
 
 def main():
     # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_cube(iris.sample_data_path('E1.2098.pp'),
-                        callback=cop_metadata_callback)
-    a1b = iris.load_cube(iris.sample_data_path('A1B.2098.pp'),
-                         callback=cop_metadata_callback)
+    e1 = iris.load_cube(
+        iris.sample_data_path("E1.2098.pp"), callback=cop_metadata_callback
+    )
+    a1b = iris.load_cube(
+        iris.sample_data_path("A1B.2098.pp"), callback=cop_metadata_callback
+    )
 
     # Load the global average data and add an 'Experiment' coord it
-    global_avg = iris.load_cube(iris.sample_data_path('pre-industrial.pp'))
+    global_avg = iris.load_cube(iris.sample_data_path("pre-industrial.pp"))
 
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the
     # specific colours
     levels = np.arange(20) - 2.5
-    red = np.array([0, 0, 221, 239, 229, 217, 239, 234, 228, 222, 205, 196,
-                    161, 137, 116, 89, 77, 60, 51]) / 256.
-    green = np.array([16, 217, 242, 243, 235, 225, 190, 160, 128, 87, 72, 59,
-                      33, 21, 29, 30, 30, 29, 26]) / 256.
-    blue = np.array([255, 255, 243, 169, 99, 51, 63, 37, 39, 21, 27, 23, 22,
-                     26, 29, 28, 27, 25, 22]) / 256.
+    red = (
+        np.array(
+            [
+                0,
+                0,
+                221,
+                239,
+                229,
+                217,
+                239,
+                234,
+                228,
+                222,
+                205,
+                196,
+                161,
+                137,
+                116,
+                89,
+                77,
+                60,
+                51,
+            ]
+        )
+        / 256.0
+    )
+    green = (
+        np.array(
+            [
+                16,
+                217,
+                242,
+                243,
+                235,
+                225,
+                190,
+                160,
+                128,
+                87,
+                72,
+                59,
+                33,
+                21,
+                29,
+                30,
+                30,
+                29,
+                26,
+            ]
+        )
+        / 256.0
+    )
+    blue = (
+        np.array(
+            [
+                255,
+                255,
+                243,
+                169,
+                99,
+                51,
+                63,
+                37,
+                39,
+                21,
+                27,
+                23,
+                22,
+                26,
+                29,
+                28,
+                27,
+                25,
+                22,
+            ]
+        )
+        / 256.0
+    )
 
     # Put those colours into an array which can be passed to contourf as the
     # specific colours for each level
@@ -77,10 +152,12 @@ def main():
 
     # Iterate over each latitude longitude slice for both e1 and a1b scenarios
     # simultaneously
-    for e1_slice, a1b_slice in zip(e1.slices(['latitude', 'longitude']),
-                                   a1b.slices(['latitude', 'longitude'])):
+    for e1_slice, a1b_slice in zip(
+        e1.slices(["latitude", "longitude"]),
+        a1b.slices(["latitude", "longitude"]),
+    ):
 
-        time_coord = a1b_slice.coord('time')
+        time_coord = a1b_slice.coord("time")
 
         # Calculate the difference from the mean
         delta_e1 = e1_slice - global_avg
@@ -95,23 +172,25 @@ def main():
         # of "MonthName Year". Also, set the y value for the title so that it
         # is not tight to the top of the plot.
         fig.suptitle(
-            'Annual Temperature Predictions for ' + time.strftime("%Y"),
+            "Annual Temperature Predictions for " + time.strftime("%Y"),
             y=0.9,
-            fontsize=18)
+            fontsize=18,
+        )
 
         # Add the first subplot showing the E1 scenario
         plt.subplot(121)
-        plt.title('HadGEM2 E1 Scenario', fontsize=10)
-        iplt.contourf(delta_e1, levels, colors=colors, extend='both')
+        plt.title("HadGEM2 E1 Scenario", fontsize=10)
+        iplt.contourf(delta_e1, levels, colors=colors, extend="both")
         plt.gca().coastlines()
         # get the current axes' subplot for use later on
         plt1_ax = plt.gca()
 
         # Add the second subplot showing the A1B scenario
         plt.subplot(122)
-        plt.title('HadGEM2 A1B-Image Scenario', fontsize=10)
-        contour_result = iplt.contourf(delta_a1b, levels, colors=colors,
-                                       extend='both')
+        plt.title("HadGEM2 A1B-Image Scenario", fontsize=10)
+        contour_result = iplt.contourf(
+            delta_a1b, levels, colors=colors, extend="both"
+        )
         plt.gca().coastlines()
         # get the current axes' subplot for use later on
         plt2_ax = plt.gca()
@@ -132,8 +211,9 @@ def main():
         colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
 
         # Add the colour bar
-        cbar = plt.colorbar(contour_result, colorbar_axes,
-                            orientation='horizontal')
+        cbar = plt.colorbar(
+            contour_result, colorbar_axes, orientation="horizontal"
+        )
 
         # Label the colour bar and add ticks
         cbar.set_label(e1_slice.units)
@@ -142,5 +222,5 @@ def main():
         iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

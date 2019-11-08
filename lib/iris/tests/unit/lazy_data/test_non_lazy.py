@@ -33,5 +33,5 @@ class Test_non_lazy(tests.IrisTest):
         self.assertArrayEqual(result, self.func_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

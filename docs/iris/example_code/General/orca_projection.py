@@ -23,26 +23,28 @@ import iris.quickplot as qplt
 
 def main():
     # Load data
-    filepath = iris.sample_data_path('orca2_votemper.nc')
+    filepath = iris.sample_data_path("orca2_votemper.nc")
     cube = iris.load_cube(filepath)
 
     # Choose plot projections
     projections = {}
-    projections['Mollweide'] = ccrs.Mollweide()
-    projections['PlateCarree'] = ccrs.PlateCarree()
-    projections['NorthPolarStereo'] = ccrs.NorthPolarStereo()
-    projections['Orthographic'] = ccrs.Orthographic(central_longitude=-90,
-                                                    central_latitude=45)
+    projections["Mollweide"] = ccrs.Mollweide()
+    projections["PlateCarree"] = ccrs.PlateCarree()
+    projections["NorthPolarStereo"] = ccrs.NorthPolarStereo()
+    projections["Orthographic"] = ccrs.Orthographic(
+        central_longitude=-90, central_latitude=45
+    )
 
-    pcarree = projections['PlateCarree']
+    pcarree = projections["PlateCarree"]
     # Transform cube to target projection
-    new_cube, extent = iris.analysis.cartography.project(cube, pcarree,
-                                                         nx=400, ny=200)
+    new_cube, extent = iris.analysis.cartography.project(
+        cube, pcarree, nx=400, ny=200
+    )
 
     # Plot data in each projection
     for name in sorted(projections):
         fig = plt.figure()
-        fig.suptitle('ORCA2 Data Projected to {}'.format(name))
+        fig.suptitle("ORCA2 Data Projected to {}".format(name))
         # Set up axes and title
         ax = plt.subplot(projection=projections[name])
         # Set limits
@@ -54,5 +56,6 @@ def main():
 
         iplt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

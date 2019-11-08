@@ -31,20 +31,23 @@ class IntegrationTest(tests.GraphicsTest):
         cs = GeogCS(6371229)
 
         coord = iris.coords.DimCoord(
-            points=np.array([1, 2, 3], dtype=np.int32), long_name='time')
+            points=np.array([1, 2, 3], dtype=np.int32), long_name="time"
+        )
         cube.add_dim_coord(coord, 0)
 
         coord = iris.coords.DimCoord(
             points=np.array([-1, 0, 1], dtype=np.int32),
-            standard_name='latitude',
-            units='degrees',
-            coord_system=cs)
+            standard_name="latitude",
+            units="degrees",
+            coord_system=cs,
+        )
         cube.add_dim_coord(coord, 1)
         coord = iris.coords.DimCoord(
             points=np.array([-1, 0, 1, 2], dtype=np.int32),
-            standard_name='longitude',
-            units='degrees',
-            coord_system=cs)
+            standard_name="longitude",
+            units="degrees",
+            coord_system=cs,
+        )
         cube.add_dim_coord(coord, 2)
         self.cube = cube
 
@@ -52,7 +55,7 @@ class IntegrationTest(tests.GraphicsTest):
         # This follows :meth:`~matplotlib.animation.FuncAnimation.save`
         # to ensure that each frame corresponds to known accepted frames for
         # the animation.
-        cube_iter = self.cube.slices(('latitude', 'longitude'))
+        cube_iter = self.cube.slices(("latitude", "longitude"))
 
         ani = animate.animate(cube_iter, iplt.contourf)
 

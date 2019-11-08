@@ -16,27 +16,29 @@ from iris.analysis import Linear
 
 class Test_Linear(tests.IrisTest):
     def setUp(self):
-        self.extrap = 'some extrapolation'
+        self.extrap = "some extrapolation"
 
     def test___init__(self):
         linear = Linear(extrapolation_mode=self.extrap)
-        self.assertEqual(getattr(linear, 'extrapolation_mode', None),
-                         self.extrap)
+        self.assertEqual(
+            getattr(linear, "extrapolation_mode", None), self.extrap
+        )
 
-    @mock.patch('iris.analysis.LinearInterpolator', name='LinearInterpolator')
+    @mock.patch("iris.analysis.LinearInterpolator", name="LinearInterpolator")
     def test_interpolator(self, linear_interp_patch):
-        mock_interpolator = mock.Mock(name='mocked linear interpolator')
+        mock_interpolator = mock.Mock(name="mocked linear interpolator")
         linear_interp_patch.return_value = mock_interpolator
 
         linear = Linear(self.extrap)
-        cube = mock.Mock(name='cube')
-        coords = mock.Mock(name='coords')
+        cube = mock.Mock(name="cube")
+        coords = mock.Mock(name="coords")
 
         interpolator = linear.interpolator(cube, coords)
 
         self.assertIs(interpolator, mock_interpolator)
         linear_interp_patch.assert_called_once_with(
-            cube, coords, extrapolation_mode=self.extrap)
+            cube, coords, extrapolation_mode=self.extrap
+        )
 
 
 if __name__ == "__main__":

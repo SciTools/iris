@@ -68,8 +68,8 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
         plt.show()
 
     """
-    kwargs.setdefault('interval', 100)
-    coords = kwargs.pop('coords', None)
+    kwargs.setdefault("interval", 100)
+    coords = kwargs.pop("coords", None)
 
     if fig is None:
         fig = plt.gcf()
@@ -83,36 +83,41 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     # Turn cube iterator into a list to determine plot ranges.
     # NOTE: we check that we are not providing a cube as this has a deprecated
     # iter special method.
-    if (hasattr(cube_iterator, '__iter__') and not
-            isinstance(cube_iterator, iris.cube.Cube)):
+    if hasattr(cube_iterator, "__iter__") and not isinstance(
+        cube_iterator, iris.cube.Cube
+    ):
         cubes = iris.cube.CubeList(cube_iterator)
     else:
-        msg = 'iterable type object required for animation, {} given'.format(
-            type(cube_iterator))
+        msg = "iterable type object required for animation, {} given".format(
+            type(cube_iterator)
+        )
         raise TypeError(msg)
 
-    supported = ['iris.plot', 'iris.quickplot']
+    supported = ["iris.plot", "iris.quickplot"]
     if plot_func.__module__ not in supported:
-        msg = ('Given plotting module "{}" may not be supported, intended '
-               'use: {}.')
+        msg = (
+            'Given plotting module "{}" may not be supported, intended '
+            "use: {}."
+        )
         msg = msg.format(plot_func.__module__, supported)
         warnings.warn(msg, UserWarning)
 
-    supported = ['contour', 'contourf', 'pcolor', 'pcolormesh']
+    supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
-        msg = ('Given plotting function "{}" may not be supported, intended '
-               'use: {}.')
+        msg = (
+            'Given plotting function "{}" may not be supported, intended '
+            "use: {}."
+        )
         msg = msg.format(plot_func.__name__, supported)
         warnings.warn(msg, UserWarning)
 
     # Determine plot range.
-    vmin = kwargs.pop('vmin', min([cc.data.min() for cc in cubes]))
-    vmax = kwargs.pop('vmax', max([cc.data.max() for cc in cubes]))
+    vmin = kwargs.pop("vmin", min([cc.data.min() for cc in cubes]))
+    vmax = kwargs.pop("vmax", max([cc.data.max() for cc in cubes]))
 
     update = update_animation_iris
     frames = range(len(cubes))
 
-    return animation.FuncAnimation(fig, update,
-                                   frames=frames,
-                                   fargs=(cubes, vmin, vmax, coords),
-                                   **kwargs)
+    return animation.FuncAnimation(
+        fig, update, frames=frames, fargs=(cubes, vmin, vmax, coords), **kwargs
+    )

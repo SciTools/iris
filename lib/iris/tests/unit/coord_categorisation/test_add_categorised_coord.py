@@ -22,14 +22,14 @@ from iris.coords import DimCoord
 
 
 class Test_add_categorised_coord(tests.IrisTest):
-
     def setUp(self):
         # Factor out common variables and objects.
-        self.cube = mock.Mock(name='cube', coords=mock.Mock(return_value=[]))
-        self.coord = mock.Mock(name='coord',
-                               points=np.arange(12).reshape(3, 4))
-        self.units = 'units'
-        self.vectorised = mock.Mock(name='vectorized_result')
+        self.cube = mock.Mock(name="cube", coords=mock.Mock(return_value=[]))
+        self.coord = mock.Mock(
+            name="coord", points=np.arange(12).reshape(3, 4)
+        )
+        self.units = "units"
+        self.vectorised = mock.Mock(name="vectorized_result")
 
     def test_vectorise_call(self):
         # Check that the function being passed through gets called with
@@ -37,13 +37,15 @@ class Test_add_categorised_coord(tests.IrisTest):
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
         def fn(coord, v):
-            return v**2
+            return v ** 2
 
-        with mock.patch('numpy.vectorize',
-                        return_value=self.vectorised) as vectorise_patch:
-            with mock.patch('iris.coords.AuxCoord') as aux_coord_constructor:
-                add_categorised_coord(self.cube, 'foobar', self.coord, fn,
-                                      units=self.units)
+        with mock.patch(
+            "numpy.vectorize", return_value=self.vectorised
+        ) as vectorise_patch:
+            with mock.patch("iris.coords.AuxCoord") as aux_coord_constructor:
+                add_categorised_coord(
+                    self.cube, "foobar", self.coord, fn, units=self.units
+                )
 
         # Check the constructor of AuxCoord gets called with the
         # appropriate arguments.
@@ -55,49 +57,59 @@ class Test_add_categorised_coord(tests.IrisTest):
         aux_coord_constructor.assert_called_once_with(
             self.vectorised(self.coord, self.coord.points),
             units=self.units,
-            attributes=self.coord.attributes.copy())
+            attributes=self.coord.attributes.copy(),
+        )
         # And check adding the aux coord to the cube mock.
         self.cube.add_aux_coord.assert_called_once_with(
-            aux_coord_constructor(), self.cube.coord_dims(self.coord))
+            aux_coord_constructor(), self.cube.coord_dims(self.coord)
+        )
 
     def test_string_vectorised(self):
         # Check that special case handling of a vectorized string returning
         # function is taking place.
         def fn(coord, v):
-            return '0123456789'[:v]
+            return "0123456789"[:v]
 
-        with mock.patch('numpy.vectorize',
-                        return_value=self.vectorised) as vectorise_patch:
-            with mock.patch('iris.coords.AuxCoord') as aux_coord_constructor:
-                add_categorised_coord(self.cube, 'foobar', self.coord, fn,
-                                      units=self.units)
+        with mock.patch(
+            "numpy.vectorize", return_value=self.vectorised
+        ) as vectorise_patch:
+            with mock.patch("iris.coords.AuxCoord") as aux_coord_constructor:
+                add_categorised_coord(
+                    self.cube, "foobar", self.coord, fn, units=self.units
+                )
 
         self.assertEqual(
             aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points)
-            .astype('|S64'))
+            vectorise_patch(fn, otypes=[object])(
+                self.coord, self.coord.points
+            ).astype("|S64"),
+        )
 
 
 class Test_add_day_of_year(tests.IrisTest):
     def setUp(self):
         self.expected = {
-            'standard': np.array(list(range(360, 367)) + list(range(1, 4))),
-            'gregorian': np.array(list(range(360, 367)) + list(range(1, 4))),
-            'proleptic_gregorian': np.array(list(range(360, 367)) +
-                                            list(range(1, 4))),
-            'noleap': np.array(list(range(359, 366)) + list(range(1, 4))),
-            'julian': np.array(list(range(360, 367)) + list(range(1, 4))),
-            'all_leap': np.array(list(range(360, 367)) + list(range(1, 4))),
-            '365_day': np.array(list(range(359, 366)) + list(range(1, 4))),
-            '366_day': np.array(list(range(360, 367)) + list(range(1, 4))),
-            '360_day': np.array(list(range(355, 361)) + list(range(1, 5)))}
+            "standard": np.array(list(range(360, 367)) + list(range(1, 4))),
+            "gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
+            "proleptic_gregorian": np.array(
+                list(range(360, 367)) + list(range(1, 4))
+            ),
+            "noleap": np.array(list(range(359, 366)) + list(range(1, 4))),
+            "julian": np.array(list(range(360, 367)) + list(range(1, 4))),
+            "all_leap": np.array(list(range(360, 367)) + list(range(1, 4))),
+            "365_day": np.array(list(range(359, 366)) + list(range(1, 4))),
+            "366_day": np.array(list(range(360, 367)) + list(range(1, 4))),
+            "360_day": np.array(list(range(355, 361)) + list(range(1, 5))),
+        }
 
     def make_cube(self, calendar):
         n_times = 10
         cube = Cube(np.arange(n_times))
-        time_coord = DimCoord(np.arange(n_times), standard_name='time',
-                              units=Unit('days since 1980-12-25',
-                                         calendar=calendar))
+        time_coord = DimCoord(
+            np.arange(n_times),
+            standard_name="time",
+            units=Unit("days since 1980-12-25", calendar=calendar),
+        )
         cube.add_dim_coord(time_coord, 0)
         return cube
 
@@ -106,16 +118,17 @@ class Test_add_day_of_year(tests.IrisTest):
             # Skip the Julian calendar due to
             # https://github.com/Unidata/netcdftime/issues/13
             # Remove this if block once the issue is resolved.
-            if calendar == 'julian':
+            if calendar == "julian":
                 continue
             cube = self.make_cube(calendar)
-            add_day_of_year(cube, 'time')
-            points = cube.coord('day_of_year').points
+            add_day_of_year(cube, "time")
+            points = cube.coord("day_of_year").points
             expected_points = self.expected[calendar]
-            msg = 'Test failed for the following calendar: {}.'
-            self.assertArrayEqual(points, expected_points,
-                                  err_msg=msg.format(calendar))
+            msg = "Test failed for the following calendar: {}."
+            self.assertArrayEqual(
+                points, expected_points, err_msg=msg.format(calendar)
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

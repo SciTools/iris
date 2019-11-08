@@ -17,7 +17,7 @@ import iris.fileformats.abf
 @tests.skip_data
 class TestAbfLoad(tests.IrisTest):
     def setUp(self):
-        self.path = tests.get_data_path(('abf', 'AVHRRBUVI01.1985apra.abf'))
+        self.path = tests.get_data_path(("abf", "AVHRRBUVI01.1985apra.abf"))
 
     def test_load(self):
         cubes = iris.load(self.path)
@@ -28,7 +28,7 @@ class TestAbfLoad(tests.IrisTest):
         time_coord.bounds = np.array(time_coord.bounds, dtype=np.int64)
         # Normalise the different array orders returned by version 1.6
         # and 1.7 of NumPy.
-        cubes[0].data = cubes[0].data.copy(order='C')
+        cubes[0].data = cubes[0].data.copy(order="C")
         self.assertCML(cubes, ("abf", "load.cml"))
 
     def test_fill_value(self):
@@ -40,5 +40,5 @@ class TestAbfLoad(tests.IrisTest):
         self.assertLess(field.data.fill_value, 256)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

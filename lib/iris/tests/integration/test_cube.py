@@ -21,9 +21,10 @@ from iris._lazy_data import is_lazy_data, as_lazy_data
 class Test_aggregated_by(tests.IrisTest):
     @tests.skip_data
     def test_agg_by_aux_coord(self):
-        problem_test_file = tests.get_data_path(('NetCDF', 'testing',
-                                                'small_theta_colpex.nc'))
-        cube = iris.load_cube(problem_test_file, 'air_potential_temperature')
+        problem_test_file = tests.get_data_path(
+            ("NetCDF", "testing", "small_theta_colpex.nc")
+        )
+        cube = iris.load_cube(problem_test_file, "air_potential_temperature")
 
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `cube`, whose `_points` attribute is a lazy array.
@@ -33,15 +34,15 @@ class Test_aggregated_by(tests.IrisTest):
         # First confirm we've got a lazy array.
         # NB. This checks the merge process in `load_cube()` hasn't
         # triggered the load of the coordinate's data.
-        forecast_period_coord = cube.coord('forecast_period')
+        forecast_period_coord = cube.coord("forecast_period")
 
         self.assertTrue(is_lazy_data(forecast_period_coord.core_points()))
 
         # Now confirm we can aggregate along this coord.
-        res_cube = cube.aggregated_by('forecast_period', MEAN)
+        res_cube = cube.aggregated_by("forecast_period", MEAN)
         res_cell_methods = res_cube.cell_methods[0]
-        self.assertEqual(res_cell_methods.coord_names, ('forecast_period',))
-        self.assertEqual(res_cell_methods.method, 'mean')
+        self.assertEqual(res_cell_methods.coord_names, ("forecast_period",))
+        self.assertEqual(res_cell_methods.method, "mean")
 
 
 class TestDataFillValue(tests.IrisTest):
@@ -59,5 +60,5 @@ class TestDataFillValue(tests.IrisTest):
         self.assertEqual(cube.data.fill_value, 20)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

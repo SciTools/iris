@@ -19,18 +19,23 @@ from iris.tests import stock
 
 
 class TestClimatology(iris.tests.IrisTest):
-    reference_cdl_path = os_sep.join([
-        dirname(tests.__file__),
-        ('results/integration/climatology/TestClimatology/'
-            'reference_simpledata.cdl')])
+    reference_cdl_path = os_sep.join(
+        [
+            dirname(tests.__file__),
+            (
+                "results/integration/climatology/TestClimatology/"
+                "reference_simpledata.cdl"
+            ),
+        ]
+    )
 
     @classmethod
     def _simple_cdl_string(cls):
-        with open(cls.reference_cdl_path, 'r') as f:
+        with open(cls.reference_cdl_path, "r") as f:
             cdl_content = f.read()
         # Add the expected CDL first line since this is removed from the
         # stored results file.
-        cdl_content = 'netcdf {\n' + cdl_content
+        cdl_content = "netcdf {\n" + cdl_content
 
         return cdl_content
 
@@ -38,7 +43,7 @@ class TestClimatology(iris.tests.IrisTest):
     def _load_sanitised_cube(filepath):
         cube = iris.load_cube(filepath)
         # Remove attributes convention, if any.
-        cube.attributes.pop('Conventions', None)
+        cube.attributes.pop("Conventions", None)
         # Remove any var-names.
         for coord in cube.coords():
             coord.var_name = None
@@ -49,16 +54,15 @@ class TestClimatology(iris.tests.IrisTest):
     def setUpClass(cls):
         # Create a temp directory for temp files.
         cls.temp_dir = tempfile.mkdtemp()
-        cls.path_ref_cdl = path_join(cls.temp_dir, 'standard.cdl')
-        cls.path_ref_nc = path_join(cls.temp_dir, 'standard.nc')
+        cls.path_ref_cdl = path_join(cls.temp_dir, "standard.cdl")
+        cls.path_ref_nc = path_join(cls.temp_dir, "standard.nc")
         # Create reference CDL file.
-        with open(cls.path_ref_cdl, 'w') as f_out:
+        with open(cls.path_ref_cdl, "w") as f_out:
             f_out.write(cls._simple_cdl_string())
         # Create reference netCDF file from reference CDL.
-        command = 'ncgen -o {} {}'.format(
-            cls.path_ref_nc, cls.path_ref_cdl)
+        command = "ncgen -o {} {}".format(cls.path_ref_nc, cls.path_ref_cdl)
         check_call(command, shell=True)
-        cls.path_temp_nc = path_join(cls.temp_dir, 'tmp.nc')
+        cls.path_temp_nc = path_join(cls.temp_dir, "tmp.nc")
 
         # Create reference cube.
         cls.cube_ref = stock.climatology_3d()
@@ -68,7 +72,7 @@ class TestClimatology(iris.tests.IrisTest):
         # Destroy a temp directory for temp files.
         shutil.rmtree(cls.temp_dir)
 
-###############################################################################
+    ###############################################################################
     # Round-trip tests
 
     def test_cube_to_cube(self):
@@ -86,7 +90,8 @@ class TestClimatology(iris.tests.IrisTest):
         self.assertCDL(
             self.path_temp_nc,
             reference_filename=self.reference_cdl_path,
-            flags='')
+            flags="",
+        )
 
     # NOTE:
     # The saving half of the round-trip tests is tested in the

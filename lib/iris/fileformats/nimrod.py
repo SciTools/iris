@@ -17,50 +17,117 @@ import iris.fileformats.nimrod_load_rules
 
 
 # general header (int16) elements
-general_header_int16s = ("vt_year", "vt_month", "vt_day", "vt_hour",
-                         "vt_minute", "vt_second", "dt_year", "dt_month",
-                         "dt_day", "dt_hour", "dt_minute", "datum_type",
-                         "datum_len", "experiment_num", "horizontal_grid_type",
-                         "num_rows", "num_cols", "nimrod_version",
-                         "field_code", "vertical_coord_type",
-                         "reference_vertical_coord_type",
-                         "data_specific_float32_len",
-                         "data_specific_int16_len",
-                         "origin_corner", "int_mdi", "period_minutes",
-                         "num_model_levels", "proj_biaxial_ellipsoid",
-                         "ensemble_member", "spare1", "spare2")
+general_header_int16s = (
+    "vt_year",
+    "vt_month",
+    "vt_day",
+    "vt_hour",
+    "vt_minute",
+    "vt_second",
+    "dt_year",
+    "dt_month",
+    "dt_day",
+    "dt_hour",
+    "dt_minute",
+    "datum_type",
+    "datum_len",
+    "experiment_num",
+    "horizontal_grid_type",
+    "num_rows",
+    "num_cols",
+    "nimrod_version",
+    "field_code",
+    "vertical_coord_type",
+    "reference_vertical_coord_type",
+    "data_specific_float32_len",
+    "data_specific_int16_len",
+    "origin_corner",
+    "int_mdi",
+    "period_minutes",
+    "num_model_levels",
+    "proj_biaxial_ellipsoid",
+    "ensemble_member",
+    "spare1",
+    "spare2",
+)
 
 
 # general header (float32) elements
-general_header_float32s = ("vertical_coord", "reference_vertical_coord",
-                           "y_origin", "row_step", "x_origin", "column_step",
-                           "float32_mdi", "MKS_data_scaling", "data_offset",
-                           "x_offset", "y_offset", "true_origin_latitude",
-                           "true_origin_longitude", "true_origin_easting",
-                           "true_origin_northing", "tm_meridian_scaling")
+general_header_float32s = (
+    "vertical_coord",
+    "reference_vertical_coord",
+    "y_origin",
+    "row_step",
+    "x_origin",
+    "column_step",
+    "float32_mdi",
+    "MKS_data_scaling",
+    "data_offset",
+    "x_offset",
+    "y_offset",
+    "true_origin_latitude",
+    "true_origin_longitude",
+    "true_origin_easting",
+    "true_origin_northing",
+    "tm_meridian_scaling",
+)
 
 
 # data specific header (float32) elements
-data_header_float32s = ("tl_y", "tl_x", "tr_y", "ty_x", "br_y", "br_x", "bl_y",
-                        "bl_x", "sat_calib", "sat_space_count",
-                        "ducting_index", "elevation_angle")
+data_header_float32s = (
+    "tl_y",
+    "tl_x",
+    "tr_y",
+    "ty_x",
+    "br_y",
+    "br_x",
+    "bl_y",
+    "bl_x",
+    "sat_calib",
+    "sat_space_count",
+    "ducting_index",
+    "elevation_angle",
+)
 
 
 # data specific header (int16) elements
-data_header_int16s = ("radar_num", "radars_bitmask", "more_radars_bitmask",
-                      "clutter_map_num", "calibration_type",
-                      "bright_band_height", "bright_band_intensity",
-                      "bright_band_test1", "bright_band_test2", "infill_flag",
-                      "stop_elevation", "int16_vertical_coord",
-                      "int16_reference_vertical_coord", "int16_y_origin",
-                      "int16_row_step", "int16_x_origin", "int16_column_step",
-                      "int16_float32_mdi", "int16_data_scaling",
-                      "int16_data_offset", "int16_x_offset", "int16_y_offset",
-                      "int16_true_origin_latitude",
-                      "int16_true_origin_longitude", "int16_tl_y",
-                      "int16_tl_x", "int16_tr_y", "int16_ty_x", "int16_br_y",
-                      "int16_br_x", "int16_bl_y", "int16_bl_x", "sensor_id",
-                      "meteosat_id", "alphas_available")
+data_header_int16s = (
+    "radar_num",
+    "radars_bitmask",
+    "more_radars_bitmask",
+    "clutter_map_num",
+    "calibration_type",
+    "bright_band_height",
+    "bright_band_intensity",
+    "bright_band_test1",
+    "bright_band_test2",
+    "infill_flag",
+    "stop_elevation",
+    "int16_vertical_coord",
+    "int16_reference_vertical_coord",
+    "int16_y_origin",
+    "int16_row_step",
+    "int16_x_origin",
+    "int16_column_step",
+    "int16_float32_mdi",
+    "int16_data_scaling",
+    "int16_data_offset",
+    "int16_x_offset",
+    "int16_y_offset",
+    "int16_true_origin_latitude",
+    "int16_true_origin_longitude",
+    "int16_tl_y",
+    "int16_tl_x",
+    "int16_tr_y",
+    "int16_ty_x",
+    "int16_br_y",
+    "int16_br_x",
+    "int16_bl_y",
+    "int16_bl_x",
+    "sensor_id",
+    "meteosat_id",
+    "alphas_available",
+)
 
 
 def _read_chars(infile, num):
@@ -78,6 +145,7 @@ class NimrodField:
     Capable of converting itself into a :class:`~iris.cube.Cube`
 
     """
+
     def __init__(self, from_file=None):
         """
         Create a NimrodField object and optionally read from an open file.
@@ -136,9 +204,10 @@ class NimrodField:
 
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
-            raise TranslationError('Expected header trailing_length of {}, '
-                                   'got {}.'.format(leading_length,
-                                                    trailing_length))
+            raise TranslationError(
+                "Expected header trailing_length of {}, "
+                "got {}.".format(leading_length, trailing_length)
+            )
 
     def _read_data(self, infile):
         """
@@ -164,8 +233,9 @@ class NimrodField:
             elif self.datum_len == 4:
                 numpy_dtype = np.int32
             else:
-                raise TranslationError("Undefined datum length "
-                                       "%d" % self.datum_type)
+                raise TranslationError(
+                    "Undefined datum length " "%d" % self.datum_type
+                )
         # 2:byte
         elif self.datum_type == 2:
             numpy_dtype = np.byte
@@ -173,8 +243,9 @@ class NimrodField:
             raise TranslationError("Undefined data type")
         leading_length = struct.unpack(">L", infile.read(4))[0]
         if leading_length != num_data_bytes:
-            raise TranslationError("Expected data leading_length of %d" %
-                                   num_data_bytes)
+            raise TranslationError(
+                "Expected data leading_length of %d" % num_data_bytes
+            )
 
         # TODO: Deal appropriately with MDI. Can't just create masked arrays
         #       as cube merge converts masked arrays with no masks to ndarrays,
@@ -186,8 +257,9 @@ class NimrodField:
 
         trailing_length = struct.unpack(">L", infile.read(4))[0]
         if trailing_length != leading_length:
-            raise TranslationError("Expected data trailing_length of %d" %
-                                   num_data_bytes)
+            raise TranslationError(
+                "Expected data trailing_length of %d" % num_data_bytes
+            )
 
         # Form the correct shape.
         self.data = self.data.reshape(self.num_rows, self.num_cols)
@@ -228,10 +300,9 @@ def load_cubes(filenames, callback=None):
 
                     # Were we given a callback?
                     if callback is not None:
-                        cube = iris.io.run_callback(callback,
-                                                    cube,
-                                                    field,
-                                                    filename)
+                        cube = iris.io.run_callback(
+                            callback, cube, field, filename
+                        )
                     if cube is None:
                         continue
 

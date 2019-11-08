@@ -21,12 +21,12 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
-        qplt.contour(self.cube, coords=('bar', 'str_coord'))
-        self.assertPointsTickLabels('yaxis')
+        qplt.contour(self.cube, coords=("bar", "str_coord"))
+        self.assertPointsTickLabels("yaxis")
 
     def test_xaxis_labels(self):
-        qplt.contour(self.cube, coords=('str_coord', 'bar'))
-        self.assertPointsTickLabels('xaxis')
+        qplt.contour(self.cube, coords=("str_coord", "bar"))
+        self.assertPointsTickLabels("xaxis")
 
 
 @tests.skip_plot
@@ -34,13 +34,13 @@ class TestCoords(tests.IrisTest, MixinCoords):
     def setUp(self):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=False)
-        self.foo = self.cube.coord('foo').points
+        self.foo = self.cube.coord("foo").points
         self.foo_index = np.arange(self.foo.size)
-        self.bar = self.cube.coord('bar').points
+        self.bar = self.cube.coord("bar").points
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.mpl_patch = self.patch('matplotlib.pyplot.contour')
+        self.mpl_patch = self.patch("matplotlib.pyplot.contour")
         self.draw_func = qplt.contour
 
 

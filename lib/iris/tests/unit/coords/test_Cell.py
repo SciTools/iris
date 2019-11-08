@@ -37,12 +37,15 @@ class Test___common_cmp__(tests.IrisTest):
         # results.
         cell = Cell(cftime.datetime(2010, 3, 21))
         dt = mock.Mock(timetuple=mock.Mock())
-        self.assert_raises_on_comparison(cell, dt, TypeError,
-                                         'determine the order of cftime')
-        self.assert_raises_on_comparison(cell, 23, TypeError,
-                                         'determine the order of cftime')
-        self.assert_raises_on_comparison(cell, 'hello', TypeError,
-                                         'Unexpected type.*str')
+        self.assert_raises_on_comparison(
+            cell, dt, TypeError, "determine the order of cftime"
+        )
+        self.assert_raises_on_comparison(
+            cell, 23, TypeError, "determine the order of cftime"
+        )
+        self.assert_raises_on_comparison(
+            cell, "hello", TypeError, "Unexpected type.*str"
+        )
 
     def test_cftime_other(self):
         # Check that cell comparison to a cftime.datetime object
@@ -50,19 +53,25 @@ class Test___common_cmp__(tests.IrisTest):
         # producing unreliable results.
         dt = cftime.datetime(2010, 3, 21)
         cell = Cell(mock.Mock(timetuple=mock.Mock()))
-        self.assert_raises_on_comparison(cell, dt, TypeError,
-                                         'determine the order of cftime')
+        self.assert_raises_on_comparison(
+            cell, dt, TypeError, "determine the order of cftime"
+        )
 
     def test_PartialDateTime_bounded_cell(self):
         # Check that bounded comparisions to a PartialDateTime
         # raise an exception. These are not supported as they
         # depend on the calendar.
         dt = PartialDateTime(month=6)
-        cell = Cell(datetime.datetime(2010, 1, 1),
-                    bound=[datetime.datetime(2010, 1, 1),
-                           datetime.datetime(2011, 1, 1)])
-        self.assert_raises_on_comparison(cell, dt, TypeError,
-                                         'bounded region for datetime')
+        cell = Cell(
+            datetime.datetime(2010, 1, 1),
+            bound=[
+                datetime.datetime(2010, 1, 1),
+                datetime.datetime(2011, 1, 1),
+            ],
+        )
+        self.assert_raises_on_comparison(
+            cell, dt, TypeError, "bounded region for datetime"
+        )
 
     def test_PartialDateTime_unbounded_cell(self):
         # Check that cell comparison works with PartialDateTimes.
@@ -88,8 +97,9 @@ class Test___eq__(tests.IrisTest):
     def test_datetimelike(self):
         # Check that cell equality works with objects with a "timetuple".
         dt = mock.Mock(timetuple=mock.Mock())
-        cell = mock.MagicMock(spec=Cell, point=datetime.datetime(2010, 3, 21),
-                              bound=None)
+        cell = mock.MagicMock(
+            spec=Cell, point=datetime.datetime(2010, 3, 21), bound=None
+        )
         _ = cell == dt
         cell.__eq__.assert_called_once_with(dt)
 
@@ -99,10 +109,14 @@ class Test___eq__(tests.IrisTest):
         # depends on the calendar which is not always known from
         # the datetime-like bound objects.
         other = mock.Mock(timetuple=mock.Mock())
-        cell = Cell(point=object(),
-                    bound=[mock.Mock(timetuple=mock.Mock()),
-                           mock.Mock(timetuple=mock.Mock())])
-        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
+        cell = Cell(
+            point=object(),
+            bound=[
+                mock.Mock(timetuple=mock.Mock()),
+                mock.Mock(timetuple=mock.Mock()),
+            ],
+        )
+        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
             cell == other
 
     def test_PartialDateTime_other(self):
@@ -116,16 +130,20 @@ class Test___eq__(tests.IrisTest):
 class Test_contains_point(tests.IrisTest):
     def test_datetimelike_bounded_cell(self):
         point = object()
-        cell = Cell(point=object(),
-                    bound=[mock.Mock(timetuple=mock.Mock()),
-                           mock.Mock(timetuple=mock.Mock())])
-        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
+        cell = Cell(
+            point=object(),
+            bound=[
+                mock.Mock(timetuple=mock.Mock()),
+                mock.Mock(timetuple=mock.Mock()),
+            ],
+        )
+        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
             cell.contains_point(point)
 
     def test_datetimelike_point(self):
         point = mock.Mock(timetuple=mock.Mock())
         cell = Cell(point=object(), bound=[object(), object()])
-        with self.assertRaisesRegex(TypeError, 'bounded region for datetime'):
+        with self.assertRaisesRegex(TypeError, "bounded region for datetime"):
             cell.contains_point(point)
 
 
@@ -133,6 +151,7 @@ class Test_numpy_comparison(tests.IrisTest):
     """
     Unit tests to check that the results of comparisons with numpy types can be
     used as truth values."""
+
     def test_cell_lhs(self):
         cell = Cell(point=1.5)
         n = np.float64(1.2)
@@ -146,7 +165,8 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(cell != n)
         except:
             self.fail(
-                "Result of comparison could not be used as a truth value")
+                "Result of comparison could not be used as a truth value"
+            )
 
     def test_cell_rhs(self):
         cell = Cell(point=1.5)
@@ -161,7 +181,9 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n != cell)
         except:
             self.fail(
-                "Result of comparison could not be used as a truth value")
+                "Result of comparison could not be used as a truth value"
+            )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     tests.main()

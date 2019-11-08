@@ -23,12 +23,12 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
-        qplt.contourf(self.cube, coords=('bar', 'str_coord'))
-        self.assertPointsTickLabels('yaxis')
+        qplt.contourf(self.cube, coords=("bar", "str_coord"))
+        self.assertPointsTickLabels("yaxis")
 
     def test_xaxis_labels(self):
-        qplt.contourf(self.cube, coords=('str_coord', 'bar'))
-        self.assertPointsTickLabels('xaxis')
+        qplt.contourf(self.cube, coords=("str_coord", "bar"))
+        self.assertPointsTickLabels("xaxis")
 
 
 @tests.skip_plot
@@ -36,17 +36,18 @@ class TestCoords(tests.IrisTest, MixinCoords):
     def setUp(self):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=False)
-        self.foo = self.cube.coord('foo').points
+        self.foo = self.cube.coord("foo").points
         self.foo_index = np.arange(self.foo.size)
-        self.bar = self.cube.coord('bar').points
+        self.bar = self.cube.coord("bar").points
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
         mocker = mock.Mock(alpha=0, antialiased=False)
-        self.mpl_patch = self.patch('matplotlib.pyplot.contourf',
-                                    return_value=mocker)
+        self.mpl_patch = self.patch(
+            "matplotlib.pyplot.contourf", return_value=mocker
+        )
         # Also need to mock the colorbar.
-        self.patch('matplotlib.pyplot.colorbar')
+        self.patch("matplotlib.pyplot.colorbar")
         self.draw_func = qplt.contourf
 
 

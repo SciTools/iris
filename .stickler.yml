@@ -1,7 +1,4 @@
 linters:
     flake8:
         python: 3
-
-files:
-    ignore:
-        - 'lib/iris/fileformats/um_cf_map.py'
+        config: ./.flake8

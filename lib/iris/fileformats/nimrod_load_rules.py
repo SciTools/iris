@@ -16,7 +16,7 @@ from iris.coords import DimCoord
 from iris.exceptions import TranslationError
 
 
-__all__ = ['run']
+__all__ = ["run"]
 
 
 # Meridian scaling for British National grid.
@@ -24,8 +24,9 @@ MERIDIAN_SCALING_BNG = 0.9996012717
 
 NIMROD_DEFAULT = -32767.0
 
-TIME_UNIT = cf_units.Unit('hours since 1970-01-01 00:00:00',
-                          calendar=cf_units.CALENDAR_GREGORIAN)
+TIME_UNIT = cf_units.Unit(
+    "hours since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_GREGORIAN
+)
 
 
 FIELD_CODES = {73: "orography"}
@@ -54,16 +55,22 @@ def units(cube, field):
         cube.units = units
     except ValueError:
         # Just add it as an attribute.
-        warnings.warn("Unhandled units '{0}' recorded in cube attributes.".
-                      format(units))
+        warnings.warn(
+            "Unhandled units '{0}' recorded in cube attributes.".format(units)
+        )
         cube.attributes["invalid_units"] = units
 
 
 def time(cube, field):
     """Add a time coord to the cube."""
-    valid_date = cftime.datetime(field.vt_year, field.vt_month,
-                                 field.vt_day, field.vt_hour,
-                                 field.vt_minute, field.vt_second)
+    valid_date = cftime.datetime(
+        field.vt_year,
+        field.vt_month,
+        field.vt_day,
+        field.vt_hour,
+        field.vt_minute,
+        field.vt_second,
+    )
     point = TIME_UNIT.date2num(valid_date)
 
     bounds = None
@@ -71,10 +78,9 @@ def time(cube, field):
         # Create a bound array to handle the Period of Interest if set.
         bounds = (point - (field.period_minutes / 60.0), point)
 
-    time_coord = DimCoord(points=point,
-                          bounds=bounds,
-                          standard_name='time',
-                          units=TIME_UNIT)
+    time_coord = DimCoord(
+        points=point, bounds=bounds, standard_name="time", units=TIME_UNIT
+    )
 
     cube.add_aux_coord(time_coord)
 
@@ -82,13 +88,19 @@ def time(cube, field):
 def reference_time(cube, field):
     """Add a 'reference time' to the cube, if present in the field."""
     if field.dt_year != field.int_mdi:
-        data_date = cftime.datetime(field.dt_year, field.dt_month,
-                                    field.dt_day, field.dt_hour,
-                                    field.dt_minute)
+        data_date = cftime.datetime(
+            field.dt_year,
+            field.dt_month,
+            field.dt_day,
+            field.dt_hour,
+            field.dt_minute,
+        )
 
-        ref_time_coord = DimCoord(TIME_UNIT.date2num(data_date),
-                                  standard_name='forecast_reference_time',
-                                  units=TIME_UNIT)
+        ref_time_coord = DimCoord(
+            TIME_UNIT.date2num(data_date),
+            standard_name="forecast_reference_time",
+            units=TIME_UNIT,
+        )
 
         cube.add_aux_coord(ref_time_coord)
 
@@ -96,8 +108,9 @@ def reference_time(cube, field):
 def experiment(cube, field):
     """Add an 'experiment number' to the cube, if present in the field."""
     if field.experiment_num != field.int_mdi:
-        cube.add_aux_coord(DimCoord(field.experiment_num,
-                                    long_name="experiment_number"))
+        cube.add_aux_coord(
+            DimCoord(field.experiment_num, long_name="experiment_number")
+        )
 
 
 def proj_biaxial_ellipsoid(cube, field):
@@ -120,16 +133,21 @@ def tm_meridian_scaling(cube, field):
         if abs(field.tm_meridian_scaling - MERIDIAN_SCALING_BNG) < 1e-6:
             pass  # This is the expected value for British National Grid
         else:
-            warnings.warn("tm_meridian_scaling not yet handled: {}"
-                          "".format(field.tm_meridian_scaling),
-                          TranslationWarning)
+            warnings.warn(
+                "tm_meridian_scaling not yet handled: {}"
+                "".format(field.tm_meridian_scaling),
+                TranslationWarning,
+            )
 
 
 def british_national_grid_x(cube, field):
     """Add a British National Grid X coord to the cube."""
-    x_coord = DimCoord(np.arange(field.num_cols) * field.column_step +
-                       field.x_origin, standard_name="projection_x_coordinate",
-                       units="m", coord_system=iris.coord_systems.OSGB())
+    x_coord = DimCoord(
+        np.arange(field.num_cols) * field.column_step + field.x_origin,
+        standard_name="projection_x_coordinate",
+        units="m",
+        coord_system=iris.coord_systems.OSGB(),
+    )
     cube.add_dim_coord(x_coord, 1)
 
 
@@ -143,12 +161,15 @@ def british_national_grid_y(cube, field):
     if field.origin_corner == 0:  # top left
         y_coord = DimCoord(
             np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin,
-            standard_name="projection_y_coordinate", units="m",
-            coord_system=iris.coord_systems.OSGB())
+            standard_name="projection_y_coordinate",
+            units="m",
+            coord_system=iris.coord_systems.OSGB(),
+        )
         cube.add_dim_coord(y_coord, 0)
     else:
-        raise TranslationError("Corner {0} not yet implemented".
-                               format(field.origin_corner))
+        raise TranslationError(
+            "Corner {0} not yet implemented".format(field.origin_corner)
+        )
 
 
 def horizontal_grid(cube, field):
@@ -162,8 +183,9 @@ def horizontal_grid(cube, field):
         british_national_grid_x(cube, field)
         british_national_grid_y(cube, field)
     else:
-        raise TranslationError("Grid type %d not yet implemented" %
-                               field.horizontal_grid_type)
+        raise TranslationError(
+            "Grid type %d not yet implemented" % field.horizontal_grid_type
+        )
 
 
 def orography_vertical_coord(cube, field):
@@ -175,11 +197,16 @@ def orography_vertical_coord(cube, field):
 
 def height_vertical_coord(cube, field):
     """Add a height coord to the cube, if present in the field."""
-    if (field.reference_vertical_coord_type == field.int_mdi or
-            field.reference_vertical_coord == field.float32_mdi):
-        height_coord = DimCoord(field.vertical_coord,
-                                standard_name="height", units="m",
-                                attributes={"positive": "up"})
+    if (
+        field.reference_vertical_coord_type == field.int_mdi
+        or field.reference_vertical_coord == field.float32_mdi
+    ):
+        height_coord = DimCoord(
+            field.vertical_coord,
+            standard_name="height",
+            units="m",
+            attributes={"positive": "up"},
+        )
         cube.add_aux_coord(height_coord)
     else:
         raise TranslationError("Bounded vertical not yet implemented")
@@ -187,26 +214,34 @@ def height_vertical_coord(cube, field):
 
 def altitude_vertical_coord(cube, field):
     """Add an altitude coord to the cube, if present in the field."""
-    if (field.reference_vertical_coord_type == field.int_mdi or
-            field.reference_vertical_coord == field.float32_mdi):
-                alti_coord = DimCoord(field.vertical_coord,
-                                      standard_name="altitude",
-                                      units="m",
-                                      attributes={"positive": "up"})
-                cube.add_aux_coord(alti_coord)
+    if (
+        field.reference_vertical_coord_type == field.int_mdi
+        or field.reference_vertical_coord == field.float32_mdi
+    ):
+        alti_coord = DimCoord(
+            field.vertical_coord,
+            standard_name="altitude",
+            units="m",
+            attributes={"positive": "up"},
+        )
+        cube.add_aux_coord(alti_coord)
     else:
         raise TranslationError("Bounded vertical not yet implemented")
 
 
 def levels_below_ground_vertical_coord(cube, field):
     """Add a levels_below_ground coord to the cube, if present in the field."""
-    if (field.reference_vertical_coord_type == field.int_mdi or
-            field.reference_vertical_coord == field.float32_mdi):
-                lev_coord = DimCoord(field.vertical_coord,
-                                     long_name="levels_below_ground",
-                                     units="1",
-                                     attributes={"positive": "down"})
-                cube.add_aux_coord(lev_coord)
+    if (
+        field.reference_vertical_coord_type == field.int_mdi
+        or field.reference_vertical_coord == field.float32_mdi
+    ):
+        lev_coord = DimCoord(
+            field.vertical_coord,
+            long_name="levels_below_ground",
+            units="1",
+            attributes={"positive": "down"},
+        )
+        cube.add_aux_coord(lev_coord)
     else:
         raise TranslationError("Bounded vertical not yet implemented")
 
@@ -227,8 +262,10 @@ def vertical_coord(cube, field):
             elif vertical_code_name == "levels_below_ground":
                 levels_below_ground_vertical_coord(cube, field)
             else:
-                warnings.warn("Vertical coord {!r} not yet handled"
-                              "".format(v_type), TranslationWarning)
+                warnings.warn(
+                    "Vertical coord {!r} not yet handled" "".format(v_type),
+                    TranslationWarning,
+                )
 
 
 def ensemble_member(cube, field):
@@ -243,13 +280,15 @@ def origin_corner(cube, field):
     if field.origin_corner == 0:  # top left
         cube.data = cube.data[::-1, :].copy()
     else:
-        raise TranslationError("Corner {0} not yet implemented".
-                               format(field.origin_corner))
+        raise TranslationError(
+            "Corner {0} not yet implemented".format(field.origin_corner)
+        )
     return cube
 
 
 def attributes(cube, field):
     """Add attributes to the cube."""
+
     def add_attr(name):
         """Add an attribute to the cube."""
         if hasattr(field, name):

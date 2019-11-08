@@ -32,8 +32,15 @@ class PartialDateTime:
 
     """
 
-    __slots__ = ('year', 'month', 'day', 'hour', 'minute', 'second',
-                 'microsecond')
+    __slots__ = (
+        "year",
+        "month",
+        "day",
+        "hour",
+        "minute",
+        "second",
+        "microsecond",
+    )
 
     #: A dummy value provided as a workaround to allow comparisons with
     #: :class:`datetime.datetime`.
@@ -41,8 +48,16 @@ class PartialDateTime:
     # NB. It doesn't even matter what this value is.
     timetuple = None
 
-    def __init__(self, year=None, month=None, day=None, hour=None,
-                 minute=None, second=None, microsecond=None):
+    def __init__(
+        self,
+        year=None,
+        month=None,
+        day=None,
+        hour=None,
+        minute=None,
+        second=None,
+        microsecond=None,
+    ):
         """
         Allows partial comparisons against datetime-like objects.
 
@@ -88,15 +103,17 @@ class PartialDateTime:
         self.microsecond = microsecond
 
     def __repr__(self):
-        attr_pieces = ['{}={}'.format(name, getattr(self, name))
-                       for name in self.__slots__
-                       if getattr(self, name) is not None]
-        result = '{}({})'.format(type(self).__name__, ', '.join(attr_pieces))
+        attr_pieces = [
+            "{}={}".format(name, getattr(self, name))
+            for name in self.__slots__
+            if getattr(self, name) is not None
+        ]
+        result = "{}({})".format(type(self).__name__, ", ".join(attr_pieces))
         return result
 
     def __gt__(self, other):
         if isinstance(other, type(self)):
-            raise TypeError('Cannot order PartialDateTime instances.')
+            raise TypeError("Cannot order PartialDateTime instances.")
         result = False
         try:
             # Everything except 'microsecond' is mandatory
@@ -107,7 +124,7 @@ class PartialDateTime:
                     result = attr > other_attr
                     break
             # 'microsecond' is optional
-            if result and hasattr(other, 'microsecond'):
+            if result and hasattr(other, "microsecond"):
                 attr = self.microsecond
                 other_attr = other.microsecond
                 if attr is not None and attr != other_attr:
@@ -133,7 +150,7 @@ class PartialDateTime:
                         result = False
                         break
                 # 'microsecond' is optional
-                if result and hasattr(other, 'microsecond'):
+                if result and hasattr(other, "microsecond"):
                     attr = self.microsecond
                     other_attr = other.microsecond
                     if attr is not None and attr != other_attr:
@@ -156,5 +173,5 @@ class PartialDateTime:
         # We don't want Python to fall back to the default `object`
         # behaviour (which compares using object IDs), so we raise an
         # exception here instead.
-        fmt = 'unable to compare PartialDateTime with {}'
+        fmt = "unable to compare PartialDateTime with {}"
         raise TypeError(fmt.format(type(other)))

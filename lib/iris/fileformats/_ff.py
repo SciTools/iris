@@ -20,7 +20,7 @@ from . import pp
 
 IMDI = -32768
 
-FF_HEADER_DEPTH = 256      # In words (64-bit).
+FF_HEADER_DEPTH = 256  # In words (64-bit).
 DEFAULT_FF_WORD_DEPTH = 8  # In bytes.
 
 # UM marker to signify empty lookup table entry.
@@ -28,37 +28,38 @@ _FF_LOOKUP_TABLE_TERMINATE = -99
 
 # UM FieldsFile fixed length header names and positions.
 UM_FIXED_LENGTH_HEADER = [
-    ('data_set_format_version',    (1, )),
-    ('sub_model',                  (2, )),
-    ('vert_coord_type',            (3, )),
-    ('horiz_grid_type',            (4, )),
-    ('dataset_type',               (5, )),
-    ('run_identifier',             (6, )),
-    ('experiment_number',          (7, )),
-    ('calendar',                   (8, )),
-    ('grid_staggering',            (9, )),
-    ('time_type',                  (10, )),
-    ('projection_number',          (11, )),
-    ('model_version',              (12, )),
-    ('obs_file_type',              (14, )),
-    ('last_fieldop_type',          (15, )),
-    ('first_validity_time',        (21, 22, 23, 24, 25, 26, 27, )),
-    ('last_validity_time',         (28, 29, 30, 31, 32, 33, 34, )),
-    ('misc_validity_time',         (35, 36, 37, 38, 39, 40, 41, )),
-    ('integer_constants',          (100, 101, )),
-    ('real_constants',             (105, 106, )),
-    ('level_dependent_constants',  (110, 111, 112, )),
-    ('row_dependent_constants',    (115, 116, 117, )),
-    ('column_dependent_constants', (120, 121, 122, )),
-    ('fields_of_constants',        (125, 126, 127, )),
-    ('extra_constants',            (130, 131, )),
-    ('temp_historyfile',           (135, 136, )),
-    ('compressed_field_index1',    (140, 141, )),
-    ('compressed_field_index2',    (142, 143, )),
-    ('compressed_field_index3',    (144, 145, )),
-    ('lookup_table',               (150, 151, 152, )),
-    ('total_prognostic_fields',    (153, )),
-    ('data',                       (160, 161, 162, )), ]
+    ("data_set_format_version", (1,)),
+    ("sub_model", (2,)),
+    ("vert_coord_type", (3,)),
+    ("horiz_grid_type", (4,)),
+    ("dataset_type", (5,)),
+    ("run_identifier", (6,)),
+    ("experiment_number", (7,)),
+    ("calendar", (8,)),
+    ("grid_staggering", (9,)),
+    ("time_type", (10,)),
+    ("projection_number", (11,)),
+    ("model_version", (12,)),
+    ("obs_file_type", (14,)),
+    ("last_fieldop_type", (15,)),
+    ("first_validity_time", (21, 22, 23, 24, 25, 26, 27,)),
+    ("last_validity_time", (28, 29, 30, 31, 32, 33, 34,)),
+    ("misc_validity_time", (35, 36, 37, 38, 39, 40, 41,)),
+    ("integer_constants", (100, 101,)),
+    ("real_constants", (105, 106,)),
+    ("level_dependent_constants", (110, 111, 112,)),
+    ("row_dependent_constants", (115, 116, 117,)),
+    ("column_dependent_constants", (120, 121, 122,)),
+    ("fields_of_constants", (125, 126, 127,)),
+    ("extra_constants", (130, 131,)),
+    ("temp_historyfile", (135, 136,)),
+    ("compressed_field_index1", (140, 141,)),
+    ("compressed_field_index2", (142, 143,)),
+    ("compressed_field_index3", (144, 145,)),
+    ("lookup_table", (150, 151, 152,)),
+    ("total_prognostic_fields", (153,)),
+    ("data", (160, 161, 162,)),
+]
 
 # Offset value to convert from UM_FIXED_LENGTH_HEADER positions to
 # FF_HEADER offsets.
@@ -66,28 +67,32 @@ UM_TO_FF_HEADER_OFFSET = 1
 # Offset the UM_FIXED_LENGTH_HEADER positions to FF_HEADER offsets.
 FF_HEADER = [
     (name, tuple(position - UM_TO_FF_HEADER_OFFSET for position in positions))
-    for name, positions in UM_FIXED_LENGTH_HEADER]
+    for name, positions in UM_FIXED_LENGTH_HEADER
+]
 
 # UM FieldsFile fixed length header pointer names.
 _FF_HEADER_POINTERS = [
-    'integer_constants',
-    'real_constants',
-    'level_dependent_constants',
-    'row_dependent_constants',
-    'column_dependent_constants',
-    'fields_of_constants',
-    'extra_constants',
-    'temp_historyfile',
-    'compressed_field_index1',
-    'compressed_field_index2',
-    'compressed_field_index3',
-    'lookup_table',
-    'data', ]
+    "integer_constants",
+    "real_constants",
+    "level_dependent_constants",
+    "row_dependent_constants",
+    "column_dependent_constants",
+    "fields_of_constants",
+    "extra_constants",
+    "temp_historyfile",
+    "compressed_field_index1",
+    "compressed_field_index2",
+    "compressed_field_index3",
+    "lookup_table",
+    "data",
+]
 
-_LBUSER_DTYPE_LOOKUP = {1: '>f{word_depth}',
-                        2: '>i{word_depth}',
-                        3: '>i{word_depth}',
-                        'default': '>f{word_depth}', }
+_LBUSER_DTYPE_LOOKUP = {
+    1: ">f{word_depth}",
+    2: ">i{word_depth}",
+    3: ">i{word_depth}",
+    "default": ">f{word_depth}",
+}
 
 #: Codes used in STASH_GRID which indicate the x coordinate is on the
 #: edge of the cell.
@@ -119,8 +124,14 @@ class Grid:
     definition for a FieldsFile.
 
     """
-    def __init__(self, column_dependent_constants, row_dependent_constants,
-                 real_constants, horiz_grid_type):
+
+    def __init__(
+        self,
+        column_dependent_constants,
+        row_dependent_constants,
+        real_constants,
+        horiz_grid_type,
+    ):
         """
         Create a Grid from the relevant sections of the FFHeader.
 
@@ -195,6 +206,7 @@ class ArakawaC(Grid):
     An abstract class representing an Arakawa C-grid.
 
     """
+
     def _x_vectors(self):
         x_p, x_u = None, None
         if self.column_dependent_constants is not None:
@@ -315,45 +327,53 @@ class FFHeader:
         self._word_depth = word_depth
 
         # Read the FF header data
-        with open(filename, 'rb') as ff_file:
+        with open(filename, "rb") as ff_file:
             # typically 64-bit words (aka. int64 or ">i8")
-            header_data = np.fromfile(ff_file,
-                                      dtype='>i{0}'.format(word_depth),
-                                      count=FF_HEADER_DEPTH)
+            header_data = np.fromfile(
+                ff_file,
+                dtype=">i{0}".format(word_depth),
+                count=FF_HEADER_DEPTH,
+            )
             header_data = tuple(header_data)
             # Create FF instance attributes
             for name, offsets in FF_HEADER:
                 if len(offsets) == 1:
                     value = header_data[offsets[0]]
                 else:
-                    value = header_data[offsets[0]:offsets[-1] + 1]
+                    value = header_data[offsets[0] : offsets[-1] + 1]
                 setattr(self, name, value)
 
             # Turn the pointer values into real arrays.
             for elem in _FF_HEADER_POINTERS:
-                if elem not in ['data', 'lookup_table']:
+                if elem not in ["data", "lookup_table"]:
                     if self._attribute_is_pointer_and_needs_addressing(elem):
                         addr = getattr(self, elem)
                         ff_file.seek((addr[0] - 1) * word_depth, os.SEEK_SET)
                         if len(addr) == 2:
-                            if elem == 'integer_constants':
+                            if elem == "integer_constants":
                                 res = np.fromfile(
                                     ff_file,
-                                    dtype='>i{0}'.format(word_depth),
-                                    count=addr[1])
+                                    dtype=">i{0}".format(word_depth),
+                                    count=addr[1],
+                                )
                             else:
                                 res = np.fromfile(
                                     ff_file,
-                                    dtype='>f{0}'.format(word_depth),
-                                    count=addr[1])
+                                    dtype=">f{0}".format(word_depth),
+                                    count=addr[1],
+                                )
                         elif len(addr) == 3:
-                            res = np.fromfile(ff_file,
-                                              dtype='>f{0}'.format(word_depth),
-                                              count=addr[1]*addr[2])
-                            res = res.reshape((addr[1], addr[2]), order='F')
+                            res = np.fromfile(
+                                ff_file,
+                                dtype=">f{0}".format(word_depth),
+                                count=addr[1] * addr[2],
+                            )
+                            res = res.reshape((addr[1], addr[2]), order="F")
                         else:
-                            raise ValueError('ff header element {} is not'
-                                             'handled correctly'.format(elem))
+                            raise ValueError(
+                                "ff header element {} is not"
+                                "handled correctly".format(elem)
+                            )
                     else:
                         res = None
                     setattr(self, elem, res)
@@ -361,11 +381,11 @@ class FFHeader:
     def __str__(self):
         attributes = []
         for name, _ in FF_HEADER:
-            attributes.append('    {}: {}'.format(name, getattr(self, name)))
-        return 'FF Header:\n' + '\n'.join(attributes)
+            attributes.append("    {}: {}".format(name, getattr(self, name)))
+        return "FF Header:\n" + "\n".join(attributes)
 
     def __repr__(self):
-        return '{}({!r})'.format(type(self).__name__, self.ff_filename)
+        return "{}({!r})".format(type(self).__name__, self.ff_filename)
 
     def _attribute_is_pointer_and_needs_addressing(self, name):
         if name in _FF_HEADER_POINTERS:
@@ -374,10 +394,11 @@ class FFHeader:
             # Check that we haven't already addressed this pointer,
             # that the pointer is actually referenceable (i.e. >0)
             # and that the attribute is not marked as missing.
-            is_referenceable = (isinstance(attr, tuple) and
-                                attr[0] > 0 and attr[0] != IMDI)
+            is_referenceable = (
+                isinstance(attr, tuple) and attr[0] > 0 and attr[0] != IMDI
+            )
         else:
-            msg = '{!r} object does not have pointer attribute {!r}'
+            msg = "{!r} object does not have pointer attribute {!r}"
             raise AttributeError(msg.format(self.__class__.__name__, name))
         return is_referenceable
 
@@ -399,7 +420,7 @@ class FFHeader:
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[1:]
         else:
-            msg = '{!r} object does not have pointer address {!r}'
+            msg = "{!r} object does not have pointer address {!r}"
             raise AttributeError(msg.format(self.__class_.__name__, name))
         return value
 
@@ -409,11 +430,15 @@ class FFHeader:
         if grid_class is None:
             grid_class = NewDynamics
             warnings.warn(
-                'Staggered grid type: {} not currently interpreted, assuming '
-                'standard C-grid'.format(self.grid_staggering))
-        grid = grid_class(self.column_dependent_constants,
-                          self.row_dependent_constants,
-                          self.real_constants, self.horiz_grid_type)
+                "Staggered grid type: {} not currently interpreted, assuming "
+                "standard C-grid".format(self.grid_staggering)
+            )
+        grid = grid_class(
+            self.column_dependent_constants,
+            self.row_dependent_constants,
+            self.real_constants,
+            self.horiz_grid_type,
+        )
         return grid
 
 
@@ -423,8 +448,9 @@ class FF2PP:
 
     """
 
-    def __init__(self, filename, read_data=False,
-                 word_depth=DEFAULT_FF_WORD_DEPTH):
+    def __init__(
+        self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH
+    ):
         """
         Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
@@ -464,7 +490,7 @@ class FF2PP:
             data_words = field.lblrec - field.lbext
             # Determine PP field 64-bit payload datatype.
             lookup = _LBUSER_DTYPE_LOOKUP
-            dtype_template = lookup.get(field.lbuser[0], lookup['default'])
+            dtype_template = lookup.get(field.lbuser[0], lookup["default"])
             dtype_name = dtype_template.format(word_depth=self._word_depth)
             data_type = np.dtype(dtype_name)
         else:
@@ -477,19 +503,20 @@ class FF2PP:
                 # Data packed using CRAY 32-bit method.
                 data_words = field.lblrec - field.lbext
             else:
-                msg = 'PP fields with LBPACK of {} are not supported.'
+                msg = "PP fields with LBPACK of {} are not supported."
                 raise NotYetImplementedError(msg.format(field.raw_lbpack))
 
             # Determine PP field payload datatype.
             lookup = pp.LBUSER_DTYPE_LOOKUP
-            data_type = lookup.get(field.lbuser[0], lookup['default'])
+            data_type = lookup.get(field.lbuser[0], lookup["default"])
 
         if field.boundary_packing is not None:
             if lbpack_n1 not in (0, 2):
                 # Can't handle the usual packing methods with LBC data.
                 raise ValueError(
-                    'LBC data has LBPACK = {:d}, but packed LBC data is not '
-                    'supported.'.format(field.raw_lbpack))
+                    "LBC data has LBPACK = {:d}, but packed LBC data is not "
+                    "supported.".format(field.raw_lbpack)
+                )
             # Adjust to packed data size, for LBC data.
             # NOTE: logic duplicates that in pp._data_bytes_to_shaped_array.
             pack_dims = field.boundary_packing
@@ -497,8 +524,9 @@ class FF2PP:
             boundary_width = pack_dims.x_halo + pack_dims.rim_width
             y_height, x_width = field.lbrow, field.lbnpt
             mid_height = y_height - 2 * boundary_height
-            data_words = (boundary_height * x_width * 2 +
-                          boundary_width * mid_height * 2)
+            data_words = (
+                boundary_height * x_width * 2 + boundary_width * mid_height * 2
+            )
 
         data_depth = data_words * word_depth
         return data_depth, data_type
@@ -521,9 +549,11 @@ class FF2PP:
         res_low = field_dim[1] - field_dim[0]
         res_high = field_dim[-1] - field_dim[-2]
         if not np.allclose(res_low, res_high):
-            msg = ('The x or y coordinates of your boundary condition field '
-                   'may be incorrect, not having taken into account the '
-                   'boundary size.')
+            msg = (
+                "The x or y coordinates of your boundary condition field "
+                "may be incorrect, not having taken into account the "
+                "boundary size."
+            )
             warnings.warn(msg)
         else:
             range2 = field_dim[0] - res_low
@@ -548,16 +578,20 @@ class FF2PP:
         # i.e. t1=forecast, t2=reference
         lbtim_default = 11
         if field.lbtim not in (0, lbtim_default):
-            raise ValueError('LBC field has LBTIM of {:d}, expected only '
-                             '0 or {:d}.'.format(field.lbtim, lbtim_default))
+            raise ValueError(
+                "LBC field has LBTIM of {:d}, expected only "
+                "0 or {:d}.".format(field.lbtim, lbtim_default)
+            )
         field.lbtim = lbtim_default
 
         # Set LBVC to indicate the specific height encoding for LBCs,
         # i.e. hybrid height layers.
         lbvc_default = 65
         if field.lbvc not in (0, lbvc_default):
-            raise ValueError('LBC field has LBVC of {:d}, expected only '
-                             '0 or {:d}.'.format(field.lbvc, lbvc_default))
+            raise ValueError(
+                "LBC field has LBVC of {:d}, expected only "
+                "0 or {:d}.".format(field.lbvc, lbvc_default)
+            )
         field.lbvc = lbvc_default
         # Specifying a vertical encoding scheme means a usable vertical
         # coordinate can be produced, because we also record the level
@@ -566,8 +600,9 @@ class FF2PP:
         # See per-layer loop (below).
 
         # Calculate field packing details.
-        name_mapping = dict(rim_width=slice(4, 6), y_halo=slice(2, 4),
-                            x_halo=slice(0, 2))
+        name_mapping = dict(
+            rim_width=slice(4, 6), y_halo=slice(2, 4), x_halo=slice(0, 2)
+        )
         boundary_packing = pp.SplittableInt(field.lbuser[2], name_mapping)
         # Store packing on the field, which affects how it gets the data.
         field.boundary_packing = boundary_packing
@@ -584,16 +619,17 @@ class FF2PP:
         # Update the x and y coordinates for this field. Note: it may
         # be that this needs to update x and y also, but that is yet
         # to be confirmed.
-        if (field.bdx in (0, field.bmdi) or
-                field.bdy in (0, field.bmdi)):
+        if field.bdx in (0, field.bmdi) or field.bdy in (0, field.bmdi):
             field.x = self._det_border(field.x, boundary_packing.x_halo)
             field.y = self._det_border(field.y, boundary_packing.y_halo)
         else:
             if field.bdy < 0:
-                warnings.warn('The LBC has a bdy less than 0. No '
-                              'case has previously been seen of '
-                              'this, and the decompression may be '
-                              'erroneous.')
+                warnings.warn(
+                    "The LBC has a bdy less than 0. No "
+                    "case has previously been seen of "
+                    "this, and the decompression may be "
+                    "erroneous."
+                )
             field.bzx -= field.bdx * boundary_packing.x_halo
             field.bzy -= field.bdy * boundary_packing.y_halo
 
@@ -609,13 +645,15 @@ class FF2PP:
         levels_count = field.lbhem - 100
         if levels_count < 1:
             raise ValueError(
-                'LBC field has LBHEM of {:d}, but this should be (100 '
-                '+ levels-per-field-type), hence >= 101.'.format(field.lbhem))
+                "LBC field has LBHEM of {:d}, but this should be (100 "
+                "+ levels-per-field-type), hence >= 101.".format(field.lbhem)
+            )
         if levels_count > n_all_levels:
             raise ValueError(
-                'LBC field has LBHEM of (100 + levels-per-field-type) '
-                '= {:d}, but this is more than the total number of levels '
-                'in the file = {:d}).'.format(field.lbhem, n_all_levels))
+                "LBC field has LBHEM of (100 + levels-per-field-type) "
+                "= {:d}, but this is more than the total number of levels "
+                "in the file = {:d}).".format(field.lbhem, n_all_levels)
+            )
 
         for i_model_level in range(levels_count):
             # Make subsequent fields alike, but distinct.
@@ -639,10 +677,10 @@ class FF2PP:
 
         lookup_table = self._ff_header.lookup_table
         table_index, table_entry_depth, table_count = lookup_table
-        table_offset = (table_index - 1) * self._word_depth       # in bytes
+        table_offset = (table_index - 1) * self._word_depth  # in bytes
         table_entry_depth = table_entry_depth * self._word_depth  # in bytes
         # Open the FF for processing.
-        with open(self._ff_header.ff_filename, 'rb') as ff_file:
+        with open(self._ff_header.ff_filename, "rb") as ff_file:
             ff_file_seek = ff_file.seek
 
             is_boundary_packed = self._ff_header.dataset_type == 5
@@ -658,15 +696,19 @@ class FF2PP:
 
                 # Read the current PP header entry from the FF LOOKUP table.
                 header_longs = np.fromfile(
-                    ff_file, dtype='>i{0}'.format(self._word_depth),
-                    count=pp.NUM_LONG_HEADERS)
+                    ff_file,
+                    dtype=">i{0}".format(self._word_depth),
+                    count=pp.NUM_LONG_HEADERS,
+                )
                 # Check whether the current FF LOOKUP table entry is valid.
                 if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
                     # There are no more FF LOOKUP table entries to read.
                     break
                 header_floats = np.fromfile(
-                    ff_file, dtype='>f{0}'.format(self._word_depth),
-                    count=pp.NUM_FLOAT_HEADERS)
+                    ff_file,
+                    dtype=">f{0}".format(self._word_depth),
+                    count=pp.NUM_FLOAT_HEADERS,
+                )
                 header = tuple(header_longs) + tuple(header_floats)
 
                 # Calculate next FF LOOKUP table entry.
@@ -685,19 +727,22 @@ class FF2PP:
                     # Fast stash look-up.
                     stash_s = field.lbuser[3] // 1000
                     stash_i = field.lbuser[3] % 1000
-                    stash = 'm{:02}s{:02}i{:03}'.format(field.lbuser[6],
-                                                        stash_s, stash_i)
+                    stash = "m{:02}s{:02}i{:03}".format(
+                        field.lbuser[6], stash_s, stash_i
+                    )
                     stash_entry = STASH_TRANS.get(stash, None)
                     if stash_entry is None:
                         subgrid = None
                     else:
                         subgrid = stash_entry.grid_code
                         if subgrid not in HANDLED_GRIDS:
-                            warnings.warn('The stash code {} is on a grid {} '
-                                          'which has not been explicitly '
-                                          'handled by the fieldsfile loader.'
-                                          ' Assuming the data is on a P grid'
-                                          '.'.format(stash, subgrid))
+                            warnings.warn(
+                                "The stash code {} is on a grid {} "
+                                "which has not been explicitly "
+                                "handled by the fieldsfile loader."
+                                " Assuming the data is on a P grid"
+                                ".".format(stash, subgrid)
+                            )
 
                     field.x, field.y = grid.vectors(subgrid)
 
@@ -707,9 +752,11 @@ class FF2PP:
                     no_y = field.bzy in (0, field.bmdi) and field.y is None
                     if no_x and no_y:
                         if subgrid is None:
-                            msg = ('The STASH code {0} was not found in the '
-                                   'STASH to grid type mapping. Picking the P '
-                                   'position as the cell type'.format(stash))
+                            msg = (
+                                "The STASH code {0} was not found in the "
+                                "STASH to grid type mapping. Picking the P "
+                                "position as the cell type".format(stash)
+                            )
                             warnings.warn(msg)
                         field.bzx, field.bdx = grid.regular_x(subgrid)
                         field.bzy, field.bdy = grid.regular_y(subgrid)
@@ -717,7 +764,8 @@ class FF2PP:
                         field.bplon = grid.pole_lon
                     elif no_x or no_y:
                         warnings.warn(
-                            'Partially missing X or Y coordinate values.')
+                            "Partially missing X or Y coordinate values."
+                        )
 
                     # Check for LBC fields.
                     is_boundary_packed = self._ff_header.dataset_type == 5
@@ -742,19 +790,26 @@ class FF2PP:
                             # to a numpy array at a higher level.
                             ff_file_seek(data_offset, os.SEEK_SET)
                             result_field.data = pp.LoadedArrayBytes(
-                                ff_file.read(data_depth), data_type)
+                                ff_file.read(data_depth), data_type
+                            )
                         else:
                             # Provide enough context to read the data bytes
                             # later.
-                            result_field.data = (self._filename, data_offset,
-                                                 data_depth, data_type)
+                            result_field.data = (
+                                self._filename,
+                                data_offset,
+                                data_depth,
+                                data_type,
+                            )
 
                         data_offset += data_depth
 
                         yield result_field
                 except ValueError as valerr:
-                    msg = ('Input field skipped as PPField creation failed :'
-                           ' error = {!r}')
+                    msg = (
+                        "Input field skipped as PPField creation failed :"
+                        " error = {!r}"
+                    )
                     warnings.warn(msg.format(str(valerr)))
 
     def __iter__(self):
@@ -781,8 +836,9 @@ def load_cubes(filenames, callback, constraints=None):
         orography references).
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
-                                          constraints=constraints)
+    return pp._load_cubes_variable_loader(
+        filenames, callback, FF2PP, constraints=constraints
+    )
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
@@ -794,6 +850,6 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
         :func:`load_cubes` for keyword details
 
     """
-    return pp._load_cubes_variable_loader(filenames, callback, FF2PP,
-                                          {'word_depth': 4},
-                                          constraints=constraints)
+    return pp._load_cubes_variable_loader(
+        filenames, callback, FF2PP, {"word_depth": 4}, constraints=constraints
+    )

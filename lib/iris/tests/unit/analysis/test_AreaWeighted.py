@@ -25,14 +25,17 @@ class Test(tests.IrisTest):
             area_weighted = AreaWeighted(mdtol=mdtol)
         self.assertEqual(area_weighted.mdtol, mdtol)
 
-        with mock.patch('iris.analysis.AreaWeightedRegridder',
-                        return_value=mock.sentinel.regridder) as awr:
-            regridder = area_weighted.regridder(mock.sentinel.src,
-                                                mock.sentinel.target)
+        with mock.patch(
+            "iris.analysis.AreaWeightedRegridder",
+            return_value=mock.sentinel.regridder,
+        ) as awr:
+            regridder = area_weighted.regridder(
+                mock.sentinel.src, mock.sentinel.target
+            )
 
-        awr.assert_called_once_with(mock.sentinel.src,
-                                    mock.sentinel.target,
-                                    mdtol=mdtol)
+        awr.assert_called_once_with(
+            mock.sentinel.src, mock.sentinel.target, mdtol=mdtol
+        )
         self.assertIs(regridder, mock.sentinel.regridder)
 
     def test_default(self):
@@ -42,15 +45,15 @@ class Test(tests.IrisTest):
         self.check_call(0.5)
 
     def test_invalid_high_mdtol(self):
-        msg = 'mdtol must be in range 0 - 1'
+        msg = "mdtol must be in range 0 - 1"
         with self.assertRaisesRegex(ValueError, msg):
             AreaWeighted(mdtol=1.2)
 
     def test_invalid_low_mdtol(self):
-        msg = 'mdtol must be in range 0 - 1'
+        msg = "mdtol must be in range 0 - 1"
         with self.assertRaisesRegex(ValueError, msg):
             AreaWeighted(mdtol=-0.2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -20,14 +20,14 @@ from iris.coords import DimCoord
 class Test_basics(tests.IrisTest):
     def setUp(self):
         data = np.array([1, 2, 3, 4, 5])
-        coord = DimCoord([6, 7, 8, 9, 10], long_name='foo')
+        coord = DimCoord([6, 7, 8, 9, 10], long_name="foo")
         self.cube = Cube(data)
         self.cube.add_dim_coord(coord, 0)
         self.lazy_cube = Cube(as_lazy_data(data))
         self.lazy_cube.add_dim_coord(coord, 0)
 
     def test_name(self):
-        self.assertEqual(STD_DEV.name(), 'standard_deviation')
+        self.assertEqual(STD_DEV.name(), "standard_deviation")
 
     def test_collapse(self):
         data = STD_DEV.aggregate(self.cube.data, axis=0)
@@ -45,15 +45,15 @@ class Test_basics(tests.IrisTest):
 class Test_lazy_aggregate(tests.IrisTest):
     def test_mdtol(self):
         na = -999.888
-        array = np.ma.masked_equal([[1., 2., 1., 2.],
-                                    [1., 2., 3., na],
-                                    [1., 2., na, na]],
-                                   na)
+        array = np.ma.masked_equal(
+            [[1.0, 2.0, 1.0, 2.0], [1.0, 2.0, 3.0, na], [1.0, 2.0, na, na]], na
+        )
         array = as_lazy_data(array)
         var = STD_DEV.lazy_aggregate(array, axis=1, mdtol=0.3)
         masked_result = as_concrete_data(var)
-        masked_expected = np.ma.masked_array([0.57735, 1., 0.707107],
-                                             mask=[0, 0, 1])
+        masked_expected = np.ma.masked_array(
+            [0.57735, 1.0, 0.707107], mask=[0, 0, 1]
+        )
         self.assertMaskedArrayAlmostEqual(masked_result, masked_expected)
 
     def test_ddof_one(self):
@@ -78,5 +78,5 @@ class Test_aggregate_shape(tests.IrisTest):
         self.assertTupleEqual(STD_DEV.aggregate_shape(**kwargs), shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

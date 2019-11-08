@@ -17,7 +17,7 @@ from matplotlib.path import Path
 import numpy as np
 
 
-__all__ = ('CLOUD_COVER',)
+__all__ = ("CLOUD_COVER",)
 
 
 # The thickness to use for lines, circles, etc.
@@ -40,19 +40,20 @@ def _make_merged_patch(paths):
     i_codes = 0
     for vertices, code in all_segments:
         n_vertices = len(vertices)
-        all_vertices[i_vertices:i_vertices + n_vertices] = vertices
+        all_vertices[i_vertices : i_vertices + n_vertices] = vertices
         i_vertices += n_vertices
 
         n_codes = n_vertices // 2
         if code == Path.STOP:
             code = Path.MOVETO
-        all_codes[i_codes:i_codes + n_codes] = code
+        all_codes[i_codes : i_codes + n_codes] = code
         i_codes += n_codes
 
     all_vertices.shape = (total_len, 2)
 
-    return PathPatch(Path(all_vertices, all_codes), facecolor='black',
-                     edgecolor='none')
+    return PathPatch(
+        Path(all_vertices, all_codes), facecolor="black", edgecolor="none"
+    )
 
 
 def _ring_path():
@@ -60,8 +61,9 @@ def _ring_path():
     # The outer radius is 1, the inner radius is 1 - _THICKNESS.
     circle = Path.unit_circle()
     inner_radius = 1.0 - _THICKNESS
-    vertices = np.concatenate([circle.vertices[:-1],
-                               circle.vertices[-2::-1] * inner_radius])
+    vertices = np.concatenate(
+        [circle.vertices[:-1], circle.vertices[-2::-1] * inner_radius]
+    )
     codes = np.concatenate([circle.codes[:-1], circle.codes[:-1]])
     return Path(vertices, codes)
 
@@ -71,15 +73,18 @@ def _vertical_bar_path():
     # nicely overlap the result of _ring_path().
     width = _THICKNESS / 2.0
     inner_radius = 1.0 - _THICKNESS
-    vertices = np.array([
-        [-width, -inner_radius],
-        [width, -inner_radius],
-        [width, inner_radius],
-        [-width, inner_radius],
-        [-width, inner_radius]
-    ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
-                      Path.CLOSEPOLY])
+    vertices = np.array(
+        [
+            [-width, -inner_radius],
+            [width, -inner_radius],
+            [width, inner_radius],
+            [-width, inner_radius],
+            [-width, inner_radius],
+        ]
+    )
+    codes = np.array(
+        [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+    )
     return Path(vertices, codes)
 
 
@@ -88,8 +93,9 @@ def _slot_path():
     # removed.
     circle = Path.unit_circle()
     vertical_bar = _vertical_bar_path()
-    vertices = np.concatenate([circle.vertices[:-1],
-                               vertical_bar.vertices[-2::-1]])
+    vertices = np.concatenate(
+        [circle.vertices[:-1], vertical_bar.vertices[-2::-1]]
+    )
     codes = np.concatenate([circle.codes[:-1], vertical_bar.codes[:-1]])
     return Path(vertices, codes)
 
@@ -99,15 +105,18 @@ def _left_bar_path():
     # height _THICKNESS, that will nicely overlap the result of _ring_path().
     inner_radius = 1.0 - _THICKNESS
     height = _THICKNESS / 2.0
-    vertices = np.array([
-        [-inner_radius, -height],
-        [0, -height],
-        [0, height],
-        [-inner_radius, height],
-        [-inner_radius, height]
-    ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
-                      Path.CLOSEPOLY])
+    vertices = np.array(
+        [
+            [-inner_radius, -height],
+            [0, -height],
+            [0, height],
+            [-inner_radius, height],
+            [-inner_radius, height],
+        ]
+    )
+    codes = np.array(
+        [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+    )
     return Path(vertices, codes)
 
 
@@ -122,20 +131,33 @@ def _slash_path():
     end_point_offset = cos45 * central_radius
     half_width_offset = cos45 * half_width
 
-    vertices = np.array([
-        [-end_point_offset - half_width_offset,
-         -end_point_offset + half_width_offset],
-        [-end_point_offset + half_width_offset,
-         -end_point_offset - half_width_offset],
-        [end_point_offset + half_width_offset,
-         end_point_offset - half_width_offset],
-        [end_point_offset - half_width_offset,
-         end_point_offset + half_width_offset],
-        [-end_point_offset - half_width_offset,
-         -end_point_offset + half_width_offset]
-    ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
-                      Path.CLOSEPOLY])
+    vertices = np.array(
+        [
+            [
+                -end_point_offset - half_width_offset,
+                -end_point_offset + half_width_offset,
+            ],
+            [
+                -end_point_offset + half_width_offset,
+                -end_point_offset - half_width_offset,
+            ],
+            [
+                end_point_offset + half_width_offset,
+                end_point_offset - half_width_offset,
+            ],
+            [
+                end_point_offset - half_width_offset,
+                end_point_offset + half_width_offset,
+            ],
+            [
+                -end_point_offset - half_width_offset,
+                -end_point_offset + half_width_offset,
+            ],
+        ]
+    )
+    codes = np.array(
+        [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+    )
     return Path(vertices, codes)
 
 
@@ -150,25 +172,38 @@ def _backslash_path():
     end_point_offset = cos45 * central_radius
     half_width_offset = cos45 * half_width
 
-    vertices = np.array([
-        [-end_point_offset - half_width_offset,
-         end_point_offset - half_width_offset],
-        [end_point_offset - half_width_offset,
-         -end_point_offset - half_width_offset],
-        [end_point_offset + half_width_offset,
-         -end_point_offset + half_width_offset],
-        [-end_point_offset + half_width_offset,
-         end_point_offset + half_width_offset],
-        [-end_point_offset - half_width_offset,
-         end_point_offset - half_width_offset]
-    ])
-    codes = np.array([Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
-                      Path.CLOSEPOLY])
+    vertices = np.array(
+        [
+            [
+                -end_point_offset - half_width_offset,
+                end_point_offset - half_width_offset,
+            ],
+            [
+                end_point_offset - half_width_offset,
+                -end_point_offset - half_width_offset,
+            ],
+            [
+                end_point_offset + half_width_offset,
+                -end_point_offset + half_width_offset,
+            ],
+            [
+                -end_point_offset + half_width_offset,
+                end_point_offset + half_width_offset,
+            ],
+            [
+                -end_point_offset - half_width_offset,
+                end_point_offset - half_width_offset,
+            ],
+        ]
+    )
+    codes = np.array(
+        [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY]
+    )
     return Path(vertices, codes)
 
 
 def _wedge_fix(wedge_path):
-    '''
+    """
     Fixes the problem with Path.wedge where it doesn't initialise the first,
     and last two vertices.
     This fix should not have any side-effects once Path.wedge has been fixed,
@@ -177,7 +212,7 @@ def _wedge_fix(wedge_path):
     This is fixed in MPL v1.3, raising a RuntimeError. A check is performed to
     allow for backward compatibility with MPL v1.2.x.
 
-    '''
+    """
     if wedge_path.vertices.flags.writeable:
         wedge_path.vertices[0] = 0
         wedge_path.vertices[-2:] = 0

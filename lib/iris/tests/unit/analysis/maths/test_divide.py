@@ -14,15 +14,18 @@ import operator
 
 from iris.analysis.maths import divide
 from iris.cube import Cube
-from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticMaskingTestMixin, \
-    CubeArithmeticCoordsTest
+from iris.tests.unit.analysis.maths import (
+    CubeArithmeticBroadcastingTestMixin,
+    CubeArithmeticMaskingTestMixin,
+    CubeArithmeticCoordsTest,
+)
 
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestBroadcasting(tests.IrisTest_nometa,
-                       CubeArithmeticBroadcastingTestMixin):
+class TestBroadcasting(
+    tests.IrisTest_nometa, CubeArithmeticBroadcastingTestMixin
+):
     @property
     def data_op(self):
         return operator.truediv
@@ -45,8 +48,8 @@ class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     def test_unmasked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.
-        dat_a = np.array([0., 0., 0., 0.])
-        dat_b = np.array([2., 2., 2., 2.])
+        dat_a = np.array([0.0, 0.0, 0.0, 0.0])
+        dat_b = np.array([2.0, 2.0, 2.0, 2.0])
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)
@@ -59,8 +62,8 @@ class TestMasking(tests.IrisTest_nometa, CubeArithmeticMaskingTestMixin):
     def test_masked_div_zero(self):
         # Ensure cube behaviour matches numpy operator behaviour for the
         # handling of arrays containing 0.
-        dat_a = np.ma.array([0., 0., 0., 0.], mask=False)
-        dat_b = np.ma.array([2., 2., 2., 2.], mask=False)
+        dat_a = np.ma.array([0.0, 0.0, 0.0, 0.0], mask=False)
+        dat_b = np.ma.array([2.0, 2.0, 2.0, 2.0], mask=False)
 
         cube_a = Cube(dat_a)
         cube_b = Cube(dat_b)

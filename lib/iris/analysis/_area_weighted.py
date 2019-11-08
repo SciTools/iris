@@ -53,7 +53,7 @@ class AreaWeightedRegridder:
         self._target_grid = snapshot_grid(target_grid_cube)
         # Missing data tolerance.
         if not (0 <= mdtol <= 1):
-            msg = 'Value for mdtol must be in range 0 - 1, got {}.'
+            msg = "Value for mdtol must be in range 0 - 1, got {}."
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 
@@ -93,7 +93,10 @@ class AreaWeightedRegridder:
 
         """
         if get_xy_dim_coords(cube) != self._src_grid:
-            raise ValueError('The given cube is not defined on the same '
-                             'source grid as this regridder.')
+            raise ValueError(
+                "The given cube is not defined on the same "
+                "source grid as this regridder."
+            )
         return eregrid.regrid_area_weighted_rectilinear_src_and_grid(
-            cube, self._target_grid_cube, mdtol=self._mdtol)
+            cube, self._target_grid_cube, mdtol=self._mdtol
+        )

@@ -71,8 +71,9 @@ class Test(tests.IrisTest):
     def test_bounds_collapse(self):
         points = np.array([1, 1, 1])
         bounds = np.array([[0, 2], [0, 2], [0, 2]])
-        result_dims, result_pts, result_bds = \
-            _reduce_points_and_bounds(points, (bounds[..., 0], bounds[..., 1]))
+        result_dims, result_pts, result_bds = _reduce_points_and_bounds(
+            points, (bounds[..., 0], bounds[..., 1])
+        )
         self.assertArrayEqual(result_pts, np.array(1))
         self.assertArrayEqual(result_bds, np.array([0, 2]))
         self.assertEqual(result_dims, None)
@@ -80,8 +81,9 @@ class Test(tests.IrisTest):
     def test_bounds_no_collapse(self):
         points = np.array([1, 2, 3])
         bounds = np.array([[0, 2], [1, 3], [2, 4]])
-        result_dims, result_pts, result_bds = \
-            _reduce_points_and_bounds(points, (bounds[..., 0], bounds[..., 1]))
+        result_dims, result_pts, result_bds = _reduce_points_and_bounds(
+            points, (bounds[..., 0], bounds[..., 1])
+        )
         self.assertArrayEqual(result_pts, points)
         self.assertArrayEqual(result_bds, bounds)
         self.assertEqual(result_dims, (0,))

@@ -13,7 +13,7 @@ import iris.std_names
 
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
-_TOKEN_PARSE = re.compile(r'''^[a-zA-Z0-9][\w\.\+\-@]*$''')
+_TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 
 def get_valid_standard_name(name):
@@ -23,42 +23,58 @@ def get_valid_standard_name(name):
     if name is not None:
         name_is_valid = False
         # Supported standard name modifiers. Ref: [CF] Appendix C.
-        valid_std_name_modifiers = ['detection_minimum',
-                                    'number_of_observations',
-                                    'standard_error',
-                                    'status_flag']
+        valid_std_name_modifiers = [
+            "detection_minimum",
+            "number_of_observations",
+            "standard_error",
+            "status_flag",
+        ]
 
-        valid_name_pattern = re.compile(r'''^([a-zA-Z_]+)( *)([a-zA-Z_]*)$''')
+        valid_name_pattern = re.compile(r"""^([a-zA-Z_]+)( *)([a-zA-Z_]*)$""")
         name_groups = valid_name_pattern.match(name)
 
         if name_groups:
             std_name, whitespace, std_name_modifier = name_groups.groups()
             if (std_name in iris.std_names.STD_NAMES) and (
-                bool(whitespace) == (std_name_modifier in
-                                     valid_std_name_modifiers)):
+                bool(whitespace)
+                == (std_name_modifier in valid_std_name_modifiers)
+            ):
                 name_is_valid = True
 
         if name_is_valid is False:
-            raise ValueError('{!r} is not a valid standard_name'.format(
-                    name))
+            raise ValueError("{!r} is not a valid standard_name".format(name))
 
     return name
 
 
 class LimitedAttributeDict(dict):
-    _forbidden_keys = ('standard_name', 'long_name', 'units', 'bounds', 'axis',
-                       'calendar', 'leap_month', 'leap_year', 'month_lengths',
-                       'coordinates', 'grid_mapping', 'climatology',
-                       'cell_methods', 'formula_terms', 'compress',
-                       'add_offset', 'scale_factor',
-                       '_FillValue')
+    _forbidden_keys = (
+        "standard_name",
+        "long_name",
+        "units",
+        "bounds",
+        "axis",
+        "calendar",
+        "leap_month",
+        "leap_year",
+        "month_lengths",
+        "coordinates",
+        "grid_mapping",
+        "climatology",
+        "cell_methods",
+        "formula_terms",
+        "compress",
+        "add_offset",
+        "scale_factor",
+        "_FillValue",
+    )
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
         # Check validity of keys
         for key in self.keys():
             if key in self._forbidden_keys:
-                raise ValueError('%r is not a permitted attribute' % key)
+                raise ValueError("%r is not a permitted attribute" % key)
 
     def __eq__(self, other):
         # Extend equality to allow for NumPy arrays.
@@ -79,7 +95,7 @@ class LimitedAttributeDict(dict):
 
     def __setitem__(self, key, value):
         if key in self._forbidden_keys:
-            raise ValueError('%r is not a permitted attribute' % key)
+            raise ValueError("%r is not a permitted attribute" % key)
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
@@ -95,18 +111,18 @@ class LimitedAttributeDict(dict):
         # Check validity of keys
         for key in keys:
             if key in self._forbidden_keys:
-                raise ValueError('%r is not a permitted attribute' % key)
+                raise ValueError("%r is not a permitted attribute" % key)
 
         dict.update(self, other, **kwargs)
 
 
 class CFVariableMixin:
 
-    _DEFAULT_NAME = 'unknown'  # the name default string
+    _DEFAULT_NAME = "unknown"  # the name default string
 
     @staticmethod
     def token(name):
-        '''
+        """
         Determine whether the provided name is a valid NetCDF name and thus
         safe to represent a single parsable token.
 
@@ -118,7 +134,7 @@ class CFVariableMixin:
         Returns:
             The provided name if valid, otherwise None.
 
-        '''
+        """
         if name is not None:
             result = _TOKEN_PARSE.match(name)
             name = result if result is None else name
@@ -146,18 +162,22 @@ class CFVariableMixin:
             String.
 
         """
+
         def _check(item):
             return self.token(item) if token else item
 
         default = self._DEFAULT_NAME if default is None else default
 
-        result = (_check(self.standard_name) or _check(self.long_name) or
-                  _check(self.var_name) or
-                  _check(str(self.attributes.get('STASH', ''))) or
-                  _check(default))
+        result = (
+            _check(self.standard_name)
+            or _check(self.long_name)
+            or _check(self.var_name)
+            or _check(str(self.attributes.get("STASH", "")))
+            or _check(default)
+        )
 
         if token and result is None:
-            emsg = 'Cannot retrieve a valid name token from {!r}'
+            emsg = "Cannot retrieve a valid name token from {!r}"
             raise ValueError(emsg.format(self))
 
         return result
@@ -209,7 +229,7 @@ class CFVariableMixin:
         if name is not None:
             result = self.token(name)
             if result is None or not name:
-                emsg = '{!r} is not a valid NetCDF variable name.'
+                emsg = "{!r} is not a valid NetCDF variable name."
                 raise ValueError(emsg.format(name))
         self._var_name = name
 

@@ -1,11 +1,10 @@
-
 import matplotlib.pyplot as plt
 
 import iris
 import iris.quickplot as qplt
 
 
-fname = iris.sample_data_path('air_temp.pp')
+fname = iris.sample_data_path("air_temp.pp")
 temperature_cube = iris.load_cube(fname)
 
 # Draw the contour with 25 levels.

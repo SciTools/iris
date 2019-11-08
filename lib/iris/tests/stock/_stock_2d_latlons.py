@@ -47,8 +47,10 @@ def expand_1d_x_and_y_bounds_to_2d_xy(x_bounds_1d, y_bounds_1d):
     shapes = [bds.shape for bds in (x_bounds_1d, y_bounds_1d)]
     for shape in shapes:
         if len(shape) != 2 or shape[1] != 2:
-            msg = ('One-dimensional bounds arrays must have shapes (ny, 2) '
-                   'and (nx, 2).  Got {} and {}.')
+            msg = (
+                "One-dimensional bounds arrays must have shapes (ny, 2) "
+                "and (nx, 2).  Got {} and {}."
+            )
             raise ValueError(msg.format(*shapes))
 
     # Construct output arrays, which are both (ny, nx, 4).
@@ -85,8 +87,10 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     """
     for coord in (x_coord_1d, y_coord_1d):
         if coord.ndim != 1:
-            msg = ('Input coords must be one-dimensional. '
-                   'Coordinate "{}" has shape {}.')
+            msg = (
+                "Input coords must be one-dimensional. "
+                'Coordinate "{}" has shape {}.'
+            )
             raise ValueError(msg.format(coord.name(), coord.shape))
 
     # Calculate centre-points as a mesh of the 2 inputs.
@@ -96,14 +100,15 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
         bds_2d_y = None
     else:
         bds_2d_x, bds_2d_y = expand_1d_x_and_y_bounds_to_2d_xy(
-            x_coord_1d.bounds, y_coord_1d.bounds)
+            x_coord_1d.bounds, y_coord_1d.bounds
+        )
 
     # Make two new coords + return them.
     result = []
-    for pts, bds, name in zip((pts_2d_x, pts_2d_y),
-                              (bds_2d_x, bds_2d_y),
-                              ('longitude', 'latitude')):
-        coord = AuxCoord(pts, bounds=bds, standard_name=name, units='degrees')
+    for pts, bds, name in zip(
+        (pts_2d_x, pts_2d_y), (bds_2d_x, bds_2d_y), ("longitude", "latitude")
+    ):
+        coord = AuxCoord(pts, bounds=bds, standard_name=name, units="degrees")
         result.append(coord)
 
     return result
@@ -201,6 +206,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         >>>
 
     """
+
     def sample_cube(xargs, yargs):
         # Make a test cube with given latitude + longitude coordinates.
         # xargs/yargs are args for np.linspace (start, stop, N), to make the X
@@ -211,11 +217,11 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         data = np.zeros((ny, nx))
         data.flat[:] = np.arange(ny * nx) % (nx + 2)
         # Build a 2d cube with longitude + latitude coordinates.
-        cube = Cube(data, long_name='test_data')
+        cube = Cube(data, long_name="test_data")
         x_pts = np.linspace(x0, x1, nx, endpoint=True)
         y_pts = np.linspace(y0, y1, ny, endpoint=True)
-        co_x = DimCoord(x_pts, standard_name='longitude', units='degrees')
-        co_y = DimCoord(y_pts, standard_name='latitude', units='degrees')
+        co_x = DimCoord(x_pts, standard_name="longitude", units="degrees")
+        co_y = DimCoord(y_pts, standard_name="latitude", units="degrees")
         cube.add_dim_coord(co_y, 0)
         cube.add_dim_coord(co_x, 1)
         return cube
@@ -223,22 +229,22 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     # Start by making a "normal" cube with separate 1-D X and Y coords.
     if regional:
         # Make a small regional cube.
-        cube = sample_cube(xargs=(150., 243.75, 6), yargs=(-10., 40., 5))
+        cube = sample_cube(xargs=(150.0, 243.75, 6), yargs=(-10.0, 40.0, 5))
 
         # Add contiguous bounds.
-        for ax in ('x', 'y'):
+        for ax in ("x", "y"):
             cube.coord(axis=ax).guess_bounds()
     else:
         # Global data, but at a drastically reduced resolution.
-        cube = sample_cube(xargs=(37.5, 318.75, 6), yargs=(-85., 65., 5))
+        cube = sample_cube(xargs=(37.5, 318.75, 6), yargs=(-85.0, 65.0, 5))
 
         # Make contiguous bounds and adjust outer edges to ensure it is global.
-        for name in ('longitude', 'latitude'):
+        for name in ("longitude", "latitude"):
             coord = cube.coord(name)
             coord.guess_bounds()
             bds = coord.bounds.copy()
             # Make bounds global, by fixing lowest and uppermost values.
-            if name == 'longitude':
+            if name == "longitude":
                 bds[0, 0] = 0.0
                 bds[-1, 1] = 360.0
             else:
@@ -248,7 +254,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
 
     # Now convert the 1-d coords to 2-d equivalents.
     # Get original 1-d coords.
-    co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ('x', 'y')]
+    co_1d_x, co_1d_y = [cube.coord(axis=ax).copy() for ax in ("x", "y")]
 
     # Calculate 2-d equivalents.
     co_2d_x, co_2d_y = grid_coords_2d_from_1d(co_1d_x, co_1d_y)
@@ -266,7 +272,7 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
         pole_lat, pole_lon = 75.0, 120.0
         if transformed:
             # Reproject coordinate values from rotated to true lat-lons.
-            co_x, co_y = [cube.coord(axis=ax) for ax in ('x', 'y')]
+            co_x, co_y = [cube.coord(axis=ax) for ax in ("x", "y")]
             # Unrotate points.
             lons, lats = co_x.points, co_y.points
             lons, lats = unrotate_pole(lons, lats, pole_lon, pole_lat)
@@ -277,8 +283,9 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
             # "unrotate_pole" uses "cartopy.crs.CRS.transform_points", which
             # only works on arrays of 1 or 2 dimensions.
             shape = lons.shape
-            lons, lats = unrotate_pole(lons.flatten(), lats.flatten(),
-                                       pole_lon, pole_lat)
+            lons, lats = unrotate_pole(
+                lons.flatten(), lats.flatten(), pole_lon, pole_lat
+            )
             co_x.bounds, co_y.bounds = lons.reshape(shape), lats.reshape(shape)
         else:
             # "Just" rotate operation : add a coord-system to each coord.
@@ -302,11 +309,13 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
     The cube must be 2-dimensional and have bounded 2d 'x' and 'y' coordinates.
 
     """
-    x_coord = cube.coord(axis='x')
-    y_coord = cube.coord(axis='y')
+    x_coord = cube.coord(axis="x")
+    y_coord = cube.coord(axis="y")
     assert x_coord.shape == y_coord.shape
-    assert (coord.bounds.ndim == 3 and coord.shape[-1] == 4
-            for coord in (x_coord, y_coord))
+    assert (
+        coord.bounds.ndim == 3 and coord.shape[-1] == 4
+        for coord in (x_coord, y_coord)
+    )
 
     # For both X and Y coord, move points + bounds to create a discontinuity.
     def adjust_coord(coord):
@@ -343,7 +352,7 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
     for coord in (x_coord, y_coord):
         span = set(cube.coord_dims(coord))
         if not span:
-            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            msg = "The coordinate {!r} doesn't span a data dimension."
             raise ValueError(msg.format(coord.name()))
 
         masked_data = ma.masked_array(cube.data)

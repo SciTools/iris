@@ -35,6 +35,9 @@
 <a href="https://zenodo.org/badge/latestdoi/5312648">
 <img src="https://zenodo.org/badge/5312648.svg"
      alt="zenodo" /></a>
+<a href="https://github.com/psf/black">
+<img src="https://img.shields.io/badge/code%20style-black-000000.svg"
+     alt="black" /></a>
 </p>
 <br>
 

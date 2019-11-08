@@ -22,8 +22,10 @@ from iris.fileformats.pp_load_rules import _convert_scalar_realization_coords
 class Test(TestField):
     def test_valid(self):
         coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=21)
-        self.assertEqual(coords_and_dims,
-                         [(DimCoord([21], standard_name='realization'), None)])
+        self.assertEqual(
+            coords_and_dims,
+            [(DimCoord([21], standard_name="realization"), None)],
+        )
 
     def test_missing_indicator(self):
         coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=0)

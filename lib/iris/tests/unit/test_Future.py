@@ -16,7 +16,6 @@ from iris import Future
 
 
 def patched_future(value=False, deprecated=False, error=False):
-
     class LocalFuture(Future):
         # Modified Future class, with controlled deprecation options.
         #
@@ -26,12 +25,12 @@ def patched_future(value=False, deprecated=False, error=False):
         deprecated_options = {}
         if deprecated:
             if error:
-                deprecated_options['example_future_flag'] = 'error'
+                deprecated_options["example_future_flag"] = "error"
             else:
-                deprecated_options['example_future_flag'] = 'warning'
+                deprecated_options["example_future_flag"] = "warning"
 
     future = LocalFuture()
-    future.__dict__['example_future_flag'] = value
+    future.__dict__["example_future_flag"] = value
     return future
 
 
@@ -40,7 +39,7 @@ class Test___setattr__(tests.IrisTest):
         future = patched_future()
         new_value = not future.example_future_flag
         with warnings.catch_warnings():
-            warnings.simplefilter('error')  # Check no warning emitted !
+            warnings.simplefilter("error")  # Check no warning emitted !
             future.example_future_flag = new_value
         self.assertEqual(future.example_future_flag, new_value)
 
@@ -52,8 +51,9 @@ class Test___setattr__(tests.IrisTest):
 
     def test_deprecated_error(self):
         future = patched_future(deprecated=True, error=True)
-        exp_emsg = \
+        exp_emsg = (
             "'Future' property 'example_future_flag' has been deprecated"
+        )
         with self.assertRaisesRegex(AttributeError, exp_emsg):
             future.example_future_flag = False
 
@@ -70,7 +70,7 @@ class Test_context(tests.IrisTest):
         # of the test it is replacing, but ought to cover most of the same
         # behaviour while Future is empty.
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             future = patched_future(value=False)
             self.assertFalse(future.example_future_flag)
             with future.context():
@@ -85,7 +85,7 @@ class Test_context(tests.IrisTest):
         # of the test it is replacing, but ought to cover most of the same
         # behaviour while Future is empty.
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             future = patched_future(value=False)
             self.assertFalse(future.example_future_flag)
             self.assertFalse(future.example_future_flag)
@@ -112,7 +112,7 @@ class Test_context(tests.IrisTest):
         # of the test it is replacing, but ought to cover most of the same
         # behaviour while Future is empty.
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             future = patched_future(value=False)
             try:
                 with future.context(example_future_flag=True):

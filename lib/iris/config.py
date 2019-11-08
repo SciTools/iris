@@ -64,8 +64,10 @@ def get_dir_option(section, option, default=None):
         if os.path.isdir(c_path):
             path = c_path
         else:
-            msg = 'Ignoring config item {!r}:{!r} (section:option) as {!r}' \
-                  ' is not a valid directory path.'
+            msg = (
+                "Ignoring config item {!r}:{!r} (section:option) as {!r}"
+                " is not a valid directory path."
+            )
             warnings.warn(msg.format(section, option, c_path))
     return path
 
@@ -74,24 +76,26 @@ def get_dir_option(section, option, default=None):
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
 # The full path to the configuration directory of the active Iris instance.
-CONFIG_PATH = os.path.join(ROOT_PATH, 'etc')
+CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
 
 # Load the optional "site.cfg" file if it exists.
 if sys.version_info >= (3, 2):
     config = configparser.ConfigParser()
 else:
     config = configparser.SafeConfigParser()
-config.read([os.path.join(CONFIG_PATH, 'site.cfg')])
+config.read([os.path.join(CONFIG_PATH, "site.cfg")])
 
 
 ##################
 # Resource options
-_RESOURCE_SECTION = 'Resources'
+_RESOURCE_SECTION = "Resources"
 
 
-TEST_DATA_DIR = get_dir_option(_RESOURCE_SECTION, 'test_data_dir',
-                               default=os.path.join(os.path.dirname(__file__),
-                                                    'test_data'))
+TEST_DATA_DIR = get_dir_option(
+    _RESOURCE_SECTION,
+    "test_data_dir",
+    default=os.path.join(os.path.dirname(__file__), "test_data"),
+)
 
 # Override the data repository if the appropriate environment variable
 # has been set.  This is used in setup.py in the TestRunner command to
@@ -102,8 +106,9 @@ if override:
     if os.path.isdir(os.path.expanduser(override)):
         TEST_DATA_DIR = os.path.abspath(override)
 
-PALETTE_PATH = get_dir_option(_RESOURCE_SECTION, 'palette_path',
-                              os.path.join(CONFIG_PATH, 'palette'))
+PALETTE_PATH = get_dir_option(
+    _RESOURCE_SECTION, "palette_path", os.path.join(CONFIG_PATH, "palette")
+)
 
 # Runtime options
 
@@ -144,35 +149,36 @@ class NetCDF:
 
         """
         # Define allowed `__dict__` keys first.
-        self.__dict__['conventions_override'] = None
+        self.__dict__["conventions_override"] = None
 
         # Now set specific values.
-        setattr(self, 'conventions_override', conventions_override)
+        setattr(self, "conventions_override", conventions_override)
 
     def __repr__(self):
-        msg = 'NetCDF options: {}.'
+        msg = "NetCDF options: {}."
         # Automatically populate with all currently accepted kwargs.
-        options = ['{}={}'.format(k, v)
-                   for k, v in self.__dict__.items()]
-        joined = ', '.join(options)
+        options = ["{}={}".format(k, v) for k, v in self.__dict__.items()]
+        joined = ", ".join(options)
         return msg.format(joined)
 
     def __setattr__(self, name, value):
         if name not in self.__dict__:
             # Can't add new names.
-            msg = 'Cannot set option {!r} for {} configuration.'
+            msg = "Cannot set option {!r} for {} configuration."
             raise AttributeError(msg.format(name, self.__class__.__name__))
         if value is None:
             # Set an unset value to the name's default.
-            value = self._defaults_dict[name]['default']
-        if self._defaults_dict[name]['options'] is not None:
+            value = self._defaults_dict[name]["default"]
+        if self._defaults_dict[name]["options"] is not None:
             # Replace a bad value with a good one if there is a defined set of
             # specified good values. If there isn't, we can assume that
             # anything goes.
-            if value not in self._defaults_dict[name]['options']:
-                good_value = self._defaults_dict[name]['default']
-                wmsg = ('Attempting to set invalid value {!r} for '
-                        'attribute {!r}. Defaulting to {!r}.')
+            if value not in self._defaults_dict[name]["options"]:
+                good_value = self._defaults_dict[name]["default"]
+                wmsg = (
+                    "Attempting to set invalid value {!r} for "
+                    "attribute {!r}. Defaulting to {!r}."
+                )
                 warnings.warn(wmsg.format(value, name, good_value))
                 value = good_value
         self.__dict__[name] = value
@@ -180,9 +186,12 @@ class NetCDF:
     @property
     def _defaults_dict(self):
         # Set this as a property so that it isn't added to `self.__dict__`.
-        return {'conventions_override': {'default': False,
-                                         'options': [True, False]},
-                }
+        return {
+            "conventions_override": {
+                "default": False,
+                "options": [True, False],
+            },
+        }
 
     @contextlib.contextmanager
     def context(self, **kwargs):

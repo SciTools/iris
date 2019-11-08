@@ -1,0 +1,30 @@
+[tool.black]
+line-length = 79
+target-version = ['py36', 'py37']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | compiled_krb
+    | dist
+    | etc
+    | iris_image_test_output
+    | sphinxext
+    | tools
+  )/
+  | gitwash_dumper.py
+  | _ff_cross_references.py  # auto-generated files
+  | std_names.py
+  | um_cf_map.py
+)
+'''

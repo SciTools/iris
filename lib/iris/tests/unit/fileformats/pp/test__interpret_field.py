@@ -20,20 +20,30 @@ import iris.fileformats.pp as pp
 
 class Test__interpret_fields__land_packed_fields(tests.IrisTest):
     def setUp(self):
-        return_value = ('dummy', 0, 0, np.dtype('f4'))
+        return_value = ("dummy", 0, 0, np.dtype("f4"))
         core_data = mock.MagicMock(return_value=return_value)
         # A field packed using a land/sea mask.
-        self.pp_field = mock.Mock(lblrec=1, lbext=0, lbuser=[0] * 7,
-                                  lbrow=0, lbnpt=0,
-                                  raw_lbpack=21,
-                                  lbpack=mock.Mock(n1=0, n2=2, n3=1),
-                                  core_data=core_data)
+        self.pp_field = mock.Mock(
+            lblrec=1,
+            lbext=0,
+            lbuser=[0] * 7,
+            lbrow=0,
+            lbnpt=0,
+            raw_lbpack=21,
+            lbpack=mock.Mock(n1=0, n2=2, n3=1),
+            core_data=core_data,
+        )
         # The field specifying the land/seamask.
         lbuser = [None, None, None, 30, None, None, 1]  # m01s00i030
-        self.land_mask_field = mock.Mock(lblrec=1, lbext=0, lbuser=lbuser,
-                                         lbrow=3, lbnpt=4,
-                                         raw_lbpack=0,
-                                         core_data=core_data)
+        self.land_mask_field = mock.Mock(
+            lblrec=1,
+            lbext=0,
+            lbuser=lbuser,
+            lbrow=3,
+            lbnpt=4,
+            raw_lbpack=0,
+            core_data=core_data,
+        )
 
     def test_non_deferred_fix_lbrow_lbnpt(self):
         # Checks the fix_lbrow_lbnpt is applied to fields which are not
@@ -50,19 +60,23 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
     def test_fix_lbrow_lbnpt_no_mask_available(self):
         # Check a warning is issued when loading a land masked field
         # without a land mask.
-        with mock.patch('warnings.warn') as warn:
+        with mock.patch("warnings.warn") as warn:
             list(pp._interpret_fields([self.pp_field]))
         self.assertEqual(warn.call_count, 1)
         warn_msg = warn.call_args[0][0]
-        self.assertTrue(warn_msg.startswith('Landmask compressed fields '
-                                            'existed without a landmask'),
-                        'Unexpected warning message: {!r}'.format(warn_msg))
+        self.assertTrue(
+            warn_msg.startswith(
+                "Landmask compressed fields " "existed without a landmask"
+            ),
+            "Unexpected warning message: {!r}".format(warn_msg),
+        )
 
     def test_deferred_mask_field(self):
         # Check that the order of the load is yielded last if the mask
         # hasn't yet been seen.
-        result = list(pp._interpret_fields([self.pp_field,
-                                            self.land_mask_field]))
+        result = list(
+            pp._interpret_fields([self.pp_field, self.land_mask_field])
+        )
         self.assertEqual(result, [self.land_mask_field, self.pp_field])
 
     def test_not_deferred_mask_field(self):
@@ -90,9 +104,11 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         # This is too complex to explore in a mock-ist way, so let's load a
         # tiny bit of real data ...
         testfile_path = tests.get_data_path(
-            ['FF', 'landsea_masked', 'testdata_mini_lsm.ff'])
+            ["FF", "landsea_masked", "testdata_mini_lsm.ff"]
+        )
         landsea_mask, soil_temp = iris.load_cubes(
-            testfile_path, ('land_binary_mask', 'soil_temperature'))
+            testfile_path, ("land_binary_mask", "soil_temperature")
+        )
 
         # Now check that the soil-temp dask graph correctly references the
         # landsea mask, in its dask graph.
@@ -109,8 +125,9 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         mask_data_name = mask_toplev_item[1]
 
         # Check that the item this refers to is a PPDataProxy.
-        self.assertIsInstance(lazy_mask_array.dask[mask_data_name],
-                              pp.PPDataProxy)
+        self.assertIsInstance(
+            lazy_mask_array.dask[mask_data_name], pp.PPDataProxy
+        )
 
         # Check that the soil-temp graph references the *same* lazy element,
         # showing that the mask+data calculation is handled by dask.

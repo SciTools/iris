@@ -18,9 +18,11 @@ import iris.tests as tests
 import numpy as np
 import numpy.ma as ma
 
-from iris.tests.unit.coords import (CoordTestMixin,
-                                    lazyness_string,
-                                    coords_all_dtypes_and_lazynesses)
+from iris.tests.unit.coords import (
+    CoordTestMixin,
+    lazyness_string,
+    coords_all_dtypes_and_lazynesses,
+)
 
 from cf_units import Unit
 from iris.coords import AuxCoord
@@ -40,21 +42,28 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
         self.setupTestArrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
-        for (coord, points_type_name, bounds_type_name) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            coord,
+            points_type_name,
+            bounds_type_name,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
             pts = coord.core_points()
             bds = coord.core_bounds()
             # Check properties of points.
-            if points_type_name == 'real':
+            if points_type_name == "real":
                 # Real points.
                 if coord.dtype == self.pts_real.dtype:
                     self.assertArraysShareData(
-                        pts, self.pts_real,
-                        'Points are not the same data as the provided array.')
+                        pts,
+                        self.pts_real,
+                        "Points are not the same data as the provided array.",
+                    )
                     self.assertIsNot(
-                        pts, self.pts_real,
-                        'Points array is the same instance as the provided '
-                        'array.')
+                        pts,
+                        self.pts_real,
+                        "Points array is the same instance as the provided "
+                        "array.",
+                    )
                 else:
                     # the original points were cast to a test dtype.
                     check_pts = self.pts_real.astype(coord.dtype)
@@ -68,21 +77,25 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                 self.assertEqual(coord.points.dtype, target_dtype)
 
             # Check properties of bounds.
-            if bounds_type_name == 'real':
+            if bounds_type_name == "real":
                 # Real bounds.
                 if coord.bounds_dtype == self.bds_real.dtype:
                     self.assertArraysShareData(
-                        bds, self.bds_real,
-                        'Bounds are not the same data as the provided array.')
+                        bds,
+                        self.bds_real,
+                        "Bounds are not the same data as the provided array.",
+                    )
                     self.assertIsNot(
-                        pts, self.pts_real,
-                        'Bounds array is the same instance as the provided '
-                        'array.')
+                        pts,
+                        self.pts_real,
+                        "Bounds array is the same instance as the provided "
+                        "array.",
+                    )
                 else:
                     # the original bounds were cast to a test dtype.
                     check_bds = self.bds_real.astype(coord.bounds_dtype)
                     self.assertEqualRealArraysAndDtypes(bds, check_bds)
-            elif bounds_type_name == 'lazy':
+            elif bounds_type_name == "lazy":
                 # Lazy points : the core data may be promoted to float.
                 check_bds = self.bds_lazy.astype(bds.dtype)
                 self.assertEqualLazyArraysAndDtypes(bds, check_bds)
@@ -94,7 +107,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
         bds_shape = list(self.bds_real.shape)
         bds_shape[0] += 1
         bds_wrong = np.zeros(bds_shape)
-        msg = 'Bounds shape must be compatible with points shape'
+        msg = "Bounds shape must be compatible with points shape"
         with self.assertRaisesRegex(ValueError, msg):
             AuxCoord(self.pts_real, bounds=bds_wrong)
 
@@ -184,8 +197,10 @@ class Test_core_points(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_real)
         result = coord.core_points()
         self.assertArraysShareData(
-            result, self.pts_real,
-            'core_points() do not share data with the internal array.')
+            result,
+            self.pts_real,
+            "core_points() do not share data with the internal array.",
+        )
 
     def test_lazy_points(self):
         coord = AuxCoord(self.pts_lazy)
@@ -213,8 +228,10 @@ class Test_core_bounds(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         result = coord.core_bounds()
         self.assertArraysShareData(
-            result, self.bds_real,
-            'core_bounds() do not share data with the internal array.')
+            result,
+            self.bds_real,
+            "core_bounds() do not share data with the internal array.",
+        )
 
     def test_lazy_bounds(self):
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
@@ -331,14 +348,14 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
         self.setupTestArrays()
 
     def test_partial_slice_data_copy(self):
-        parent_coord = AuxCoord([1., 2., 3.])
+        parent_coord = AuxCoord([1.0, 2.0, 3.0])
         sub_coord = parent_coord[:1]
         values_before_change = sub_coord.points.copy()
         parent_coord.points[:] = -999.9
         self.assertArrayEqual(sub_coord.points, values_before_change)
 
     def test_full_slice_data_copy(self):
-        parent_coord = AuxCoord([1., 2., 3.])
+        parent_coord = AuxCoord([1.0, 2.0, 3.0])
         sub_coord = parent_coord[:]
         values_before_change = sub_coord.points.copy()
         parent_coord.points[:] = -999.9
@@ -349,89 +366,136 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
         # either an int or floating dtype.
         # Check that dtypes remain the same in all cases, taking the dtypes
         # directly from the core points and bounds (as we have no masking).
-        for (main_coord, points_type_name, bounds_type_name) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            main_coord,
+            points_type_name,
+            bounds_type_name,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
             sub_coord = main_coord[:2, 1]
 
             coord_dtype = main_coord.dtype
-            msg = ('Indexing main_coord of dtype {} '
-                   'with {} points and {} bounds '
-                   'changed dtype of {} to {}.')
+            msg = (
+                "Indexing main_coord of dtype {} "
+                "with {} points and {} bounds "
+                "changed dtype of {} to {}."
+            )
 
             sub_points = sub_coord.core_points()
             self.assertEqual(
-                sub_points.dtype, coord_dtype,
-                msg.format(coord_dtype,
-                           points_type_name, bounds_type_name,
-                           'points', sub_points.dtype))
+                sub_points.dtype,
+                coord_dtype,
+                msg.format(
+                    coord_dtype,
+                    points_type_name,
+                    bounds_type_name,
+                    "points",
+                    sub_points.dtype,
+                ),
+            )
 
-            if bounds_type_name is not 'no':
+            if bounds_type_name is not "no":
                 sub_bounds = sub_coord.core_bounds()
                 main_bounds_dtype = main_coord.bounds_dtype
                 self.assertEqual(
-                    sub_bounds.dtype, main_bounds_dtype,
-                    msg.format(main_bounds_dtype,
-                               points_type_name, bounds_type_name,
-                               'bounds', sub_bounds.dtype))
+                    sub_bounds.dtype,
+                    main_bounds_dtype,
+                    msg.format(
+                        main_bounds_dtype,
+                        points_type_name,
+                        bounds_type_name,
+                        "bounds",
+                        sub_bounds.dtype,
+                    ),
+                )
 
     def test_lazyness(self):
         # Index coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_coord, points_type_name, bounds_type_name) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            main_coord,
+            points_type_name,
+            bounds_type_name,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
             sub_coord = main_coord[:2, 1]
 
-            msg = ('Indexing coord of dtype {} '
-                   'with {} points and {} bounds '
-                   'changed laziness of {} from {!r} to {!r}.')
+            msg = (
+                "Indexing coord of dtype {} "
+                "with {} points and {} bounds "
+                "changed laziness of {} from {!r} to {!r}."
+            )
             coord_dtype = main_coord.dtype
             sub_points_lazyness = lazyness_string(sub_coord.core_points())
             self.assertEqual(
-                sub_points_lazyness, points_type_name,
-                msg.format(coord_dtype,
-                           points_type_name, bounds_type_name,
-                           'points', points_type_name, sub_points_lazyness))
+                sub_points_lazyness,
+                points_type_name,
+                msg.format(
+                    coord_dtype,
+                    points_type_name,
+                    bounds_type_name,
+                    "points",
+                    points_type_name,
+                    sub_points_lazyness,
+                ),
+            )
 
-            if bounds_type_name is not 'no':
+            if bounds_type_name is not "no":
                 sub_bounds_lazy = lazyness_string(sub_coord.core_bounds())
                 self.assertEqual(
-                    sub_bounds_lazy, bounds_type_name,
-                    msg.format(coord_dtype,
-                               points_type_name, bounds_type_name,
-                               'bounds', bounds_type_name, sub_bounds_lazy))
+                    sub_bounds_lazy,
+                    bounds_type_name,
+                    msg.format(
+                        coord_dtype,
+                        points_type_name,
+                        bounds_type_name,
+                        "bounds",
+                        bounds_type_name,
+                        sub_bounds_lazy,
+                    ),
+                )
 
     def test_real_data_copies(self):
         # Index coords with all combinations of real+lazy points+bounds.
         # In all cases, check that any real arrays are copied by the indexing.
-        for (main_coord, points_lazyness, bounds_lazyness) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            main_coord,
+            points_lazyness,
+            bounds_lazyness,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
             sub_coord = main_coord[:2, 1]
 
-            msg = ('Indexed coord with {} points and {} bounds '
-                   'does not have its own separate {} array.')
-            if points_lazyness == 'real':
+            msg = (
+                "Indexed coord with {} points and {} bounds "
+                "does not have its own separate {} array."
+            )
+            if points_lazyness == "real":
                 main_points = main_coord.core_points()
                 sub_points = sub_coord.core_points()
                 sub_main_points = main_points[:2, 1]
-                self.assertEqualRealArraysAndDtypes(sub_points,
-                                                    sub_main_points)
+                self.assertEqualRealArraysAndDtypes(
+                    sub_points, sub_main_points
+                )
                 self.assertArraysDoNotShareData(
-                    sub_points, sub_main_points,
-                    msg.format(points_lazyness, bounds_lazyness, 'points'))
+                    sub_points,
+                    sub_main_points,
+                    msg.format(points_lazyness, bounds_lazyness, "points"),
+                )
 
-            if bounds_lazyness == 'real':
+            if bounds_lazyness == "real":
                 main_bounds = main_coord.core_bounds()
                 sub_bounds = sub_coord.core_bounds()
                 sub_main_bounds = main_bounds[:2, 1]
-                self.assertEqualRealArraysAndDtypes(sub_bounds,
-                                                    sub_main_bounds)
+                self.assertEqualRealArraysAndDtypes(
+                    sub_bounds, sub_main_bounds
+                )
                 self.assertArraysDoNotShareData(
-                    sub_bounds, sub_main_bounds,
-                    msg.format(points_lazyness, bounds_lazyness, 'bounds'))
+                    sub_bounds,
+                    sub_main_bounds,
+                    msg.format(points_lazyness, bounds_lazyness, "bounds"),
+                )
 
 
 class Test_copy(tests.IrisTest, AuxCoordTestMixin):
@@ -443,57 +507,85 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
         # Copy coords with all combinations of real+lazy points+bounds, and
         # either an int or floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_coord, points_lazyness, bounds_lazyness) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            main_coord,
+            points_lazyness,
+            bounds_lazyness,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
             coord_dtype = main_coord.dtype
             copied_coord = main_coord.copy()
 
-            msg = ('Copying main_coord of dtype {} '
-                   'with {} points and {} bounds '
-                   'changed lazyness of {} from {!r} to {!r}.')
+            msg = (
+                "Copying main_coord of dtype {} "
+                "with {} points and {} bounds "
+                "changed lazyness of {} from {!r} to {!r}."
+            )
 
             copied_pts_lazyness = lazyness_string(copied_coord.core_points())
-            self.assertEqual(copied_pts_lazyness, points_lazyness,
-                             msg.format(coord_dtype,
-                                        points_lazyness, bounds_lazyness,
-                                        'points',
-                                        points_lazyness, copied_pts_lazyness))
+            self.assertEqual(
+                copied_pts_lazyness,
+                points_lazyness,
+                msg.format(
+                    coord_dtype,
+                    points_lazyness,
+                    bounds_lazyness,
+                    "points",
+                    points_lazyness,
+                    copied_pts_lazyness,
+                ),
+            )
 
-            if bounds_lazyness != 'no':
+            if bounds_lazyness != "no":
                 copied_bds_lazy = lazyness_string(copied_coord.core_bounds())
-                self.assertEqual(copied_bds_lazy, bounds_lazyness,
-                                 msg.format(coord_dtype,
-                                            points_lazyness, bounds_lazyness,
-                                            'bounds',
-                                            bounds_lazyness, copied_bds_lazy))
+                self.assertEqual(
+                    copied_bds_lazy,
+                    bounds_lazyness,
+                    msg.format(
+                        coord_dtype,
+                        points_lazyness,
+                        bounds_lazyness,
+                        "bounds",
+                        bounds_lazyness,
+                        copied_bds_lazy,
+                    ),
+                )
 
     def test_realdata_copies(self):
         # Copy coords with all combinations of real+lazy points+bounds.
         # In all cases, check that any real arrays are copies, not views.
-        for (main_coord, points_lazyness, bounds_lazyness) in \
-                coords_all_dtypes_and_lazynesses(self, AuxCoord):
+        for (
+            main_coord,
+            points_lazyness,
+            bounds_lazyness,
+        ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
 
             copied_coord = main_coord.copy()
 
-            msg = ('Copied coord with {} points and {} bounds '
-                   'does not have its own separate {} array.')
+            msg = (
+                "Copied coord with {} points and {} bounds "
+                "does not have its own separate {} array."
+            )
 
-            if points_lazyness == 'real':
+            if points_lazyness == "real":
                 main_points = main_coord.core_points()
                 copied_points = copied_coord.core_points()
                 self.assertEqualRealArraysAndDtypes(main_points, copied_points)
                 self.assertArraysDoNotShareData(
-                    main_points, copied_points,
-                    msg.format(points_lazyness, bounds_lazyness, 'points'))
+                    main_points,
+                    copied_points,
+                    msg.format(points_lazyness, bounds_lazyness, "points"),
+                )
 
-            if bounds_lazyness == 'real':
+            if bounds_lazyness == "real":
                 main_bounds = main_coord.core_bounds()
                 copied_bounds = copied_coord.core_bounds()
                 self.assertEqualRealArraysAndDtypes(main_bounds, copied_bounds)
                 self.assertArraysDoNotShareData(
-                    main_bounds, copied_bounds,
-                    msg.format(points_lazyness, bounds_lazyness, 'bounds'))
+                    main_bounds,
+                    copied_bounds,
+                    msg.format(points_lazyness, bounds_lazyness, "bounds"),
+                )
 
 
 class Test_points__getter(tests.IrisTest, AuxCoordTestMixin):
@@ -515,8 +607,10 @@ class Test_points__getter(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_real)
         result = coord.points
         self.assertArraysShareData(
-            result, self.pts_real,
-            'Points do not share data with the provided array.')
+            result,
+            self.pts_real,
+            "Points do not share data with the provided array.",
+        )
 
     def test_lazy_points(self):
         # Getting lazy points realises them.
@@ -532,8 +626,10 @@ class Test_points__getter(tests.IrisTest, AuxCoordTestMixin):
         coord.points
         result = coord.core_bounds()
         self.assertArraysShareData(
-            result, self.bds_real,
-            'Bounds do not share data with the provided array.')
+            result,
+            self.bds_real,
+            "Bounds do not share data with the provided array.",
+        )
 
     def test_real_points_with_lazy_bounds(self):
         # Getting real points does not touch lazy bounds.
@@ -566,13 +662,15 @@ class Test_points__setter(tests.IrisTest, AuxCoordTestMixin):
         coord.points = new_pts
         result = coord.core_points()
         self.assertArraysShareData(
-            result, new_pts,
-            'Points do not share data with the assigned array.')
+            result,
+            new_pts,
+            "Points do not share data with the assigned array.",
+        )
 
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = AuxCoord([1.0, 2.0])
-        msg = 'Require data with shape \(2,\), got \(3,\)'
+        msg = "Require data with shape \(2,\), got \(3,\)"
         with self.assertRaisesRegex(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
 
@@ -613,8 +711,10 @@ class Test_bounds__getter(tests.IrisTest, AuxCoordTestMixin):
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         result = coord.bounds
         self.assertArraysShareData(
-            result, self.bds_real,
-            'Bounds do not share data with the provided array.')
+            result,
+            self.bds_real,
+            "Bounds do not share data with the provided array.",
+        )
 
     def test_lazy_bounds(self):
         # Getting lazy bounds realises them.
@@ -642,13 +742,15 @@ class Test_bounds__setter(tests.IrisTest, AuxCoordTestMixin):
         coord.bounds = new_bounds
         result = coord.core_bounds()
         self.assertArraysShareData(
-            result, new_bounds,
-            'Bounds do not share data with the assigned array.')
+            result,
+            new_bounds,
+            "Bounds do not share data with the assigned array.",
+        )
 
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
-        msg = 'must be compatible with points shape'
+        msg = "must be compatible with points shape"
         with self.assertRaisesRegex(ValueError, msg):
             coord.bounds = np.array([1.0, 2.0, 3.0])
 
@@ -670,37 +772,39 @@ class Test_bounds__setter(tests.IrisTest, AuxCoordTestMixin):
 
 class Test_convert_units(tests.IrisTest):
     def test_preserves_lazy(self):
-        test_bounds = np.array([[[11.0, 12.0], [12.0, 13.0], [13.0, 14.0]],
-                                [[21.0, 22.0], [22.0, 23.0], [23.0, 24.0]]])
-        test_points = np.array([[11.1, 12.2, 13.3],
-                                [21.4, 22.5, 23.6]])
+        test_bounds = np.array(
+            [
+                [[11.0, 12.0], [12.0, 13.0], [13.0, 14.0]],
+                [[21.0, 22.0], [22.0, 23.0], [23.0, 24.0]],
+            ]
+        )
+        test_points = np.array([[11.1, 12.2, 13.3], [21.4, 22.5, 23.6]])
         lazy_points = as_lazy_data(test_points)
         lazy_bounds = as_lazy_data(test_bounds)
-        coord = AuxCoord(points=lazy_points, bounds=lazy_bounds,
-                         units='m')
-        coord.convert_units('ft')
+        coord = AuxCoord(points=lazy_points, bounds=lazy_bounds, units="m")
+        coord.convert_units("ft")
         self.assertTrue(coord.has_lazy_points())
         self.assertTrue(coord.has_lazy_bounds())
-        test_points_ft = Unit('m').convert(test_points, 'ft')
-        test_bounds_ft = Unit('m').convert(test_bounds, 'ft')
+        test_points_ft = Unit("m").convert(test_points, "ft")
+        test_bounds_ft = Unit("m").convert(test_bounds, "ft")
         self.assertArrayAllClose(coord.points, test_points_ft)
         self.assertArrayAllClose(coord.bounds, test_bounds_ft)
 
 
 class TestEquality(tests.IrisTest):
     def test_nanpoints_eq_self(self):
-        co1 = AuxCoord([1., np.nan, 2.])
+        co1 = AuxCoord([1.0, np.nan, 2.0])
         self.assertEqual(co1, co1)
 
     def test_nanpoints_eq_copy(self):
-        co1 = AuxCoord([1., np.nan, 2.])
+        co1 = AuxCoord([1.0, np.nan, 2.0])
         co2 = co1.copy()
         self.assertEqual(co1, co2)
 
     def test_nanbounds_eq_self(self):
-        co1 = AuxCoord([15., 25.], bounds=[[14., 16.], [24., np.nan]])
+        co1 = AuxCoord([15.0, 25.0], bounds=[[14.0, 16.0], [24.0, np.nan]])
         self.assertEqual(co1, co1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

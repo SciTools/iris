@@ -9,16 +9,26 @@ import iris.tests as tests
 
 
 class TestField(tests.IrisTest):
-    def _test_for_coord(self, field, convert, coord_predicate, expected_points,
-                        expected_bounds):
-        (factories, references, standard_name, long_name, units,
-         attributes, cell_methods, dim_coords_and_dims,
-         aux_coords_and_dims) = convert(field)
+    def _test_for_coord(
+        self, field, convert, coord_predicate, expected_points, expected_bounds
+    ):
+        (
+            factories,
+            references,
+            standard_name,
+            long_name,
+            units,
+            attributes,
+            cell_methods,
+            dim_coords_and_dims,
+            aux_coords_and_dims,
+        ) = convert(field)
 
         # Check for one and only one matching coordinate.
         coords_and_dims = dim_coords_and_dims + aux_coords_and_dims
-        matching_coords = [coord for coord, _ in coords_and_dims if
-                           coord_predicate(coord)]
+        matching_coords = [
+            coord for coord, _ in coords_and_dims if coord_predicate(coord)
+        ]
         self.assertEqual(len(matching_coords), 1, str(matching_coords))
         coord = matching_coords[0]
 
@@ -31,8 +41,9 @@ class TestField(tests.IrisTest):
         else:
             self.assertArrayEqual(coord.bounds, expected_bounds)
 
-    def assertCoordsAndDimsListsMatch(self, coords_and_dims_got,
-                                      coords_and_dims_expected):
+    def assertCoordsAndDimsListsMatch(
+        self, coords_and_dims_got, coords_and_dims_expected
+    ):
         """
         Check that coords_and_dims lists are equivalent.
 
@@ -42,14 +53,17 @@ class TestField(tests.IrisTest):
         It also checks that the coordinate types (DimCoord/AuxCoord) match.
 
         """
+
         def sorted_by_coordname(list):
             return sorted(list, key=lambda item: item[0].name())
 
         coords_and_dims_got = sorted_by_coordname(coords_and_dims_got)
         coords_and_dims_expected = sorted_by_coordname(
-            coords_and_dims_expected)
+            coords_and_dims_expected
+        )
         self.assertEqual(coords_and_dims_got, coords_and_dims_expected)
         # Also check coordinate type equivalences (as Coord.__eq__ does not).
         self.assertEqual(
             [type(coord) for coord, dims in coords_and_dims_got],
-            [type(coord) for coord, dims in coords_and_dims_expected])
+            [type(coord) for coord, dims in coords_and_dims_expected],
+        )

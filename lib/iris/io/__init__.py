@@ -22,6 +22,7 @@ import iris.exceptions
 # Saving routines, indexed by file extension.
 class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
+
     def __setitem__(self, key, value):
         if not isinstance(key, str):
             raise ValueError("key is not a string")
@@ -29,7 +30,9 @@ class _SaversDict(dict):
             raise ValueError("A saver already exists for", key)
         for k in self.keys():
             if k.endswith(key) or key.endswith(k):
-                raise ValueError("key %s conflicts with existing key %s" % (key, k))
+                raise ValueError(
+                    "key %s conflicts with existing key %s" % (key, k)
+                )
         dict.__setitem__(self, key, value)
 
 
@@ -72,13 +75,14 @@ def run_callback(callback, cube, field, filename):
         if result is None:
             result = cube
         elif not isinstance(result, iris.cube.Cube):
-                raise TypeError("Callback function returned an "
-                                "unhandled data type.")
+            raise TypeError(
+                "Callback function returned an " "unhandled data type."
+            )
     return result
 
 
-def decode_uri(uri, default='file'):
-    r'''
+def decode_uri(uri, default="file"):
+    r"""
     Decodes a single URI into scheme and scheme-specific parts.
 
     In addition to well-formed URIs, it also supports bare file paths.
@@ -108,7 +112,7 @@ def decode_uri(uri, default='file'):
         >>> print(decode_uri('dataZoo/...'))
         ('file', 'dataZoo/...')
 
-    '''
+    """
     # make sure scheme has at least 2 letters to avoid windows drives
     # put - last in the brackets so it refers to the character, not a range
     # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
@@ -139,13 +143,17 @@ def expand_filespecs(file_specs):
 
     """
     # Remove any hostname component - currently unused
-    filenames = [os.path.abspath(os.path.expanduser(
-                    fn[2:] if fn.startswith('//') else fn))
-                 for fn in file_specs]
+    filenames = [
+        os.path.abspath(
+            os.path.expanduser(fn[2:] if fn.startswith("//") else fn)
+        )
+        for fn in file_specs
+    ]
 
     # Try to expand all filenames as globs
-    glob_expanded = OrderedDict([[fn, sorted(glob.glob(fn))]
-                                 for fn in filenames])
+    glob_expanded = OrderedDict(
+        [[fn, sorted(glob.glob(fn))] for fn in filenames]
+    )
 
     # If any of the specs expanded to an empty list then raise an error
     all_expanded = glob_expanded.values()
@@ -154,8 +162,9 @@ def expand_filespecs(file_specs):
         msg = "One or more of the files specified did not exist:"
         for pattern, expanded in glob_expanded.items():
             if expanded:
-                msg += '\n    - "{}" matched {} file(s)'.format(pattern,
-                                                                len(expanded))
+                msg += '\n    - "{}" matched {} file(s)'.format(
+                    pattern, len(expanded)
+                )
             else:
                 msg += '\n    * "{}" didn\'t match any files'.format(pattern)
         raise IOError(msg)
@@ -180,16 +189,19 @@ def load_files(filenames, callback, constraints=None):
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
     for fn in all_file_paths:
-        with open(fn, 'rb') as fh:
-            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
+        with open(fn, "rb") as fh:
+            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+                os.path.basename(fn), fh
+            )
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the approriate filenames
     for handling_format_spec in sorted(handler_map):
         fnames = handler_map[handling_format_spec]
         if handling_format_spec.constraint_aware_handler:
-            for cube in handling_format_spec.handler(fnames, callback,
-                                                     constraints):
+            for cube in handling_format_spec.handler(
+                fnames, callback, constraints
+            ):
                 yield cube
         else:
             for cube in handling_format_spec.handler(fnames, callback):
@@ -210,7 +222,9 @@ def load_http(urls, callback):
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
     for url in urls:
-        handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(url, None)
+        handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+            url, None
+        )
         handler_map[handling_format_spec].append(url)
 
     # Call each iris format handler with the appropriate filenames
@@ -225,6 +239,7 @@ def _dot_save(cube, target):
     # saver to be registered without triggering the import of
     # `iris.fileformats.dot`.
     import iris.fileformats.dot
+
     return iris.fileformats.dot.save(cube, target)
 
 
@@ -233,6 +248,7 @@ def _dot_save_png(cube, target, **kwargs):
     # saver to be registered without triggering the import of
     # `iris.fileformats.dot`.
     import iris.fileformats.dot
+
     return iris.fileformats.dot.save_png(cube, target, **kwargs)
 
 
@@ -242,8 +258,10 @@ def _grib_save(cube, target, append=False, **kwargs):
     try:
         from iris_grib import save_grib2
     except ImportError:
-        raise RuntimeError('Unable to save GRIB file - '
-                           '"iris_grib" package is not installed.')
+        raise RuntimeError(
+            "Unable to save GRIB file - "
+            '"iris_grib" package is not installed.'
+        )
 
     save_grib2(cube, target, append, **kwargs)
 
@@ -252,11 +270,15 @@ def _check_init_savers():
     # TODO: Raise a ticket to resolve the cyclic import error that requires
     # us to initialise this on first use. Probably merge io and fileformats.
     if "pp" not in _savers:
-        _savers.update({"pp": iris.fileformats.pp.save,
-                        "nc": iris.fileformats.netcdf.save,
-                        "dot": _dot_save,
-                        "dotpng": _dot_save_png,
-                        "grib2": _grib_save})
+        _savers.update(
+            {
+                "pp": iris.fileformats.pp.save,
+                "nc": iris.fileformats.netcdf.save,
+                "dot": _dot_save,
+                "dotpng": _dot_save_png,
+                "grib2": _grib_save,
+            }
+        )
 
 
 def add_saver(file_extension, new_saver):
@@ -272,7 +294,10 @@ def add_saver(file_extension, new_saver):
 
     """
     # Make sure it's a func with 2+ args
-    if not hasattr(new_saver, "__call__") or new_saver.__code__.co_argcount < 2:
+    if (
+        not hasattr(new_saver, "__call__")
+        or new_saver.__code__.co_argcount < 2
+    ):
         raise ValueError("Saver routines must be callable with 2+ arguments.")
 
     # Try to add this saver. Invalid keys will be rejected.
@@ -293,13 +318,16 @@ def find_saver(filespec):
 
     """
     _check_init_savers()
-    matches = [ext for ext in _savers if filespec.lower().endswith('.' + ext) or
-                                         filespec.lower() == ext]
+    matches = [
+        ext
+        for ext in _savers
+        if filespec.lower().endswith("." + ext) or filespec.lower() == ext
+    ]
     # Multiple matches could occur if one of the savers included a '.':
     #   e.g. _savers = {'.dot.png': dot_png_saver, '.png': png_saver}
     if len(matches) > 1:
         fmt = "Multiple savers found for %r: %s"
-        matches = ', '.join(map(repr, matches))
+        matches = ", ".join(map(repr, matches))
         raise ValueError(fmt % (filespec, matches))
     return _savers[matches[0]] if matches else None
 
@@ -381,7 +409,7 @@ def save(source, target, saver=None, **kwargs):
     # Determine format from filename
     if isinstance(target, str) and saver is None:
         saver = find_saver(target)
-    elif hasattr(target, 'name') and saver is None:
+    elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
     elif isinstance(saver, str):
         saver = find_saver(saver)
@@ -393,23 +421,25 @@ def save(source, target, saver=None, **kwargs):
         saver(source, target, **kwargs)
 
     # CubeList or sequence of cubes?
-    elif (isinstance(source, iris.cube.CubeList) or
-          (isinstance(source, (list, tuple)) and
-           all([isinstance(i, iris.cube.Cube) for i in source]))):
+    elif isinstance(source, iris.cube.CubeList) or (
+        isinstance(source, (list, tuple))
+        and all([isinstance(i, iris.cube.Cube) for i in source])
+    ):
         # Only allow cubelist saving for those fileformats that are capable.
-        if not 'iris.fileformats.netcdf' in saver.__module__:
+        if not "iris.fileformats.netcdf" in saver.__module__:
             # Make sure the saver accepts an append keyword
             if not "append" in saver.__code__.co_varnames:
-                raise ValueError("Cannot append cubes using saver function "
-                                 "'%s' in '%s'" %
-                                 (saver.__code__.co_name,
-                                  saver.__code__.co_filename))
+                raise ValueError(
+                    "Cannot append cubes using saver function "
+                    "'%s' in '%s'"
+                    % (saver.__code__.co_name, saver.__code__.co_filename)
+                )
             # Force append=True for the tail cubes. Don't modify the incoming
             # kwargs.
             kwargs = kwargs.copy()
             for i, cube in enumerate(source):
                 if i != 0:
-                    kwargs['append'] = True
+                    kwargs["append"] = True
                 saver(cube, target, **kwargs)
         # Netcdf saver.
         else:

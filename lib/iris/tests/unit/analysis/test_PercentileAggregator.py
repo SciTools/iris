@@ -23,12 +23,13 @@ from iris.cube import Cube
 
 class Test(tests.IrisTest):
     def test_init(self):
-        name = 'percentile'
+        name = "percentile"
         call_func = _percentile
         units_func = mock.sentinel.units_func
         lazy_func = mock.sentinel.lazy_func
-        aggregator = PercentileAggregator(units_func=units_func,
-                                          lazy_func=lazy_func)
+        aggregator = PercentileAggregator(
+            units_func=units_func, lazy_func=lazy_func
+        )
         self.assertEqual(aggregator.name(), name)
         self.assertIs(aggregator.call_func, call_func)
         self.assertIs(aggregator.units_func, units_func)
@@ -41,12 +42,12 @@ class Test_post_process(tests.IrisTest):
         shape = (2, 5)
         data = np.arange(np.prod(shape))
 
-        self.coord_simple = DimCoord(data, 'time')
+        self.coord_simple = DimCoord(data, "time")
         self.cube_simple = Cube(data)
         self.cube_simple.add_dim_coord(self.coord_simple, 0)
 
-        self.coord_multi_0 = DimCoord(np.arange(shape[0]), 'time')
-        self.coord_multi_1 = DimCoord(np.arange(shape[1]), 'height')
+        self.coord_multi_0 = DimCoord(np.arange(shape[0]), "time")
+        self.coord_multi_1 = DimCoord(np.arange(shape[1]), "height")
         self.cube_multi = Cube(data.reshape(shape))
         self.cube_multi.add_dim_coord(self.coord_multi_0, 0)
         self.cube_multi.add_dim_coord(self.coord_multi_1, 1)
@@ -55,7 +56,7 @@ class Test_post_process(tests.IrisTest):
         aggregator = PercentileAggregator()
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
         with self.assertRaisesRegex(ValueError, emsg):
-            aggregator.aggregate('dummy', axis=0)
+            aggregator.aggregate("dummy", axis=0)
 
     def test_simple_single_point(self):
         aggregator = PercentileAggregator()
@@ -63,11 +64,12 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent)
         data = np.empty(self.cube_simple.shape)
         coords = [self.coord_simple]
-        actual = aggregator.post_process(self.cube_simple, data, coords,
-                                         **kwargs)
+        actual = aggregator.post_process(
+            self.cube_simple, data, coords, **kwargs
+        )
         self.assertEqual(actual.shape, self.cube_simple.shape)
         self.assertIs(actual.data, data)
-        name = 'percentile_over_time'
+        name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name)
         self.assertEqual(coord, expected)
@@ -79,12 +81,13 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_simple.shape + percent.shape
         data = np.empty(shape)
         coords = [self.coord_simple]
-        actual = aggregator.post_process(self.cube_simple, data, coords,
-                                         **kwargs)
+        actual = aggregator.post_process(
+            self.cube_simple, data, coords, **kwargs
+        )
         self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
         expected = np.rollaxis(data, -1)
         self.assertArrayEqual(actual.data, expected)
-        name = 'percentile_over_time'
+        name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name)
         self.assertEqual(coord, expected)
@@ -95,11 +98,12 @@ class Test_post_process(tests.IrisTest):
         kwargs = dict(percent=percent)
         data = np.empty(self.cube_multi.shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(self.cube_multi, data, coords,
-                                         **kwargs)
+        actual = aggregator.post_process(
+            self.cube_multi, data, coords, **kwargs
+        )
         self.assertEqual(actual.shape, self.cube_multi.shape)
         self.assertIs(actual.data, data)
-        name = 'percentile_over_time'
+        name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name)
         self.assertEqual(coord, expected)
@@ -111,12 +115,13 @@ class Test_post_process(tests.IrisTest):
         shape = self.cube_multi.shape + percent.shape
         data = np.empty(shape)
         coords = [self.coord_multi_0]
-        actual = aggregator.post_process(self.cube_multi, data, coords,
-                                         **kwargs)
+        actual = aggregator.post_process(
+            self.cube_multi, data, coords, **kwargs
+        )
         self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
         expected = np.rollaxis(data, -1)
         self.assertArrayEqual(actual.data, expected)
-        name = 'percentile_over_time'
+        name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name)
         self.assertEqual(coord, expected)
