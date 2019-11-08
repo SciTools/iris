@@ -848,8 +848,8 @@ class _MetaOrderedHashable(ABCMeta):
     def __new__(cls, name, bases, namespace):
         # We only want to modify concrete classes that have defined the
         # "_names" property.
-        if "_names" in namespace and not isinstance(
-            namespace["_names"], abstractproperty
+        if "_names" in namespace and not getattr(
+            namespace["_names"], "__isabstractmethod__", False
         ):
             args = ", ".join(namespace["_names"])
 
