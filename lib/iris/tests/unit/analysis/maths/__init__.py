@@ -186,6 +186,13 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
 
 
 class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
+
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.
         dtype = np.int64
