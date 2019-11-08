@@ -8,7 +8,7 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-import abc
+from abc import ABCMeta, abstractmethod
 import collections
 from copy import deepcopy
 import operator
@@ -825,7 +825,7 @@ def _pp_attribute_names(header_defn):
     return normal_headers + special_headers + extra_data + special_attributes
 
 
-class PPField(metaclass=abc.ABCMeta):
+class PPField(metaclass=ABCMeta):
     """
     A generic class for PP fields - not specific to a particular
     header release number.
@@ -911,11 +911,13 @@ class PPField(metaclass=abc.ABCMeta):
             setattr(self, key, value)
         return value
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def t1(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def t2(self):
         pass
 

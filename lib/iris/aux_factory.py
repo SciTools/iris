@@ -8,7 +8,7 @@ Definitions of derived coordinates.
 
 """
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 import warnings
 
 import dask.array as da
@@ -42,7 +42,8 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         #: Coordinate system (if any) of the coordinate made by the factory
         self.coord_system = None
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def dependencies(self):
         """
         Returns a dictionary mapping from constructor argument names to

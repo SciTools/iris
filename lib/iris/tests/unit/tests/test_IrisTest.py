@@ -9,7 +9,7 @@
 # importing anything else
 import iris.tests as tests
 
-from abc import ABCMeta, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
@@ -19,7 +19,8 @@ class _MaskedArrayEquality(metaclass=ABCMeta):
         self.arr1 = np.ma.array([1, 2, 3, 4], mask=[False, True, True, False])
         self.arr2 = np.ma.array([1, 3, 2, 4], mask=[False, True, True, False])
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def _func(self):
         pass
 

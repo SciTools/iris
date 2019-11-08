@@ -9,7 +9,7 @@ Miscellaneous utility functions.
 """
 
 from collections.abc import Hashable
-import abc
+from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 import copy
 import functools
@@ -830,7 +830,7 @@ def _wrap_function_for_method(function, docstring=None):
     return wrapper
 
 
-class _MetaOrderedHashable(abc.ABCMeta):
+class _MetaOrderedHashable(ABCMeta):
     """
     A metaclass that ensures that non-abstract subclasses of _OrderedHashable
     without an explicit __init__ method are given a default __init__ method
@@ -849,7 +849,7 @@ class _MetaOrderedHashable(abc.ABCMeta):
         # We only want to modify concrete classes that have defined the
         # "_names" property.
         if "_names" in namespace and not isinstance(
-            namespace["_names"], abc.abstractproperty
+            namespace["_names"], abstractproperty
         ):
             args = ", ".join(namespace["_names"])
 
@@ -895,7 +895,8 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
 
     """
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def _names(self):
         """
         Override this attribute to declare the names of all the attributes
