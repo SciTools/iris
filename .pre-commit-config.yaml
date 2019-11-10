@@ -19,9 +19,9 @@ repos:
         # Force black to run on whole repo, using settings from pyproject.toml
         pass_filenames: false
         args: [--config=./pyproject.toml, .]
-#-   repo: https://gitlab.com/pycqa/flake8
-#    rev: '3.7.9'
-#    hooks:
-#        # Run flake8.
-#    -   id: flake8
-#        args: [--config=./.flake8]
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: '3.7.9'
+    hooks:
+        # Run flake8.
+    -   id: flake8
+        args: [--config=./.flake8]

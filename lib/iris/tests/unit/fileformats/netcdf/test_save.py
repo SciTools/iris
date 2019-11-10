@@ -206,7 +206,7 @@ class Test_fill_value(tests.IrisTest):
         # is passed as the fill_value argument, an error is raised
         cubes = self._make_cubes()
         fill_values = [1.0, 2.0, 3.0, 4.0]
-        with mock.patch("iris.fileformats.netcdf.Saver") as Saver:
+        with mock.patch("iris.fileformats.netcdf.Saver"):
             with self.assertRaises(ValueError):
                 save(cubes, "dummy.nc", fill_value=fill_values)
 

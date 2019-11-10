@@ -15,11 +15,9 @@ import iris.tests as tests
 from unittest import mock
 
 import numpy as np
-from cf_units import Unit, CALENDAR_GREGORIAN, CALENDAR_360_DAY
+from cf_units import Unit, CALENDAR_360_DAY
 from cftime import datetime as nc_datetime
 
-import cartopy.crs as ccrs
-import iris
 from iris.fileformats.pp_load_rules import _all_other_rules
 from iris.fileformats.pp import SplittableInt
 from iris.coords import CellMethod, DimCoord, AuxCoord
@@ -95,7 +93,7 @@ class TestCellMethods(tests.IrisTest):
         expected = [CellMethod("maximum", "time")]
         self.assertEqual(res, expected)
 
-    def test_climatology_max(self):
+    def test_climatology_min(self):
         field = mock.MagicMock(lbproc=4096, lbtim=mock.Mock(ia=24, ib=3, ic=3))
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
         expected = [CellMethod("minimum", "time")]

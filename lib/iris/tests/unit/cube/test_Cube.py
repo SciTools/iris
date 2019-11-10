@@ -853,7 +853,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_nonexistent_coord_given(self):
         with self.assertRaises(CoordinateNotFoundError):
-            res = self.cube.slices_over(self.cube.coord("wibble"))
+            _ = self.cube.slices_over(self.cube.coord("wibble"))
 
     def test_1d_slice_coord_name_given(self):
         res = self.cube.slices_over("model_level_number")
@@ -863,7 +863,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_nonexistent_coord_name_given(self):
         with self.assertRaises(CoordinateNotFoundError):
-            res = self.cube.slices_over("wibble")
+            _ = self.cube.slices_over("wibble")
 
     def test_1d_slice_dimension_given(self):
         res = self.cube.slices_over(1)
@@ -873,7 +873,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_1d_slice_nonexistent_dimension_given(self):
         with self.assertRaisesRegex(ValueError, "iterator over a dimension"):
-            res = self.cube.slices_over(self.cube.ndim + 1)
+            _ = self.cube.slices_over(self.cube.ndim + 1)
 
     def test_2d_slice_coord_given(self):
         # Slicing over these two dimensions returns 420 2D cubes, so only check
@@ -890,7 +890,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_nonexistent_coord_given(self):
         with self.assertRaises(CoordinateNotFoundError):
-            res = self.cube.slices_over(
+            _ = self.cube.slices_over(
                 [self.cube.coord("time"), self.cube.coord("wibble")]
             )
 
@@ -907,7 +907,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_nonexistent_coord_name_given(self):
         with self.assertRaises(CoordinateNotFoundError):
-            res = self.cube.slices_over(["time", "wibble"])
+            _ = self.cube.slices_over(["time", "wibble"])
 
     def test_2d_slice_dimension_given(self):
         # Slicing over these two dimensions returns 420 2D cubes, so only check
@@ -933,7 +933,7 @@ class Test_slices_over(tests.IrisTest):
 
     def test_2d_slice_nonexistent_dimension_given(self):
         with self.assertRaisesRegex(ValueError, "iterator over a dimension"):
-            res = self.cube.slices_over([0, self.cube.ndim + 1])
+            _ = self.cube.slices_over([0, self.cube.ndim + 1])
 
     def test_multidim_slice_coord_given(self):
         # Slicing over surface altitude returns 100x100 2D cubes, so only check
@@ -1214,6 +1214,10 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
             [0.0, 3.74999905, 7.49999809, 11.24999714, 14.99999619], dtype="f4"
         )
         result = cube.intersection(longitude=(0, 5))
+        self.assertArrayAlmostEqual(
+            result.coord("longitude").points, np.array([0.0, 3.74999905])
+        )
+        self.assertArrayEqual(result.data[0, 0], np.array([0, 1]))
 
     def test_tolerance_f8(self):
         cube = create_cube(0, 5)
@@ -1221,6 +1225,10 @@ class Test_intersection__RegionalSrcModulus(tests.IrisTest):
             [0.0, 3.74999905, 7.49999809, 11.24999714, 14.99999619], dtype="f8"
         )
         result = cube.intersection(longitude=(0, 5))
+        self.assertArrayAlmostEqual(
+            result.coord("longitude").points, np.array([0.0, 3.74999905])
+        )
+        self.assertArrayEqual(result.data[0, 0], np.array([0, 1]))
 
 
 # Check what happens with a global, points-only circular intersection
@@ -2029,13 +2037,13 @@ class TestCellMeasures(tests.IrisTest):
 
     def test_fail_get_cell_measure(self):
         with self.assertRaises(CellMeasureNotFoundError):
-            cm = self.cube.cell_measure("notarea")
+            _ = self.cube.cell_measure("notarea")
 
     def test_fail_get_cell_measures_obj(self):
         a_cell_measure = self.a_cell_measure.copy()
         a_cell_measure.units = "km2"
         with self.assertRaises(CellMeasureNotFoundError):
-            cms = self.cube.cell_measure(a_cell_measure)
+            _ = self.cube.cell_measure(a_cell_measure)
 
     def test_cell_measure_dims(self):
         cm_dims = self.cube.cell_measure_dims(self.a_cell_measure)
@@ -2045,7 +2053,7 @@ class TestCellMeasures(tests.IrisTest):
         a_cell_measure = self.a_cell_measure.copy()
         a_cell_measure.units = "km2"
         with self.assertRaises(CellMeasureNotFoundError):
-            cm_dims = self.cube.cell_measure_dims(a_cell_measure)
+            _ = self.cube.cell_measure_dims(a_cell_measure)
 
 
 class Test_transpose(tests.IrisTest):

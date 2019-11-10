@@ -5,9 +5,6 @@
 # licensing details.
 """A module to provide an optimal array structure calculation."""
 
-import itertools
-
-import numpy as np
 
 from iris.fileformats._structured_array_identification import GroupStructure
 

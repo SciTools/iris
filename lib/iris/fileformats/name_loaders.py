@@ -295,30 +295,30 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
     # Match against height agl, asl and Pa.
     pattern = re.compile(
         r"^From\s*"
-        "(?P<lower_bound>[0-9]+(\.[0-9]+)?)"
-        "\s*-\s*"
-        "(?P<upper_bound>[0-9]+(\.[0-9]+)?)"
-        "\s*(?P<type>m\s*asl|m\s*agl|Pa)"
-        "(?P<extra>.*)"
+        r"(?P<lower_bound>[0-9]+(\.[0-9]+)?)"
+        r"\s*-\s*"
+        r"(?P<upper_bound>[0-9]+(\.[0-9]+)?)"
+        r"\s*(?P<type>m\s*asl|m\s*agl|Pa)"
+        r"(?P<extra>.*)"
     )
 
     # Match against flight level.
     pattern_fl = re.compile(
         r"^From\s*"
-        "(?P<type>FL)"
-        "(?P<lower_bound>[0-9]+(\.[0-9]+)?)"
-        "\s*-\s*FL"
-        "(?P<upper_bound>[0-9]+(\.[0-9]+)?)"
-        "(?P<extra>.*)"
+        r"(?P<type>FL)"
+        r"(?P<lower_bound>[0-9]+(\.[0-9]+)?)"
+        r"\s*-\s*FL"
+        r"(?P<upper_bound>[0-9]+(\.[0-9]+)?)"
+        r"(?P<extra>.*)"
     )
 
     # NAMEIII - integer/float support.
     # Match scalar against height agl, asl, Pa, FL
     pattern_scalar = re.compile(
         r"Z\s*=\s*"
-        "(?P<point>[0-9]+(\.[0-9]+)?([eE][+-]?\d+)?)"
-        "\s*(?P<type>m\s*agl|m\s*asl|FL|Pa)"
-        "(?P<extra>.*)"
+        r"(?P<point>[0-9]+(\.[0-9]+)?([eE][+-]?\d+)?)"
+        r"\s*(?P<type>m\s*agl|m\s*asl|FL|Pa)"
+        r"(?P<extra>.*)"
     )
 
     type_name = {
@@ -1250,7 +1250,7 @@ def load_NAMEIII_trajectory(filename):
         if np.all(np.array(values) == values[0]):
             values = [values[0]]
 
-        standard_name = long_name = units = None
+        long_name = units = None
         if isinstance(values[0], datetime.datetime):
             values = time_unit.date2num(values)
             units = time_unit

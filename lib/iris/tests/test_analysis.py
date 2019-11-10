@@ -8,7 +8,6 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-import cartopy.crs as ccrs
 import cf_units
 import numpy as np
 import numpy.ma as ma
@@ -20,11 +19,6 @@ import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests.stock
-
-# Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
-    import matplotlib
-    import matplotlib.pyplot as plt
 
 
 class TestAnalysisCubeCoordComparison(tests.IrisTest):
@@ -248,14 +242,13 @@ class TestAnalysisWeights(tests.IrisTest):
 
     @tests.skip_data
     def test_weighted_mean(self):
-        ### compare with pp_area_avg - which collapses both lat and lon
+        # compare with pp_area_avg - which collapses both lat and lon
         #
         #     pp = ppa('/data/local/dataZoo/PP/simple_pp/global.pp', 0)
         #     print, pp_area(pp, /box)
         #     print, pp_area_avg(pp, /box)  #287.927
         #     ;gives an answer of 287.927
         #
-        ###
         e = iris.tests.stock.simple_pp()
         self.assertCML(e, ("analysis", "weighted_mean_original.cml"))
         e.coord("latitude").guess_bounds()
@@ -833,7 +826,7 @@ class TestAggregators(tests.IrisTest):
 
     def test_proportion(self):
         cube = tests.stock.simple_1d()
-        r = cube.data >= 5
+        assert np.any(cube.data >= 5)
         gt5 = cube.collapsed(
             "foo", iris.analysis.PROPORTION, function=lambda val: val >= 5
         )
@@ -1384,16 +1377,14 @@ class TestLatitudeWeightGeneration(tests.IrisTest):
         # no coordinate identified as latitude
         self.cube_dim_lat.remove_coord("grid_latitude")
         with self.assertRaises(ValueError):
-            weights = iris.analysis.cartography.cosine_latitude_weights(
+            _ = iris.analysis.cartography.cosine_latitude_weights(
                 self.cube_dim_lat
             )
 
     def test_cosine_latitude_weights_multiple_latitude(self):
         # two coordinates identified as latitude
         with self.assertRaises(ValueError):
-            weights = iris.analysis.cartography.cosine_latitude_weights(
-                self.cube
-            )
+            _ = iris.analysis.cartography.cosine_latitude_weights(self.cube)
 
 
 class TestRollingWindow(tests.IrisTest):

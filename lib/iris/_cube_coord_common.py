@@ -5,7 +5,6 @@
 # licensing details.
 
 import re
-import string
 
 import cf_units
 

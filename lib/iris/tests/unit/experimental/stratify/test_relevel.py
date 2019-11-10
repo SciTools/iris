@@ -17,7 +17,6 @@ from functools import partial
 import numpy as np
 from numpy.testing import assert_array_equal
 
-import iris
 from iris.coords import AuxCoord, DimCoord
 import iris.tests.stock as stock
 

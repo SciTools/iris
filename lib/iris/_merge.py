@@ -15,7 +15,6 @@ from collections import namedtuple, OrderedDict
 from copy import deepcopy
 
 import numpy as np
-import numpy.ma as ma
 
 from iris._lazy_data import (
     as_lazy_data,

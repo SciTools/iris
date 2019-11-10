@@ -63,7 +63,6 @@ class TestGeoTiffExport(tests.IrisTest):
             np.testing.assert_array_equal(im_data, data.astype(np.float32))
 
     def _check_tiff_export(self, masked, inverted=False):
-        tif_header = "SMALL_total_column_co2.nc.tif_header.txt"
         tif_header_keys = [
             256,
             257,

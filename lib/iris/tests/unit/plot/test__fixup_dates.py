@@ -18,10 +18,6 @@ from iris.plot import _fixup_dates
 
 
 class Test(tests.IrisTest):
-    def coord(self, calendar):
-        unit = Unit("hours since 2000-04-13 00:00:00", calendar=calendar)
-        coord = AuxCoord([1, 2, 3], "time", units=unit)
-
     def test_gregorian_calendar(self):
         unit = Unit("hours since 2000-04-13 00:00:00", calendar="gregorian")
         coord = AuxCoord([1, 3, 6], "time", units=unit)

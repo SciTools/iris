@@ -408,7 +408,7 @@ class Test_data__setter(tests.IrisTest, AncillaryVariableTestMixin):
     def test_fail_bad_shape(self):
         # Setting real data requires matching shape.
         ancill_var = AncillaryVariable([1.0, 2.0])
-        msg = "Require data with shape \(2,\), got \(3,\)"
+        msg = r"Require data with shape \(2,\), got \(3,\)"
         with self.assertRaisesRegex(ValueError, msg):
             ancill_var.data = np.array([1.0, 2.0, 3.0])
 

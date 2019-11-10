@@ -9,16 +9,10 @@
 # importing anything else.
 import iris.tests as tests
 
-from distutils.version import StrictVersion
-
-import cf_units
 import numpy as np
 import warnings
 
 import iris
-
-if tests.GRIB_AVAILABLE:
-    import gribapi
 
 
 def name_cb(cube, field, filename):

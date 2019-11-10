@@ -139,7 +139,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_aux_coord(co_y, 0)
         cube.add_aux_coord(co_x, 1)
         sample_point = {"x": 2.8, "y": 18.5}
-        exp_emsg = "must be a list of \(coordinate, value\) pairs"
+        exp_emsg = r"must be a list of \(coordinate, value\) pairs"
         with self.assertRaisesRegex(TypeError, exp_emsg):
             nn_ndinds(cube, sample_point)
 

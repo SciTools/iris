@@ -55,7 +55,7 @@ class Test(tests.IrisTest):
         self.assertEqual(len(warn), 1)
         wmsg = (
             "LBLREC has a different value to the .* the header in the "
-            "file \(8 and 4\)\. Skipping .*"
+            r"file \(8 and 4\)\. Skipping .*"
         )
         self.assertRegex(str(warn[0].message), wmsg)
 

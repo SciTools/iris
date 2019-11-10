@@ -557,12 +557,6 @@ def curl(i_cube, j_cube, k_cube=None):
             )
         )
 
-    ignore_string = ""
-    if coord_comparison["ignorable"]:
-        ignore_string = " (ignoring {})".format(
-            ", ".join(group.name() for group in bad_coords)
-        )
-
     # Get the dim_coord, or None if none exist, for the xyz dimensions
     x_coord = i_cube.coord(axis="X")
     y_coord = i_cube.coord(axis="Y")

@@ -15,7 +15,6 @@ import unittest
 import iris
 
 if tests.GRIB_AVAILABLE:
-    import gribapi
     from iris_grib.message import GribMessage
 
 

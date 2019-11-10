@@ -52,7 +52,6 @@ class Test_vectors(tests.IrisTest):
 
     def _test_subgrid_vectors(self, subgrid, expected):
         grid = Grid(None, None, (None,) * 6, None)
-        dummy_vectors = (self.xp, self.yp, self.xu, self.yv)
         grid._x_vectors = mock.Mock(return_value=(self.xp, self.xu))
         grid._y_vectors = mock.Mock(return_value=(self.yp, self.yv))
         result = grid.vectors(subgrid)

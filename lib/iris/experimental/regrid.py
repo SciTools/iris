@@ -210,28 +210,28 @@ def _cropped_bounds(bounds, lower, upper):
             # A single region lower->upper.
             if lower < bounds[0, 0]:
                 # Region extends below bounds so use first lower bound.
-                l = 0
+                lindex = 0
                 lower = bounds[0, 0]
             else:
                 # Index of last lower bound less than or equal to lower.
-                l = np.nonzero(bounds[:, 0] <= lower)[0][-1]
+                lindex = np.nonzero(bounds[:, 0] <= lower)[0][-1]
             if upper > bounds[-1, 1]:
                 # Region extends above bounds so use last upper bound.
-                u = n - 1
+                uindex = n - 1
                 upper = bounds[-1, 1]
             else:
                 # Index of first upper bound greater than or equal to
                 # upper.
-                u = np.nonzero(bounds[:, 1] >= upper)[0][0]
+                uindex = np.nonzero(bounds[:, 1] >= upper)[0][0]
             # Extract the bounds in our region defined by lower->upper.
-            new_bounds = np.copy(bounds[l : (u + 1), :])
+            new_bounds = np.copy(bounds[lindex : (uindex + 1), :])
             # Replace first and last values with specified bounds.
             new_bounds[0, 0] = lower
             new_bounds[-1, 1] = upper
             if reversed_flag:
-                indices = slice(n - (u + 1), n - l)
+                indices = slice(n - (uindex + 1), n - lindex)
             else:
-                indices = slice(l, u + 1)
+                indices = slice(lindex, uindex + 1)
     else:
         # Two regions [0]->upper, lower->[-1]
         # [0]->upper
@@ -243,21 +243,21 @@ def _cropped_bounds(bounds, lower, upper):
         else:
             if upper > bounds[-1, 1]:
                 # Whole of bounds.
-                u = n - 1
+                uindex = n - 1
                 upper = bounds[-1, 1]
             else:
                 # Index of first upper bound greater than or equal to upper.
-                u = np.nonzero(bounds[:, 1] >= upper)[0][0]
+                uindex = np.nonzero(bounds[:, 1] >= upper)[0][0]
             # Extract the bounds in our region defined by [0]->upper.
-            new_bounds_left = np.copy(bounds[0 : (u + 1), :])
+            new_bounds_left = np.copy(bounds[0 : (uindex + 1), :])
             # Replace last value with specified bound.
             new_bounds_left[-1, 1] = upper
             if reversed_flag:
-                indices_left = tuple(range(n - (u + 1), n))
-                slice_left = slice(n - (u + 1), n)
+                indices_left = tuple(range(n - (uindex + 1), n))
+                slice_left = slice(n - (uindex + 1), n)
             else:
-                indices_left = tuple(range(0, u + 1))
-                slice_left = slice(0, u + 1)
+                indices_left = tuple(range(0, uindex + 1))
+                slice_left = slice(0, uindex + 1)
         # lower->[-1]
         if lower > bounds[-1, 1]:
             # Region is outside src bounds.
@@ -267,21 +267,21 @@ def _cropped_bounds(bounds, lower, upper):
         else:
             if lower < bounds[0, 0]:
                 # Whole of bounds.
-                l = 0
+                lindex = 0
                 lower = bounds[0, 0]
             else:
                 # Index of last lower bound less than or equal to lower.
-                l = np.nonzero(bounds[:, 0] <= lower)[0][-1]
+                lindex = np.nonzero(bounds[:, 0] <= lower)[0][-1]
             # Extract the bounds in our region defined by lower->[-1].
-            new_bounds_right = np.copy(bounds[l:, :])
+            new_bounds_right = np.copy(bounds[lindex:, :])
             # Replace first value with specified bound.
             new_bounds_right[0, 0] = lower
             if reversed_flag:
-                indices_right = tuple(range(0, n - l))
-                slice_right = slice(0, n - l)
+                indices_right = tuple(range(0, n - lindex))
+                slice_right = slice(0, n - lindex)
             else:
-                indices_right = tuple(range(l, n))
-                slice_right = slice(l, None)
+                indices_right = tuple(range(lindex, n))
+                slice_right = slice(lindex, None)
 
         if reversed_flag:
             # Flip everything around.
@@ -849,7 +849,7 @@ def regrid_area_weighted_rectilinear_src_and_grid(
 
 
 def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
-    """
+    r"""
     Return a new cube with the data values calculated using the weighted
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
@@ -1261,7 +1261,6 @@ class _ProjectedUnstructuredRegridder:
         src_x_coord, src_y_coord = get_xy_coords(src_cube)
         tgt_x_coord, tgt_y_coord = self._tgt_grid
         src_cs = src_x_coord.coord_system
-        tgt_cs = tgt_x_coord.coord_system
 
         if src_x_coord.coord_system != src_y_coord.coord_system:
             raise ValueError(

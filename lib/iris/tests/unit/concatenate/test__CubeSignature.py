@@ -12,9 +12,8 @@ import iris.tests as tests
 from cf_units import Unit
 import numpy as np
 
-import iris
 from iris._concatenate import _CubeSignature as CubeSignature
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.util import new_axis
 

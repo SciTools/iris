@@ -17,8 +17,6 @@ Specifically, this module tests the following functions:
 # importing anything else
 import iris.tests as tests
 
-import inspect
-
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord

@@ -274,11 +274,5 @@ class Test___ge__(tests.IrisTest, _Test_operator):
         self.expected_value = negate_expectations(LT_EXPECTATIONS)
 
 
-class Test___le__(tests.IrisTest, _Test_operator):
-    def setUp(self):
-        self.op = operator.le
-        self.expected_value = negate_expectations(GT_EXPECTATIONS)
-
-
 if __name__ == "__main__":
     tests.main()

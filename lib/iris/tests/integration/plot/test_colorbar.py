@@ -65,7 +65,7 @@ class TestColorBarCreation(tests.GraphicsTest):
     def test_common_draw_functions_specified_mappable(self):
         for draw_function in self.draw_functions:
             mappable_initial = draw_function(self.cube, cmap="cool")
-            mappable = draw_function(self.cube)
+            _ = draw_function(self.cube)
             cbar = plt.colorbar(mappable_initial)
             self.assertIs(
                 cbar.mappable,
@@ -82,7 +82,7 @@ class TestColorBarCreation(tests.GraphicsTest):
 
     def test_points_with_c_kwarg_specified_mappable(self):
         mappable_initial = points(self.cube, c=self.cube.data, cmap="cool")
-        mappable = points(self.cube, c=self.cube.data)
+        _ = points(self.cube, c=self.cube.data)
         cbar = plt.colorbar(mappable_initial)
         self.assertIs(cbar.mappable, mappable_initial)
 
@@ -97,7 +97,7 @@ class TestColorBarCreation(tests.GraphicsTest):
         mappable_initial = scatter(
             self.traj_lon, self.traj_lat, c=self.traj_lon.points
         )
-        mappable = scatter(
+        _ = scatter(
             self.traj_lon, self.traj_lat, c=self.traj_lon.points, cmap="cool"
         )
         cbar = plt.colorbar(mappable_initial)

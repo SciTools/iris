@@ -34,7 +34,7 @@ def um_to_pp(filename, read_data=False, word_depth=None):
         the FieldsFile.  Default value is False.
 
     Returns:
-        Iteration of :class:`iris.fileformats.pp.PPField`\s.
+        Iteration of :class:`iris.fileformats.pp.PPField`.
 
     For example::
 

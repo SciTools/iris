@@ -16,7 +16,6 @@ from unittest import mock
 
 import numpy as np
 
-import iris
 from iris.fileformats.cf import CFReader
 
 

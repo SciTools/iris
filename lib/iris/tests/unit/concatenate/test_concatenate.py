@@ -98,7 +98,7 @@ class TestMessages(tests.IrisTest):
         cube_2.units = "1"
         exc_regexp = "Cube metadata differs for phenomenon: *"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_dimensions_difference_message(self):
         cube_1 = self.cube
@@ -106,7 +106,7 @@ class TestMessages(tests.IrisTest):
         cube_2.remove_coord("latitude")
         exc_regexp = "Dimension coordinates differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_dimensions_metadata_difference_message(self):
         cube_1 = self.cube
@@ -114,7 +114,7 @@ class TestMessages(tests.IrisTest):
         cube_2.coord("latitude").long_name = "bob"
         exc_regexp = "Dimension coordinates metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_aux_coords_difference_message(self):
         cube_1 = self.cube
@@ -122,7 +122,7 @@ class TestMessages(tests.IrisTest):
         cube_2.remove_coord("foo")
         exc_regexp = "Auxiliary coordinates differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_aux_coords_metadata_difference_message(self):
         cube_1 = self.cube
@@ -130,7 +130,7 @@ class TestMessages(tests.IrisTest):
         cube_2.coord("foo").units = "m"
         exc_regexp = "Auxiliary coordinates metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_scalar_coords_difference_message(self):
         cube_1 = self.cube
@@ -138,7 +138,7 @@ class TestMessages(tests.IrisTest):
         cube_2.remove_coord("height")
         exc_regexp = "Scalar coordinates differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_scalar_coords_metadata_difference_message(self):
         cube_1 = self.cube
@@ -146,7 +146,7 @@ class TestMessages(tests.IrisTest):
         cube_2.coord("height").long_name = "alice"
         exc_regexp = "Scalar coordinates metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_ndim_difference_message(self):
         cube_1 = self.cube
@@ -163,7 +163,7 @@ class TestMessages(tests.IrisTest):
         cube_2.add_dim_coord(x_coord, 0)
         exc_regexp = "Data dimensions differ: [0-9] != [0-9]"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_datatype_difference_message(self):
         cube_1 = self.cube
@@ -171,7 +171,7 @@ class TestMessages(tests.IrisTest):
         cube_2.data.dtype = np.float64
         exc_regexp = "Data types differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
-            result = concatenate([cube_1, cube_2], True)
+            _ = concatenate([cube_1, cube_2], True)
 
 
 class TestOrder(tests.IrisTest):

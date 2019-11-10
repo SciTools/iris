@@ -163,7 +163,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(cell >= n)
             bool(cell == n)
             bool(cell != n)
-        except:
+        except:  # noqa
             self.fail(
                 "Result of comparison could not be used as a truth value"
             )
@@ -179,7 +179,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n >= cell)
             bool(n == cell)
             bool(n != cell)
-        except:
+        except:  # noqa
             self.fail(
                 "Result of comparison could not be used as a truth value"
             )

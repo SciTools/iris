@@ -47,7 +47,6 @@ class Test_make_content(tests.IrisTest):
     def test__cube_name_summary_consistency(self):
         # Just check the first cube in the CubeList.
         single_cube_html = self.content[0]
-        first_contents_line = single_cube_html.split("\n")[1]
         # Get a "prettified" cube name, as it should be in the cubelist repr.
         cube_name = self.cubes[0].name()
         pretty_cube_name = cube_name.strip().replace("_", " ").title()

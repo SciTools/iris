@@ -258,7 +258,7 @@ def _load_palette():
         # Read the file header.
         with open(filename) as file_handle:
             header = filter(
-                lambda line: re.match("^\s*#.*:\s+.*$", line),
+                lambda line: re.match(r"^\s*#.*:\s+.*$", line),
                 file_handle.readlines(),
             )
 

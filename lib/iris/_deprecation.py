@@ -10,8 +10,6 @@ Utilities for producing runtime deprecation messages.
 
 import warnings
 
-from iris.exceptions import IrisError
-
 
 class IrisDeprecation(UserWarning):
     """An Iris deprecation warning."""

@@ -144,7 +144,7 @@ class TestRunner:
             "--process-timeout=180",
         ]
         try:
-            import gribapi
+            import gribapi  # noqa
         except ImportError:
             args.append("--exclude=^grib$")
         if self.stop:

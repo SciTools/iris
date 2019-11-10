@@ -13,7 +13,7 @@ from unittest import mock
 
 import cartopy
 import cartopy.crs as ccrs
-from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coord_systems import RotatedGeogCS
 
 
 class Test_init(tests.IrisTest):
@@ -50,7 +50,7 @@ class Test_init(tests.IrisTest):
     def test_as_cartopy_projection(self):
         if cartopy.__version__ < "0.12":
             with mock.patch("warnings.warn") as warn:
-                accrs = self.rp_crs.as_cartopy_projection()
+                _ = self.rp_crs.as_cartopy_projection()
                 self.assertEqual(warn.call_count, 1)
         else:
             accrsp = self.rp_crs.as_cartopy_projection()

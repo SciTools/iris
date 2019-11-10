@@ -14,7 +14,6 @@ import iris.tests as tests
 import cf_units
 import numpy as np
 
-import iris
 from iris.analysis.cartography import _quadrant_area
 from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
 

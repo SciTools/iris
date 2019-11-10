@@ -75,7 +75,7 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset = nc.Dataset(filename, mode="a")
             dataset.renameVariable("time_bnds", "foo")
             dataset.close()
-            cube = iris.load_cube(filename, "eastward_wind")
+            _ = iris.load_cube(filename, "eastward_wind")
 
     def test_load_global_xyzt_gems(self):
         # Test loading single xyzt CF-netCDF file (multi-cube).
@@ -198,7 +198,7 @@ class TestNetCDFLoad(tests.IrisTest):
             dataset = nc.Dataset(filename, mode="a")
             dataset.renameVariable("climatology_bounds", "foo")
             dataset.close()
-            cube = iris.load_cube(filename, "Mean temperature")
+            _ = iris.load_cube(filename, "Mean temperature")
 
     def test_load_merc_grid(self):
         # Test loading a single CF-netCDF file with a Mercator grid_mapping

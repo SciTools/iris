@@ -99,7 +99,7 @@ class Tests(tests.IrisTest):
         ]
         coord_name = "foo"
         with mock.patch("warnings.warn") as warn:
-            res = _build_cell_methods(av_or_int, coord_name)
+            _ = _build_cell_methods(av_or_int, coord_name)
         expected_msg = (
             "Unknown {} statistic: {!r}. Unable to "
             "create cell method.".format(coord_name, unrecognised_heading)
@@ -124,7 +124,7 @@ class Tests(tests.IrisTest):
             ]
             coord_name = "foo"
             with mock.patch("warnings.warn") as warn:
-                res = _build_cell_methods(av_or_int, coord_name)
+                _ = _build_cell_methods(av_or_int, coord_name)
             expected_msg = (
                 "Unknown {} statistic: {!r}. Unable to "
                 "create cell method.".format(coord_name, unrecognised_heading)

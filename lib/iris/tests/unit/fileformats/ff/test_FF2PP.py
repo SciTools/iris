@@ -12,7 +12,6 @@ import iris.tests as tests
 import collections
 import contextlib
 from unittest import mock
-import warnings
 
 import numpy as np
 
@@ -564,7 +563,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
         field.lblev = self.original_lblev
 
     def _check_expected_levels(self, results, n_levels):
-        if n_levels is 0:
+        if n_levels == 0:
             self.assertEqual(len(results), 1)
             self.assertEqual(results[0].lblev, self.original_lblev)
         else:

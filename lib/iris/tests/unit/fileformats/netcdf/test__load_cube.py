@@ -11,7 +11,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import netCDF4
 import numpy as np
 
 from iris.coords import DimCoord

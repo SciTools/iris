@@ -13,7 +13,6 @@ Tests for :func:`iris.experimental.regrid.regrid_conservative_via_esmpy`.
 import iris.tests as tests
 
 import contextlib
-import os
 import unittest
 
 import cf_units
@@ -22,7 +21,7 @@ import numpy as np
 # Import ESMF if installed, else fail quietly + disable all the tests.
 try:
     import ESMF
-except ImportError as AttributeError:
+except ImportError:
     ESMF = None
 skip_esmf = unittest.skipIf(
     condition=ESMF is None, reason="Requires ESMF, which is not available."

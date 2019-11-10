@@ -21,7 +21,7 @@ class Test(tests.IrisTest):
         cube.coord("grid_longitude").guess_bounds()
 
         with self.assertRaisesRegex(ValueError, "bounds"):
-            result_non_circ = _xy_range(cube)
+            _ = _xy_range(cube)
 
     def test_non_circular(self):
         cube = stock.realistic_3d()

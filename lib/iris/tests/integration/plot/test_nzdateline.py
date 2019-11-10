@@ -17,14 +17,7 @@ import iris
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
-    from iris.plot import (
-        contour,
-        contourf,
-        pcolormesh,
-        pcolor,
-        points,
-        scatter,
-    )
+    from iris.plot import pcolormesh
 
 
 @tests.skip_plot

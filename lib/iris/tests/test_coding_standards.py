@@ -11,9 +11,7 @@ import iris.tests as tests
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
-from itertools import chain
 import os
-import re
 import subprocess
 
 import iris

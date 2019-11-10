@@ -396,7 +396,8 @@ class TestPPSaveRules(tests.IrisTest, pp.PPTest):
 def fields_from_cube(cubes):
     """
     Return an iterator of PP fields generated from saving the given cube(s)
-    to a temporary file, and then subsequently loading them again 
+    to a temporary file, and then subsequently loading them again
+
     """
     with tempfile.NamedTemporaryFile("w+b", suffix=".pp") as tmp_file:
         fh = tmp_file

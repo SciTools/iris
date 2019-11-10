@@ -9,9 +9,7 @@
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import contextmanager
 from unittest import mock
-import warnings
 
 import numpy as np
 

@@ -22,7 +22,7 @@ import iris.coords as icoords
 from iris.coords import DimCoord, AuxCoord, CellMethod
 import iris.tests as tests
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from ._stock_2d_latlons import (
+from ._stock_2d_latlons import (  # noqa
     sample_2d_latlons,
     make_bounds_discontiguous_at_point,
 )

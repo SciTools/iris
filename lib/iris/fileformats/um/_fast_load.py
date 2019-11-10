@@ -29,7 +29,6 @@ import numpy as np
 
 # Be minimal about what we import from iris, to avoid circular imports.
 # Below, other parts of iris.fileformats are accessed via deferred imports.
-import iris
 from iris.coords import DimCoord
 from iris.cube import CubeList
 from iris.exceptions import TranslationError

@@ -9,9 +9,6 @@
 # importing anything else.
 import iris.tests as tests
 
-import numpy as np
-
-from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import TestGraphicStringCoord
 from iris.tests.unit.plot._blockplot_common import (
     MixinStringCoordPlot,

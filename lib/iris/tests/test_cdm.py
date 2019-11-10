@@ -11,11 +11,8 @@ Test cube indexing, slicing, and extracting, and also the dot graphs.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
-from contextlib import contextmanager
 import os
 import re
-import sys
-import unittest
 
 import cf_units
 import numpy as np
@@ -402,14 +399,6 @@ class TestCubeStringRepresentations(IrisDotTest):
         )
         cube.add_aux_coord(aux, 0)
         self.assertString(str(cube), ("cdm", "str_repr", "simple.__str__.txt"))
-
-    @contextmanager
-    def unicode_encoding_change(self, new_encoding):
-        default_encoding = sys.getdefaultencoding()
-        reload(sys).setdefaultencoding(new_encoding)
-        yield
-        sys.setdefaultencoding(default_encoding)
-        del sys.setdefaultencoding
 
     def test_unicode_attribute(self):
         self.assertString(

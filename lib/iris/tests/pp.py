@@ -8,7 +8,6 @@ import contextlib
 import os.path
 
 import iris
-import iris.tests as tests
 
 
 class PPTest:

@@ -10,13 +10,9 @@
 import iris.tests as tests
 
 from collections import Iterable
-
-import os.path
 import tempfile
 import shutil
-import os
 
-from cf_units import Unit
 import numpy as np
 
 import iris.coords
@@ -28,7 +24,6 @@ from iris.fileformats.pp import EARTH_RADIUS, STASH
 from iris.fileformats.um._fast_load import STRUCTURED_LOAD_CONTROLS
 
 import iris
-from iris.fileformats.um import structured_um_loading
 
 
 class Mixin_FieldTest:

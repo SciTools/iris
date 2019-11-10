@@ -14,7 +14,7 @@ import numpy.ma as ma
 
 import iris
 from iris import load_cube, save
-from iris.coords import CellMethod, DimCoord
+from iris.coords import DimCoord
 from iris.coord_systems import RotatedGeogCS
 from iris.fileformats.pp import EARTH_RADIUS as UM_DEFAULT_EARTH_RADIUS
 import iris.tests.stock as stock

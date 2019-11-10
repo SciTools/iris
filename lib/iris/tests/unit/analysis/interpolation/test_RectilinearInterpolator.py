@@ -302,6 +302,7 @@ class Test___call___1D_circular(ThreeDimCube):
         points, points_wrapped = self.testpoints_partially_wrapped
         expected = self.interpolator(points)
         result = self.interpolator(points_wrapped)
+        self.assertArrayEqual(expected.data, result.data)
 
     def test_partially_wrapped_reversed_mainpoints(self):
         points, _ = self.testpoints_partially_wrapped

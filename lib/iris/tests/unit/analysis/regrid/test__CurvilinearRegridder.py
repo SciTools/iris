@@ -116,8 +116,8 @@ class Test___call__(tests.IrisTest):
         ) as patch_setup:
             with mock.patch(
                 self.func_operate, return_value=self.dummy_slice_result
-            ) as patch_operate:
-                result = regridder(src_grid)
+            ):
+                _ = regridder(src_grid)
         patch_setup.assert_called_once_with(src_grid, None, target_grid)
 
     def test_diff_src_from_init(self):
@@ -132,11 +132,11 @@ class Test___call__(tests.IrisTest):
         different_src_cube.rename("Different_source")
         with mock.patch(
             self.func_setup, return_value=mock.sentinel.regrid_info
-        ) as patch_setup:
+        ):
             with mock.patch(
                 self.func_operate, return_value=self.dummy_slice_result
             ) as patch_operate:
-                result = regridder(different_src_cube)
+                _ = regridder(different_src_cube)
         patch_operate.assert_called_once_with(
             different_src_cube, mock.sentinel.regrid_info
         )
@@ -155,8 +155,8 @@ class Test___call__(tests.IrisTest):
             with mock.patch(
                 self.func_operate, return_value=self.dummy_slice_result
             ) as patch_operate:
-                result1 = regridder(src_grid)
-                result2 = regridder(different_src_cube)
+                _ = regridder(src_grid)
+                _ = regridder(different_src_cube)
         patch_setup.assert_called_once_with(
             src_grid, self.weights, target_grid
         )

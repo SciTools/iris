@@ -11,7 +11,6 @@ import iris.tests as tests
 
 import numpy as np
 
-import iris
 from iris.coords import DimCoord
 from iris.cube import Cube
 

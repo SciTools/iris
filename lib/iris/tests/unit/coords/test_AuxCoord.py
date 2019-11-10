@@ -394,7 +394,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 ),
             )
 
-            if bounds_type_name is not "no":
+            if bounds_type_name != "no":
                 sub_bounds = sub_coord.core_bounds()
                 main_bounds_dtype = main_coord.bounds_dtype
                 self.assertEqual(
@@ -441,7 +441,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 ),
             )
 
-            if bounds_type_name is not "no":
+            if bounds_type_name != "no":
                 sub_bounds_lazy = lazyness_string(sub_coord.core_bounds())
                 self.assertEqual(
                     sub_bounds_lazy,
@@ -670,7 +670,7 @@ class Test_points__setter(tests.IrisTest, AuxCoordTestMixin):
     def test_fail_bad_shape(self):
         # Setting real points requires matching shape.
         coord = AuxCoord([1.0, 2.0])
-        msg = "Require data with shape \(2,\), got \(3,\)"
+        msg = r"Require data with shape \(2,\), got \(3,\)"
         with self.assertRaisesRegex(ValueError, msg):
             coord.points = np.array([1.0, 2.0, 3.0])
 

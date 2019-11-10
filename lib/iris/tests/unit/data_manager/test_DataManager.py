@@ -409,7 +409,7 @@ class Test_data__setter(tests.IrisTest):
 
     def test_scalar_1d_to_zero_ndim_fail(self):
         dm = DataManager(np.array([123]))
-        emsg = "Require data with shape \(1,\), got \(\)."
+        emsg = r"Require data with shape \(1,\), got \(\)."
         with self.assertRaisesRegex(ValueError, emsg):
             dm.data = 456
 

@@ -26,11 +26,11 @@ class TestCubeDelta(tests.IrisTest):
     def test_invalid(self):
         cube = iris.tests.stock.realistic_4d()
         with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
-            t = iris.analysis.calculus.cube_delta(cube, "surface_altitude")
+            _ = iris.analysis.calculus.cube_delta(cube, "surface_altitude")
         with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
-            t = iris.analysis.calculus.cube_delta(cube, "altitude")
+            _ = iris.analysis.calculus.cube_delta(cube, "altitude")
         with self.assertRaises(ValueError):
-            t = iris.analysis.calculus.cube_delta(cube, "forecast_period")
+            _ = iris.analysis.calculus.cube_delta(cube, "forecast_period")
 
     def test_delta_coord_lookup(self):
         cube = iris.cube.Cube(np.arange(10), standard_name="air_temperature")
@@ -699,7 +699,6 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
 
         cos_x_pts = np.cos(np.radians(x.points)).reshape(1, x.shape[0])
         sin_x_pts = np.sin(np.radians(x.points)).reshape(1, x.shape[0])
-        cos_y_pts = np.cos(np.radians(y.points)).reshape(y.shape[0], 1)
         sin_y_pts = np.sin(np.radians(y.points)).reshape(y.shape[0], 1)
         y_ones = np.ones((cube.shape[0], 1))
 
@@ -782,8 +781,7 @@ class TestCurlInterface(tests.IrisTest):
     def test_standard_name(self):
         nx = 20
         ny = 50
-        nz = None
-        u = build_cube(np.empty((50, 20)), spherical=True)
+        u = build_cube(np.empty((ny, nx)), spherical=True)
         v = u.copy()
         w = u.copy()
         u.rename("u_wind")

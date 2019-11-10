@@ -24,10 +24,6 @@ from iris.tests.stock import (
 from iris.plot import _check_bounds_contiguity_and_mask
 
 
-if tests.MPL_AVAILABLE:
-    import iris.plot as iplt
-
-
 @tests.skip_plot
 class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
     def test_1d_not_checked(self):
