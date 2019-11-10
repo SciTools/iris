@@ -119,11 +119,6 @@ script:
       echo $(black --version);
       rm ${INSTALL_DIR}/.gitignore;
       black --check ${INSTALL_DIR};
-      RC=${?};
-      if [[ ${RC} -ne 0 ]]; then
-        black --diff ${INSTALL_DIR};
-        (exit ${RC});
-      fi;
     fi
 
   - >
