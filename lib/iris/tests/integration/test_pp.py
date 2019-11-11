@@ -448,6 +448,13 @@ class TestVertical(tests.IrisTest):
 
 
 class TestSaveLBFT(tests.IrisTest):
+    def setUp(self):
+        delta_start = 24
+        delta_mid = 36
+        self.delta_end = 369 * 24
+        ref_offset = 10 * 24
+        self.args = (delta_start, delta_mid, self.delta_end, ref_offset)
+
     def create_cube(self, fp_min, fp_mid, fp_max, ref_offset, season=None):
         cube = Cube(np.zeros((3, 4)))
         cube.add_aux_coord(
@@ -531,24 +538,24 @@ class TestSaveLBFT(tests.IrisTest):
         self.assertEqual(field.lbft, 4 * 24)
 
     def test_climatological_mean_multi_year_djf(self):
-        cube = self.create_cube(24, 36, 369 * 24, 240, "djf")
+        cube = self.create_cube(*self.args, season="djf")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 369 * 24)
+        self.assertEqual(field.lbft, self.delta_end)
 
     def test_climatological_mean_multi_year_mam(self):
-        cube = self.create_cube(24, 36, 369 * 24, 240, "mam")
+        cube = self.create_cube(*self.args, season="mam")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 369 * 24)
+        self.assertEqual(field.lbft, self.delta_end)
 
     def test_climatological_mean_multi_year_jja(self):
-        cube = self.create_cube(24, 36, 369 * 24, 240, "jja")
+        cube = self.create_cube(*self.args, season="jja")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 369 * 24)
+        self.assertEqual(field.lbft, self.delta_end)
 
     def test_climatological_mean_multi_year_son(self):
-        cube = self.create_cube(24, 36, 369 * 24, 240, "son")
+        cube = self.create_cube(*self.args, season="son")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 369 * 24)
+        self.assertEqual(field.lbft, self.delta_end)
 
 
 class TestCoordinateForms(tests.IrisTest):

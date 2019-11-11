@@ -614,7 +614,7 @@ class _Common__check_attribute_compliance:
         self.data = np.array(1, dtype="int32")
 
         patch = mock.patch("netCDF4.Dataset")
-        patch.start()
+        _ = patch.start()
         self.addCleanup(patch.stop)
 
     def set_attribute(self, value):
