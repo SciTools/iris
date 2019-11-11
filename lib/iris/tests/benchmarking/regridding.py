@@ -1,3 +1,10 @@
+from os import environ
+
+# Temporary override for local testing.
+environ[
+    "OVERRIDE_TEST_DATA_REPOSITORY"
+] = "/net/home/h01/myeo/iris-test-data-master/test_data"
+
 # import iris tests first so that some things can be initialised before
 # importing anything else.
 from iris import tests
@@ -10,19 +17,13 @@ from iris import analysis
 @tests.skip_data
 class RegriddingTests:
     def setup(self):
-        file_path_start = tests.get_data_path(
-            ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+        # Prepare a cube and a regridding scheme.
+        file_path = tests.get_data_path(
+            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
-        self.cube_start = iris.load(file_path_start)[0]
-
-        file_path_end = tests.get_data_path(
-            ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
-        )
-        self.cube_end = iris.load(file_path_end)[0]
-
-        self.scheme_linear = analysis.Linear()
+        self.cube = iris.load(file_path)[0]
+        self.scheme_area_w = analysis.AreaWeighted()
 
     def time_regrid_basic(self):
-        cube_rotated = self.cube_start.regrid(
-            self.cube_end, self.scheme_linear
-        )
+        # Regrid the cube onto itself.
+        cube_rotated = self.cube.regrid(self.cube, self.scheme_area_w)
