@@ -1,10 +1,3 @@
-from os import environ
-
-# Temporary override for local testing.
-environ[
-    "OVERRIDE_TEST_DATA_REPOSITORY"
-] = "/net/home/h01/myeo/iris-test-data-master/test_data"
-
 # import iris tests first so that some things can be initialised before
 # importing anything else.
 from iris import tests
