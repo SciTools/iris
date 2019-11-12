@@ -31,4 +31,4 @@ class RegriddingTests:
 
     def time_regrid_area_w(self):
         # Regrid the cube onto itself.
-        cube_rotated = self.cube.regrid(self.cube, self.scheme_area_w)
+        _ = self.cube.regrid(self.cube, self.scheme_area_w)
