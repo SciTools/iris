@@ -5,8 +5,8 @@
 # licensing details.
 """Unit tests for the `iris._constraints.NameConstraint` class."""
 
-from __future__ import (absolute_import, division, print_function)
-from six.moves import (filter, input, map, range, zip)  # noqa
+from __future__ import absolute_import, division, print_function
+from six.moves import filter, input, map, range, zip  # noqa
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -19,7 +19,7 @@ from iris._constraints import NameConstraint
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.default = 'none'
+        self.default = "none"
 
     def test_default(self):
         constraint = NameConstraint()
@@ -75,10 +75,12 @@ class Test__cube_func(tests.IrisTest):
         self.long_name = sentinel.long_name
         self.var_name = sentinel.var_name
         self.STASH = sentinel.STASH
-        self.cube = Mock(standard_name=self.standard_name,
-                         long_name=self.long_name,
-                         var_name=self.var_name,
-                         attributes=dict(STASH=self.STASH))
+        self.cube = Mock(
+            standard_name=self.standard_name,
+            long_name=self.long_name,
+            var_name=self.var_name,
+            attributes=dict(STASH=self.STASH),
+        )
 
     def test_standard_name(self):
         # Match.
@@ -88,10 +90,10 @@ class Test__cube_func(tests.IrisTest):
         constraint = NameConstraint(self.standard_name)
         self.assertTrue(constraint._cube_func(self.cube))
         # No match.
-        constraint = NameConstraint(standard_name='wibble')
+        constraint = NameConstraint(standard_name="wibble")
         self.assertFalse(constraint._cube_func(self.cube))
         # No match.
-        constraint = NameConstraint('wibble')
+        constraint = NameConstraint("wibble")
         self.assertFalse(constraint._cube_func(self.cube))
 
     def test_long_name(self):
@@ -113,8 +115,9 @@ class Test__cube_func(tests.IrisTest):
         constraint = NameConstraint(var_name=self.var_name)
         self.assertTrue(constraint._cube_func(self.cube))
         # Match.
-        constraint = NameConstraint(self.standard_name, self.long_name,
-                                    self.var_name)
+        constraint = NameConstraint(
+            self.standard_name, self.long_name, self.var_name
+        )
         self.assertTrue(constraint._cube_func(self.cube))
         # No match.
         constraint = NameConstraint(var_name=None)
@@ -128,8 +131,9 @@ class Test__cube_func(tests.IrisTest):
         constraint = NameConstraint(STASH=self.STASH)
         self.assertTrue(constraint._cube_func(self.cube))
         # Match.
-        constraint = NameConstraint(self.standard_name, self.long_name,
-                                    self.var_name, self.STASH)
+        constraint = NameConstraint(
+            self.standard_name, self.long_name, self.var_name, self.STASH
+        )
         self.assertTrue(constraint._cube_func(self.cube))
         # No match.
         constraint = NameConstraint(STASH=None)
@@ -145,15 +149,15 @@ class Test___repr__(tests.IrisTest):
         self.long_name = sentinel.long_name
         self.var_name = sentinel.var_name
         self.STASH = sentinel.STASH
-        self.msg = 'NameConstraint({})'
-        self.f_standard_name = 'standard_name={!r}'.format(self.standard_name)
-        self.f_long_name = 'long_name={!r}'.format(self.long_name)
-        self.f_var_name = 'var_name={!r}'.format(self.var_name)
-        self.f_STASH = 'STASH={!r}'.format(self.STASH)
+        self.msg = "NameConstraint({})"
+        self.f_standard_name = "standard_name={!r}".format(self.standard_name)
+        self.f_long_name = "long_name={!r}".format(self.long_name)
+        self.f_var_name = "var_name={!r}".format(self.var_name)
+        self.f_STASH = "STASH={!r}".format(self.STASH)
 
     def test(self):
         constraint = NameConstraint()
-        expected = self.msg.format('')
+        expected = self.msg.format("")
         self.assertEqual(repr(constraint), expected)
 
     def test_standard_name(self):
@@ -166,7 +170,7 @@ class Test___repr__(tests.IrisTest):
         expected = self.msg.format(self.f_long_name)
         self.assertEqual(repr(constraint), expected)
         constraint = NameConstraint(self.standard_name, self.long_name)
-        args = '{}, {}'.format(self.f_standard_name, self.f_long_name)
+        args = "{}, {}".format(self.f_standard_name, self.f_long_name)
         expected = self.msg.format(args)
         self.assertEqual(repr(constraint), expected)
 
@@ -174,10 +178,12 @@ class Test___repr__(tests.IrisTest):
         constraint = NameConstraint(var_name=self.var_name)
         expected = self.msg.format(self.f_var_name)
         self.assertEqual(repr(constraint), expected)
-        constraint = NameConstraint(self.standard_name, self.long_name,
-                                    self.var_name)
-        args = '{}, {}, {}'.format(self.f_standard_name, self.f_long_name,
-                                   self.f_var_name)
+        constraint = NameConstraint(
+            self.standard_name, self.long_name, self.var_name
+        )
+        args = "{}, {}, {}".format(
+            self.f_standard_name, self.f_long_name, self.f_var_name
+        )
         expected = self.msg.format(args)
         self.assertEqual(repr(constraint), expected)
 
@@ -185,13 +191,18 @@ class Test___repr__(tests.IrisTest):
         constraint = NameConstraint(STASH=self.STASH)
         expected = self.msg.format(self.f_STASH)
         self.assertEqual(repr(constraint), expected)
-        constraint = NameConstraint(self.standard_name, self.long_name,
-                                    self.var_name, self.STASH)
-        args = '{}, {}, {}, {}'.format(self.f_standard_name, self.f_long_name,
-                                       self.f_var_name, self.f_STASH)
+        constraint = NameConstraint(
+            self.standard_name, self.long_name, self.var_name, self.STASH
+        )
+        args = "{}, {}, {}, {}".format(
+            self.f_standard_name,
+            self.f_long_name,
+            self.f_var_name,
+            self.f_STASH,
+        )
         expected = self.msg.format(args)
         self.assertEqual(repr(constraint), expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -117,7 +117,7 @@ __all__ = [
     "save",
     "Constraint",
     "AttributeConstraint",
-    "NameConstraint"
+    "NameConstraint",
     "sample_data_path",
     "site_configuration",
     "Future",

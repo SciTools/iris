@@ -17,8 +17,9 @@ import iris.std_names
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 
-class Names(namedtuple('Names',
-                       ['standard_name', 'long_name', 'var_name', 'STASH'])):
+class Names(
+    namedtuple("Names", ["standard_name", "long_name", "var_name", "STASH"])
+):
     """
     Immutable container for name metadata.
 
@@ -217,7 +218,7 @@ class CFVariableMixin:
         standard_name = self.standard_name
         long_name = self.long_name
         var_name = self.var_name
-        stash_name = self.attributes.get('STASH')
+        stash_name = self.attributes.get("STASH")
         if stash_name is not None:
             stash_name = str(stash_name)
         return Names(standard_name, long_name, var_name, stash_name)

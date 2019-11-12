@@ -140,7 +140,7 @@ class Test_names(tests.IrisTest):
         self.cf_var.attributes = dict()
 
     def test_standard_name(self):
-        standard_name = 'air_temperature'
+        standard_name = "air_temperature"
         self.cf_var.standard_name = standard_name
         expected = (standard_name, None, None, None)
         result = self.cf_var.names
@@ -148,7 +148,7 @@ class Test_names(tests.IrisTest):
         self.assertEqual(result.standard_name, standard_name)
 
     def test_long_name(self):
-        long_name = 'air temperature'
+        long_name = "air temperature"
         self.cf_var.long_name = long_name
         expected = (None, long_name, None, None)
         result = self.cf_var.names
@@ -156,7 +156,7 @@ class Test_names(tests.IrisTest):
         self.assertEqual(result.long_name, long_name)
 
     def test_var_name(self):
-        var_name = 'atemp'
+        var_name = "atemp"
         self.cf_var.var_name = var_name
         expected = (None, None, var_name, None)
         result = self.cf_var.names
@@ -164,7 +164,7 @@ class Test_names(tests.IrisTest):
         self.assertEqual(result.var_name, var_name)
 
     def test_STASH(self):
-        stash = 'm01s16i203'
+        stash = "m01s16i203"
         self.cf_var.attributes = dict(STASH=stash)
         expected = (None, None, None, stash)
         result = self.cf_var.names

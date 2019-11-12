@@ -130,8 +130,10 @@ class Constraint:
         """
         match = True
         if self._name:
-            match = (self._name in cube.names or
-                     self._name == CFVariableMixin._DEFAULT_NAME)
+            match = (
+                self._name in cube.names
+                or self._name == CFVariableMixin._DEFAULT_NAME
+            )
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match
@@ -505,8 +507,14 @@ class NameConstraint(Constraint):
     The name constraint will only succeed if all of the provided names match.
 
     """
-    def __init__(self, standard_name='none', long_name='none',
-                 var_name='none', STASH='none'):
+
+    def __init__(
+        self,
+        standard_name="none",
+        long_name="none",
+        var_name="none",
+        STASH="none",
+    ):
         """
         Example usage::
 
@@ -525,7 +533,7 @@ class NameConstraint(Constraint):
         self.long_name = long_name
         self.var_name = var_name
         self.STASH = STASH
-        self._names = ('standard_name', 'long_name', 'var_name', 'STASH')
+        self._names = ("standard_name", "long_name", "var_name", "STASH")
         super().__init__(cube_func=self._cube_func)
 
     def _cube_func(self, cube):
@@ -538,11 +546,11 @@ class NameConstraint(Constraint):
 
         match = True
         for name in self._names:
-            if name == 'STASH' and self.STASH != 'none':
-                match = matcher(cube.attributes.get('STASH'), self.STASH)
+            if name == "STASH" and self.STASH != "none":
+                match = matcher(cube.attributes.get("STASH"), self.STASH)
             else:
                 expected = getattr(self, name)
-                if expected != 'none':
+                if expected != "none":
                     actual = getattr(cube, name)
                     match = matcher(actual, expected)
             # This is a short-cut match.
@@ -555,6 +563,6 @@ class NameConstraint(Constraint):
         names = []
         for name in self._names:
             value = getattr(self, name)
-            if value != 'none':
-                names.append('{}={!r}'.format(name, value))
-        return '{}({})'.format(self.__class__.__name__, ', '.join(names))
+            if value != "none":
+                names.append("{}={!r}".format(name, value))
+        return "{}({})".format(self.__class__.__name__, ", ".join(names))
