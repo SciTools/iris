@@ -1,0 +1,3 @@
+* The :mod:`iris.experimental.concatenate` module has now been removed. Previously the experimental `concatenate`
+  functionality was moved to the :meth:`iris.cube.CubeList.concatenate` method as of v1.6.0, and calling the
+  :func:`iris.experimental.concatenate.concatenate` function raised an exception.
