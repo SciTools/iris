@@ -15,7 +15,7 @@ or alternatively using ``conda``::
 
     $ conda install -c conda-forge pre-commit
 
-Then from the root of the Iris git repository run::
+Then from the root directory of Iris run::
 
     $ pre-commit install
 
