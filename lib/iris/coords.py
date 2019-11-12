@@ -8,10 +8,11 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterator
 import copy
+from functools import wraps
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -1282,6 +1283,7 @@ class Coord(_DimensionalMetadata):
 
     """
 
+    @abstractmethod
     def __init__(
         self,
         points,
@@ -2564,6 +2566,10 @@ class AuxCoord(Coord):
         everything is inherited from :class:`Coord`.
 
     """
+
+    @wraps(Coord.__init__, assigned=("__doc__",), updated=())
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     # Logically, :class:`Coord` is an abstract class and all actual coords must
     # be members of some concrete subclass, i.e. an :class:`AuxCoord` or

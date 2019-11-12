@@ -1010,5 +1010,15 @@ class TestClimatology(tests.IrisTest):
         self.assertFalse(coord.climatological)
 
 
+class Test_Coord_is_abstract(tests.IrisTest):
+    def test_instantiate_fail(self):
+        emsg = (
+            "Can't instantiate abstract class Coord with abstract"
+            " methods __init__"
+        )
+        with self.assertRaisesRegex(TypeError, emsg):
+            _ = Coord(points=[0, 1])
+
+
 if __name__ == "__main__":
     tests.main()
