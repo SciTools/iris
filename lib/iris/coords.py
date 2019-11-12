@@ -2567,7 +2567,9 @@ class AuxCoord(Coord):
     """
 
     def __init__(self, *args, **kwargs):
+        self.__doc__ = super().__init__.__doc__
         super().__init__(*args, **kwargs)
+
     # Logically, :class:`Coord` is an abstract class and all actual coords must
     # be members of some concrete subclass, i.e. an :class:`AuxCoord` or
     # a :class:`DimCoord`.
