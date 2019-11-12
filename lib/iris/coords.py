@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterator
 import copy
+from functools import wraps
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -2566,8 +2567,8 @@ class AuxCoord(Coord):
 
     """
 
+    @wraps(Coord.__init__, assigned=("__doc__",), updated=())
     def __init__(self, *args, **kwargs):
-        self.__doc__ = super().__init__.__doc__
         super().__init__(*args, **kwargs)
 
     # Logically, :class:`Coord` is an abstract class and all actual coords must
