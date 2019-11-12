@@ -17,6 +17,6 @@ class RegriddingTests:
         self.cube = iris.load(file_path)[0]
         self.scheme_area_w = analysis.AreaWeighted()
 
-    def time_regrid_basic(self):
+    def time_regrid_area_w(self):
         # Regrid the cube onto itself.
         cube_rotated = self.cube.regrid(self.cube, self.scheme_area_w)
