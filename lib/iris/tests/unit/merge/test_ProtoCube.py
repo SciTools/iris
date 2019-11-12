@@ -9,7 +9,7 @@
 # importing anything else.
 import iris.tests as tests
 
-import abc
+from abc import ABCMeta, abstractmethod
 from unittest import mock
 
 import numpy as np
@@ -33,16 +33,18 @@ def example_cube():
     )
 
 
-class Mixin_register(metaclass=abc.ABCMeta):
+class Mixin_register(metaclass=ABCMeta):
     @property
     def cube1(self):
         return example_cube()
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def cube2(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abstractmethod
     def fragments(self):
         pass
 

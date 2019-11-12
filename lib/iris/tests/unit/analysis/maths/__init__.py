@@ -5,7 +5,7 @@
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-from abc import ABCMeta, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from numpy import ma
@@ -20,12 +20,14 @@ import iris.tests.stock as stock
 class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
     # A framework for testing the broadcasting behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
-    @abstractproperty
+    @property
+    @abstractmethod
     def data_op(self):
         # Define an operator to be called, I.E. 'operator.xx'.
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def cube_func(self):
         # Define an iris arithmetic function to be called
         # I.E. 'iris.analysis.maths.xx'.
@@ -109,12 +111,14 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
 class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
     # A framework for testing the mask handling behaviour of the various cube
     # arithmetic operations.  (A test for each operation inherits this).
-    @abstractproperty
+    @property
+    @abstractmethod
     def data_op(self):
         # Define an operator to be called, I.E. 'operator.xx'.
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def cube_func(self):
         # Define an iris arithmetic function to be called
         # I.E. 'iris.analysis.maths.xx'.
@@ -182,6 +186,13 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
 
 
 class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
+
     def test_masked_constant_in_place(self):
         # Cube in_place arithmetic operation.
         dtype = np.int64

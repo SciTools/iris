@@ -9,7 +9,7 @@ translations.
 
 """
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from collections import deque, namedtuple
 import copy
 from queue import Queue
@@ -175,7 +175,8 @@ class Mappings(metaclass=ABCMeta):
         """Method to provide the sort key of the mappings order."""
         return line
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def mapping_name(self):
         """
         Abstract property that specifies the name of the dictionary
@@ -183,7 +184,8 @@ class Mappings(metaclass=ABCMeta):
 
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def source_scheme(self):
         """
         Abstract property that specifies the name of the scheme for
@@ -192,7 +194,8 @@ class Mappings(metaclass=ABCMeta):
 
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def target_scheme(self):
         """
         Abstract property that specifies the name of the scheme for
