@@ -11,8 +11,11 @@ function."""
 import iris.tests as tests
 
 from iris.coords import BOUND_MODE, POINT_MODE
-from iris.tests.stock import (simple_2d, simple_2d_w_multidim_coords,
-                              hybrid_height)
+from iris.tests.stock import (
+    simple_2d,
+    simple_2d_w_multidim_coords,
+    hybrid_height,
+)
 
 
 if tests.MPL_AVAILABLE:
@@ -23,55 +26,65 @@ if tests.MPL_AVAILABLE:
 class Test_get_plot_defn_custom_coords_picked(tests.IrisTest):
     def test_1d_coords(self):
         cube = simple_2d()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, ('foo', 'bar'),
-                                                        POINT_MODE)
-        self.assertEqual([coord.name() for coord in defn.coords],
-                         ['bar', 'foo'])
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, ("foo", "bar"), POINT_MODE
+        )
+        self.assertEqual(
+            [coord.name() for coord in defn.coords], ["bar", "foo"]
+        )
         self.assertFalse(defn.transpose)
 
     def test_1d_coords_swapped(self):
         cube = simple_2d()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, ('bar', 'foo'),
-                                                        POINT_MODE)
-        self.assertEqual([coord.name() for coord in defn.coords],
-                         ['foo', 'bar'])
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, ("bar", "foo"), POINT_MODE
+        )
+        self.assertEqual(
+            [coord.name() for coord in defn.coords], ["foo", "bar"]
+        )
         self.assertTrue(defn.transpose)
 
     def test_1d_coords_as_integers(self):
         cube = simple_2d()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, (1, 0),
-                                                        POINT_MODE)
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, (1, 0), POINT_MODE
+        )
         self.assertEqual([coord for coord in defn.coords], [0, 1])
         self.assertFalse(defn.transpose)
 
     def test_1d_coords_as_integers_swapped(self):
         cube = simple_2d()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, (0, 1),
-                                                        POINT_MODE)
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, (0, 1), POINT_MODE
+        )
         self.assertEqual([coord for coord in defn.coords], [1, 0])
         self.assertTrue(defn.transpose)
 
     def test_2d_coords(self):
         cube = simple_2d_w_multidim_coords()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, ('foo', 'bar'),
-                                                        BOUND_MODE)
-        self.assertEqual([coord.name() for coord in defn.coords],
-                         ['bar', 'foo'])
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, ("foo", "bar"), BOUND_MODE
+        )
+        self.assertEqual(
+            [coord.name() for coord in defn.coords], ["bar", "foo"]
+        )
         self.assertFalse(defn.transpose)
 
     def test_2d_coords_as_integers(self):
         cube = simple_2d_w_multidim_coords()
-        defn = iplt._get_plot_defn_custom_coords_picked(cube, (0, 1),
-                                                        BOUND_MODE)
+        defn = iplt._get_plot_defn_custom_coords_picked(
+            cube, (0, 1), BOUND_MODE
+        )
         self.assertEqual([coord for coord in defn.coords], [1, 0])
         self.assertTrue(defn.transpose)
 
     def test_span_check(self):
         cube = hybrid_height()
-        emsg = 'don\'t span the 2 data dimensions'
+        emsg = "don't span the 2 data dimensions"
         with self.assertRaisesRegex(ValueError, emsg):
             iplt._get_plot_defn_custom_coords_picked(
-                cube, ('sigma', 'level_height'), POINT_MODE)
+                cube, ("sigma", "level_height"), POINT_MODE
+            )
 
 
 if __name__ == "__main__":

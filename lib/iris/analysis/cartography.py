@@ -28,28 +28,29 @@ from ._grid_angles import gridcell_angles, rotate_grid_vectors
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
-    'area_weights',
-    'cosine_latitude_weights',
-    'get_xy_contiguous_bounded_grids',
-    'get_xy_grids',
-    'gridcell_angles',
-    'project',
-    'rotate_grid_vectors',
-    'rotate_pole',
-    'rotate_winds',
-    'unrotate_pole',
-    'wrap_lons',
-    'DistanceDifferential',
-    'PartialDifferential']
+    "area_weights",
+    "cosine_latitude_weights",
+    "get_xy_contiguous_bounded_grids",
+    "get_xy_grids",
+    "gridcell_angles",
+    "project",
+    "rotate_grid_vectors",
+    "rotate_pole",
+    "rotate_winds",
+    "unrotate_pole",
+    "wrap_lons",
+    "DistanceDifferential",
+    "PartialDifferential",
+]
 
 # This value is used as a fall-back if the cube does not define the earth
 DEFAULT_SPHERICAL_EARTH_RADIUS = 6367470
 # TODO: This should not be necessary, as CF is always in meters
-DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = cf_units.Unit('m')
+DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT = cf_units.Unit("m")
 # Distance differentials for coordinate systems at specified locations
-DistanceDifferential = namedtuple('DistanceDifferential', 'dx1 dy1 dx2 dy2')
+DistanceDifferential = namedtuple("DistanceDifferential", "dx1 dy1 dx2 dy2")
 # Partial differentials between coordinate systems
-PartialDifferential = namedtuple('PartialDifferential', 'dx1 dy1')
+PartialDifferential = namedtuple("PartialDifferential", "dx1 dy1")
 
 
 def wrap_lons(lons, base, period):
@@ -107,11 +108,13 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
         An array of unrotated longitudes and an array of unrotated latitudes.
 
     """
-    src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
-                                    pole_latitude=pole_lat)
+    src_proj = ccrs.RotatedGeodetic(
+        pole_longitude=pole_lon, pole_latitude=pole_lat
+    )
     target_proj = ccrs.Geodetic()
-    res = target_proj.transform_points(x=rotated_lons, y=rotated_lats,
-                                       src_crs=src_proj)
+    res = target_proj.transform_points(
+        x=rotated_lons, y=rotated_lats, src_crs=src_proj
+    )
     unrotated_lon = res[..., 0]
     unrotated_lat = res[..., 1]
 
@@ -155,10 +158,10 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
     """
     src_proj = ccrs.Geodetic()
-    target_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon,
-                                       pole_latitude=pole_lat)
-    res = target_proj.transform_points(x=lons, y=lats,
-                                       src_crs=src_proj)
+    target_proj = ccrs.RotatedGeodetic(
+        pole_longitude=pole_lon, pole_latitude=pole_lat
+    )
+    res = target_proj.transform_points(x=lons, y=lats, src_crs=src_proj)
     rotated_lon = res[..., 0]
     rotated_lat = res[..., 1]
 
@@ -166,14 +169,17 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lon_lat_coords(cube):
-    lat_coords = [coord for coord in cube.coords()
-                  if "latitude" in coord.name()]
-    lon_coords = [coord for coord in cube.coords()
-                  if "longitude" in coord.name()]
+    lat_coords = [
+        coord for coord in cube.coords() if "latitude" in coord.name()
+    ]
+    lon_coords = [
+        coord for coord in cube.coords() if "longitude" in coord.name()
+    ]
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
             "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
-            " is currently disallowed")
+            " is currently disallowed"
+        )
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
     return (lon_coord, lat_coord)
@@ -196,24 +202,29 @@ def _xy_range(cube, mode=None):
     """
     # Helpful error if we have an inappropriate CoordSystem
     cs = cube.coord_system("CoordSystem")
-    cs_valid_types = (iris.coord_systems.GeogCS,
-                      iris.coord_systems.RotatedGeogCS)
-    if ((cs is not None) and not isinstance(cs, cs_valid_types)):
+    cs_valid_types = (
+        iris.coord_systems.GeogCS,
+        iris.coord_systems.RotatedGeogCS,
+    )
+    if (cs is not None) and not isinstance(cs, cs_valid_types):
         raise ValueError(
-            "Latlon coords cannot be found with {0}.".format(type(cs)))
+            "Latlon coords cannot be found with {0}.".format(type(cs))
+        )
 
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
-    cs = cube.coord_system('CoordSystem')
+    cs = cube.coord_system("CoordSystem")
 
     if x_coord.has_bounds() != y_coord.has_bounds():
         raise ValueError(
-            'Cannot get the range of the x and y coordinates if they do '
-            'not have the same presence of bounds.')
+            "Cannot get the range of the x and y coordinates if they do "
+            "not have the same presence of bounds."
+        )
 
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
             raise ValueError(
-                'When the coordinate has bounds, please specify "mode".')
+                'When the coordinate has bounds, please specify "mode".'
+            )
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
@@ -233,7 +244,7 @@ def _xy_range(cube, mode=None):
             y = y_coord.bounds
 
     # Get the x and y range
-    if getattr(x_coord, 'circular', False):
+    if getattr(x_coord, "circular", False):
         x_range = (np.min(x), np.min(x) + x_coord.units.modulus)
     else:
         x_range = (np.min(x), np.max(x))
@@ -315,10 +326,12 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
 
     """
     # ensure pairs of bounds
-    if (radian_lat_bounds.shape[-1] != 2 or
-            radian_lon_bounds.shape[-1] != 2 or
-            radian_lat_bounds.ndim != 2 or
-            radian_lon_bounds.ndim != 2):
+    if (
+        radian_lat_bounds.shape[-1] != 2
+        or radian_lon_bounds.shape[-1] != 2
+        or radian_lat_bounds.ndim != 2
+        or radian_lon_bounds.ndim != 2
+    ):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
@@ -371,8 +384,9 @@ def area_weights(cube, normalize=False):
         if cs.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.semi_major_axis
-    elif (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
-            (cs.ellipsoid is not None)):
+    elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and (
+        cs.ellipsoid is not None
+    ):
         if cs.ellipsoid.inverse_flattening != 0.0:
             warnings.warn("Assuming spherical earth from ellipsoid.")
         radius_of_earth = cs.ellipsoid.semi_major_axis
@@ -384,8 +398,10 @@ def area_weights(cube, normalize=False):
     try:
         lon, lat = _get_lon_lat_coords(cube)
     except IndexError:
-        raise ValueError('Cannot get latitude/longitude '
-                         'coordinates from cube {!r}.'.format(cube.name()))
+        raise ValueError(
+            "Cannot get latitude/longitude "
+            "coordinates from cube {!r}.".format(cube.name())
+        )
 
     if lat.ndim > 1:
         raise iris.exceptions.CoordinateMultiDimError(lat)
@@ -399,8 +415,10 @@ def area_weights(cube, normalize=False):
     lon_dim = lon_dim[0] if lon_dim else None
 
     if not (lat.has_bounds() and lon.has_bounds()):
-        msg = ("Coordinates {!r} and {!r} must have bounds to determine "
-               "the area weights.".format(lat.name(), lon.name()))
+        msg = (
+            "Coordinates {!r} and {!r} must have bounds to determine "
+            "the area weights.".format(lat.name(), lon.name())
+        )
         raise ValueError(msg)
 
     # Convert from degrees to radians
@@ -408,19 +426,18 @@ def area_weights(cube, normalize=False):
     lon = lon.copy()
 
     for coord in (lat, lon):
-        if coord.units in (cf_units.Unit('degrees'),
-                           cf_units.Unit('radians')):
-            coord.convert_units('radians')
+        if coord.units in (cf_units.Unit("degrees"), cf_units.Unit("radians")):
+            coord.convert_units("radians")
         else:
-            msg = ("Units of degrees or radians required, coordinate "
-                   "{!r} has units: {!r}".format(coord.name(),
-                                                 coord.units.name))
+            msg = (
+                "Units of degrees or radians required, coordinate "
+                "{!r} has units: {!r}".format(coord.name(), coord.units.name)
+            )
             raise ValueError(msg)
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds,
-                                lon.bounds, radius_of_earth)
+    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -435,9 +452,9 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(ll_weights,
-                                                 cube.shape,
-                                                 broadcast_dims)
+    broad_weights = iris.util.broadcast_to_shape(
+        ll_weights, cube.shape, broadcast_dims
+    )
 
     return broad_weights
 
@@ -478,22 +495,25 @@ def cosine_latitude_weights(cube):
 
     """
     # Find all latitude coordinates, we want one and only one.
-    lat_coords = [coord for coord in cube.coords()
-                  if "latitude" in coord.name()]
+    lat_coords = [
+        coord for coord in cube.coords() if "latitude" in coord.name()
+    ]
     if len(lat_coords) > 1:
         raise ValueError("Multiple latitude coords are currently disallowed.")
     try:
         lat = lat_coords[0]
     except IndexError:
-        raise ValueError('Cannot get latitude '
-                         'coordinate from cube {!r}.'.format(cube.name()))
+        raise ValueError(
+            "Cannot get latitude "
+            "coordinate from cube {!r}.".format(cube.name())
+        )
 
     # Get the dimension position(s) of the latitude coordinate.
     lat_dims = cube.coord_dims(lat)
 
     # Convert to radians.
     lat = lat.copy()
-    lat.convert_units('radians')
+    lat.convert_units("radians")
 
     # Compute the weights as the cosine of latitude. In some cases,
     # particularly when working in 32-bit precision, the latitude values can
@@ -502,13 +522,16 @@ def cosine_latitude_weights(cube):
     # warning if these are found. Then the cosine is computed and clipped to
     # the valid range [0, 1].
     threshold = np.deg2rad(0.001)  # small value for grid resolution
-    if np.any(lat.points < -np.pi / 2. - threshold) or \
-            np.any(lat.points > np.pi / 2. + threshold):
-        warnings.warn('Out of range latitude values will be '
-                      'clipped to the valid range.',
-                      UserWarning)
+    if np.any(lat.points < -np.pi / 2.0 - threshold) or np.any(
+        lat.points > np.pi / 2.0 + threshold
+    ):
+        warnings.warn(
+            "Out of range latitude values will be "
+            "clipped to the valid range.",
+            UserWarning,
+        )
     points = lat.points
-    l_weights = np.cos(points).clip(0., 1.)
+    l_weights = np.cos(points).clip(0.0, 1.0)
 
     # Create weights for each grid point. This operation handles adding extra
     # dimensions and also the order of the dimensions.
@@ -518,9 +541,9 @@ def cosine_latitude_weights(cube):
         if dim is not None:
             wshape.append(l_weights.shape[idim])
     l_weights = l_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(l_weights,
-                                                 cube.shape,
-                                                 broadcast_dims)
+    broad_weights = iris.util.broadcast_to_shape(
+        l_weights, cube.shape, broadcast_dims
+    )
 
     return broad_weights
 
@@ -580,27 +603,34 @@ def project(cube, target_proj, nx=None, ny=None):
     try:
         lon_coord, lat_coord = _get_lon_lat_coords(cube)
     except IndexError:
-        raise ValueError('Cannot get latitude/longitude '
-                         'coordinates from cube {!r}.'.format(cube.name()))
+        raise ValueError(
+            "Cannot get latitude/longitude "
+            "coordinates from cube {!r}.".format(cube.name())
+        )
 
     if lat_coord.coord_system != lon_coord.coord_system:
-        raise ValueError('latitude and longitude coords appear to have '
-                         'different coordinates systems.')
+        raise ValueError(
+            "latitude and longitude coords appear to have "
+            "different coordinates systems."
+        )
 
-    if lon_coord.units != 'degrees':
+    if lon_coord.units != "degrees":
         lon_coord = lon_coord.copy()
-        lon_coord.convert_units('degrees')
-    if lat_coord.units != 'degrees':
+        lon_coord.convert_units("degrees")
+    if lat_coord.units != "degrees":
         lat_coord = lat_coord.copy()
-        lat_coord.convert_units('degrees')
+        lat_coord.convert_units("degrees")
 
     # Determine source coordinate system
     if lat_coord.coord_system is None:
         # Assume WGS84 latlon if unspecified
-        warnings.warn('Coordinate system of latitude and longitude '
-                      'coordinates is not specified. Assuming WGS84 Geodetic.')
-        orig_cs = iris.coord_systems.GeogCS(semi_major_axis=6378137.0,
-                                            inverse_flattening=298.257223563)
+        warnings.warn(
+            "Coordinate system of latitude and longitude "
+            "coordinates is not specified. Assuming WGS84 Geodetic."
+        )
+        orig_cs = iris.coord_systems.GeogCS(
+            semi_major_axis=6378137.0, inverse_flattening=298.257223563
+        )
     else:
         orig_cs = lat_coord.coord_system
 
@@ -627,12 +657,15 @@ def project(cube, target_proj, nx=None, ny=None):
         ny = source_x.shape[0]
 
     target_x, target_y, extent = cartopy.img_transform.mesh_projection(
-        target_proj, nx, ny)
+        target_proj, nx, ny
+    )
 
     # Determine dimension mappings - expect either 1d or 2d
     if lat_coord.ndim != lon_coord.ndim:
-        raise ValueError("The latitude and longitude coordinates have "
-                         "different dimensionality.")
+        raise ValueError(
+            "The latitude and longitude coordinates have "
+            "different dimensionality."
+        )
 
     latlon_ndim = lat_coord.ndim
     lon_dims = cube.coord_dims(lon_coord)
@@ -643,16 +676,20 @@ def project(cube, target_proj, nx=None, ny=None):
         ydim = lat_dims[0]
     elif latlon_ndim == 2:
         if lon_dims != lat_dims:
-            raise ValueError("The 2d latitude and longitude coordinates "
-                             "correspond to different dimensions.")
+            raise ValueError(
+                "The 2d latitude and longitude coordinates "
+                "correspond to different dimensions."
+            )
         # If coords are 2d assume that grid is ordered such that x corresponds
         # to the last dimension (shortest stride).
         xdim = lon_dims[1]
         ydim = lon_dims[0]
     else:
-        raise ValueError('Expected the latitude and longitude coordinates '
-                         'to have 1 or 2 dimensions, got {} and '
-                         '{}.'.format(lat_coord.ndim, lon_coord.ndim))
+        raise ValueError(
+            "Expected the latitude and longitude coordinates "
+            "to have 1 or 2 dimensions, got {} and "
+            "{}.".format(lat_coord.ndim, lon_coord.ndim)
+        )
 
     # Create array to store regridded data
     new_shape = list(cube.shape)
@@ -669,32 +706,34 @@ def project(cube, target_proj, nx=None, ny=None):
     elif lat_coord.ndim == 2 and lon_coord.ndim == 2:
         slice_it = cube.slices(lat_coord)
     else:
-        raise ValueError('Expected the latitude and longitude coordinates '
-                         'to have 1 or 2 dimensions, got {} and '
-                         '{}.'.format(lat_coord.ndim, lon_coord.ndim))
+        raise ValueError(
+            "Expected the latitude and longitude coordinates "
+            "to have 1 or 2 dimensions, got {} and "
+            "{}.".format(lat_coord.ndim, lon_coord.ndim)
+        )
 
-#    # Mask out points outside of extent in source_cs - disabled until
-#    # a way to specify global/limited extent is agreed upon and code
-#    # is generalised to handle -180 to +180, 0 to 360 and >360 longitudes.
-#    source_desired_xy = source_cs.transform_points(target_proj,
-#                                                   target_x.flatten(),
-#                                                   target_y.flatten())
-#    if np.any(source_x < 0.0) and np.any(source_x > 180.0):
-#        raise ValueError('Unable to handle range of longitude.')
-#    # This does not work in all cases e.g. lon > 360
-#    if np.any(source_x > 180.0):
-#        source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) +
-#                            360.0) % 360.0
-#    else:
-#        source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
-#    source_desired_y = source_desired_xy[:, 1].reshape(ny, nx)
-#    outof_extent_points = ((source_desired_x < source_x.min()) |
-#                           (source_desired_x > source_x.max()) |
-#                           (source_desired_y < source_y.min()) |
-#                           (source_desired_y > source_y.max()))
-#    # Make array a mask by default (rather than a single bool) to allow mask
-#    # to be assigned to slices.
-#    new_data.mask = np.zeros(new_shape)
+    #    # Mask out points outside of extent in source_cs - disabled until
+    #    # a way to specify global/limited extent is agreed upon and code
+    #    # is generalised to handle -180 to +180, 0 to 360 and >360 longitudes.
+    #    source_desired_xy = source_cs.transform_points(target_proj,
+    #                                                   target_x.flatten(),
+    #                                                   target_y.flatten())
+    #    if np.any(source_x < 0.0) and np.any(source_x > 180.0):
+    #        raise ValueError('Unable to handle range of longitude.')
+    #    # This does not work in all cases e.g. lon > 360
+    #    if np.any(source_x > 180.0):
+    #        source_desired_x = (source_desired_xy[:, 0].reshape(ny, nx) +
+    #                            360.0) % 360.0
+    #    else:
+    #        source_desired_x = source_desired_xy[:, 0].reshape(ny, nx)
+    #    source_desired_y = source_desired_xy[:, 1].reshape(ny, nx)
+    #    outof_extent_points = ((source_desired_x < source_x.min()) |
+    #                           (source_desired_x > source_x.max()) |
+    #                           (source_desired_y < source_y.min()) |
+    #                           (source_desired_y > source_y.max()))
+    #    # Make array a mask by default (rather than a single bool) to allow mask
+    #    # to be assigned to slices.
+    #    new_data.mask = np.zeros(new_shape)
 
     # Step through cube data, regrid onto desired projection and insert results
     # in new_data array
@@ -704,14 +743,18 @@ def project(cube, target_proj, nx=None, ny=None):
         index[xdim] = slice(None, None)
         index[ydim] = slice(None, None)
         index = tuple(index)  # Numpy>=1.16 : index with tuple, *not* list.
-        new_data[index] = cartopy.img_transform.regrid(ll_slice.data,
-                                                       source_x, source_y,
-                                                       source_cs,
-                                                       target_proj,
-                                                       target_x, target_y)
+        new_data[index] = cartopy.img_transform.regrid(
+            ll_slice.data,
+            source_x,
+            source_y,
+            source_cs,
+            target_proj,
+            target_x,
+            target_y,
+        )
 
-#    # Mask out points beyond extent
-#    new_data[index].mask[outof_extent_points] = True
+    #    # Mask out points beyond extent
+    #    new_data[index].mask[outof_extent_points] = True
 
     # Remove mask if it is unnecessary
     if not np.any(new_data.mask):
@@ -721,30 +764,40 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube = iris.cube.Cube(new_data)
 
     # Add new grid coords
-    x_coord = iris.coords.DimCoord(target_x[0, :], 'projection_x_coordinate',
-                                   units='m',
-                                   coord_system=copy.copy(target_cs))
-    y_coord = iris.coords.DimCoord(target_y[:, 0], 'projection_y_coordinate',
-                                   units='m',
-                                   coord_system=copy.copy(target_cs))
+    x_coord = iris.coords.DimCoord(
+        target_x[0, :],
+        "projection_x_coordinate",
+        units="m",
+        coord_system=copy.copy(target_cs),
+    )
+    y_coord = iris.coords.DimCoord(
+        target_y[:, 0],
+        "projection_y_coordinate",
+        units="m",
+        coord_system=copy.copy(target_cs),
+    )
 
     new_cube.add_dim_coord(x_coord, xdim)
     new_cube.add_dim_coord(y_coord, ydim)
 
     # Add resampled lat/lon in original coord system
-    source_desired_xy = source_cs.transform_points(target_proj,
-                                                   target_x.flatten(),
-                                                   target_y.flatten())
+    source_desired_xy = source_cs.transform_points(
+        target_proj, target_x.flatten(), target_y.flatten()
+    )
     new_lon_points = source_desired_xy[:, 0].reshape(ny, nx)
     new_lat_points = source_desired_xy[:, 1].reshape(ny, nx)
-    new_lon_coord = iris.coords.AuxCoord(new_lon_points,
-                                         standard_name='longitude',
-                                         units='degrees',
-                                         coord_system=orig_cs)
-    new_lat_coord = iris.coords.AuxCoord(new_lat_points,
-                                         standard_name='latitude',
-                                         units='degrees',
-                                         coord_system=orig_cs)
+    new_lon_coord = iris.coords.AuxCoord(
+        new_lon_points,
+        standard_name="longitude",
+        units="degrees",
+        coord_system=orig_cs,
+    )
+    new_lat_coord = iris.coords.AuxCoord(
+        new_lat_points,
+        standard_name="latitude",
+        units="degrees",
+        coord_system=orig_cs,
+    )
     new_cube.add_aux_coord(new_lon_coord, [ydim, xdim])
     new_cube.add_aux_coord(new_lat_coord, [ydim, xdim])
 
@@ -759,11 +812,14 @@ def project(cube, target_proj, nx=None, ny=None):
             new_cube.add_aux_coord(coord.copy(), cube.coord_dims(coord))
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
-        warnings.warn('Discarding coordinates that share dimensions with '
-                      '{} and {}: {}'.format(lat_coord.name(),
-                                             lon_coord.name(),
-                                             [coord.name() for
-                                              coord in discarded_coords]))
+        warnings.warn(
+            "Discarding coordinates that share dimensions with "
+            "{} and {}: {}".format(
+                lat_coord.name(),
+                lon_coord.name(),
+                [coord.name() for coord in discarded_coords],
+            )
+        )
 
     # TODO handle derived coords/aux_factories
 
@@ -865,14 +921,15 @@ def _crs_distance_differentials(crs, x, y):
 
     """
     # Make a true-latlon coordinate system for distance calculations.
-    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse='sphere'))
+    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse="sphere"))
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
-    dlon_dx, dlat_dx, dlon_dy, dlat_dy = \
-        _inter_crs_differentials(crs, x, y, crs_latlon)
+    dlon_dx, dlat_dx, dlon_dy, dlat_dy = _inter_crs_differentials(
+        crs, x, y, crs_latlon
+    )
     # Calculate effective scalings of X and Y coordinates.
-    lat_factor = np.cos(np.deg2rad(true_lat))**2
+    lat_factor = np.cos(np.deg2rad(true_lat)) ** 2
     ds_dx = np.sqrt(dlat_dx * dlat_dx + dlon_dx * dlon_dx * lat_factor)
     ds_dy = np.sqrt(dlat_dy * dlat_dy + dlon_dy * dlon_dy * lat_factor)
     return ds_dx, ds_dy
@@ -911,8 +968,9 @@ def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
     return u2_dist, v2_dist
 
 
-def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
-                                               ds, dx2, dy2):
+def _transform_distance_vectors_tolerance_mask(
+    src_crs, x, y, tgt_crs, ds, dx2, dy2
+):
     """
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
@@ -935,9 +993,10 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
 
     """
     if x.shape != y.shape:
-        raise ValueError('Arrays do not have matching shapes. '
-                         'x.shape is {}, y.shape is {}.'.format(x.shape,
-                                                                y.shape))
+        raise ValueError(
+            "Arrays do not have matching shapes. "
+            "x.shape is {}, y.shape is {}.".format(x.shape, y.shape)
+        )
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
     u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
@@ -945,11 +1004,14 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs,
     # Squared magnitudes should be equal to one within acceptable tolerance.
     # A value of atol=2e-3 is used, which corresponds to a change in magnitude
     # of approximately 0.1%.
-    sqmag_1_0 = u_one_t**2 + v_zero_t**2
-    sqmag_0_1 = u_zero_t**2 + v_one_t**2
+    sqmag_1_0 = u_one_t ** 2 + v_zero_t ** 2
+    sqmag_0_1 = u_zero_t ** 2 + v_one_t ** 2
     mask = np.logical_not(
-        np.logical_and(np.isclose(sqmag_1_0, ones, atol=2e-3),
-                       np.isclose(sqmag_0_1, ones, atol=2e-3)))
+        np.logical_and(
+            np.isclose(sqmag_1_0, ones, atol=2e-3),
+            np.isclose(sqmag_0_1, ones, atol=2e-3),
+        )
+    )
     return mask
 
 
@@ -1009,29 +1071,47 @@ def rotate_winds(u_cube, v_cube, target_cs):
     # Check u_cube and v_cube have the same shape. We iterate through
     # the u and v cube slices which relies on the shapes matching.
     if u_cube.shape != v_cube.shape:
-        msg = 'Expected u and v cubes to have the same shape. ' \
-              'u cube has shape {}, v cube has shape {}.'
+        msg = (
+            "Expected u and v cubes to have the same shape. "
+            "u cube has shape {}, v cube has shape {}."
+        )
         raise ValueError(msg.format(u_cube.shape, v_cube.shape))
 
     # Check the u_cube and v_cube have the same x and y coords.
-    msg = 'Coordinates differ between u and v cubes. Coordinate {!r} from ' \
-          'u cube does not equal coordinate {!r} from v cube.'
-    if u_cube.coord(axis='x') != v_cube.coord(axis='x'):
-        raise ValueError(msg.format(u_cube.coord(axis='x').name(),
-                                    v_cube.coord(axis='x').name()))
-    if u_cube.coord(axis='y') != v_cube.coord(axis='y'):
-        raise ValueError(msg.format(u_cube.coord(axis='y').name(),
-                                    v_cube.coord(axis='y').name()))
+    msg = (
+        "Coordinates differ between u and v cubes. Coordinate {!r} from "
+        "u cube does not equal coordinate {!r} from v cube."
+    )
+    if u_cube.coord(axis="x") != v_cube.coord(axis="x"):
+        raise ValueError(
+            msg.format(
+                u_cube.coord(axis="x").name(), v_cube.coord(axis="x").name()
+            )
+        )
+    if u_cube.coord(axis="y") != v_cube.coord(axis="y"):
+        raise ValueError(
+            msg.format(
+                u_cube.coord(axis="y").name(), v_cube.coord(axis="y").name()
+            )
+        )
 
     # Check x and y coords have the same coordinate system.
-    x_coord = u_cube.coord(axis='x')
-    y_coord = u_cube.coord(axis='y')
+    x_coord = u_cube.coord(axis="x")
+    y_coord = u_cube.coord(axis="y")
     if x_coord.coord_system != y_coord.coord_system:
-        msg = "Coordinate systems of x and y coordinates differ. " \
-              "Coordinate {!r} has a coord system of {!r}, but coordinate " \
-              "{!r} has a coord system of {!r}."
-        raise ValueError(msg.format(x_coord.name(), x_coord.coord_system,
-                                    y_coord.name(), y_coord.coord_system))
+        msg = (
+            "Coordinate systems of x and y coordinates differ. "
+            "Coordinate {!r} has a coord system of {!r}, but coordinate "
+            "{!r} has a coord system of {!r}."
+        )
+        raise ValueError(
+            msg.format(
+                x_coord.name(),
+                x_coord.coord_system,
+                y_coord.name(),
+                y_coord.coord_system,
+            )
+        )
 
     # Convert from iris coord systems to cartopy CRSs to access
     # transform functionality. Use projection as cartopy
@@ -1049,18 +1129,24 @@ def rotate_winds(u_cube, v_cube, target_cs):
     x = x_coord.points
     y = y_coord.points
     if x.ndim != y.ndim or x.ndim > 2 or y.ndim > 2:
-        msg = 'x and y coordinates must have the same number of dimensions ' \
-              'and be either 1D or 2D. The number of dimensions are {} and ' \
-              '{}, respectively.'.format(x.ndim, y.ndim)
+        msg = (
+            "x and y coordinates must have the same number of dimensions "
+            "and be either 1D or 2D. The number of dimensions are {} and "
+            "{}, respectively.".format(x.ndim, y.ndim)
+        )
         raise ValueError(msg)
 
     # Check the dimension mappings match between u_cube and v_cube.
     if u_cube.coord_dims(x_coord) != v_cube.coord_dims(x_coord):
-        raise ValueError('Dimension mapping of x coordinate differs '
-                         'between u and v cubes.')
+        raise ValueError(
+            "Dimension mapping of x coordinate differs "
+            "between u and v cubes."
+        )
     if u_cube.coord_dims(y_coord) != v_cube.coord_dims(y_coord):
-        raise ValueError('Dimension mapping of y coordinate differs '
-                         'between u and v cubes.')
+        raise ValueError(
+            "Dimension mapping of y coordinate differs "
+            "between u and v cubes."
+        )
     x_dims = u_cube.coord_dims(x_coord)
     y_dims = u_cube.coord_dims(y_coord)
 
@@ -1080,8 +1166,8 @@ def rotate_winds(u_cube, v_cube, target_cs):
     # Create resulting cubes.
     ut_cube = u_cube.copy()
     vt_cube = v_cube.copy()
-    ut_cube.rename('transformed_{}'.format(u_cube.name()))
-    vt_cube.rename('transformed_{}'.format(v_cube.name()))
+    ut_cube.rename("transformed_{}".format(u_cube.name()))
+    vt_cube.rename("transformed_{}".format(v_cube.name()))
 
     # Get distance scalings for source crs.
     ds_dx1, ds_dy1 = _crs_distance_differentials(src_crs, x, y)
@@ -1093,17 +1179,17 @@ def rotate_winds(u_cube, v_cube, target_cs):
     ds = DistanceDifferential(ds_dx1, ds_dy1, ds_dx2, ds_dy2)
 
     # Calculate coordinate partial differentials from source crs to target crs.
-    dx2_dx1, dy2_dx1, dx2_dy1, dy2_dy1 = _inter_crs_differentials(src_crs,
-                                                                  x, y,
-                                                                  target_crs)
+    dx2_dx1, dy2_dx1, dx2_dy1, dy2_dy1 = _inter_crs_differentials(
+        src_crs, x, y, target_crs
+    )
 
     dx2 = PartialDifferential(dx2_dx1, dx2_dy1)
     dy2 = PartialDifferential(dy2_dx1, dy2_dy1)
 
     # Calculate mask based on preservation of magnitude.
-    mask = _transform_distance_vectors_tolerance_mask(src_crs, x, y,
-                                                      target_crs,
-                                                      ds, dx2, dy2)
+    mask = _transform_distance_vectors_tolerance_mask(
+        src_crs, x, y, target_crs, ds, dx2, dy2
+    )
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
@@ -1144,18 +1230,20 @@ def rotate_winds(u_cube, v_cube, target_cs):
         xt = xt.transpose()
         yt = yt.transpose()
 
-    xt_coord = iris.coords.AuxCoord(xt,
-                                    standard_name='projection_x_coordinate',
-                                    coord_system=target_cs)
-    yt_coord = iris.coords.AuxCoord(yt,
-                                    standard_name='projection_y_coordinate',
-                                    coord_system=target_cs)
+    xt_coord = iris.coords.AuxCoord(
+        xt, standard_name="projection_x_coordinate", coord_system=target_cs
+    )
+    yt_coord = iris.coords.AuxCoord(
+        yt, standard_name="projection_y_coordinate", coord_system=target_cs
+    )
     # Set units based on coord_system.
-    if isinstance(target_cs, (iris.coord_systems.GeogCS,
-                              iris.coord_systems.RotatedGeogCS)):
-        xt_coord.units = yt_coord.units = 'degrees'
+    if isinstance(
+        target_cs,
+        (iris.coord_systems.GeogCS, iris.coord_systems.RotatedGeogCS),
+    ):
+        xt_coord.units = yt_coord.units = "degrees"
     else:
-        xt_coord.units = yt_coord.units = 'm'
+        xt_coord.units = yt_coord.units = "m"
 
     ut_cube.add_aux_coord(xt_coord, dims)
     ut_cube.add_aux_coord(yt_coord, dims)

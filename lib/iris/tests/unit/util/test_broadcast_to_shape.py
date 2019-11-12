@@ -16,7 +16,6 @@ from iris.util import broadcast_to_shape
 
 
 class Test_broadcast_to_shape(tests.IrisTest):
-
     def test_same_shape(self):
         # broadcast to current shape should result in no change
         a = np.random.random([2, 3])
@@ -60,5 +59,5 @@ class Test_broadcast_to_shape(tests.IrisTest):
                 self.assertMaskedArrayEqual(b[i, :, j, :].T, m)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

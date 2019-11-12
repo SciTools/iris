@@ -19,7 +19,7 @@ class Test_aggregate(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
         with self.assertRaisesRegex(ValueError, emsg):
-            PERCENTILE.aggregate('dummy', axis=0)
+            PERCENTILE.aggregate("dummy", axis=0)
 
     def test_1d_single(self):
         data = np.arange(11)
@@ -99,7 +99,7 @@ class Test_aggregate(tests.IrisTest):
 
 class Test_name(tests.IrisTest):
     def test(self):
-        self.assertEqual(PERCENTILE.name(), 'percentile')
+        self.assertEqual(PERCENTILE.name(), "percentile")
 
 
 class Test_aggregate_shape(tests.IrisTest):

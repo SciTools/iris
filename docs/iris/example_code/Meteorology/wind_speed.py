@@ -18,20 +18,19 @@ import iris
 import iris.coord_categorisation
 import iris.quickplot as qplt
 
-import cartopy
 import cartopy.feature as cfeat
 import cartopy.crs as ccrs
 
 
 def main():
     # Load the u and v components of wind from a pp file
-    infile = iris.sample_data_path('wind_speed_lake_victoria.pp')
+    infile = iris.sample_data_path("wind_speed_lake_victoria.pp")
 
-    uwind = iris.load_cube(infile, 'x_wind')
-    vwind = iris.load_cube(infile, 'y_wind')
+    uwind = iris.load_cube(infile, "x_wind")
+    vwind = iris.load_cube(infile, "y_wind")
 
-    ulon = uwind.coord('longitude')
-    vlon = vwind.coord('longitude')
+    ulon = uwind.coord("longitude")
+    vlon = vwind.coord("longitude")
 
     # The longitude points go from 180 to 540, so subtract 360 from them
     ulon.points = ulon.points - 360.0
@@ -39,16 +38,17 @@ def main():
 
     # Create a cube containing the wind speed
     windspeed = (uwind ** 2 + vwind ** 2) ** 0.5
-    windspeed.rename('windspeed')
+    windspeed.rename("windspeed")
 
     x = ulon.points
-    y = uwind.coord('latitude').points
+    y = uwind.coord("latitude").points
     u = uwind.data
     v = vwind.data
 
     # Set up axes to show the lake
-    lakes = cfeat.NaturalEarthFeature('physical', 'lakes', '50m',
-                                      facecolor='none')
+    lakes = cfeat.NaturalEarthFeature(
+        "physical", "lakes", "50m", facecolor="none"
+    )
 
     plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -61,7 +61,7 @@ def main():
     qplt.contourf(windspeed, 20)
 
     # Add arrows to show the wind vectors
-    plt.quiver(x, y, u, v, pivot='middle', transform=transform)
+    plt.quiver(x, y, u, v, pivot="middle", transform=transform)
 
     plt.title("Wind speed over Lake Victoria")
     qplt.show()
@@ -76,10 +76,11 @@ def main():
 
     qplt.contourf(windspeed, 20)
 
-    plt.quiver(x, y, u_norm, v_norm, pivot='middle', transform=transform)
+    plt.quiver(x, y, u_norm, v_norm, pivot="middle", transform=transform)
 
     plt.title("Wind speed over Lake Victoria")
     qplt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

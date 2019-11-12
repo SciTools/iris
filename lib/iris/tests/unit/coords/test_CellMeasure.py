@@ -17,21 +17,24 @@ from iris._lazy_data import as_lazy_data
 
 class Tests(tests.IrisTest):
     def setUp(self):
-        self.values = np.array((10., 12., 16., 9.))
-        self.measure = CellMeasure(self.values, units='m^2',
-                                   standard_name='cell_area',
-                                   long_name='measured_area',
-                                   var_name='area',
-                                   attributes={'notes': '1m accuracy'},
-                                   measure='area')
+        self.values = np.array((10.0, 12.0, 16.0, 9.0))
+        self.measure = CellMeasure(
+            self.values,
+            units="m^2",
+            standard_name="cell_area",
+            long_name="measured_area",
+            var_name="area",
+            attributes={"notes": "1m accuracy"},
+            measure="area",
+        )
 
     def test_invalid_measure(self):
         msg = "measure must be 'area' or 'volume', not length"
         with self.assertRaisesRegex(ValueError, msg):
-            self.measure.measure = 'length'
+            self.measure.measure = "length"
 
     def test_set_measure(self):
-        v = 'volume'
+        v = "volume"
         self.measure.measure = v
         self.assertEqual(self.measure.measure, v)
 
@@ -39,7 +42,7 @@ class Tests(tests.IrisTest):
         self.assertArrayEqual(self.measure.data, self.values)
 
     def test_set_data(self):
-        new_vals = np.array((1., 2., 3., 4.))
+        new_vals = np.array((1.0, 2.0, 3.0, 4.0))
         self.measure.data = new_vals
         self.assertArrayEqual(self.measure.data, new_vals)
 
@@ -54,13 +57,13 @@ class Tests(tests.IrisTest):
         self.assertArrayEqual(self.measure.data, new_vals)
 
     def test_set_data__lazy(self):
-        new_vals = as_lazy_data(np.array((1., 2., 3., 4.)))
+        new_vals = as_lazy_data(np.array((1.0, 2.0, 3.0, 4.0)))
         self.measure.data = new_vals
         self.assertArrayEqual(self.measure.data, new_vals)
 
     def test_data_different_shape(self):
-        new_vals = np.array((1., 2., 3.))
-        msg = 'Require data with shape.'
+        new_vals = np.array((1.0, 2.0, 3.0))
+        msg = "Require data with shape."
         with self.assertRaisesRegex(ValueError, msg):
             self.measure.data = new_vals
 
@@ -84,32 +87,38 @@ class Tests(tests.IrisTest):
         self.assertArrayEqual(sub_measure.data, old_values)
 
     def test_copy(self):
-        new_vals = np.array((7., 8.))
+        new_vals = np.array((7.0, 8.0))
         copy_measure = self.measure.copy(new_vals)
         self.assertArrayEqual(copy_measure.data, new_vals)
 
     def test_repr_other_metadata(self):
-        expected = (", long_name='measured_area', "
-                    "var_name='area', attributes={'notes': '1m accuracy'}")
+        expected = (
+            ", long_name='measured_area', "
+            "var_name='area', attributes={'notes': '1m accuracy'}"
+        )
         self.assertEqual(self.measure._repr_other_metadata(), expected)
 
     def test__str__(self):
-        expected = ("CellMeasure(array([10., 12., 16.,  9.]), "
-                    "measure=area, standard_name='cell_area', "
-                    "units=Unit('m^2'), long_name='measured_area', "
-                    "var_name='area', attributes={'notes': '1m accuracy'})")
+        expected = (
+            "CellMeasure(array([10., 12., 16.,  9.]), "
+            "measure=area, standard_name='cell_area', "
+            "units=Unit('m^2'), long_name='measured_area', "
+            "var_name='area', attributes={'notes': '1m accuracy'})"
+        )
         self.assertEqual(self.measure.__str__(), expected)
 
     def test__repr__(self):
-        expected = ("CellMeasure(array([10., 12., 16.,  9.]), "
-                    "measure=area, standard_name='cell_area', "
-                    "units=Unit('m^2'), long_name='measured_area', "
-                    "var_name='area', attributes={'notes': '1m accuracy'})")
+        expected = (
+            "CellMeasure(array([10., 12., 16.,  9.]), "
+            "measure=area, standard_name='cell_area', "
+            "units=Unit('m^2'), long_name='measured_area', "
+            "var_name='area', attributes={'notes': '1m accuracy'})"
+        )
         self.assertEqual(self.measure.__repr__(), expected)
 
     def test__eq__(self):
         self.assertEqual(self.measure, self.measure)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

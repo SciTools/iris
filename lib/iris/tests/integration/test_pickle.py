@@ -13,8 +13,8 @@ import pickle
 import unittest
 
 import iris
+
 if tests.GRIB_AVAILABLE:
-    import gribapi
     from iris_grib.message import GribMessage
 
 
@@ -22,10 +22,10 @@ class Common:
     def pickle_cube(self, protocol):
         # Ensure that data proxies are pickleable.
         cube = iris.load(self.path)[0]
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
+        with self.temp_filename(".pkl") as filename:
+            with open(filename, "wb") as f:
                 pickle.dump(cube, f, protocol)
-            with open(filename, 'rb') as f:
+            with open(filename, "rb") as f:
                 ncube = pickle.load(f)
         self.assertEqual(ncube, cube)
 
@@ -43,11 +43,11 @@ class Common:
 @tests.skip_grib
 class TestGribMessage(Common, tests.IrisTest):
     def setUp(self):
-        self.path = tests.get_data_path(('GRIB', 'fp_units', 'hours.grib2'))
+        self.path = tests.get_data_path(("GRIB", "fp_units", "hours.grib2"))
 
     def pickle_obj(self, obj):
-        with self.temp_filename('.pkl') as filename:
-            with open(filename, 'wb') as f:
+        with self.temp_filename(".pkl") as filename:
+            with open(filename, "wb") as f:
                 pickle.dump(obj, f)
 
     # These probably "ought" to work, but currently fail.
@@ -80,21 +80,22 @@ class TestGribMessage(Common, tests.IrisTest):
 @tests.skip_data
 class test_netcdf(Common, tests.IrisTest):
     def setUp(self):
-        self.path = tests.get_data_path(('NetCDF', 'global', 'xyt',
-                                         'SMALL_hires_wind_u_for_ipcc4.nc'))
+        self.path = tests.get_data_path(
+            ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
+        )
 
 
 @tests.skip_data
 class test_pp(Common, tests.IrisTest):
     def setUp(self):
-        self.path = tests.get_data_path(('PP', 'aPPglob1', 'global.pp'))
+        self.path = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
 
 
 @tests.skip_data
 class test_ff(Common, tests.IrisTest):
     def setUp(self):
-        self.path = tests.get_data_path(('FF', 'n48_multi_field'))
+        self.path = tests.get_data_path(("FF", "n48_multi_field"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

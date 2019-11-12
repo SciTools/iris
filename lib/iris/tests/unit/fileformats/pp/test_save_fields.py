@@ -17,7 +17,7 @@ import iris.fileformats.pp as pp
 
 
 def asave(afilehandle):
-    afilehandle.write('saved')
+    afilehandle.write("saved")
 
 
 class TestSaveFields(tests.IrisTest):
@@ -30,20 +30,20 @@ class TestSaveFields(tests.IrisTest):
         self.pp_field.save = asave
 
     def test_save(self):
-        open_func = 'builtins.open'
+        open_func = "builtins.open"
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], 'foo.pp')
-        self.assertTrue(mock.call('foo.pp', 'wb') in m.mock_calls)
-        self.assertTrue(mock.call().write('saved') in m.mock_calls)
+            pp.save_fields([self.pp_field], "foo.pp")
+        self.assertTrue(mock.call("foo.pp", "wb") in m.mock_calls)
+        self.assertTrue(mock.call().write("saved") in m.mock_calls)
 
     def test_save_append(self):
-        open_func = 'builtins.open'
+        open_func = "builtins.open"
         m = mock.mock_open()
         with mock.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], 'foo.pp', append=True)
-        self.assertTrue(mock.call('foo.pp', 'ab') in m.mock_calls)
-        self.assertTrue(mock.call().write('saved') in m.mock_calls)
+            pp.save_fields([self.pp_field], "foo.pp", append=True)
+        self.assertTrue(mock.call("foo.pp", "ab") in m.mock_calls)
+        self.assertTrue(mock.call().write("saved") in m.mock_calls)
 
 
 if __name__ == "__main__":

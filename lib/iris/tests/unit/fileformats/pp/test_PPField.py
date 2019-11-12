@@ -9,9 +9,7 @@
 # importing anything else.
 import iris.tests as tests
 
-from contextlib import contextmanager
 from unittest import mock
-import warnings
 
 import numpy as np
 
@@ -26,23 +24,24 @@ from iris.fileformats.pp import SplittableInt
 # items when written to disk and get consistent results.
 
 
-DUMMY_HEADER = [('dummy1', (0, 11)),
-                ('lbtim', (12,)),
-                ('dummy2', (13,)),
-                ('lblrec', (14,)),
-                ('dummy3', (15, 16)),
-                ('lbrow', (17,)),
-                ('dummy4', (18,)),
-                ('lbext',  (19,)),
-                ('lbpack', (20,)),
-                ('dummy5', (21, 37)),
-                ('lbuser', (38, 39, 40, 41, 42, 43, 44,)),
-                ('brsvd', (45, 46, 47, 48)),
-                ('bdatum', (49,)),
-                ('dummy6', (50, 61)),
-                ('bmdi',   (62, )),
-                ('dummy7', (63,)),
-                ]
+DUMMY_HEADER = [
+    ("dummy1", (0, 11)),
+    ("lbtim", (12,)),
+    ("dummy2", (13,)),
+    ("lblrec", (14,)),
+    ("dummy3", (15, 16)),
+    ("lbrow", (17,)),
+    ("dummy4", (18,)),
+    ("lbext", (19,)),
+    ("lbpack", (20,)),
+    ("dummy5", (21, 37)),
+    ("lbuser", (38, 39, 40, 41, 42, 43, 44,)),
+    ("brsvd", (45, 46, 47, 48)),
+    ("bdatum", (49,)),
+    ("dummy6", (50, 61)),
+    ("bmdi", (62,)),
+    ("dummy7", (63,)),
+]
 
 
 class TestPPField(PPField):
@@ -85,17 +84,17 @@ class Test_save(tests.IrisTest):
         def field_checksum(data):
             field = TestPPField()._ready_for_save()
             field.data = data
-            with self.temp_filename('.pp') as temp_filename:
-                with open(temp_filename, 'wb') as pp_file:
+            with self.temp_filename(".pp") as temp_filename:
+                with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
                 checksum = self.file_checksum(temp_filename)
             return checksum
 
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
-        checksum_32 = field_checksum(data_64.astype('>f4'))
-        msg = 'Downcasting array precision from float64 to float32 for save.'
+        checksum_32 = field_checksum(data_64.astype(">f4"))
+        msg = "Downcasting array precision from float64 to float32 for save."
         with self.assertWarnsRegexp(msg):
-            checksum_64 = field_checksum(data_64.astype('>f8'))
+            checksum_64 = field_checksum(data_64.astype(">f8"))
         self.assertEqual(checksum_32, checksum_64)
 
     def test_masked_mdi_value_warning(self):
@@ -103,11 +102,13 @@ class Test_save(tests.IrisTest):
         field = TestPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
-        field.data = np.ma.masked_array([1., field.bmdi, 3.], dtype=np.float32)
-        msg = 'PPField data contains unmasked points'
+        field.data = np.ma.masked_array(
+            [1.0, field.bmdi, 3.0], dtype=np.float32
+        )
+        msg = "PPField data contains unmasked points"
         with self.assertWarnsRegexp(msg):
-            with self.temp_filename('.pp') as temp_filename:
-                with open(temp_filename, 'wb') as pp_file:
+            with self.temp_filename(".pp") as temp_filename:
+                with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
 
     def test_unmasked_mdi_value_warning(self):
@@ -115,11 +116,11 @@ class Test_save(tests.IrisTest):
         field = TestPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
-        field.data = np.array([1., field.bmdi, 3.], dtype=np.float32)
-        msg = 'PPField data contains unmasked points'
+        field.data = np.array([1.0, field.bmdi, 3.0], dtype=np.float32)
+        msg = "PPField data contains unmasked points"
         with self.assertWarnsRegexp(msg):
-            with self.temp_filename('.pp') as temp_filename:
-                with open(temp_filename, 'wb') as pp_file:
+            with self.temp_filename(".pp") as temp_filename:
+                with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
 
     def test_mdi_masked_value_nowarning(self):
@@ -127,32 +128,33 @@ class Test_save(tests.IrisTest):
         field = TestPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
-        field.data = np.ma.masked_array([1., 2., 3.], mask=[0, 1, 0],
-                                        dtype=np.float32)
+        field.data = np.ma.masked_array(
+            [1.0, 2.0, 3.0], mask=[0, 1, 0], dtype=np.float32
+        )
         # Set underlying data value at masked point to BMDI value.
         field.data.data[1] = field.bmdi
         self.assertArrayAllClose(field.data.data[1], field.bmdi)
-        with self.assertNoWarningsRegexp(r'\(mask\|fill\)'):
-            with self.temp_filename('.pp') as temp_filename:
-                with open(temp_filename, 'wb') as pp_file:
+        with self.assertNoWarningsRegexp(r"\(mask\|fill\)"):
+            with self.temp_filename(".pp") as temp_filename:
+                with open(temp_filename, "wb") as pp_file:
                     field.save(pp_file)
 
 
 class Test_calendar(tests.IrisTest):
     def test_greg(self):
         field = TestPPField()
-        field.lbtim = SplittableInt(1, {'ia': 2, 'ib': 1, 'ic': 0})
-        self.assertEqual(field.calendar, 'gregorian')
+        field.lbtim = SplittableInt(1, {"ia": 2, "ib": 1, "ic": 0})
+        self.assertEqual(field.calendar, "gregorian")
 
     def test_360(self):
         field = TestPPField()
-        field.lbtim = SplittableInt(2, {'ia': 2, 'ib': 1, 'ic': 0})
-        self.assertEqual(field.calendar, '360_day')
+        field.lbtim = SplittableInt(2, {"ia": 2, "ib": 1, "ic": 0})
+        self.assertEqual(field.calendar, "360_day")
 
     def test_365(self):
         field = TestPPField()
-        field.lbtim = SplittableInt(4, {'ia': 2, 'ib': 1, 'ic': 0})
-        self.assertEqual(field.calendar, '365_day')
+        field.lbtim = SplittableInt(4, {"ia": 2, "ib": 1, "ic": 0})
+        self.assertEqual(field.calendar, "365_day")
 
 
 class Test_coord_system(tests.IrisTest):
@@ -160,8 +162,9 @@ class Test_coord_system(tests.IrisTest):
         field = TestPPField()
         field.bplat = bplat
         field.bplon = bplon
-        with mock.patch('iris.fileformats.pp.iris.coord_systems') \
-                as mock_cs_mod:
+        with mock.patch(
+            "iris.fileformats.pp.iris.coord_systems"
+        ) as mock_cs_mod:
             result = field.coord_system()
         if not rotated:
             # It should return a standard unrotated CS.
@@ -172,9 +175,10 @@ class Test_coord_system(tests.IrisTest):
             self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
             self.assertTrue(mock_cs_mod.RotatedGeogCS.call_count == 1)
             self.assertEqual(result, mock_cs_mod.RotatedGeogCS())
-            self.assertEqual(mock_cs_mod.RotatedGeogCS.call_args_list[0],
-                             mock.call(bplat, bplon,
-                                       ellipsoid=mock_cs_mod.GeogCS()))
+            self.assertEqual(
+                mock_cs_mod.RotatedGeogCS.call_args_list[0],
+                mock.call(bplat, bplon, ellipsoid=mock_cs_mod.GeogCS()),
+            )
 
     def test_normal_unrotated(self):
         # Check that 'normal' BPLAT,BPLON=90,0 produces an unrotated system.
@@ -206,21 +210,21 @@ class Test__init__(tests.IrisTest):
         self.assertIsNone(field.raw_lbpack)
 
     def test_lbtim_lookup(self):
-        self.assertEqual(TestPPField.HEADER_DICT['lbtim'], (12,))
+        self.assertEqual(TestPPField.HEADER_DICT["lbtim"], (12,))
 
     def test_lbpack_lookup(self):
-        self.assertEqual(TestPPField.HEADER_DICT['lbpack'], (20,))
+        self.assertEqual(TestPPField.HEADER_DICT["lbpack"], (20,))
 
     def test_raw_lbtim(self):
         raw_lbtim = 4321
-        loc, = TestPPField.HEADER_DICT['lbtim']
+        (loc,) = TestPPField.HEADER_DICT["lbtim"]
         self.header[loc] = raw_lbtim
         field = TestPPField(header=self.header)
         self.assertEqual(field.raw_lbtim, raw_lbtim)
 
     def test_raw_lbpack(self):
         raw_lbpack = 4321
-        loc, = TestPPField.HEADER_DICT['lbpack']
+        (loc,) = TestPPField.HEADER_DICT["lbpack"]
         self.header[loc] = raw_lbpack
         field = TestPPField(header=self.header)
         self.assertEqual(field.raw_lbpack, raw_lbpack)
@@ -234,28 +238,28 @@ class Test__getattr__(tests.IrisTest):
 
     def test_attr_singular_long(self):
         lbrow = 1234
-        loc, = TestPPField.HEADER_DICT['lbrow']
+        (loc,) = TestPPField.HEADER_DICT["lbrow"]
         self.header[loc] = lbrow
         field = TestPPField(header=self.header)
         self.assertEqual(field.lbrow, lbrow)
 
     def test_attr_multi_long(self):
         lbuser = (100, 101, 102, 103, 104, 105, 106)
-        loc = TestPPField.HEADER_DICT['lbuser']
-        self.header[loc[0]:loc[-1] + 1] = lbuser
+        loc = TestPPField.HEADER_DICT["lbuser"]
+        self.header[loc[0] : loc[-1] + 1] = lbuser
         field = TestPPField(header=self.header)
         self.assertEqual(field.lbuser, lbuser)
 
     def test_attr_singular_float(self):
         bdatum = 1234
-        loc, = TestPPField.HEADER_DICT['bdatum']
+        (loc,) = TestPPField.HEADER_DICT["bdatum"]
         self.header[loc] = bdatum
         field = TestPPField(header=self.header)
         self.assertEqual(field.bdatum, bdatum)
 
     def test_attr_multi_float(self):
         brsvd = (100, 101, 102, 103)
-        loc = TestPPField.HEADER_DICT['brsvd']
+        loc = TestPPField.HEADER_DICT["brsvd"]
         start = loc[0]
         stop = loc[-1] + 1
         self.header[start:stop] = brsvd
@@ -264,7 +268,7 @@ class Test__getattr__(tests.IrisTest):
 
     def test_attr_lbtim(self):
         raw_lbtim = 4321
-        loc, = TestPPField.HEADER_DICT['lbtim']
+        (loc,) = TestPPField.HEADER_DICT["lbtim"]
         self.header[loc] = raw_lbtim
         field = TestPPField(header=self.header)
         result = field.lbtim
@@ -276,7 +280,7 @@ class Test__getattr__(tests.IrisTest):
 
     def test_attr_lbpack(self):
         raw_lbpack = 4321
-        loc, = TestPPField.HEADER_DICT['lbpack']
+        (loc,) = TestPPField.HEADER_DICT["lbpack"]
         self.header[loc] = raw_lbpack
         field = TestPPField(header=self.header)
         result = field.lbpack
@@ -337,7 +341,7 @@ class Test_lbtim(tests.IrisTest):
         headers = [0] * 64
         headers[12] = 12345
         field = TestPPField(headers)
-        si = SplittableInt(34567, {'foo': 0})
+        si = SplittableInt(34567, {"foo": 0})
         field.lbtim = si
         self.assertIsInstance(field.lbtim, SplittableInt)
         with self.assertRaises(AttributeError):

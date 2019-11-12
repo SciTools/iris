@@ -58,7 +58,7 @@ def count_spells(data, threshold, axis, spell_length):
     # Make an array with data values "windowed" along the time axis.
     hit_windows = rolling_window(data_hits, window=spell_length, axis=axis)
     # Find the windows "full of True-s" (along the added 'window axis').
-    full_windows = np.all(hit_windows, axis=axis+1)
+    full_windows = np.all(hit_windows, axis=axis + 1)
     # Count points fulfilling the condition (along the time axis).
     spell_point_counts = np.sum(full_windows, axis=axis, dtype=int)
     return spell_point_counts
@@ -66,29 +66,32 @@ def count_spells(data, threshold, axis, spell_length):
 
 def main():
     # Load the whole time-sequence as a single cube.
-    file_path = iris.sample_data_path('E1_north_america.nc')
+    file_path = iris.sample_data_path("E1_north_america.nc")
     cube = iris.load_cube(file_path)
 
     # Make an aggregator from the user function.
-    SPELL_COUNT = Aggregator('spell_count',
-                             count_spells,
-                             units_func=lambda units: 1)
+    SPELL_COUNT = Aggregator(
+        "spell_count", count_spells, units_func=lambda units: 1
+    )
 
     # Define the parameters of the test.
     threshold_temperature = 280.0
     spell_years = 5
 
     # Calculate the statistic.
-    warm_periods = cube.collapsed('time', SPELL_COUNT,
-                                  threshold=threshold_temperature,
-                                  spell_length=spell_years)
-    warm_periods.rename('Number of 5-year warm spells in 240 years')
+    warm_periods = cube.collapsed(
+        "time",
+        SPELL_COUNT,
+        threshold=threshold_temperature,
+        spell_length=spell_years,
+    )
+    warm_periods.rename("Number of 5-year warm spells in 240 years")
 
     # Plot the results.
-    qplt.contourf(warm_periods, cmap='RdYlBu_r')
+    qplt.contourf(warm_periods, cmap="RdYlBu_r")
     plt.gca().coastlines()
     iplt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

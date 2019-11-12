@@ -66,9 +66,11 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
         self.cube = iris.cube.Cube(np.arange(4).reshape(2, 2))
 
     def test_no_dim(self):
-        self.assertRaises(TypeError,
-                          self.cube.add_dim_coord,
-                          iris.coords.DimCoord(np.arange(2), "latitude"))
+        self.assertRaises(
+            TypeError,
+            self.cube.add_dim_coord,
+            iris.coords.DimCoord(np.arange(2), "latitude"),
+        )
 
     def test_adding_aux_coord(self):
         coord = iris.coords.AuxCoord(np.arange(2), "latitude")
@@ -80,6 +82,7 @@ class TestEquality(tests.IrisTest):
     def test_not_implmemented(self):
         class Terry:
             pass
+
         cube = iris.cube.Cube(0)
         self.assertIs(cube.__eq__(Terry()), NotImplemented)
         self.assertIs(cube.__ne__(Terry()), NotImplemented)

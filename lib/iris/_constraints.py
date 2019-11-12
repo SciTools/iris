@@ -26,6 +26,7 @@ class Constraint:
     :meth:`Constraint.extract` method.
 
     """
+
     def __init__(self, name=None, cube_func=None, coord_values=None, **kwargs):
         """
         Creates a new instance of a Constraint which can be used for filtering
@@ -78,20 +79,24 @@ class Constraint:
 
         """
         if not (name is None or isinstance(name, str)):
-            raise TypeError('name must be None or string, got %r' % name)
+            raise TypeError("name must be None or string, got %r" % name)
         if not (cube_func is None or callable(cube_func)):
-            raise TypeError('cube_func must be None or callable, got %r'
-                            % cube_func)
-        if not (coord_values is None or isinstance(coord_values,
-                                                   Mapping)):
-            raise TypeError('coord_values must be None or a '
-                            'collections.Mapping, got %r' % coord_values)
+            raise TypeError(
+                "cube_func must be None or callable, got %r" % cube_func
+            )
+        if not (coord_values is None or isinstance(coord_values, Mapping)):
+            raise TypeError(
+                "coord_values must be None or a "
+                "collections.Mapping, got %r" % coord_values
+            )
 
         coord_values = coord_values or {}
         duplicate_keys = set(coord_values.keys()) & set(kwargs.keys())
         if duplicate_keys:
-            raise ValueError('Duplicate coordinate conditions specified for: '
-                             '%s' % list(duplicate_keys))
+            raise ValueError(
+                "Duplicate coordinate conditions specified for: "
+                "%s" % list(duplicate_keys)
+            )
 
         self._name = name
         self._cube_func = cube_func
@@ -101,18 +106,19 @@ class Constraint:
 
         self._coord_constraints = []
         for coord_name, coord_thing in self._coord_values.items():
-            self._coord_constraints.append(_CoordConstraint(coord_name,
-                                                            coord_thing))
+            self._coord_constraints.append(
+                _CoordConstraint(coord_name, coord_thing)
+            )
 
     def __repr__(self):
         args = []
         if self._name:
-            args.append(('name', self._name))
+            args.append(("name", self._name))
         if self._cube_func:
-            args.append(('cube_func', self._cube_func))
+            args.append(("cube_func", self._cube_func))
         if self._coord_values:
-            args.append(('coord_values', self._coord_values))
-        return 'Constraint(%s)' % ', '.join('%s=%r' % (k, v) for k, v in args)
+            args.append(("coord_values", self._coord_values))
+        return "Constraint(%s)" % ", ".join("%s=%r" % (k, v) for k, v in args)
 
     def _coordless_match(self, cube):
         """
@@ -170,6 +176,7 @@ class Constraint:
 
 class ConstraintCombination(Constraint):
     """Represents the binary combination of two Constraint instances."""
+
     def __init__(self, lhs, rhs, operator):
         """
         A ConstraintCombination instance is created by providing two
@@ -180,27 +187,35 @@ class ConstraintCombination(Constraint):
             lhs_constraint = as_constraint(lhs)
             rhs_constraint = as_constraint(rhs)
         except TypeError:
-            raise TypeError('Can only combine Constraint instances, '
-                            'got: %s and %s' % (type(lhs), type(rhs)))
+            raise TypeError(
+                "Can only combine Constraint instances, "
+                "got: %s and %s" % (type(lhs), type(rhs))
+            )
         self.lhs = lhs_constraint
         self.rhs = rhs_constraint
         self.operator = operator
 
     def _coordless_match(self, cube):
-        return self.operator(self.lhs._coordless_match(cube),
-                             self.rhs._coordless_match(cube))
+        return self.operator(
+            self.lhs._coordless_match(cube), self.rhs._coordless_match(cube)
+        )
 
     def __repr__(self):
-        return 'ConstraintCombination(%r, %r, %r)' % (self.lhs, self.rhs,
-                                                      self.operator)
+        return "ConstraintCombination(%r, %r, %r)" % (
+            self.lhs,
+            self.rhs,
+            self.operator,
+        )
 
     def _CIM_extract(self, cube):
-        return self.operator(self.lhs._CIM_extract(cube),
-                             self.rhs._CIM_extract(cube))
+        return self.operator(
+            self.lhs._CIM_extract(cube), self.rhs._CIM_extract(cube)
+        )
 
 
 class _CoordConstraint:
     """Represents the atomic elements which might build up a Constraint."""
+
     def __init__(self, coord_name, coord_thing):
         """
         Create a coordinate constraint given the coordinate name and a
@@ -218,8 +233,10 @@ class _CoordConstraint:
         self._coord_thing = coord_thing
 
     def __repr__(self):
-        return '_CoordConstraint(%r, %r)' % (self.coord_name,
-                                             self._coord_thing)
+        return "_CoordConstraint(%r, %r)" % (
+            self.coord_name,
+            self._coord_thing,
+        )
 
     def extract(self, cube):
         """
@@ -237,29 +254,35 @@ class _CoordConstraint:
             return cube_cim
         dims = cube.coord_dims(coord)
         if len(dims) > 1:
-            msg = 'Cannot apply constraints to multidimensional coordinates'
+            msg = "Cannot apply constraints to multidimensional coordinates"
             raise iris.exceptions.CoordinateMultiDimError(msg)
 
         try_quick = False
         if callable(self._coord_thing):
             call_func = self._coord_thing
-        elif (isinstance(self._coord_thing, Iterable) and
-                not isinstance(self._coord_thing,
-                               (str, iris.coords.Cell))):
+        elif isinstance(self._coord_thing, Iterable) and not isinstance(
+            self._coord_thing, (str, iris.coords.Cell)
+        ):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
             if coord.has_bounds():
+
                 def call_func(cell):
                     return cell in desired_values
+
             else:
+
                 def call_func(cell):
                     return cell.point in desired_values
+
         else:
+
             def call_func(c):
                 return c == self._coord_thing
 
-            try_quick = (isinstance(coord, iris.coords.DimCoord) and
-                         not isinstance(self._coord_thing, iris.coords.Cell))
+            try_quick = isinstance(
+                coord, iris.coords.DimCoord
+            ) and not isinstance(self._coord_thing, iris.coords.Cell)
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:
@@ -294,6 +317,7 @@ class _ColumnIndexManager:
         print(cim.as_slice())
 
     """
+
     def __init__(self, ndims):
         """
         A _ColumnIndexManager is always created to span the given
@@ -317,8 +341,10 @@ class _ColumnIndexManager:
             return NotImplemented
 
         if self.ndims != other.ndims:
-            raise ValueError('Cannot do %s for %r and %r as they have a '
-                             'different number of dimensions.' % operator)
+            raise ValueError(
+                "Cannot do %s for %r and %r as they have a "
+                "different number of dimensions." % operator
+            )
         r = _ColumnIndexManager(self.ndims)
         # iterate over each dimension an combine appropriately
         for i, (lhs, rhs) in enumerate(zip(self, other)):
@@ -338,8 +364,10 @@ class _ColumnIndexManager:
         if is_vector or isinstance(value, bool):
             self._column_arrays[key] = value
         else:
-            raise TypeError('Expecting value to be a 1 dimensional numpy array'
-                            ', or a boolean. Got %s' % (type(value)))
+            raise TypeError(
+                "Expecting value to be a 1 dimensional numpy array"
+                ", or a boolean. Got %s" % (type(value))
+            )
 
     def as_slice(self):
         """
@@ -371,8 +399,9 @@ class _ColumnIndexManager:
                     delta = np.diff(where_true, axis=0)
                     # if the diff is consistent we can create a slice object
                     if all(delta[0] == delta):
-                        result[dim] = slice(where_true[0], where_true[-1] + 1,
-                                            delta[0])
+                        result[dim] = slice(
+                            where_true[0], where_true[-1] + 1, delta[0]
+                        )
                     else:
                         # otherwise, key is a tuple
                         result[dim] = tuple(where_true)
@@ -418,11 +447,12 @@ def as_constraint(thing):
     elif isinstance(thing, str):
         return Constraint(thing)
     else:
-        raise TypeError('%r cannot be cast to a constraint.' % thing)
+        raise TypeError("%r cannot be cast to a constraint." % thing)
 
 
 class AttributeConstraint(Constraint):
     """Provides a simple Cube-attribute based :class:`Constraint`."""
+
     def __init__(self, **attributes):
         """
         Example usage::
@@ -459,4 +489,4 @@ class AttributeConstraint(Constraint):
         return match
 
     def __repr__(self):
-        return 'AttributeConstraint(%r)' % self._attributes
+        return "AttributeConstraint(%r)" % self._attributes

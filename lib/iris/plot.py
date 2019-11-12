@@ -33,14 +33,15 @@ import iris.analysis.cartography as cartography
 import iris.coords
 import iris.coord_systems
 from iris.exceptions import IrisError
+
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 from iris.util import _meshgrid
 
 # Cynthia Brewer citation text.
-BREWER_CITE = 'Colours based on ColorBrewer.org'
+BREWER_CITE = "Colours based on ColorBrewer.org"
 
-PlotDefn = collections.namedtuple('PlotDefn', ('coords', 'transpose'))
+PlotDefn = collections.namedtuple("PlotDefn", ("coords", "transpose"))
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
@@ -48,17 +49,19 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
         result = []
         for coord in coords:
             if isinstance(coord, int):
-                result.append('dim={}'.format(coord))
+                result.append("dim={}".format(coord))
             else:
                 result.append(coord.name())
-        return ', '.join(result)
+        return ", ".join(result)
 
     def as_coord(coord):
         if isinstance(coord, int):
             # Pass through valid dimension indexes.
             if coord >= ndims:
-                emsg = ('The data dimension ({}) is out of range for '
-                        'the dimensionality of the required plot ({})')
+                emsg = (
+                    "The data dimension ({}) is out of range for "
+                    "the dimensionality of the required plot ({})"
+                )
                 raise IndexError(emsg.format(coord, ndims))
         else:
             coord = cube.coord(coord)
@@ -68,10 +71,11 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
 
     # Check that we were given the right number of coordinates/dimensions.
     if len(coords) != ndims:
-        raise ValueError('The list of coordinates given (%s) should have the'
-                         ' same length (%s) as the dimensionality of the'
-                         ' required plot (%s)' % (names(coords),
-                                                  len(coords), ndims))
+        raise ValueError(
+            "The list of coordinates given (%s) should have the"
+            " same length (%s) as the dimensionality of the"
+            " required plot (%s)" % (names(coords), len(coords), ndims)
+        )
 
     # Check which dimensions are spanned by each coordinate.
     def get_span(coord):
@@ -84,20 +88,25 @@ def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     spans = list(map(get_span, coords))
     for span, coord in zip(spans, coords):
         if not span:
-            msg = 'The coordinate {!r} doesn\'t span a data dimension.'
+            msg = "The coordinate {!r} doesn't span a data dimension."
             raise ValueError(msg.format(coord.name()))
         if mode == iris.coords.BOUND_MODE and len(span) not in [1, 2]:
-            raise ValueError('The coordinate {!r} has {} dimensions.'
-                             'Cell-based plotting is only supported for'
-                             'coordinates with one or two dimensions.'
-                             .format(coord.name(), len(span)))
+            raise ValueError(
+                "The coordinate {!r} has {} dimensions."
+                "Cell-based plotting is only supported for"
+                "coordinates with one or two dimensions.".format(
+                    coord.name(), len(span)
+                )
+            )
 
     # Check the combination of coordinates spans enough (ndims) data
     # dimensions.
     total_span = set().union(*spans)
     if len(total_span) != ndims:
-        raise ValueError('The given coordinates ({}) don\'t span the {} data'
-                         ' dimensions.'.format(names(coords), ndims))
+        raise ValueError(
+            "The given coordinates ({}) don't span the {} data"
+            " dimensions.".format(names(coords), ndims)
+        )
 
     # If we have 2-dimensional data, and one or more 1-dimensional
     # coordinates, check if we need to transpose.
@@ -130,7 +139,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
     """
     if cube.ndim != ndims:
-        msg = 'Cube must be %s-dimensional. Got %s dimensions.'
+        msg = "Cube must be %s-dimensional. Got %s dimensions."
         raise ValueError(msg % (ndims, cube.ndim))
 
     # Start by taking the DimCoords from each dimension.
@@ -153,21 +162,26 @@ def _get_plot_defn(cube, mode, ndims=2):
     for dim, coord in enumerate(coords):
         if coord is None:
             aux_coords = cube.coords(dimensions=dim)
-            aux_coords = [coord for coord in aux_coords
-                          if isinstance(coord, iris.coords.DimCoord)]
+            aux_coords = [
+                coord
+                for coord in aux_coords
+                if isinstance(coord, iris.coords.DimCoord)
+            ]
             if aux_coords:
                 aux_coords.sort(key=lambda coord: coord._as_defn())
                 coords[dim] = aux_coords[0]
 
     # If plotting a 2 dimensional plot, check for 2d coordinates
     if ndims == 2:
-        missing_dims = [dim for dim, coord in enumerate(coords) if
-                        coord is None]
+        missing_dims = [
+            dim for dim, coord in enumerate(coords) if coord is None
+        ]
         if missing_dims:
             # Note that this only picks up coordinates that span the dims
             two_dim_coords = cube.coords(dimensions=missing_dims)
-            two_dim_coords = [coord for coord in two_dim_coords
-                              if coord.ndim == 2]
+            two_dim_coords = [
+                coord for coord in two_dim_coords if coord.ndim == 2
+            ]
             if len(two_dim_coords) >= 2:
                 two_dim_coords.sort(key=lambda coord: coord._as_defn())
                 coords = two_dim_coords[:2]
@@ -178,11 +192,13 @@ def _get_plot_defn(cube, mode, ndims=2):
         # derived altitude over model_level_number or level_height.
         # Limit to Z axis to avoid preferring latitude over grid_latitude etc.
         axes = list(map(guess_axis, coords))
-        axis = 'Z'
+        axis = "Z"
         if axis in axes:
             for coord in cube.coords(dim_coords=False):
-                if max(coord.shape) > 1 and \
-                        iris.util.guess_coord_axis(coord) == axis:
+                if (
+                    max(coord.shape) > 1
+                    and iris.util.guess_coord_axis(coord) == axis
+                ):
                     coords[axes.index(axis)] = coord
 
     # Re-order the coordinates to achieve the preferred
@@ -190,25 +206,30 @@ def _get_plot_defn(cube, mode, ndims=2):
     # an axis to order the coordinates, fall back to using the cube dimension
     # followed by the name of the coordinate.
     def sort_key(coord):
-        order = {'X': 2, 'T': 1, 'Y': -1, 'Z': -2}
+        order = {"X": 2, "T": 1, "Y": -1, "Z": -2}
         axis = guess_axis(coord)
-        return (order.get(axis, 0),
-                coords.index(coord),
-                coord and coord.name())
+        return (
+            order.get(axis, 0),
+            coords.index(coord),
+            coord and coord.name(),
+        )
 
     sorted_coords = sorted(coords, key=sort_key)
 
-    transpose = (sorted_coords != coords)
+    transpose = sorted_coords != coords
     return PlotDefn(sorted_coords, transpose)
 
 
 def _can_draw_map(coords):
-    std_names = [c and c.standard_name for c in coords
-                 if isinstance(c, iris.coords.Coord)]
+    std_names = [
+        c and c.standard_name
+        for c in coords
+        if isinstance(c, iris.coords.Coord)
+    ]
     valid_std_names = [
-        ['latitude', 'longitude'],
-        ['grid_latitude', 'grid_longitude'],
-        ['projection_y_coordinate', 'projection_x_coordinate']
+        ["latitude", "longitude"],
+        ["grid_latitude", "grid_longitude"],
+        ["projection_y_coordinate", "projection_x_coordinate"],
     ]
     return std_names in valid_std_names
 
@@ -252,8 +273,8 @@ def _invert_yaxis(v_coord, axes=None):
     axes = axes if axes else plt.gca()
     yaxis_is_inverted = axes.yaxis_inverted()
     if not yaxis_is_inverted and isinstance(v_coord, iris.coords.Coord):
-        attr_pve = v_coord.attributes.get('positive')
-        if attr_pve is not None and attr_pve.lower() == 'down':
+        attr_pve = v_coord.attributes.get("positive")
+        if attr_pve is not None and attr_pve.lower() == "down":
             axes.invert_yaxis()
 
 
@@ -284,7 +305,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
 
     """
     kwargs = {}
-    data_is_masked = hasattr(data, 'mask')
+    data_is_masked = hasattr(data, "mask")
     if data_is_masked:
         # When checking the location of the discontiguities, we check against
         # the opposite of the mask, which is True where data exists.
@@ -297,16 +318,17 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
             contiguous, diffs = coord._discontiguity_in_bounds(atol=atol)
 
             if not contiguous and data_is_masked:
-                    not_masked_at_discontiguity = np.any(
-                        np.logical_and(mask_invert[:-1], diffs))
+                not_masked_at_discontiguity = np.any(
+                    np.logical_and(mask_invert[:-1], diffs)
+                )
         else:
             return
 
     elif coord.ndim == 2:
         if atol:
-            kwargs['atol'] = atol
+            kwargs["atol"] = atol
         if rtol:
-            kwargs['rtol'] = rtol
+            kwargs["rtol"] = rtol
         contiguous, diffs = coord._discontiguity_in_bounds(**kwargs)
 
         if not contiguous and data_is_masked:
@@ -315,35 +337,42 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
             # Check along both dimensions that any discontiguous
             # points are correctly masked.
             not_masked_at_discontiguity_along_x = np.any(
-                np.logical_and(mask_invert[:, :-1], diffs_along_x))
+                np.logical_and(mask_invert[:, :-1], diffs_along_x)
+            )
 
             not_masked_at_discontiguity_along_y = np.any(
-                np.logical_and(mask_invert[:-1, ], diffs_along_y))
+                np.logical_and(mask_invert[:-1,], diffs_along_y)
+            )
 
-            not_masked_at_discontiguity = not_masked_at_discontiguity_along_x \
+            not_masked_at_discontiguity = (
+                not_masked_at_discontiguity_along_x
                 or not_masked_at_discontiguity_along_y
+            )
 
     # If any discontiguity occurs where the data is not masked the grid will be
     # created incorrectly, so raise an error.
     if not contiguous:
         if not data_is_masked:
-            raise ValueError('The bounds of the {} coordinate are not '
-                             'contiguous. Not able to create a suitable grid'
-                             'to plot. You can use '
-                             'iris.util.find_discontiguities() to identify '
-                             'discontiguities in your x and y coordinate '
-                             'bounds arrays.'.format(coord.name()))
+            raise ValueError(
+                "The bounds of the {} coordinate are not "
+                "contiguous. Not able to create a suitable grid"
+                "to plot. You can use "
+                "iris.util.find_discontiguities() to identify "
+                "discontiguities in your x and y coordinate "
+                "bounds arrays.".format(coord.name())
+            )
         if not_masked_at_discontiguity:
-            raise ValueError('The bounds of the {} coordinate are not '
-                             'contiguous and data is not masked where the '
-                             'discontiguity occurs. Not able to create a '
-                             'suitable grid to plot. You can use '
-                             'iris.util.find_discontiguities() to identify '
-                             'discontiguities in your x and y coordinate '
-                             'bounds arrays, and then mask them with '
-                             'iris.util.mask_cube()'
-                             ''.format(
-                              coord.name()))
+            raise ValueError(
+                "The bounds of the {} coordinate are not "
+                "contiguous and data is not masked where the "
+                "discontiguity occurs. Not able to create a "
+                "suitable grid to plot. You can use "
+                "iris.util.find_discontiguities() to identify "
+                "discontiguities in your x and y coordinate "
+                "bounds arrays, and then mask them with "
+                "iris.util.mask_cube()"
+                "".format(coord.name())
+            )
 
 
 def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
@@ -351,23 +380,32 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
     # horizontal and vertical axes on the matplotlib plot.
     mode = iris.coords.BOUND_MODE
     # Get & remove the coords entry from kwargs.
-    coords = kwargs.pop('coords', None)
+    coords = kwargs.pop("coords", None)
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode,
-                                                        ndims=2)
+        plot_defn = _get_plot_defn_custom_coords_picked(
+            cube, coords, mode, ndims=2
+        )
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
-    contig_tol = kwargs.pop('contiguity_tolerance', None)
+    contig_tol = kwargs.pop("contiguity_tolerance", None)
 
     for coord in plot_defn.coords:
-        if hasattr(coord, 'has_bounds') and coord.has_bounds():
-                _check_bounds_contiguity_and_mask(coord, data=cube.data,
-                                                  atol=contig_tol)
+        if hasattr(coord, "has_bounds") and coord.has_bounds():
+            _check_bounds_contiguity_and_mask(
+                coord, data=cube.data, atol=contig_tol
+            )
 
     if _can_draw_map(plot_defn.coords):
-        result = _map_common(draw_method_name, None, iris.coords.BOUND_MODE,
-                             cube, plot_defn, *args, **kwargs)
+        result = _map_common(
+            draw_method_name,
+            None,
+            iris.coords.BOUND_MODE,
+            cube,
+            plot_defn,
+            *args,
+            **kwargs,
+        )
     else:
         # Obtain data array.
         data = cube.data
@@ -383,21 +421,21 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         # Map axis name to associated values.
         string_axes = {}
 
-        for coord, axis_name, data_dim in zip([u_coord, v_coord],
-                                              ['xaxis', 'yaxis'],
-                                              [1, 0]):
+        for coord, axis_name, data_dim in zip(
+            [u_coord, v_coord], ["xaxis", "yaxis"], [1, 0]
+        ):
             if coord is None:
                 values = np.arange(data.shape[data_dim] + 1)
             elif isinstance(coord, int):
                 dim = 1 - coord if plot_defn.transpose else coord
                 values = np.arange(data.shape[dim] + 1)
             else:
-                if coord.points.dtype.char in 'SU':
+                if coord.points.dtype.char in "SU":
                     if coord.points.ndim != 1:
-                        msg = 'Coord {!r} must be one-dimensional.'
+                        msg = "Coord {!r} must be one-dimensional."
                         raise ValueError(msg.format(coord))
                     if coord.bounds is not None:
-                        msg = 'Cannot plot bounded string coordinate.'
+                        msg = "Cannot plot bounded string coordinate."
                         raise ValueError(msg)
                     string_axes[axis_name] = coord.points
                     values = np.arange(data.shape[data_dim] + 1) - 0.5
@@ -416,7 +454,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
         if u.ndim == v.ndim == 1:
             u, v = _broadcast_2d(u, v)
 
-        axes = kwargs.pop('axes', None)
+        axes = kwargs.pop("axes", None)
         draw_method = getattr(axes if axes else plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
@@ -434,16 +472,22 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
     # horizontal and vertical axes on the matplotlib plot.
     mode = iris.coords.POINT_MODE
     # Get & remove the coords entry from kwargs.
-    coords = kwargs.pop('coords', None)
+    coords = kwargs.pop("coords", None)
     if coords is not None:
         plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode)
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
 
     if _can_draw_map(plot_defn.coords):
-        result = _map_common(draw_method_name, arg_func,
-                             iris.coords.POINT_MODE, cube, plot_defn,
-                             *args, **kwargs)
+        result = _map_common(
+            draw_method_name,
+            arg_func,
+            iris.coords.POINT_MODE,
+            cube,
+            plot_defn,
+            *args,
+            **kwargs,
+        )
     else:
         # Obtain data array.
         data = cube.data
@@ -451,10 +495,10 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
             data = data.T
             # Also transpose the scatter marker color array,
             # as now mpl 2.x does not do this for free.
-            if draw_method_name == 'scatter' and 'c' in kwargs:
-                c = kwargs['c']
-                if hasattr(c, 'T') and cube.data.shape == c.shape:
-                    kwargs['c'] = c.T
+            if draw_method_name == "scatter" and "c" in kwargs:
+                c = kwargs["c"]
+                if hasattr(c, "T") and cube.data.shape == c.shape:
+                    kwargs["c"] = c.T
 
         # Obtain U and V coordinates
         v_coord, u_coord = plot_defn.coords
@@ -486,16 +530,19 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         # Map axis name to associated values.
         string_axes = {}
 
-        for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+        for values, axis_name in zip([u, v], ["xaxis", "yaxis"]):
             # Replace any string coordinates with "index" coordinates.
-            if values.dtype.char in 'SU':
+            if values.dtype.char in "SU":
                 if values.ndim != 1:
-                    raise ValueError('Multi-dimensional string coordinates '
-                                     'not supported.')
+                    raise ValueError(
+                        "Multi-dimensional string coordinates "
+                        "not supported."
+                    )
                 plot_arrays.append(np.arange(values.size))
                 string_axes[axis_name] = values
-            elif (values.dtype == np.dtype(object) and
-                  isinstance(values[0], datetime.datetime)):
+            elif values.dtype == np.dtype(object) and isinstance(
+                values[0], datetime.datetime
+            ):
                 plot_arrays.append(mpl_dates.date2num(values))
             else:
                 plot_arrays.append(values)
@@ -503,7 +550,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         u, v = plot_arrays
         u, v = _broadcast_2d(u, v)
 
-        axes = kwargs.pop('axes', None)
+        axes = kwargs.pop("axes", None)
         draw_method = getattr(axes if axes else plt, draw_method_name)
         if arg_func is not None:
             args, kwargs = arg_func(u, v, data, *args, **kwargs)
@@ -524,24 +571,28 @@ def _fixup_dates(coord, values):
     if coord.units.calendar is not None and values.ndim == 1:
         # Convert coordinate values into tuples of
         # (year, month, day, hour, min, sec)
-        dates = [coord.units.num2date(val).timetuple()[0:6]
-                 for val in values]
-        if coord.units.calendar == 'gregorian':
+        dates = [coord.units.num2date(val).timetuple()[0:6] for val in values]
+        if coord.units.calendar == "gregorian":
             r = [datetime.datetime(*date) for date in dates]
         else:
             try:
                 import nc_time_axis
             except ImportError:
-                msg = ('Cannot plot against time in a non-gregorian '
-                       'calendar, because "nc_time_axis" is not available :  '
-                       'Install the package from '
-                       'https://github.com/SciTools/nc-time-axis to enable '
-                       'this usage.')
+                msg = (
+                    "Cannot plot against time in a non-gregorian "
+                    'calendar, because "nc_time_axis" is not available :  '
+                    "Install the package from "
+                    "https://github.com/SciTools/nc-time-axis to enable "
+                    "this usage."
+                )
                 raise IrisError(msg)
 
-            r = [nc_time_axis.CalendarDateTime(
-                cftime.datetime(*date), coord.units.calendar)
-                for date in dates]
+            r = [
+                nc_time_axis.CalendarDateTime(
+                    cftime.datetime(*date), coord.units.calendar
+                )
+                for date in dates
+            ]
         values = np.empty(len(r), dtype=object)
         values[:] = r
     return values
@@ -553,12 +604,12 @@ def _data_from_coord_or_cube(c):
     elif isinstance(c, iris.coords.Coord):
         data = _fixup_dates(c, c.points)
     else:
-        raise TypeError('Plot arguments must be cubes or coordinates.')
+        raise TypeError("Plot arguments must be cubes or coordinates.")
     return data
 
 
 def _uv_from_u_object_v_object(u_object, v_object):
-    ndim_msg = 'Cube or coordinate must be 1-dimensional. Got {} dimensions.'
+    ndim_msg = "Cube or coordinate must be 1-dimensional. Got {} dimensions."
     if u_object is not None and u_object.ndim > 1:
         raise ValueError(ndim_msg.format(u_object.ndim))
     if v_object.ndim > 1:
@@ -575,22 +626,26 @@ def _u_object_from_v_object(v_object):
     u_object = None
     if isinstance(v_object, iris.cube.Cube):
         plot_defn = _get_plot_defn(v_object, iris.coords.POINT_MODE, ndims=1)
-        u_object, = plot_defn.coords
+        (u_object,) = plot_defn.coords
     return u_object
 
 
 def _get_plot_objects(args):
-    if len(args) > 1 and isinstance(args[1],
-                                    (iris.cube.Cube, iris.coords.Coord)):
+    if len(args) > 1 and isinstance(
+        args[1], (iris.cube.Cube, iris.coords.Coord)
+    ):
         # two arguments
         u_object, v_object = args[:2]
         u, v = _uv_from_u_object_v_object(u_object, v_object)
         args = args[2:]
         if len(u) != len(v):
-            msg = "The x and y-axis objects are not compatible. They should " \
-                  "have equal sizes but got ({}: {}) and ({}: {})."
-            raise ValueError(msg.format(u_object.name(), len(u),
-                                        v_object.name(), len(v)))
+            msg = (
+                "The x and y-axis objects are not compatible. They should "
+                "have equal sizes but got ({}: {}) and ({}: {})."
+            )
+            raise ValueError(
+                msg.format(u_object.name(), len(u), v_object.name(), len(v))
+            )
     else:
         # single argument
         v_object = args[0]
@@ -610,18 +665,19 @@ def _get_geodesic_params(globe):
             # Has semiminor or raises error
             if flattening is None:
                 # Has inverse flattening or raises error
-                flattening = 1. / globe.inverse_flattening
-            semimajor = globe.semiminor_axis / (1. - flattening)
+                flattening = 1.0 / globe.inverse_flattening
+            semimajor = globe.semiminor_axis / (1.0 - flattening)
         elif flattening is None:
             if globe.semiminor_axis is not None:
-                flattening = ((semimajor - globe.semiminor_axis) /
-                              float(semimajor))
+                flattening = (semimajor - globe.semiminor_axis) / float(
+                    semimajor
+                )
             else:
                 # Has inverse flattening or raises error
-                flattening = 1. / globe.inverse_flattening
+                flattening = 1.0 / globe.inverse_flattening
     except TypeError:
         # One of the required attributes was None
-        raise ValueError('The globe was underspecified.')
+        raise ValueError("The globe was underspecified.")
 
     return semimajor, flattening
 
@@ -636,8 +692,11 @@ def _shift_plot_sections(u_object, u, v):
 
     """
     # Convert coordinates to true lat-lon
-    src_crs = u_object.coord_system.as_cartopy_crs() \
-        if u_object.coord_system is not None else ccrs.Geodetic()
+    src_crs = (
+        u_object.coord_system.as_cartopy_crs()
+        if u_object.coord_system is not None
+        else ccrs.Geodetic()
+    )
     tgt_crs = ccrs.Geodetic(globe=src_crs.globe)
     tgt_proj = ccrs.PlateCarree(globe=src_crs.globe)
 
@@ -657,8 +716,9 @@ def _shift_plot_sections(u_object, u, v):
     dists, azms, _ = geodesic.inverse(startpoints, endpoints).T
     azms_lon = np.sin(np.deg2rad(azms))
     azms_lat = np.cos(np.deg2rad(azms))
-    azms_u, _ = src_crs.transform_vectors(tgt_proj, proj_x[:-1], proj_y[:-1],
-                                          azms_lon, azms_lat)
+    azms_u, _ = src_crs.transform_vectors(
+        tgt_proj, proj_x[:-1], proj_y[:-1], azms_lon, azms_lat
+    )
 
     # Use the grid longitude values and the geodesic azimuth to determine
     # the points where the line should cross the 0/360 degree boundary, and
@@ -688,11 +748,11 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     # Map axis name to associated values.
     string_axes = {}
 
-    for values, axis_name in zip([u, v], ['xaxis', 'yaxis']):
+    for values, axis_name in zip([u, v], ["xaxis", "yaxis"]):
         # Replace any string coordinates with "index" coordinates.
-        if values.dtype.char in 'SU':
+        if values.dtype.char in "SU":
             if values.ndim != 1:
-                msg = 'Multi-dimensional string coordinates are not supported.'
+                msg = "Multi-dimensional string coordinates are not supported."
                 raise ValueError(msg)
             plot_arrays.append(np.arange(values.size))
             string_axes[axis_name] = values
@@ -703,19 +763,23 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
-    if isinstance(u_object, iris.coords.Coord) and \
-            isinstance(v_object, iris.coords.Coord) and \
-            _can_draw_map([v_object, u_object]):
+    if (
+        isinstance(u_object, iris.coords.Coord)
+        and isinstance(v_object, iris.coords.Coord)
+        and _can_draw_map([v_object, u_object])
+    ):
         # Replace non-cartopy subplot/axes with a cartopy alternative and set
         # the transform keyword.
-        kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object,
-                                                           kwargs)
-        if draw_method_name == 'plot' and \
-                u_object.standard_name not in ('projection_x_coordinate',
-                                               'projection_y_coordinate'):
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(
+            u_object, v_object, kwargs
+        )
+        if draw_method_name == "plot" and u_object.standard_name not in (
+            "projection_x_coordinate",
+            "projection_y_coordinate",
+        ):
             u = _shift_plot_sections(u_object, u, v)
 
-    axes = kwargs.pop('axes', None)
+    axes = kwargs.pop("axes", None)
     draw_method = getattr(axes if axes else plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v, *args, **kwargs)
@@ -741,20 +805,23 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
     """
 
     ax = plt.gca()
-    if not isinstance(ax,
-                      cartopy.mpl.geoaxes.GeoAxes):
+    if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         fig = plt.gcf()
         if isinstance(ax, matplotlib.axes.SubplotBase):
-            new_ax = fig.add_subplot(ax.get_subplotspec(),
-                                     projection=cartopy_proj,
-                                     title=ax.get_title(),
-                                     xlabel=ax.get_xlabel(),
-                                     ylabel=ax.get_ylabel())
+            _ = fig.add_subplot(
+                ax.get_subplotspec(),
+                projection=cartopy_proj,
+                title=ax.get_title(),
+                xlabel=ax.get_xlabel(),
+                ylabel=ax.get_ylabel(),
+            )
         else:
-            new_ax = fig.add_axes(projection=cartopy_proj,
-                                  title=ax.get_title(),
-                                  xlabel=ax.get_xlabel(),
-                                  ylabel=ax.get_ylabel())
+            _ = fig.add_axes(
+                projection=cartopy_proj,
+                title=ax.get_title(),
+                xlabel=ax.get_xlabel(),
+                ylabel=ax.get_ylabel(),
+            )
 
         # delete the axes which didn't have a cartopy projection
         fig.delaxes(ax)
@@ -769,8 +836,9 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     """
     # Determine projection.
     if x_coord.coord_system != y_coord.coord_system:
-        raise ValueError('The X and Y coordinates must have equal coordinate'
-                         ' systems.')
+        raise ValueError(
+            "The X and Y coordinates must have equal coordinate" " systems."
+        )
     cs = x_coord.coord_system
     if cs is not None:
         cartopy_proj = cs.as_cartopy_projection()
@@ -778,31 +846,37 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
         cartopy_proj = ccrs.PlateCarree()
 
     # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
-    axes = kwargs.get('axes')
+    axes = kwargs.get("axes")
     if axes is None:
-        if (isinstance(cs, iris.coord_systems.RotatedGeogCS) and
-                x_coord.points.max() > 180 and x_coord.points.max() < 360 and
-                x_coord.points.min() > 0):
+        if (
+            isinstance(cs, iris.coord_systems.RotatedGeogCS)
+            and x_coord.points.max() > 180
+            and x_coord.points.max() < 360
+            and x_coord.points.min() > 0
+        ):
             # The RotatedGeogCS has 0 - 360 extent, different from the
             # assumptions made by Cartopy: rebase longitudes for the map axes
             # to set the datum longitude to the International Date Line.
             cs_kwargs = cs._ccrs_kwargs()
-            cs_kwargs['central_rotated_longitude'] = 180.0
+            cs_kwargs["central_rotated_longitude"] = 180.0
             adapted_cartopy_proj = ccrs.RotatedPole(**cs_kwargs)
             _replace_axes_with_cartopy_axes(adapted_cartopy_proj)
         else:
             _replace_axes_with_cartopy_axes(cartopy_proj)
     elif axes and not isinstance(axes, cartopy.mpl.geoaxes.GeoAxes):
-        raise TypeError("The supplied axes instance must be a cartopy "
-                        "GeoAxes instance.")
+        raise TypeError(
+            "The supplied axes instance must be a cartopy " "GeoAxes instance."
+        )
 
     # Set the "from transform" keyword.
-    if 'transform' in kwargs:
-        raise ValueError("The 'transform' keyword is not allowed as it "
-                         "automatically determined from the coordinate "
-                         "metadata.")
+    if "transform" in kwargs:
+        raise ValueError(
+            "The 'transform' keyword is not allowed as it "
+            "automatically determined from the coordinate "
+            "metadata."
+        )
     new_kwargs = kwargs.copy()
-    new_kwargs['transform'] = cartopy_proj
+    new_kwargs["transform"] = cartopy_proj
 
     return new_kwargs
 
@@ -813,17 +887,18 @@ def _check_geostationary_coords_and_convert(x, y, kwargs):
     # Geostationary). Before plotting, must be converted by multiplying by
     # satellite height.
     x, y = (i.copy() for i in (x, y))
-    transform = kwargs.get('transform')
+    transform = kwargs.get("transform")
     if isinstance(transform, cartopy.crs.Geostationary):
-        satellite_height = transform.proj4_params['h']
+        satellite_height = transform.proj4_params["h"]
         for i in (x, y):
             i *= satellite_height
 
     return x, y
 
 
-def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
-                *args, **kwargs):
+def _map_common(
+    draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwargs
+):
     """
     Draw the given cube on a map using its points or bounds.
 
@@ -844,17 +919,22 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     else:
         if not x_coord.ndim == y_coord.ndim == 2:
             try:
-                x, y = _meshgrid(x_coord.contiguous_bounds(),
-                                 y_coord.contiguous_bounds())
+                x, y = _meshgrid(
+                    x_coord.contiguous_bounds(), y_coord.contiguous_bounds()
+                )
             # Exception translation.
             except iris.exceptions.CoordinateMultiDimError:
-                raise ValueError("Expected two 1D coords. Could not get XY"
-                                 " grid from bounds. X or Y coordinate not"
-                                 " 1D.")
+                raise ValueError(
+                    "Expected two 1D coords. Could not get XY"
+                    " grid from bounds. X or Y coordinate not"
+                    " 1D."
+                )
             except ValueError:
-                raise ValueError("Could not get XY grid from bounds. "
-                                 "X or Y coordinate doesn't have 2 bounds "
-                                 "per point.")
+                raise ValueError(
+                    "Could not get XY grid from bounds. "
+                    "X or Y coordinate doesn't have 2 bounds "
+                    "per point."
+                )
         else:
             x = x_coord.contiguous_bounds()
             y = y_coord.contiguous_bounds()
@@ -868,21 +948,23 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
     # last (and add 360 degrees) NOTE: if it is found that this block of code
     # is useful in anywhere other than this plotting routine, it may be better
     # placed in the CS.
-    if getattr(x_coord, 'circular', False):
-        _, direction = iris.util.monotonic(x_coord.points,
-                                           return_direction=True)
+    if getattr(x_coord, "circular", False):
+        _, direction = iris.util.monotonic(
+            x_coord.points, return_direction=True
+        )
         y = np.append(y, y[:, 0:1], axis=1)
         x = np.append(x, x[:, 0:1] + 360 * direction, axis=1)
         data = ma.concatenate([data, data[:, 0:1]], axis=1)
-        if '_v_data' in kwargs:
-            v_data = kwargs['_v_data']
+        if "_v_data" in kwargs:
+            v_data = kwargs["_v_data"]
             v_data = ma.concatenate([v_data, v_data[:, 0:1]], axis=1)
-            kwargs['_v_data'] = v_data
+            kwargs["_v_data"] = v_data
 
     # Replace non-cartopy subplot/axes with a cartopy alternative and set the
     # transform keyword.
-    kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord,
-                                                       kwargs)
+    kwargs = _ensure_cartopy_axes_and_determine_kwargs(
+        x_coord, y_coord, kwargs
+    )
 
     # Make Geostationary coordinates plot-able.
     x, y = _check_geostationary_coords_and_convert(x, y, kwargs)
@@ -893,7 +975,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn,
         new_args = (x, y, data) + args
 
     # Draw the contour lines/filled contours.
-    axes = kwargs.pop('axes', None)
+    axes = kwargs.pop("axes", None)
     plotfn = getattr(axes if axes else plt, draw_method_name)
     return plotfn(*new_args, **kwargs)
 
@@ -918,7 +1000,7 @@ def contour(cube, *args, **kwargs):
     keyword arguments.
 
     """
-    result = _draw_2d_from_points('contour', None, cube, *args, **kwargs)
+    result = _draw_2d_from_points("contour", None, cube, *args, **kwargs)
     return result
 
 
@@ -942,9 +1024,9 @@ def contourf(cube, *args, **kwargs):
     keyword arguments.
 
     """
-    coords = kwargs.get('coords')
-    kwargs.setdefault('antialiased', True)
-    result = _draw_2d_from_points('contourf', None, cube, *args, **kwargs)
+    coords = kwargs.get("coords")
+    kwargs.setdefault("antialiased", True)
+    result = _draw_2d_from_points("contourf", None, cube, *args, **kwargs)
 
     # Matplotlib produces visible seams between anti-aliased polygons.
     # But if the polygons are virtually opaque then we can cover the seams
@@ -960,13 +1042,13 @@ def contourf(cube, *args, **kwargs):
     if result.antialiased and alpha > 0.95:
         levels = result.levels
         colors = [c[0] for c in result.tcolors]
-        if result.extend == 'neither':
+        if result.extend == "neither":
             levels = levels[1:-1]
             colors = colors[:-1]
-        elif result.extend == 'min':
+        elif result.extend == "min":
             levels = levels[:-1]
             colors = colors[:-1]
-        elif result.extend == 'max':
+        elif result.extend == "max":
             levels = levels[1:]
             colors = colors[:-1]
         else:
@@ -974,10 +1056,17 @@ def contourf(cube, *args, **kwargs):
         if len(levels) > 0:
             # Draw the lines just *below* the polygons to ensure we minimise
             # any boundary shift.
-            zorder = result.collections[0].zorder - .1
-            axes = kwargs.get('axes', None)
-            contour(cube, levels=levels, colors=colors, antialiased=True,
-                    zorder=zorder, coords=coords, axes=axes)
+            zorder = result.collections[0].zorder - 0.1
+            axes = kwargs.get("axes", None)
+            contour(
+                cube,
+                levels=levels,
+                colors=colors,
+                antialiased=True,
+                zorder=zorder,
+                coords=coords,
+                axes=axes,
+            )
             # Restore the current "image" to 'result' rather than the mappable
             # resulting from the additional call to contour().
             if axes:
@@ -1024,39 +1113,44 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
 
 def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
     # Find the orography coordinate.
-    orography = cube.coord('surface_altitude')
+    orography = cube.coord("surface_altitude")
 
     if coords is not None:
-        plot_defn = _get_plot_defn_custom_coords_picked(cube, coords, mode,
-                                                        ndims=2)
+        plot_defn = _get_plot_defn_custom_coords_picked(
+            cube, coords, mode, ndims=2
+        )
     else:
         plot_defn = _get_plot_defn(cube, mode, ndims=2)
     v_coord, u_coord = plot_defn.coords
 
     # Find which plot coordinate corresponds to the derived altitude, so that
     # we can replace altitude with the surface altitude.
-    if v_coord and v_coord.standard_name == 'altitude':
+    if v_coord and v_coord.standard_name == "altitude":
         # v is altitude, so plot u and orography with orog in the y direction.
         result = vert_plot(u_coord, orography, style_args)
-    elif u_coord and u_coord.standard_name == 'altitude':
+    elif u_coord and u_coord.standard_name == "altitude":
         # u is altitude, so plot v and orography with orog in the x direction.
         result = horiz_plot(v_coord, orography, style_args)
     else:
-        raise ValueError('Plot does not use hybrid height. One of the '
-                         'coordinates to plot must be altitude, but %s and %s '
-                         'were given.' % (u_coord.name(), v_coord.name()))
+        raise ValueError(
+            "Plot does not use hybrid height. One of the "
+            "coordinates to plot must be altitude, but %s and %s "
+            "were given." % (u_coord.name(), v_coord.name())
+        )
     return result
 
 
-def orography_at_bounds(cube, facecolor='#888888', coords=None, axes=None):
+def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
     """Plots orography defined at cell boundaries from the given Cube."""
 
     # XXX Needs contiguous orography corners to work.
-    raise NotImplementedError('This operation is temporarily not provided '
-                              'until coordinates can expose 2d contiguous '
-                              'bounds (corners).')
+    raise NotImplementedError(
+        "This operation is temporarily not provided "
+        "until coordinates can expose 2d contiguous "
+        "bounds (corners)."
+    )
 
-    style_args = {'edgecolor': 'none', 'facecolor': facecolor}
+    style_args = {"edgecolor": "none", "facecolor": facecolor}
 
     def vert_plot(u_coord, orography, style_args):
         u = u_coord.contiguous_bounds()
@@ -1074,14 +1168,15 @@ def orography_at_bounds(cube, facecolor='#888888', coords=None, axes=None):
         plotfn = axes.barh if axes else plt.barh
         return plotfn(bottom, width, height, **style_args)
 
-    return _fill_orography(cube, coords, iris.coords.BOUND_MODE, vert_plot,
-                           horiz_plot, style_args)
+    return _fill_orography(
+        cube, coords, iris.coords.BOUND_MODE, vert_plot, horiz_plot, style_args
+    )
 
 
-def orography_at_points(cube, facecolor='#888888', coords=None, axes=None):
+def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
     """Plots orography defined at sample points from the given Cube."""
 
-    style_args = {'facecolor': facecolor}
+    style_args = {"facecolor": facecolor}
 
     def vert_plot(u_coord, orography, style_args):
         x = u_coord.points
@@ -1095,11 +1190,12 @@ def orography_at_points(cube, facecolor='#888888', coords=None, axes=None):
         plotfn = axes.fill_betweenx if axes else plt.fill_betweenx
         return plotfn(y, x, **style_args)
 
-    return _fill_orography(cube, coords, iris.coords.POINT_MODE, vert_plot,
-                           horiz_plot, style_args)
+    return _fill_orography(
+        cube, coords, iris.coords.POINT_MODE, vert_plot, horiz_plot, style_args
+    )
 
 
-def outline(cube, coords=None, color='k', linewidth=None, axes=None):
+def outline(cube, coords=None, color="k", linewidth=None, axes=None):
     """
     Draws cell outlines based on the given Cube.
 
@@ -1124,14 +1220,21 @@ def outline(cube, coords=None, color='k', linewidth=None, axes=None):
         Defaults to the current axes if none provided.
 
     """
-    result = _draw_2d_from_bounds('pcolormesh', cube, facecolors='none',
-                                  edgecolors=color, linewidth=linewidth,
-                                  antialiased=True, coords=coords, axes=axes)
+    result = _draw_2d_from_bounds(
+        "pcolormesh",
+        cube,
+        facecolors="none",
+        edgecolors=color,
+        linewidth=linewidth,
+        antialiased=True,
+        coords=coords,
+        axes=axes,
+    )
 
     # set the _is_stroked property to get a single color grid.
     # See https://github.com/matplotlib/matplotlib/issues/1302
     result._is_stroked = False
-    if hasattr(result, '_wrapped_collection_fix'):
+    if hasattr(result, "_wrapped_collection_fix"):
         result._wrapped_collection_fix._is_stroked = False
     return result
 
@@ -1162,9 +1265,9 @@ def pcolor(cube, *args, **kwargs):
     keyword arguments.
 
     """
-    kwargs.setdefault('antialiased', True)
-    kwargs.setdefault('snap', False)
-    result = _draw_2d_from_bounds('pcolor', cube, *args, **kwargs)
+    kwargs.setdefault("antialiased", True)
+    kwargs.setdefault("snap", False)
+    result = _draw_2d_from_bounds("pcolor", cube, *args, **kwargs)
     return result
 
 
@@ -1195,7 +1298,7 @@ def pcolormesh(cube, *args, **kwargs):
     valid keyword arguments.
 
     """
-    result = _draw_2d_from_bounds('pcolormesh', cube, *args, **kwargs)
+    result = _draw_2d_from_bounds("pcolormesh", cube, *args, **kwargs)
     return result
 
 
@@ -1223,8 +1326,9 @@ def points(cube, *args, **kwargs):
     def _scatter_args(u, v, data, *args, **kwargs):
         return ((u, v) + args, kwargs)
 
-    return _draw_2d_from_points('scatter', _scatter_args, cube,
-                                *args, **kwargs)
+    return _draw_2d_from_points(
+        "scatter", _scatter_args, cube, *args, **kwargs
+    )
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
@@ -1238,16 +1342,18 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     The matching "v_cube.data" component is stored in kwargs['_v_data'].
 
     """
-    v_data = kwargs.pop('_v_data')
+    v_data = kwargs.pop("_v_data")
 
     # Rescale u+v values for plot distortion.
-    crs = kwargs.get('transform', None)
+    crs = kwargs.get("transform", None)
     if crs:
         if not isinstance(crs, (ccrs.PlateCarree, ccrs.RotatedPole)):
-            msg = ('Can only plot vectors provided in a lat-lon '
-                   'projection, i.e. equivalent to "cartopy.crs.PlateCarree" '
-                   'or "cartopy.crs.RotatedPole". This '
-                   "cube coordinate system translates as Cartopy {}.")
+            msg = (
+                "Can only plot vectors provided in a lat-lon "
+                'projection, i.e. equivalent to "cartopy.crs.PlateCarree" '
+                'or "cartopy.crs.RotatedPole". This '
+                "cube coordinate system translates as Cartopy {}."
+            )
             raise ValueError(msg.format(crs))
         # Given the above check, the Y points must be latitudes.
         # We therefore **assume** they are in degrees : I'm not sure this
@@ -1308,9 +1414,10 @@ def quiver(u_cube, v_cube, *args, **kwargs):
     #
     # TODO: check u + v cubes for compatibility.
     #
-    kwargs['_v_data'] = v_cube.data
-    return _draw_2d_from_points('quiver', _vector_component_args, u_cube,
-                                *args, **kwargs)
+    kwargs["_v_data"] = v_cube.data
+    return _draw_2d_from_points(
+        "quiver", _vector_component_args, u_cube, *args, **kwargs
+    )
 
 
 def plot(*args, **kwargs):
@@ -1349,12 +1456,14 @@ def plot(*args, **kwargs):
     keyword arguments.
 
     """
-    if 'coords' in kwargs:
-        raise TypeError('"coords" is not a valid plot keyword. Coordinates '
-                        'and cubes may be passed as arguments for '
-                        'full control of the plot axes.')
+    if "coords" in kwargs:
+        raise TypeError(
+            '"coords" is not a valid plot keyword. Coordinates '
+            "and cubes may be passed as arguments for "
+            "full control of the plot axes."
+        )
     _plot_args = None
-    return _draw_1d_from_points('plot', _plot_args, *args, **kwargs)
+    return _draw_1d_from_points("plot", _plot_args, *args, **kwargs)
 
 
 def scatter(x, y, *args, **kwargs):
@@ -1380,19 +1489,19 @@ def scatter(x, y, *args, **kwargs):
     """
     # here we are more specific about argument types than generic 1d plotting
     if not isinstance(x, (iris.cube.Cube, iris.coords.Coord)):
-        raise TypeError('x must be a cube or a coordinate.')
+        raise TypeError("x must be a cube or a coordinate.")
     if not isinstance(y, (iris.cube.Cube, iris.coords.Coord)):
-        raise TypeError('y must be a cube or a coordinate.')
+        raise TypeError("y must be a cube or a coordinate.")
     args = (x, y) + args
     _plot_args = None
-    return _draw_1d_from_points('scatter', _plot_args, *args, **kwargs)
+    return _draw_1d_from_points("scatter", _plot_args, *args, **kwargs)
 
 
 # Provide convenience show method from pyplot
 show = plt.show
 
 
-def symbols(x, y, symbols, size, axes=None, units='inches'):
+def symbols(x, y, symbols, size, axes=None, units="inches"):
     """
     Draws fixed-size symbols.
 
@@ -1437,15 +1546,18 @@ def symbols(x, y, symbols, size, axes=None, units='inches'):
     edgecolors = [p.get_edgecolor() for p in symbols]
     linewidths = [p.get_linewidth() for p in symbols]
 
-    pc = mpl_collections.PatchCollection(symbols, offsets=offsets,
-                                         transOffset=axes.transData,
-                                         facecolors=facecolors,
-                                         edgecolors=edgecolors,
-                                         linewidths=linewidths)
+    pc = mpl_collections.PatchCollection(
+        symbols,
+        offsets=offsets,
+        transOffset=axes.transData,
+        facecolors=facecolors,
+        edgecolors=edgecolors,
+        linewidths=linewidths,
+    )
 
-    if units == 'inches':
+    if units == "inches":
         scale = axes.figure.dpi
-    elif units == 'points':
+    elif units == "points":
         scale = axes.figure.dpi / 72.0
     else:
         raise ValueError("Unrecognised units: '%s'" % units)
@@ -1482,6 +1594,6 @@ def citation(text, figure=None, axes=None):
         if figure is None and not axes:
             figure = plt.gcf()
         anchor = AnchoredText(text, prop=dict(size=6), frameon=True, loc=4)
-        anchor.patch.set_boxstyle('round, pad=0, rounding_size=0.2')
+        anchor.patch.set_boxstyle("round, pad=0, rounding_size=0.2")
         axes = axes if axes else figure.gca()
         axes.add_artist(anchor)

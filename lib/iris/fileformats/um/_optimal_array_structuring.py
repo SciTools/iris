@@ -5,12 +5,8 @@
 # licensing details.
 """A module to provide an optimal array structure calculation."""
 
-import itertools
 
-import numpy as np
-
-from iris.fileformats._structured_array_identification import \
-    GroupStructure
+from iris.fileformats._structured_array_identification import GroupStructure
 
 
 def _optimal_dimensioning_structure(structure, element_priorities):
@@ -44,12 +40,13 @@ def _optimal_dimensioning_structure(structure, element_priorities):
     if not permitted_structures:
         result = []
     else:
-        result = max(permitted_structures,
-                     key=lambda candidate: (
-                         len(candidate),
-                         [element_priorities[name]
-                             for (name, struct) in candidate])
-                     )
+        result = max(
+            permitted_structures,
+            key=lambda candidate: (
+                len(candidate),
+                [element_priorities[name] for (name, struct) in candidate],
+            ),
+        )
     return result
 
 
@@ -115,7 +112,7 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         actual_values_elements = element_ordering_arrays
     actual_value_arrays = dict(actual_values_elements)
     if set(actual_value_arrays.keys()) != set(element_ordering_arrays.keys()):
-        msg = 'Names in values arrays do not match those in ordering arrays.'
+        msg = "Names in values arrays do not match those in ordering arrays."
         raise ValueError(msg)
 
     # Define element priorities from ordering, to choose between equally good
@@ -123,15 +120,18 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
     n_elements = len(ordering_elements)
     element_priorities = {
         name: n_elements - index
-        for index, (name, array) in enumerate(ordering_elements)}
+        for index, (name, array) in enumerate(ordering_elements)
+    }
 
     # Calculate the basic fields-group array structure.
     base_structure = GroupStructure.from_component_arrays(
-        element_ordering_arrays)
+        element_ordering_arrays
+    )
 
     # Work out the target cube structure.
-    target_structure = _optimal_dimensioning_structure(base_structure,
-                                                       element_priorities)
+    target_structure = _optimal_dimensioning_structure(
+        base_structure, element_priorities
+    )
 
     # Work out result cube dimensions.
     if not target_structure:
@@ -141,21 +141,23 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         vector_dims_shape = (elements_length,)
     else:
         vector_dims_shape = tuple(
-            struct.size for (_, struct) in target_structure)
+            struct.size for (_, struct) in target_structure
+        )
 
     # Build arrays of element values mapped onto the vectorised dimensions.
     elements_and_dimensions = base_structure.build_arrays(
-        vector_dims_shape, actual_value_arrays)
+        vector_dims_shape, actual_value_arrays
+    )
 
     # Filter out the trivial (scalar) ones.
     elements_and_dimensions = {
         name: (array, dims)
         for name, (array, dims) in elements_and_dimensions.items()
-        if len(dims)}
+        if len(dims)
+    }
 
     # Make a list of 'primary' elements; i.e. those in the target structure.
-    primary_dimension_elements = set(
-        name for (name, _) in target_structure)
+    primary_dimension_elements = set(name for (name, _) in target_structure)
 
     if vector_dims_shape == (1,):
         shape = ()

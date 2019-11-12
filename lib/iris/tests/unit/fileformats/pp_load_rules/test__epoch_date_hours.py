@@ -17,8 +17,9 @@ import cf_units
 from cf_units import Unit
 from cftime import datetime as nc_datetime
 
-from iris.fileformats.pp_load_rules \
-    import _epoch_date_hours as epoch_hours_call
+from iris.fileformats.pp_load_rules import (
+    _epoch_date_hours as epoch_hours_call,
+)
 
 
 #
@@ -27,10 +28,12 @@ from iris.fileformats.pp_load_rules \
 # Result values are the same as from 'date2num' in cftime version <= 1.0.1.
 #
 
+
 class TestEpochHours__gregorian(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit('hours since epoch',
-                             calendar=cf_units.CALENDAR_GREGORIAN)
+        self.hrs_unit = Unit(
+            "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+        )
 
     def test_1970_1_1(self):
         test_date = nc_datetime(1970, 1, 1)
@@ -54,25 +57,26 @@ class TestEpochHours__gregorian(tests.IrisTest):
 
     def test_ymd_0_preserves_timeofday(self):
         hrs, mins, secs, usecs = (7, 13, 24, 335772)
-        hours_in_day = (hrs +
-                        1./60 * mins +
-                        1./3600 * secs +
-                        (1.0e-6) / 3600 * usecs)
-        test_date = nc_datetime(0, 0, 0,
-                                hour=hrs, minute=mins, second=secs,
-                                microsecond=usecs)
+        hours_in_day = (
+            hrs + 1.0 / 60 * mins + 1.0 / 3600 * secs + (1.0e-6) / 3600 * usecs
+        )
+        test_date = nc_datetime(
+            0, 0, 0, hour=hrs, minute=mins, second=secs, microsecond=usecs
+        )
         result = epoch_hours_call(self.hrs_unit, test_date)
         # NOTE: the calculation is only accurate to approx +/- 0.5 seconds
         # in such a large number of hours -- even 0.1 seconds is too fine.
         absolute_tolerance = 0.5 / 3600
-        self.assertArrayAllClose(result, -17269488.0 + hours_in_day,
-                                 rtol=0, atol=absolute_tolerance)
+        self.assertArrayAllClose(
+            result, -17269488.0 + hours_in_day, rtol=0, atol=absolute_tolerance
+        )
 
 
 class TestEpochHours__360day(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit('hours since epoch',
-                             calendar=cf_units.CALENDAR_360_DAY)
+        self.hrs_unit = Unit(
+            "hours since epoch", calendar=cf_units.CALENDAR_360_DAY
+        )
 
     def test_1970_1_1(self):
         test_date = nc_datetime(1970, 1, 1)
@@ -97,8 +101,9 @@ class TestEpochHours__360day(tests.IrisTest):
 
 class TestEpochHours__365day(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit('hours since epoch',
-                             calendar=cf_units.CALENDAR_365_DAY)
+        self.hrs_unit = Unit(
+            "hours since epoch", calendar=cf_units.CALENDAR_365_DAY
+        )
 
     def test_1970_1_1(self):
         test_date = nc_datetime(1970, 1, 1)
@@ -124,12 +129,13 @@ class TestEpochHours__365day(tests.IrisTest):
 class TestEpochHours__invalid_calendar(tests.IrisTest):
     def test_bad_calendar(self):
         # Setup a unit with an unrecognised calendar
-        hrs_unit = Unit('hours since epoch',
-                        calendar=cf_units.CALENDAR_ALL_LEAP)
+        hrs_unit = Unit(
+            "hours since epoch", calendar=cf_units.CALENDAR_ALL_LEAP
+        )
         # Test against a date with year=0, which requires calendar correction.
         test_date = nc_datetime(0, 1, 1)
         # Check that this causes an error.
-        with self.assertRaisesRegex(ValueError, 'unrecognised calendar'):
+        with self.assertRaisesRegex(ValueError, "unrecognised calendar"):
             epoch_hours_call(hrs_unit, test_date)
 
 

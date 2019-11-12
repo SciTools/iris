@@ -18,50 +18,48 @@ import iris.io
 @tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_normal(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
     def test_nonexist(self):
         paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-            tests.get_data_path(['PP', '_guaranteed_non_exist.pp']),
+            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            tests.get_data_path(["PP", "_guaranteed_non_exist.pp"]),
         )
         with self.assertRaises(IOError) as error_trap:
-            cubes = iris.load(paths)
-        self.assertIn('One or more of the files specified did not exist',
-                      str(error_trap.exception))
+            _ = iris.load(paths)
+        self.assertIn(
+            "One or more of the files specified did not exist",
+            str(error_trap.exception),
+        )
 
     def test_nonexist_wild(self):
         paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-            tests.get_data_path(['PP', '_guaranteed_non_exist_*.pp']),
+            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            tests.get_data_path(["PP", "_guaranteed_non_exist_*.pp"]),
         )
         with self.assertRaises(IOError) as error_trap:
-            cubes = iris.load(paths)
-        self.assertIn('One or more of the files specified did not exist',
-                      str(error_trap.exception))
+            _ = iris.load(paths)
+        self.assertIn(
+            "One or more of the files specified did not exist",
+            str(error_trap.exception),
+        )
 
     def test_bogus(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
-        cubes = iris.load(paths, 'wibble')
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load(paths, "wibble")
         self.assertEqual(len(cubes), 0)
 
     def test_real_and_bogus(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
-        cubes = iris.load(paths, ('air_temperature', 'wibble'))
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load(paths, ("air_temperature", "wibble"))
         self.assertEqual(len(cubes), 1)
 
     def test_duplicate(self):
         paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-            tests.get_data_path(['PP', 'aPPglob1', 'gl?bal.pp'])
+            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 2)
@@ -70,22 +68,18 @@ class TestLoad(tests.IrisTest):
 @tests.skip_data
 class TestLoadCube(tests.IrisTest):
     def test_normal(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
-        cube = iris.load_cube(paths)
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        _ = iris.load_cube(paths)
 
     def test_not_enough(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
-            iris.load_cube(paths, 'wibble')
+            iris.load_cube(paths, "wibble")
 
     def test_too_many(self):
         paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-            tests.get_data_path(['PP', 'aPPglob1', 'gl?bal.pp'])
+            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
@@ -94,30 +88,24 @@ class TestLoadCube(tests.IrisTest):
 @tests.skip_data
 class TestLoadCubes(tests.IrisTest):
     def test_normal(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 
     def test_not_enough(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
-            iris.load_cubes(paths, 'wibble')
+            iris.load_cubes(paths, "wibble")
 
     def test_not_enough_multi(self):
-        paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-        )
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
-            iris.load_cubes(paths, ('air_temperature', 'wibble'))
+            iris.load_cubes(paths, ("air_temperature", "wibble"))
 
     def test_too_many(self):
         paths = (
-            tests.get_data_path(['PP', 'aPPglob1', 'global.pp']),
-            tests.get_data_path(['PP', 'aPPglob1', 'gl?bal.pp'])
+            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
@@ -128,7 +116,7 @@ class TestOpenDAP(tests.IrisTest):
         # Check that calling iris.load_* with a http URI triggers a call to
         # ``iris.io.load_http``
 
-        url = 'http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15'
+        url = "http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
 
         class LoadHTTPCalled(Exception):
             pass
@@ -142,8 +130,12 @@ class TestOpenDAP(tests.IrisTest):
             orig = iris.io.load_http
             iris.io.load_http = new_load_http
 
-            for fn in [iris.load, iris.load_raw,
-                       iris.load_cube, iris.load_cubes]:
+            for fn in [
+                iris.load,
+                iris.load_raw,
+                iris.load_cube,
+                iris.load_cubes,
+            ]:
                 with self.assertRaises(LoadHTTPCalled):
                     fn(url)
 

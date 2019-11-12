@@ -8,13 +8,16 @@
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (add_examples_to_path,
-                          show_replaced_by_check_graphic,
-                          fail_any_deprecation_warnings)
+from .extest_util import (
+    add_examples_to_path,
+    show_replaced_by_check_graphic,
+    fail_any_deprecation_warnings,
+)
 
 
 class TestAnomalyLogColouring(tests.GraphicsTest):
     """Test the anomaly colouring example code."""
+
     def test_anomaly_log_colouring(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
@@ -23,5 +26,5 @@ class TestAnomalyLogColouring(tests.GraphicsTest):
                 anomaly_log_colouring.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

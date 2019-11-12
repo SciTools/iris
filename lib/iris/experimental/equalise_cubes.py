@@ -30,9 +30,13 @@ def equalise_attributes(cubes):
     for cube in cubes[1:]:
         cube_keys = list(cube.attributes.keys())
         common_keys = [
-            key for key in common_keys
-            if (key in cube_keys and
-                np.all(cube.attributes[key] == cubes[0].attributes[key]))]
+            key
+            for key in common_keys
+            if (
+                key in cube_keys
+                and np.all(cube.attributes[key] == cubes[0].attributes[key])
+            )
+        ]
 
     # Remove all the other attributes.
     for cube in cubes:

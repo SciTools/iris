@@ -34,18 +34,17 @@ class Test_units_func(tests.IrisTest):
 class Test_masked(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(ma.masked_equal([1, 2, 3, 4, 5], 3))
-        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10],
-                                         long_name='foo'), 0)
+        self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
 
     def test_ma_ddof0(self):
         cube = self.cube.collapsed("foo", VARIANCE, ddof=0)
-        expected = 10 / 4.
+        expected = 10 / 4.0
         self.assertArrayEqual(np.var(self.cube.data, ddof=0), expected)
         self.assertArrayAlmostEqual(cube.data, expected)
 
     def test_ma_ddof1(self):
         cube = self.cube.collapsed("foo", VARIANCE, ddof=1)
-        expected = 10 / 3.
+        expected = 10 / 3.0
         self.assertArrayEqual(np.var(self.cube.data, ddof=1), expected)
         self.assertArrayEqual(cube.data, expected)
 
@@ -70,7 +69,7 @@ class Test_lazy_aggregate(tests.IrisTest):
 
 class Test_name(tests.IrisTest):
     def test(self):
-        self.assertEqual(VARIANCE.name(), 'variance')
+        self.assertEqual(VARIANCE.name(), "variance")
 
 
 class Test_aggregate_shape(tests.IrisTest):
@@ -78,7 +77,7 @@ class Test_aggregate_shape(tests.IrisTest):
         shape = ()
         kwargs = dict()
         self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
-        kwargs = dict(bat='man', wonder='woman')
+        kwargs = dict(bat="man", wonder="woman")
         self.assertTupleEqual(VARIANCE.aggregate_shape(**kwargs), shape)
 
 

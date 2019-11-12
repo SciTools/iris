@@ -8,13 +8,16 @@
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (add_examples_to_path,
-                          show_replaced_by_check_graphic,
-                          fail_any_deprecation_warnings)
+from .extest_util import (
+    add_examples_to_path,
+    show_replaced_by_check_graphic,
+    fail_any_deprecation_warnings,
+)
 
 
 class TestPolynomialFit(tests.GraphicsTest):
     """Test the polynomial_fit example code."""
+
     def test_polynomial_fit(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
@@ -23,5 +26,5 @@ class TestPolynomialFit(tests.GraphicsTest):
                 polynomial_fit.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

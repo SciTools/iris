@@ -13,7 +13,6 @@ Tests for :func:`iris.experimental.regrid.regrid_conservative_via_esmpy`.
 import iris.tests as tests
 
 import contextlib
-import os
 import unittest
 
 import cf_units
@@ -22,22 +21,22 @@ import numpy as np
 # Import ESMF if installed, else fail quietly + disable all the tests.
 try:
     import ESMF
-except ImportError as AttributeError:
+except ImportError:
     ESMF = None
 skip_esmf = unittest.skipIf(
-    condition=ESMF is None,
-    reason='Requires ESMF, which is not available.')
+    condition=ESMF is None, reason="Requires ESMF, which is not available."
+)
 
 import iris
 import iris.analysis
 import iris.analysis.cartography as i_cartog
-from iris.experimental.regrid_conservative import \
-    regrid_conservative_via_esmpy
+from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 import iris.tests.stock as istk
 
 
 _PLAIN_GEODETIC_CS = iris.coord_systems.GeogCS(
-    i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS)
+    i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS
+)
 
 
 def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
@@ -53,26 +52,31 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
     cube = iris.cube.Cube(np.zeros((ny, nx)))
     xvals = np.linspace(xlims[0], xlims[1], nx)
     yvals = np.linspace(ylims[0], ylims[1], ny)
-    coordname_prefix = ''
+    coordname_prefix = ""
     cs = _PLAIN_GEODETIC_CS
     if pole_latlon is not None:
-        coordname_prefix = 'grid_'
+        coordname_prefix = "grid_"
         pole_lat, pole_lon = pole_latlon
         cs = iris.coord_systems.RotatedGeogCS(
             grid_north_pole_latitude=pole_lat,
             grid_north_pole_longitude=pole_lon,
-            ellipsoid=cs)
+            ellipsoid=cs,
+        )
 
-    co_x = iris.coords.DimCoord(xvals,
-                                standard_name=coordname_prefix + 'longitude',
-                                units=cf_units.Unit('degrees'),
-                                coord_system=cs)
+    co_x = iris.coords.DimCoord(
+        xvals,
+        standard_name=coordname_prefix + "longitude",
+        units=cf_units.Unit("degrees"),
+        coord_system=cs,
+    )
     co_x.guess_bounds()
     cube.add_dim_coord(co_x, 1)
-    co_y = iris.coords.DimCoord(yvals,
-                                standard_name=coordname_prefix + 'latitude',
-                                units=cf_units.Unit('degrees'),
-                                coord_system=cs)
+    co_y = iris.coords.DimCoord(
+        yvals,
+        standard_name=coordname_prefix + "latitude",
+        units=cf_units.Unit("degrees"),
+        coord_system=cs,
+    )
     co_y.guess_bounds()
     cube.add_dim_coord(co_y, 0)
     return cube
@@ -81,8 +85,9 @@ def _make_test_cube(shape, xlims, ylims, pole_latlon=None):
 def _cube_area_sum(cube):
     """Calculate total area-sum - Iris can't do this in one operation."""
     area_sums = cube * i_cartog.area_weights(cube, normalize=False)
-    area_sum = area_sums.collapsed(area_sums.coords(dim_coords=True),
-                                   iris.analysis.SUM)
+    area_sum = area_sums.collapsed(
+        area_sums.coords(dim_coords=True), iris.analysis.SUM
+    )
     return area_sum.data.flatten()[0]
 
 
@@ -114,7 +119,6 @@ def _donothing_context_manager():
 
 @skip_esmf
 class TestConservativeRegrid(tests.IrisTest):
-
     def setUp(self):
         # Compute basic test data cubes.
         shape1 = (5, 5)
@@ -150,10 +154,14 @@ class TestConservativeRegrid(tests.IrisTest):
         c1to2_areasum = _cube_area_sum(c1to2)
 
         # Check expected result (Cartesian equivalent, so not exact).
-        d_expect = np.array([[0.00, 0.00, 0.00, 0.00],
-                             [0.00, 0.25, 0.25, 0.00],
-                             [0.00, 0.25, 0.25, 0.00],
-                             [0.00, 0.00, 0.00, 0.00]])
+        d_expect = np.array(
+            [
+                [0.00, 0.00, 0.00, 0.00],
+                [0.00, 0.25, 0.25, 0.00],
+                [0.00, 0.25, 0.25, 0.00],
+                [0.00, 0.00, 0.00, 0.00],
+            ]
+        )
         # Numbers are slightly off (~0.25000952).  This is expected.
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
@@ -168,11 +176,15 @@ class TestConservativeRegrid(tests.IrisTest):
         c1to2to1_areasum = _cube_area_sum(c1to2to1)
 
         # Check expected result (Cartesian/exact difference now greater)
-        d_expect = np.array([[0.0, 0.0000, 0.0000, 0.0000, 0.0],
-                             [0.0, 0.0625, 0.1250, 0.0625, 0.0],
-                             [0.0, 0.1250, 0.2500, 0.1250, 0.0],
-                             [0.0, 0.0625, 0.1250, 0.0625, 0.0],
-                             [0.0, 0.0000, 0.0000, 0.0000, 0.0]])
+        d_expect = np.array(
+            [
+                [0.0, 0.0000, 0.0000, 0.0000, 0.0],
+                [0.0, 0.0625, 0.1250, 0.0625, 0.0],
+                [0.0, 0.1250, 0.2500, 0.1250, 0.0],
+                [0.0, 0.0625, 0.1250, 0.0625, 0.0],
+                [0.0, 0.0000, 0.0000, 0.0000, 0.0],
+            ]
+        )
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.00002)
 
         # check area sums again
@@ -191,24 +203,32 @@ class TestConservativeRegrid(tests.IrisTest):
 
         # regrid from c2 to c1 -- should mask all the edges...
         c2_to_c1 = regrid_conservative_via_esmpy(c2, c1)
-        self.assertArrayEqual(c2_to_c1.data.mask,
-                              [[True, True, True, True, True],
-                               [True, False, False, False, True],
-                               [True, False, False, False, True],
-                               [True, False, False, False, True],
-                               [True, True, True, True, True]])
+        self.assertArrayEqual(
+            c2_to_c1.data.mask,
+            [
+                [True, True, True, True, True],
+                [True, False, False, False, True],
+                [True, False, False, False, True],
+                [True, False, False, False, True],
+                [True, True, True, True, True],
+            ],
+        )
 
         # do same with a particular point masked
         c2m = c2.copy()
         c2m.data = np.ma.array(c2m.data)
         c2m.data[1, 1] = np.ma.masked
         c2m_to_c1 = regrid_conservative_via_esmpy(c2m, c1)
-        self.assertArrayEqual(c2m_to_c1.data.mask,
-                              [[True, True, True, True, True],
-                               [True, True, True, False, True],
-                               [True, True, True, False, True],
-                               [True, False, False, False, True],
-                               [True, True, True, True, True]])
+        self.assertArrayEqual(
+            c2m_to_c1.data.mask,
+            [
+                [True, True, True, True, True],
+                [True, True, True, False, True],
+                [True, True, True, False, True],
+                [True, False, False, False, True],
+                [True, True, True, True, True],
+            ],
+        )
 
     @tests.skip_data
     def test_multidimensional(self):
@@ -233,17 +253,19 @@ class TestConservativeRegrid(tests.IrisTest):
         c1.transpose((3, 1, 0, 2))
 
         # Construct a (coarser) target grid of about the same extent
-        c1_cs = c1.coord(axis='x').coord_system
-        xlims = _minmax(c1.coord(axis='x').contiguous_bounds())
-        ylims = _minmax(c1.coord(axis='y').contiguous_bounds())
+        c1_cs = c1.coord(axis="x").coord_system
+        xlims = _minmax(c1.coord(axis="x").contiguous_bounds())
+        ylims = _minmax(c1.coord(axis="y").contiguous_bounds())
         # Reduce the dimensions slightly to avoid NaNs in regridded orography
         delta = 0.05
         # || NOTE: this is *not* a small amount.  Think there is a bug.
         # || NOTE: See https://github.com/SciTools/iris/issues/458
         xlims = np.interp([delta, 1.0 - delta], [0, 1], xlims)
         ylims = np.interp([delta, 1.0 - delta], [0, 1], ylims)
-        pole_latlon = (c1_cs.grid_north_pole_latitude,
-                       c1_cs.grid_north_pole_longitude)
+        pole_latlon = (
+            c1_cs.grid_north_pole_latitude,
+            c1_cs.grid_north_pole_longitude,
+        )
         c2 = _make_test_cube((7, 8), xlims, ylims, pole_latlon=pole_latlon)
 
         # regrid onto new grid
@@ -303,20 +325,24 @@ class TestConservativeRegrid(tests.IrisTest):
         # - top + bottom rows all the same
         # - left + right columns "mostly close" for checking across the seam
         basedata = np.array(
-            [[1, 1, 1, 1, 1, 1, 1, 1],
-             [1, 1, 4, 4, 4, 2, 2, 1],
-             [2, 1, 4, 4, 4, 2, 2, 2],
-             [2, 5, 5, 1, 1, 1, 5, 5],
-             [5, 5, 5, 1, 1, 1, 5, 5],
-             [5, 5, 5, 5, 5, 5, 5, 5]])
+            [
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 4, 4, 4, 2, 2, 1],
+                [2, 1, 4, 4, 4, 2, 2, 2],
+                [2, 5, 5, 1, 1, 1, 5, 5],
+                [5, 5, 5, 1, 1, 1, 5, 5],
+                [5, 5, 5, 5, 5, 5, 5, 5],
+            ]
+        )
         c1.data[:] = basedata
 
         # Create a rotated grid to regrid this onto.
         shape2 = (14, 11)
         xlim2 = 180.0 * (shape2[0] - 1) / shape2[0]
         ylim2 = 90.0 * (shape2[1] - 1) / shape2[1]
-        c2 = _make_test_cube(shape2, (-xlim2, xlim2), (-ylim2, ylim2),
-                             pole_latlon=(47.4, 25.7))
+        c2 = _make_test_cube(
+            shape2, (-xlim2, xlim2), (-ylim2, ylim2), pole_latlon=(47.4, 25.7)
+        )
 
         # Perform regridding
         c1toc2 = regrid_conservative_via_esmpy(c1, c2)
@@ -333,14 +359,20 @@ class TestConservativeRegrid(tests.IrisTest):
         c1_areasum = self.stock_c1_areasum
 
         # Condense entire globe onto a single cell
-        x_coord_2 = iris.coords.DimCoord([0.0], bounds=[-180.0, 180.0],
-                                         standard_name='longitude',
-                                         units='degrees',
-                                         coord_system=_PLAIN_GEODETIC_CS)
-        y_coord_2 = iris.coords.DimCoord([0.0], bounds=[-90.0, 90.0],
-                                         standard_name='latitude',
-                                         units='degrees',
-                                         coord_system=_PLAIN_GEODETIC_CS)
+        x_coord_2 = iris.coords.DimCoord(
+            [0.0],
+            bounds=[-180.0, 180.0],
+            standard_name="longitude",
+            units="degrees",
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
+        y_coord_2 = iris.coords.DimCoord(
+            [0.0],
+            bounds=[-90.0, 90.0],
+            standard_name="latitude",
+            units="degrees",
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
         c2 = iris.cube.Cube([[0.0]])
         c2.add_dim_coord(y_coord_2, 0)
         c2.add_dim_coord(x_coord_2, 1)
@@ -366,16 +398,22 @@ class TestConservativeRegrid(tests.IrisTest):
         # - result cell has missing-data ?
         #
         # Condense entire region into a single cell in the c1 grid
-        xlims1 = _minmax(c1.coord(axis='x').bounds)
-        ylims1 = _minmax(c1.coord(axis='y').bounds)
-        x_c1x1 = iris.coords.DimCoord(xlims1[0], bounds=xlims1,
-                                      standard_name='longitude',
-                                      units='degrees',
-                                      coord_system=_PLAIN_GEODETIC_CS)
-        y_c1x1 = iris.coords.DimCoord(ylims1[0], bounds=ylims1,
-                                      standard_name='latitude',
-                                      units='degrees',
-                                      coord_system=_PLAIN_GEODETIC_CS)
+        xlims1 = _minmax(c1.coord(axis="x").bounds)
+        ylims1 = _minmax(c1.coord(axis="y").bounds)
+        x_c1x1 = iris.coords.DimCoord(
+            xlims1[0],
+            bounds=xlims1,
+            standard_name="longitude",
+            units="degrees",
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
+        y_c1x1 = iris.coords.DimCoord(
+            ylims1[0],
+            bounds=ylims1,
+            standard_name="latitude",
+            units="degrees",
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
         c1x1_gridcube = iris.cube.Cube([[0.0]])
         c1x1_gridcube.add_dim_coord(y_c1x1, 0)
         c1x1_gridcube.add_dim_coord(x_c1x1, 1)
@@ -389,16 +427,22 @@ class TestConservativeRegrid(tests.IrisTest):
             self.assertArrayAllClose(c1x1_areasum, c1_areasum)
 
         # Condense entire region onto a single cell covering the area of 'c2'
-        xlims2 = _minmax(c2.coord(axis='x').bounds)
-        ylims2 = _minmax(c2.coord(axis='y').bounds)
-        x_c2x1 = iris.coords.DimCoord(xlims2[0], bounds=xlims2,
-                                      standard_name='longitude',
-                                      units=cf_units.Unit('degrees'),
-                                      coord_system=_PLAIN_GEODETIC_CS)
-        y_c2x1 = iris.coords.DimCoord(ylims2[0], bounds=ylims2,
-                                      standard_name='latitude',
-                                      units=cf_units.Unit('degrees'),
-                                      coord_system=_PLAIN_GEODETIC_CS)
+        xlims2 = _minmax(c2.coord(axis="x").bounds)
+        ylims2 = _minmax(c2.coord(axis="y").bounds)
+        x_c2x1 = iris.coords.DimCoord(
+            xlims2[0],
+            bounds=xlims2,
+            standard_name="longitude",
+            units=cf_units.Unit("degrees"),
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
+        y_c2x1 = iris.coords.DimCoord(
+            ylims2[0],
+            bounds=ylims2,
+            standard_name="latitude",
+            units=cf_units.Unit("degrees"),
+            coord_system=_PLAIN_GEODETIC_CS,
+        )
         c2x1_gridcube = iris.cube.Cube([[0.0]])
         c2x1_gridcube.add_dim_coord(y_c2x1, 0)
         c2x1_gridcube.add_dim_coord(x_c2x1, 1)
@@ -412,10 +456,10 @@ class TestConservativeRegrid(tests.IrisTest):
         # construct a single-cell approximation to 'c1' with the same area sum.
         # NOTE: can't use _make_cube (see docstring)
         c1x1 = c1.copy()[0:1, 0:1]
-        xlims1 = _minmax(c1.coord(axis='x').bounds)
-        ylims1 = _minmax(c1.coord(axis='y').bounds)
-        c1x1.coord(axis='x').bounds = xlims1
-        c1x1.coord(axis='y').bounds = ylims1
+        xlims1 = _minmax(c1.coord(axis="x").bounds)
+        ylims1 = _minmax(c1.coord(axis="y").bounds)
+        c1x1.coord(axis="x").bounds = xlims1
+        c1x1.coord(axis="y").bounds = ylims1
         # Assign data mean as single cell value : Maybe not exact, but "close"
         c1x1.data[0, 0] = np.mean(c1.data)
 
@@ -446,12 +490,15 @@ class TestConservativeRegrid(tests.IrisTest):
 
         # Create a small, plausible global array (see test_global).
         basedata = np.array(
-            [[1, 1, 1, 1, 1, 1, 1, 1],
-             [1, 1, 4, 4, 4, 2, 2, 1],
-             [2, 1, 4, 4, 4, 2, 2, 2],
-             [2, 5, 5, 1, 1, 1, 5, 5],
-             [5, 5, 5, 1, 1, 1, 5, 5],
-             [5, 5, 5, 5, 5, 5, 5, 5]])
+            [
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 4, 4, 4, 2, 2, 1],
+                [2, 1, 4, 4, 4, 2, 2, 2],
+                [2, 5, 5, 1, 1, 1, 5, 5],
+                [5, 5, 5, 1, 1, 1, 5, 5],
+                [5, 5, 5, 5, 5, 5, 5, 5],
+            ]
+        )
         c1.data[:] = basedata
 
         shape2 = (14, 11)
@@ -459,8 +506,9 @@ class TestConservativeRegrid(tests.IrisTest):
         ylim2 = 90.0 * (shape2[1] - 1) / shape2[1]
         xlims_2 = (-xlim2, xlim2)
         ylims_2 = (-ylim2, ylim2)
-        c2 = _make_test_cube(shape2, xlims_2, ylims_2,
-                             pole_latlon=(47.4, 25.7))
+        c2 = _make_test_cube(
+            shape2, xlims_2, ylims_2, pole_latlon=(47.4, 25.7)
+        )
 
         # Perform regridding
         c1toc2 = regrid_conservative_via_esmpy(c1, c2)
@@ -468,8 +516,9 @@ class TestConservativeRegrid(tests.IrisTest):
         # Now redo with dst longitudes rotated, so 'seam' is somewhere else.
         x2_shift_steps = shape2[0] // 3
         xlims2_shifted = np.array(xlims_2) + 360.0 * x2_shift_steps / shape2[0]
-        c2_shifted = _make_test_cube(shape2, xlims2_shifted, ylims_2,
-                                     pole_latlon=(47.4, 25.7))
+        c2_shifted = _make_test_cube(
+            shape2, xlims2_shifted, ylims_2, pole_latlon=(47.4, 25.7)
+        )
         c1toc2_shifted = regrid_conservative_via_esmpy(c1, c2_shifted)
 
         # Show that results are the same, when output rolled by same amount
@@ -509,10 +558,14 @@ class TestConservativeRegrid(tests.IrisTest):
         c1to2 = regrid_conservative_via_esmpy(c1, c2)
 
         # check for expected pattern
-        d_expect = np.array([[0.0, 0.0, 0.0, 0.0],
-                             [0.0, 0.23614, 0.23614, 0.0],
-                             [0.0, 0.26784, 0.26784, 0.0],
-                             [0.0, 0.0, 0.0, 0.0]])
+        d_expect = np.array(
+            [
+                [0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.23614, 0.23614, 0.0],
+                [0.0, 0.26784, 0.26784, 0.0],
+                [0.0, 0.0, 0.0, 0.0],
+            ]
+        )
         self.assertArrayAllClose(c1to2.data, d_expect, rtol=5.0e-5)
 
         # check sums
@@ -525,11 +578,15 @@ class TestConservativeRegrid(tests.IrisTest):
         c1to2to1 = regrid_conservative_via_esmpy(c1to2, c1)
 
         # check values
-        d_expect = np.array([[0.0, 0.0, 0.0, 0.0, 0.0],
-                             [0.0, 0.056091, 0.112181, 0.056091, 0.0],
-                             [0.0, 0.125499, 0.250998, 0.125499, 0.0],
-                             [0.0, 0.072534, 0.145067, 0.072534, 0.0],
-                             [0.0, 0.0, 0.0, 0.0, 0.0]])
+        d_expect = np.array(
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.056091, 0.112181, 0.056091, 0.0],
+                [0.0, 0.125499, 0.250998, 0.125499, 0.0],
+                [0.0, 0.072534, 0.145067, 0.072534, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+            ]
+        )
         self.assertArrayAllClose(c1to2to1.data, d_expect, atol=0.0005)
 
         # check sums
@@ -548,7 +605,7 @@ class TestConservativeRegrid(tests.IrisTest):
         xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.data[:] = 0.0
-        c2.coord('latitude').coord_system = None
+        c2.coord("latitude").coord_system = None
 
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
@@ -562,23 +619,23 @@ class TestConservativeRegrid(tests.IrisTest):
         xlims2, ylims2 = ((-1.5, 1.5), (-1.5, 1.5))
 
         # Check basic regrid between these is ok.
-        c1 = _make_test_cube(shape1, xlims1, ylims1,
-                             pole_latlon=(45.0, 35.0))
+        c1 = _make_test_cube(shape1, xlims1, ylims1, pole_latlon=(45.0, 35.0))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         regrid_conservative_via_esmpy(c1, c2)
 
         # Replace the coord_system one of the source coords + check this fails.
-        c1.coord('grid_longitude').coord_system = \
-            c2.coord('longitude').coord_system
+        c1.coord("grid_longitude").coord_system = c2.coord(
+            "longitude"
+        ).coord_system
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
 
         # Repeat with target coordinate fiddled.
-        c1 = _make_test_cube(shape1, xlims1, ylims1,
-                             pole_latlon=(45.0, 35.0))
+        c1 = _make_test_cube(shape1, xlims1, ylims1, pole_latlon=(45.0, 35.0))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
-        c2.coord('latitude').coord_system = \
-            c1.coord('grid_latitude').coord_system
+        c2.coord("latitude").coord_system = c1.coord(
+            "grid_latitude"
+        ).coord_system
         with self.assertRaises(ValueError):
             regrid_conservative_via_esmpy(c1, c2)
 
@@ -602,17 +659,24 @@ class TestConservativeRegrid(tests.IrisTest):
         c1_xlims = -60.0, 60.0
         c1_ylims = -45.0, 20.0
         c1_xlims = [x - deg_swing for x in c1_xlims]
-        c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
-                             pole_latlon=(pole_lat, pole_lon))
-        c1.data[3:-3, 3:-3] = np.array([
-            [100, 100, 100, 100, 100, 100, 100, 100, 100],
-            [100, 100, 100, 100, 100, 100, 100, 100, 100],
-            [100, 100, 199, 199, 199, 199, 100, 100, 100],
-            [100, 100, 100, 100, 199, 199, 100, 100, 100],
-            [100, 100, 100, 100, 199, 199, 199, 100, 100],
-            [100, 100, 100, 100, 100, 100, 100, 100, 100],
-            [100, 100, 100, 100, 100, 100, 100, 100, 100]],
-            dtype=np.float)
+        c1 = _make_test_cube(
+            (c1_nx, c1_ny),
+            c1_xlims,
+            c1_ylims,
+            pole_latlon=(pole_lat, pole_lon),
+        )
+        c1.data[3:-3, 3:-3] = np.array(
+            [
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 199, 199, 199, 199, 100, 100, 100],
+                [100, 100, 100, 100, 199, 199, 100, 100, 100],
+                [100, 100, 100, 100, 199, 199, 199, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                [100, 100, 100, 100, 100, 100, 100, 100, 100],
+            ],
+            dtype=np.float,
+        )
 
         c1_areasum = _cube_area_sum(c1)
 
@@ -645,11 +709,14 @@ class TestConservativeRegrid(tests.IrisTest):
         #
         c1.data = np.ma.array(c1.data, mask=True)
         c2.data[:] = 0.0
-        c2.data[5:-5, 5:-5] = np.array([
-            [199, 199, 199, 199, 100],
-            [100, 100, 199, 199, 100],
-            [100, 100, 199, 199, 199]],
-            dtype=np.float)
+        c2.data[5:-5, 5:-5] = np.array(
+            [
+                [199, 199, 199, 199, 100],
+                [100, 100, 199, 199, 100],
+                [100, 100, 199, 199, 199],
+            ],
+            dtype=np.float,
+        )
         c2_areasum = _cube_area_sum(c2)
 
         c2toc1 = regrid_conservative_via_esmpy(c2, c1)
@@ -686,18 +753,25 @@ class TestConservativeRegrid(tests.IrisTest):
             c1_xlims = -60.0, 60.0
             c1_ylims = -45.0, 20.0
             c1_xlims = [x - deg_swing for x in c1_xlims]
-            c1 = _make_test_cube((c1_nx, c1_ny), c1_xlims, c1_ylims,
-                                 pole_latlon=(pole_lat, pole_lon))
+            c1 = _make_test_cube(
+                (c1_nx, c1_ny),
+                c1_xlims,
+                c1_ylims,
+                pole_latlon=(pole_lat, pole_lon),
+            )
             c1.data = np.ma.array(c1.data, mask=False)
-            c1.data[3:-3, 3:-3] = np.ma.array([
-                [100, 100, 100, 100, 100, 100, 100, 100, 100],
-                [100, 100, 100, 100, 100, 100, 100, 100, 100],
-                [100, 100, 199, 199, 199, 199, 100, 100, 100],
-                [100, 100, 100, 100, 199, 199, 100, 100, 100],
-                [100, 100, 100, 100, 199, 199, 199, 100, 100],
-                [100, 100, 100, 100, 100, 100, 100, 100, 100],
-                [100, 100, 100, 100, 100, 100, 100, 100, 100]],
-                dtype=np.float)
+            c1.data[3:-3, 3:-3] = np.ma.array(
+                [
+                    [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                    [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                    [100, 100, 199, 199, 199, 199, 100, 100, 100],
+                    [100, 100, 100, 100, 199, 199, 100, 100, 100],
+                    [100, 100, 100, 100, 199, 199, 199, 100, 100],
+                    [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                    [100, 100, 100, 100, 100, 100, 100, 100, 100],
+                ],
+                dtype=np.float,
+            )
 
             if do_add_missing:
                 c1.data = np.ma.array(c1.data)
@@ -719,19 +793,22 @@ class TestConservativeRegrid(tests.IrisTest):
             # (generated by inspecting plot of how src+dst grids overlap)
             expected_mask_valuemap = np.array(
                 # KEY: 0=masked, 7=present, 5=masked with masked datapoints
-                [[0, 0, 0, 0, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0],
-                 [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
-                 [0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
-                 [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
-                 [0, 0, 0, 7, 7, 7, 7, 5, 5, 7, 7, 7, 7, 0, 0],
-                 [0, 0, 0, 0, 7, 7, 7, 5, 5, 7, 7, 7, 7, 0, 0],
-                 [0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0],
-                 [0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0],
-                 [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 0]])
+                [
+                    [0, 0, 0, 0, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0],
+                    [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
+                    [0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
+                    [0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 5, 5, 7, 0, 0],
+                    [0, 0, 0, 7, 7, 7, 7, 5, 5, 7, 7, 7, 7, 0, 0],
+                    [0, 0, 0, 0, 7, 7, 7, 5, 5, 7, 7, 7, 7, 0, 0],
+                    [0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0],
+                    [0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0],
+                    [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 0],
+                ]
+            )
 
             if do_add_missing:
                 expected_mask = expected_mask_valuemap < 7
@@ -750,5 +827,5 @@ class TestConservativeRegrid(tests.IrisTest):
                 self.assertArrayAllClose(c1_areasum, c1to2_areasum, rtol=0.003)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

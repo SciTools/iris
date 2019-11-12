@@ -24,11 +24,10 @@ from iris.coords import AuxCoord, DimCoord
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.sigma = mock.Mock(units=Unit('1'), nbounds=0)
-        self.eta = mock.Mock(units=Unit('m'), nbounds=0)
-        self.depth = mock.Mock(units=Unit('m'), nbounds=0)
-        self.kwargs = dict(sigma=self.sigma, eta=self.eta,
-                           depth=self.depth)
+        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
+        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
+        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
+        self.kwargs = dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
     def test_insufficient_coordinates(self):
         with self.assertRaises(ValueError):
@@ -46,26 +45,26 @@ class Test___init__(tests.IrisTest):
             OceanSigmaFactory(**self.kwargs)
 
     def test_sigma_incompatible_units(self):
-        self.sigma.units = Unit('km')
+        self.sigma.units = Unit("km")
         with self.assertRaises(ValueError):
             OceanSigmaFactory(**self.kwargs)
 
     def test_eta_incompatible_units(self):
-        self.eta.units = Unit('km')
+        self.eta.units = Unit("km")
         with self.assertRaises(ValueError):
             OceanSigmaFactory(**self.kwargs)
 
     def test_depth_incompatible_units(self):
-        self.depth.units = Unit('km')
+        self.depth.units = Unit("km")
         with self.assertRaises(ValueError):
             OceanSigmaFactory(**self.kwargs)
 
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
-        self.sigma = mock.Mock(units=Unit('1'), nbounds=0)
-        self.eta = mock.Mock(units=Unit('m'), nbounds=0)
-        self.depth = mock.Mock(units=Unit('m'), nbounds=0)
+        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
+        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
+        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
         self.kwargs = dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
     def test_values(self):
@@ -83,20 +82,29 @@ class Test_make_coord(tests.IrisTest):
     def derive(sigma, eta, depth, coord=True):
         result = eta + sigma * (depth + eta)
         if coord:
-            name = 'sea_surface_height_above_reference_ellipsoid'
-            result = AuxCoord(result,
-                              standard_name=name,
-                              units='m',
-                              attributes=dict(positive='up'))
+            name = "sea_surface_height_above_reference_ellipsoid"
+            result = AuxCoord(
+                result,
+                standard_name=name,
+                units="m",
+                attributes=dict(positive="up"),
+            )
         return result
 
     def setUp(self):
-        self.sigma = DimCoord(np.linspace(-0.05, -1, 5),
-                              long_name='sigma', units='1')
-        self.eta = AuxCoord(np.arange(-1, 3, dtype=np.float).reshape(2, 2),
-                            long_name='eta', units='m')
-        self.depth = AuxCoord(np.arange(4, dtype=np.float).reshape(2, 2) * 1e3,
-                              long_name='depth', units='m')
+        self.sigma = DimCoord(
+            np.linspace(-0.05, -1, 5), long_name="sigma", units="1"
+        )
+        self.eta = AuxCoord(
+            np.arange(-1, 3, dtype=np.float).reshape(2, 2),
+            long_name="eta",
+            units="m",
+        )
+        self.depth = AuxCoord(
+            np.arange(4, dtype=np.float).reshape(2, 2) * 1e3,
+            long_name="depth",
+            units="m",
+        )
         self.kwargs = dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
     def test_derived_points(self):
@@ -114,44 +122,44 @@ class Test_make_coord(tests.IrisTest):
 
 class Test_update(tests.IrisTest):
     def setUp(self):
-        self.sigma = mock.Mock(units=Unit('1'), nbounds=0)
-        self.eta = mock.Mock(units=Unit('m'), nbounds=0)
-        self.depth = mock.Mock(units=Unit('m'), nbounds=0)
+        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
+        self.eta = mock.Mock(units=Unit("m"), nbounds=0)
+        self.depth = mock.Mock(units=Unit("m"), nbounds=0)
         self.kwargs = dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
         self.factory = OceanSigmaFactory(**self.kwargs)
 
     def test_sigma(self):
-        new_sigma = mock.Mock(units=Unit('1'), nbounds=0)
+        new_sigma = mock.Mock(units=Unit("1"), nbounds=0)
         self.factory.update(self.sigma, new_sigma)
         self.assertIs(self.factory.sigma, new_sigma)
 
     def test_sigma_too_many_bounds(self):
-        new_sigma = mock.Mock(units=Unit('1'), nbounds=4)
+        new_sigma = mock.Mock(units=Unit("1"), nbounds=4)
         with self.assertRaises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
     def test_sigma_incompatible_units(self):
-        new_sigma = mock.Mock(units=Unit('Pa'), nbounds=0)
+        new_sigma = mock.Mock(units=Unit("Pa"), nbounds=0)
         with self.assertRaises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
     def test_eta(self):
-        new_eta = mock.Mock(units=Unit('m'), nbounds=0)
+        new_eta = mock.Mock(units=Unit("m"), nbounds=0)
         self.factory.update(self.eta, new_eta)
         self.assertIs(self.factory.eta, new_eta)
 
     def test_eta_incompatible_units(self):
-        new_eta = mock.Mock(units=Unit('Pa'), nbounds=0)
+        new_eta = mock.Mock(units=Unit("Pa"), nbounds=0)
         with self.assertRaises(ValueError):
             self.factory.update(self.eta, new_eta)
 
     def test_depth(self):
-        new_depth = mock.Mock(units=Unit('m'), nbounds=0)
+        new_depth = mock.Mock(units=Unit("m"), nbounds=0)
         self.factory.update(self.depth, new_depth)
         self.assertIs(self.factory.depth, new_depth)
 
     def test_depth_incompatible_units(self):
-        new_depth = mock.Mock(units=Unit('Pa'), nbounds=0)
+        new_depth = mock.Mock(units=Unit("Pa"), nbounds=0)
         with self.assertRaises(ValueError):
             self.factory.update(self.depth, new_depth)
 

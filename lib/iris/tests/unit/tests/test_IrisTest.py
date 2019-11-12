@@ -66,8 +66,7 @@ class _MaskedArrayEquality(metaclass=ABCMeta):
 
 
 @tests.iristest_timing_decorator
-class Test_assertMaskedArrayEqual(_MaskedArrayEquality,
-                                  tests.IrisTest_nometa):
+class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest_nometa):
     @property
     def _func(self):
         return self.assertMaskedArrayEqual
@@ -89,7 +88,7 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
     def test_masked_nonmasked_different(self):
         arr1 = np.ma.masked_array([1, 2])
         arr2 = np.array([1, 3])
-        with self.assertRaisesRegex(AssertionError, 'Arrays are not equal'):
+        with self.assertRaisesRegex(AssertionError, "Arrays are not equal"):
             self.assertMaskedArrayEqual(arr1, arr2)
 
     def test_nonmasked_masked_same(self):
@@ -115,8 +114,9 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
 
 
 @tests.iristest_timing_decorator
-class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
-                                        tests.IrisTest_nometa):
+class Test_assertMaskedArrayAlmostEqual(
+    _MaskedArrayEquality, tests.IrisTest_nometa
+):
     @property
     def _func(self):
         return self.assertMaskedArrayAlmostEqual
@@ -128,5 +128,5 @@ class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality,
             self.assertMaskedArrayAlmostEqual(arr1, arr2, decimal=3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

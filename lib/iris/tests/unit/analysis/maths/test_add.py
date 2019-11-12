@@ -12,15 +12,19 @@ import iris.tests as tests
 import operator
 
 from iris.analysis.maths import add
-from iris.tests.unit.analysis.maths import \
-    CubeArithmeticBroadcastingTestMixin, CubeArithmeticCoordsTest, \
-    CubeArithmeticMaskedConstantTestMixin, CubeArithmeticMaskingTestMixin
+from iris.tests.unit.analysis.maths import (
+    CubeArithmeticBroadcastingTestMixin,
+    CubeArithmeticCoordsTest,
+    CubeArithmeticMaskedConstantTestMixin,
+    CubeArithmeticMaskingTestMixin,
+)
 
 
 @tests.skip_data
 @tests.iristest_timing_decorator
-class TestBroadcasting(tests.IrisTest_nometa,
-                       CubeArithmeticBroadcastingTestMixin):
+class TestBroadcasting(
+    tests.IrisTest_nometa, CubeArithmeticBroadcastingTestMixin
+):
     @property
     def data_op(self):
         return operator.add
@@ -54,8 +58,9 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
 
 
 @tests.iristest_timing_decorator
-class TestMaskedConstant(tests.IrisTest_nometa,
-                         CubeArithmeticMaskedConstantTestMixin):
+class TestMaskedConstant(
+    tests.IrisTest_nometa, CubeArithmeticMaskedConstantTestMixin
+):
     @property
     def data_op(self):
         return operator.add

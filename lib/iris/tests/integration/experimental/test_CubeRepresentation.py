@@ -28,17 +28,17 @@ class TestNoMetadata(tests.IrisTest):
         self.representer.repr_html()
 
     def test_cube_name(self):
-        expected = 'Unknown'  # This cube has no metadata.
+        expected = "Unknown"  # This cube has no metadata.
         result = self.representer.name
         self.assertEqual(expected, result)
 
     def test_cube_units(self):
-        expected = 'unknown'  # This cube has no metadata.
+        expected = "unknown"  # This cube has no metadata.
         result = self.representer.units
         self.assertEqual(expected, result)
 
     def test_dim_names(self):
-        expected = ['--'] * len(self.shape)
+        expected = ["--"] * len(self.shape)
         result = self.representer.names
         self.assertEqual(expected, result)
 
@@ -58,10 +58,10 @@ class TestMissingMetadata(tests.IrisTest):
             self.cube.remove_coord(coord)
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertNotIn('dimension coordinates', result)
-        self.assertNotIn('auxiliary coordinates', result)
-        self.assertNotIn('scalar coordinates', result)
-        self.assertIn('attributes', result)
+        self.assertNotIn("dimension coordinates", result)
+        self.assertNotIn("auxiliary coordinates", result)
+        self.assertNotIn("scalar coordinates", result)
+        self.assertIn("attributes", result)
 
     def test_no_dim_coords(self):
         dim_coords = [c.name() for c in self.cube.coords(dim_coords=True)]
@@ -69,46 +69,46 @@ class TestMissingMetadata(tests.IrisTest):
             self.cube.remove_coord(coord)
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertNotIn('dimension coordinates', result)
-        self.assertIn('auxiliary coordinates', result)
-        self.assertIn('scalar coordinates', result)
-        self.assertIn('attributes', result)
+        self.assertNotIn("dimension coordinates", result)
+        self.assertIn("auxiliary coordinates", result)
+        self.assertIn("scalar coordinates", result)
+        self.assertIn("attributes", result)
 
     def test_no_aux_coords(self):
-        aux_coords = ['forecast_period']
+        aux_coords = ["forecast_period"]
         for coord in aux_coords:
             self.cube.remove_coord(coord)
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertIn('dimension coordinates', result)
-        self.assertNotIn('auxiliary coordinates', result)
-        self.assertIn('scalar coordinates', result)
-        self.assertIn('attributes', result)
+        self.assertIn("dimension coordinates", result)
+        self.assertNotIn("auxiliary coordinates", result)
+        self.assertIn("scalar coordinates", result)
+        self.assertIn("attributes", result)
 
     def test_no_scalar_coords(self):
-        aux_coords = ['air_pressure']
+        aux_coords = ["air_pressure"]
         for coord in aux_coords:
             self.cube.remove_coord(coord)
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertIn('dimension coordinates', result)
-        self.assertIn('auxiliary coordinates', result)
-        self.assertNotIn('scalar coordinates', result)
-        self.assertIn('attributes', result)
+        self.assertIn("dimension coordinates", result)
+        self.assertIn("auxiliary coordinates", result)
+        self.assertNotIn("scalar coordinates", result)
+        self.assertIn("attributes", result)
 
     def test_no_attrs(self):
         self.cube.attributes = {}
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertIn('dimension coordinates', result)
-        self.assertIn('auxiliary coordinates', result)
-        self.assertIn('scalar coordinates', result)
-        self.assertNotIn('attributes', result)
+        self.assertIn("dimension coordinates", result)
+        self.assertIn("auxiliary coordinates", result)
+        self.assertIn("scalar coordinates", result)
+        self.assertNotIn("attributes", result)
 
     def test_no_cell_methods(self):
         representer = CubeRepresentation(self.cube)
         result = representer.repr_html().lower()
-        self.assertNotIn('cell methods', result)
+        self.assertNotIn("cell methods", result)
 
 
 @tests.skip_data
@@ -124,7 +124,7 @@ class TestScalarCube(tests.IrisTest):
 
     def test_header__name(self):
         header = self.representer._make_header()
-        expected_name = escape(self.cube.name().title().replace('_', ' '))
+        expected_name = escape(self.cube.name().title().replace("_", " "))
         self.assertIn(expected_name, header)
 
     def test_header__units(self):
@@ -135,13 +135,13 @@ class TestScalarCube(tests.IrisTest):
     def test_header__scalar_str(self):
         # Check that 'scalar cube' is placed in the header.
         header = self.representer._make_header()
-        expected_str = '(scalar cube)'
+        expected_str = "(scalar cube)"
         self.assertIn(expected_str, header)
 
     def test_content__scalars(self):
         # Check an element "Scalar coordinates" is present in the main content.
         content = self.representer._make_content()
-        expected_str = 'Scalar coordinates'
+        expected_str = "Scalar coordinates"
         self.assertIn(expected_str, content)
 
     def test_content__specific_scalar_coord(self):
@@ -156,9 +156,9 @@ class TestScalarCube(tests.IrisTest):
     def test_content__attributes(self):
         # Check an element "attributes" is present in the main content.
         content = self.representer._make_content()
-        expected_str = 'Attributes'
+        expected_str = "Attributes"
         self.assertIn(expected_str, content)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

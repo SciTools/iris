@@ -30,19 +30,23 @@ class Test_as_cartopy_crs(tests.IrisTest):
             self.longitude_of_projection_origin,
             self.false_easting,
             self.false_northing,
-            ellipsoid=self.ellipsoid)
+            ellipsoid=self.ellipsoid,
+        )
 
     def test_crs_creation(self):
         res = self.laea_cs.as_cartopy_crs()
-        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                           semiminor_axis=self.semi_minor_axis,
-                           ellipse=None)
+        globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
         expected = ccrs.LambertAzimuthalEqualArea(
             self.longitude_of_projection_origin,
             self.latitude_of_projection_origin,
             self.false_easting,
             self.false_northing,
-            globe=globe)
+            globe=globe,
+        )
         self.assertEqual(res, expected)
 
 
@@ -60,21 +64,25 @@ class Test_as_cartopy_projection(tests.IrisTest):
             self.longitude_of_projection_origin,
             self.false_easting,
             self.false_northing,
-            ellipsoid=self.ellipsoid)
+            ellipsoid=self.ellipsoid,
+        )
 
     def test_projection_creation(self):
         res = self.laea_cs.as_cartopy_projection()
-        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                           semiminor_axis=self.semi_minor_axis,
-                           ellipse=None)
+        globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
         expected = ccrs.LambertAzimuthalEqualArea(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
             self.false_easting,
             self.false_northing,
-            globe=globe)
+            globe=globe,
+        )
         self.assertEqual(res, expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

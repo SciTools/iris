@@ -32,5 +32,5 @@ class Test_int_types(tests.IrisTest):
         self._test(np.int64(0))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

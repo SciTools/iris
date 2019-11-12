@@ -18,11 +18,20 @@ class Test___init__(tests.IrisTest):
     def test_attributes(self):
         # Ensure the constructor initialises all the grid's attributes
         # correctly, including unpacking values from the REAL constants.
-        reals = (mock.sentinel.ew, mock.sentinel.ns,
-                 mock.sentinel.first_lat, mock.sentinel.first_lon,
-                 mock.sentinel.pole_lat, mock.sentinel.pole_lon)
-        grid = Grid(mock.sentinel.column, mock.sentinel.row, reals,
-                    mock.sentinel.horiz_grid_type)
+        reals = (
+            mock.sentinel.ew,
+            mock.sentinel.ns,
+            mock.sentinel.first_lat,
+            mock.sentinel.first_lon,
+            mock.sentinel.pole_lat,
+            mock.sentinel.pole_lon,
+        )
+        grid = Grid(
+            mock.sentinel.column,
+            mock.sentinel.row,
+            reals,
+            mock.sentinel.horiz_grid_type,
+        )
         self.assertIs(grid.column_dependent_constants, mock.sentinel.column)
         self.assertIs(grid.row_dependent_constants, mock.sentinel.row)
         self.assertIs(grid.ew_spacing, mock.sentinel.ew)
@@ -43,7 +52,6 @@ class Test_vectors(tests.IrisTest):
 
     def _test_subgrid_vectors(self, subgrid, expected):
         grid = Grid(None, None, (None,) * 6, None)
-        dummy_vectors = (self.xp, self.yp, self.xu, self.yv)
         grid._x_vectors = mock.Mock(return_value=(self.xp, self.xu))
         grid._y_vectors = mock.Mock(return_value=(self.yp, self.yv))
         result = grid.vectors(subgrid)

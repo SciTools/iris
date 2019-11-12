@@ -24,7 +24,7 @@ import iris.config
 
 
 # Symmetric normalization function pivot points by SI unit.
-PIVOT_BY_UNIT = {cf_units.Unit('K'): 273.15}
+PIVOT_BY_UNIT = {cf_units.Unit("K"): 273.15}
 
 # Color map names by palette file metadata field value.
 CMAP_BREWER = set()
@@ -32,8 +32,8 @@ _CMAP_BY_SCHEME = None
 _CMAP_BY_KEYWORD = None
 _CMAP_BY_STD_NAME = None
 
-_MISSING_KWARG_CMAP = 'missing kwarg cmap'
-_MISSING_KWARG_NORM = 'missing kwarg norm'
+_MISSING_KWARG_CMAP = "missing kwarg cmap"
+_MISSING_KWARG_NORM = "missing kwarg norm"
 
 
 def is_brewer(cmap):
@@ -69,11 +69,11 @@ def _default_cmap_norm(args, kwargs):
             break
 
     # Find the keyword arguments of interest.
-    colors = kwargs.get('colors', None)
+    colors = kwargs.get("colors", None)
     # cmap = None to disable default behaviour.
-    cmap = kwargs.get('cmap', _MISSING_KWARG_CMAP)
+    cmap = kwargs.get("cmap", _MISSING_KWARG_CMAP)
     # norm = None to disable default behaviour.
-    norm = kwargs.get('norm', _MISSING_KWARG_NORM)
+    norm = kwargs.get("norm", _MISSING_KWARG_NORM)
 
     # Note that "colors" and "cmap" keywords are mutually exclusive.
     if colors is None and cube is not None:
@@ -93,15 +93,15 @@ def _default_cmap_norm(args, kwargs):
             # Add default color map to keyword arguments.
             if len(cmaps):
                 cmap = sorted(cmaps, reverse=True)[0]
-                kwargs['cmap'] = mpl_cm.get_cmap(cmap)
+                kwargs["cmap"] = mpl_cm.get_cmap(cmap)
 
         # Perform default "norm" keyword behaviour.
         if norm == _MISSING_KWARG_NORM:
-            if 'anomaly' in std_name:
+            if "anomaly" in std_name:
                 # Determine the pivot point.
                 pivot = PIVOT_BY_UNIT.get(cube.units, 0)
                 norm = SymmetricNormalize(pivot)
-                kwargs['norm'] = norm
+                kwargs["norm"] = norm
 
     return args, kwargs
 
@@ -123,7 +123,7 @@ def cmap_norm(cube):
 
     """
     args, kwargs = _default_cmap_norm((cube,), {})
-    return kwargs.get('cmap'), kwargs.get('norm')
+    return kwargs.get("cmap"), kwargs.get("norm")
 
 
 def auto_palette(func):
@@ -140,6 +140,7 @@ def auto_palette(func):
         Closure wrapper function.
 
     """
+
     @wraps(func)
     def wrapper_func(*args, **kwargs):
         """
@@ -168,7 +169,7 @@ class SymmetricNormalize(mpl_colors.Normalize):
         mpl_colors.Normalize.__init__(self, *args, **kwargs)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.pivot)
+        return "%s(%r)" % (self.__class__.__name__, self.pivot)
 
     def _update(self, val, update_min=True, update_max=True):
         # Update both _vmin and _vmax from given value.
@@ -184,7 +185,7 @@ class SymmetricNormalize(mpl_colors.Normalize):
 
     @property
     def vmin(self):
-        return getattr(self, '_vmin')
+        return getattr(self, "_vmin")
 
     @vmin.setter
     def vmin(self, val):
@@ -199,7 +200,7 @@ class SymmetricNormalize(mpl_colors.Normalize):
 
     @property
     def vmax(self):
-        return getattr(self, '_vmax')
+        return getattr(self, "_vmax")
 
     @vmax.setter
     def vmax(self, val):
@@ -231,12 +232,16 @@ def _load_palette():
     # Identify all .txt color map palette files.
     for root, dirs, files in os.walk(iris.config.PALETTE_PATH):
         # Prune any .svn directory from the tree walk.
-        if '.svn' in dirs:
-            del dirs[dirs.index('.svn')]
+        if ".svn" in dirs:
+            del dirs[dirs.index(".svn")]
         # Identify any target .txt color map palette files.
-        filenames.extend([os.path.join(root, filename)
-                          for filename in files
-                          if os.path.splitext(filename)[1] == '.txt'])
+        filenames.extend(
+            [
+                os.path.join(root, filename)
+                for filename in files
+                if os.path.splitext(filename)[1] == ".txt"
+            ]
+        )
 
     for filename in filenames:
         # Default color map name based on the file base-name (case-SENSITIVE).
@@ -252,47 +257,51 @@ def _load_palette():
 
         # Read the file header.
         with open(filename) as file_handle:
-            header = filter(lambda line: re.match('^\s*#.*:\s+.*$', line),
-                            file_handle.readlines())
+            header = filter(
+                lambda line: re.match(r"^\s*#.*:\s+.*$", line),
+                file_handle.readlines(),
+            )
 
         # Extract the file header metadata.
         for line in header:
-            line = line.replace('#', '', 1).split(':')
+            line = line.replace("#", "", 1).split(":")
             head = line[0].strip().lower()
             body = line[1].strip()
 
-            if head == 'name':
+            if head == "name":
                 # Case-SENSITIVE.
-                cmap_name = 'brewer_{}'.format(body)
+                cmap_name = "brewer_{}".format(body)
 
-            if head == 'scheme':
+            if head == "scheme":
                 # Case-insensitive.
                 cmap_scheme = body.lower()
 
-            if head == 'keyword':
+            if head == "keyword":
                 # Case-insensitive.
-                keywords = [part.strip().lower() for part in body.split(',')]
+                keywords = [part.strip().lower() for part in body.split(",")]
                 cmap_keywords.extend(keywords)
 
-            if head == 'std_name':
+            if head == "std_name":
                 # Case-insensitive.
-                std_names = [part.strip().lower() for part in body.split(',')]
+                std_names = [part.strip().lower() for part in body.split(",")]
                 cmap_std_names.extend(std_names)
 
-            if head == 'interpolate':
+            if head == "interpolate":
                 # Case-insensitive.
-                interpolate_flag = body.lower() != 'off'
+                interpolate_flag = body.lower() != "off"
 
-            if head == 'type':
+            if head == "type":
                 # Case-insensitive.
                 cmap_type = body.lower()
 
         # Integrity check for meta-data 'type' field.
-        assert cmap_type is not None, \
-            'Missing meta-data "type" keyword for color map file, "%s"' % \
-            filename
-        assert cmap_type == 'rgb', \
-            'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
+        assert cmap_type is not None, (
+            'Missing meta-data "type" keyword for color map file, "%s"'
+            % filename
+        )
+        assert (
+            cmap_type == "rgb"
+        ), 'Invalid type [%s] for color map file "%s"' % (cmap_type, filename)
 
         # Update the color map look-up dictionaries.
         CMAP_BREWER.add(cmap_name)
@@ -318,13 +327,15 @@ def _load_palette():
             # Perform default color map interpolation for quantization
             # levels per primary color.
             cmap = mpl_colors.LinearSegmentedColormap.from_list(
-                cmap_name, cmap_data)
+                cmap_name, cmap_data
+            )
         else:
             # Restrict quantization levels per primary color (turn-off
             # interpolation).
             # Typically used for Brewer color maps.
             cmap = mpl_colors.LinearSegmentedColormap.from_list(
-                cmap_name, cmap_data, N=len(cmap_data))
+                cmap_name, cmap_data, N=len(cmap_data)
+            )
 
         # Register the color map for use.
         mpl_cm.register_cmap(cmap=cmap)

@@ -21,18 +21,20 @@ from iris.fileformats.netcdf import _get_cf_var_data
 
 class Test__get_cf_var_data(tests.IrisTest):
     def setUp(self):
-        self.filename = 'DUMMY'
+        self.filename = "DUMMY"
         self.shape = (300000, 240, 200)
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
     def _make(self, chunksizes):
         cf_data = mock.Mock(_FillValue=None)
         cf_data.chunking = mock.MagicMock(return_value=chunksizes)
-        cf_var = mock.MagicMock(spec=iris.fileformats.cf.CFVariable,
-                                dtype=np.dtype('i4'),
-                                cf_data=cf_data,
-                                cf_name='DUMMY_VAR',
-                                shape=self.shape)
+        cf_var = mock.MagicMock(
+            spec=iris.fileformats.cf.CFVariable,
+            dtype=np.dtype("i4"),
+            cf_data=cf_data,
+            cf_name="DUMMY_VAR",
+            shape=self.shape,
+        )
         return cf_var
 
     def test_cf_data_type(self):
@@ -60,7 +62,7 @@ class Test__get_cf_var_data(tests.IrisTest):
 
     def test_cf_data_contiguous(self):
         # Chunks 'contiguous' is equivalent to no chunks.
-        chunks = 'contiguous'
+        chunks = "contiguous"
         cf_var = self._make(chunks)
         lazy_data = _get_cf_var_data(cf_var, self.filename)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]

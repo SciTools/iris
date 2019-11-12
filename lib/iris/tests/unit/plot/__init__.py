@@ -19,8 +19,9 @@ class TestGraphicStringCoord(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
         self.cube = simple_2d(with_bounds=True)
-        self.cube.add_aux_coord(AuxCoord(list('abcd'),
-                                         long_name='str_coord'), 1)
+        self.cube.add_aux_coord(
+            AuxCoord(list("abcd"), long_name="str_coord"), 1
+        )
         self.lat_lon_cube = lat_lon_cube()
 
     def tick_loc_and_label(self, axis_name, axes=None):
@@ -42,13 +43,19 @@ class TestGraphicStringCoord(tests.GraphicsTest):
 
     def assertBoundsTickLabels(self, axis, axes=None):
         actual = self.tick_loc_and_label(axis, axes)
-        expected = [(-1.0, 'a'), (0.0, 'a'), (1.0, 'b'),
-                    (2.0, 'c'), (3.0, 'd'), (4.0, u'')]
+        expected = [
+            (-1.0, "a"),
+            (0.0, "a"),
+            (1.0, "b"),
+            (2.0, "c"),
+            (3.0, "d"),
+            (4.0, ""),
+        ]
         self.assertEqual(expected, actual)
 
     def assertPointsTickLabels(self, axis, axes=None):
         actual = self.tick_loc_and_label(axis, axes)
-        expected = [(0.0, 'a'), (1.0, 'b'), (2.0, 'c'), (3.0, 'd')]
+        expected = [(0.0, "a"), (1.0, "b"), (2.0, "c"), (3.0, "d")]
         self.assertEqual(expected, actual)
 
 
@@ -59,6 +66,7 @@ class MixinCoords:
     permutations of coordinates and anonymous dimensions.
 
     """
+
     def _check(self, u, v, data=None):
         self.assertEqual(self.mpl_patch.call_count, 1)
         if data is not None:
@@ -70,22 +78,22 @@ class MixinCoords:
         self.assertArrayEqual(actual_v, v)
 
     def test_foo_bar(self):
-        self.draw_func(self.cube, coords=('foo', 'bar'))
+        self.draw_func(self.cube, coords=("foo", "bar"))
         u, v = broadcast(self.foo, self.bar)
         self._check(u, v, self.data)
 
     def test_bar_foo(self):
-        self.draw_func(self.cube, coords=('bar', 'foo'))
+        self.draw_func(self.cube, coords=("bar", "foo"))
         u, v = broadcast(self.bar, self.foo)
         self._check(u, v, self.dataT)
 
     def test_foo_0(self):
-        self.draw_func(self.cube, coords=('foo', 0))
+        self.draw_func(self.cube, coords=("foo", 0))
         u, v = broadcast(self.foo, self.bar_index)
         self._check(u, v, self.data)
 
     def test_1_bar(self):
-        self.draw_func(self.cube, coords=(1, 'bar'))
+        self.draw_func(self.cube, coords=(1, "bar"))
         u, v = broadcast(self.foo_index, self.bar)
         self._check(u, v, self.data)
 
@@ -95,12 +103,12 @@ class MixinCoords:
         self._check(u, v, self.data)
 
     def test_0_foo(self):
-        self.draw_func(self.cube, coords=(0, 'foo'))
+        self.draw_func(self.cube, coords=(0, "foo"))
         u, v = broadcast(self.bar_index, self.foo)
         self._check(u, v, self.dataT)
 
     def test_bar_1(self):
-        self.draw_func(self.cube, coords=('bar', 1))
+        self.draw_func(self.cube, coords=("bar", 1))
         u, v = broadcast(self.bar, self.foo_index)
         self._check(u, v, self.dataT)
 

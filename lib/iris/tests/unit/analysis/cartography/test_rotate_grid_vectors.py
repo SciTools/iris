@@ -24,15 +24,16 @@ from iris.analysis.cartography import rotate_grid_vectors
 
 
 class TestRotateGridVectors(tests.IrisTest):
-    def _check_angles_calculation(self, angles_in_degrees=True,
-                                  nan_angles_mask=None):
+    def _check_angles_calculation(
+        self, angles_in_degrees=True, nan_angles_mask=None
+    ):
         # Check basic maths on a 2d latlon grid.
         u_cube = sample_2d_latlons(regional=True, transformed=True)
-        u_cube.units = 'ms-1'
-        u_cube.rename('dx')
+        u_cube.units = "ms-1"
+        u_cube.rename("dx")
         u_cube.data[...] = 0
         v_cube = u_cube.copy()
-        v_cube.name('dy')
+        v_cube.name("dy")
 
         # Define 6 different vectors, repeated in each data row.
         in_vu = np.array([(0, 1), (2, -1), (-1, -1), (-3, 1), (2, 0), (0, 0)])
@@ -42,14 +43,13 @@ class TestRotateGridVectors(tests.IrisTest):
         u_cube.data[...] = in_vu[..., 1]
 
         # Define 5 different test rotation angles, one for each data row.
-        rotation_angles = np.array([0., -45., 135, -140., 90.])
-        ang_cube_data = np.broadcast_to(rotation_angles[:, None],
-                                        u_cube.shape)
+        rotation_angles = np.array([0.0, -45.0, 135, -140.0, 90.0])
+        ang_cube_data = np.broadcast_to(rotation_angles[:, None], u_cube.shape)
         ang_cube = u_cube.copy()
         if angles_in_degrees:
-            ang_cube.units = 'degrees'
+            ang_cube.units = "degrees"
         else:
-            ang_cube.units = 'radians'
+            ang_cube.units = "radians"
             ang_cube_data = np.deg2rad(ang_cube_data)
         ang_cube.data[:] = ang_cube_data
 
@@ -93,35 +93,37 @@ class TestRotateGridVectors(tests.IrisTest):
         # the angles routine.
         u_cube = sample_2d_latlons(regional=True, transformed=True)
         u_cube = u_cube[:2, :3]
-        u_cube.units = 'ms-1'
-        u_cube.rename('dx')
+        u_cube.units = "ms-1"
+        u_cube.rename("dx")
         u_cube.data[...] = 1.0
         v_cube = u_cube.copy()
-        v_cube.name('dy')
+        v_cube.name("dy")
         v_cube.data[...] = 0.0
 
         # Setup a fake angles result from the inner call to 'gridcell_angles'.
-        angles_result_data = np.array([[0.0, 90.0, 180.0],
-                                       [-180.0, -90.0, 270.0]])
-        angles_result_cube = Cube(angles_result_data, units='degrees')
-        angles_kwargs = {'this': 2}
+        angles_result_data = np.array(
+            [[0.0, 90.0, 180.0], [-180.0, -90.0, 270.0]]
+        )
+        angles_result_cube = Cube(angles_result_data, units="degrees")
+        angles_kwargs = {"this": 2}
         angles_call_patch = self.patch(
-                'iris.analysis._grid_angles.gridcell_angles',
-                Mock(return_value=angles_result_cube))
+            "iris.analysis._grid_angles.gridcell_angles",
+            Mock(return_value=angles_result_cube),
+        )
 
         # Call the routine.
-        result = rotate_grid_vectors(u_cube, v_cube,
-                                     grid_angles_kwargs=angles_kwargs)
+        result = rotate_grid_vectors(
+            u_cube, v_cube, grid_angles_kwargs=angles_kwargs
+        )
 
-        self.assertEqual(angles_call_patch.call_args_list,
-                         [mock_call(u_cube, this=2)])
+        self.assertEqual(
+            angles_call_patch.call_args_list, [mock_call(u_cube, this=2)]
+        )
 
         out_u, out_v = [cube.data for cube in result]
         # Records what results should be for the various n*90deg rotations.
-        expect_u = np.array([[1.0, 0.0, -1.0],
-                             [-1.0, 0.0, 0.0]])
-        expect_v = np.array([[0.0, 1.0, 0.0],
-                             [0.0, -1.0, -1.0]])
+        expect_u = np.array([[1.0, 0.0, -1.0], [-1.0, 0.0, 0.0]])
+        expect_v = np.array([[0.0, 1.0, 0.0], [0.0, -1.0, -1.0]])
         # Check results are as expected.
         self.assertArrayAllClose(out_u, expect_u)
         self.assertArrayAllClose(out_v, expect_v)

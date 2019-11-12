@@ -18,7 +18,7 @@ from iris._lazy_data import is_lazy_data
 class Test_is_lazy_data(tests.IrisTest):
     def test_lazy(self):
         values = np.arange(30).reshape((2, 5, 3))
-        lazy_array = da.from_array(values, chunks='auto')
+        lazy_array = da.from_array(values, chunks="auto")
         self.assertTrue(is_lazy_data(lazy_array))
 
     def test_real(self):
@@ -26,5 +26,5 @@ class Test_is_lazy_data(tests.IrisTest):
         self.assertFalse(is_lazy_data(real_array))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

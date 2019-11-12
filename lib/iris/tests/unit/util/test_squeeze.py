@@ -16,7 +16,6 @@ import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):
-
     def setUp(self):
         self.cube = stock.simple_2d_w_multidim_and_scalars()
 
@@ -24,14 +23,14 @@ class Test(tests.IrisTest):
         self.assertEqual(self.cube, iris.util.squeeze(self.cube))
 
     def test_squeeze_one_dim(self):
-        cube_3d = iris.util.new_axis(self.cube, scalar_coord='an_other')
+        cube_3d = iris.util.new_axis(self.cube, scalar_coord="an_other")
         cube_2d = iris.util.squeeze(cube_3d)
 
         self.assertEqual(self.cube, cube_2d)
 
     def test_squeeze_two_dims(self):
-        cube_3d = iris.util.new_axis(self.cube, scalar_coord='an_other')
-        cube_4d = iris.util.new_axis(cube_3d, scalar_coord='air_temperature')
+        cube_3d = iris.util.new_axis(self.cube, scalar_coord="an_other")
+        cube_4d = iris.util.new_axis(cube_3d, scalar_coord="air_temperature")
 
         self.assertEqual(self.cube, iris.util.squeeze(cube_4d))
 
@@ -48,5 +47,5 @@ class Test(tests.IrisTest):
         self.assertEqual(cube_scalar, iris.util.squeeze(cube_1d))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

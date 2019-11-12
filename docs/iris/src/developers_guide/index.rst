@@ -12,6 +12,7 @@
 
    documenting/index.rst
    gitwash/index.rst
+   code_format.rst
    pulls.rst
    tests.rst
    deprecations.rst

@@ -27,22 +27,22 @@ class TestEqualiseAttributes(tests.IrisTest):
         self.cube_no_attrs = empty.copy()
 
         self.cube_a1 = empty.copy()
-        self.cube_a1.attributes.update({'a': 1})
+        self.cube_a1.attributes.update({"a": 1})
 
         self.cube_a2 = empty.copy()
-        self.cube_a2.attributes.update({'a': 2})
+        self.cube_a2.attributes.update({"a": 2})
 
         self.cube_a1b5 = empty.copy()
-        self.cube_a1b5.attributes.update({'a': 1, 'b': 5})
+        self.cube_a1b5.attributes.update({"a": 1, "b": 5})
 
         self.cube_a1b6 = empty.copy()
-        self.cube_a1b6.attributes.update({'a': 1, 'b': 6})
+        self.cube_a1b6.attributes.update({"a": 1, "b": 6})
 
         self.cube_a2b6 = empty.copy()
-        self.cube_a2b6.attributes.update({'a': 2, 'b': 6})
+        self.cube_a2b6.attributes.update({"a": 2, "b": 6})
 
         self.cube_b5 = empty.copy()
-        self.cube_b5.attributes.update({'b': 5})
+        self.cube_b5.attributes.update({"b": 5})
 
         # Array attribute values
         v1 = np.array([11, 12, 13])
@@ -50,13 +50,13 @@ class TestEqualiseAttributes(tests.IrisTest):
         self.v1 = v1
 
         self.cube_a1b5v1 = empty.copy()
-        self.cube_a1b5v1.attributes.update({'a': 1, 'b': 5, 'v': v1})
+        self.cube_a1b5v1.attributes.update({"a": 1, "b": 5, "v": v1})
 
         self.cube_a1b6v1 = empty.copy()
-        self.cube_a1b6v1.attributes.update({'a': 1, 'b': 6, 'v': v1})
+        self.cube_a1b6v1.attributes.update({"a": 1, "b": 6, "v": v1})
 
         self.cube_a1b6v2 = empty.copy()
-        self.cube_a1b6v2.attributes.update({'a': 1, 'b': 6, 'v': v2})
+        self.cube_a1b6v2.attributes.update({"a": 1, "b": 6, "v": v2})
 
     def _test(self, cubes, expect_attributes):
         """Test."""
@@ -83,23 +83,23 @@ class TestEqualiseAttributes(tests.IrisTest):
 
     def test_single(self):
         cubes = [self.cube_a1]
-        self._test(cubes, {'a': 1})
+        self._test(cubes, {"a": 1})
 
     def test_identical(self):
         cubes = [self.cube_a1, self.cube_a1.copy()]
-        self._test(cubes, {'a': 1})
+        self._test(cubes, {"a": 1})
 
     def test_one_extra(self):
         cubes = [self.cube_a1, self.cube_a1b5.copy()]
-        self._test(cubes, {'a': 1})
+        self._test(cubes, {"a": 1})
 
     def test_one_different(self):
         cubes = [self.cube_a1b5, self.cube_a1b6]
-        self._test(cubes, {'a': 1})
+        self._test(cubes, {"a": 1})
 
     def test_common_no_diffs(self):
         cubes = [self.cube_a1b5, self.cube_a1b5.copy()]
-        self._test(cubes, {'a': 1, 'b': 5})
+        self._test(cubes, {"a": 1, "b": 5})
 
     def test_common_all_diffs(self):
         cubes = [self.cube_a1b5, self.cube_a2b6]
@@ -111,21 +111,23 @@ class TestEqualiseAttributes(tests.IrisTest):
 
     def test_array_extra(self):
         cubes = [self.cube_a1b6, self.cube_a1b6v1]
-        self._test(cubes, {'a': 1, 'b': 6})
+        self._test(cubes, {"a": 1, "b": 6})
 
     def test_array_different(self):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v2]
-        self._test(cubes, {'a': 1})
+        self._test(cubes, {"a": 1})
 
     def test_array_same(self):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v1]
-        self._test(cubes, {'a': 1, 'v': self.v1})
+        self._test(cubes, {"a": 1, "v": self.v1})
 
     @tests.skip_data
     def test_complex_nonecommon(self):
         # Example with cell methods and factories, but no common attributes.
-        cubes = [iris.tests.stock.global_pp(),
-                 iris.tests.stock.hybrid_height()]
+        cubes = [
+            iris.tests.stock.global_pp(),
+            iris.tests.stock.hybrid_height(),
+        ]
         self._test(cubes, {})
 
     @tests.skip_data
@@ -134,8 +136,13 @@ class TestEqualiseAttributes(tests.IrisTest):
         cubes = [iris.tests.stock.global_pp(), iris.tests.stock.simple_pp()]
         self._test(
             cubes,
-            {'STASH': iris.fileformats.pp.STASH(model=1, section=16, item=203),
-             'source': 'Data from Met Office Unified Model'})
+            {
+                "STASH": iris.fileformats.pp.STASH(
+                    model=1, section=16, item=203
+                ),
+                "source": "Data from Met Office Unified Model",
+            },
+        )
 
 
 if __name__ == "__main__":

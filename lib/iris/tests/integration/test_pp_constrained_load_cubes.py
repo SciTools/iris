@@ -18,8 +18,8 @@ from iris.fileformats.rules import load_cubes
 class Test(tests.IrisTest):
     @tests.skip_data
     def test_pp_with_stash_constraint(self):
-        filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
-        stcon = iris.AttributeConstraint(STASH='m01s00i004')
+        filenames = [tests.get_data_path(("PP", "globClim1", "dec_subset.pp"))]
+        stcon = iris.AttributeConstraint(STASH="m01s00i004")
         pp_constraints = pp._convert_constraints(stcon)
         pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))
@@ -27,9 +27,9 @@ class Test(tests.IrisTest):
 
     @tests.skip_data
     def test_pp_with_stash_constraints(self):
-        filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
-        stcon1 = iris.AttributeConstraint(STASH='m01s00i004')
-        stcon2 = iris.AttributeConstraint(STASH='m01s00i010')
+        filenames = [tests.get_data_path(("PP", "globClim1", "dec_subset.pp"))]
+        stcon1 = iris.AttributeConstraint(STASH="m01s00i004")
+        stcon2 = iris.AttributeConstraint(STASH="m01s00i010")
         pp_constraints = pp._convert_constraints([stcon1, stcon2])
         pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))
@@ -37,7 +37,7 @@ class Test(tests.IrisTest):
 
     @tests.skip_data
     def test_pp_no_constraint(self):
-        filenames = [tests.get_data_path(('PP', 'globClim1', 'dec_subset.pp'))]
+        filenames = [tests.get_data_path(("PP", "globClim1", "dec_subset.pp"))]
         pp_constraints = pp._convert_constraints(None)
         pp_loader = iris.fileformats.rules.Loader(pp.load, {}, convert)
         cubes = list(load_cubes(filenames, None, pp_loader, pp_constraints))

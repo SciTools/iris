@@ -14,11 +14,11 @@ env:
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
   matrix:
     - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=3.6 TEST_TARGET=default
+    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_BLACK=true
     - PYTHON_VERSION=3.6 TEST_TARGET=example
 
     - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=3.7 TEST_TARGET=default
+    - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_BLACK=true
     - PYTHON_VERSION=3.7 TEST_TARGET=example
     - PYTHON_VERSION=3.7 TEST_TARGET=doctest PUSH_BUILT_DOCS=true
 
@@ -49,7 +49,7 @@ install:
     conda config --set show_channel_urls True;
     conda config --add channels conda-forge;
     conda update --quiet conda;
-    ENV_NAME='test-environment';
+    export ENV_NAME='test-environment';
     conda create --quiet -n ${ENV_NAME} python=${PYTHON_VERSION} pip;
     source activate ${ENV_NAME};
 
@@ -69,7 +69,7 @@ install:
     cat ${CONDA_REQS_FILE};
     conda install --quiet -n ${ENV_NAME} --file ${CONDA_REQS_FILE};
 
-  - PREFIX="${HOME}/miniconda/envs/${ENV_NAME}"
+  - export PREFIX="${HOME}/miniconda/envs/${ENV_NAME}"
 
   # Output debug info
   - >
@@ -103,7 +103,8 @@ install:
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   # test against the latest version of python-eccodes.
   # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
-  - if [[ "${TEST_MINIMAL}" != true ]]; then
+  - >
+    if [[ "${TEST_MINIMAL}" != true ]]; then
         conda install --quiet -n ${ENV_NAME} python-eccodes=0.9.3;
         conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
     fi
@@ -111,21 +112,29 @@ install:
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
   # the RC, so it's best to start each operation with an absolute cd.
-  - INSTALL_DIR=$(pwd)
+  - export INSTALL_DIR=$(pwd)
 
   - >
-    if [[ ${TEST_TARGET} == 'default' ]]; then
+    if [[ "${TEST_BLACK}" == 'true' ]]; then
+      echo $(black --version);
+      rm ${INSTALL_DIR}/.gitignore;
+      black --check ${INSTALL_DIR};
+    fi
+
+  - >
+    if [[ "${TEST_TARGET}" == 'default' ]]; then
       export IRIS_REPO_DIR=${INSTALL_DIR};
       python -m iris.tests.runner --default-tests --system-tests;
     fi
 
-  - if [[ ${TEST_TARGET} == 'example' ]]; then
+  - if [[ "${TEST_TARGET}" == 'example' ]]; then
       python -m iris.tests.runner --example-tests;
     fi
 
   # A call to check "whatsnew" contributions are valid, because the Iris test
   # for it needs a *developer* install to be able to find the docs.
-  - if [[ ${TEST_TARGET} == 'doctest' ]]; then
+  - >
+    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       python aggregate_directory.py --checkonly;
     fi
@@ -133,17 +142,17 @@ script:
   # When pushing built docs, attempt to make a preliminary whatsnew by calling
   # 'aggregate_directory.py', before the build.
   - >
-    if [[ ${PUSH_BUILT_DOCS} == 'true' ]]; then
+    if [[ "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
       WHATSNEW=$(ls -d contributions_* 2>/dev/null);
-      if [[ "$WHATSNEW" != "" ]]; then
+      if [[ -n "${WHATSNEW}" ]]; then
         python aggregate_directory.py --unreleased;
       fi;
     fi
 
   # Build the docs.
   - >
-    if [[ ${TEST_TARGET} == 'doctest' ]]; then
+    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
       MPL_RC_DIR="${HOME}/.config/matplotlib";
       mkdir -p ${MPL_RC_DIR};
       echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
@@ -153,12 +162,13 @@ script:
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
-  - ORG=(${TRAVIS_REPO_SLUG//\// })
+  - export ORG=(${TRAVIS_REPO_SLUG//\// })
 
   # When we merge a change to SciTools/iris, we can push docs to github pages.
   # At present, only the Python 3.7 "doctest" job does this.
   # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
-  - if [[ ${ORG} == "SciTools" && ${TRAVIS_EVENT_TYPE} == 'push' && ${PUSH_BUILT_DOCS} == 'true' ]]; then
+  - >
+    if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
@@ -166,4 +176,3 @@ script:
         --no-require-master
         ${TRAVIS_BRANCH:-${TRAVIS_TAG}};
     fi
-

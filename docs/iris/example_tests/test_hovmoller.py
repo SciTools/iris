@@ -8,13 +8,16 @@
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (add_examples_to_path,
-                          show_replaced_by_check_graphic,
-                          fail_any_deprecation_warnings)
+from .extest_util import (
+    add_examples_to_path,
+    show_replaced_by_check_graphic,
+    fail_any_deprecation_warnings,
+)
 
 
 class TestGlobalMap(tests.GraphicsTest):
     """Test the hovmoller example code."""
+
     def test_hovmoller(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
@@ -23,5 +26,5 @@ class TestGlobalMap(tests.GraphicsTest):
                 hovmoller.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

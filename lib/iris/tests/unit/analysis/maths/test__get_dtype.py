@@ -94,5 +94,5 @@ class Test(tests.IrisTest):
         self._check_call(dim_coord, dtype)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

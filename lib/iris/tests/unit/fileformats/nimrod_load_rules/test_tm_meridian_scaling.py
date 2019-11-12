@@ -15,17 +15,21 @@ import iris.tests as tests
 
 from unittest import mock
 
-from iris.fileformats.nimrod_load_rules import (tm_meridian_scaling,
-                                                NIMROD_DEFAULT,
-                                                MERIDIAN_SCALING_BNG)
+from iris.fileformats.nimrod_load_rules import (
+    tm_meridian_scaling,
+    NIMROD_DEFAULT,
+    MERIDIAN_SCALING_BNG,
+)
 from iris.fileformats.nimrod import NimrodField
 
 
 class Test(tests.IrisTest):
     def setUp(self):
-        self.field = mock.Mock(tm_meridian_scaling=NIMROD_DEFAULT,
-                               spec=NimrodField,
-                               float32_mdi=-123)
+        self.field = mock.Mock(
+            tm_meridian_scaling=NIMROD_DEFAULT,
+            spec=NimrodField,
+            float32_mdi=-123,
+        )
         self.cube = mock.Mock()
 
     def _call_tm_meridian_scaling(self, scaling_value):
@@ -33,18 +37,19 @@ class Test(tests.IrisTest):
         tm_meridian_scaling(self.cube, self.field)
 
     def test_unhandled(self):
-        with mock.patch('warnings.warn') as warn:
+        with mock.patch("warnings.warn") as warn:
             self._call_tm_meridian_scaling(1)
         self.assertEqual(warn.call_count, 1)
 
     @tests.no_warnings
     def test_british_national_grid(self):
         # A value is not returned in this rule currently.
-        self.assertEqual(None,
-                         self._call_tm_meridian_scaling(MERIDIAN_SCALING_BNG))
+        self.assertEqual(
+            None, self._call_tm_meridian_scaling(MERIDIAN_SCALING_BNG)
+        )
 
     def test_null(self):
-        with mock.patch('warnings.warn') as warn:
+        with mock.patch("warnings.warn") as warn:
             self._call_tm_meridian_scaling(NIMROD_DEFAULT)
             self._call_tm_meridian_scaling(self.field.float32_mdi)
         self.assertEqual(warn.call_count, 0)

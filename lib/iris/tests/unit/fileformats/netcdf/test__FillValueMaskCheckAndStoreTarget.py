@@ -23,8 +23,9 @@ from iris.fileformats.netcdf import _FillValueMaskCheckAndStoreTarget
 class Test__FillValueMaskCheckAndStoreTarget(tests.IrisTest):
     def _call_target(self, fill_value, keys, vals):
         inner_target = mock.MagicMock()
-        target = _FillValueMaskCheckAndStoreTarget(inner_target,
-                                                   fill_value=fill_value)
+        target = _FillValueMaskCheckAndStoreTarget(
+            inner_target, fill_value=fill_value
+        )
 
         for key, val in zip(keys, vals):
             target[key] = val

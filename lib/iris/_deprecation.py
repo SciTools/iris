@@ -10,11 +10,10 @@ Utilities for producing runtime deprecation messages.
 
 import warnings
 
-from iris.exceptions import IrisError
-
 
 class IrisDeprecation(UserWarning):
     """An Iris deprecation warning."""
+
     pass
 
 
@@ -60,7 +59,7 @@ class ClassWrapperSameDocstring(type):
         parent_class = bases[0]
 
         # Copy the original class docstring.
-        class_dict['__doc__'] = parent_class.__doc__
+        class_dict["__doc__"] = parent_class.__doc__
 
         # Return the result.
         return super().__new__(metacls, classname, bases, class_dict)

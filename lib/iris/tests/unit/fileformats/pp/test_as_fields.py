@@ -9,8 +9,6 @@
 # importing anything else.
 import iris.tests as tests
 
-from iris.coords import DimCoord
-from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 import iris.tests.stock as stock
 
@@ -25,9 +23,9 @@ class TestAsFields(tests.IrisTest):
             self.assertEqual(field.lbcode, 101)
 
     def test_field_coords(self):
-        fields = pp.as_fields(self.cube,
-                              field_coords=['grid_longitude',
-                                            'grid_latitude'])
+        fields = pp.as_fields(
+            self.cube, field_coords=["grid_longitude", "grid_latitude"]
+        )
         for field in fields:
             self.assertEqual(field.lbcode, 101)
 

@@ -18,11 +18,10 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, multidim_lazy_stack
 class Test_multidim_lazy_stack(tests.IrisTest):
     def _check(self, stack_shape):
         vals = np.arange(np.prod(stack_shape)).reshape(stack_shape)
-        stack = np.empty(stack_shape, 'object')
+        stack = np.empty(stack_shape, "object")
         # Define the shape of each element in the stack.
         stack_element_shape = (4, 5)
-        expected = np.empty(stack_shape + stack_element_shape,
-                            dtype=int)
+        expected = np.empty(stack_shape + stack_element_shape, dtype=int)
         for index, val in np.ndenumerate(vals):
             stack[index] = as_lazy_data(val * np.ones(stack_element_shape))
 
@@ -46,5 +45,5 @@ class Test_multidim_lazy_stack(tests.IrisTest):
         self._check(shape)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -120,7 +120,7 @@ def _angle(p, q, r):
     mid_lons = np.deg2rad(q[0])
 
     pr = _3d_xyz_from_latlon(r[0], r[1]) - _3d_xyz_from_latlon(p[0], p[1])
-    pr_norm = np.sqrt(np.sum(pr**2, axis=0))
+    pr_norm = np.sqrt(np.sum(pr ** 2, axis=0))
     pr_top = pr[1] * np.cos(mid_lons) - pr[0] * np.sin(mid_lons)
 
     index = pr_norm == 0
@@ -135,7 +135,7 @@ def _angle(p, q, r):
     return np.rad2deg(psi)
 
 
-def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
+def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     """
     Calculate gridcell orientations for an arbitrary 2-dimensional grid.
 
@@ -204,48 +204,60 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
 
     """
     cube = None
-    if hasattr(x, 'add_aux_coord'):
+    if hasattr(x, "add_aux_coord"):
         # Passed a cube : extract 'x' and ;'y' axis coordinates.
         cube = x  # Save for later checking.
-        x, y = cube.coord(axis='x'), cube.coord(axis='y')
+        x, y = cube.coord(axis="x"), cube.coord(axis="y")
 
     # Now should have either 2 coords or 2 arrays.
-    if not hasattr(x, 'shape') or not hasattr(y, 'shape'):
-        msg = ('Inputs (x,y) must have array shape property.'
-               'Got type(x)={} and type(y)={}.')
+    if not hasattr(x, "shape") or not hasattr(y, "shape"):
+        msg = (
+            "Inputs (x,y) must have array shape property."
+            "Got type(x)={} and type(y)={}."
+        )
         raise ValueError(msg.format(type(x), type(y)))
 
     x_coord, y_coord = None, None
-    if hasattr(x, 'bounds') and hasattr(y, 'bounds'):
+    if hasattr(x, "bounds") and hasattr(y, "bounds"):
         # x and y are Coords.
         x_coord, y_coord = x.copy(), y.copy()
 
         # They must be angles : convert into degrees
         for coord in (x_coord, y_coord):
-            if not coord.units.is_convertible('degrees'):
-                msg = ('Input X and Y coordinates must have angular '
-                       'units. Got units of "{!s}" and "{!s}".')
+            if not coord.units.is_convertible("degrees"):
+                msg = (
+                    "Input X and Y coordinates must have angular "
+                    'units. Got units of "{!s}" and "{!s}".'
+                )
                 raise ValueError(msg.format(x_coord.units, y_coord.units))
-            coord.convert_units('degrees')
+            coord.convert_units("degrees")
 
         if x_coord.ndim != 2 or y_coord.ndim != 2:
-            msg = ('Coordinate inputs must have 2-dimensional shape. '
-                   'Got x-shape of {} and y-shape of {}.')
+            msg = (
+                "Coordinate inputs must have 2-dimensional shape. "
+                "Got x-shape of {} and y-shape of {}."
+            )
             raise ValueError(msg.format(x_coord.shape, y_coord.shape))
         if x_coord.shape != y_coord.shape:
-            msg = ('Coordinate inputs must have same shape. '
-                   'Got x-shape of {} and y-shape of {}.')
+            msg = (
+                "Coordinate inputs must have same shape. "
+                "Got x-shape of {} and y-shape of {}."
+            )
             raise ValueError(msg.format(x_coord.shape, y_coord.shape))
         if cube:
             x_dims, y_dims = (cube.coord_dims(co) for co in (x, y))
             if x_dims != y_dims:
-                msg = ('X and Y coordinates must have the same cube '
-                       'dimensions.  Got x-dims = {} and y-dims = {}.')
+                msg = (
+                    "X and Y coordinates must have the same cube "
+                    "dimensions.  Got x-dims = {} and y-dims = {}."
+                )
                 raise ValueError(msg.format(x_dims, y_dims))
         cs = x_coord.coord_system
         if y_coord.coord_system != cs:
-            msg = ('Coordinate inputs must have same coordinate system. '
-                   'Got x of {} and y of {}.')
+            msg = (
+                "Coordinate inputs must have same coordinate system. "
+                "Got x of {} and y of {}."
+            )
             raise ValueError(msg.format(cs, y_coord.coord_system))
 
         # Base calculation on bounds if we have them, or points as a fallback.
@@ -279,18 +291,24 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             xpts, ypts = transform_xy_arrays(xpts, ypts)
             xbds, ybds = transform_xy_arrays(xbds, ybds)
             x_coord = iris.coords.AuxCoord(
-                points=xpts, bounds=xbds,
-                standard_name='longitude', units='degrees')
+                points=xpts,
+                bounds=xbds,
+                standard_name="longitude",
+                units="degrees",
+            )
             y_coord = iris.coords.AuxCoord(
-                points=ypts, bounds=ybds,
-                standard_name='latitude', units='degrees')
+                points=ypts,
+                bounds=ybds,
+                standard_name="latitude",
+                units="degrees",
+            )
 
-    elif hasattr(x, 'bounds') or hasattr(y, 'bounds'):
+    elif hasattr(x, "bounds") or hasattr(y, "bounds"):
         # One was a Coord, and the other not ?
-        is_and_not = ('x', 'y')
-        if hasattr(y, 'bounds'):
+        is_and_not = ("x", "y")
+        if hasattr(y, "bounds"):
             is_and_not = reversed(is_and_not)
-        msg = 'Input {!r} is a Coordinate, but {!r} is not.'
+        msg = "Input {!r} is a Coordinate, but {!r} is not."
         raise ValueError(msg.format(*is_and_not))
 
     # Now have either 2 points arrays (ny, nx) or 2 bounds arrays (ny, nx, 4).
@@ -314,30 +332,39 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
         rhs = np.roll(mid, -1, 2)
         if not x_coord:
             # Create coords for result cube : with no bounds.
-            y_coord = iris.coords.AuxCoord(x, standard_name='latitude',
-                                           units='degrees')
-            x_coord = iris.coords.AuxCoord(y, standard_name='longitude',
-                                           units='degrees')
+            y_coord = iris.coords.AuxCoord(
+                x, standard_name="latitude", units="degrees"
+            )
+            x_coord = iris.coords.AuxCoord(
+                y, standard_name="longitude", units="degrees"
+            )
     else:
         # Data is bounds arrays.
         # Use gridcell corners at different grid-x positions as references.
         # NOTE: so with bounds, we *don't* need full circular longitudes.
         xyz = _3d_xyz_from_latlon(x, y)
         # Support two different choices of reference points locations.
-        angle_boundpoints_vals = {'mid-lhs, mid-rhs': '03_to_12',
-                                  'lower-left, lower-right': '0_to_1'}
+        angle_boundpoints_vals = {
+            "mid-lhs, mid-rhs": "03_to_12",
+            "lower-left, lower-right": "0_to_1",
+        }
         bounds_pos = angle_boundpoints_vals.get(cell_angle_boundpoints)
-        if bounds_pos == '0_to_1':
+        if bounds_pos == "0_to_1":
             lhs_xyz = xyz[..., 0]
             rhs_xyz = xyz[..., 1]
-        elif bounds_pos == '03_to_12':
+        elif bounds_pos == "03_to_12":
             lhs_xyz = 0.5 * (xyz[..., 0] + xyz[..., 3])
             rhs_xyz = 0.5 * (xyz[..., 1] + xyz[..., 2])
         else:
-            msg = ('unrecognised cell_angle_boundpoints of "{}", '
-                   'must be one of {}')
-            raise ValueError(msg.format(cell_angle_boundpoints,
-                                        list(angle_boundpoints_vals.keys())))
+            msg = (
+                'unrecognised cell_angle_boundpoints of "{}", '
+                "must be one of {}"
+            )
+            raise ValueError(
+                msg.format(
+                    cell_angle_boundpoints, list(angle_boundpoints_vals.keys())
+                )
+            )
         if not x_coord:
             # Create bounded coords for result cube.
             # Use average of lhs+rhs points in 3d to get 'mid' points,
@@ -346,11 +373,17 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
             mid_latlons = _latlon_from_xyz(mid_xyz)
             # Create coords with given bounds, and averaged centrepoints.
             x_coord = iris.coords.AuxCoord(
-                points=mid_latlons[0], bounds=x,
-                standard_name='longitude', units='degrees')
+                points=mid_latlons[0],
+                bounds=x,
+                standard_name="longitude",
+                units="degrees",
+            )
             y_coord = iris.coords.AuxCoord(
-                points=mid_latlons[1], bounds=y,
-                standard_name='latitude', units='degrees')
+                points=mid_latlons[1],
+                bounds=y,
+                standard_name="latitude",
+                units="degrees",
+            )
 
         # Convert lhs and rhs points back to latlon form -- IN DEGREES !
         lhs = _latlon_from_xyz(lhs_xyz)
@@ -360,16 +393,17 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints='mid-lhs, mid-rhs'):
 
     # Do the angle calcs, and return as a suitable cube.
     angles = _angle(lhs, mid, rhs)
-    result = iris.cube.Cube(angles,
-                            long_name='gridcell_angle_from_true_east',
-                            units='degrees')
+    result = iris.cube.Cube(
+        angles, long_name="gridcell_angle_from_true_east", units="degrees"
+    )
     result.add_aux_coord(x_coord, (0, 1))
     result.add_aux_coord(y_coord, (0, 1))
     return result
 
 
-def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None,
-                        grid_angles_kwargs=None):
+def rotate_grid_vectors(
+    u_cube, v_cube, grid_angles_cube=None, grid_angles_kwargs=None
+):
     """
     Rotate distance vectors from grid-oriented to true-latlon-oriented.
 
@@ -421,16 +455,16 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None,
         grid_angles_kwargs = grid_angles_kwargs or {}
         grid_angles_cube = gridcell_angles(u_cube, **grid_angles_kwargs)
     gridangles = grid_angles_cube.copy()
-    gridangles.convert_units('radians')
+    gridangles.convert_units("radians")
     uu, vv, aa = (cube.data for cube in (u_out, v_out, gridangles))
-    mags = np.sqrt(uu*uu + vv*vv)
+    mags = np.sqrt(uu * uu + vv * vv)
     angs = np.arctan2(vv, uu) + aa
     uu, vv = mags * np.cos(angs), mags * np.sin(angs)
 
     # Promote all to masked arrays, and also apply mask at bad (NaN) angles.
     mask = np.isnan(aa)
     for cube in (u_out, v_out, aa):
-        if hasattr(cube.data, 'mask'):
+        if hasattr(cube.data, "mask"):
             mask |= cube.data.mask
     u_out.data = np.ma.masked_array(uu, mask=mask)
     v_out.data = np.ma.masked_array(vv, mask=mask)

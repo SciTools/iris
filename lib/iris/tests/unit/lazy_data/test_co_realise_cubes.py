@@ -36,14 +36,14 @@ class Test_co_realise_cubes(tests.IrisTest):
         co_realise_cubes()
 
     def test_basic(self):
-        real_data = np.arange(3.)
+        real_data = np.arange(3.0)
         cube = Cube(as_lazy_data(real_data))
         co_realise_cubes(cube)
         self.assertFalse(cube.has_lazy_data())
         self.assertArrayAllClose(cube.core_data(), real_data)
 
     def test_multi(self):
-        real_data = np.arange(3.)
+        real_data = np.arange(3.0)
         cube_base = Cube(as_lazy_data(real_data))
         cube_inner = cube_base + 1
         result_a = cube_base + 1
@@ -57,7 +57,7 @@ class Test_co_realise_cubes(tests.IrisTest):
         self.assertTrue(cube_inner.has_lazy_data())
 
     def test_combined_access(self):
-        wrapped_array = ArrayAccessCounter(np.arange(3.))
+        wrapped_array = ArrayAccessCounter(np.arange(3.0))
         lazy_array = as_lazy_data(wrapped_array)
         derived_a = lazy_array + 1
         derived_b = lazy_array + 2
@@ -79,5 +79,5 @@ class Test_co_realise_cubes(tests.IrisTest):
         self.assertEqual(wrapped_array.access_count, 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

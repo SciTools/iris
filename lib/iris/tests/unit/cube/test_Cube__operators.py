@@ -25,9 +25,9 @@ class Test_lazy_maths(tests.IrisTest):
         data = np.arange(len(points) * nx, dtype=dtype) + 1  # Just avoid 0.
         data = data.reshape(len(points), nx)
         data = as_lazy_data(data)
-        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
-        lat = DimCoord(points, 'latitude', bounds=bounds)
-        lon = DimCoord(np.arange(nx), 'longitude')
+        cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
+        lat = DimCoord(points, "latitude", bounds=bounds)
+        lon = DimCoord(np.arange(nx), "longitude")
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         return cube
@@ -143,7 +143,7 @@ class Test_lazy_maths(tests.IrisTest):
 class Test_lazy_maths__scalar_cube(tests.IrisTest):
     def build_lazy_cube(self, value, dtype=np.float64):
         data = as_lazy_data(np.array(value, dtype=dtype))
-        return iris.cube.Cube(data, standard_name='air_temperature', units='K')
+        return iris.cube.Cube(data, standard_name="air_temperature", units="K")
 
     def setUp(self):
         self.c1 = self.build_lazy_cube(3)
@@ -224,13 +224,13 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
 
 class Test_lazy_maths__masked_data(tests.IrisTest):
     def build_lazy_cube(self, dtype=np.float64):
-        data = ma.array([[1., 1.], [1., 100000.]],
-                        mask=[[0, 0], [0, 1]],
-                        dtype=dtype)
+        data = ma.array(
+            [[1.0, 1.0], [1.0, 100000.0]], mask=[[0, 0], [0, 1]], dtype=dtype
+        )
         data = as_lazy_data(data)
-        cube = iris.cube.Cube(data, standard_name='air_temperature', units='K')
-        lat = DimCoord([-10, 10], 'latitude')
-        lon = DimCoord([10, 20], 'longitude')
+        cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
+        lat = DimCoord([-10, 10], "latitude")
+        lon = DimCoord([10, 20], "longitude")
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
         return cube

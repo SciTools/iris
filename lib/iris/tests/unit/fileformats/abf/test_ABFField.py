@@ -36,15 +36,15 @@ class MethodCounter:
 
 class Test_data(tests.IrisTest):
     def test_single_read(self):
-        path = '0000000000000000jan00000'
+        path = "0000000000000000jan00000"
         field = ABFField(path)
 
-        with mock.patch('iris.fileformats.abf.np.fromfile') as fromfile:
-            with MethodCounter('__getattr__') as getattr:
-                with MethodCounter('_read') as read:
+        with mock.patch("iris.fileformats.abf.np.fromfile") as fromfile:
+            with MethodCounter("__getattr__") as getattr:
+                with MethodCounter("_read") as read:
                     field.data
 
-        fromfile.assert_called_once_with(path, dtype='>u1')
+        fromfile.assert_called_once_with(path, dtype=">u1")
         self.assertEqual(getattr.count, 1)
         self.assertEqual(read.count, 1)
 

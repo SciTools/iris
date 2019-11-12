@@ -29,27 +29,32 @@ class Test(iris.tests.IrisTest):
 
     def test_noncommon_array_attributes(self):
         # test non-common array attribute
-        self.cube_a.attributes['test_array'] = np.array([1, 2, 3])
+        self.cube_a.attributes["test_array"] = np.array([1, 2, 3])
         return_str = self._compare_result(self.cube_a, self.cube_b)
-        self.assertString(return_str, ['compatible_cubes.str.txt'])
+        self.assertString(return_str, ["compatible_cubes.str.txt"])
 
     def test_same_array_attributes(self):
         # test matching array attribute
-        self.cube_a.attributes['test_array'] = np.array([1, 2, 3])
-        self.cube_b.attributes['test_array'] = np.array([1, 2, 3])
+        self.cube_a.attributes["test_array"] = np.array([1, 2, 3])
+        self.cube_b.attributes["test_array"] = np.array([1, 2, 3])
         return_str = self._compare_result(self.cube_a, self.cube_b)
-        self.assertString(return_str, ['compatible_cubes.str.txt'])
+        self.assertString(return_str, ["compatible_cubes.str.txt"])
 
     def test_different_array_attributes(self):
         # test non-matching array attribute
-        self.cube_a.attributes['test_array'] = np.array([1, 2, 3])
-        self.cube_b.attributes['test_array'] = np.array([1, 7, 3])
+        self.cube_a.attributes["test_array"] = np.array([1, 2, 3])
+        self.cube_b.attributes["test_array"] = np.array([1, 7, 3])
         return_str = self._compare_result(self.cube_a, self.cube_b)
         self.assertString(
             return_str,
-            ['unit', 'util', 'describe_diff',
-             'incompatible_array_attrs.str.txt'])
+            [
+                "unit",
+                "util",
+                "describe_diff",
+                "incompatible_array_attrs.str.txt",
+            ],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

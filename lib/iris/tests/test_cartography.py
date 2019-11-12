@@ -29,24 +29,34 @@ class Test_get_xy_grids(tests.IrisTest):
 
     def test_2d(self):
         cube = iris.cube.Cube(np.arange(12).reshape(3, 4))
-        cube.add_aux_coord(iris.coords.AuxCoord(
-                                np.arange(12).reshape(3, 4),
-                                "latitude"), (0, 1))
-        cube.add_aux_coord(iris.coords.AuxCoord(
-                                np.arange(100, 112).reshape(3, 4),
-                                "longitude"), (0, 1))
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(np.arange(12).reshape(3, 4), "latitude"),
+            (0, 1),
+        )
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.arange(100, 112).reshape(3, 4), "longitude"
+            ),
+            (0, 1),
+        )
         x, y = iris.analysis.cartography.get_xy_grids(cube)
         self.assertRepr((x, y), ("cartography", "get_xy_grids", "2d.txt"))
 
     def test_3d(self):
         cube = iris.cube.Cube(np.arange(60).reshape(5, 3, 4))
-        cube.add_aux_coord(iris.coords.AuxCoord(
-                                np.arange(60).reshape(5, 3, 4),
-                                "latitude"), (0, 1, 2))
-        cube.add_aux_coord(iris.coords.AuxCoord(
-                                np.arange(100, 160).reshape(5, 3, 4),
-                                "longitude"), (0, 1, 2))
-        self.assertRaises(ValueError, iris.analysis.cartography.get_xy_grids, cube)
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(np.arange(60).reshape(5, 3, 4), "latitude"),
+            (0, 1, 2),
+        )
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(
+                np.arange(100, 160).reshape(5, 3, 4), "longitude"
+            ),
+            (0, 1, 2),
+        )
+        self.assertRaises(
+            ValueError, iris.analysis.cartography.get_xy_grids, cube
+        )
 
 
 if __name__ == "__main__":

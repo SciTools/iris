@@ -19,17 +19,23 @@ class Test_load(tests.IrisTest):
         # Check that the load function calls the two necessary utility
         # functions.
         extract_result = mock.Mock()
-        interpret_patch = mock.patch('iris.fileformats.pp._interpret_fields',
-                                     autospec=True, return_value=iter([]))
-        field_gen_patch = mock.patch('iris.fileformats.pp._field_gen',
-                                     autospec=True,
-                                     return_value=extract_result)
+        interpret_patch = mock.patch(
+            "iris.fileformats.pp._interpret_fields",
+            autospec=True,
+            return_value=iter([]),
+        )
+        field_gen_patch = mock.patch(
+            "iris.fileformats.pp._field_gen",
+            autospec=True,
+            return_value=extract_result,
+        )
         with interpret_patch as interpret, field_gen_patch as field_gen:
-            pp.load('mock', read_data=True)
+            pp.load("mock", read_data=True)
 
         interpret.assert_called_once_with(extract_result)
-        field_gen.assert_called_once_with('mock', read_data_bytes=True,
-                                          little_ended=False)
+        field_gen.assert_called_once_with(
+            "mock", read_data_bytes=True, little_ended=False
+        )
 
 
 if __name__ == "__main__":

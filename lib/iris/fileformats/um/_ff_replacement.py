@@ -34,7 +34,7 @@ def um_to_pp(filename, read_data=False, word_depth=None):
         the FieldsFile.  Default value is False.
 
     Returns:
-        Iteration of :class:`iris.fileformats.pp.PPField`\s.
+        Iteration of :class:`iris.fileformats.pp.PPField`.
 
     For example::
 
@@ -45,16 +45,14 @@ def um_to_pp(filename, read_data=False, word_depth=None):
     if word_depth is None:
         ff2pp = FF2PP(filename, read_data=read_data)
     else:
-        ff2pp = FF2PP(filename, read_data=read_data,
-                      word_depth=word_depth)
+        ff2pp = FF2PP(filename, read_data=read_data, word_depth=word_depth)
 
     # Note: unlike the original wrapped case, we will return an actual
     # iterator, rather than an object that can provide an iterator.
     return iter(ff2pp)
 
 
-def load_cubes(filenames, callback, constraints=None,
-               _loader_kwargs=None):
+def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
     """
     Loads cubes from filenames of UM fieldsfile-like files.
 
@@ -75,8 +73,12 @@ def load_cubes(filenames, callback, constraints=None,
 
     """
     return _load_cubes_variable_loader(
-        filenames, callback, FF2PP, constraints=constraints,
-        loading_function_kwargs=_loader_kwargs)
+        filenames,
+        callback,
+        FF2PP,
+        constraints=constraints,
+        loading_function_kwargs=_loader_kwargs,
+    )
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
@@ -89,5 +91,9 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
         :func:`load_cubes` for keyword details
 
     """
-    return load_cubes(filenames, callback, constraints=constraints,
-                      _loader_kwargs={'word_depth': 4})
+    return load_cubes(
+        filenames,
+        callback,
+        constraints=constraints,
+        _loader_kwargs={"word_depth": 4},
+    )

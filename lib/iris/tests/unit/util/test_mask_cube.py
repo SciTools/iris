@@ -43,5 +43,5 @@ class Test(tests.IrisTest):
         self.assertTrue(np.all(expected.data.mask == returned.data.mask))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

@@ -21,12 +21,12 @@ if tests.MPL_AVAILABLE:
 @tests.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
-        qplt.outline(self.cube, coords=('bar', 'str_coord'))
-        self.assertBoundsTickLabels('yaxis')
+        qplt.outline(self.cube, coords=("bar", "str_coord"))
+        self.assertBoundsTickLabels("yaxis")
 
     def test_xaxis_labels(self):
-        qplt.outline(self.cube, coords=('str_coord', 'bar'))
-        self.assertBoundsTickLabels('xaxis')
+        qplt.outline(self.cube, coords=("str_coord", "bar"))
+        self.assertBoundsTickLabels("xaxis")
 
 
 @tests.skip_plot
@@ -34,15 +34,15 @@ class TestCoords(tests.IrisTest, MixinCoords):
     def setUp(self):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=True)
-        coord = self.cube.coord('foo')
+        coord = self.cube.coord("foo")
         self.foo = coord.contiguous_bounds()
         self.foo_index = np.arange(coord.points.size + 1)
-        coord = self.cube.coord('bar')
+        coord = self.cube.coord("bar")
         self.bar = coord.contiguous_bounds()
         self.bar_index = np.arange(coord.points.size + 1)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.mpl_patch = self.patch('matplotlib.pyplot.pcolormesh')
+        self.mpl_patch = self.patch("matplotlib.pyplot.pcolormesh")
         self.draw_func = qplt.outline
 
 

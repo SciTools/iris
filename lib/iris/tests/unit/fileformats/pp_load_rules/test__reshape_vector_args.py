@@ -38,7 +38,7 @@ class TestSingleArg(tests.IrisTest):
 
     def test_bad_dimensions(self):
         points = np.array([[1, 2, 3], [4, 5, 6]])
-        with self.assertRaisesRegex(ValueError, 'Length'):
+        with self.assertRaisesRegex(ValueError, "Length"):
             _reshape_vector_args([(points, (0, 1, 2))])
 
     def test_scalar(self):
@@ -127,9 +127,11 @@ class TestMultipleArgs(tests.IrisTest):
         a2 = np.array([3, 4])
         a3 = np.array(7)
         result = _reshape_vector_args([(a1, (0, 2)), (a2, (1,)), (a3, ())])
-        expected = [a1.reshape(1, 1, 4),
-                    a2.reshape(1, 2, 1),
-                    a3.reshape(1, 1, 1)]
+        expected = [
+            a1.reshape(1, 1, 4),
+            a2.reshape(1, 2, 1),
+            a3.reshape(1, 1, 1),
+        ]
         self._check(result, expected)
 
 

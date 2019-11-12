@@ -20,19 +20,24 @@ class Test_as_cartopy_crs(tests.IrisTest):
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
-        self.ortho_cs = Orthographic(self.latitude_of_projection_origin,
-                                     self.longitude_of_projection_origin,
-                                     ellipsoid=self.ellipsoid)
+        self.ortho_cs = Orthographic(
+            self.latitude_of_projection_origin,
+            self.longitude_of_projection_origin,
+            ellipsoid=self.ellipsoid,
+        )
 
     def test_crs_creation(self):
         res = self.ortho_cs.as_cartopy_crs()
-        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                           semiminor_axis=self.semi_minor_axis,
-                           ellipse=None)
+        globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
         expected = ccrs.Orthographic(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
-            globe=globe)
+            globe=globe,
+        )
         self.assertEqual(res, expected)
 
 
@@ -43,21 +48,26 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.semi_major_axis = 6377563.396
         self.semi_minor_axis = 6356256.909
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
-        self.ortho_cs = Orthographic(self.latitude_of_projection_origin,
-                                     self.longitude_of_projection_origin,
-                                     ellipsoid=self.ellipsoid)
+        self.ortho_cs = Orthographic(
+            self.latitude_of_projection_origin,
+            self.longitude_of_projection_origin,
+            ellipsoid=self.ellipsoid,
+        )
 
     def test_projection_creation(self):
         res = self.ortho_cs.as_cartopy_projection()
-        globe = ccrs.Globe(semimajor_axis=self.semi_major_axis,
-                           semiminor_axis=self.semi_minor_axis,
-                           ellipse=None)
+        globe = ccrs.Globe(
+            semimajor_axis=self.semi_major_axis,
+            semiminor_axis=self.semi_minor_axis,
+            ellipse=None,
+        )
         expected = ccrs.Orthographic(
             self.latitude_of_projection_origin,
             self.longitude_of_projection_origin,
-            globe=globe)
+            globe=globe,
+        )
         self.assertEqual(res, expected)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

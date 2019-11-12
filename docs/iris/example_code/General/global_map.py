@@ -15,7 +15,7 @@ import iris.quickplot as qplt
 
 
 def main():
-    fname = iris.sample_data_path('air_temp.pp')
+    fname = iris.sample_data_path("air_temp.pp")
     temperature = iris.load_cube(fname)
 
     # Plot #1: contourf with axes longitude from -180 to 180
@@ -31,5 +31,6 @@ def main():
     plt.gca().coastlines()
     iplt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

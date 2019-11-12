@@ -17,10 +17,11 @@ with extest_util.add_examples_to_path():
 
 class TestCoriolisPlot(tests.GraphicsTest):
     """Test the Coriolis Plot example code."""
+
     def test_coriolis_plot(self):
         with extest_util.show_replaced_by_check_graphic(self):
             coriolis_plot.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

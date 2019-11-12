@@ -22,13 +22,19 @@ def _ones_like(cube):
     """
     ones_cube = cube.copy()
     ones_cube.data = np.ones_like(cube.data)
-    ones_cube.rename('unknown')
+    ones_cube.rename("unknown")
     ones_cube.units = 1
     return ones_cube
 
 
-def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
-             common_mask=False):
+def pearsonr(
+    cube_a,
+    cube_b,
+    corr_coords=None,
+    weights=None,
+    mdtol=1.0,
+    common_mask=False,
+):
     """
     Calculate the Pearson's r correlation coefficient over specified
     dimensions.
@@ -100,13 +106,17 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
         if ma.is_masked(cube_2.data):
             mask_cube = _ones_like(cube_2)
         else:
-            mask_cube = 1.
+            mask_cube = 1.0
         if ma.is_masked(cube_1.data):
             # Take a slice to avoid unnecessary broadcasting of cube_2.
-            slice_coords = [dim_coords_1[i] for i in range(cube_1.ndim) if
-                            dim_coords_1[i] not in common_dim_coords and
-                            np.array_equal(cube_1.data.mask.any(axis=i),
-                                           cube_1.data.mask.all(axis=i))]
+            slice_coords = [
+                dim_coords_1[i]
+                for i in range(cube_1.ndim)
+                if dim_coords_1[i] not in common_dim_coords
+                and np.array_equal(
+                    cube_1.data.mask.any(axis=i), cube_1.data.mask.all(axis=i)
+                )
+            ]
             cube_1_slice = next(cube_1.slices_over(slice_coords))
             mask_cube = _ones_like(cube_1_slice) * mask_cube
         # Apply common mask to data.
@@ -121,35 +131,49 @@ def pearsonr(cube_a, cube_b, corr_coords=None, weights=None, mdtol=1.,
         weights_2 = weights
     else:
         if weights.shape != smaller_shape:
-            raise ValueError("weights array should have dimensions {}".
-                             format(smaller_shape))
+            raise ValueError(
+                "weights array should have dimensions {}".format(smaller_shape)
+            )
 
-        dims_1_common = [i for i in range(cube_1.ndim) if
-                         dim_coords_1[i] in common_dim_coords]
+        dims_1_common = [
+            i
+            for i in range(cube_1.ndim)
+            if dim_coords_1[i] in common_dim_coords
+        ]
         weights_1 = broadcast_to_shape(weights, cube_1.shape, dims_1_common)
         if cube_2.shape != smaller_shape:
-            dims_2_common = [i for i in range(cube_2.ndim) if
-                             dim_coords_2[i] in common_dim_coords]
-            weights_2 = broadcast_to_shape(weights, cube_2.shape,
-                                           dims_2_common)
+            dims_2_common = [
+                i
+                for i in range(cube_2.ndim)
+                if dim_coords_2[i] in common_dim_coords
+            ]
+            weights_2 = broadcast_to_shape(
+                weights, cube_2.shape, dims_2_common
+            )
         else:
             weights_2 = weights
 
     # Calculate correlations.
-    s1 = cube_1 - cube_1.collapsed(corr_coords, iris.analysis.MEAN,
-                                   weights=weights_1)
-    s2 = cube_2 - cube_2.collapsed(corr_coords, iris.analysis.MEAN,
-                                   weights=weights_2)
+    s1 = cube_1 - cube_1.collapsed(
+        corr_coords, iris.analysis.MEAN, weights=weights_1
+    )
+    s2 = cube_2 - cube_2.collapsed(
+        corr_coords, iris.analysis.MEAN, weights=weights_2
+    )
 
-    covar = (s1*s2).collapsed(corr_coords, iris.analysis.SUM,
-                              weights=weights_1, mdtol=mdtol)
-    var_1 = (s1**2).collapsed(corr_coords, iris.analysis.SUM,
-                              weights=weights_1)
-    var_2 = (s2**2).collapsed(corr_coords, iris.analysis.SUM,
-                              weights=weights_2)
+    covar = (s1 * s2).collapsed(
+        corr_coords, iris.analysis.SUM, weights=weights_1, mdtol=mdtol
+    )
+    var_1 = (s1 ** 2).collapsed(
+        corr_coords, iris.analysis.SUM, weights=weights_1
+    )
+    var_2 = (s2 ** 2).collapsed(
+        corr_coords, iris.analysis.SUM, weights=weights_2
+    )
 
-    denom = iris.analysis.maths.apply_ufunc(np.sqrt, var_1*var_2,
-                                            new_unit=covar.units)
+    denom = iris.analysis.maths.apply_ufunc(
+        np.sqrt, var_1 * var_2, new_unit=covar.units
+    )
     corr_cube = covar / denom
     corr_cube.rename("Pearson's r")
 

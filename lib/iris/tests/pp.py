@@ -8,7 +8,6 @@ import contextlib
 import os.path
 
 import iris
-import iris.tests as tests
 
 
 class PPTest:
@@ -16,8 +15,15 @@ class PPTest:
     A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
 
     """
+
     @contextlib.contextmanager
-    def cube_save_test(self, reference_txt_path, reference_cubes=None, reference_pp_path=None, **kwargs):
+    def cube_save_test(
+        self,
+        reference_txt_path,
+        reference_cubes=None,
+        reference_pp_path=None,
+        **kwargs,
+    ):
         """
         A context manager for testing the saving of Cubes to PP files.
 
@@ -48,13 +54,19 @@ class PPTest:
                 temp_pp_path = iris.util.create_temp_filename(".pp")
                 try:
                     iris.save(reference_cubes, temp_pp_path, **kwargs)
-                    self._create_reference_txt(reference_txt_path, temp_pp_path)
+                    self._create_reference_txt(
+                        reference_txt_path, temp_pp_path
+                    )
                 finally:
                     os.remove(temp_pp_path)
             elif reference_pp_path:
-                self._create_reference_txt(reference_txt_path, reference_pp_path)
+                self._create_reference_txt(
+                    reference_txt_path, reference_pp_path
+                )
             else:
-                raise ValueError('Missing all of reference txt file, cubes, and PP path.')
+                raise ValueError(
+                    "Missing all of reference txt file, cubes, and PP path."
+                )
 
         temp_pp_path = iris.util.create_temp_filename(".pp")
         try:
@@ -65,10 +77,14 @@ class PPTest:
             pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
             for pp_field in pp_fields:
                 pp_field.data
-            with open(reference_txt_path, 'r') as reference_fh:
-                reference = ''.join(reference_fh)
-            self._assert_str_same(reference + '\n', str(pp_fields) + '\n',
-                                    reference_txt_path, type_comparison_name='PP files')
+            with open(reference_txt_path, "r") as reference_fh:
+                reference = "".join(reference_fh)
+            self._assert_str_same(
+                reference + "\n",
+                str(pp_fields) + "\n",
+                reference_txt_path,
+                type_comparison_name="PP files",
+            )
         finally:
             os.remove(temp_pp_path)
 
@@ -79,11 +95,11 @@ class PPTest:
             pp_field.data
 
         # Clear any header words we don't use
-        unused = ('lbexp', 'lbegin', 'lbnrec', 'lbproj', 'lbtyp')
+        unused = ("lbexp", "lbegin", "lbnrec", "lbproj", "lbtyp")
         for pp_field in pp_fields:
             for word_name in unused:
                 setattr(pp_field, word_name, 0)
 
         # Save the textual representation of the PP fields
-        with open(txt_path, 'w') as txt_file:
+        with open(txt_path, "w") as txt_file:
             txt_file.writelines(str(pp_fields))
