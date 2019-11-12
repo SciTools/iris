@@ -3,34 +3,26 @@
 Code Formatting
 ***************
 
-Iris uses `black <https://black.readthedocs.io/en/stable/>`_ formatting and `flake8 <https://flake8.pycqa.org/en/stable/>`_
-linting to enforce a consistent code format throughout the project. ``black`` and ``flake8`` can easily be installed
-into your development environment with ``pip``::
+To enforce a consistent code format throughout Iris, we recommend using `pre-commit <https://pre-commit.com/>`_ to run
+`black <https://black.readthedocs.io/en/stable/>`_ formatting and `flake8 <https://flake8.pycqa.org/en/stable/>`_
+linting automatically prior to each ``git commit``.
 
-  $ pip install black flake8
+Please install ``pre-commit`` in your development environment using ``pip``::
 
-and then manually run from the root of the Iris repository::
+    $ pip install pre-commit
 
-  $ black .
-  $ flake8 .
+or alternatively using ``conda``::
 
-Alternatively, ``black`` and ``flake8`` may be installed using ``conda`` instead. Note that, ``black`` also offers
-`editor integration <https://black.readthedocs.io/en/stable/editor_integration.html#editor-integration>`_.
+    $ conda install -c conda-forge pre-commit
 
-As a developer workflow, we instead recommend using `pre-commit <https://pre-commit.com/>`_ to automatically run ``black`` and ``flake8``
-whenever you perform a ``git commit``. Please install ``pre-commit`` in your development environment as follows::
+Then from the root of the Iris git repository run::
 
-  $ pip install pre-commit
+    $ pre-commit install
 
-then run::
+to install the ``pre-commit`` git hooks defined in our ``.pre-commit-config.yaml`` file.
 
-  $ pre-commit install
+Upon performing a ``git commit``, your code will now be automatically formatted to the ``black`` configuration defined
+in our ``pyproject.toml`` file, and linted according to our ``.flake8`` configuration file. Note that, ``pre-commit``
+will automatically download and install the necessary packages for each ``.pre-commit-config.yaml`` git hook.
 
-from the root of the Iris repository to install the Iris ``pre-commit`` git hooks defined in our ``.pre-commit-config.yaml``
-file. Note that, the ``pre-commit`` hooks will download and install the appropriate packages as necessary.
-
-Upon performing a ``git commit``, your code will now be automatically formatted according to our ``black`` configuration defined in the
-``pyproject.toml`` file, and linted using our ``flake8`` configuration defined in the ``.flake8`` file.
-
-Note that, ``pre-commit`` allows you to `disable hooks <https://pre-commit.com/#temporarily-disabling-hooks>`_
-temporarily, if so required.
+Additionally, you may wish to enable ``black`` for your preferred `editor/IDE <https://black.readthedocs.io/en/stable/editor_integration.html#editor-integration>`_.
