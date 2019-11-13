@@ -15,8 +15,7 @@ performance testing. it is expected to be expanded/replaced in future.
 from iris import tests
 
 import iris
-
-from iris import analysis
+from iris.analysis import AreaWeighted
 
 
 @tests.skip_data
@@ -26,8 +25,8 @@ class RegriddingTests:
         file_path = tests.get_data_path(
             ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
-        self.cube = iris.load(file_path)[0]
-        self.scheme_area_w = analysis.AreaWeighted()
+        self.cube = iris.load_cube(file_path)
+        self.scheme_area_w = AreaWeighted()
 
     def time_regrid_area_w(self):
         # Regrid the cube onto itself.

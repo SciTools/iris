@@ -1,3 +1,5 @@
+// See https://asv.readthedocs.io/en/stable/asv.conf.json.html for
+// details on what can be included in this file.
 {
     "version": 1,
     "project": "iris",
@@ -33,7 +35,4 @@
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-
-    // See https://asv.readthedocs.io/en/stable/asv.conf.json.html for
-    // details on what can be included in this file.
 }
