@@ -52,6 +52,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         _MODE_RDIV: "/",
     }
 
+    @abstractmethod
     def __init__(
         self,
         values,
