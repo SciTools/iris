@@ -14,7 +14,7 @@ Getting started
 1. Fork the Iris repository, create your new fix/feature branch, and
    start commiting code.
  - Our
-   [development guide](http://scitools.org.uk/iris/docs/latest/developers_guide/gitwash/git_development.html)
+   [development guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html)
    has more detail.
 1. Make sure you've added appropriate tests, and that *all* the tests
    pass.
