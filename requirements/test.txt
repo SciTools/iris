@@ -6,3 +6,4 @@ pep8
 filelock
 imagehash>=4.0
 requests
+asv
