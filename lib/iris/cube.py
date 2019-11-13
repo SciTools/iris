@@ -3583,6 +3583,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     or coord_comparison["non_equal_data_dimension"]
                 )
 
+            if result:
+                anc_diff = set(self._ancillary_variables_and_dims) == set(
+                    other._ancillary_variables_and_dims
+                )
+                cm_diff = set(self._cell_measures_and_dims) == set(
+                    other._cell_measures_and_dims
+                )
+                result = anc_diff and cm_diff
+
             # Having checked everything else, check approximate data equality.
             if result:
                 result = da.allclose(
