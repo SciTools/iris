@@ -7,7 +7,6 @@
     "repo": ".",
     "environment_type": "conda",
     "show_commit_url": "http://github.com/scitools/iris/commit/",
-    //"pythons": ["2.7", "3.6", "3.7"],
     "conda_channels": ["conda-forge", "defaults"],
     "matrix": {
         "cartopy": [],
