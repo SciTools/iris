@@ -16,7 +16,7 @@ import iris.tests as tests
 import numpy as np
 
 from iris.cube import Cube
-from iris.experimental.equalise_cubes import equalise_attributes
+from iris.util import equalise_attributes
 import iris.tests.stock
 
 

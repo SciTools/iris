@@ -1,0 +1,2 @@
+* The :func:`iris.experimental.equalise_cubes.equalise_attributes` function has been migrated into
+  the core of Iris. Please use the :func:`iris.util.equalise_attributes` function instead.
