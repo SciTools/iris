@@ -1023,7 +1023,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
         self.names_map = ["latitude", "longitude"]
         masked_array = np.ma.masked_array([0, 1, 2], mask=[True, False, True])
         self.cm = iris.coords.CellMeasure(
-            masked_array, measure="area", var_name="cell_area"
+            masked_array, "area", var_name="cell_area"
         )
         self.cube.add_cell_measure(self.cm, data_dims=0)
         self.exp_emsg = "Cell measures with missing data are not supported."

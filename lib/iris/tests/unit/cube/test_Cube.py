@@ -1837,7 +1837,7 @@ class Test_add_metadata(tests.IrisTest):
     def test_add_cell_measure(self):
         cube = Cube(np.arange(6).reshape(2, 3))
         a_cell_measure = CellMeasure(
-            data=np.arange(6).reshape(2, 3), long_name="area", measure="area"
+            np.arange(6).reshape(2, 3), "area", long_name="area"
         )
         cube.add_cell_measure(a_cell_measure, [0, 1])
         self.assertEqual(cube.cell_measure("area"), a_cell_measure)
@@ -1887,12 +1887,10 @@ class Test_remove_metadata(tests.IrisTest):
         z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
         cube.add_aux_coord(z_coord, [0, 1])
         a_cell_measure = CellMeasure(
-            data=np.arange(6).reshape(2, 3), long_name="area", measure="area"
+            np.arange(6).reshape(2, 3), "area", long_name="area"
         )
         self.b_cell_measure = CellMeasure(
-            data=np.arange(6).reshape(2, 3),
-            long_name="other_area",
-            measure="area",
+            np.arange(6).reshape(2, 3), "area", long_name="other_area",
         )
         cube.add_cell_measure(a_cell_measure, [0, 1])
         cube.add_cell_measure(self.b_cell_measure, [0, 1])
@@ -1943,7 +1941,7 @@ class Test__getitem_CellMeasure(tests.IrisTest):
         z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
         cube.add_aux_coord(z_coord, [0, 1])
         a_cell_measure = CellMeasure(
-            data=np.arange(6).reshape(2, 3), long_name="area", measure="area"
+            np.arange(6).reshape(2, 3), "area", long_name="area"
         )
         cube.add_cell_measure(a_cell_measure, [0, 1])
         self.cube = cube
@@ -2013,10 +2011,7 @@ class TestCellMeasures(tests.IrisTest):
         z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
         cube.add_aux_coord(z_coord, [0, 1])
         self.a_cell_measure = CellMeasure(
-            data=np.arange(6).reshape(2, 3),
-            long_name="area",
-            measure="area",
-            units="m2",
+            np.arange(6).reshape(2, 3), "area", long_name="area", units="m2",
         )
         cube.add_cell_measure(self.a_cell_measure, [0, 1])
         self.cube = cube
@@ -2118,9 +2113,7 @@ class Test_transpose(tests.IrisTest):
 
     def test_cell_measures(self):
         area_cm = CellMeasure(
-            data=np.arange(12).reshape(3, 4),
-            long_name="area of cells",
-            measure="area",
+            np.arange(12).reshape(3, 4), "area", long_name="area of cells",
         )
         self.cube.add_cell_measure(area_cm, (0, 2))
         self.cube.transpose()

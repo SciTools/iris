@@ -1974,12 +1974,12 @@ fc_extras
 
         # Create the CellMeasure
         cell_measure = iris.coords.CellMeasure(data,
+                                               measure,
                                                standard_name=standard_name,
                                                long_name=long_name,
                                                var_name=var_name,
                                                units=attr_units,
-                                               attributes=attributes,
-                                               measure=measure)
+                                               attributes=attributes)
 
         # Add it to the cube
         cube.add_cell_measure(cell_measure, data_dims)

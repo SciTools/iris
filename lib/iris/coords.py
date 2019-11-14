@@ -755,12 +755,12 @@ class CellMeasure(AncillaryVariable):
     def __init__(
         self,
         data,
+        measure,
         standard_name=None,
         long_name=None,
         var_name=None,
         units="1",
         attributes=None,
-        measure=None,
     ):
 
         """
@@ -772,6 +772,9 @@ class CellMeasure(AncillaryVariable):
             The values of the measure for each cell.
             Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
             (:class:`dask.array.Array`).
+        * measure
+            A string describing the type of measure.  'area' and 'volume'
+            are the only valid entries.
 
         Kwargs:
 
@@ -786,9 +789,6 @@ class CellMeasure(AncillaryVariable):
             Can be a string, which will be converted to a Unit object.
         * attributes
             A dictionary containing other CF and user-defined attributes.
-        * measure
-            A string describing the type of measure.  'area' and 'volume'
-            are the only valid entries.
 
         """
         super().__init__(
@@ -821,8 +821,8 @@ class CellMeasure(AncillaryVariable):
 
     def __repr__(self):
         fmt = (
-            "{cls}({self.data!r}"
-            ", measure={self.measure}, standard_name={self.standard_name!r}"
+            "{cls}({self.data!r}, {self.measure!r}"
+            ", standard_name={self.standard_name!r}"
             ", units={self.units!r}{other_metadata})"
         )
         result = fmt.format(
