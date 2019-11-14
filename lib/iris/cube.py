@@ -1095,7 +1095,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.cell_measures(cell_measure):
             raise ValueError("Duplicate cell_measures are not permitted.")
         data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
-        self._cell_measures_and_dims.append([cell_measure, data_dims])
+        self._cell_measures_and_dims.append((cell_measure, data_dims))
         self._cell_measures_and_dims.sort(
             key=lambda cm_dims: (cm_dims[0]._as_defn(), cm_dims[1])
         )
@@ -1125,7 +1125,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ancillary_variable, data_dims
         )
         self._ancillary_variables_and_dims.append(
-            [ancillary_variable, data_dims]
+            (ancillary_variable, data_dims)
         )
         self._ancillary_variables_and_dims.sort(
             key=lambda av_dims: (av_dims[0]._as_defn(), av_dims[1])

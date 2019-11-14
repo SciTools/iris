@@ -2257,7 +2257,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
         cmth = CellMethod("mean", "time", "6hr")
-        cube2.add_cell_meathod(cmth)
+        cube2.add_cell_method(cmth)
         self.assertFalse(cube1 == cube2)
 
 
