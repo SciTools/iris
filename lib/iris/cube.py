@@ -2255,16 +2255,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 av for av in self.ancillary_variables()
             ]
 
-            # Determine the cube coordinates that don't describe the cube and
-            # are most likely erroneous.
-            vector_coords = (
-                vector_dim_coords + vector_aux_coords + vector_derived_coords
-            )
-            ok_coord_ids = scalar_coord_ids.union(set(map(id, vector_coords)))
-            invalid_coords = [
-                coord for coord in all_coords if id(coord) not in ok_coord_ids
-            ]
-
             # Sort scalar coordinates by name.
             scalar_coords.sort(key=lambda coord: coord.name())
             # Sort vector coordinates by data dimension and name.
@@ -2277,8 +2267,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             vector_derived_coords.sort(
                 key=lambda coord: (self.coord_dims(coord), coord.name())
             )
-            # Sort other coordinates by name.
-            invalid_coords.sort(key=lambda coord: coord.name())
 
             #
             # Generate textual summary of cube vector coordinates.
@@ -2515,27 +2503,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 summary += "\n     Scalar coordinates:\n" + "\n".join(
                     scalar_summary
-                )
-
-            #
-            # Generate summary of cube's invalid coordinates.
-            #
-            if invalid_coords:
-                invalid_summary = []
-
-                for coord in invalid_coords:
-                    invalid_summary.append(
-                        "%*s%s" % (indent, " ", coord.name())
-                    )
-
-                # Interleave any extra lines that are needed to distinguish the
-                # coordinates.
-                invalid_summary = self._summary_extra(
-                    invalid_coords, invalid_summary, extra_indent
-                )
-
-                summary += "\n     Invalid coordinates:\n" + "\n".join(
-                    invalid_summary
                 )
 
             # cell measures
