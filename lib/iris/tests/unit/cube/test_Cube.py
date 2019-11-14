@@ -25,7 +25,13 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord, CellMeasure, AncillaryVariable
+from iris.coords import (
+    AuxCoord,
+    DimCoord,
+    CellMeasure,
+    AncillaryVariable,
+    CellMethod,
+)
 from iris.exceptions import (
     CoordinateNotFoundError,
     CellMeasureNotFoundError,
@@ -2204,6 +2210,68 @@ class Test__eq__data(tests.IrisTest):
         cube1 = Cube([True, False])
         cube2 = Cube([True, True])
         self.assertFalse(cube1 == cube2)
+
+
+class Test__eq__meta(tests.IrisTest):
+    def test_ancillary_fail(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        avr = AncillaryVariable([2, 3], long_name="foo")
+        cube2.add_ancillary_variable(avr, 0)
+        self.assertFalse(cube1 == cube2)
+
+    def test_ancillary_reorder(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        avr1 = AncillaryVariable([2, 3], long_name="foo")
+        avr2 = AncillaryVariable([4, 5], long_name="bar")
+        # Add the same ancillary variables to cube1 and cube2 in
+        # opposite orders.
+        cube1.add_ancillary_variable(avr1, 0)
+        cube1.add_ancillary_variable(avr2, 0)
+        cube2.add_ancillary_variable(avr2, 0)
+        cube2.add_ancillary_variable(avr1, 0)
+        self.assertTrue(cube1 == cube2)
+
+    def test_cell_measure_fail(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cms = CellMeasure([2, 3], measure="area", long_name="foo")
+        cube2.add_cell_measure(cms, 0)
+        self.assertFalse(cube1 == cube2)
+
+    def test_cell_measure_reorder(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cms1 = CellMeasure([2, 3], measure="area", long_name="foo")
+        cms2 = CellMeasure([4, 5], measure="area", long_name="bar")
+        # Add the same cell measure to cube1 and cube2 in
+        # opposite orders.
+        cube1.add_cell_measure(cms1, 0)
+        cube1.add_cell_measure(cms2, 0)
+        cube2.add_cell_measure(cms2, 0)
+        cube2.add_cell_measure(cms1, 0)
+        self.assertTrue(cube1 == cube2)
+
+    def test_cell_method_fail(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cmth = CellMethod("mean", "time", "6hr")
+        cube2.add_cell_meathod(cmth)
+        self.assertFalse(cube1 == cube2)
+
+    def test_cell_method_reorder(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cmth1 = CellMethod("mean", "time", "6hr")
+        cmth2 = CellMethod("mean", "time", "12hr")
+        # Add the same cell method to cube1 and cube2 in
+        # opposite orders.
+        cube1.add_cell_method(cmth1)
+        cube1.add_cell_method(cmth2)
+        cube2.add_cell_method(cmth2)
+        cube2.add_cell_method(cmth1)
+        self.assertTrue(cube1 == cube2)
 
 
 if __name__ == "__main__":
