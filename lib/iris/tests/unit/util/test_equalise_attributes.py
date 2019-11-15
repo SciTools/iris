@@ -4,8 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.experimental.equalise_cubes.equalise_attributes`
-function.
+Unit tests for the :func:`iris.util.equalise_attributes` function.
 
 """
 
