@@ -12,7 +12,6 @@ from abc import ABCMeta, abstractmethod
 import warnings
 
 import numpy as np
-import cartopy
 import cartopy.crs as ccrs
 
 
@@ -369,24 +368,13 @@ class RotatedGeogCS(CoordSystem):
 
     def _ccrs_kwargs(self):
         globe = self._ellipsoid_to_globe(self.ellipsoid, None)
-
-        # Cartopy v0.12 provided the new arg north_pole_grid_longitude
         cartopy_kwargs = {
+            "central_rotated_longitude": self.north_pole_grid_longitude,
             "pole_longitude": self.grid_north_pole_longitude,
             "pole_latitude": self.grid_north_pole_latitude,
             "globe": globe,
         }
 
-        if cartopy.__version__ < "0.12":
-            warnings.warn(
-                '"central_rotated_longitude" is not supported by '
-                "cartopy{} and has been ignored in the "
-                "creation of the cartopy "
-                "projection/crs.".format(cartopy.__version__)
-            )
-        else:
-            crl = "central_rotated_longitude"
-            cartopy_kwargs[crl] = self.north_pole_grid_longitude
         return cartopy_kwargs
 
     def as_cartopy_crs(self):
@@ -1015,12 +1003,6 @@ class LambertConformal(CoordSystem):
 
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
-        # Cartopy v0.12 deprecated the use of secant_latitudes.
-        if cartopy.__version__ < "0.12":
-            conic_position = dict(secant_latitudes=self.secant_latitudes)
-        else:
-            conic_position = dict(standard_parallels=self.secant_latitudes)
-
         return ccrs.LambertConformal(
             central_longitude=self.central_lon,
             central_latitude=self.central_lat,
@@ -1028,7 +1010,7 @@ class LambertConformal(CoordSystem):
             false_northing=self.false_northing,
             globe=globe,
             cutoff=cutoff,
-            **conic_position,
+            standard_parallels=self.secant_latitudes,
         )
 
     def as_cartopy_projection(self):

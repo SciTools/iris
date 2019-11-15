@@ -3,7 +3,7 @@
 
 # Without these, iris won't even import.
 
-cartopy
+cartopy>=0.12
 #conda: proj4<6
 cf-units>=2
 cftime
