@@ -398,7 +398,7 @@ Merge
 Differences in the :data:`~iris.cube.Cube.attributes` the input cubes probably
 cause the greatest amount of merge-related difficulties.
 In recognition of this, Iris has a helper function,
-:func:`~iris.experimental.equalise_cubes.equalise_attributes`, to equalise
+:func:`~iris.util.equalise_attributes`, to equalise
 attributes differences in the input cubes.
 
 .. note::
@@ -407,16 +407,16 @@ attributes differences in the input cubes.
     :meth:`iris.cube.Cube.is_compatible` are **not** designed to give user
     indication of whether two cubes can be merged.
 
-To demonstrate using :func:`~iris.experimental.equalise_cubes.equalise_attributes`,
+To demonstrate using :func:`~iris.util.equalise_attributes`,
 let's return to our non-merging list of input cubes from the merge_cube example
 from earlier.
-We'll call :func:`~iris.experimental.equalise_cubes.equalise_attributes` on the
+We'll call :func:`~iris.util.equalise_attributes` on the
 input cubes before merging the input cubes using :meth:`~iris.cube.CubeList.merge_cube`:
 
 .. doctest:: merge_vs_merge_cube
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
-    >>> from iris.experimental.equalise_cubes import equalise_attributes
+    >>> from iris.util import equalise_attributes
     >>> print(cubes)
     0: air_temperature / (kelvin)          (y: 4; x: 5)
     1: air_temperature / (kelvin)          (y: 4; x: 5)

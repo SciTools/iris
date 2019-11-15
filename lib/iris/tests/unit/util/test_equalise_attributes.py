@@ -4,8 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.experimental.equalise_cubes.equalise_attributes`
-function.
+Unit tests for the :func:`iris.util.equalise_attributes` function.
 
 """
 
@@ -16,7 +15,7 @@ import iris.tests as tests
 import numpy as np
 
 from iris.cube import Cube
-from iris.experimental.equalise_cubes import equalise_attributes
+from iris.util import equalise_attributes
 import iris.tests.stock
 
 
