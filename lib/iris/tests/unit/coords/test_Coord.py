@@ -1010,8 +1010,8 @@ class TestClimatology(tests.IrisTest):
         self.assertFalse(coord.climatological)
 
 
-class Test_Coord_is_abstract(tests.IrisTest):
-    def test_instantiate_fail(self):
+class Test___init____abstractmethod(tests.IrisTest):
+    def test(self):
         emsg = (
             "Can't instantiate abstract class Coord with abstract"
             " methods __init__"
