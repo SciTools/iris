@@ -508,6 +508,14 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         cached_x_bounds.append(x_bounds)
         cached_x_indices.append(x_indices)
 
+    # Axes of data over which the weighted mean is calculated.
+    axes = []
+    if y_dim is not None:
+        axes.append(y_dim)
+    if x_dim is not None:
+        axes.append(x_dim)
+    axis = tuple(axes)
+
     # Simple for loop approach.
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
@@ -596,19 +604,14 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                     # Broadcast the weights array to allow numpy's ma.average
                     # to be called.
                     weights_padded_shape = [1] * data.ndim
-                    axes = []
                     if y_dim is not None:
                         weights_padded_shape[y_dim] = weights_shape_y
-                        axes.append(y_dim)
                     if x_dim is not None:
                         weights_padded_shape[x_dim] = weights_shape_x
-                        axes.append(x_dim)
                     # Assign new shape to raise error on copy.
                     weights.shape = weights_padded_shape
                     # Broadcast weights to match shape of data.
                     _, weights = np.broadcast_arrays(data, weights)
-                    # Axes of data over which the weighted mean is calculated.
-                    axis = tuple(axes)
 
                 # Calculate weighted mean taking into account missing data.
                 new_data_pt = _weighted_mean_with_mdtol(
