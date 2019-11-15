@@ -20,7 +20,6 @@ class Tests(tests.IrisTest):
         self.values = np.array((10.0, 12.0, 16.0, 9.0))
         self.measure = CellMeasure(
             self.values,
-            "area",
             units="m^2",
             standard_name="cell_area",
             long_name="measured_area",
@@ -29,7 +28,7 @@ class Tests(tests.IrisTest):
         )
 
     def test_invalid_measure(self):
-        msg = "measure must be 'area' or 'volume', not length"
+        msg = "measure must be 'area' or 'volume', got 'length'"
         with self.assertRaisesRegex(ValueError, msg):
             self.measure.measure = "length"
 
@@ -101,7 +100,7 @@ class Tests(tests.IrisTest):
     def test___str__(self):
         expected = (
             "CellMeasure(array([10., 12., 16.,  9.]), "
-            "'area', standard_name='cell_area', "
+            "measure='area', standard_name='cell_area', "
             "units=Unit('m^2'), long_name='measured_area', "
             "var_name='area', attributes={'notes': '1m accuracy'})"
         )
@@ -110,7 +109,7 @@ class Tests(tests.IrisTest):
     def test___repr__(self):
         expected = (
             "CellMeasure(array([10., 12., 16.,  9.]), "
-            "'area', standard_name='cell_area', "
+            "measure='area', standard_name='cell_area', "
             "units=Unit('m^2'), long_name='measured_area', "
             "var_name='area', attributes={'notes': '1m accuracy'})"
         )
