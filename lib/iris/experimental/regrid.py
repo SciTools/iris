@@ -8,7 +8,6 @@ Regridding functions.
 
 """
 
-from collections import namedtuple
 import copy
 import functools
 import warnings
@@ -33,12 +32,6 @@ from iris.analysis._regrid import (
 import iris.coord_systems
 import iris.cube
 from iris.util import _meshgrid
-
-
-_Version = namedtuple("Version", ("major", "minor", "micro"))
-_NP_VERSION = _Version(
-    *(int(val) for val in np.version.version.split(".") if val.isdigit())
-)
 
 
 def _get_xy_coords(cube):
@@ -582,62 +575,22 @@ def _regrid_area_weighted_array(
                 # Calculate weights based on areas of cropped bounds.
                 weights = area_func(y_bounds, x_bounds)
 
-                # Numpy 1.7 allows the axis keyword arg to be a tuple.
-                # If the version of NumPy is less than 1.7 manipulate the axes
-                # of the data so the x and y dimensions can be flattened.
-                if _NP_VERSION.minor < 7:
-                    if y_dim is not None and x_dim is not None:
-                        flattened_shape = list(data.shape)
-                        if y_dim > x_dim:
-                            data = np.rollaxis(data, y_dim, data.ndim)
-                            data = np.rollaxis(data, x_dim, data.ndim)
-                            del flattened_shape[y_dim]
-                            del flattened_shape[x_dim]
-                        else:
-                            data = np.rollaxis(data, x_dim, data.ndim)
-                            data = np.rollaxis(data, y_dim, data.ndim)
-                            del flattened_shape[x_dim]
-                            del flattened_shape[y_dim]
-                            weights = weights.T
-                        flattened_shape.append(-1)
-                        data = data.reshape(*flattened_shape)
-                    elif y_dim is not None:
-                        flattened_shape = list(data.shape)
-                        del flattened_shape[y_dim]
-                        flattened_shape.append(-1)
-                        data = data.swapaxes(y_dim, -1).reshape(
-                            *flattened_shape
-                        )
-                    elif x_dim is not None:
-                        flattened_shape = list(data.shape)
-                        del flattened_shape[x_dim]
-                        flattened_shape.append(-1)
-                        data = data.swapaxes(x_dim, -1).reshape(
-                            *flattened_shape
-                        )
-                    weights = weights.ravel()
-                    axis = -1
-                else:
-                    # Transpose weights to match dim ordering in data.
-                    weights_shape_y = weights.shape[0]
-                    weights_shape_x = weights.shape[1]
-                    if (
-                        x_dim is not None
-                        and y_dim is not None
-                        and x_dim < y_dim
-                    ):
-                        weights = weights.T
-                    # Broadcast the weights array to allow numpy's ma.average
-                    # to be called.
-                    weights_padded_shape = [1] * data.ndim
-                    if y_dim is not None:
-                        weights_padded_shape[y_dim] = weights_shape_y
-                    if x_dim is not None:
-                        weights_padded_shape[x_dim] = weights_shape_x
-                    # Assign new shape to raise error on copy.
-                    weights.shape = weights_padded_shape
-                    # Broadcast weights to match shape of data.
-                    _, weights = np.broadcast_arrays(data, weights)
+                # Transpose weights to match dim ordering in data.
+                weights_shape_y = weights.shape[0]
+                weights_shape_x = weights.shape[1]
+                if x_dim is not None and y_dim is not None and x_dim < y_dim:
+                    weights = weights.T
+                # Broadcast the weights array to allow numpy's ma.average
+                # to be called.
+                weights_padded_shape = [1] * data.ndim
+                if y_dim is not None:
+                    weights_padded_shape[y_dim] = weights_shape_y
+                if x_dim is not None:
+                    weights_padded_shape[x_dim] = weights_shape_x
+                # Assign new shape to raise error on copy.
+                weights.shape = weights_padded_shape
+                # Broadcast weights to match shape of data.
+                _, weights = np.broadcast_arrays(data, weights)
 
                 # Calculate weighted mean taking into account missing data.
                 new_data_pt = _weighted_mean_with_mdtol(
