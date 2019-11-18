@@ -1040,7 +1040,6 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
 #         self.assertEqual(ancils1[0], ancils2[0])
 #         self.assertIsNot(ancils1[0], ancils2[0])
 
-
     def test_aliases(self):
         # Check that saving cubes with *differing* ancillaries of the same name
         # is correctly resolved.
