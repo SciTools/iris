@@ -2260,6 +2260,20 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_meathod(cmth)
         self.assertFalse(cube1 == cube2)
 
+    # Unlike cell measures, cell methods are order sensitive.
+    def test_cell_method_reorder_fail(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cmth1 = CellMethod("mean", "time", "6hr")
+        cmth2 = CellMethod("mean", "time", "12hr")
+        # Add the same cell method to cube1 and cube2 in
+        # opposite orders.
+        cube1.add_cell_method(cmth1)
+        cube1.add_cell_method(cmth2)
+        cube2.add_cell_method(cmth2)
+        cube2.add_cell_method(cmth1)
+        self.assertFalse(cube1 == cube2)
+
 
 if __name__ == "__main__":
     tests.main()

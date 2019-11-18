@@ -1044,7 +1044,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
-        self._aux_coords_and_dims.append([coord, data_dims])
+        self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
         """
@@ -1095,7 +1095,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if self.cell_measures(cell_measure):
             raise ValueError("Duplicate cell_measures are not permitted.")
         data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
-        self._cell_measures_and_dims.append([cell_measure, data_dims])
+        self._cell_measures_and_dims.append((cell_measure, data_dims))
         self._cell_measures_and_dims.sort(
             key=lambda cm_dims: (cm_dims[0]._as_defn(), cm_dims[1])
         )
@@ -1125,7 +1125,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ancillary_variable, data_dims
         )
         self._ancillary_variables_and_dims.append(
-            [ancillary_variable, data_dims]
+            (ancillary_variable, data_dims)
         )
         self._ancillary_variables_and_dims.sort(
             key=lambda av_dims: (av_dims[0]._as_defn(), av_dims[1])
@@ -1195,7 +1195,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
             )
 
-        self._dim_coords_and_dims.append([dim_coord, int(data_dim)])
+        self._dim_coords_and_dims.append((dim_coord, int(data_dim)))
 
     def remove_aux_factory(self, aux_factory):
         """Removes the given auxiliary coordinate factory from the cube."""
@@ -1263,7 +1263,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cell_measure = self.cell_measure(cell_measure)
 
         self._cell_measures_and_dims = [
-            [cell_measure_, dim]
+            (cell_measure_, dim)
             for cell_measure_, dim in self._cell_measures_and_dims
             if cell_measure_ is not cell_measure
         ]
@@ -1280,7 +1280,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         """
         self._ancillary_variables_and_dims = [
-            [ancillary_variable_, dim]
+            (ancillary_variable_, dim)
             for ancillary_variable_, dim in self._ancillary_variables_and_dims
             if ancillary_variable_ is not ancillary_variable
         ]
