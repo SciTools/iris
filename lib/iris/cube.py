@@ -3548,7 +3548,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             dim_coords_and_dims=new_dim_coords_and_dims,
             aux_coords_and_dims=new_aux_coords_and_dims,
             ancillary_variables_and_dims=new_ancillary_variables_and_dims,
-            cell_measures_and_dims=new_ancillary_variables_and_dims,
+            cell_measures_and_dims=new_cell_measures_and_dims,
         )
 
         new_cube.metadata = deepcopy(self.metadata, memo)
