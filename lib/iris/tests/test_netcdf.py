@@ -964,6 +964,103 @@ class TestNetCDFSave(tests.IrisTest):
             )
 
 
+class TestNetCDFSave__ancillaries(tests.IrisTest):
+    """Test for saving data with ancillary variables."""
+    def test_fulldims(self):
+        testcube = stock.realistic_3d()
+        ancil = iris.coords.AncillaryVariable(
+            np.zeros(testcube.shape),
+            long_name='ancil_data', units=1,
+            attributes={'attr_1':7, 'attr_2':'chat'})
+        testcube.add_ancillary_variable(ancil, (0, 1, 2))
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(testcube, filename)
+            self.assertCDL(filename)
+
+    def test_partialdims(self):
+        # Test saving ancillary data which maps only dims 0 and 2.
+        testcube = stock.realistic_3d()
+        ancil = iris.coords.AncillaryVariable(
+            np.zeros(testcube[:, 0, :].shape),
+            long_name='time_lon_values', units='m')
+        testcube.add_ancillary_variable(ancil, (0, 2))
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(testcube, filename)
+            self.assertCDL(filename)
+
+    def test_multiple(self):
+        # Test saving with multiple ancillary variables.
+        testcube = stock.realistic_3d()
+        ancil1_time_lat_lon = iris.coords.AncillaryVariable(
+            np.zeros(testcube.shape),
+            long_name='data_values', units=1)
+        testcube.add_ancillary_variable(ancil1_time_lat_lon, (0, 1, 2))
+        ancil2_time = iris.coords.AncillaryVariable(
+            np.zeros(testcube[:, 0, 0].shape),
+            long_name='time_values', units='s')
+        testcube.add_ancillary_variable(ancil2_time, 0)
+        ancil3_lon = iris.coords.AncillaryVariable(
+            np.zeros(testcube[0, 0, :].shape),
+            long_name='lon_values', units='m')
+        testcube.add_ancillary_variable(ancil3_lon, 2)
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(testcube, filename)
+            self.assertCDL(filename)
+
+    def test_shared(self):
+        # Check that saving cubes with matching ancillaries maps to a shared
+        # file variable.
+        testcube_1 = stock.realistic_3d()
+        ancil = iris.coords.AncillaryVariable(
+            np.zeros(testcube_1[0].shape),
+            long_name='latlon_refs', units='s')
+        testcube_1.add_ancillary_variable(ancil, (1, 2))
+
+        testcube_2 = testcube_1.copy()
+        testcube_2.units = 'm'
+        testcube_2.rename('alternate_data')
+        # TODO: this should not be necessary, when cube.copy() handles ancils.
+        testcube_2.add_ancillary_variable(ancil.copy(), (1, 2))
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save([testcube_1, testcube_2], filename)
+            self.assertCDL(filename)
+#
+# TODO: when loading is implemented, test specifics of the re-loaded data
+# instead ??
+#
+#             # Check also that this reads back as two cubes, with matching but
+#             # distinct ancils.
+#             cubes = iris.load(filename)
+
+#         self.assertEqual(len(cubes), 2)
+#         ancils1 = cubes[0].ancillary_variables()
+#         ancils2 = cubes[1].ancillary_variables()
+#         self.assertEqual(len(ancils1), 1)
+#         self.assertEqual(len(ancils2), 1)
+#         self.assertEqual(ancils1[0], ancils2[0])
+#         self.assertIsNot(ancils1[0], ancils2[0])
+
+
+    def test_aliases(self):
+        # Check that saving cubes with *differing* ancillaries of the same name
+        # is correctly resolved.
+        testcube_1 = stock.realistic_3d()
+        ancil1 = iris.coords.AncillaryVariable(
+            np.zeros(testcube_1[0].shape),
+            long_name='latlon_refs', units='s')
+        testcube_1.add_ancillary_variable(ancil1, (1, 2))
+
+        testcube_2 = testcube_1.copy()
+        testcube_2.units = 'm'
+        testcube_2.rename('alternate_data')
+        ancil2 = ancil1.copy()
+        ancil2.data[0, 0] += 1.0
+        testcube_2.add_ancillary_variable(ancil2, (1, 2))
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save([testcube_1, testcube_2], filename)
+            self.assertCDL(filename)
+
+
 class TestNetCDF3SaveInteger(tests.IrisTest):
     def setUp(self):
         self.cube = iris.cube.Cube(

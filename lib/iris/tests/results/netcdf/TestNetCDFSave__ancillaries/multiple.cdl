@@ -1,0 +1,51 @@
+dimensions:
+	grid_latitude = 9 ;
+	grid_longitude = 11 ;
+	time = 7 ;
+variables:
+	int64 air_potential_temperature(time, grid_latitude, grid_longitude) ;
+		air_potential_temperature:standard_name = "air_potential_temperature" ;
+		air_potential_temperature:units = "K" ;
+		air_potential_temperature:grid_mapping = "rotated_latitude_longitude" ;
+		air_potential_temperature:coordinates = "air_pressure forecast_period" ;
+		air_potential_temperature:ancillary_variables = "data_values lon_values time_values" ;
+	int rotated_latitude_longitude ;
+		rotated_latitude_longitude:grid_mapping_name = "rotated_latitude_longitude" ;
+		rotated_latitude_longitude:longitude_of_prime_meridian = 0. ;
+		rotated_latitude_longitude:earth_radius = 6371229. ;
+		rotated_latitude_longitude:grid_north_pole_latitude = 37.5 ;
+		rotated_latitude_longitude:grid_north_pole_longitude = 177.5 ;
+		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+	double time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "gregorian" ;
+	double grid_latitude(grid_latitude) ;
+		grid_latitude:axis = "Y" ;
+		grid_latitude:units = "degrees" ;
+		grid_latitude:standard_name = "grid_latitude" ;
+	double grid_longitude(grid_longitude) ;
+		grid_longitude:axis = "X" ;
+		grid_longitude:units = "degrees" ;
+		grid_longitude:standard_name = "grid_longitude" ;
+	double air_pressure ;
+		air_pressure:units = "Pa" ;
+		air_pressure:standard_name = "air_pressure" ;
+	double forecast_period(time) ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	double data_values(time, grid_latitude, grid_longitude) ;
+		data_values:units = "1" ;
+		data_values:long_name = "data_values" ;
+	double lon_values(grid_longitude) ;
+		lon_values:units = "m" ;
+		lon_values:long_name = "lon_values" ;
+	double time_values(time) ;
+		time_values:units = "s" ;
+		time_values:long_name = "time_values" ;
+
+// global attributes:
+		:source = "Iris test case" ;
+		:Conventions = "CF-1.7" ;
+}
