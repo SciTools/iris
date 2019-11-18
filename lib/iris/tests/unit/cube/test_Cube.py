@@ -312,6 +312,20 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.data, np.mean(self.data, axis=1))
 
+    def test_ancillary_variables_kept(self):
+        cube = self.cube.copy()
+        avr = AncillaryVariable([0, 1], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        cube_collapsed = cube.collapsed("x", MEAN)
+        self.assertEquals(cube_collapsed.ancillary_variables()[0], avr)
+
+    def test_ancillary_variables_removed(self):
+        cube = self.cube.copy()
+        avr = AncillaryVariable([0, 1], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        cube_collapsed = cube.collapsed("y", MEAN)
+        self.assertEquals(cube_collapsed.ancillary_variables(), [])
+
 
 class Test_collapsed__warning(tests.IrisTest):
     def setUp(self):
@@ -597,6 +611,20 @@ class Test_aggregated_by(tests.IrisTest):
             result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar")
         )
 
+    def test_ancillary_variables_kept(self):
+        cube = self.cube.copy()
+        avr = AncillaryVariable([0, 1, 2, 3], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        cube_agg = cube.aggregated_by("val", self.mock_agg)
+        self.assertEquals(cube_agg.ancillary_variables()[0], avr)
+
+    def test_ancillary_variables_removed(self):
+        cube = self.cube.copy()
+        avr = AncillaryVariable([0, 1, 2, 3], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        cube_agg = cube.aggregated_by("simple_agg", self.mock_agg)
+        self.assertEquals(cube_agg.ancillary_variables(), [])
+
 
 class Test_aggregated_by__lazy(tests.IrisTest):
     def setUp(self):
@@ -709,12 +737,16 @@ class Test_aggregated_by__lazy(tests.IrisTest):
 class Test_rolling_window(tests.IrisTest):
     def setUp(self):
         self.cube = Cube(np.arange(6))
+        self.multi_dim_cube = Cube(np.arange(12).reshape(6, 2))
         val_coord = DimCoord([0, 1, 2, 3, 4, 5], long_name="val")
         month_coord = AuxCoord(
             ["jan", "feb", "mar", "apr", "may", "jun"], long_name="month"
         )
+        extra_coord = AuxCoord([0, 1], long_name="extra")
         self.cube.add_dim_coord(val_coord, 0)
         self.cube.add_aux_coord(month_coord, 0)
+        self.multi_dim_cube.add_dim_coord(val_coord, 0)
+        self.multi_dim_cube.add_aux_coord(extra_coord, 1)
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
@@ -759,6 +791,20 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.float64,
         )
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
+    def test_ancillary_variables_kept(self):
+        cube = self.multi_dim_cube.copy()
+        avr = AncillaryVariable([0, 1], long_name="foo")
+        cube.add_ancillary_variable(avr, 1)
+        res_cube = cube.rolling_window("val", self.mock_agg, 3)
+        self.assertEquals(res_cube.ancillary_variables()[0], avr)
+
+    def test_ancillary_variables_removed(self):
+        cube = self.multi_dim_cube.copy()
+        avr = AncillaryVariable([0, 1, 2, 0, 1, 2], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        res_cube = cube.rolling_window("val", self.mock_agg, 3)
+        self.assertEquals(res_cube.ancillary_variables(), [])
 
 
 class Test_slices_dim_order(tests.IrisTest):
