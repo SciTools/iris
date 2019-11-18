@@ -1710,6 +1710,18 @@ class Test_copy(tests.IrisTest):
         cube = stock.simple_3d()
         self._check_copy(cube, cube.copy())
 
+    def test_copy_ancillary_variables(self):
+        cube = stock.simple_3d()
+        avr = AncillaryVariable([2, 3], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        self._check_copy(cube, cube.copy())
+
+    def test_copy_cell_measures(self):
+        cube = stock.simple_3d()
+        cms = CellMeasure([2, 3], measure="area", long_name="foo")
+        cube.add_cell_measure(cms, 0)
+        self._check_copy(cube, cube.copy())
+
     def test__masked_emptymask(self):
         cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
