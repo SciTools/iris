@@ -2592,6 +2592,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if dimension_mapping[d] is not None
             ]
 
+        def new_ancillary_variable_dims(av_):
+            return [
+                dimension_mapping[d]
+                for d in self.ancillary_variable_dims(av_)
+                if dimension_mapping[d] is not None
+            ]
+
         # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
 
@@ -2666,6 +2673,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cm_keys = tuple([full_slice[dim] for dim in dims])
             new_cm = cellmeasure[cm_keys]
             cube.add_cell_measure(new_cm, new_cell_measure_dims(cellmeasure))
+
+        # slice the ancillary variables and add them to the cube
+        for ancvar in self.ancillary_variables():
+            dims = self.ancillary_variable_dims(ancvar)
+            av_keys = tuple([full_slice[dim] for dim in dims])
+            new_av = ancvar[av_keys]
+            cube.add_ancillary_variable(
+                new_av, new_ancillary_variable_dims(ancvar)
+            )
 
         return cube
 

@@ -1959,6 +1959,36 @@ class Test__getitem_CellMeasure(tests.IrisTest):
         self.assertEqual(result.shape, result.cell_measures()[0].data.shape)
 
 
+class Test__getitem_AncillaryVariables(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        cube.add_dim_coord(x_coord, 1)
+        y_coord = DimCoord(points=np.array([5, 6]), long_name="y")
+        cube.add_dim_coord(y_coord, 0)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
+        cube.add_aux_coord(z_coord, [0, 1])
+        a_ancillary_variable = AncillaryVariable(
+            data=np.arange(6).reshape(2, 3), long_name="foo"
+        )
+        cube.add_ancillary_variable(a_ancillary_variable, [0, 1])
+        self.cube = cube
+
+    def test_ancillary_variables_2d(self):
+        result = self.cube[0:2, 0:2]
+        self.assertEqual(len(result.ancillary_variables()), 1)
+        self.assertEqual(
+            result.shape, result.ancillary_variables()[0].data.shape
+        )
+
+    def test_ancillary_variables_1d(self):
+        result = self.cube[0, 0:2]
+        self.assertEqual(len(result.ancillary_variables()), 1)
+        self.assertEqual(
+            result.shape, result.ancillary_variables()[0].data.shape
+        )
+
+
 class TestAncillaryVariables(tests.IrisTest):
     def setUp(self):
         cube = Cube(10 * np.arange(6).reshape(2, 3))
