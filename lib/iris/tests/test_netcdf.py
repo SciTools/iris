@@ -1044,16 +1044,18 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
         # Check that saving cubes with *differing* ancillaries of the same name
         # is correctly resolved.
         testcube_1 = stock.realistic_3d()
+        testcube_2 = testcube_1.copy()
+        testcube_2.units = 'm'
+        testcube_2.rename('alternate_data')
+
         ancil1 = iris.coords.AncillaryVariable(
             np.zeros(testcube_1[0].shape),
             long_name='latlon_refs', units='s')
         testcube_1.add_ancillary_variable(ancil1, (1, 2))
 
-        testcube_2 = testcube_1.copy()
-        testcube_2.units = 'm'
-        testcube_2.rename('alternate_data')
         ancil2 = ancil1.copy()
         ancil2.data[0, 0] += 1.0
+        # TODO: needs modifying, when cube.copy() handles ancils.
         testcube_2.add_ancillary_variable(ancil2, (1, 2))
         with self.temp_filename(suffix=".nc") as filename:
             iris.save([testcube_1, testcube_2], filename)
