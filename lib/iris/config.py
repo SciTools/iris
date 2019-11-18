@@ -33,7 +33,6 @@ defined by :mod:`ConfigParser`.
 import configparser
 import contextlib
 import os.path
-import sys
 import warnings
 
 
@@ -79,10 +78,7 @@ ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
 
 # Load the optional "site.cfg" file if it exists.
-if sys.version_info >= (3, 2):
-    config = configparser.ConfigParser()
-else:
-    config = configparser.SafeConfigParser()
+config = configparser.ConfigParser()
 config.read([os.path.join(CONFIG_PATH, "site.cfg")])
 
 
