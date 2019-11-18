@@ -1919,13 +1919,13 @@ class Test_remove_metadata(tests.IrisTest):
     def test_remove_cell_measure(self):
         self.cube.remove_cell_measure(self.cube.cell_measure("area"))
         self.assertEqual(
-            self.cube._cell_measures_and_dims, [[self.b_cell_measure, (0, 1)]]
+            self.cube._cell_measures_and_dims, [(self.b_cell_measure, (0, 1))]
         )
 
     def test_remove_cell_measure_by_name(self):
         self.cube.remove_cell_measure("area")
         self.assertEqual(
-            self.cube._cell_measures_and_dims, [[self.b_cell_measure, (0, 1)]]
+            self.cube._cell_measures_and_dims, [(self.b_cell_measure, (0, 1))]
         )
 
     def test_fail_remove_cell_measure_by_name(self):
@@ -2257,7 +2257,7 @@ class Test__eq__meta(tests.IrisTest):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
         cmth = CellMethod("mean", "time", "6hr")
-        cube2.add_cell_meathod(cmth)
+        cube2.add_cell_method(cmth)
         self.assertFalse(cube1 == cube2)
 
     # Unlike cell measures, cell methods are order sensitive.
