@@ -69,3 +69,4 @@ docs/iris/iris_image_test_output/
 \#*
 \.\#*
 *.swp
+.ipynb_checkpoints
