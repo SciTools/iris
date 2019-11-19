@@ -127,14 +127,12 @@ class Test_cube_dims(tests.IrisTest):
         # Check that "coord.cube_dims(cube)" calls "cube.coord_dims(coord)".
         mock_dims_result = mock.sentinel.CM_DIMS
         mock_dims_call = mock.Mock(return_value=mock_dims_result)
-        mock_cube = mock.Mock(Cube,
-                              cell_measure_dims=mock_dims_call)
+        mock_cube = mock.Mock(Cube, cell_measure_dims=mock_dims_call)
         test_cm = CellMeasure([1], long_name="test_name")
 
         result = test_cm.cube_dims(mock_cube)
         self.assertEqual(result, mock_dims_result)
-        self.assertEqual(mock_dims_call.call_args_list,
-                         [mock.call(test_cm)])
+        self.assertEqual(mock_dims_call.call_args_list, [mock.call(test_cm)])
 
 
 if __name__ == "__main__":

@@ -1031,8 +1031,9 @@ class Test_cube_dims(tests.IrisTest):
 
         result = test_coord.cube_dims(mock_cube)
         self.assertEqual(result, mock_dims_result)
-        self.assertEqual(mock_dims_call.call_args_list,
-                         [mock.call(test_coord)])
+        self.assertEqual(
+            mock_dims_call.call_args_list, [mock.call(test_coord)]
+        )
 
 
 if __name__ == "__main__":
