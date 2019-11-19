@@ -173,6 +173,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         return new_metadata
 
+    @abstractmethod
+    def cube_dims(self, cube):
+        """
+        Identify the cube dims of any _DimensionalMetadata object.
+
+        Return the dimensions in the cube of a matching _DimensionalMetadata
+        object, if any.
+
+        Equivalent to cube.coord_dims(self) for a Coord,
+        or cube.cell_measure_dims for a CellMeasure, and so on.
+        Simplifies generic code to handle any _DimensionalMetadata objects.
+
+        """
+        # Only makes sense for specific subclasses.
+        raise NotImplementedError()
+
     def _sanitise_array(self, src, ndmin):
         if _lazy.is_lazy_data(src):
             # Lazy data : just ensure ndmin requirement.
@@ -744,6 +760,15 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         return super()._has_lazy_values()
 
+    def cube_dims(self, cube):
+        """
+        Return the cube dimensions of this AncillaryVariable.
+
+        Equivalent to "cube.ancillary_variable_dims(self)".
+
+        """
+        return cube.ancillary_variable_dims(self)
+
 
 class CellMeasure(AncillaryVariable):
     """
@@ -845,6 +870,15 @@ class CellMeasure(AncillaryVariable):
             self.measure,
         )
         return defn
+
+    def cube_dims(self, cube):
+        """
+        Return the cube dimensions of this CellMeasure.
+
+        Equivalent to "cube.cell_measure_dims(self)".
+
+        """
+        return cube.cell_measure_dims(self)
 
 
 class CoordDefn(
@@ -1595,6 +1629,15 @@ class Coord(_DimensionalMetadata):
     # Fixing it will require changing those uses.  See #962 and #1772.
     def __hash__(self):
         return hash(id(self))
+
+    def cube_dims(self, cube):
+        """
+        Return the cube dimensions of this Coord.
+
+        Equivalent to "cube.coord_dims(self)".
+
+        """
+        return cube.coord_dims(self)
 
     def convert_units(self, unit):
         r"""

@@ -17,6 +17,7 @@ import dask.array as da
 import numpy as np
 
 import iris
+from iris.cube import Cube
 from iris.coords import DimCoord, AuxCoord, Coord
 from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
@@ -1018,6 +1019,20 @@ class Test___init____abstractmethod(tests.IrisTest):
         )
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Coord(points=[0, 1])
+
+
+class Test_cube_dims(tests.IrisTest):
+    def test(self):
+        # Check that "coord.cube_dims(cube)" calls "cube.coord_dims(coord)".
+        mock_dims_result = mock.sentinel.COORD_DIMS
+        mock_dims_call = mock.Mock(return_value=mock_dims_result)
+        mock_cube = mock.Mock(Cube, coord_dims=mock_dims_call)
+        test_coord = AuxCoord([1], long_name="test_name")
+
+        result = test_coord.cube_dims(mock_cube)
+        self.assertEqual(result, mock_dims_result)
+        self.assertEqual(mock_dims_call.call_args_list,
+                         [mock.call(test_coord)])
 
 
 if __name__ == "__main__":
