@@ -2292,6 +2292,19 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_method(cmth1)
         self.assertFalse(cube1 == cube2)
 
+    def test_cell_method_correct_order(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cmth1 = CellMethod("mean", "time", "6hr")
+        cmth2 = CellMethod("mean", "time", "12hr")
+        # Add the same cell method to cube1 and cube2 in
+        # the same order.
+        cube1.add_cell_method(cmth1)
+        cube1.add_cell_method(cmth2)
+        cube2.add_cell_method(cmth1)
+        cube2.add_cell_method(cmth2)
+        self.assertTrue(cube1 == cube2)
+
 
 if __name__ == "__main__":
     tests.main()
