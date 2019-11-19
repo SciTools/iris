@@ -186,7 +186,7 @@ class _CoordGroup:
         return any(self.matches(predicate))
 
 
-def coord_comparison(*cubes):
+def coord_comparison(*cubes, object_type="coord"):
     """
     Convenience function to help compare coordinates on one or more cubes
     by their metadata.
@@ -240,7 +240,14 @@ def coord_comparison(*cubes):
         print('All equal coordinates: ', result['equal'])
 
     """
-    all_coords = [cube.coords() for cube in cubes]
+    if object_type == "coord":
+        all_coords = [cube.coords() for cube in cubes]
+    elif object_type == "cell measure":
+        all_coords = [cube.cell_measures() for cube in cubes]
+    elif object_type == "ancillary variable":
+        all_coords = [cube.ancillary_variables() for cube in cubes]
+    else:
+        raise Exception
     grouped_coords = []
 
     # set of coordinates id()s of coordinates which have been processed
@@ -334,7 +341,18 @@ def coord_comparison(*cubes):
         # dimension on their respective cubes
         # (None -> group describes a different dimension)
         def diff_data_dim_fn(cube, coord):
-            return cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+            if object_type == "coord":
+                return cube.coord_dims(coord) != first_cube.coord_dims(
+                    first_coord
+                )
+            elif object_type == "cell measure":
+                return cube.cell_measure_dims(
+                    coord
+                ) != first_cube.cell_measure_dims(first_coord)
+            elif object_type == "ancillary variable":
+                return cube.ancillary_variable_dims(
+                    coord
+                ) != first_cube.ancillary_variable_dims(first_coord)
 
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
@@ -342,7 +360,12 @@ def coord_comparison(*cubes):
         # get all coordinate groups which don't describe a dimension
         # (None -> doesn't describe a dimension)
         def no_data_dim_fn(cube, coord):
-            return cube.coord_dims(coord) == ()
+            if object_type == "coord":
+                return cube.coord_dims(coord) == ()
+            elif object_type == "cell measure":
+                return cube.cell_measure_dims(coord) == ()
+            elif object_type == "ancillary variable":
+                return cube.ancillary_variable_dims(coord) == ()
 
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
