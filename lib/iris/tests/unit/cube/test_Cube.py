@@ -2233,6 +2233,15 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_ancillary_variable(avr1, 0)
         self.assertTrue(cube1 == cube2)
 
+    def test_ancillary_diff_data(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        avr1 = AncillaryVariable([2, 3], long_name="foo")
+        avr2 = AncillaryVariable([4, 5], long_name="foo")
+        cube1.add_ancillary_variable(avr1, 0)
+        cube2.add_ancillary_variable(avr2, 0)
+        self.assertFalse(cube1 == cube2)
+
     def test_cell_measure_fail(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
@@ -2252,6 +2261,15 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_measure(cms2, 0)
         cube2.add_cell_measure(cms1, 0)
         self.assertTrue(cube1 == cube2)
+
+    def test_cell_measure_diff_data(self):
+        cube1 = Cube([0, 1])
+        cube2 = Cube([0, 1])
+        cms1 = CellMeasure([2, 3], measure="area", long_name="foo")
+        cms2 = CellMeasure([4, 5], measure="area", long_name="foo")
+        cube1.add_cell_measure(cms1, 0)
+        cube2.add_cell_measure(cms2, 0)
+        self.assertFalse(cube1 == cube2)
 
     def test_cell_method_fail(self):
         cube1 = Cube([0, 1])
