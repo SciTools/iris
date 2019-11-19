@@ -1256,6 +1256,10 @@ class Saver:
                 cf_name = self._name_coord_map.name(element)
 
             if cf_name is not None:
+                if role_attribute_name == "cell_measures":
+                    # In the case of cell-measures, the attribute entries are not just
+                    # a var_name, but each have the form "<measure>: <varname>".
+                    cf_name = "{}: {}".format(element.measure, cf_name)
                 element_names.append(cf_name)
 
         # Add CF-netCDF references to the primary data variable.
