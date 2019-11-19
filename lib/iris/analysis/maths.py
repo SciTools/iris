@@ -8,6 +8,7 @@ Basic mathematical and statistical operations.
 
 """
 
+from functools import lru_cache
 import inspect
 import math
 import operator
@@ -27,9 +28,7 @@ import dask.array as da
 from dask.array.core import broadcast_shapes
 
 
-_output_dtype_cache = {}
-
-
+@lru_cache(maxsize=128, typed=True)
 def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
     """
     Get the numpy dtype corresponding to the result of applying a unary or
@@ -70,12 +69,8 @@ def _output_dtype(op, first_dtype, second_dtype=None, in_place=False):
             if second_dtype is not None
             else (first_dtype,)
         )
-        key = (op, operand_dtypes)
-        result = _output_dtype_cache.get(key, None)
-        if result is None:
-            arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
-            result = op(*arrays).dtype
-            _output_dtype_cache[key] = result
+        arrays = [np.array([1], dtype=dtype) for dtype in operand_dtypes]
+        result = op(*arrays).dtype
     return result
 
 
