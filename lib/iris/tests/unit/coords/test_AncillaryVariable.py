@@ -9,6 +9,8 @@
 # importing anything else.
 import iris.tests as tests
 
+from unittest import mock
+
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -17,6 +19,7 @@ from iris.tests.unit.coords import CoordTestMixin, lazyness_string
 
 from cf_units import Unit
 from iris.coords import AncillaryVariable
+from iris.cube import Cube
 from iris._lazy_data import as_lazy_data
 
 
@@ -681,6 +684,19 @@ class TestEquality(tests.IrisTest):
         av1 = AncillaryVariable([1.0, np.nan, 2.0])
         av2 = av1.copy()
         self.assertEqual(av1, av2)
+
+
+class Test_cube_dims(tests.IrisTest):
+    def test(self):
+        # Check that "coord.cube_dims(cube)" calls "cube.coord_dims(coord)".
+        mock_dims_result = mock.sentinel.AV_DIMS
+        mock_dims_call = mock.Mock(return_value=mock_dims_result)
+        mock_cube = mock.Mock(Cube, ancillary_variable_dims=mock_dims_call)
+        test_var = AncillaryVariable([1], long_name="test_name")
+
+        result = test_var.cube_dims(mock_cube)
+        self.assertEqual(result, mock_dims_result)
+        self.assertEqual(mock_dims_call.call_args_list, [mock.call(test_var)])
 
 
 if __name__ == "__main__":
