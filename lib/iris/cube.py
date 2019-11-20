@@ -3655,13 +3655,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Collapse any ancillary variables that span the dimension(s) being collapsed
         for ancil in reduced_cube.ancillary_variables():
-            ancil_dims = reduced_cube.coord_dims(ancil)
+            ancil_dims = reduced_cube.ancillary_variable_dims(ancil)
             if set(dims_to_collapse).intersection(ancil_dims):
                 reduced_cube.remove_ancillary_variable(ancil)
 
         # Collapse any cell measures that span the dimension(s) being collapsed
         for cm in reduced_cube.cell_measures():
-            cm_dims = reduced_cube.coord_dims(cm)
+            cm_dims = reduced_cube.cell_measure_dims(cm)
             if set(dims_to_collapse).intersection(cm_dims):
                 reduced_cube.remove_cell_measure(cm)
 
