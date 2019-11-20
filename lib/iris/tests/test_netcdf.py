@@ -16,6 +16,7 @@ import os
 import os.path
 import shutil
 import stat
+from subprocess import check_call
 import tempfile
 from unittest import mock
 
@@ -27,8 +28,10 @@ import iris
 import iris.analysis.trajectory
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
+from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.util
+from iris.coords import AncillaryVariable
 import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
 from iris._lazy_data import is_lazy_data
@@ -36,6 +39,13 @@ from iris._lazy_data import is_lazy_data
 
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
+    def setUp(self):
+        self.tmpdir = None
+
+    def tearDown(self):
+        if self.tmpdir is not None:
+            shutil.rmtree(self.tmpdir)
+
     def test_monotonic(self):
         cubes = iris.load(
             tests.get_data_path(
@@ -239,6 +249,52 @@ class TestNetCDFLoad(tests.IrisTest):
             cube.data = ma.masked_equal(cube.data, -2147483647)
 
         self.assertCML(cubes, ("netcdf", "netcdf_cell_methods.cml"))
+
+    def test_ancillary_variables(self):
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+            variables:
+                int64 qqv(axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:units = "1" ;
+                    qqv:ancillary_variables = "my_av" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:units = "1" ;
+                    my_av:long_name = "refs" ;
+                    my_av:custom = "extra-attribute";
+            data:
+                axv = 1, 2, 3;
+                my_av = 11., 12., 13.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        avs = cubes[0].ancillary_variables()
+        self.assertEqual(len(avs), 1)
+        expected = AncillaryVariable(
+            np.ma.array([11.0, 12.0, 13.0]),
+            long_name="refs",
+            var_name="my_av",
+            units="1",
+            attributes={"custom": "extra-attribute"},
+        )
+        self.assertEqual(avs[0], expected)
 
     def test_deferred_loading(self):
         # Test exercising CF-netCDF deferred loading and deferred slicing.

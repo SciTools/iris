@@ -500,6 +500,22 @@ fc_build_cell_measure
 
 #
 # Context:
+#   This rule will trigger for each ancillary_variable case specific fact.
+#
+# Purpose:
+#   Add the ancillary variable to the cube.
+#
+fc_build_ancil_var
+    foreach
+        facts_cf.ancillary_variable($var)
+    assert
+        python ancil_var = engine.cf_var.cf_group.ancillary_variables[$var]
+        python build_ancil_var(engine, ancil_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
 #   This rule will trigger iff a CF latitude coordinate exists and
 #   a lat/lon coordinate system exists.
 #
@@ -1941,25 +1957,25 @@ fc_extras
         # Add it to the cube
         cube.add_aux_coord(coord, data_dims)
 
-        # Update the coordinate to CF-netCDF variable mapping.
+        # Make a list with names, stored on the engine, so we can find them all later.
         engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
 
 
     ################################################################################
-    def build_cell_measures(engine, cf_cm_attr, coord_name=None):
+    def build_cell_measures(engine, cf_cm_var):
         """Create a CellMeasure instance and add it to the cube."""
         cf_var = engine.cf_var
         cube = engine.cube
         attributes = {}
 
         # Get units
-        attr_units = get_attr_units(cf_cm_attr, attributes)
+        attr_units = get_attr_units(cf_cm_var, attributes)
 
-        data = _get_cf_var_data(cf_cm_attr, engine.filename)
+        data = _get_cf_var_data(cf_cm_var, engine.filename)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
-        common_dims = [dim for dim in cf_cm_attr.dimensions
+        common_dims = [dim for dim in cf_cm_var.dimensions
                        if dim in cf_var.dimensions]
         data_dims = None
         if common_dims:
@@ -1967,10 +1983,10 @@ fc_extras
             data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
 
         # Determine the standard_name, long_name and var_name
-        standard_name, long_name, var_name = get_names(cf_cm_attr, coord_name, attributes)
+        standard_name, long_name, var_name = get_names(cf_cm_var, None, attributes)
 
         # Obtain the cf_measure.
-        measure = cf_cm_attr.cf_measure
+        measure = cf_cm_var.cf_measure
 
         # Create the CellMeasure
         cell_measure = iris.coords.CellMeasure(data,
@@ -1983,6 +1999,51 @@ fc_extras
 
         # Add it to the cube
         cube.add_cell_measure(cell_measure, data_dims)
+
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.provides['cell_measures'].append((cell_measure, cf_cm_var.cf_name))
+
+
+
+    ################################################################################
+    def build_ancil_var(engine, cf_av_var):
+        """Create an AncillaryVariable instance and add it to the cube."""
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+
+        # Get units
+        attr_units = get_attr_units(cf_av_var, attributes)
+
+        # Get (lazy) content array
+        data = _get_cf_var_data(cf_av_var, engine.filename)
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the AV being built.
+        common_dims = [dim for dim in cf_av_var.dimensions
+                       if dim in cf_var.dimensions]
+        data_dims = None
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_av_var, None, attributes)
+
+        # Create the AncillaryVariable
+        av = iris.coords.AncillaryVariable(
+            data,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=attr_units,
+            attributes=attributes)
+
+        # Add it to the cube
+        cube.add_ancillary_variable(av, data_dims)
+
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.provides['ancillary_variables'].append((av, cf_av_var.cf_name))
 
 
 

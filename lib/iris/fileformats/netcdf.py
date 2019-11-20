@@ -459,7 +459,10 @@ class NetCDFDataProxy:
 
 def _assert_case_specific_facts(engine, cf, cf_group):
     # Initialise pyke engine "provides" hooks.
+    # These are used to patch non-processed element attributes after rules activation.
     engine.provides["coordinates"] = []
+    engine.provides["cell_measures"] = []
+    engine.provides["ancillary_variables"] = []
 
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
@@ -477,6 +480,12 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     for cf_name in cf_group.cell_measures.keys():
         engine.add_case_specific_fact(
             _PYKE_FACT_BASE, "cell_measure", (cf_name,)
+        )
+
+    # Assert facts for CF ancillary variables.
+    for cf_name in cf_group.ancillary_variables.keys():
+        engine.add_case_specific_fact(
+            _PYKE_FACT_BASE, "ancillary_variable", (cf_name,)
         )
 
     # Assert facts for CF grid_mappings.
@@ -597,31 +606,37 @@ def _load_cube(engine, cf, cf_var, filename):
     # Run pyke inference engine with forward chaining rules.
     engine.activate(_PYKE_RULE_BASE)
 
-    # Populate coordinate attributes with the untouched attributes from the
-    # associated CF-netCDF variable.
-    coordinates = engine.provides.get("coordinates", [])
-
+    # Having run the rules, now populate the attributes of all the cf elements with the
+    # "unused" attributes from the associated CF-netCDF variable.
+    # That is, all those that aren't CF reserved terms.
     def attribute_predicate(item):
         return item[0] not in _CF_ATTRS
 
-    for coord, cf_var_name in coordinates:
-        tmpvar = filter(
-            attribute_predicate, cf.cf_group[cf_var_name].cf_attrs_unused()
-        )
+    def add_unused_attributes(iris_object, cf_var):
+        tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
         for attr_name, attr_value in tmpvar:
-            _set_attributes(coord.attributes, attr_name, attr_value)
+            _set_attributes(iris_object.attributes, attr_name, attr_value)
 
-    tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
-    # Attach untouched attributes of the associated CF-netCDF data variable to
-    # the cube.
-    for attr_name, attr_value in tmpvar:
-        _set_attributes(cube.attributes, attr_name, attr_value)
+    def fix_attributes_all_elements(role_name):
+        elements_and_names = engine.provides.get(role_name, [])
 
+        for iris_object, cf_var_name in elements_and_names:
+            add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
+
+    # Populate the attributes of all coordinates, cell-measures and ancillary-vars.
+    fix_attributes_all_elements("coordinates")
+    fix_attributes_all_elements("ancillary_variables")
+    fix_attributes_all_elements("cell_measures")
+
+    # Also populate attributes of the top-level cube itself.
+    add_unused_attributes(cube, cf_var)
+
+    # Work out reference names for all the coords.
     names = {
         coord.var_name: coord.standard_name or coord.var_name or "unknown"
         for coord in cube.coords()
     }
-
+    # Add all the cube cell methods.
     cube.cell_methods = [
         iris.coords.CellMethod(
             method=method.method,
