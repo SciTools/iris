@@ -129,6 +129,8 @@ class Constraint:
         """
         match = True
         if self._name:
+            # Require to also check against cube.name() for the fallback
+            # "unknown" default case, when there is no name metadata available.
             match = self._name in cube.names or self._name == cube.name()
         if match and self._cube_func:
             match = self._cube_func(cube)
