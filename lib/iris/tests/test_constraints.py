@@ -305,7 +305,7 @@ class TestCubeExtract__names(TestMixin, tests.IrisTest):
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
-        self.long_name = "air potential temperature"
+        self.long_name = "AIR POTENTIAL TEMPERATURE"
         self.var_name = "apt"
         self.stash = "m01s00i004"
         # Configure missing names...

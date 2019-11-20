@@ -533,10 +533,6 @@ class NameConstraint(Constraint):
             value to be matched against e.g., to constrain against all cubes
             where the standard_name is not set, then use standard_name=None.
 
-        ... note::
-            The None value will not be passed through to a callable. Instead
-            use the "<name>=None" pattern.
-
         Returns:
         * Boolean
 
