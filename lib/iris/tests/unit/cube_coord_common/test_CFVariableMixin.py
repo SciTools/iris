@@ -171,6 +171,11 @@ class Test_names(tests.IrisTest):
         self.assertEqual(expected, result)
         self.assertEqual(result.STASH, stash)
 
+    def test_None(self):
+        expected = (None, None, None, None)
+        result = self.cf_var.names
+        self.assertEqual(expected, result)
+
 
 class Test_standard_name__setter(tests.IrisTest):
     def test_valid_standard_name(self):

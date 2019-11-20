@@ -299,142 +299,209 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
 @tests.skip_data
 class TestCubeExtract__names(TestMixin, tests.IrisTest):
     def setUp(self):
+        fname = iris.sample_data_path("atlantic_profiles.nc")
+        self.cubes = iris.load(fname)
         TestMixin.setUp(self)
-        self.cube = iris.load_cube(self.theta_path)
+        cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
         self.long_name = "air potential temperature"
         self.var_name = "apt"
         self.stash = "m01s00i004"
         # Configure missing names...
-        self.cube.long_name = self.long_name
-        self.cube.var_name = self.var_name
+        cube.long_name = self.long_name
+        cube.var_name = self.var_name
+        # Add this cube to the mix...
+        self.cubes.append(cube)
+        self.index = len(self.cubes) - 1
 
     def test_standard_name(self):
         constraint = iris.Constraint(self.standard_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
         self.assertEqual(result.standard_name, self.standard_name)
 
     def test_long_name(self):
         constraint = iris.Constraint(self.long_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
         self.assertEqual(result.long_name, self.long_name)
 
     def test_var_name(self):
         constraint = iris.Constraint(self.var_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
         self.assertEqual(result.var_name, self.var_name)
 
     def test_stash(self):
         constraint = iris.Constraint(self.stash)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
         self.assertEqual(str(result.attributes["STASH"]), self.stash)
 
     def test_unknown(self):
+        cube = self.cubes[self.index]
         # Clear the cube metadata.
-        self.cube.standard_name = None
-        self.cube.long_name = None
-        self.cube.var_name = None
-        self.cube.attributes = None
+        cube.standard_name = None
+        cube.long_name = None
+        cube.var_name = None
+        cube.attributes = None
         # Extract the unknown cube.
         constraint = iris.Constraint("unknown")
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.name(), "unknown")
 
 
 @tests.skip_data
 class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
     def setUp(self):
+        fname = iris.sample_data_path("atlantic_profiles.nc")
+        self.cubes = iris.load(fname)
         TestMixin.setUp(self)
-        self.cube = iris.load_cube(self.theta_path)
+        cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
         self.long_name = "air potential temperature"
         self.var_name = "apt"
         self.stash = "m01s00i004"
         # Configure missing names...
-        self.cube.long_name = self.long_name
-        self.cube.var_name = self.var_name
+        cube.long_name = self.long_name
+        cube.var_name = self.var_name
+        # Add this cube to the mix...
+        self.cubes.append(cube)
+        self.index = len(self.cubes) - 1
 
     def test_standard_name(self):
         # No match.
         constraint = NameConstraint(standard_name="wibble")
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(standard_name=self.standard_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
 
         # Match - callable.
         kwargs = dict(standard_name=lambda item: item.startswith("air_pot"))
         constraint = NameConstraint(**kwargs)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+
+    def test_standard_name__None(self):
+        cube = self.cubes[self.index]
+        cube.standard_name = None
+        constraint = NameConstraint(
+            standard_name=None, long_name=self.long_name
+        )
+        result = self.cubes.extract(constraint, strict=True)
+        self.assertIsNotNone(result)
+        self.assertIsNone(result.standard_name)
+        self.assertEqual(result.long_name, self.long_name)
 
     def test_long_name(self):
         # No match.
         constraint = NameConstraint(long_name="wibble")
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(long_name=self.long_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.long_name, self.long_name)
 
         # Match - callable.
-        kwargs = dict(long_name=lambda item: item.startswith("air pot"))
+        kwargs = dict(
+            long_name=lambda item: item is not None
+            and item.startswith("air pot")
+        )
         constraint = NameConstraint(**kwargs)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.long_name, self.long_name)
+
+    def test_long_name__None(self):
+        cube = self.cubes[self.index]
+        cube.long_name = None
+        constraint = NameConstraint(
+            standard_name=self.standard_name, long_name=None
+        )
+        result = self.cubes.extract(constraint, strict=True)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+        self.assertIsNone(result.long_name)
 
     def test_var_name(self):
         # No match.
         constraint = NameConstraint(var_name="wibble")
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(var_name=self.var_name)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.var_name, self.var_name)
 
         # Match - callable.
         kwargs = dict(var_name=lambda item: item.startswith("ap"))
         constraint = NameConstraint(**kwargs)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.var_name, self.var_name)
+
+    def test_var_name__None(self):
+        cube = self.cubes[self.index]
+        cube.var_name = None
+        constraint = NameConstraint(
+            standard_name=self.standard_name, var_name=None
+        )
+        result = self.cubes.extract(constraint, strict=True)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+        self.assertIsNone(result.var_name)
 
     def test_stash(self):
         # No match.
         constraint = NameConstraint(STASH="m01s00i444")
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(STASH=self.stash)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(str(result.attributes["STASH"]), self.stash)
 
         # Match - callable.
         kwargs = dict(STASH=lambda stash: stash.item == 4)
         constraint = NameConstraint(**kwargs)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+
+    def test_stash__None(self):
+        cube = self.cubes[self.index]
+        del cube.attributes["STASH"]
+        constraint = NameConstraint(
+            standard_name=self.standard_name, STASH=None
+        )
+        result = self.cubes.extract(constraint, strict=True)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+        self.assertIsNone(result.attributes.get("STASH"))
 
     def test_compound(self):
         # Match.
         constraint = NameConstraint(
             standard_name=self.standard_name, long_name=self.long_name
         )
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
 
         # No match - var_name.
         constraint = NameConstraint(
@@ -442,8 +509,8 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
             long_name=self.long_name,
             var_name="wibble",
         )
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(
@@ -451,8 +518,11 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
             long_name=self.long_name,
             var_name=self.var_name,
         )
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+        self.assertEqual(result.long_name, self.long_name)
+        self.assertEqual(result.var_name, self.var_name)
 
         # No match - STASH.
         constraint = NameConstraint(
@@ -461,8 +531,8 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
             var_name=self.var_name,
             STASH="m01s00i444",
         )
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
         # Match.
         constraint = NameConstraint(
@@ -471,8 +541,12 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
             var_name=self.var_name,
             STASH=self.stash,
         )
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertEqual(result.standard_name, self.standard_name)
+        self.assertEqual(result.long_name, self.long_name)
+        self.assertEqual(result.var_name, self.var_name)
+        self.assertEqual(result.var_name, self.var_name)
 
         # No match - standard_name.
         constraint = NameConstraint(
@@ -481,17 +555,28 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
             var_name=self.var_name,
             STASH=self.stash,
         )
-        result = self.cube.extract(constraint)
-        self.assertIsNone(result)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
 
     def test_unknown(self):
-        self.cube.standard_name = None
-        self.cube.long_name = None
-        self.cube.var_name = None
-        self.cube.attributes = None
+        # No match.
         constraint = NameConstraint(None, None, None, None)
-        result = self.cube.extract(constraint)
+        result = self.cubes.extract(constraint)
+        self.assertFalse(result)
+
+        # Match.
+        cube = self.cubes[self.index]
+        cube.standard_name = None
+        cube.long_name = None
+        cube.var_name = None
+        cube.attributes = None
+        constraint = NameConstraint(None, None, None, None)
+        result = self.cubes.extract(constraint, strict=True)
         self.assertIsNotNone(result)
+        self.assertIsNone(result.standard_name)
+        self.assertIsNone(result.long_name)
+        self.assertIsNone(result.var_name)
+        self.assertIsNone(result.attributes.get("STASH"))
 
 
 @tests.skip_data

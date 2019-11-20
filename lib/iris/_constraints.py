@@ -13,7 +13,6 @@ import operator
 
 import numpy as np
 
-from iris._cube_coord_common import CFVariableMixin
 import iris.coords
 import iris.exceptions
 
@@ -130,10 +129,7 @@ class Constraint:
         """
         match = True
         if self._name:
-            match = (
-                self._name in cube.names
-                or self._name == CFVariableMixin._DEFAULT_NAME
-            )
+            match = self._name in cube.names or self._name == cube.name()
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match
@@ -498,15 +494,7 @@ class AttributeConstraint(Constraint):
 
 
 class NameConstraint(Constraint):
-    """
-    Provides a simple Cube name based :class:`Constraint`, which matches
-    against each of the names provided, which may be either standard name,
-    long name, NetCDF variable name and/or the STASH from the attributes
-    dictionary.
-
-    The name constraint will only succeed if all of the provided names match.
-
-    """
+    """Provides a simple Cube name based :class:`Constraint`."""
 
     def __init__(
         self,
@@ -516,17 +504,48 @@ class NameConstraint(Constraint):
         STASH="none",
     ):
         """
+        Provides a simple Cube name based :class:`Constraint`, which matches
+        against each of the names provided, which may be either standard name,
+        long name, NetCDF variable name and/or the STASH from the attributes
+        dictionary.
+
+        The name constraint will only succeed if *all* of the provided names
+        match.
+
+        Kwargs:
+        * standard_name:
+            A string or callable representing the standard name to match
+            against.
+        * long_name:
+            A string or callable representing the long name to match against.
+        * var_name:
+            A string or callable representing the NetCDF variable name to match
+            against.
+        * STASH:
+            A string or callable representing the UM STASH code to match
+            against.
+
+        .. note::
+            The default value of each of the keyword arguments is the string
+            "none", rather than the singleton None, as None may be a legitimate
+            value to be matched against e.g., to constrain against all cubes
+            where the standard_name is not set, then use standard_name=None.
+
+        ... note::
+            The None value will not be passed through to a callable. Instead
+            use the "<name>=None" pattern.
+
+        Returns:
+        * Boolean
+
         Example usage::
 
-            iris.NameConstraint(long_name='air temp')
+            iris.NameConstraint(long_name='air temp', var_name=None)
+
+            iris.NameConstraint(long_name=lambda name: 'temp' in name)
 
             iris.NameConstraint(standard_name='air_temperature',
                                 STASH=lambda stash: stash.item == 203)
-
-            .. note::
-
-                Name constraint names are case sensitive i.e., use the
-                ``STASH`` keyword argument and not ``stash``.
 
         """
         self.standard_name = standard_name
@@ -539,23 +558,33 @@ class NameConstraint(Constraint):
     def _cube_func(self, cube):
         def matcher(target, value):
             if callable(value):
-                result = value(target)
+                result = False
+                if target is not None:
+                    #
+                    # Don't pass None through into the callable. Users should
+                    # use the "name=None" pattern instead. Otherwise, users
+                    # will need to explicitly handle the None case, which is
+                    # unnecessary and pretty darn ugly e.g.,
+                    #
+                    # lambda name: name is not None and name.startswith('ick')
+                    #
+                    result = value(target)
             else:
                 result = value == target
             return result
 
         match = True
         for name in self._names:
-            if name == "STASH" and self.STASH != "none":
-                match = matcher(cube.attributes.get("STASH"), self.STASH)
-            else:
-                expected = getattr(self, name)
-                if expected != "none":
+            expected = getattr(self, name)
+            if expected != "none":
+                if name == "STASH":
+                    actual = cube.attributes.get(name)
+                else:
                     actual = getattr(cube, name)
-                    match = matcher(actual, expected)
-            # This is a short-cut match.
-            if match is False:
-                break
+                match = matcher(actual, expected)
+                # Make this is a short-circuit match.
+                if match is False:
+                    break
 
         return match
 
