@@ -166,18 +166,36 @@ As we have seen, loading the following file creates several Cubes::
     cubes = iris.load(filename)
 
 Specifying a name as a constraint argument to :py:func:`iris.load` will mean 
-only cubes with a matching :meth:`name <iris.cube.Cube.name>` 
+only cubes with matching :meth:`name <iris.cube.Cube.names>`
 will be returned::
 
     filename = iris.sample_data_path('uk_hires.pp')
-    cubes = iris.load(filename, 'specific_humidity')
+    cubes = iris.load(filename, 'surface_altitude')
 
-To constrain the load to multiple distinct constraints, a list of constraints 
+Note that, the provided name will match against either the standard name,
+long name, NetCDF variable name or STASH metadata of a cube. Therefore, the
+previous example using the ``surface_altitude`` standard name constraint can
+also be achieved using the STASH value of ``m01s00i033``::
+
+    filename = iris.sample_data_path('uk_hires.pp')
+    cubes = iris.load(filename, 'm01s00i033')
+
+If further specific name constraint control is required i.e., to constrain
+against a combination of standard name, long name, NetCDF variable name and/or
+STASH metadata, consider using the :class:`iris.NameConstraint`. For example,
+to constrain against both a standard name of ``surface_altitude`` **and** a STASH
+of ``m01s00i033``::
+
+    filename = iris.sample_data_path('uk_hires.pp')
+    constraint = iris.NameConstraint(standard_name='surface_altitude', STASH='m01s00i033')
+    cubes = iris.load(filename, constraint)
+
+To constrain the load to multiple distinct constraints, a list of constraints
 can be provided.  This is equivalent to running load once for each constraint 
 but is likely to be more efficient::
 
     filename = iris.sample_data_path('uk_hires.pp')
-    cubes = iris.load(filename, ['air_potential_temperature', 'specific_humidity'])
+    cubes = iris.load(filename, ['air_potential_temperature', 'surface_altitude'])
 
 The :class:`iris.Constraint` class can be used to restrict coordinate values 
 on load. For example, to constrain the load to match 

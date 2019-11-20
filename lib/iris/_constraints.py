@@ -52,7 +52,8 @@ class Constraint(object):
         Args:
 
         * name:   string or None
-            If a string, it is used as the name to match against Cube.name().
+            If a string, it is used as the name to match against the
+            `~iris.cube.Cube.names` property.
         * cube_func:   callable or None
             If a callable, it must accept a Cube as its first and only argument
             and return either True or False.
@@ -140,7 +141,9 @@ class Constraint(object):
         """
         match = True
         if self._name:
-            match = self._name == cube.name()
+            # Require to also check against cube.name() for the fallback
+            # "unknown" default case, when there is no name metadata available.
+            match = self._name in cube.names or self._name == cube.name()
         if match and self._cube_func:
             match = self._cube_func(cube)
         return match
@@ -454,7 +457,7 @@ class AttributeConstraint(Constraint):
 
         """
         self._attributes = attributes
-        Constraint.__init__(self, cube_func=self._cube_func)
+        super().__init__(cube_func=self._cube_func)
 
     def _cube_func(self, cube):
         match = True
@@ -477,4 +480,104 @@ class AttributeConstraint(Constraint):
         return match
 
     def __repr__(self):
-        return 'AttributeConstraint(%r)' % self._attributes
+        return "AttributeConstraint(%r)" % self._attributes
+
+
+class NameConstraint(Constraint):
+    """Provides a simple Cube name based :class:`Constraint`."""
+
+    def __init__(
+        self,
+        standard_name="none",
+        long_name="none",
+        var_name="none",
+        STASH="none",
+    ):
+        """
+        Provides a simple Cube name based :class:`Constraint`, which matches
+        against each of the names provided, which may be either standard name,
+        long name, NetCDF variable name and/or the STASH from the attributes
+        dictionary.
+
+        The name constraint will only succeed if *all* of the provided names
+        match.
+
+        Kwargs:
+        * standard_name:
+            A string or callable representing the standard name to match
+            against.
+        * long_name:
+            A string or callable representing the long name to match against.
+        * var_name:
+            A string or callable representing the NetCDF variable name to match
+            against.
+        * STASH:
+            A string or callable representing the UM STASH code to match
+            against.
+
+        .. note::
+            The default value of each of the keyword arguments is the string
+            "none", rather than the singleton None, as None may be a legitimate
+            value to be matched against e.g., to constrain against all cubes
+            where the standard_name is not set, then use standard_name=None.
+
+        Returns:
+        * Boolean
+
+        Example usage::
+
+            iris.NameConstraint(long_name='air temp', var_name=None)
+
+            iris.NameConstraint(long_name=lambda name: 'temp' in name)
+
+            iris.NameConstraint(standard_name='air_temperature',
+                                STASH=lambda stash: stash.item == 203)
+
+        """
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.var_name = var_name
+        self.STASH = STASH
+        self._names = ("standard_name", "long_name", "var_name", "STASH")
+        super().__init__(cube_func=self._cube_func)
+
+    def _cube_func(self, cube):
+        def matcher(target, value):
+            if callable(value):
+                result = False
+                if target is not None:
+                    #
+                    # Don't pass None through into the callable. Users should
+                    # use the "name=None" pattern instead. Otherwise, users
+                    # will need to explicitly handle the None case, which is
+                    # unnecessary and pretty darn ugly e.g.,
+                    #
+                    # lambda name: name is not None and name.startswith('ick')
+                    #
+                    result = value(target)
+            else:
+                result = value == target
+            return result
+
+        match = True
+        for name in self._names:
+            expected = getattr(self, name)
+            if expected != "none":
+                if name == "STASH":
+                    actual = cube.attributes.get(name)
+                else:
+                    actual = getattr(cube, name)
+                match = matcher(actual, expected)
+                # Make this is a short-circuit match.
+                if match is False:
+                    break
+
+        return match
+
+    def __repr__(self):
+        names = []
+        for name in self._names:
+            value = getattr(self, name)
+            if value != "none":
+                names.append("{}={!r}".format(name, value))
+        return "{}({})".format(self.__class__.__name__, ", ".join(names))

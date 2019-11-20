@@ -124,14 +124,26 @@ except ImportError:
 __version__ = '2.4.0rc0'
 
 # Restrict the names imported when using "from iris import *"
-__all__ = ['load', 'load_cube', 'load_cubes', 'load_raw',
-           'save', 'Constraint', 'AttributeConstraint', 'sample_data_path',
-           'site_configuration', 'Future', 'FUTURE',
-           'IrisDeprecation']
+__all__ = [
+    "load",
+    "load_cube",
+    "load_cubes",
+    "load_raw",
+    "save",
+    "Constraint",
+    "AttributeConstraint",
+    "NameConstraint",
+    "sample_data_path",
+    "site_configuration",
+    "Future",
+    "FUTURE",
+    "IrisDeprecation",
+]
 
 
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
+NameConstraint = iris._constraints.NameConstraint
 
 
 class Future(threading.local):
