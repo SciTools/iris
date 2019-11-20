@@ -3522,6 +3522,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         new_dim_coords_and_dims = deepcopy(self._dim_coords_and_dims, memo)
         new_aux_coords_and_dims = deepcopy(self._aux_coords_and_dims, memo)
+        new_cell_measures_and_dims = deepcopy(
+            self._cell_measures_and_dims, memo
+        )
+        new_ancillary_variables_and_dims = deepcopy(
+            self._ancillary_variables_and_dims, memo
+        )
 
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
@@ -3541,6 +3547,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             dm.core_data(),
             dim_coords_and_dims=new_dim_coords_and_dims,
             aux_coords_and_dims=new_aux_coords_and_dims,
+            cell_measures_and_dims=new_cell_measures_and_dims,
+            ancillary_variables_and_dims=new_ancillary_variables_and_dims,
         )
 
         new_cube.metadata = deepcopy(self.metadata, memo)
@@ -3567,13 +3575,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
 
             if result:
-                result = set(self._cell_measures_and_dims) == set(
-                    other._cell_measures_and_dims
+                coord_comparison = iris.analysis.coord_comparison(
+                    self, other, object_get=Cube.cell_measures,
+                )
+                # if there are any cell measures which are not equal
+                result = not (
+                    coord_comparison["not_equal"]
+                    or coord_comparison["non_equal_data_dimension"]
                 )
 
             if result:
-                result = set(self._ancillary_variables_and_dims) == set(
-                    other._ancillary_variables_and_dims
+                coord_comparison = iris.analysis.coord_comparison(
+                    self, other, object_get=Cube.ancillary_variables,
+                )
+                # if there are any ancillary variables which are not equal
+                result = not (
+                    coord_comparison["not_equal"]
+                    or coord_comparison["non_equal_data_dimension"]
                 )
 
             # Having checked everything else, check approximate data equality.

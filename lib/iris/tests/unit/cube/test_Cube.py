@@ -1710,6 +1710,18 @@ class Test_copy(tests.IrisTest):
         cube = stock.simple_3d()
         self._check_copy(cube, cube.copy())
 
+    def test_copy_ancillary_variables(self):
+        cube = stock.simple_3d()
+        avr = AncillaryVariable([2, 3], long_name="foo")
+        cube.add_ancillary_variable(avr, 0)
+        self._check_copy(cube, cube.copy())
+
+    def test_copy_cell_measures(self):
+        cube = stock.simple_3d()
+        cms = CellMeasure([2, 3], long_name="foo")
+        cube.add_cell_measure(cms, 0)
+        self._check_copy(cube, cube.copy())
+
     def test__masked_emptymask(self):
         cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
@@ -2268,15 +2280,15 @@ class Test__eq__meta(tests.IrisTest):
     def test_cell_measure_fail(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
-        cms = CellMeasure([2, 3], measure="area", long_name="foo")
+        cms = CellMeasure([2, 3], long_name="foo")
         cube2.add_cell_measure(cms, 0)
         self.assertFalse(cube1 == cube2)
 
     def test_cell_measure_reorder(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
-        cms1 = CellMeasure([2, 3], measure="area", long_name="foo")
-        cms2 = CellMeasure([4, 5], measure="area", long_name="bar")
+        cms1 = CellMeasure([2, 3], long_name="foo")
+        cms2 = CellMeasure([4, 5], long_name="bar")
         # Add the same cell measure to cube1 and cube2 in
         # opposite orders.
         cube1.add_cell_measure(cms1, 0)
@@ -2288,8 +2300,8 @@ class Test__eq__meta(tests.IrisTest):
     def test_cell_measure_diff_data(self):
         cube1 = Cube([0, 1])
         cube2 = Cube([0, 1])
-        cms1 = CellMeasure([2, 3], measure="area", long_name="foo")
-        cms2 = CellMeasure([4, 5], measure="area", long_name="foo")
+        cms1 = CellMeasure([2, 3], long_name="foo")
+        cms2 = CellMeasure([4, 5], long_name="foo")
         cube1.add_cell_measure(cms1, 0)
         cube2.add_cell_measure(cms2, 0)
         self.assertFalse(cube1 == cube2)

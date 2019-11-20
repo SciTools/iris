@@ -186,7 +186,7 @@ class _CoordGroup:
         return any(self.matches(predicate))
 
 
-def coord_comparison(*cubes):
+def coord_comparison(*cubes, object_get=None):
     """
     Convenience function to help compare coordinates on one or more cubes
     by their metadata.
@@ -240,7 +240,12 @@ def coord_comparison(*cubes):
         print('All equal coordinates: ', result['equal'])
 
     """
-    all_coords = [cube.coords() for cube in cubes]
+    if object_get is None:
+        from iris.cube import Cube
+
+        object_get = Cube.coords
+
+    all_coords = [object_get(cube) for cube in cubes]
     grouped_coords = []
 
     # set of coordinates id()s of coordinates which have been processed
@@ -334,7 +339,7 @@ def coord_comparison(*cubes):
         # dimension on their respective cubes
         # (None -> group describes a different dimension)
         def diff_data_dim_fn(cube, coord):
-            return cube.coord_dims(coord) != first_cube.coord_dims(first_coord)
+            return coord.cube_dims(cube) != first_coord.cube_dims(first_cube)
 
         if coord_group.matches_any(diff_data_dim_fn):
             different_data_dimension.add(coord_group)
@@ -342,7 +347,7 @@ def coord_comparison(*cubes):
         # get all coordinate groups which don't describe a dimension
         # (None -> doesn't describe a dimension)
         def no_data_dim_fn(cube, coord):
-            return cube.coord_dims(coord) == ()
+            return coord.cube_dims(cube) == ()
 
         if coord_group.matches_all(no_data_dim_fn):
             no_data_dimension.add(coord_group)
