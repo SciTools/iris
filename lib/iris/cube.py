@@ -3576,7 +3576,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if result:
                 coord_comparison = iris.analysis.coord_comparison(
-                    self, other, object_type="cell measure",
+                    self, other, object_get=Cube.cell_measures,
                 )
                 # if there are any cell measures which are not equal
                 result = not (
@@ -3586,7 +3586,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if result:
                 coord_comparison = iris.analysis.coord_comparison(
-                    self, other, object_type="ancillary variable",
+                    self, other, object_get=Cube.ancillary_variables,
                 )
                 # if there are any ancillary variables which are not equal
                 result = not (

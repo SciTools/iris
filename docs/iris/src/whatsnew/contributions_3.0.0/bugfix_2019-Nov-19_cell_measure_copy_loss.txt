@@ -1,0 +1,2 @@
+* Copying a cube would previously ignore any attached class:`iris.coords.CellMeasure`.
+  These are now copied over.
