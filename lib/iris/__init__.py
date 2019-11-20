@@ -117,6 +117,7 @@ __all__ = [
     "save",
     "Constraint",
     "AttributeConstraint",
+    "NameConstraint",
     "sample_data_path",
     "site_configuration",
     "Future",
@@ -127,6 +128,7 @@ __all__ = [
 
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
+NameConstraint = iris._constraints.NameConstraint
 
 
 class Future(threading.local):
