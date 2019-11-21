@@ -3575,23 +3575,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
 
             if result:
-                coord_comparison = iris.analysis.coord_comparison(
+                comparison = iris.analysis._dimensional_metadata_comparison(
                     self, other, object_get=Cube.cell_measures,
                 )
                 # if there are any cell measures which are not equal
                 result = not (
-                    coord_comparison["not_equal"]
-                    or coord_comparison["non_equal_data_dimension"]
+                    comparison["not_equal"]
+                    or comparison["non_equal_data_dimension"]
                 )
 
             if result:
-                coord_comparison = iris.analysis.coord_comparison(
+                comparison = iris.analysis._dimensional_metadata_comparison(
                     self, other, object_get=Cube.ancillary_variables,
                 )
                 # if there are any ancillary variables which are not equal
                 result = not (
-                    coord_comparison["not_equal"]
-                    or coord_comparison["non_equal_data_dimension"]
+                    comparison["not_equal"]
+                    or comparison["non_equal_data_dimension"]
                 )
 
             # Having checked everything else, check approximate data equality.
