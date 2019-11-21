@@ -187,6 +187,14 @@ class _CoordGroup:
 
 
 def _dimensional_metadata_comparison(*cubes, object_get=None):
+    """
+    This is a generalised form of :func:`coord_comparison`. See that function
+    for a more detailed description.
+
+    Additionally, this function can compare over different types of dimensional
+    metadata with the argument object_get. For example, :func:`coord_comparison`
+    effectively has object_get=:meth:`iris.cube.Cube.coords`.
+    """
     if object_get is None:
         from iris.cube import Cube
 
