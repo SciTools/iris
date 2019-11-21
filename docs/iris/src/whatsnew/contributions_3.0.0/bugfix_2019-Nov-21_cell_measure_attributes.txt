@@ -1,0 +1,2 @@
+* Fixed a bug where the attributes of cell methods in netcdf-CF files were discarded on
+  loading.  They now appear on the CellMethod in the loaded cube.
