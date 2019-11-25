@@ -283,6 +283,10 @@ class Test_collapsed__lazy(tests.IrisTest):
             npts = cube.shape[i_dim]
             coord = DimCoord(np.arange(npts), long_name=name)
             cube.add_dim_coord(coord, i_dim)
+        self.ancillary_variable = AncillaryVariable([0, 1], long_name="foo")
+        cube.add_ancillary_variable(self.ancillary_variable, 0)
+        self.cell_measure = CellMeasure([0, 1], long_name="bar")
+        cube.add_cell_measure(self.cell_measure, 0)
         self.cube = cube
 
     def test_dim0_lazy(self):
@@ -312,19 +316,17 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.data, np.mean(self.data, axis=1))
 
-    def test_ancillary_variables_kept(self):
-        cube = self.cube.copy()
-        avr = AncillaryVariable([0, 1], long_name="foo")
-        cube.add_ancillary_variable(avr, 0)
-        cube_collapsed = cube.collapsed("x", MEAN)
-        self.assertEqual(cube_collapsed.ancillary_variables()[0], avr)
+    def test_ancillary_variables_and_cell_measures_kept(self):
+        cube_collapsed = self.cube.collapsed("x", MEAN)
+        self.assertEqual(
+            cube_collapsed.ancillary_variables()[0], self.ancillary_variable
+        )
+        self.assertEqual(cube_collapsed.cell_measures()[0], self.cell_measure)
 
-    def test_ancillary_variables_removed(self):
-        cube = self.cube.copy()
-        avr = AncillaryVariable([0, 1], long_name="foo")
-        cube.add_ancillary_variable(avr, 0)
-        cube_collapsed = cube.collapsed("y", MEAN)
+    def test_ancillary_variables_and_cell_measures_removed(self):
+        cube_collapsed = self.cube.collapsed("y", MEAN)
         self.assertEqual(cube_collapsed.ancillary_variables(), [])
+        self.assertEqual(cube_collapsed.cell_measures(), [])
 
 
 class Test_collapsed__warning(tests.IrisTest):
@@ -522,6 +524,13 @@ class Test_aggregated_by(tests.IrisTest):
         self.mock_agg.lazy_func = None
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
+        self.ancillary_variable = AncillaryVariable(
+            [0, 1, 2, 3], long_name="foo"
+        )
+        self.cube.add_ancillary_variable(self.ancillary_variable, 0)
+        self.cell_measure = CellMeasure([0, 1, 2, 3], long_name="bar")
+        self.add_cell_measure(self.cell_measure, 0)
+
     def test_2d_coord_simple_agg(self):
         # For 2d coords, slices of aggregated coord should be the same as
         # aggregated slices.
@@ -611,19 +620,15 @@ class Test_aggregated_by(tests.IrisTest):
             result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar")
         )
 
-    def test_ancillary_variables_kept(self):
-        cube = self.cube.copy()
-        avr = AncillaryVariable([0, 1, 2, 3], long_name="foo")
-        cube.add_ancillary_variable(avr, 0)
-        cube_agg = cube.aggregated_by("val", self.mock_agg)
-        self.assertEqual(cube_agg.ancillary_variables()[0], avr)
+    def test_ancillary_variables_and_cell_measures_kept(self):
+        cube_agg = self.cube.aggregated_by("val", self.mock_agg)
+        self.assertEqual(cube_agg.ancillary_variables()[0], self.ancillary_variable)
+        self.assertEqual(cube_agg.cell_measures()[0], self.cell_measure)
 
-    def test_ancillary_variables_removed(self):
-        cube = self.cube.copy()
-        avr = AncillaryVariable([0, 1, 2, 3], long_name="foo")
-        cube.add_ancillary_variable(avr, 0)
-        cube_agg = cube.aggregated_by("simple_agg", self.mock_agg)
+    def test_ancillary_variables_and_cell_measures_removed(self):
+        cube_agg = self.cube.aggregated_by("simple_agg", self.mock_agg)
         self.assertEqual(cube_agg.ancillary_variables(), [])
+        self.assertEqual(cube_agg.cell_measures(), [])
 
 
 class Test_aggregated_by__lazy(tests.IrisTest):
@@ -737,16 +742,21 @@ class Test_aggregated_by__lazy(tests.IrisTest):
 class Test_rolling_window(tests.IrisTest):
     def setUp(self):
         self.cube = Cube(np.arange(6))
-        self.multi_dim_cube = Cube(np.arange(12).reshape(6, 2))
+        self.multi_dim_cube = Cube(np.arange(36).reshape(6, 6))
         val_coord = DimCoord([0, 1, 2, 3, 4, 5], long_name="val")
         month_coord = AuxCoord(
             ["jan", "feb", "mar", "apr", "may", "jun"], long_name="month"
         )
-        extra_coord = AuxCoord([0, 1], long_name="extra")
+        extra_coord = AuxCoord([0, 1, 2, 3, 4, 5], long_name="extra")
         self.cube.add_dim_coord(val_coord, 0)
         self.cube.add_aux_coord(month_coord, 0)
         self.multi_dim_cube.add_dim_coord(val_coord, 0)
         self.multi_dim_cube.add_aux_coord(extra_coord, 1)
+        self.ancillary_variable = AncillaryVariable([0, 1, 2, 0, 1, 2], long_name="foo")
+        self.multi_dim_cube.add_ancillary_variable(self.ancillary_variable, 0)
+        self.cell_measure = CellMeasure([0, 1, 2, 0, 1, 2], long_name="bar")
+        self.multi_dim_cube.add_cell_measure(self.ancillary_variable, 0)
+
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
@@ -792,19 +802,15 @@ class Test_rolling_window(tests.IrisTest):
         )
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
-    def test_ancillary_variables_kept(self):
-        cube = self.multi_dim_cube.copy()
-        avr = AncillaryVariable([0, 1], long_name="foo")
-        cube.add_ancillary_variable(avr, 1)
-        res_cube = cube.rolling_window("val", self.mock_agg, 3)
-        self.assertEqual(res_cube.ancillary_variables()[0], avr)
+    def test_ancillary_variables_and_cell_measures_kept(self):
+        res_cube = self.multi_dim_cube.rolling_window("val", self.mock_agg, 3)
+        self.assertEqual(res_cube.ancillary_variables()[0], self.ancillary_variable)
+        self.assertEqual(res_cube.cell_measures()[0], self.cell_measure)
 
-    def test_ancillary_variables_removed(self):
-        cube = self.multi_dim_cube.copy()
-        avr = AncillaryVariable([0, 1, 2, 0, 1, 2], long_name="foo")
-        cube.add_ancillary_variable(avr, 0)
-        res_cube = cube.rolling_window("val", self.mock_agg, 3)
+    def test_ancillary_variables_and_cell_measures_removed(self):
+        res_cube = self.multi_dim_cube.rolling_window("extra", self.mock_agg, 3)
         self.assertEqual(res_cube.ancillary_variables(), [])
+        self.assertEqual(res_cube.cell_measures(), [])
 
 
 class Test_slices_dim_order(tests.IrisTest):
