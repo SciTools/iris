@@ -194,6 +194,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Additionally, this function can compare over different types of dimensional
     metadata with the argument object_get. For example, :func:`coord_comparison`
     effectively has object_get=:meth:`iris.cube.Cube.coords`.
+
     """
     if object_get is None:
         from iris.cube import Cube
