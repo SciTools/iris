@@ -3650,23 +3650,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     __pow__ = iris.analysis.maths.exponentiate
     # END OPERATOR OVERLOADS
 
-    def _trim_ancils(self, dims_to_collapse):
-        reduced_cube = self.copy()
-
-        # Remove any ancillary variables that span the dimension(s) being collapsed
-        for ancil in reduced_cube.ancillary_variables():
-            ancil_dims = reduced_cube.ancillary_variable_dims(ancil)
-            if set(dims_to_collapse).intersection(ancil_dims):
-                reduced_cube.remove_ancillary_variable(ancil)
-
-        # Remove any cell measures that span the dimension(s) being collapsed
-        for cm in reduced_cube.cell_measures():
-            cm_dims = reduced_cube.cell_measure_dims(cm)
-            if set(dims_to_collapse).intersection(cm_dims):
-                reduced_cube.remove_cell_measure(cm)
-
-        return reduced_cube
-
     def collapsed(self, coords, aggregator, **kwargs):
         """
         Collapse one or more dimensions over the cube given the coordinate/s
@@ -3801,7 +3784,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         untouched_dims = set(range(self.ndim)) - set(dims_to_collapse)
 
-        collapsed_cube = self._trim_ancils(dims_to_collapse)
+        collapsed_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+            self, dims_to_collapse
+        )
 
         # Remove the collapsed dimension(s) from the metadata
         indices = [slice(None, None)] * self.ndim
@@ -4016,7 +4001,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Create the resulting aggregate-by cube and remove the original
         # coordinates that are going to be groupedby.
-        aggregateby_cube = self._trim_ancils([dimension_to_groupby])
+        aggregateby_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+            self, [dimension_to_groupby]
+        )
         key = [slice(None, None)] * self.ndim
         # Generate unique index tuple key to maintain monotonicity.
         key[dimension_to_groupby] = tuple(range(len(groupby)))
@@ -4220,7 +4207,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # some sort of `cube.prepare()` method would be handy to allow
         # re-shaping with given data, and returning a mapping of
         # old-to-new-coords (to avoid having to use metadata identity)?
-        new_cube = self._trim_ancils([dimension])
+        new_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+            self, [dimension]
+        )
         key = [slice(None, None)] * self.ndim
         key[dimension] = slice(None, self.shape[dimension] - window + 1)
         new_cube = new_cube[tuple(key)]

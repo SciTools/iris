@@ -1828,3 +1828,30 @@ def equalise_attributes(cubes):
         for key in list(cube.attributes.keys()):
             if key not in common_keys:
                 del cube.attributes[key]
+
+
+def _remove_ancils_and_cms_mapping_dims(cube, dims):
+    """
+    Remove ancillary variables and cell measures that map to specific dimensions.
+
+    Returns a cube copy with (possibly) some cell-measures and ancillary variables removed.
+
+    To be used by operations that modify or remove dimensions.
+    Note: does nothing to (aux)-coordinates.  Those would be handled explicitly by the calling operation.
+
+    """
+    reduced_cube = cube.copy()
+
+    # Remove any ancillary variables that span the dimension(s) being collapsed
+    for ancil in reduced_cube.ancillary_variables():
+        ancil_dims = reduced_cube.ancillary_variable_dims(ancil)
+        if set(dims).intersection(ancil_dims):
+            reduced_cube.remove_ancillary_variable(ancil)
+
+    # Remove any cell measures that span the dimension(s) being collapsed
+    for cm in reduced_cube.cell_measures():
+        cm_dims = reduced_cube.cell_measure_dims(cm)
+        if set(dims).intersection(cm_dims):
+            reduced_cube.remove_cell_measure(cm)
+
+    return reduced_cube
