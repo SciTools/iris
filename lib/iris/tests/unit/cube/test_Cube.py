@@ -319,9 +319,9 @@ class Test_collapsed__lazy(tests.IrisTest):
     def test_ancillary_variables_and_cell_measures_kept(self):
         cube_collapsed = self.cube.collapsed("x", MEAN)
         self.assertEqual(
-            cube_collapsed.ancillary_variables()[0], self.ancillary_variable
+            cube_collapsed.ancillary_variables(), [self.ancillary_variable]
         )
-        self.assertEqual(cube_collapsed.cell_measures()[0], self.cell_measure)
+        self.assertEqual(cube_collapsed.cell_measures(), [self.cell_measure])
 
     def test_ancillary_variables_and_cell_measures_removed(self):
         cube_collapsed = self.cube.collapsed("y", MEAN)
@@ -529,7 +529,7 @@ class Test_aggregated_by(tests.IrisTest):
         )
         self.cube.add_ancillary_variable(self.ancillary_variable, 0)
         self.cell_measure = CellMeasure([0, 1, 2, 3], long_name="bar")
-        self.add_cell_measure(self.cell_measure, 0)
+        self.cube.add_cell_measure(self.cell_measure, 0)
 
     def test_2d_coord_simple_agg(self):
         # For 2d coords, slices of aggregated coord should be the same as
@@ -622,8 +622,10 @@ class Test_aggregated_by(tests.IrisTest):
 
     def test_ancillary_variables_and_cell_measures_kept(self):
         cube_agg = self.cube.aggregated_by("val", self.mock_agg)
-        self.assertEqual(cube_agg.ancillary_variables()[0], self.ancillary_variable)
-        self.assertEqual(cube_agg.cell_measures()[0], self.cell_measure)
+        self.assertEqual(
+            cube_agg.ancillary_variables(), [self.ancillary_variable]
+        )
+        self.assertEqual(cube_agg.cell_measures(), [self.cell_measure])
 
     def test_ancillary_variables_and_cell_measures_removed(self):
         cube_agg = self.cube.aggregated_by("simple_agg", self.mock_agg)
@@ -752,10 +754,12 @@ class Test_rolling_window(tests.IrisTest):
         self.cube.add_aux_coord(month_coord, 0)
         self.multi_dim_cube.add_dim_coord(val_coord, 0)
         self.multi_dim_cube.add_aux_coord(extra_coord, 1)
-        self.ancillary_variable = AncillaryVariable([0, 1, 2, 0, 1, 2], long_name="foo")
-        self.multi_dim_cube.add_ancillary_variable(self.ancillary_variable, 0)
+        self.ancillary_variable = AncillaryVariable(
+            [0, 1, 2, 0, 1, 2], long_name="foo"
+        )
+        self.multi_dim_cube.add_ancillary_variable(self.ancillary_variable, 1)
         self.cell_measure = CellMeasure([0, 1, 2, 0, 1, 2], long_name="bar")
-        self.multi_dim_cube.add_cell_measure(self.ancillary_variable, 0)
+        self.multi_dim_cube.add_cell_measure(self.ancillary_variable, 1)
 
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
@@ -804,11 +808,15 @@ class Test_rolling_window(tests.IrisTest):
 
     def test_ancillary_variables_and_cell_measures_kept(self):
         res_cube = self.multi_dim_cube.rolling_window("val", self.mock_agg, 3)
-        self.assertEqual(res_cube.ancillary_variables()[0], self.ancillary_variable)
-        self.assertEqual(res_cube.cell_measures()[0], self.cell_measure)
+        self.assertEqual(
+            res_cube.ancillary_variables(), [self.ancillary_variable]
+        )
+        self.assertEqual(res_cube.cell_measures(), [self.cell_measure])
 
     def test_ancillary_variables_and_cell_measures_removed(self):
-        res_cube = self.multi_dim_cube.rolling_window("extra", self.mock_agg, 3)
+        res_cube = self.multi_dim_cube.rolling_window(
+            "extra", self.mock_agg, 3
+        )
         self.assertEqual(res_cube.ancillary_variables(), [])
         self.assertEqual(res_cube.cell_measures(), [])
 
