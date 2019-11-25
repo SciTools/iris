@@ -759,7 +759,7 @@ class Test_rolling_window(tests.IrisTest):
         )
         self.multi_dim_cube.add_ancillary_variable(self.ancillary_variable, 1)
         self.cell_measure = CellMeasure([0, 1, 2, 0, 1, 2], long_name="bar")
-        self.multi_dim_cube.add_cell_measure(self.ancillary_variable, 1)
+        self.multi_dim_cube.add_cell_measure(self.cell_measure, 1)
 
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
