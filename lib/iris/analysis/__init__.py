@@ -190,22 +190,48 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Convenience function to help compare coordinates, cell-measures or
     ancillary-variables, on one or more cubes, by their metadata.
 
-    Return a dictionary where the key represents the statement,
-    "Given these cubes list the elements which,
-    when grouped by metadata, are/have..."
-
     .. Note::
 
         Up to Iris 2.x, this _used_ to be the public API method
         "iris.analysis.coord_comparison".
         It has since been generalised, and made private.
-        However, the cube elements handled are still referred to as 'coords' /
-        'coordinates' throughout, for backwards compatibility :  In practice, these can
-        be either `iris.coords.Coord`, or `iris.coords.CellMeasure` or
+        However, the cube elements handled are still mostly referred to as 'coords' /
+        'coordinates' throughout, for simplicity :  In fact, they will all be either
+        `iris.coords.Coord`, `iris.coords.CellMeasure` or
         `iris.coords.AncillaryVariable`, the cube element type being controlled by the
         'object_get' keyword.
 
-    Keys:
+    Args:
+
+    * cubes (iterable of `iris.cube.Cube`):
+        a set of cubes whose coordinates, cell-measures or ancillary-variables are to
+        be compared.
+
+    Kwargs:
+
+    * object_get (callable(cube) or None):
+        If not None, this must be a cube method returning a list of all cube elements
+        of the required type, i.e. one of `iris.cube.Cube.coords`,
+        `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
+        If not specified, defaults to `iris.cube.Cube.coords`
+
+    Returns:
+
+        result (dict mapping string: list of _CoordGroup):
+            A dictionary whose keys are match categories and values are groups of
+            coordinates, cell-measures or ancillary-variables.
+
+    The values of the returned dictionary are lists of _CoordGroup representing
+    grouped coordinates.  Each _CoordGroup contains all the input 'cubes', and a
+    matching list of the coord within each cube that matches some specific CoordDefn
+    (or maybe None).
+
+    The keys of the returned dictionary are strings naming 'categories' :  Each
+    represents a statement,
+    "Given these cubes list the coordinates which,
+    when grouped by metadata, are/have..."
+
+    Returned Keys:
 
     * grouped_coords
        A list of coordinate groups of all the coordinates grouped together
@@ -243,14 +269,6 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
         A list of equal, different data dimensioned coordinate groups
     * transposable
        A list of non equal, same data dimensioned, non scalar coordinate groups
-
-    Kwargs:
-
-    * object_get (callable(cube) or None):
-        If not None, this must be a cube method returning a list of all cube elements
-        of the required type, i.e. one of `iris.cube.Cube.coords`,
-        `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
-        If not specified, defaults to `iris.cube.Cube.coords`
 
     Example usage::
 
