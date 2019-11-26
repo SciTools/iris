@@ -1028,8 +1028,6 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
         testcube_2 = testcube_1.copy()
         testcube_2.units = "m"
         testcube_2.rename("alternate_data")
-        # TODO: this should not be necessary, when cube.copy() handles ancils.
-        testcube_2.add_ancillary_variable(ancil.copy(), (1, 2))
         with self.temp_filename(suffix=".nc") as filename:
             iris.save([testcube_1, testcube_2], filename)
             self.assertCDL(filename)
@@ -1062,7 +1060,6 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
 
         ancil2 = ancil1.copy()
         ancil2.data[0, 0] += 1.0
-        # TODO: needs modifying, when cube.copy() handles ancils.
         testcube_2.add_ancillary_variable(ancil2, (1, 2))
         with self.temp_filename(suffix=".nc") as filename:
             iris.save([testcube_1, testcube_2], filename)
