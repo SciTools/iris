@@ -1831,7 +1831,6 @@ class Saver:
             cube, dimension_names, ancillary_variable
         )
 
-    # TODO: this was renamed from "_create_cf_variable" .
     def _create_cf_coord_variable(self, cube, dimension_names, coord):
         """
         Create the associated CF-netCDF variable in the netCDF dataset for the
