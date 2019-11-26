@@ -1207,7 +1207,7 @@ class TestDataManagerIndexing(TestCube2d):
 
 class TestCubeCollapsed(tests.IrisTest):
     def partial_compare(self, dual, single):
-        result = iris.analysis.coord_comparison(dual, single)
+        result = iris.analysis._dimensional_metadata_comparison(dual, single)
         self.assertEqual(len(result["not_equal"]), 0)
         self.assertEqual(
             dual.name(),

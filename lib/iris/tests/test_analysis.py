@@ -109,7 +109,7 @@ class TestAnalysisCubeCoordComparison(tests.IrisTest):
         cube5.add_dim_coord(lon, 0)
         cube5.add_dim_coord(lat, 1)
 
-        coord_comparison = iris.analysis.coord_comparison
+        coord_comparison = iris.analysis._dimensional_metadata_comparison
 
         self.assertComparisonDict(
             coord_comparison(cube1, cube1),

@@ -71,7 +71,6 @@ __all__ = (
     "SUM",
     "VARIANCE",
     "WPERCENTILE",
-    "coord_comparison",
     "Aggregator",
     "WeightedAggregator",
     "clear_phenomenon_identity",
@@ -186,14 +185,25 @@ class _CoordGroup:
         return any(self.matches(predicate))
 
 
-def coord_comparison(*cubes, object_get=None):
+def _dimensional_metadata_comparison(*cubes, object_get=None):
     """
-    Convenience function to help compare coordinates on one or more cubes
-    by their metadata.
+    Convenience function to help compare coordinates, cell-measures or
+    ancillary-variables, on one or more cubes, by their metadata.
 
     Return a dictionary where the key represents the statement,
-    "Given these cubes list the coordinates which,
+    "Given these cubes list the elements which,
     when grouped by metadata, are/have..."
+
+    .. Note::
+
+        Up to Iris 2.x, this _used_ to be the public API method
+        "iris.analysis.coord_comparison".
+        It has since been generalised, and made private.
+        However, the cube elements handled are still referred to as 'coords' /
+        'coordinates' throughout, for backwards compatibility :  In practice, these can
+        be either `iris.coords.Coord`, or `iris.coords.CellMeasure` or
+        `iris.coords.AncillaryVariable`, the cube element type being controlled by the
+        'object_get' keyword.
 
     Keys:
 
@@ -234,9 +244,17 @@ def coord_comparison(*cubes, object_get=None):
     * transposable
        A list of non equal, same data dimensioned, non scalar coordinate groups
 
+    Kwargs:
+
+    * object_get (callable(cube) or None):
+        If not None, this must be a cube method returning a list of all cube elements
+        of the required type, i.e. one of `iris.cube.Cube.coords`,
+        `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
+        If not specified, defaults to `iris.cube.Cube.coords`
+
     Example usage::
 
-        result = coord_comparison(cube1, cube2)
+        result = _dimensional_metadata_comparison(cube1, cube2)
         print('All equal coordinates: ', result['equal'])
 
     """
