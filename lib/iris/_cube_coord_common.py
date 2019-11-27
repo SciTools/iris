@@ -5,7 +5,7 @@
 # licensing details.
 
 
-from collections import namedtuple
+from collections import Iterable, namedtuple
 import re
 
 import cf_units
@@ -281,3 +281,51 @@ class CFVariableMixin:
     @attributes.setter
     def attributes(self, attributes):
         self._attributes = LimitedAttributeDict(attributes or {})
+
+    @property
+    def metadata(self):
+        fields = {
+            field: getattr(self, field) for field in self._METADATA._fields
+        }
+        return self._METADATA(**fields)
+
+    @metadata.setter
+    def metadata(self, metadata):
+        try:
+            # Try dict-like initialisation...
+            metadata = self._METADATA(**metadata)
+        except TypeError:
+            try:
+                # Try iterator/namedtuple-like initialisation...
+                metadata = self._METADATA(*metadata)
+            except TypeError:
+                if hasattr(metadata, "_asdict"):
+                    metadata = metadata._asdict()
+                fields = self._METADATA._fields
+
+                if isinstance(metadata, Iterable):
+                    missing = [
+                        field for field in fields if field not in metadata
+                    ]
+                else:
+                    missing = [
+                        field
+                        for field in fields
+                        if not hasattr(metadata, field)
+                    ]
+
+                if missing:
+                    missing = ", ".join(
+                        map(lambda i: "{!r}".format(i), missing)
+                    )
+                    emsg = "Invalid {!r} metadata, require {} to be specified."
+                    raise TypeError(
+                        emsg.format(self.__class__.__name__, missing)
+                    )
+
+        for field in self._METADATA._fields:
+            if hasattr(metadata, field):
+                value = getattr(metadata, field)
+            else:
+                value = metadata[field]
+            setattr(self, field, value)

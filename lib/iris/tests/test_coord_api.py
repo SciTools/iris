@@ -944,11 +944,11 @@ class TestCoordCompatibility(tests.IrisTest):
         r.circular = False
         self.assertTrue(r.is_compatible(self.dim_coord))
 
-    def test_defn(self):
-        coord_defn = self.aux_coord._as_defn()
-        self.assertTrue(self.aux_coord.is_compatible(coord_defn))
-        coord_defn = self.dim_coord._as_defn()
-        self.assertTrue(self.dim_coord.is_compatible(coord_defn))
+    def test_metadata(self):
+        metadata = self.aux_coord.metadata
+        self.assertTrue(self.aux_coord.is_compatible(metadata))
+        metadata = self.dim_coord.metadata
+        self.assertTrue(self.dim_coord.is_compatible(metadata))
 
     def test_is_ignore(self):
         r = self.aux_coord.copy()

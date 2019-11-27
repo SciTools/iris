@@ -25,6 +25,7 @@ import numpy.ma as ma
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris.aux_factory
+from iris.common import BaseMetadata, CellMeasureMetadata, CoordMetadata
 import iris.exceptions
 import iris.time
 import iris.util
@@ -39,6 +40,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     """
 
+    _METADATA = BaseMetadata
     _MODE_ADD = 1
     _MODE_SUB = 2
     _MODE_MUL = 3
@@ -340,9 +342,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # If the other object has a means of getting its definition, then do
         # the  comparison, otherwise return a NotImplemented to let Python try
         # to resolve the operator elsewhere.
-        if hasattr(other, "_as_defn"):
+        if hasattr(other, "metadata"):
             # metadata comparison
-            eq = self._as_defn() == other._as_defn()
+            eq = self.metadata == other.metadata
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
@@ -366,17 +368,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if result is not NotImplemented:
             result = not result
         return result
-
-    def _as_defn(self):
-        defn = (
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-        )
-
-        return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
@@ -778,6 +769,8 @@ class CellMeasure(AncillaryVariable):
 
     """
 
+    _METADATA = CellMeasureMetadata
+
     def __init__(
         self,
         data,
@@ -860,17 +853,6 @@ class CellMeasure(AncillaryVariable):
         )
         return result
 
-    def _as_defn(self):
-        defn = (
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.measure,
-        )
-        return defn
-
     def cube_dims(self, cube):
         """
         Return the cube dimensions of this CellMeasure.
@@ -879,61 +861,6 @@ class CellMeasure(AncillaryVariable):
 
         """
         return cube.cell_measure_dims(self)
-
-
-class CoordDefn(
-    namedtuple(
-        "CoordDefn",
-        [
-            "standard_name",
-            "long_name",
-            "var_name",
-            "units",
-            "attributes",
-            "coord_system",
-            "climatological",
-        ],
-    )
-):
-    """
-    Criterion for identifying a specific type of :class:`DimCoord` or
-    :class:`AuxCoord` based on its metadata.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-    def __lt__(self, other):
-        if not isinstance(other, CoordDefn):
-            return NotImplemented
-
-        def _sort_key(defn):
-            # Emulate Python 2 behaviour with None
-            return (
-                defn.standard_name is not None,
-                defn.standard_name,
-                defn.long_name is not None,
-                defn.long_name,
-                defn.var_name is not None,
-                defn.var_name,
-                defn.units is not None,
-                defn.units,
-                defn.coord_system is not None,
-                defn.coord_system,
-            )
-
-        return _sort_key(self) < _sort_key(other)
 
 
 class CoordExtent(
@@ -1320,6 +1247,8 @@ class Coord(_DimensionalMetadata):
 
     """
 
+    _METADATA = CoordMetadata
+
     @abstractmethod
     def __init__(
         self,
@@ -1609,18 +1538,6 @@ class Coord(_DimensionalMetadata):
             result += ", climatological={}".format(self.climatological)
         return result
 
-    def _as_defn(self):
-        defn = CoordDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.coord_system,
-            self.climatological,
-        )
-        return defn
-
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
     # We ought to remove this, as equality of two coords can *change*, so they
@@ -1874,7 +1791,7 @@ class Coord(_DimensionalMetadata):
 
         * other:
             An instance of :class:`iris.coords.Coord` or
-            :class:`iris.coords.CoordDefn`.
+            :class:`iris.common.CoordMetadata`.
         * ignore:
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all

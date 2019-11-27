@@ -15,6 +15,7 @@ import dask.array as da
 import numpy as np
 
 from iris._cube_coord_common import CFVariableMixin
+from iris.common import CoordMetadata
 import iris.coords
 
 
@@ -32,6 +33,8 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     """
 
+    _METADATA = CoordMetadata
+
     def __init__(self):
         #: Descriptive name of the coordinate made by the factory
         self.long_name = None
@@ -43,6 +46,15 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         self.coord_system = None
 
     @property
+    def climatological(self):
+        """
+        Always returns False, as a factory can never have points/bounds and
+        therefore can never be climatological.
+
+        """
+        return False
+
+    @property
     @abstractmethod
     def dependencies(self):
         """
@@ -50,20 +62,6 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         the corresponding coordinates.
 
         """
-
-    def _as_defn(self):
-        defn = iris.coords.CoordDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.coord_system,
-            # Slot for Coord 'climatological' property, which this
-            # doesn't have.
-            False,
-        )
-        return defn
 
     @abstractmethod
     def make_coord(self, coord_dims_func):
