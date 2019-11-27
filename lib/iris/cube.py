@@ -4207,9 +4207,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # some sort of `cube.prepare()` method would be handy to allow
         # re-shaping with given data, and returning a mapping of
         # old-to-new-coords (to avoid having to use metadata identity)?
-        new_cube = iris.util._strip_metadata_from_dims(
-            self, [dimension]
-        )
+        new_cube = iris.util._strip_metadata_from_dims(self, [dimension])
         key = [slice(None, None)] * self.ndim
         key[dimension] = slice(None, self.shape[dimension] - window + 1)
         new_cube = new_cube[tuple(key)]
