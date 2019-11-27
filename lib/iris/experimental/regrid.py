@@ -497,8 +497,6 @@ def _regrid_area_weighted_array(
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
 
-    indices = [slice(None)] * new_data.ndim
-
     # Determine which grid bounds are within src extent.
     y_within_bounds = _within_bounds(
         src_y_bounds, grid_y_bounds, grid_y_decreasing
@@ -526,6 +524,7 @@ def _regrid_area_weighted_array(
     axis = tuple(axes)
 
     # Simple for loop approach.
+    indices = [slice(None)] * new_data.ndim
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
         if grid_y_decreasing:
@@ -560,16 +559,16 @@ def _regrid_area_weighted_array(
                 # Calculate weighted mean of data points.
                 # Slice out relevant data (this may or may not be a view()
                 # depending on x_indices being a slice or not).
-                if x_dim is not None:
-                    indices[x_dim] = x_indices
-                if y_dim is not None:
-                    indices[y_dim] = y_indices
                 if isinstance(x_indices, tuple) and isinstance(
                     y_indices, tuple
                 ):
                     raise RuntimeError(
                         "Cannot handle split bounds " "in both x and y."
                     )
+                if x_dim is not None:
+                    indices[x_dim] = x_indices
+                if y_dim is not None:
+                    indices[y_dim] = y_indices
                 data = src_data[tuple(indices)]
 
                 # Calculate weights based on areas of cropped bounds.
