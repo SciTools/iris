@@ -148,7 +148,9 @@ def intersection_of_cubes(cube, other_cube):
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
 
-    coord_comp = iris.analysis.coord_comparison(cube, other_cube)
+    coord_comp = iris.analysis._dimensional_metadata_comparison(
+        cube, other_cube
+    )
 
     if coord_comp["ungroupable_and_dimensioned"]:
         raise ValueError(
@@ -338,7 +340,9 @@ def _add_subtract_common(
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
+        coord_comp = iris.analysis._dimensional_metadata_comparison(
+            cube, other
+        )
 
         bad_coord_grps = (
             coord_comp["ungroupable_and_dimensioned"]
@@ -413,7 +417,9 @@ def multiply(cube, other, dim=None, in_place=False):
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
+        coord_comp = iris.analysis._dimensional_metadata_comparison(
+            cube, other
+        )
         bad_coord_grps = (
             coord_comp["ungroupable_and_dimensioned"]
             + coord_comp["resamplable"]
@@ -512,7 +518,9 @@ def divide(cube, other, dim=None, in_place=False):
     if isinstance(other, iris.cube.Cube):
         # get a coordinate comparison of this cube and the cube to do the
         # operation with
-        coord_comp = iris.analysis.coord_comparison(cube, other)
+        coord_comp = iris.analysis._dimensional_metadata_comparison(
+            cube, other
+        )
         bad_coord_grps = (
             coord_comp["ungroupable_and_dimensioned"]
             + coord_comp["resamplable"]

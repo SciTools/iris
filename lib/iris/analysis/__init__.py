@@ -71,7 +71,6 @@ __all__ = (
     "SUM",
     "VARIANCE",
     "WPERCENTILE",
-    "coord_comparison",
     "Aggregator",
     "WeightedAggregator",
     "clear_phenomenon_identity",
@@ -186,16 +185,53 @@ class _CoordGroup:
         return any(self.matches(predicate))
 
 
-def coord_comparison(*cubes, object_get=None):
+def _dimensional_metadata_comparison(*cubes, object_get=None):
     """
-    Convenience function to help compare coordinates on one or more cubes
-    by their metadata.
+    Convenience function to help compare coordinates, cell-measures or
+    ancillary-variables, on one or more cubes, by their metadata.
 
-    Return a dictionary where the key represents the statement,
+    .. Note::
+
+        Up to Iris 2.x, this _used_ to be the public API method
+        "iris.analysis.coord_comparison".
+        It has since been generalised, and made private.
+        However, the cube elements handled are still mostly referred to as 'coords' /
+        'coordinates' throughout, for simplicity :  In fact, they will all be either
+        `iris.coords.Coord`, `iris.coords.CellMeasure` or
+        `iris.coords.AncillaryVariable`, the cube element type being controlled by the
+        'object_get' keyword.
+
+    Args:
+
+    * cubes (iterable of `iris.cube.Cube`):
+        a set of cubes whose coordinates, cell-measures or ancillary-variables are to
+        be compared.
+
+    Kwargs:
+
+    * object_get (callable(cube) or None):
+        If not None, this must be a cube method returning a list of all cube elements
+        of the required type, i.e. one of `iris.cube.Cube.coords`,
+        `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
+        If not specified, defaults to `iris.cube.Cube.coords`
+
+    Returns:
+
+        result (dict mapping string: list of _CoordGroup):
+            A dictionary whose keys are match categories and values are groups of
+            coordinates, cell-measures or ancillary-variables.
+
+    The values of the returned dictionary are lists of _CoordGroup representing
+    grouped coordinates.  Each _CoordGroup contains all the input 'cubes', and a
+    matching list of the coord within each cube that matches some specific CoordDefn
+    (or maybe None).
+
+    The keys of the returned dictionary are strings naming 'categories' :  Each
+    represents a statement,
     "Given these cubes list the coordinates which,
     when grouped by metadata, are/have..."
 
-    Keys:
+    Returned Keys:
 
     * grouped_coords
        A list of coordinate groups of all the coordinates grouped together
@@ -236,7 +272,7 @@ def coord_comparison(*cubes, object_get=None):
 
     Example usage::
 
-        result = coord_comparison(cube1, cube2)
+        result = _dimensional_metadata_comparison(cube1, cube2)
         print('All equal coordinates: ', result['equal'])
 
     """

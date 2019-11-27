@@ -536,7 +536,7 @@ def curl(i_cube, j_cube, k_cube=None):
     cubes = filter(None, [i_cube, j_cube, k_cube])
 
     # get the names of all coords binned into useful comparison groups
-    coord_comparison = iris.analysis.coord_comparison(*cubes)
+    coord_comparison = iris.analysis._dimensional_metadata_comparison(*cubes)
 
     bad_coords = coord_comparison["ungroupable_and_dimensioned"]
     if bad_coords:
