@@ -1830,7 +1830,7 @@ def equalise_attributes(cubes):
                 del cube.attributes[key]
 
 
-def _remove_ancils_and_cms_mapping_dims(cube, dims):
+def _strip_metadata_from_dims(cube, dims):
     """
     Remove ancillary variables and cell measures that map to specific dimensions.
 

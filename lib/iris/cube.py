@@ -3784,7 +3784,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         untouched_dims = set(range(self.ndim)) - set(dims_to_collapse)
 
-        collapsed_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+        collapsed_cube = iris.util._strip_metadata_from_dims(
             self, dims_to_collapse
         )
 
@@ -4001,7 +4001,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Create the resulting aggregate-by cube and remove the original
         # coordinates that are going to be groupedby.
-        aggregateby_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+        aggregateby_cube = iris.util._strip_metadata_from_dims(
             self, [dimension_to_groupby]
         )
         key = [slice(None, None)] * self.ndim
@@ -4207,7 +4207,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # some sort of `cube.prepare()` method would be handy to allow
         # re-shaping with given data, and returning a mapping of
         # old-to-new-coords (to avoid having to use metadata identity)?
-        new_cube = iris.util._remove_ancils_and_cms_mapping_dims(
+        new_cube = iris.util._strip_metadata_from_dims(
             self, [dimension]
         )
         key = [slice(None, None)] * self.ndim
