@@ -283,10 +283,6 @@ class Test_collapsed__lazy(tests.IrisTest):
             npts = cube.shape[i_dim]
             coord = DimCoord(np.arange(npts), long_name=name)
             cube.add_dim_coord(coord, i_dim)
-        self.ancillary_variable = AncillaryVariable([0, 1], long_name="foo")
-        cube.add_ancillary_variable(self.ancillary_variable, 0)
-        self.cell_measure = CellMeasure([0, 1], long_name="bar")
-        cube.add_cell_measure(self.cell_measure, 0)
         self.cube = cube
 
     def test_dim0_lazy(self):
@@ -315,6 +311,20 @@ class Test_collapsed__lazy(tests.IrisTest):
         result = self.cube.collapsed("x", dummy_agg)
         self.assertFalse(result.has_lazy_data())
         self.assertArrayEqual(result.data, np.mean(self.data, axis=1))
+
+
+class Test_collapsed__cellmeasure_ancils(tests.IrisTest):
+    def setUp(self):
+        cube = Cube(np.arange(6.0).reshape((2, 3)))
+        for i_dim, name in enumerate(("y", "x")):
+            npts = cube.shape[i_dim]
+            coord = DimCoord(np.arange(npts), long_name=name)
+            cube.add_dim_coord(coord, i_dim)
+        self.ancillary_variable = AncillaryVariable([0, 1], long_name="foo")
+        cube.add_ancillary_variable(self.ancillary_variable, 0)
+        self.cell_measure = CellMeasure([0, 1], long_name="bar")
+        cube.add_cell_measure(self.cell_measure, 0)
+        self.cube = cube
 
     def test_ancillary_variables_and_cell_measures_kept(self):
         cube_collapsed = self.cube.collapsed("x", MEAN)
