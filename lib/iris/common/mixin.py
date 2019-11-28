@@ -13,6 +13,12 @@ import cf_units
 import iris.std_names
 
 
+__all__ = [
+    "CFVariableMixin",
+    "Names",
+]
+
+
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
@@ -41,7 +47,7 @@ class Names(
     __slots__ = ()
 
 
-def get_valid_standard_name(name):
+def _get_valid_standard_name(name):
     # Standard names are optionally followed by a standard name
     # modifier, separated by one or more blank spaces
 
@@ -249,7 +255,7 @@ class CFVariableMixin:
 
     @standard_name.setter
     def standard_name(self, name):
-        self._standard_name = get_valid_standard_name(name)
+        self._standard_name = _get_valid_standard_name(name)
 
     @property
     def units(self):

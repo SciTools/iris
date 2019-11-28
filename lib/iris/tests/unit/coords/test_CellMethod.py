@@ -11,7 +11,7 @@ Unit tests for the :class:`iris.coords.CellMethod`.
 # importing anything else.
 import iris.tests as tests
 
-from iris._cube_coord_common import CFVariableMixin
+from iris.common import CFVariableMixin
 from iris.coords import CellMethod, AuxCoord
 
 

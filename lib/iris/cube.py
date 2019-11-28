@@ -29,18 +29,16 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.common import CoordMetadata, CubeMetadata
+from iris.common import CFVariableMixin, CoordMetadata, CubeMetadata
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -1176,7 +1174,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a cell_measure instance with metadata equal to that of
             the desired cell_measures.
@@ -1428,7 +1426,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a coordinate instance with metadata equal to that of
             the desired coordinates. Accepts either a
@@ -1725,7 +1723,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a cell_measure instance with metadata equal to that of
             the desired cell_measures.
@@ -1808,7 +1806,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a ancillary_variable instance with metadata equal to that of
             the desired ancillary_variables.

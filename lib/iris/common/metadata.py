@@ -61,7 +61,10 @@ class _BaseMeta(ABCMeta):
 
 
 class BaseMetadata(metaclass=_BaseMeta):
-    """Container for common metadata."""
+    """
+    Container for common metadata.
+
+    """
 
     _names = (
         "standard_name",
@@ -74,6 +77,7 @@ class BaseMetadata(metaclass=_BaseMeta):
     __slots__ = ()
 
     def name(self, default="unknown"):
+
         """
         Returns a human-readable name.
 
@@ -103,7 +107,10 @@ class BaseMetadata(metaclass=_BaseMeta):
 
 
 class CellMeasureMetadata(BaseMetadata):
-    """Metadata for a :class:`~iris.coords.CellMeasure`."""
+    """
+    Metadata container for a :class:`~iris.coords.CellMeasure`.
+
+    """
 
     _names = "measure"
 
@@ -111,7 +118,10 @@ class CellMeasureMetadata(BaseMetadata):
 
 
 class CoordMetadata(BaseMetadata):
-    """Metadata for a :class:`~iris.coords.Coord`."""
+    """
+    Metadata container for a :class:`~iris.coords.Coord`.
+
+    """
 
     _names = ("coord_system", "climatological")
 
@@ -119,7 +129,10 @@ class CoordMetadata(BaseMetadata):
 
 
 class CubeMetadata(BaseMetadata):
-    """Metadata for a :class:`~iris.cube.Cube`."""
+    """
+    Metadata container for a :class:`~iris.cube.Cube`.
+
+    """
 
     _names = "cell_methods"
 

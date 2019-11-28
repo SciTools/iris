@@ -25,13 +25,15 @@ import numpy.ma as ma
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris.aux_factory
-from iris.common import BaseMetadata, CellMeasureMetadata, CoordMetadata
+from iris.common import (
+    CFVariableMixin,
+    BaseMetadata,
+    CellMeasureMetadata,
+    CoordMetadata,
+)
 import iris.exceptions
 import iris.time
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
-from iris.util import points_step
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -2254,7 +2256,7 @@ class DimCoord(Coord):
 
         """
         points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = points_step(points)
+        _, regular = iris.util.points_step(points)
         if not regular:
             points = (zeroth + step) + step * np.arange(
                 count, dtype=np.float64

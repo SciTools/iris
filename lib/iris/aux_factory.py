@@ -14,8 +14,7 @@ import warnings
 import dask.array as da
 import numpy as np
 
-from iris._cube_coord_common import CFVariableMixin
-from iris.common import CoordMetadata
+from iris.common import CFVariableMixin, CoordMetadata
 import iris.coords
 
 

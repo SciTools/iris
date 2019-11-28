@@ -4,14 +4,14 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris._cube_coord_common.CFVariableMixin`.
+Unit tests for the :class:`iris.common.mixin.CFVariableMixin`.
 """
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
 
-from iris._cube_coord_common import CFVariableMixin
+from iris.common.mixin import CFVariableMixin
 
 
 class Test_token(tests.IrisTest):
