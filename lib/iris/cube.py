@@ -3786,11 +3786,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         untouched_dims = set(range(self.ndim)) - set(dims_to_collapse)
 
+        collapsed_cube = iris.util._strip_metadata_from_dims(
+            self, dims_to_collapse
+        )
+
         # Remove the collapsed dimension(s) from the metadata
         indices = [slice(None, None)] * self.ndim
         for dim in dims_to_collapse:
             indices[dim] = 0
-        collapsed_cube = self[tuple(indices)]
+        collapsed_cube = collapsed_cube[tuple(indices)]
 
         # Collapse any coords that span the dimension(s) being collapsed
         for coord in self.dim_coords + self.aux_coords:
@@ -3999,11 +4003,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         # Create the resulting aggregate-by cube and remove the original
         # coordinates that are going to be groupedby.
+        aggregateby_cube = iris.util._strip_metadata_from_dims(
+            self, [dimension_to_groupby]
+        )
         key = [slice(None, None)] * self.ndim
         # Generate unique index tuple key to maintain monotonicity.
         key[dimension_to_groupby] = tuple(range(len(groupby)))
         key = tuple(key)
-        aggregateby_cube = self[key]
+        aggregateby_cube = aggregateby_cube[key]
         for coord in groupby_coords + shared_coords:
             aggregateby_cube.remove_coord(coord)
 
@@ -4202,9 +4209,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # some sort of `cube.prepare()` method would be handy to allow
         # re-shaping with given data, and returning a mapping of
         # old-to-new-coords (to avoid having to use metadata identity)?
+        new_cube = iris.util._strip_metadata_from_dims(self, [dimension])
         key = [slice(None, None)] * self.ndim
         key[dimension] = slice(None, self.shape[dimension] - window + 1)
-        new_cube = self[tuple(key)]
+        new_cube = new_cube[tuple(key)]
 
         # take a view of the original data using the rolling_window function
         # this will add an extra dimension to the data at dimension + 1 which
