@@ -109,7 +109,9 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         volume = iris.coords.CellMeasure(
             [0, 15], measure="volume", long_name="volume"
         )
-        area = iris.coords.CellMeasure([1.5], standard_name="height", units="m")
+        area = iris.coords.CellMeasure(
+            [1.5], standard_name="height", units="m"
+        )
         t_unit = cf_units.Unit(
             "hours since 1970-01-01 00:00:00", calendar="gregorian"
         )
@@ -139,10 +141,10 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         lat = iris.coords.DimCoord(
             [0, 30], standard_name="latitude", units="degrees"
         )
-        quality = iris.coords.AncillaryVariable(
-            [0, 15], long_name="quality"
+        quality = iris.coords.AncillaryVariable([0, 15], long_name="quality")
+        height = iris.coords.AncillaryVariable(
+            [1.5], standard_name="height", units="m"
         )
-        height = iris.coords.AncillaryVariable([1.5], standard_name="height", units="m")
         t_unit = cf_units.Unit(
             "hours since 1970-01-01 00:00:00", calendar="gregorian"
         )
