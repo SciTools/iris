@@ -157,7 +157,7 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         cube.add_ancillary_variable(height)
         return cube
 
-    def test_diff_cell_measure(self):
+    def test_diff_ancillary_variables(self):
         cube_a = self.create_cube()
         cube_b = cube_a.copy()
         cube_b.coord("time").points = [12, 18]
