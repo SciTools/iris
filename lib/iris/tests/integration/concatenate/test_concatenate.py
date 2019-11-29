@@ -99,6 +99,72 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
 
 
+class Test_cubes_with_cell_measure(tests.IrisTest):
+    def create_cube(self):
+        data = np.arange(4).reshape(2, 2)
+
+        lat = iris.coords.DimCoord(
+            [0, 30], standard_name="latitude", units="degrees"
+        )
+        volume = iris.coords.CellMeasure(
+            [0, 15], measure="volume", long_name="volume"
+        )
+        area = iris.coords.CellMeasure([1.5], standard_name="height", units="m")
+        t_unit = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+        )
+        time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
+
+        cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
+        cube.add_dim_coord(time, 0)
+        cube.add_dim_coord(lat, 1)
+        cube.add_cell_measure(volume, 1)
+        cube.add_cell_measure(area)
+        return cube
+
+    def test_diff_cell_measure(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.cell_measure("volume").data = [120, 150]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 2)
+
+
+class Test_cubes_with_ancillary_variables(tests.IrisTest):
+    def create_cube(self):
+        data = np.arange(4).reshape(2, 2)
+
+        lat = iris.coords.DimCoord(
+            [0, 30], standard_name="latitude", units="degrees"
+        )
+        quality = iris.coords.AncillaryVariable(
+            [0, 15], long_name="quality"
+        )
+        height = iris.coords.AncillaryVariable([1.5], standard_name="height", units="m")
+        t_unit = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar="gregorian"
+        )
+        time = iris.coords.DimCoord([0, 6], standard_name="time", units=t_unit)
+
+        cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
+        cube.add_dim_coord(time, 0)
+        cube.add_dim_coord(lat, 1)
+        cube.add_ancillary_variable(quality, 1)
+        cube.add_ancillary_variable(height)
+        return cube
+
+    def test_diff_cell_measure(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.ancillary_variable("quality").data = [120, 150]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 2)
+
+
 class Test_anonymous_dims(tests.IrisTest):
     def setUp(self):
         data = np.arange(12).reshape(2, 3, 2)

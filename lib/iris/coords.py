@@ -969,7 +969,7 @@ class CellMeasureDefn(
         return self.standard_name or self.long_name or self.var_name or default
 
     def __lt__(self, other):
-        if not isinstance(other, CoordDefn):
+        if not isinstance(other, CellMeasureDefn):
             return NotImplemented
 
         def _sort_key(defn):
@@ -1016,7 +1016,7 @@ class _DMDefn(
         return self.standard_name or self.long_name or self.var_name or default
 
     def __lt__(self, other):
-        if not isinstance(other, CoordDefn):
+        if not isinstance(other, _DMDefn):
             return NotImplemented
 
         def _sort_key(defn):
