@@ -535,14 +535,12 @@ class _CubeSignature:
         # Check cell measures.
         if self.cm_metadata != other.cm_metadata:
             differences = self._coordinate_differences(other, "cm_metadata")
-            msgs.append(
-                msg_template.format("Auxiliary coordinates", *differences)
-            )
+            msgs.append(msg_template.format("Cell measures", *differences))
         # Check ancillary variables.
         if self.av_metadata != other.av_metadata:
             differences = self._coordinate_differences(other, "av_metadata")
             msgs.append(
-                msg_template.format("Auxiliary coordinates", *differences)
+                msg_template.format("Ancillary variables", *differences)
             )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
@@ -865,7 +863,7 @@ class _ProtoCube:
                     self._cube_signature.aux_coords_and_dims,
                     cube_signature.aux_coords_and_dims,
                 ):
-                    # AuxCoords that span the candidate axis can difffer
+                    # AuxCoords that span the candidate axis can differ
                     if (
                         candidate_axis not in coord_a.dims
                         or candidate_axis not in coord_b.dims
@@ -880,7 +878,7 @@ class _ProtoCube:
                     self._cube_signature.cell_measures_and_dims,
                     cube_signature.cell_measures_and_dims,
                 ):
-                    # CellMeasures that span the candidate axis can difffer
+                    # CellMeasures that span the candidate axis can differ
                     if (
                         candidate_axis not in coord_a.dims
                         or candidate_axis not in coord_b.dims
@@ -895,7 +893,7 @@ class _ProtoCube:
                     self._cube_signature.ancillary_variables_and_dims,
                     cube_signature.ancillary_variables_and_dims,
                 ):
-                    # AncillaryVariables that span the candidate axis can difffer
+                    # AncillaryVariables that span the candidate axis can differ
                     if (
                         candidate_axis not in coord_a.dims
                         or candidate_axis not in coord_b.dims

@@ -1312,10 +1312,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Args:
 
-        * ancillary_variable (AncillaryVariable)
-            The AncillaryVariable to remove from the cube.
+        * ancillary_variable (string or AncillaryVariable)
+            The (name of the) AncillaryVariable to remove from the cube.
 
         """
+        ancillary_variable = self.ancillary_variable(ancillary_variable)
+
         self._ancillary_variables_and_dims = [
             (ancillary_variable_, dim)
             for ancillary_variable_, dim in self._ancillary_variables_and_dims
