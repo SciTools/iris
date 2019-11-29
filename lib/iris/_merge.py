@@ -328,7 +328,13 @@ class _CoordSignature(
 class _CubeSignature(
     namedtuple(
         "CubeSignature",
-        ["defn", "data_shape", "data_type", "cell_measures_and_dims"],
+        [
+            "defn",
+            "data_shape",
+            "data_type",
+            "cell_measures_and_dims",
+            "ancillary_variables_and_dims",
+        ],
     )
 ):
     """
@@ -348,6 +354,9 @@ class _CubeSignature(
 
     * cell_measures_and_dims:
         A list of cell_measures and dims for the cube.
+
+    * ancillary_variables_and_dims:
+        A list of ancillary variables and dims for the cube.
 
     """
 
@@ -441,6 +450,11 @@ class _CubeSignature(
             msgs.append(msg.format(self.data_type, other.data_type))
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
             msgs.append("cube.cell_measures differ")
+        if (
+            self.ancillary_variables_and_dims
+            != other.ancillary_variables_and_dims
+        ):
+            msgs.append("cube.ancillary_variables differ")
 
         match = not bool(msgs)
         if error_on_mismatch and not match:
@@ -1187,9 +1201,10 @@ class ProtoCube:
         self._vector_dim_coords_dims = []
         self._vector_aux_coords_dims = []
 
-        # cell measures are not merge candidates
+        # cell measures and ancillary variables are not merge candidates
         # they are checked and preserved through merge
         self._cell_measures_and_dims = cube._cell_measures_and_dims
+        self._ancillary_variables_and_dims = cube._ancillary_variables_and_dims
 
     def _report_duplicate(self, nd_indexes, group_by_nd_index):
         # Find the first offending source-cube with duplicate metadata.
@@ -1581,11 +1596,16 @@ class ProtoCube:
         cms_and_dims = [
             (deepcopy(cm), dims) for cm, dims in self._cell_measures_and_dims
         ]
+        avs_and_dims = [
+            (deepcopy(av), dims)
+            for av, dims in self._ancillary_variables_and_dims
+        ]
         cube = iris.cube.Cube(
             data,
             dim_coords_and_dims=dim_coords_and_dims,
             aux_coords_and_dims=aux_coords_and_dims,
             cell_measures_and_dims=cms_and_dims,
+            ancillary_variables_and_dims=avs_and_dims,
             **kwargs,
         )
 
@@ -1717,7 +1737,11 @@ class ProtoCube:
         """
 
         return _CubeSignature(
-            cube.metadata, cube.shape, cube.dtype, cube._cell_measures_and_dims
+            cube.metadata,
+            cube.shape,
+            cube.dtype,
+            cube._cell_measures_and_dims,
+            cube._ancillary_variables_and_dims,
         )
 
     def _add_cube(self, cube, coord_payload):
