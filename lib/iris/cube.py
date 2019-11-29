@@ -1306,7 +1306,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         ]
 
     def remove_ancillary_variable(self, ancillary_variable):
-
         """
         Removes an ancillary variable from the cube.
 
