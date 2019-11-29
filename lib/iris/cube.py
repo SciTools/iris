@@ -489,7 +489,12 @@ class CubeList(list):
 
         return merged_cubes
 
-    def concatenate_cube(self, check_aux_coords=True):
+    def concatenate_cube(
+        self,
+        check_aux_coords=True,
+        check_cell_measures=True,
+        check_ancils=True,
+    ):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -505,6 +510,16 @@ class CubeList(list):
             is not applied to auxilliary coordinates that span the dimension
             the concatenation is occuring along. Defaults to True.
 
+        * check_cell_measures
+            Checks the cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
+        * check_ancils
+            Checks the ancillary variables of the cubes match. This check
+            is not applied to ancillary variables that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
         .. note::
 
             Concatenation cannot occur along an anonymous dimension.
@@ -517,7 +532,11 @@ class CubeList(list):
         unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
             res = iris._concatenate.concatenate(
-                self, error_on_mismatch=True, check_aux_coords=check_aux_coords
+                self,
+                error_on_mismatch=True,
+                check_aux_coords=check_aux_coords,
+                check_cell_measures=check_cell_measures,
+                check_ancils=check_ancils,
             )
             n_res_cubes = len(res)
             if n_res_cubes == 1:
@@ -537,7 +556,12 @@ class CubeList(list):
             )
             raise iris.exceptions.ConcatenateError(msgs)
 
-    def concatenate(self, check_aux_coords=True):
+    def concatenate(
+        self,
+        check_aux_coords=True,
+        check_cell_measures=True,
+        check_ancils=True,
+    ):
         """
         Concatenate the cubes over their common dimensions.
 
@@ -546,6 +570,16 @@ class CubeList(list):
         * check_aux_coords
             Checks the auxilliary coordinates of the cubes match. This check
             is not applied to auxilliary coordinates that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
+        * check_cell_measures
+            Checks the cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension
+            the concatenation is occuring along. Defaults to True.
+
+        * check_ancils
+            Checks the ancillary variables of the cubes match. This check
+            is not applied to ancillary variables that span the dimension
             the concatenation is occuring along. Defaults to True.
 
         Returns:
@@ -613,7 +647,10 @@ class CubeList(list):
 
         """
         return iris._concatenate.concatenate(
-            self, check_aux_coords=check_aux_coords
+            self,
+            check_aux_coords=check_aux_coords,
+            check_cell_measures=check_cell_measures,
+            check_ancils=check_ancils,
         )
 
     def realise_data(self):

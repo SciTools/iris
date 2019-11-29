@@ -133,6 +133,16 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         result = concatenate([cube_a, cube_b])
         self.assertEqual(len(result), 2)
 
+    def test_ignore_diff_cell_measure(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.cell_measure("volume").data = [120, 150]
+
+        result = concatenate([cube_a, cube_b], check_cell_measures=False)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
+
 
 class Test_cubes_with_ancillary_variables(tests.IrisTest):
     def create_cube(self):
@@ -165,6 +175,16 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
 
         result = concatenate([cube_a, cube_b])
         self.assertEqual(len(result), 2)
+
+    def test_ignore_diff_ancillary_variables(self):
+        cube_a = self.create_cube()
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+        cube_b.ancillary_variable("quality").data = [120, 150]
+
+        result = concatenate([cube_a, cube_b], check_ancils=False)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (4, 2))
 
 
 class Test_anonymous_dims(tests.IrisTest):

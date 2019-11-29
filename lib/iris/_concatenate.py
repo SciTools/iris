@@ -276,7 +276,13 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     __slots__ = ()
 
 
-def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
+def concatenate(
+    cubes,
+    error_on_mismatch=False,
+    check_aux_coords=True,
+    check_cell_measures=True,
+    check_ancils=True,
+):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -311,7 +317,12 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
             registered = proto_cube.register(
-                cube, axis, error_on_mismatch, check_aux_coords
+                cube,
+                axis,
+                error_on_mismatch,
+                check_aux_coords,
+                check_cell_measures,
+                check_ancils,
             )
             if registered:
                 axis = proto_cube.axis
@@ -787,7 +798,13 @@ class _ProtoCube:
         return cube
 
     def register(
-        self, cube, axis=None, error_on_mismatch=False, check_aux_coords=False
+        self,
+        cube,
+        axis=None,
+        error_on_mismatch=False,
+        check_aux_coords=False,
+        check_cell_measures=False,
+        check_ancils=False,
     ):
         """
         Determine whether the given source-cube is suitable for concatenation
@@ -858,7 +875,7 @@ class _ProtoCube:
 
         # Check for compatible CellMeasures.
         if match:
-            if check_aux_coords:
+            if check_cell_measures:
                 for coord_a, coord_b in zip(
                     self._cube_signature.cell_measures_and_dims,
                     cube_signature.cell_measures_and_dims,
@@ -873,7 +890,7 @@ class _ProtoCube:
 
         # Check for compatible AncillaryVariables.
         if match:
-            if check_aux_coords:
+            if check_ancils:
                 for coord_a, coord_b in zip(
                     self._cube_signature.ancillary_variables_and_dims,
                     cube_signature.ancillary_variables_and_dims,
