@@ -162,10 +162,9 @@ script:
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
-  - export ORG=(${TRAVIS_REPO_SLUG//\// })
-
-  # Debug push operation
-  - echo "org=${ORG} : event=${TRAVIS_EVENT_TYPE} : push=${PUSH_BUILT_DOCS}"
+  - >
+    export ORG=(${TRAVIS_REPO_SLUG//\// });
+    echo "org=${ORG} : event=${TRAVIS_EVENT_TYPE} : push=${PUSH_BUILT_DOCS}"
 
   # When we merge a change to SciTools/iris, we can push docs to github pages.
   # At present, only the Python 3.7 "doctest" job does this.
