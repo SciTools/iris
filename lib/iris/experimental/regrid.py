@@ -461,6 +461,24 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         grid.
 
     """
+    # Determine which grid bounds are within src extent.
+    y_within_bounds = _within_bounds(
+        src_y_bounds, grid_y_bounds, grid_y_decreasing
+    )
+    x_within_bounds = _within_bounds(
+        src_x_bounds, grid_x_bounds, grid_x_decreasing
+    )
+
+    # Cache which src_bounds are within grid bounds
+    cached_x_bounds = []
+    cached_x_indices = []
+    for (x_0, x_1) in grid_x_bounds:
+        if grid_x_decreasing:
+            x_0, x_1 = x_1, x_0
+        x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+        cached_x_bounds.append(x_bounds)
+        cached_x_indices.append(x_indices)
+
     # Create empty data array to match the new grid.
     # Note that dtype is not preserved and that the array is
     # masked to allow for regions that do not overlap.
@@ -483,22 +501,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         new_data = ma.zeros(new_shape, dtype=dtype)
     # Assign to mask to explode it, allowing indexed assignment.
     new_data.mask = False
-
-    # Determine which grid bounds are within src extent.
-    y_within_bounds = _within_bounds(src_y_bounds, grid_y_bounds,
-                                     grid_y_decreasing)
-    x_within_bounds = _within_bounds(src_x_bounds, grid_x_bounds,
-                                     grid_x_decreasing)
-
-    # Cache which src_bounds are within grid bounds
-    cached_x_bounds = []
-    cached_x_indices = []
-    for (x_0, x_1) in grid_x_bounds:
-        if grid_x_decreasing:
-            x_0, x_1 = x_1, x_0
-        x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
-        cached_x_bounds.append(x_bounds)
-        cached_x_indices.append(x_indices)
 
     # Axes of data over which the weighted mean is calculated.
     axes = []
@@ -547,14 +549,14 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
                     raise RuntimeError(
                         "Cannot handle split bounds " "in both x and y."
                     )
+                # Calculate weights based on areas of cropped bounds.
+                weights = area_func(y_bounds, x_bounds)
+
                 if x_dim is not None:
                     indices[x_dim] = x_indices
                 if y_dim is not None:
                     indices[y_dim] = y_indices
                 data = src_data[tuple(indices)]
-
-                # Calculate weights based on areas of cropped bounds.
-                weights = area_func(y_bounds, x_bounds)
 
                 # Transpose weights to match dim ordering in data.
                 weights_shape_y = weights.shape[0]
