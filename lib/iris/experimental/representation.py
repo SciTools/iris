@@ -285,7 +285,7 @@ class CubeRepresentation(object):
                 for line in v:
                     # Add every other row in the sub-heading.
                     if k in self.dim_desc_coords:
-                        body = re.findall(r'[\w-]+', line)
+                        body = re.findall(r"[\w-]+", line)
                         title = body.pop(0)
                         colspan = 0
                     elif k in self.two_cell_headers:
@@ -314,7 +314,7 @@ class CubeRepresentation(object):
                     elements.extend(
                         self._make_row(title, body=body, col_span=colspan)
                     )
-        return '\n'.join(element for element in elements)
+        return "\n".join(element for element in elements)
 
     def repr_html(self):
         """The `repr` interface for Jupyter."""
@@ -323,7 +323,7 @@ class CubeRepresentation(object):
 
         # Check if we have a scalar cube.
         if self.scalar_cube:
-            shape = ''
+            shape = ""
             # We still need a single content column!
             self.ndims = 1
         else:
@@ -334,7 +334,7 @@ class CubeRepresentation(object):
         # If we only have a single line `cube_str` we have no coords / attrs!
         # We need to handle this case specially.
         if len(lines) == 1:
-            content = ''
+            content = ""
         else:
             self._get_bits(lines)
             content = self._make_content()
