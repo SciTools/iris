@@ -14,7 +14,7 @@ import warnings
 import dask.array as da
 import numpy as np
 
-from iris.common import CFVariableMixin, CoordMetadata
+from iris.common import CFVariableMixin, CoordMetadata, MetadataFactory
 import iris.coords
 
 
@@ -32,26 +32,41 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     """
 
-    _METADATA = CoordMetadata
-
     def __init__(self):
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata"):
+            self._metadata = MetadataFactory(CoordMetadata)
+
         #: Descriptive name of the coordinate made by the factory
         self.long_name = None
 
         #: netCDF variable name for the coordinate made by the factory
         self.var_name = None
 
-        #: Coordinate system (if any) of the coordinate made by the factory
         self.coord_system = None
+        # See the climatological property getter.
+        self._metadata.climatological = False
+
+    @property
+    def coord_system(self):
+        """
+        The coordinate-system (if any) of the coordinate made by the factory.
+
+        """
+        return self._metadata.coord_system
+
+    @coord_system.setter
+    def coord_system(self, value):
+        self._metadata.coord_system = value
 
     @property
     def climatological(self):
         """
-        Always returns False, as a factory can never have points/bounds and
-        therefore can never be climatological.
+        Always returns False, as a factory itself can never have points/bounds
+        and therefore can never be climatological by definition.
 
         """
-        return False
+        return self._metadata.climatological
 
     @property
     @abstractmethod
@@ -369,6 +384,8 @@ class HybridHeightFactory(AuxCoordFactory):
             The coordinate providing the `orog` term.
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         if delta and delta.nbounds not in (0, 2):
@@ -392,21 +409,24 @@ class HybridHeightFactory(AuxCoordFactory):
 
         self.standard_name = "altitude"
         if delta is None and orography is None:
-            raise ValueError(
-                "Unable to determine units: no delta or orography"
-                " available."
+            emsg = (
+                "Unable to determine units: no delta or orography "
+                "available."
             )
+            raise ValueError(emsg)
         if delta and orography and delta.units != orography.units:
-            raise ValueError(
-                "Incompatible units: delta and orography must"
-                " have the same units."
+            emsg = (
+                "Incompatible units: delta and orography must have "
+                "the same units."
             )
+            raise ValueError(emsg)
         self.units = (delta and delta.units) or orography.units
         if not self.units.is_convertible("m"):
-            raise ValueError(
-                "Invalid units: delta and/or orography"
-                " must be expressed in length units."
+            emsg = (
+                "Invalid units: delta and/or orography must be expressed "
+                "in length units."
             )
+            raise ValueError(emsg)
         self.attributes = {"positive": "up"}
 
     @property
@@ -553,10 +573,13 @@ class HybridPressureFactory(AuxCoordFactory):
             The coordinate providing the `ps` term.
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coords meet necessary conditions.
         self._check_dependencies(delta, sigma, surface_air_pressure)
+        self.units = (delta and delta.units) or surface_air_pressure.units
 
         self.delta = delta
         self.sigma = sigma
@@ -565,20 +588,12 @@ class HybridPressureFactory(AuxCoordFactory):
         self.standard_name = "air_pressure"
         self.attributes = {}
 
-    @property
-    def units(self):
-        if self.delta is not None:
-            units = self.delta.units
-        else:
-            units = self.surface_air_pressure.units
-        return units
-
     @staticmethod
     def _check_dependencies(delta, sigma, surface_air_pressure):
         # Check for sufficient coordinates.
         if delta is None and (sigma is None or surface_air_pressure is None):
             msg = (
-                "Unable to contruct hybrid pressure coordinate factory "
+                "Unable to construct hybrid pressure coordinate factory "
                 "due to insufficient source coordinates."
             )
             raise ValueError(msg)
@@ -750,7 +765,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         zlev=None,
     ):
         """
-        Creates a ocean sigma over z coordinate factory with the formula:
+        Creates an ocean sigma over z coordinate factory with the formula:
 
         if k < nsigma:
             z(n, k, j, i) = eta(n, j, i) + sigma(k) *
@@ -763,10 +778,13 @@ class OceanSigmaZFactory(AuxCoordFactory):
         either `eta`, or 'sigma' and `depth` and `depth_c` coordinates.
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev)
+        self.units = zlev.units
 
         self.sigma = sigma
         self.eta = eta
@@ -778,16 +796,12 @@ class OceanSigmaZFactory(AuxCoordFactory):
         self.standard_name = "sea_surface_height_above_reference_ellipsoid"
         self.attributes = {"positive": "up"}
 
-    @property
-    def units(self):
-        return self.zlev.units
-
     @staticmethod
     def _check_dependencies(sigma, eta, depth, depth_c, nsigma, zlev):
         # Check for sufficient factory coordinates.
         if zlev is None:
             raise ValueError(
-                "Unable to determine units: " "no zlev coordinate available."
+                "Unable to determine units: no zlev coordinate available."
             )
         if nsigma is None:
             raise ValueError("Missing nsigma coordinate.")
@@ -1065,10 +1079,13 @@ class OceanSigmaFactory(AuxCoordFactory):
                         (depth(j, i) + eta(n, j, i))
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(sigma, eta, depth)
+        self.units = depth.units
 
         self.sigma = sigma
         self.eta = eta
@@ -1076,10 +1093,6 @@ class OceanSigmaFactory(AuxCoordFactory):
 
         self.standard_name = "sea_surface_height_above_reference_ellipsoid"
         self.attributes = {"positive": "up"}
-
-    @property
-    def units(self):
-        return self.depth.units
 
     @staticmethod
     def _check_dependencies(sigma, eta, depth):
@@ -1249,10 +1262,13 @@ class OceanSg1Factory(AuxCoordFactory):
             S(k,j,i) = depth_c * s(k) + (depth(j,i) - depth_c) * C(k)
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, c, eta, depth, depth_c)
+        self.units = depth.units
 
         self.s = s
         self.c = c
@@ -1262,10 +1278,6 @@ class OceanSg1Factory(AuxCoordFactory):
 
         self.standard_name = "sea_surface_height_above_reference_ellipsoid"
         self.attributes = {"positive": "up"}
-
-    @property
-    def units(self):
-        return self.depth.units
 
     @staticmethod
     def _check_dependencies(s, c, eta, depth, depth_c):
@@ -1473,10 +1485,13 @@ class OceanSFactory(AuxCoordFactory):
                    b * [tanh(a * (s(k) + 0.5)) / (2 * tanh(0.5*a)) - 0.5]
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, eta, depth, a, b, depth_c)
+        self.units = depth.units
 
         self.s = s
         self.eta = eta
@@ -1487,10 +1502,6 @@ class OceanSFactory(AuxCoordFactory):
 
         self.standard_name = "sea_surface_height_above_reference_ellipsoid"
         self.attributes = {"positive": "up"}
-
-    @property
-    def units(self):
-        return self.depth.units
 
     @staticmethod
     def _check_dependencies(s, eta, depth, a, b, depth_c):
@@ -1692,10 +1703,13 @@ class OceanSg2Factory(AuxCoordFactory):
                        (depth_c + depth(j,i))
 
         """
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
         self._check_dependencies(s, c, eta, depth, depth_c)
+        self.units = depth.units
 
         self.s = s
         self.c = c
@@ -1705,10 +1719,6 @@ class OceanSg2Factory(AuxCoordFactory):
 
         self.standard_name = "sea_surface_height_above_reference_ellipsoid"
         self.attributes = {"positive": "up"}
-
-    @property
-    def units(self):
-        return self.depth.units
 
     @staticmethod
     def _check_dependencies(s, c, eta, depth, depth_c):

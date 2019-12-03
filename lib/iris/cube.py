@@ -38,7 +38,12 @@ import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.common import CFVariableMixin, CoordMetadata, CubeMetadata
+from iris.common import (
+    CFVariableMixin,
+    CoordMetadata,
+    CubeMetadata,
+    MetadataFactory,
+)
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -654,8 +659,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     """
 
-    _METADATA = CubeMetadata
-
     #: Indicates to client code that the object supports
     #: "orthogonal indexing", which means that slices that are 1d arrays
     #: or lists slice along each dimension independently. This behavior
@@ -744,6 +747,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, str):
             raise TypeError("Invalid data type: {!r}.".format(data))
 
+        # Configure the metadata manager.
+        self._metadata = MetadataFactory(CubeMetadata)
+
         # Initialise the cube data manager.
         self._data_manager = DataManager(data)
 
@@ -808,6 +814,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if ancillary_variables_and_dims:
             for ancillary_variable, dims in ancillary_variables_and_dims:
                 self.add_ancillary_variable(ancillary_variable, dims)
+
+    @property
+    def _names(self):
+        """
+        A tuple containing the value of each name participating in the identify
+        of a :class:`iris.cube.Cube`. This includes the standard name,
+        long name, NetCDF variable name, and the STASH from the attributes
+        dictionary.
+
+        """
+        return self._metadata._names
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1887,11 +1904,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         done on the phenomenon.
 
         """
-        return self._cell_methods
+        return self._metadata.cell_methods
 
     @cell_methods.setter
     def cell_methods(self, cell_methods):
-        self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
+        self._metadata.cell_methods = (
+            tuple(cell_methods) if cell_methods else tuple()
+        )
 
     def core_data(self):
         """

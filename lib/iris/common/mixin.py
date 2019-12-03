@@ -5,46 +5,17 @@
 # licensing details.
 
 
-from collections import Iterable, namedtuple
+from collections.abc import Mapping
+from functools import wraps
 import re
 
 import cf_units
 
+from iris.common import BaseMetadata
 import iris.std_names
 
 
-__all__ = [
-    "CFVariableMixin",
-    "Names",
-]
-
-
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
-_TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
-
-
-class Names(
-    namedtuple("Names", ["standard_name", "long_name", "var_name", "STASH"])
-):
-    """
-    Immutable container for name metadata.
-
-    Args:
-
-    * standard_name:
-        A string representing the CF Conventions and Metadata standard name, or
-        None.
-    * long_name:
-        A string representing the CF Conventions and Metadata long name, or
-        None
-    * var_name:
-        A string representing the associated NetCDF variable name, or None.
-    * STASH:
-        A string representing the `~iris.fileformats.pp.STASH` code, or None.
-
-    """
-
-    __slots__ = ()
+__all__ = ["CFVariableMixin"]
 
 
 def _get_valid_standard_name(name):
@@ -105,7 +76,7 @@ class LimitedAttributeDict(dict):
         # Check validity of keys
         for key in self.keys():
             if key in self._forbidden_keys:
-                raise ValueError("%r is not a permitted attribute" % key)
+                raise ValueError(f"{key!r} is not a permitted attribute")
 
     def __eq__(self, other):
         # Extend equality to allow for NumPy arrays.
@@ -126,7 +97,7 @@ class LimitedAttributeDict(dict):
 
     def __setitem__(self, key, value):
         if key in self._forbidden_keys:
-            raise ValueError("%r is not a permitted attribute" % key)
+            raise ValueError(f"{key!r} is not a permitted attribute")
         dict.__setitem__(self, key, value)
 
     def update(self, other, **kwargs):
@@ -142,92 +113,15 @@ class LimitedAttributeDict(dict):
         # Check validity of keys
         for key in keys:
             if key in self._forbidden_keys:
-                raise ValueError("%r is not a permitted attribute" % key)
+                raise ValueError(f"{key!r} is not a permitted attribute")
 
         dict.update(self, other, **kwargs)
 
 
 class CFVariableMixin:
-
-    _DEFAULT_NAME = "unknown"  # the name default string
-
-    @staticmethod
-    def token(name):
-        """
-        Determine whether the provided name is a valid NetCDF name and thus
-        safe to represent a single parsable token.
-
-        Args:
-
-        * name:
-            The string name to verify
-
-        Returns:
-            The provided name if valid, otherwise None.
-
-        """
-        if name is not None:
-            result = _TOKEN_PARSE.match(name)
-            name = result if result is None else name
-        return name
-
-    def name(self, default=None, token=False):
-        """
-        Returns a human-readable name.
-
-        First it tries :attr:`standard_name`, then 'long_name', then
-        'var_name', then the STASH attribute before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        Kwargs:
-
-        * default:
-            The value of the default name.
-        * token:
-            If true, ensure that the name returned satisfies the criteria for
-            the characters required by a valid NetCDF name. If it is not
-            possible to return a valid name, then a ValueError exception is
-            raised.
-
-        Returns:
-            String.
-
-        """
-
-        def _check(item):
-            return self.token(item) if token else item
-
-        default = self._DEFAULT_NAME if default is None else default
-
-        result = (
-            _check(self.standard_name)
-            or _check(self.long_name)
-            or _check(self.var_name)
-            or _check(str(self.attributes.get("STASH", "")))
-            or _check(default)
-        )
-
-        if token and result is None:
-            emsg = "Cannot retrieve a valid name token from {!r}"
-            raise ValueError(emsg.format(self))
-
-        return result
-
-    @property
-    def names(self):
-        """
-        A tuple containing all of the metadata names. This includes the
-        standard name, long name, NetCDF variable name, and attributes
-        STASH name.
-
-        """
-        standard_name = self.standard_name
-        long_name = self.long_name
-        var_name = self.var_name
-        stash_name = self.attributes.get("STASH")
-        if stash_name is not None:
-            stash_name = str(stash_name)
-        return Names(standard_name, long_name, var_name, stash_name)
+    @wraps(BaseMetadata.name)
+    def name(self, default=None, token=None):
+        return self._metadata.name(default=default, token=token)
 
     def rename(self, name):
         """
@@ -250,70 +144,80 @@ class CFVariableMixin:
 
     @property
     def standard_name(self):
-        """The standard name for the Cube's data."""
-        return self._standard_name
+        """The CF Metadata standard name for the object."""
+        return self._metadata.standard_name
 
     @standard_name.setter
     def standard_name(self, name):
-        self._standard_name = _get_valid_standard_name(name)
+        self._metadata.standard_name = _get_valid_standard_name(name)
 
     @property
-    def units(self):
-        """The :mod:`~cf_units.Unit` instance of the object."""
-        return self._units
+    def long_name(self):
+        """The CF Metadata long name for the object."""
+        return self._metadata.long_name
 
-    @units.setter
-    def units(self, unit):
-        self._units = cf_units.as_unit(unit)
+    @long_name.setter
+    def long_name(self, name):
+        self._metadata.long_name = name
 
     @property
     def var_name(self):
-        """The netCDF variable name for the object."""
-        return self._var_name
+        """The NetCDF variable name for the object."""
+        return self._metadata.var_name
 
     @var_name.setter
     def var_name(self, name):
         if name is not None:
-            result = self.token(name)
+            result = self._metadata.token(name)
             if result is None or not name:
                 emsg = "{!r} is not a valid NetCDF variable name."
                 raise ValueError(emsg.format(name))
-        self._var_name = name
+        self._metadata.var_name = name
+
+    @property
+    def units(self):
+        """The S.I. unit of the object."""
+        return self._metadata.units
+
+    @units.setter
+    def units(self, unit):
+        self._metadata.units = cf_units.as_unit(unit)
 
     @property
     def attributes(self):
-        return self._attributes
+        return self._metadata.attributes
 
     @attributes.setter
     def attributes(self, attributes):
-        self._attributes = LimitedAttributeDict(attributes or {})
+        self._metadata.attributes = LimitedAttributeDict(attributes or {})
 
     @property
     def metadata(self):
-        fields = {
-            field: getattr(self, field) for field in self._METADATA._fields
-        }
-        return self._METADATA(**fields)
+        return self._metadata.values
 
     @metadata.setter
     def metadata(self, metadata):
+        cls = self._metadata.cls
+        fields = self._metadata.fields
+        arg = metadata
+
         try:
             # Try dict-like initialisation...
-            metadata = self._METADATA(**metadata)
+            metadata = cls(**metadata)
         except TypeError:
             try:
                 # Try iterator/namedtuple-like initialisation...
-                metadata = self._METADATA(*metadata)
+                metadata = cls(*metadata)
             except TypeError:
                 if hasattr(metadata, "_asdict"):
                     metadata = metadata._asdict()
-                fields = self._METADATA._fields
 
-                if isinstance(metadata, Iterable):
+                if isinstance(metadata, Mapping):
                     missing = [
                         field for field in fields if field not in metadata
                     ]
                 else:
+                    # Generic iterable/container with no associated keys.
                     missing = [
                         field
                         for field in fields
@@ -325,13 +229,14 @@ class CFVariableMixin:
                         map(lambda i: "{!r}".format(i), missing)
                     )
                     emsg = "Invalid {!r} metadata, require {} to be specified."
-                    raise TypeError(
-                        emsg.format(self.__class__.__name__, missing)
-                    )
+                    raise TypeError(emsg.format(type(arg), missing))
 
-        for field in self._METADATA._fields:
+        for field in fields:
             if hasattr(metadata, field):
                 value = getattr(metadata, field)
             else:
                 value = metadata[field]
+
+            # Ensure to always set state through the individual mixin/container
+            # setter functions.
             setattr(self, field, value)
