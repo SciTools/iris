@@ -38,7 +38,6 @@ from iris.exceptions import (
     AncillaryVariableNotFoundError,
     UnitConversionError,
 )
-from iris.experimental.representation import CubeRepresentation
 from iris._lazy_data import as_lazy_data
 import iris.tests.stock as stock
 
@@ -2417,15 +2416,12 @@ class Test__repr_html(tests.IrisTest):
     def test_bad_repr(self):
         # If an html repr fails we don't want it to pass the error.
         cube = stock.simple_3d()
-        bad_attr = {'history': 'First edit\nSecond edit'}
-        cube.attributes.update(bad_attr)
-        representer = CubeRepresentation(cube)
-
-        # Confirm we get an exception when we make the html repr...
-        with self.assertRaisesRegexp(ValueError, 'substring'):
-            representer.repr_html()
-        # ... and that it's not returned by the cube method.
-        self.assertIsNone(cube._repr_html_())
+        with mock.patch(
+                "iris.experimental.representation.CubeRepresentation.repr_html",
+                side_effect=ValueError('Bad substring')):
+            # Confirm the exception when we make the html repr is not returned
+            # by the cube method.
+            self.assertIsNone(cube._repr_html_())
 
 
 if __name__ == "__main__":
