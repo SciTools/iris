@@ -229,7 +229,7 @@ class CubeRepresentation(object):
         try:
             content = self.cube.lazy_data()._repr_html_()
         except AttributeError:
-            content = '&nbsp;'
+            content = "&nbsp;"
         return content
 
     def _make_row(self, title, body=None, col_span=0):
@@ -343,7 +343,7 @@ class CubeRepresentation(object):
         header = self._make_header()
 
         # Add content describing the cube's data attribute.
-        data = self._lazy_data_repr() if self.lazy_data else '&nbsp;'
+        data = self._lazy_data_repr() if self.lazy_data else "&nbsp;"
 
         # Check if we have a scalar cube.
         if self.scalar_cube:
@@ -363,11 +363,13 @@ class CubeRepresentation(object):
             self._get_bits(lines)
             content = self._make_content()
 
-        return self._template.format(header=header,
-                                     id=self.cube_id,
-                                     shape=shape,
-                                     content=content,
-                                     data=data)
+        return self._template.format(
+            header=header,
+            id=self.cube_id,
+            shape=shape,
+            content=content,
+            data=data,
+        )
 
 
 class CubeListRepresentation:

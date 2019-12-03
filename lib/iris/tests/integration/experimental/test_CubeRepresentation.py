@@ -172,13 +172,13 @@ class TestLazyDataRepr(tests.IrisTest):
         cube = stock.lat_lon_cube()
         representer = CubeRepresentation(cube)
         result = representer.repr_html()
-        exp_str = '&nbsp;'
+        exp_str = "&nbsp;"
         self.assertIn(exp_str, result)
 
-    @skip('Dask version does not include html repr')
+    @skip("Dask version does not include html repr")
     def test_lazy_data_repr(self):
         # Dask array repr uses an SVG.
-        exp_str = '<svg'
+        exp_str = "<svg"
         representer = CubeRepresentation(self.cube)
         result = representer._lazy_data_repr()
         self.assertIn(exp_str, result)
@@ -186,13 +186,14 @@ class TestLazyDataRepr(tests.IrisTest):
     def test_cannot_repr(self):
         # Test cases where the dask array repr cannot be made.
         cube = mock.MagicMock(spec=self.cube)
-        cube.lazy_data()._repr_html_ = \
-            mock.MagicMock(side_effect=AttributeError)
+        cube.lazy_data()._repr_html_ = mock.MagicMock(
+            side_effect=AttributeError
+        )
         representer = CubeRepresentation(cube)
         result = representer._lazy_data_repr()
-        exp_str = '&nbsp;'
+        exp_str = "&nbsp;"
         self.assertIn(exp_str, result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()
