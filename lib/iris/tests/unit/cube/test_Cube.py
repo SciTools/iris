@@ -2417,8 +2417,9 @@ class Test__repr_html(tests.IrisTest):
         # If an html repr fails we don't want it to pass the error.
         cube = stock.simple_3d()
         with mock.patch(
-                "iris.experimental.representation.CubeRepresentation.repr_html",
-                side_effect=ValueError('Bad substring')):
+            "iris.experimental.representation.CubeRepresentation.repr_html",
+            side_effect=ValueError("Bad substring"),
+        ):
             # Confirm the exception when we make the html repr is not returned
             # by the cube method.
             self.assertIsNone(cube._repr_html_())
