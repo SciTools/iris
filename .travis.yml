@@ -162,6 +162,8 @@ script:
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
+  # NOTE: a *separate* "export" command appears to be necessary here : A command of the
+  #   form "export ORG=.." failed to define ORG for the following command (?!)
   - >
     ORG=$(echo ${TRAVIS_REPO_SLUG} | cut -d/ -f1);
     export ORG
