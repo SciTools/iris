@@ -171,8 +171,7 @@ script:
   # When we merge a change to SciTools/iris, we can push docs to github pages.
   # At present, only the Python 3.7 "doctest" job does this.
   # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
-  - >
-    if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
+  - if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
