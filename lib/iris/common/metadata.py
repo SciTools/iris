@@ -267,22 +267,29 @@ class CubeMetadata(BaseMetadata):
         return (standard_name, long_name, var_name, stash_name)
 
 
-def MetadataFactory(cls):
-    def __init__(self, cls):
-        """
-        A class instance factory function responsible for manufacturing
-        metadata instances dynamically at runtime.
+def MetadataFactory(cls, **kwargs):
+    """
+    A class instance factory function responsible for manufacturing
+    metadata instances dynamically at runtime.
 
-        The factory instances returned by the factory are capable of managing
-        their metadata state, which can be proxied by the owning container.
+    The factory instances returned by the factory are capable of managing
+    their metadata state, which can be proxied by the owning container.
 
-        Args:
+    Args:
 
-        * cls:
-            A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-            the metadata to be managed.
+    * cls:
+        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
+        the metadata to be managed.
 
-        """
+    Kwargs:
+
+    * kwargs:
+        Initial values for the manufactured metadata instance. Unspecified
+        fields will default to a value of 'None'.
+
+    """
+
+    def __init__(self, cls, **kwargs):
         # Restrict to only dealing with appropriate metadata classes.
         if not issubclass(cls, BaseMetadata):
             emsg = "Require a subclass of {!r}, got {!r}."
@@ -291,16 +298,32 @@ def MetadataFactory(cls):
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
-        #: The metadata class members.
-        self.fields = cls._fields
-
         # Initialise the metadata class fields in the instance.
         for field in self.fields:
             setattr(self, field, None)
 
+        # Populate with provided kwargs, which have already been verified
+        # by the factory.
+        for field, value in kwargs.items():
+            setattr(self, field, value)
+
+    def __eq__(self, other):
+        if not hasattr(other, "cls"):
+            return NotImplemented
+        match = self.cls is other.cls
+        if match:
+            match = self.values == other.values
+        return match
+
     def __getstate__(self):
         """Return the instance state to be pickled."""
         return {field: getattr(self, field) for field in self.fields}
+
+    def __ne__(self, other):
+        match = self.__eq__(other)
+        if match is not NotImplemented:
+            match = not match
+        return match
 
     def __reduce__(self):
         """
@@ -327,6 +350,11 @@ def MetadataFactory(cls):
             setattr(self, field, value)
 
     @property
+    def fields(self):
+        """Return the name of the metadata members."""
+        return self.cls._fields
+
+    @property
     def values(self):
         fields = {field: getattr(self, field) for field in self.fields}
         return self.cls(**fields)
@@ -336,16 +364,27 @@ def MetadataFactory(cls):
         emsg = "Require a subclass of {!r}, got {!r}."
         raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
+    # Check whether kwargs have valid fields for the specified metadata.
+    if kwargs:
+        extra = [field for field in kwargs.keys() if field not in cls._fields]
+        if extra:
+            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
+            emsg = "Invalid {!r} field parameters, got {}."
+            raise ValueError(emsg.format(cls.__name__, bad))
+
     # Define the name, (inheritance) bases and namespace of the dynamic class.
     name = "Metadata"
     bases = ()
     namespace = {
         "DEFAULT_NAME": cls.DEFAULT_NAME,
         "__init__": __init__,
+        "__eq__": __eq__,
         "__getstate__": __getstate__,
+        "__ne__": __ne__,
         "__reduce__": __reduce__,
         "__repr__": __repr__,
         "__setstate__": __setstate__,
+        "fields": fields,
         "name": cls.name,
         "token": cls.token,
         "values": values,
@@ -358,6 +397,6 @@ def MetadataFactory(cls):
     # Dynamically create the class.
     Metadata = type(name, bases, namespace)
     # Now manufacture an instance of that class.
-    metadata = Metadata(cls)
+    metadata = Metadata(cls, **kwargs)
 
     return metadata
