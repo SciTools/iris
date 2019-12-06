@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float64" standard_name="air_temperature" units="K">
+    <attributes>
+      <attribute name="GRIB_PARAM" value="GRIB2:d000c000n000"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord id="507906da" long_name="extra_year_number_coord" points="[1998]" shape="(1,)" units="Unit('no_unit')" value_type="int64"/>

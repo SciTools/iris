@@ -136,7 +136,6 @@ class TestBasicLoad(tests.GraphicsTest):
         )
         self.assertCML(cube, ("grib_load", "reduced_ll_grib1.cml"))
 
-    @tests.skip_grib_fail
     def test_reduced_gg(self):
         cube = iris.load_cube(
             tests.get_data_path(("GRIB", "reduced", "reduced_gg.grib2"))
