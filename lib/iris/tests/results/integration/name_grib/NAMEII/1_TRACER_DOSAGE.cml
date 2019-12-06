@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float64" units="unknown">
+    <attributes>
+      <attribute name="GRIB_PARAM" value="GRIB2:d255c255n255"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord bounds="[[0.0, 3.0]]" id="1d45e087" points="[3.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>

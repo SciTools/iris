@@ -1210,15 +1210,10 @@ skip_grib = unittest.skipIf(not GRIB_AVAILABLE,
                             'which is not available.')
 
 
-# TODO: remove these skips when iris-grib is fixed
-skip_grib_fail = unittest.skipIf(True,
-                                 'Test(s) are failing due to known problems '
-                                 'with "iris-grib".')
-
-
-skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
-                                   ('Test(s) require "iris-sample-data", '
-                                    'which is not available.'))
+skip_sample_data = unittest.skipIf(
+    not SAMPLE_DATA_AVAILABLE,
+    ('Test(s) require "iris-sample-data", ' "which is not available."),
+)
 
 
 skip_nc_time_axis = unittest.skipIf(
