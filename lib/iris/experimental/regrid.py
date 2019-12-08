@@ -491,6 +491,31 @@ def _regrid_area_weighted_array(
         cached_x_bounds.append(x_bounds)
         cached_x_indices.append(x_indices)
 
+    # Move y_dim and x_dim to last dimensions
+    x_dim_orig = copy.copy(x_dim)
+    y_dim_orig = copy.copy(y_dim)
+    if x_dim is None and y_dim is None:
+        # e.g. a scalar point such as a vertical profile
+        pass
+    elif x_dim is not None and y_dim is None:
+        # test cross_section along line longitude
+        src_data = np.moveaxis(src_data, x_dim, -1)
+        x_dim = src_data.ndim - 1
+    elif y_dim is not None and x_dim is None:
+        # test cross_section along line latitude
+        src_data = np.moveaxis(src_data, y_dim, -1)
+        y_dim = src_data.ndim - 1
+    elif x_dim < y_dim:
+        src_data = np.moveaxis(src_data, x_dim, -1)
+        src_data = np.moveaxis(src_data, y_dim - 1, -2)
+        x_dim = src_data.ndim - 1
+        y_dim = src_data.ndim - 2
+    else:
+        src_data = np.moveaxis(src_data, x_dim, -1)
+        src_data = np.moveaxis(src_data, y_dim, -2)
+        x_dim = src_data.ndim - 1
+        y_dim = src_data.ndim - 2
+
     # Create empty data array to match the new grid.
     # Note that dtype is not preserved and that the array is
     # masked to allow for regions that do not overlap.
@@ -577,8 +602,6 @@ def _regrid_area_weighted_array(
                 # Transpose weights to match dim ordering in data.
                 weights_shape_y = weights.shape[0]
                 weights_shape_x = weights.shape[1]
-                if x_dim is not None and y_dim is not None and x_dim < y_dim:
-                    weights = weights.T
                 # Broadcast the weights array to allow numpy's ma.average
                 # to be called.
                 weights_padded_shape = [1] * data.ndim
@@ -607,6 +630,20 @@ def _regrid_area_weighted_array(
     # and no values in the new array are masked.
     if not src_masked and not new_data.mask.any():
         new_data = new_data.data
+
+    # Restore axis to original order
+    if x_dim_orig is None and y_dim_orig is None:
+        pass
+    elif x_dim_orig is not None and y_dim_orig is None:
+        new_data = np.moveaxis(new_data, -1, x_dim_orig)
+    elif y_dim_orig is not None and x_dim_orig is None:
+        new_data = np.moveaxis(new_data, -1, y_dim_orig)
+    elif x_dim_orig < y_dim_orig:
+        new_data = np.moveaxis(new_data, -1, x_dim_orig)
+        new_data = np.moveaxis(new_data, -1, y_dim_orig)
+    else:
+        new_data = np.moveaxis(new_data, -2, y_dim_orig)
+        new_data = np.moveaxis(new_data, -1, x_dim_orig)
 
     return new_data
 
