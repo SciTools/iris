@@ -473,23 +473,101 @@ def _regrid_area_weighted_array(
         grid.
 
     """
-    # Determine which grid bounds are within src extent.
-    y_within_bounds = _within_bounds(
-        src_y_bounds, grid_y_bounds, grid_y_decreasing
-    )
-    x_within_bounds = _within_bounds(
-        src_x_bounds, grid_x_bounds, grid_x_decreasing
-    )
 
-    # Cache which src_bounds are within grid bounds
-    cached_x_bounds = []
-    cached_x_indices = []
-    for (x_0, x_1) in grid_x_bounds:
-        if grid_x_decreasing:
-            x_0, x_1 = x_1, x_0
-        x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
-        cached_x_bounds.append(x_bounds)
-        cached_x_indices.append(x_indices)
+    def _calculate_regrid_area_weighted_weights(
+        src_x_bounds,
+        src_y_bounds,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        area_func,
+        circular=False,
+    ):
+        """ """
+        # Determine which grid bounds are within src extent.
+        y_within_bounds = _within_bounds(
+            src_y_bounds, grid_y_bounds, grid_y_decreasing
+        )
+        x_within_bounds = _within_bounds(
+            src_x_bounds, grid_x_bounds, grid_x_decreasing
+        )
+
+        # Cache which src_bounds are within grid bounds
+        cached_x_bounds = []
+        cached_x_indices = []
+        for (x_0, x_1) in grid_x_bounds:
+            if grid_x_decreasing:
+                x_0, x_1 = x_1, x_0
+            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+            cached_x_bounds.append(x_bounds)
+            cached_x_indices.append(x_indices)
+
+        # Cache which y src_bounds areas and weights are within grid bounds
+        cached_y_indices = []
+        cached_weights = []
+        for j, (y_0, y_1) in enumerate(grid_y_bounds):
+            # Reverse lower and upper if dest grid is decreasing.
+            if grid_y_decreasing:
+                y_0, y_1 = y_1, y_0
+            y_bounds, y_indices = _cropped_bounds(src_y_bounds, y_0, y_1)
+            cached_y_indices.append(y_indices)
+
+            weights_i = []
+            for i, (x_0, x_1) in enumerate(grid_x_bounds):
+                # Reverse lower and upper if dest grid is decreasing.
+                if grid_x_decreasing:
+                    x_0, x_1 = x_1, x_0
+                x_bounds = cached_x_bounds[i]
+                x_indices = cached_x_indices[i]
+
+                # Determine whether element i, j overlaps with src and hence
+                # an area weight should be computed.
+                # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in the case
+                # of wrapped longitudes. However if the src grid is not global
+                # (i.e. circular) this new cell would include a region outside of
+                # the extent of the src grid and thus the weight is therefore
+                # invalid.
+                outside_extent = x_0 > x_1 and not circular
+                if (
+                    outside_extent
+                    or not y_within_bounds[j]
+                    or not x_within_bounds[i]
+                ):
+                    weights = False
+                else:
+                    # Calculate weights based on areas of cropped bounds.
+                    if isinstance(x_indices, tuple) and isinstance(
+                        y_indices, tuple
+                    ):
+                        raise RuntimeError(
+                            "Cannot handle split bounds " "in both x and y."
+                        )
+                    weights = area_func(y_bounds, x_bounds)
+                weights_i.append(weights)
+            cached_weights.append(weights_i)
+        return (
+            tuple(cached_x_indices),
+            tuple(cached_y_indices),
+            tuple(cached_weights),
+        )
+
+    weights_info = _calculate_regrid_area_weighted_weights(
+        src_x_bounds,
+        src_y_bounds,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        area_func,
+        circular,
+    )
+    cached_x_indices, cached_y_indices, cached_weights = weights_info
+    # Delete variables that are not needed and would not be available
+    # if _calculate_regrid_area_weighted_weights was refactored further
+    del src_x_bounds, src_y_bounds, grid_x_bounds, grid_y_bounds
+    del grid_x_decreasing, grid_y_decreasing
+    del area_func, circular
 
     # Ensure we have x_dim and y_dim.
     x_dim_orig = copy.copy(x_dim)
@@ -513,8 +591,8 @@ def _regrid_area_weighted_array(
     # Note that dtype is not preserved and that the array is
     # masked to allow for regions that do not overlap.
     new_shape = list(src_data.shape)
-    new_shape[x_dim] = grid_x_bounds.shape[0]
-    new_shape[y_dim] = grid_y_bounds.shape[0]
+    new_shape[x_dim] = len(cached_x_indices)
+    new_shape[y_dim] = len(cached_y_indices)
 
     # Use input cube dtype or convert values to the smallest possible float
     # dtype when necessary.
@@ -535,45 +613,18 @@ def _regrid_area_weighted_array(
     axis = (y_dim, x_dim)
 
     # Simple for loop approach.
-    for j, (y_0, y_1) in enumerate(grid_y_bounds):
-        # Reverse lower and upper if dest grid is decreasing.
-        if grid_y_decreasing:
-            y_0, y_1 = y_1, y_0
-        y_bounds, y_indices = _cropped_bounds(src_y_bounds, y_0, y_1)
-        for i, (x_0, x_1) in enumerate(grid_x_bounds):
-            # Reverse lower and upper if dest grid is decreasing.
-            if grid_x_decreasing:
-                x_0, x_1 = x_1, x_0
-            x_bounds = cached_x_bounds[i]
-            x_indices = cached_x_indices[i]
-
-            # Determine whether to mask element i, j based on overlap with
-            # src.
-            # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in the case
-            # of wrapped longitudes. However if the src grid is not global
-            # (i.e. circular) this new cell would include a region outside of
-            # the extent of the src grid and should therefore be masked.
-            outside_extent = x_0 > x_1 and not circular
-            if (
-                outside_extent
-                or not y_within_bounds[j]
-                or not x_within_bounds[i]
-            ):
+    for j, y_indices in enumerate(cached_y_indices):
+        for i, x_indices in enumerate(cached_x_indices):
+            # Determine whether to mask element i, j based on whether
+            # there are valid weights.
+            weights = cached_weights[j][i]
+            if isinstance(weights, bool) and weights == False:
                 # Mask out element(s) in new_data
                 new_data[..., j, i] = ma.masked
             else:
                 # Calculate weighted mean of data points.
                 # Slice out relevant data (this may or may not be a view()
                 # depending on x_indices being a slice or not).
-                if isinstance(x_indices, tuple) and isinstance(
-                    y_indices, tuple
-                ):
-                    raise RuntimeError(
-                        "Cannot handle split bounds " "in both x and y."
-                    )
-                # Calculate weights based on areas of cropped bounds.
-                weights = area_func(y_bounds, x_bounds)
-
                 data = src_data[..., y_indices, x_indices]
 
                 # Transpose weights to match dim ordering in data.
