@@ -1971,6 +1971,7 @@ fc_extras
         # Get units
         attr_units = get_attr_units(cf_cm_var, attributes)
 
+        # Get (lazy) content array
         data = _get_cf_var_data(cf_cm_var, engine.filename)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable

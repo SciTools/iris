@@ -31,7 +31,7 @@ import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.util
-from iris.coords import AncillaryVariable
+from iris.coords import AncillaryVariable, CellMeasure
 import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
 from iris._lazy_data import is_lazy_data
@@ -295,6 +295,58 @@ class TestNetCDFLoad(tests.IrisTest):
             attributes={"custom": "extra-attribute"},
         )
         self.assertEqual(avs[0], expected)
+
+    def test_cell_measures(self):
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:units = "1" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                int64 ayv(ayv) ;
+                    ayv:units = "1" ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:units = "m2" ;
+                    my_areas:long_name = "standardised cell areas" ;
+                    my_areas:custom = "extra-attribute";
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22, 23;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        cms = cubes[0].cell_measures()
+        self.assertEqual(len(cms), 1)
+        expected = CellMeasure(
+            np.ma.array([[110.0, 120.0, 130.0], [221.0, 231.0, 241.0]]),
+            measure="area",
+            var_name="my_areas",
+            long_name="standardised cell areas",
+            units="m2",
+            attributes={"custom": "extra-attribute"},
+        )
+        self.assertEqual(cms[0], expected)
 
     def test_deferred_loading(self):
         # Test exercising CF-netCDF deferred loading and deferred slicing.
