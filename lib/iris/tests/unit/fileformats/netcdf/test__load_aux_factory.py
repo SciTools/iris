@@ -24,8 +24,10 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
         self.requires = dict(formula_type=standard_name)
         coordinates = [(mock.sentinel.b, "b"), (mock.sentinel.ps, "ps")]
-        self.provides = dict(coordinates=coordinates)
-        self.engine = mock.Mock(requires=self.requires, provides=self.provides)
+        self.cube_bits = dict(coordinates=coordinates)
+        self.engine = mock.Mock(
+            requires=self.requires, cube_bits=self.cube_bits
+        )
         self.cube = mock.create_autospec(Cube, spec_set=True, instance=True)
         # Patch out the check_dependencies functionality.
         func = "iris.aux_factory.HybridPressureFactory._check_dependencies"
@@ -34,7 +36,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.addCleanup(patcher.stop)
 
     def test_formula_terms_ap(self):
-        self.provides["coordinates"].append((mock.sentinel.ap, "ap"))
+        self.cube_bits["coordinates"].append((mock.sentinel.ap, "ap"))
         self.requires["formula_terms"] = dict(ap="ap", b="b", ps="ps")
         _load_aux_factory(self.engine, self.cube)
         # Check cube.add_aux_coord method.
@@ -57,7 +59,9 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
             long_name="vertical pressure",
             var_name="ap",
         )
-        self.provides["coordinates"].extend([(coord_a, "a"), (coord_p0, "p0")])
+        self.cube_bits["coordinates"].extend(
+            [(coord_a, "a"), (coord_p0, "p0")]
+        )
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
         _load_aux_factory(self.engine, self.cube)
         # Check cube.coord_dims method.
@@ -82,7 +86,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
 
     def test_formula_terms_p0_non_scalar(self):
         coord_p0 = DimCoord(np.arange(5))
-        self.provides["coordinates"].append((coord_p0, "p0"))
+        self.cube_bits["coordinates"].append((coord_p0, "p0"))
         self.requires["formula_terms"] = dict(p0="p0")
         with self.assertRaises(ValueError):
             _load_aux_factory(self.engine, self.cube)
@@ -90,7 +94,9 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
     def test_formula_terms_p0_bounded(self):
         coord_a = DimCoord(np.arange(5))
         coord_p0 = DimCoord(1, bounds=[0, 2], var_name="p0")
-        self.provides["coordinates"].extend([(coord_a, "a"), (coord_p0, "p0")])
+        self.cube_bits["coordinates"].extend(
+            [(coord_a, "a"), (coord_p0, "p0")]
+        )
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
@@ -131,14 +137,14 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
 
     def test_formula_terms_no_p0_term(self):
         coord_a = DimCoord(np.arange(5), units="Pa")
-        self.provides["coordinates"].append((coord_a, "a"))
+        self.cube_bits["coordinates"].append((coord_a, "a"))
         self.requires["formula_terms"] = dict(a="a", b="b", ps="ps")
         _load_aux_factory(self.engine, self.cube)
         self._check_no_delta()
 
     def test_formula_terms_no_a_term(self):
         coord_p0 = DimCoord(10, units="1")
-        self.provides["coordinates"].append((coord_p0, "p0"))
+        self.cube_bits["coordinates"].append((coord_p0, "p0"))
         self.requires["formula_terms"] = dict(a="p0", b="b", ps="ps")
         _load_aux_factory(self.engine, self.cube)
         self._check_no_delta()

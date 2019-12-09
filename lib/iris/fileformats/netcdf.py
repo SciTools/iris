@@ -460,9 +460,9 @@ class NetCDFDataProxy:
 def _assert_case_specific_facts(engine, cf, cf_group):
     # Initialise pyke engine "provides" hooks.
     # These are used to patch non-processed element attributes after rules activation.
-    engine.provides["coordinates"] = []
-    engine.provides["cell_measures"] = []
-    engine.provides["ancillary_variables"] = []
+    engine.cube_bits["coordinates"] = []
+    engine.cube_bits["cell_measures"] = []
+    engine.cube_bits["ancillary_variables"] = []
 
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
@@ -595,7 +595,7 @@ def _load_cube(engine, cf, cf_var, filename):
     # Initialise pyke engine rule processing hooks.
     engine.cf_var = cf_var
     engine.cube = cube
-    engine.provides = {}
+    engine.cube_bits = {}
     engine.requires = {}
     engine.rule_triggered = set()
     engine.filename = filename
@@ -618,7 +618,7 @@ def _load_cube(engine, cf, cf_var, filename):
             _set_attributes(iris_object.attributes, attr_name, attr_value)
 
     def fix_attributes_all_elements(role_name):
-        elements_and_names = engine.provides.get(role_name, [])
+        elements_and_names = engine.cube_bits.get(role_name, [])
 
         for iris_object, cf_var_name in elements_and_names:
             add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
@@ -677,7 +677,7 @@ def _load_aux_factory(engine, cube):
             # Convert term names to coordinates (via netCDF variable names).
             name = engine.requires["formula_terms"].get(term, None)
             if name is not None:
-                for coord, cf_var_name in engine.provides["coordinates"]:
+                for coord, cf_var_name in engine.cube_bits["coordinates"]:
                     if cf_var_name == name:
                         return coord
                 warnings.warn(

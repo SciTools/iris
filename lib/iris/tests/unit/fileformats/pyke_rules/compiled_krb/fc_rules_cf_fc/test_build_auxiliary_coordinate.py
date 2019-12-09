@@ -63,12 +63,11 @@ class TestBoundsVertexDim(tests.IrisTest):
             cf_var=mock.Mock(dimensions=('foo', 'bar'),
                              cf_data=cf_data),
             filename='DUMMY',
-            provides=dict(coordinates=[]))
+            cube_bits=dict(coordinates=[]))
 
         # Patch the deferred loading that prevents attempted file access.
         # This assumes that self.cf_bounds_var is defined in the test case.
         def patched__getitem__(proxy_self, keys):
-            variable = None
             for var in (self.cf_coord_var, self.cf_bounds_var):
                 if proxy_self.variable_name == var.cf_name:
                     return var[keys]
@@ -121,9 +120,9 @@ class TestBoundsVertexDim(tests.IrisTest):
         self.engine.cube.add_aux_coord.assert_called_with(
             self.expected_coord, [0, 1])
 
-        # Test that engine.provides container is correctly populated.
+        # Test that engine.cube_bits container is correctly populated.
         expected_list = [(self.expected_coord, self.cf_coord_var.cf_name)]
-        self.assertEqual(self.engine.provides['coordinates'],
+        self.assertEqual(self.engine.cube_bits['coordinates'],
                          expected_list)
 
     def test_fastest_varying_vertex_dim(self):
@@ -164,7 +163,7 @@ class TestDtype(tests.IrisTest):
             cube=mock.Mock(),
             cf_var=mock.Mock(dimensions=('foo', 'bar')),
             filename='DUMMY',
-            provides=dict(coordinates=[]))
+            cube_bits=dict(coordinates=[]))
 
         def patched__getitem__(proxy_self, keys):
             if proxy_self.variable_name == self.cf_coord_var.cf_name:
@@ -182,7 +181,7 @@ class TestDtype(tests.IrisTest):
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.provides['coordinates'][0]
+        coord, _ = self.engine.cube_bits['coordinates'][0]
         self.assertEqual(coord.dtype.kind, 'i')
 
     def test_scale_factor_float(self):
@@ -191,7 +190,7 @@ class TestDtype(tests.IrisTest):
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.provides['coordinates'][0]
+        coord, _ = self.engine.cube_bits['coordinates'][0]
         self.assertEqual(coord.dtype.kind, 'f')
 
     def test_add_offset_float(self):
@@ -200,7 +199,7 @@ class TestDtype(tests.IrisTest):
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.provides['coordinates'][0]
+        coord, _ = self.engine.cube_bits['coordinates'][0]
         self.assertEqual(coord.dtype.kind, 'f')
 
 
@@ -211,7 +210,7 @@ class TestCoordConstruction(tests.IrisTest):
             cube=mock.Mock(),
             cf_var=mock.Mock(dimensions=('foo', 'bar')),
             filename='DUMMY',
-            provides=dict(coordinates=[]))
+            cube_bits=dict(coordinates=[]))
 
         points = np.arange(6)
         self.cf_coord_var = mock.Mock(
