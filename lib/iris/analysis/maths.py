@@ -19,6 +19,7 @@ import numpy as np
 from numpy import ma
 
 import iris.analysis
+from iris.common._lenient import lenient_client
 import iris.coords
 import iris.cube
 import iris.exceptions
@@ -216,6 +217,7 @@ def _assert_matching_units(cube, other, operation_name):
         raise iris.exceptions.NotYetImplementedError(msg)
 
 
+@lenient_client
 def add(cube, other, dim=None, in_place=False):
     """
     Calculate the sum of two cubes, or the sum of a cube and a
@@ -261,6 +263,7 @@ def add(cube, other, dim=None, in_place=False):
     )
 
 
+@lenient_client
 def subtract(cube, other, dim=None, in_place=False):
     """
     Calculate the difference between two cubes, or the difference between
@@ -380,6 +383,7 @@ def _add_subtract_common(
     return new_cube
 
 
+@lenient_client
 def multiply(cube, other, dim=None, in_place=False):
     """
     Calculate the product of a cube and another cube or coordinate.
@@ -475,6 +479,7 @@ def _inplace_common_checks(cube, other, math_op):
         )
 
 
+@lenient_client
 def divide(cube, other, dim=None, in_place=False):
     """
     Calculate the division of a cube by a cube or coordinate.

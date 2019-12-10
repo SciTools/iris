@@ -10,6 +10,8 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
+from ._lenient import lenient_service
+
 
 __all__ = [
     "AncillaryVariableMetadata",
@@ -199,6 +201,19 @@ class CoordMetadata(BaseMetadata):
     _members = ("coord_system", "climatological")
 
     __slots__ = ()
+
+    @lenient_service
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, self.__class__):
+            result = super().__eq__(other)
+        return result
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
 
 class CubeMetadata(BaseMetadata):
