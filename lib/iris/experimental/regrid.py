@@ -498,11 +498,11 @@ def _regrid_area_weighted_array(
         # e.g. a scalar point such as a vertical profile
         pass
     elif x_dim is not None and y_dim is None:
-        # test cross_section along line longitude
+        # test cross_section along line latitude
         src_data = np.moveaxis(src_data, x_dim, -1)
         x_dim = src_data.ndim - 1
     elif y_dim is not None and x_dim is None:
-        # test cross_section along line latitude
+        # test cross_section along line longitude
         src_data = np.moveaxis(src_data, y_dim, -1)
         y_dim = src_data.ndim - 1
     elif x_dim < y_dim:
