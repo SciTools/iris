@@ -651,7 +651,7 @@ def _regrid_area_weighted_array(
             # Determine whether to mask element i, j based on whether
             # there are valid weights.
             weights = cached_weights[j][i]
-            if isinstance(weights, bool) and weights == False:
+            if isinstance(weights, bool) and not weights:
                 if not src_masked:
                     # Cheat! Fill the data with zeros and weights as one.
                     # The weighted average result will be the same, but
