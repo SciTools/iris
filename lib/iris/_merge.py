@@ -448,6 +448,9 @@ class _CubeSignature(
         if self.data_type != other.data_type:
             msg = "cube data dtype differs: {} != {}"
             msgs.append(msg.format(self.data_type, other.data_type))
+        # Both cell_measures_and_dims and ancillary_variables_and_dims are
+        # ordered by the same method, it is therefore not possible for a
+        # mismatch to be caused by a difference in order.
         if self.cell_measures_and_dims != other.cell_measures_and_dims:
             msgs.append("cube.cell_measures differ")
         if (
