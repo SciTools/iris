@@ -686,16 +686,18 @@ def _regrid_area_weighted_array(
         src_area_datas, weights=src_area_weights, axis=axis, mdtol=mdtol
     )
     new_data = new_data.reshape(new_shape)
+    if src_masked:
+        new_data_mask = new_data.mask
 
     # Mask the data if originally masked or if the result has masked points
-    if src_masked:
+    if ma.isMaskedArray(src_data):
         new_data = ma.array(
             new_data,
-            mask=new_data.mask,
+            mask=new_data_mask,
             fill_value=src_data.fill_value,
             dtype=dtype,
         )
-    elif new_data_mask.any() or ma.isMaskedArray(src_data):
+    elif new_data_mask.any():
         new_data = ma.array(new_data, mask=new_data_mask, dtype=dtype)
     else:
         new_data = new_data.astype(dtype)
