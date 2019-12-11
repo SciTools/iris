@@ -105,7 +105,7 @@ install:
   # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
   - >
     if [[ "${TEST_MINIMAL}" != true ]]; then
-        conda install --quiet -n ${ENV_NAME} python-eccodes>=0.9.1,<2;
+        conda install --quiet -n ${ENV_NAME} python-eccodes">=0.9.1, <2";
         conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
     fi
 
