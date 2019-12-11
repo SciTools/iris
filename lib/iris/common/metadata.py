@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
-from ._lenient import lenient_service
+from ._lenient import LENIENT, lenient_service
 
 
 __all__ = [
@@ -109,6 +109,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if name is not None:
             result = _TOKEN_PARSE.match(name)
             name = result if result is None else name
+
         return name
 
     def name(self, default=None, token=False):
@@ -153,6 +154,19 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
+    @lenient_service
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, self.__class__):
+            if LENIENT(self.__eq__):
+                # Perform "lenient" comparison.
+                result = self._compare(other)
+            else:
+                # Perform "strict" comparison.
+                result = super().__eq__(other)
+
+        return result
+
     def __lt__(self, other):
         #
         # Support Python2 behaviour for a "<" operation involving a
@@ -170,6 +184,39 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             return tuple(keys)
 
         return _sort_key(self) < _sort_key(other)
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+
+        return result
+
+    def _compare(self, other):
+        """
+        Support lenient metadata equality for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        result = False
+        # Use the "name" method to leniently compare "standard_name",
+        # "long_name" and "var_name" in a well defined way.
+        if self.name() == other.name():
+            # Perform "strict" comparison for "units".
+            result = self.units == other.units
+            # Perform "lenient" comparison for "attributes".
+            # This effectively means they are always equal, therefore there is
+            # no further work to do here.
+
+        return result
 
 
 class AncillaryVariableMetadata(BaseMetadata):
@@ -202,17 +249,42 @@ class CoordMetadata(BaseMetadata):
 
     __slots__ = ()
 
+    def _compare(self, other):
+        """
+        Support lenient metadata equality for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "coord_system" and "climatological".
+        result = (
+            self.coord_system == other.coord_system
+            and self.climatological == other.climatological
+        )
+        if result:
+            # Perform lenient comparison of the other members.
+            result = super()._compare(other)
+
+        return result
+
     @lenient_service
     def __eq__(self, other):
         result = NotImplemented
         if isinstance(other, self.__class__):
-            result = super().__eq__(other)
-        return result
+            if LENIENT(self.__eq__):
+                # Perform "lenient" comparison.
+                result = self._compare(other)
+            else:
+                # Perform "strict" comparison.
+                result = super().__eq__(other)
 
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
         return result
 
 
@@ -329,6 +401,7 @@ def MetadataManagerFactory(cls, **kwargs):
         match = self.cls is other.cls
         if match:
             match = self.values == other.values
+
         return match
 
     def __getstate__(self):
@@ -339,6 +412,7 @@ def MetadataManagerFactory(cls, **kwargs):
         match = self.__eq__(other)
         if match is not NotImplemented:
             match = not match
+
         return match
 
     def __reduce__(self):

@@ -93,13 +93,31 @@ class Lenient(threading.local):
         Note that, the values of these options are thread-specific.
 
         """
-        # Currently active lenient service.
+        # Currently executing lenient client at runtime.
         self.__dict__["active"] = None
         # Define ratified client/service relationships.
-        client = "iris.analysis.maths.add"
-        self.__dict__[client] = ("iris.common.metadata.CoordMetadata.__eq__",)
+        # client = "iris.analysis.maths.add"
+        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
+        # self.__dict__[client] = services
+        # # XXX: testing...
+        # client = "__main__.myfunc"
+        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
+        # self.__dict__[client] = services
 
     def __call__(self, func):
+        """
+        Determine whether it is valid for the function/method to provide a
+        lenient service at runtime to the actively executing lenient client.
+
+        Args:
+
+        * func (callable):
+            Callable function/method providing the lenient service.
+
+        Returns:
+            Boolean.
+
+        """
         result = False
         service = qualname(func)
         if service in self and self.__dict__[service]:
