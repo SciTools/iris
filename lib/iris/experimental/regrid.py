@@ -702,7 +702,7 @@ def _regrid_area_weighted_array(
     else:
         new_data = new_data.astype(dtype)
 
-    # Restore axis to original order
+    # Restore data to original form
     if x_dim_orig is None and y_dim_orig is None:
         new_data = np.squeeze(new_data, axis=x_dim)
         new_data = np.squeeze(new_data, axis=y_dim)
