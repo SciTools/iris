@@ -320,7 +320,7 @@ class TestNetCDFLoad(tests.IrisTest):
                     my_areas:custom = "extra-attribute";
             data:
                 axv = 11, 12, 13;
-                ayv = 21, 22, 23;
+                ayv = 21, 22;
                 my_areas = 110., 120., 130., 221., 231., 241.;
             }
             """
