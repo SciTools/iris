@@ -484,7 +484,10 @@ def _regrid_area_weighted_array(
         area_func,
         circular=False,
     ):
-        """ """
+        """
+        Compute the area weights used for area-weighted regridding.
+
+        """
         # Determine which grid bounds are within src extent.
         y_within_bounds = _within_bounds(
             src_y_bounds, grid_y_bounds, grid_y_decreasing
@@ -594,8 +597,8 @@ def _regrid_area_weighted_array(
     del area_func, circular
 
     # Ensure we have x_dim and y_dim.
-    x_dim_orig = copy.copy(x_dim)
-    y_dim_orig = copy.copy(y_dim)
+    x_dim_orig = x_dim
+    y_dim_orig = y_dim
     if y_dim is None:
         src_data = np.expand_dims(src_data, axis=src_data.ndim)
         y_dim = src_data.ndim - 1
@@ -603,11 +606,15 @@ def _regrid_area_weighted_array(
         src_data = np.expand_dims(src_data, axis=src_data.ndim)
         x_dim = src_data.ndim - 1
     # Move y_dim and x_dim to last dimensions
-    src_data = np.moveaxis(src_data, x_dim, -1)
-    if x_dim < y_dim:
-        src_data = np.moveaxis(src_data, y_dim - 1, -2)
-    elif x_dim > y_dim:
-        src_data = np.moveaxis(src_data, y_dim, -2)
+    if not x_dim == src_data.ndim - 1:
+        src_data = np.moveaxis(src_data, x_dim, -1)
+    if not y_dim == src_data.ndim - 2:
+        if x_dim < y_dim:
+            # note: y_dim was shifted along by one position when
+            # x_dim was moved to the last dimension
+            src_data = np.moveaxis(src_data, y_dim - 1, -2)
+        elif x_dim > y_dim:
+            src_data = np.moveaxis(src_data, y_dim, -2)
     x_dim = src_data.ndim - 1
     y_dim = src_data.ndim - 2
 
@@ -663,12 +670,14 @@ def _regrid_area_weighted_array(
                 # Slice out relevant data (this may or may not be a view()
                 # depending on x_indices being a slice or not).
                 data = src_data[..., y_indices, x_indices]
-                Nx = data.shape[-1]
-                Ny = data.shape[-2]
-                src_area_datas[..., 0:Ny, 0:Nx, target_pt_ji] = data
-                src_area_weights[0:Ny, 0:Nx, target_pt_ji] = weights
+                len_x = data.shape[-1]
+                len_y = data.shape[-2]
+                src_area_datas[..., 0:len_y, 0:len_x, target_pt_ji] = data
+                src_area_weights[0:len_y, 0:len_x, target_pt_ji] = weights
                 if src_masked:
-                    src_area_masks[..., 0:Ny, 0:Nx, target_pt_ji] = data.mask
+                    src_area_masks[
+                        ..., 0:len_y, 0:len_x, target_pt_ji
+                    ] = data.mask
 
     # Broadcast the weights array to allow numpy's ma.average
     # to be called.
@@ -713,9 +722,13 @@ def _regrid_area_weighted_array(
         new_data = np.squeeze(new_data, axis=x_dim)
         new_data = np.moveaxis(new_data, -1, y_dim_orig)
     elif x_dim_orig < y_dim_orig:
+        # move the x_dim back first, so that the y_dim will
+        # then be moved to its original position
         new_data = np.moveaxis(new_data, -1, x_dim_orig)
         new_data = np.moveaxis(new_data, -1, y_dim_orig)
     else:
+        # move the y_dim back first, so that the x_dim will
+        # then be moved to its original position
         new_data = np.moveaxis(new_data, -2, y_dim_orig)
         new_data = np.moveaxis(new_data, -1, x_dim_orig)
 
