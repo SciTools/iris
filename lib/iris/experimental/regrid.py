@@ -491,39 +491,30 @@ def _regrid_area_weighted_array(
         cached_x_bounds.append(x_bounds)
         cached_x_indices.append(x_indices)
 
-    # Move y_dim and x_dim to last dimensions
+    # Ensure we have x_dim and y_dim.
     x_dim_orig = copy.copy(x_dim)
     y_dim_orig = copy.copy(y_dim)
-    if x_dim is None and y_dim is None:
-        # e.g. a scalar point such as a vertical profile
-        pass
-    elif x_dim is not None and y_dim is None:
-        # test cross_section along line latitude
-        src_data = np.moveaxis(src_data, x_dim, -1)
-        x_dim = src_data.ndim - 1
-    elif y_dim is not None and x_dim is None:
-        # test cross_section along line longitude
-        src_data = np.moveaxis(src_data, y_dim, -1)
+    if y_dim is None:
+        src_data = np.expand_dims(src_data, axis=src_data.ndim)
         y_dim = src_data.ndim - 1
-    elif x_dim < y_dim:
-        src_data = np.moveaxis(src_data, x_dim, -1)
+    if x_dim is None:
+        src_data = np.expand_dims(src_data, axis=src_data.ndim)
+        x_dim = src_data.ndim - 1
+    # Move y_dim and x_dim to last dimensions
+    src_data = np.moveaxis(src_data, x_dim, -1)
+    if x_dim < y_dim:
         src_data = np.moveaxis(src_data, y_dim - 1, -2)
-        x_dim = src_data.ndim - 1
-        y_dim = src_data.ndim - 2
-    else:
-        src_data = np.moveaxis(src_data, x_dim, -1)
+    elif x_dim > y_dim:
         src_data = np.moveaxis(src_data, y_dim, -2)
-        x_dim = src_data.ndim - 1
-        y_dim = src_data.ndim - 2
+    x_dim = src_data.ndim - 1
+    y_dim = src_data.ndim - 2
 
     # Create empty data array to match the new grid.
     # Note that dtype is not preserved and that the array is
     # masked to allow for regions that do not overlap.
     new_shape = list(src_data.shape)
-    if x_dim is not None:
-        new_shape[x_dim] = grid_x_bounds.shape[0]
-    if y_dim is not None:
-        new_shape[y_dim] = grid_y_bounds.shape[0]
+    new_shape[x_dim] = grid_x_bounds.shape[0]
+    new_shape[y_dim] = grid_y_bounds.shape[0]
 
     # Use input cube dtype or convert values to the smallest possible float
     # dtype when necessary.
@@ -541,15 +532,9 @@ def _regrid_area_weighted_array(
     new_data.mask = False
 
     # Axes of data over which the weighted mean is calculated.
-    axes = []
-    if y_dim is not None:
-        axes.append(y_dim)
-    if x_dim is not None:
-        axes.append(x_dim)
-    axis = tuple(axes)
+    axis = (y_dim, x_dim)
 
     # Simple for loop approach.
-    indices = [slice(None)] * new_data.ndim
     for j, (y_0, y_1) in enumerate(grid_y_bounds):
         # Reverse lower and upper if dest grid is decreasing.
         if grid_y_decreasing:
@@ -575,11 +560,7 @@ def _regrid_area_weighted_array(
                 or not x_within_bounds[i]
             ):
                 # Mask out element(s) in new_data
-                if x_dim is not None:
-                    indices[x_dim] = i
-                if y_dim is not None:
-                    indices[y_dim] = j
-                new_data[tuple(indices)] = ma.masked
+                new_data[..., j, i] = ma.masked
             else:
                 # Calculate weighted mean of data points.
                 # Slice out relevant data (this may or may not be a view()
@@ -593,11 +574,7 @@ def _regrid_area_weighted_array(
                 # Calculate weights based on areas of cropped bounds.
                 weights = area_func(y_bounds, x_bounds)
 
-                if x_dim is not None:
-                    indices[x_dim] = x_indices
-                if y_dim is not None:
-                    indices[y_dim] = y_indices
-                data = src_data[tuple(indices)]
+                data = src_data[..., y_indices, x_indices]
 
                 # Transpose weights to match dim ordering in data.
                 weights_shape_y = weights.shape[0]
@@ -605,10 +582,8 @@ def _regrid_area_weighted_array(
                 # Broadcast the weights array to allow numpy's ma.average
                 # to be called.
                 weights_padded_shape = [1] * data.ndim
-                if y_dim is not None:
-                    weights_padded_shape[y_dim] = weights_shape_y
-                if x_dim is not None:
-                    weights_padded_shape[x_dim] = weights_shape_x
+                weights_padded_shape[y_dim] = weights_shape_y
+                weights_padded_shape[x_dim] = weights_shape_x
                 # Assign new shape to raise error on copy.
                 weights.shape = weights_padded_shape
                 # Broadcast weights to match shape of data.
@@ -620,11 +595,7 @@ def _regrid_area_weighted_array(
                 )
 
                 # Insert data (and mask) values into new array.
-                if x_dim is not None:
-                    indices[x_dim] = i
-                if y_dim is not None:
-                    indices[y_dim] = j
-                new_data[tuple(indices)] = new_data_pt
+                new_data[..., j, i] = new_data_pt
 
     # Remove new mask if original data was not masked
     # and no values in the new array are masked.
@@ -633,10 +604,13 @@ def _regrid_area_weighted_array(
 
     # Restore axis to original order
     if x_dim_orig is None and y_dim_orig is None:
-        pass
-    elif x_dim_orig is not None and y_dim_orig is None:
+        new_data = np.squeeze(new_data, axis=x_dim)
+        new_data = np.squeeze(new_data, axis=y_dim)
+    elif y_dim_orig is None:
+        new_data = np.squeeze(new_data, axis=y_dim)
         new_data = np.moveaxis(new_data, -1, x_dim_orig)
-    elif y_dim_orig is not None and x_dim_orig is None:
+    elif x_dim_orig is None:
+        new_data = np.squeeze(new_data, axis=x_dim)
         new_data = np.moveaxis(new_data, -1, y_dim_orig)
     elif x_dim_orig < y_dim_orig:
         new_data = np.moveaxis(new_data, -1, x_dim_orig)
