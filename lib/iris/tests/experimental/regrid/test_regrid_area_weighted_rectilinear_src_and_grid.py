@@ -322,19 +322,36 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         res = regrid_area_weighted(src, dest)
         self.assertCMLApproxData(res, RESULT_DIR + ("latlonreduced.cml",))
 
-    def test_regrid_transposed(self):
-        src = self.simple_cube.copy()
-        dest = _subsampled_grid(src, 2, 3)
-        # Transpose src so that the coords are not y, x ordered.
-        src.transpose()
+    def test_regrid_reorder_axis(self):
+        src = self.realistic_cube[0, :4, :3, :2]
+        z = src.coord("model_level_number")
+        lat = src.coord("grid_latitude")
+        lon = src.coord("grid_longitude")
+        dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("trasposed.cml",))
-        # Using original and transposing the result should give the
-        # same answer.
-        src = self.simple_cube.copy()
+        self.assertArrayShapeStats(src, (4, 3, 2), 288.08868, 0.008262919)
+        self.assertArrayShapeStats(res, (4, 9, 6), 288.08865, 0.00826281)
+        # Reshape src so that the coords are ordered [x, z, y],
+        # the mean and std statistics should be the same
+        data = np.moveaxis(src.data.copy(), 2, 0)
+        src = iris.cube.Cube(data)
+        src.add_dim_coord(lat, 2)
+        src.add_dim_coord(z, 1)
+        src.add_dim_coord(lon, 0)
         res = regrid_area_weighted(src, dest)
-        res.transpose()
-        self.assertCMLApproxData(res, RESULT_DIR + ("trasposed.cml",))
+        self.assertArrayShapeStats(src, (2, 4, 3), 288.08868, 0.008262919)
+        self.assertArrayShapeStats(res, (6, 4, 9), 288.08865, 0.00826281)
+        # Reshape src so that the coords are ordered [y, x, z],
+        # the mean and std statistics should be the same
+        data = np.moveaxis(src.data.copy(), 2, 0)
+        src = iris.cube.Cube(data)
+        src.add_dim_coord(z, 2)
+        src.add_dim_coord(lon, 1)
+        src.add_dim_coord(lat, 0)
+        dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
+        res = regrid_area_weighted(src, dest)
+        self.assertArrayShapeStats(src, (3, 2, 4), 288.08868, 0.008262919)
+        self.assertArrayShapeStats(res, (9, 6, 4), 288.08865, 0.00826281)
 
     def test_regrid_lon_to_half_res(self):
         src = self.simple_cube
@@ -365,13 +382,22 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     def test_missing_data(self):
         src = self.simple_cube.copy()
-        src.data = ma.masked_array(src.data)
+        src.data = ma.masked_array(src.data, fill_value=999)
         src.data[1, 2] = ma.masked
         dest = _resampled_grid(self.simple_cube, 2.3, 2.4)
         res = regrid_area_weighted(src, dest)
         mask = np.zeros((7, 9), bool)
         mask[slice(2, 5), slice(4, 7)] = True
         self.assertArrayEqual(res.data.mask, mask)
+        self.assertArrayEqual(res.data.fill_value, 999)
+
+    def test_masked_data_all_false(self):
+        src = self.simple_cube.copy()
+        src.data = ma.masked_array(src.data, mask=False, fill_value=999)
+        dest = _resampled_grid(self.simple_cube, 2.3, 2.4)
+        res = regrid_area_weighted(src, dest)
+        self.assertArrayEqual(res.data.mask, False)
+        self.assertArrayEqual(res.data.fill_value, 999)
 
     def test_no_x_overlap(self):
         src = self.simple_cube
@@ -446,6 +472,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         self.assertCMLApproxData(
             res, RESULT_DIR + ("const_lat_cross_section.cml",)
         )
+        # Constant latitude, data order [x, z]
+        # Using original and transposing the result should give the
+        # same answer.
+        src.transpose()
+        dest.transpose()
+        res = regrid_area_weighted(src, dest)
+        res.transpose()
+        self.assertCMLApproxData(
+            res, RESULT_DIR + ("const_lat_cross_section.cml",)
+        )
 
         # Constant longitude
         src = self.realistic_cube[0, :, :, 10]
@@ -457,6 +493,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lat, 1)
         dest.add_aux_coord(src.coord("grid_longitude").copy(), None)
         res = regrid_area_weighted(src, dest)
+        self.assertCMLApproxData(
+            res, RESULT_DIR + ("const_lon_cross_section.cml",)
+        )
+        # Constant longitude, data order [y, z]
+        # Using original and transposing the result should give the
+        # same answer.
+        src.transpose()
+        dest.transpose()
+        res = regrid_area_weighted(src, dest)
+        res.transpose()
         self.assertCMLApproxData(
             res, RESULT_DIR + ("const_lon_cross_section.cml",)
         )
