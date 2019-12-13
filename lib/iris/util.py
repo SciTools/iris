@@ -1096,7 +1096,100 @@ def format_array(arr):
     return result
 
 
-def new_axis(src_cube, scalar_coord=None):
+def _promote_aux(cube, aux):
+    new_cube = cube.copy()
+    new_aux = new_cube.coord(aux)
+    aux_dims = new_cube.coord_dims(new_aux)
+    if aux_dims == ():
+        new_cube.remove_coord(new_aux)
+        new_cube.add_aux_coord(new_aux, 0)
+    else:
+        new_dims = (0,) + aux_dims
+
+        new_cube.remove_coord(new_aux)
+
+        if new_aux.has_lazy_points():
+            new_points = new_aux.lazy_points()[None]
+        elif isinstance(new_aux.points, ma.core.MaskedConstant):
+            new_points = ma.array([np.nan], mask=[True])
+        else:
+            new_points = new_aux.data[None]
+
+        if new_aux.has_bounds():
+            if new_aux.has_lazy_bounds():
+                new_bounds = new_aux.lazy_bounds()[None]
+            else:
+                new_bounds = new_aux.bounds[None]
+        else:
+            new_bounds = None
+
+        kwargs = new_aux.metadata._asdict()
+        kwargs["bounds"] = new_bounds
+        new_aux = iris.coords.AuxCoord(new_points, **kwargs)
+        new_cube.add_aux_coord(new_aux, new_dims)
+
+    return new_cube
+
+
+def _promote_cm(cube, cm):
+    new_cube = cube.copy()
+    new_cm = new_cube.cell_measure(cm)
+    cm_dims = new_cube.cell_measure_dims(new_cm)
+    if cm_dims == ():
+        new_cube.remove_coord(new_cm)
+        new_cube.add_aux_coord(new_cm, 0)
+    else:
+        new_dims = (0,) + cm_dims
+
+        new_cube.remove_cell_measure(new_cm)
+
+        if new_cm.has_lazy_data():
+            new_data = new_cm.lazy_data()[None]
+        elif isinstance(new_cm.data, ma.core.MaskedConstant):
+            new_data = ma.array([np.nan], mask=[True])
+        else:
+            new_data = new_cm.data[None]
+
+        kwargs = new_cm.metadata._asdict()
+        new_cm = iris.coords.CellMeasure(new_data, **kwargs)
+        new_cube.add_cell_measure(new_cm, new_dims)
+
+    return new_cube
+
+
+def _promote_av(cube, av):
+    new_cube = cube.copy()
+    new_av = new_cube.ancillary_variable(av)
+    av_dims = new_cube.ancillary_variable_dims(new_av)
+    if av_dims == ():
+        new_cube.remove_coord(new_av)
+        new_cube.add_aux_coord(new_av, 0)
+    else:
+        new_dims = (0,) + av_dims
+
+        new_cube.remove_ancillary_variable(new_av)
+
+        if new_av.has_lazy_data():
+            new_data = new_av.lazy_data()[None]
+        elif isinstance(new_av.data, ma.core.MaskedConstant):
+            new_data = ma.array([np.nan], mask=[True])
+        else:
+            new_data = new_av.data[None]
+
+        kwargs = new_av.metadata._asdict()
+        new_av = iris.coords.AncillaryVariable(new_data, **kwargs)
+        new_cube.add_ancillary_variable(new_av, new_dims)
+
+    return new_cube
+
+
+def new_axis(
+    src_cube,
+    scalar_coord=None,
+    promoted_aux=[],
+    promoted_cm=[],
+    promoted_av=[],
+):
     """
     Create a new axis as the leading dimension of the cube, promoting a scalar
     coordinate if specified.
@@ -1111,9 +1204,20 @@ def new_axis(src_cube, scalar_coord=None):
     * scalar_coord (:class:`iris.coord.Coord` or 'string')
         Scalar coordinate to promote to a dimension coordinate.
 
+    * promoted_aux (list)
+        List of auxiliary coordinates to add the new axis to.
+
+    * promoted_cm (list)
+        List of cell measures to add the new axis to.
+
+    * promoted_av (list)
+        List of ancillary variables to add the new axis to.
+
     Returns:
         A new :class:`iris.cube.Cube` instance with one extra leading dimension
-        (length 1).
+        (length 1). Chosen auxiliary coordinates, cell measures and ancillary
+        variables will also be given an additional dimension, associated with
+        the leading dimension of the cube.
 
     For example::
 
@@ -1164,6 +1268,23 @@ def new_axis(src_cube, scalar_coord=None):
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
+
+    for cm in src_cube.cell_measures():
+        cm_dims = np.array(src_cube.cell_measure_dims(cm)) + 1
+        new_cube.add_cell_measure(cm.copy(), cm_dims)
+
+    for av in src_cube.ancillary_variables():
+        av_dims = np.array(src_cube.ancillary_variable_dims(av)) + 1
+        new_cube.add_ancillary_variable(av.copy(), av_dims)
+
+    for aux in promoted_aux:
+        new_cube = _promote_aux(new_cube, aux)
+
+    for cm in promoted_cm:
+        new_cube = _promote_cm(new_cube, cm)
+
+    for av in promoted_av:
+        new_cube = _promote_av(new_cube, av)
 
     return new_cube
 
