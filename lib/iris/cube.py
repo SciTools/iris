@@ -1399,6 +1399,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The CellMeasure to look for.
 
         """
+        cell_measure = self.cell_measure(cell_measure)
+
         # Search for existing cell measure (object) on the cube, faster lookup
         # than equality - makes no functional difference.
         matches = [
@@ -1421,6 +1423,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             The AncillaryVariable to look for.
 
         """
+        ancillary_variable = self.ancillary_variable(ancillary_variable)
+
         # Search for existing ancillary variable (object) on the cube, faster
         # lookup than equality - makes no functional difference.
         matches = [
