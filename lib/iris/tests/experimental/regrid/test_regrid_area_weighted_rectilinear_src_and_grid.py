@@ -382,13 +382,22 @@ class TestAreaWeightedRegrid(tests.IrisTest):
 
     def test_missing_data(self):
         src = self.simple_cube.copy()
-        src.data = ma.masked_array(src.data)
+        src.data = ma.masked_array(src.data, fill_value=999)
         src.data[1, 2] = ma.masked
         dest = _resampled_grid(self.simple_cube, 2.3, 2.4)
         res = regrid_area_weighted(src, dest)
         mask = np.zeros((7, 9), bool)
         mask[slice(2, 5), slice(4, 7)] = True
         self.assertArrayEqual(res.data.mask, mask)
+        self.assertArrayEqual(res.data.fill_value, 999)
+
+    def test_masked_data_all_false(self):
+        src = self.simple_cube.copy()
+        src.data = ma.masked_array(src.data, mask=False, fill_value=999)
+        dest = _resampled_grid(self.simple_cube, 2.3, 2.4)
+        res = regrid_area_weighted(src, dest)
+        self.assertArrayEqual(res.data.mask, False)
+        self.assertArrayEqual(res.data.fill_value, 999)
 
     def test_no_x_overlap(self):
         src = self.simple_cube
