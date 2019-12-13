@@ -8,9 +8,12 @@ from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
 from inspect import getmodule
+from itertools import product
 import threading
 
 
+# TODO: allow *args to specify the ephemeral services that the client wishes to
+#       use which are then unpacked in the LENIENT.context
 def lenient_client(func):
     """
     Decorator that allows a client function/method to declare at runtime that
@@ -41,10 +44,36 @@ def lenient_client(func):
     return lenient_inner
 
 
-def qualname(func):
-    """Return the fully qualified function/method string name."""
-    module = getmodule(func)
-    return f"{module.__name__}.{func.__qualname__}"
+def qualname(func, cls=None):
+    """
+    Return the fully qualified function/method string name.
+
+    Args:
+
+    * func (callable/string):
+        Callable function/method. The fully qualified name of the callable
+        function/method is determined, otherwise the string name is used
+        instead.
+
+    Kwargs:
+
+    * cls (class):
+        If provided, the class is used to qualify the string name.
+
+    .. note::
+        Inherited methods will be qualified with the base class that
+        defines the method.
+
+    """
+    if isinstance(func, str):
+        result = func
+        if cls is not None:
+            result = "{}.{}.{}".format(cls.__module__, cls.__name__, func)
+    else:
+        module = getmodule(func)
+        result = f"{module.__name__}.{func.__qualname__}"
+
+    return result
 
 
 def lenient_service(func):
@@ -95,31 +124,57 @@ class Lenient(threading.local):
         """
         # Currently executing lenient client at runtime.
         self.__dict__["active"] = None
-        # Define ratified client/service relationships.
+
+        # Define lenient services.
+        # Require to be explicit here for subclass methods that inherit parent
+        # class behaviour as a service for free.
+        classes = [
+            "AncillaryVariableMetadata",
+            "CellMeasureMetadata",
+            "CoordMetadata",
+            "CubeMetadata",
+        ]
+        methods = [
+            "__eq__",
+            "combine",
+            "difference",
+        ]
+        for cls, method in product(classes, methods):
+            self.__dict__[f"iris.common.metadata.{cls}.{method}"] = True
+
+        # Define lenient client/service relationships.
         # client = "iris.analysis.maths.add"
         # services = ("iris.common.metadata.CoordMetadata.__eq__",)
         # self.__dict__[client] = services
-        # # XXX: testing...
-        # client = "__main__.myfunc"
-        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
-        # self.__dict__[client] = services
 
-    def __call__(self, func):
+        # XXX: testing...
+        client = "__main__.myfunc"
+        services = ("iris.common.metadata.CoordMetadata.__eq__",)
+        self.__dict__[client] = services
+
+    def __call__(self, func, cls=None):
         """
         Determine whether it is valid for the function/method to provide a
         lenient service at runtime to the actively executing lenient client.
 
         Args:
 
-        * func (callable):
-            Callable function/method providing the lenient service.
+        * func (callable/string):
+            Callable function/method providing the lenient service. The fully
+            qualified name of the callable function/method is determined,
+            otherwise the string name is used instead.
+
+        Kwargs:
+
+        * cls (class):
+            If provided, the class is used to qualify the string name.
 
         Returns:
             Boolean.
 
         """
         result = False
-        service = qualname(func)
+        service = qualname(func, cls=cls)
         if service in self and self.__dict__[service]:
             active = self.__dict__["active"]
             if active is not None and active in self:
@@ -175,7 +230,7 @@ class Lenient(threading.local):
         self.__dict__[name] = value
 
     @contextmanager
-    def context(self, **kwargs):
+    def context(self, *args, **kwargs):
         """
         Return a context manager which allows temporary modification of
         the lenient option state for the active thread.
@@ -189,16 +244,22 @@ class Lenient(threading.local):
                 # ... code that expects some non-lenient behaviour
 
         .. note::
-
-            iris.LENIENT.example_future_flag does not exist and is
+            iris.LENIENT.example_lenient_flag does not exist and is
             provided only as an example.
 
         """
-        # Save the current context
+        # Save the original state.
         current_state = self.__dict__.copy()
-        # Temporarily update the state.
+        # Temporarily update the state with the kwargs first.
         for name, value in kwargs.items():
             setattr(self, name, value)
+        # Temporarily update the client/services, if provided.
+        if args:
+            active = self.__dict__["active"]
+            if active is None:
+                active = "context"
+                self.__dict__["active"] = active
+            self.__dict__[active] = args
         try:
             yield
         finally:

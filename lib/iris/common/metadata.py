@@ -91,26 +91,279 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     __slots__ = ()
 
-    @classmethod
-    def token(cls, name):
+    @lenient_service
+    def __eq__(self, other):
+        result = NotImplemented
+        if hasattr(other, "__class__") and other.__class__ is self.__class__:
+            if LENIENT("__eq__", cls=self.__class__):
+                # Perform "lenient" comparison.
+                result = self._compare_lenient(other)
+            else:
+                # Perform "strict" comparison.
+                result = super().__eq__(other)
+
+        return result
+
+    def __lt__(self, other):
+        #
+        # Support Python2 behaviour for a "<" operation involving a
+        # "NoneType" operand.
+        #
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        def _sort_key(item):
+            keys = []
+            for field in item._fields:
+                value = getattr(item, field)
+                keys.extend((value is not None, value))
+            return tuple(keys)
+
+        return _sort_key(self) < _sort_key(other)
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+
+        return result
+
+    def _combine_lenient(self, other):
         """
-        Determine whether the provided name is a valid NetCDF name and thus
-        safe to represent a single parsable token.
+        Perform lenient metadata member combination.
 
         Args:
 
-        * name:
-            The string name to verify
+        * other (BaseMetadata):
+            The other metadata participating in the lenient combination.
 
         Returns:
-            The provided name if valid, otherwise None.
+            A list of combined metadata member values.
 
         """
-        if name is not None:
-            result = _TOKEN_PARSE.match(name)
-            name = result if result is None else name
 
-        return name
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            result = None
+            if field == "units":
+                # Perform "strict" combination for "units".
+                result = left if left == right else None
+            elif self._is_attributes(field, left, right):
+                result = self._combine_lenient_attributes(left, right)
+            else:
+                if left == right:
+                    result = left
+                elif left is None:
+                    result = right
+                elif right is None:
+                    result = left
+            return result
+
+        return [func(field) for field in BaseMetadata._members]
+
+    @staticmethod
+    def _combine_lenient_attributes(left, right):
+        """Leniently combine the dictionary members together."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Union of common items.
+        common = sleft & sright
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Union of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+        # Remove (in-place) common item keys with different values.
+        [dsleft.pop(key) for key in keys]
+        [dsright.pop(key) for key in keys]
+        # Now bring the result together.
+        result = dict(common)
+        result.update(dsleft)
+        result.update(dsright)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Support lenient metadata equality for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        result = False
+        # Use the "name" method to leniently compare "standard_name",
+        # "long_name" and "var_name" in a well defined way.
+        if self.name() == other.name():
+            # Perform "strict" comparison for "units".
+            result = self.units == other.units
+            # Perform "lenient" comparison for "attributes".
+            # This effectively means they are always equal, therefore there is
+            # no further work to do here.
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient metadata member difference.
+
+        Args:
+
+        * other (BaseMetadata):
+            The other metadata participating in the lenient difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            if field == "units":
+                # Perform "strict" difference for "units".
+                result = None if left == right else (left, right)
+            elif self._is_attributes(field, left, right):
+                result = self._difference_lenient_attributes(left, right)
+            else:
+                # Perform "lenient" difference for members.
+                result = (
+                    (left, right)
+                    if left is not None and right is not None and left != right
+                    else None
+                )
+            return result
+
+        return [func(field) for field in BaseMetadata._members]
+
+    @staticmethod
+    def _difference_lenient_attributes(left, right):
+        """Perform lenient difference between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Union of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+        # Keep (in-place) common item keys with different values.
+        [dsleft.pop(key) for key in list(dsleft.keys()) if key not in keys]
+        [dsright.pop(key) for key in list(dsright.keys()) if key not in keys]
+
+        return (dsleft, dsright)
+
+    @staticmethod
+    def _difference_strict_attributes(left, right):
+        """Perform strict difference between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+
+        return (dsleft, dsright)
+
+    @staticmethod
+    def _is_attributes(field, left, right):
+        """Determine whether we have two 'attributes' dictionaries."""
+        return (
+            field == "attributes"
+            and isinstance(left, Mapping)
+            and isinstance(right, Mapping)
+        )
+
+    @lenient_service
+    def combine(self, other):
+        """
+        Return a new metadata instance created by combining each of the
+        associated metadata members.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Returns:
+            Metadata instance.
+
+        """
+        if (
+            not hasattr(other, "__class__")
+            or other.__class__ is not self.__class__
+        ):
+            emsg = "Cannot combine {!r} with {!r}."
+            raise ValueError(emsg.format(self.__class__.__name__, type(other)))
+
+        if LENIENT("combine", cls=self.__class__):
+            print("lenient combine")
+            values = self._combine_lenient(other)
+        else:
+            print("strict combine")
+
+            def func(field):
+                value = getattr(self, field)
+                return value if value == getattr(other, field) else None
+
+            # Note that, we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return self.__class__(*values)
+
+    @lenient_service
+    def difference(self, other):
+        """
+        Return a new metadata instance created by performing a difference
+        comparison between each of the associated metadata members.
+
+        A returned metadata member with a value of "None" indicates that there
+        is no difference between the members being compared. Otherwise, a tuple
+        of the different values is returned.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Returns:
+            Metadata instance.
+
+        """
+        if (
+            not hasattr(other, "__class__")
+            or other.__class__ is not self.__class__
+        ):
+            emsg = "Cannot differ {!r} with {!r}."
+            raise ValueError(emsg.format(self.__class__.__name__, type(other)))
+
+        if LENIENT("difference", cls=self.__class__):
+            print("lenient difference")
+            values = self._difference_lenient(other)
+        else:
+            print("strict difference")
+
+            def func(field):
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if self._is_attributes(field, left, right):
+                    result = self._difference_strict_attributes(left, right)
+                else:
+                    result = None if left == right else (left, right)
+                return result
+
+            # Note that, we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return self.__class__(*values)
 
     def name(self, default=None, token=False):
         """
@@ -154,69 +407,26 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
-    @lenient_service
-    def __eq__(self, other):
-        result = NotImplemented
-        if isinstance(other, self.__class__):
-            if LENIENT(self.__eq__):
-                # Perform "lenient" comparison.
-                result = self._compare(other)
-            else:
-                # Perform "strict" comparison.
-                result = super().__eq__(other)
-
-        return result
-
-    def __lt__(self, other):
-        #
-        # Support Python2 behaviour for a "<" operation involving a
-        # "NoneType" operand. Require to at least implement this comparison
-        # operator to support sorting of instances.
-        #
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-
-        def _sort_key(item):
-            keys = []
-            for field in item._fields:
-                value = getattr(item, field)
-                keys.extend((value is not None, value))
-            return tuple(keys)
-
-        return _sort_key(self) < _sort_key(other)
-
-    def __ne__(self, other):
-        result = self.__eq__(other)
-        if result is not NotImplemented:
-            result = not result
-
-        return result
-
-    def _compare(self, other):
+    @classmethod
+    def token(cls, name):
         """
-        Support lenient metadata equality for coordinates.
+        Determine whether the provided name is a valid NetCDF name and thus
+        safe to represent a single parsable token.
 
         Args:
 
-        * other (CoordMetadata):
-            The other coordinate metadata participating in the lenient
-            comparison.
+        * name:
+            The string name to verify
 
         Returns:
-            Boolean.
+            The provided name if valid, otherwise None.
 
         """
-        result = False
-        # Use the "name" method to leniently compare "standard_name",
-        # "long_name" and "var_name" in a well defined way.
-        if self.name() == other.name():
-            # Perform "strict" comparison for "units".
-            result = self.units == other.units
-            # Perform "lenient" comparison for "attributes".
-            # This effectively means they are always equal, therefore there is
-            # no further work to do here.
+        if name is not None:
+            result = _TOKEN_PARSE.match(name)
+            name = result if result is None else name
 
-        return result
+        return name
 
 
 class AncillaryVariableMetadata(BaseMetadata):
@@ -238,6 +448,76 @@ class CellMeasureMetadata(BaseMetadata):
 
     __slots__ = ()
 
+    def _combine_lenient(self, other):
+        """
+        Perform lenient metadata member combination for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "measure".
+        value = self.measure if self.measure == other.measure else None
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient metadata equality for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "measure".
+        result = self.measure == other.measure
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient metadata member difference for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "measure".
+        value = (
+            None
+            if self.measure == other.measure
+            else (self.measure, other.measure)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
+
+        return result
+
 
 class CoordMetadata(BaseMetadata):
     """
@@ -249,9 +529,35 @@ class CoordMetadata(BaseMetadata):
 
     __slots__ = ()
 
-    def _compare(self, other):
+    def _combine_lenient(self, other):
         """
-        Support lenient metadata equality for coordinates.
+        Perform lenient metadata member combination for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "coord_system" and "climatological".
+        def func(field):
+            value = getattr(self, field)
+            return value if value == getattr(other, field) else None
+
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient metadata equality for coordinates.
 
         Args:
 
@@ -269,21 +575,35 @@ class CoordMetadata(BaseMetadata):
             and self.climatological == other.climatological
         )
         if result:
-            # Perform lenient comparison of the other members.
-            result = super()._compare(other)
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
 
         return result
 
-    @lenient_service
-    def __eq__(self, other):
-        result = NotImplemented
-        if isinstance(other, self.__class__):
-            if LENIENT(self.__eq__):
-                # Perform "lenient" comparison.
-                result = self._compare(other)
-            else:
-                # Perform "strict" comparison.
-                result = super().__eq__(other)
+    def _difference_lenient(self, other):
+        """
+        Perform lenient metadata member difference for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "coord_system" and "climatological".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        values = [func(field) for field in self._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
 
         return result
 
@@ -298,32 +618,73 @@ class CubeMetadata(BaseMetadata):
 
     __slots__ = ()
 
-    @wraps(BaseMetadata.name)
-    def name(self, default=None, token=False):
-        def _check(item):
-            return self.token(item) if token else item
+    def _combine_lenient(self, other):
+        """
+        Perform lenient metadata member combination for cubes.
 
-        default = self.DEFAULT_NAME if default is None else default
+        Args:
 
-        # Defensive enforcement of attributes being a dictionary.
-        if not isinstance(self.attributes, Mapping):
-            try:
-                self.attributes = dict()
-            except AttributeError:
-                emsg = "Invalid '{}.attributes' member, must be a mapping."
-                raise AttributeError(emsg.format(self.__class__.__name__))
+        * other (CubeMeatadata):
+            The other cube metadata participating in the lenient combination.
 
-        result = (
-            _check(self.standard_name)
-            or _check(self.long_name)
-            or _check(self.var_name)
-            or _check(str(self.attributes.get("STASH", "")))
-            or _check(default)
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "cell_methods".
+        value = (
+            self.cell_methods
+            if self.cell_methods == other.cell_methods
+            else None
         )
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
 
-        if token and result is None:
-            emsg = "Cannot retrieve a valid name token from {!r}"
-            raise ValueError(emsg.format(self))
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient metadata equality for cubes.
+
+        Args:
+
+        * other (CubeMetadata):
+            The other cube metadata participating in the lenient comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "cell_methods".
+        result = self.cell_methods == other.cell_methods
+        if result:
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient metadata member difference for cubes.
+
+        Args:
+
+        * other (CubeMetadata):
+            The other cube metadata participating in the lenient difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "cell_methods".
+        value = (
+            None
+            if self.cell_methods == other.cell_methods
+            else (self.cell_methods, other.cell_methods)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
 
         return result
 
@@ -353,6 +714,35 @@ class CubeMetadata(BaseMetadata):
             stash_name = str(stash_name)
 
         return (standard_name, long_name, var_name, stash_name)
+
+    @wraps(BaseMetadata.name)
+    def name(self, default=None, token=False):
+        def _check(item):
+            return self.token(item) if token else item
+
+        default = self.DEFAULT_NAME if default is None else default
+
+        # Defensive enforcement of attributes being a dictionary.
+        if not isinstance(self.attributes, Mapping):
+            try:
+                self.attributes = dict()
+            except AttributeError:
+                emsg = "Invalid '{}.attributes' member, must be a mapping."
+                raise AttributeError(emsg.format(self.__class__.__name__))
+
+        result = (
+            _check(self.standard_name)
+            or _check(self.long_name)
+            or _check(self.var_name)
+            or _check(str(self.attributes.get("STASH", "")))
+            or _check(default)
+        )
+
+        if token and result is None:
+            emsg = "Cannot retrieve a valid name token from {!r}"
+            raise ValueError(emsg.format(self))
+
+        return result
 
 
 def MetadataManagerFactory(cls, **kwargs):
