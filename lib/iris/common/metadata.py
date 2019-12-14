@@ -93,13 +93,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def __eq__(self, other):
+        """hello world"""
         result = NotImplemented
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
-            if LENIENT("__eq__", cls=self.__class__):
+            if LENIENT(self.__eq__) or LENIENT(self.equal):
                 # Perform "lenient" comparison.
+                print("lenient __eq__")
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" comparison.
+                print("strict __eq__")
                 result = super().__eq__(other)
 
         return result
@@ -304,7 +307,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             emsg = "Cannot combine {!r} with {!r}."
             raise ValueError(emsg.format(self.__class__.__name__, type(other)))
 
-        if LENIENT("combine", cls=self.__class__):
+        if LENIENT(self.combine):
             print("lenient combine")
             values = self._combine_lenient(other)
         else:
@@ -345,7 +348,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             emsg = "Cannot differ {!r} with {!r}."
             raise ValueError(emsg.format(self.__class__.__name__, type(other)))
 
-        if LENIENT("difference", cls=self.__class__):
+        if LENIENT(self.difference):
             print("lenient difference")
             values = self._difference_lenient(other)
         else:
@@ -364,6 +367,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             values = [func(field) for field in self._fields]
 
         return self.__class__(*values)
+
+    @wraps(__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other):
+        return self.__eq__(other)
 
     def name(self, default=None, token=False):
         """
@@ -437,6 +445,26 @@ class AncillaryVariableMetadata(BaseMetadata):
 
     __slots__ = ()
 
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other):
+        return super().combine(other)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other):
+        return super().difference(other)
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other):
+        return self.__eq__(other)
+
 
 class CellMeasureMetadata(BaseMetadata):
     """
@@ -447,6 +475,11 @@ class CellMeasureMetadata(BaseMetadata):
     _members = "measure"
 
     __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
 
     def _combine_lenient(self, other):
         """
@@ -518,6 +551,21 @@ class CellMeasureMetadata(BaseMetadata):
 
         return result
 
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other):
+        return super().combine(other)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other):
+        return super().difference(other)
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other):
+        return self.__eq__(other)
+
 
 class CoordMetadata(BaseMetadata):
     """
@@ -528,6 +576,11 @@ class CoordMetadata(BaseMetadata):
     _members = ("coord_system", "climatological")
 
     __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
 
     def _combine_lenient(self, other):
         """
@@ -607,6 +660,21 @@ class CoordMetadata(BaseMetadata):
 
         return result
 
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other):
+        return super().combine(other)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other):
+        return super().difference(other)
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other):
+        return self.__eq__(other)
+
 
 class CubeMetadata(BaseMetadata):
     """
@@ -617,6 +685,11 @@ class CubeMetadata(BaseMetadata):
     _members = "cell_methods"
 
     __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
 
     def _combine_lenient(self, other):
         """
@@ -714,6 +787,21 @@ class CubeMetadata(BaseMetadata):
             stash_name = str(stash_name)
 
         return (standard_name, long_name, var_name, stash_name)
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other):
+        return super().combine(other)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other):
+        return super().difference(other)
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other):
+        return self.__eq__(other)
 
     @wraps(BaseMetadata.name)
     def name(self, default=None, token=False):

@@ -8,7 +8,6 @@ from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
 from inspect import getmodule
-from itertools import product
 import threading
 
 
@@ -44,34 +43,26 @@ def lenient_client(func):
     return lenient_inner
 
 
-def qualname(func, cls=None):
+def qualname(func):
     """
     Return the fully qualified function/method string name.
 
     Args:
 
-    * func (callable/string):
-        Callable function/method. The fully qualified name of the callable
-        function/method is determined, otherwise the string name is used
-        instead.
-
-    Kwargs:
-
-    * cls (class):
-        If provided, the class is used to qualify the string name.
+    * func (callable):
+        Callable function/method. Non-callable arguments are simply
+        passed through.
 
     .. note::
         Inherited methods will be qualified with the base class that
         defines the method.
 
     """
-    if isinstance(func, str):
-        result = func
-        if cls is not None:
-            result = "{}.{}.{}".format(cls.__module__, cls.__name__, func)
-    else:
+    result = func
+    if callable(func):
         module = getmodule(func)
         result = f"{module.__name__}.{func.__qualname__}"
+    print(result)
 
     return result
 
@@ -125,23 +116,6 @@ class Lenient(threading.local):
         # Currently executing lenient client at runtime.
         self.__dict__["active"] = None
 
-        # Define lenient services.
-        # Require to be explicit here for subclass methods that inherit parent
-        # class behaviour as a service for free.
-        classes = [
-            "AncillaryVariableMetadata",
-            "CellMeasureMetadata",
-            "CoordMetadata",
-            "CubeMetadata",
-        ]
-        methods = [
-            "__eq__",
-            "combine",
-            "difference",
-        ]
-        for cls, method in product(classes, methods):
-            self.__dict__[f"iris.common.metadata.{cls}.{method}"] = True
-
         # Define lenient client/service relationships.
         # client = "iris.analysis.maths.add"
         # services = ("iris.common.metadata.CoordMetadata.__eq__",)
@@ -152,29 +126,22 @@ class Lenient(threading.local):
         services = ("iris.common.metadata.CoordMetadata.__eq__",)
         self.__dict__[client] = services
 
-    def __call__(self, func, cls=None):
+    def __call__(self, func):
         """
         Determine whether it is valid for the function/method to provide a
         lenient service at runtime to the actively executing lenient client.
 
         Args:
 
-        * func (callable/string):
-            Callable function/method providing the lenient service. The fully
-            qualified name of the callable function/method is determined,
-            otherwise the string name is used instead.
-
-        Kwargs:
-
-        * cls (class):
-            If provided, the class is used to qualify the string name.
+        * func (callable):
+            Callable function/method providing the lenient service.
 
         Returns:
             Boolean.
 
         """
         result = False
-        service = qualname(func, cls=cls)
+        service = qualname(func)
         if service in self and self.__dict__[service]:
             active = self.__dict__["active"]
             if active is not None and active in self:
@@ -259,7 +226,7 @@ class Lenient(threading.local):
             if active is None:
                 active = "context"
                 self.__dict__["active"] = active
-            self.__dict__[active] = args
+            self.__dict__[active] = tuple([qualname(arg) for arg in args])
         try:
             yield
         finally:
