@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
-from ._lenient import LENIENT, lenient_service
+from ._lenient import LENIENT, lenient_service, qualname
 
 
 __all__ = [
@@ -93,7 +93,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def __eq__(self, other):
-        """hello world"""
+        """
+        Determine whether the associated metadata members are equivalent.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Returns:
+            Boolean.
+
+        """
         result = NotImplemented
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if LENIENT(self.__eq__) or LENIENT(self.equal):
@@ -102,7 +113,6 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" comparison.
-                print("strict __eq__")
                 result = super().__eq__(other)
 
         return result
@@ -130,6 +140,23 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             result = not result
 
         return result
+
+    def _combine(self, other):
+        """Perform associated metadata member combination."""
+        if LENIENT(self.combine):
+            print("lenient combine")
+            values = self._combine_lenient(other)
+        else:
+            print("strict combine")
+
+            def func(field):
+                value = getattr(self, field)
+                return value if value == getattr(other, field) else None
+
+            # Note that, we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return values
 
     def _combine_lenient(self, other):
         """
@@ -214,6 +241,28 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
+    def _difference(self, other):
+        """Perform associated metadata member difference."""
+        if LENIENT(self.difference):
+            print("lenient difference")
+            values = self._difference_lenient(other)
+        else:
+            print("strict difference")
+
+            def func(field):
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if self._is_attributes(field, left, right):
+                    result = self._difference_strict_attributes(left, right)
+                else:
+                    result = None if left == right else (left, right)
+                return result
+
+            # Note that, we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return values
+
     def _difference_lenient(self, other):
         """
         Perform lenient metadata member difference.
@@ -262,7 +311,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         [dsleft.pop(key) for key in list(dsleft.keys()) if key not in keys]
         [dsright.pop(key) for key in list(dsright.keys()) if key not in keys]
 
-        return (dsleft, dsright)
+        if not bool(dsleft) and not bool(dsright):
+            result = None
+        else:
+            result = (dsleft, dsright)
+
+        return result
 
     @staticmethod
     def _difference_strict_attributes(left, right):
@@ -274,7 +328,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Items in sright different from sleft.
         dsright = dict(sright - sleft)
 
-        return (dsleft, dsright)
+        if not bool(dsleft) and not bool(dsright):
+            result = None
+        else:
+            result = (dsleft, dsright)
+
+        return result
 
     @staticmethod
     def _is_attributes(field, left, right):
@@ -286,7 +345,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         )
 
     @lenient_service
-    def combine(self, other):
+    def combine(self, other, lenient=None):
         """
         Return a new metadata instance created by combining each of the
         associated metadata members.
@@ -295,6 +354,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         * other (metadata):
             A metadata instance of the same type.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient combination. The default is to automatically
+            detect whether this lenient operation is enabled.
 
         Returns:
             Metadata instance.
@@ -307,23 +372,21 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             emsg = "Cannot combine {!r} with {!r}."
             raise ValueError(emsg.format(self.__class__.__name__, type(other)))
 
-        if LENIENT(self.combine):
-            print("lenient combine")
-            values = self._combine_lenient(other)
+        if lenient is None:
+            values = self._combine(other)
         else:
-            print("strict combine")
+            if lenient:
+                args, kwargs = (qualname(self.combine),), dict()
+            else:
+                args, kwargs = (), {qualname(self.combine): False}
 
-            def func(field):
-                value = getattr(self, field)
-                return value if value == getattr(other, field) else None
-
-            # Note that, we use "_fields" not "_members".
-            values = [func(field) for field in self._fields]
+            with LENIENT.context(*args, **kwargs):
+                values = self._combine(other)
 
         return self.__class__(*values)
 
     @lenient_service
-    def difference(self, other):
+    def difference(self, other, lenient=None):
         """
         Return a new metadata instance created by performing a difference
         comparison between each of the associated metadata members.
@@ -337,6 +400,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         * other (metadata):
             A metadata instance of the same type.
 
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient difference. The default is to automatically
+            detect whether this lenient operation is enabled.
+
         Returns:
             Metadata instance.
 
@@ -348,30 +417,51 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             emsg = "Cannot differ {!r} with {!r}."
             raise ValueError(emsg.format(self.__class__.__name__, type(other)))
 
-        if LENIENT(self.difference):
-            print("lenient difference")
-            values = self._difference_lenient(other)
+        if lenient is None:
+            values = self._difference(other)
         else:
-            print("strict difference")
+            if lenient:
+                args, kwargs = (qualname(self.difference),), dict()
+            else:
+                args, kwargs = (), {qualname(self.difference): False}
 
-            def func(field):
-                left = getattr(self, field)
-                right = getattr(other, field)
-                if self._is_attributes(field, left, right):
-                    result = self._difference_strict_attributes(left, right)
-                else:
-                    result = None if left == right else (left, right)
-                return result
-
-            # Note that, we use "_fields" not "_members".
-            values = [func(field) for field in self._fields]
+            with LENIENT.context(*args, **kwargs):
+                values = self._difference(other)
 
         return self.__class__(*values)
 
-    @wraps(__eq__, assigned=("__doc__",), updated=())
     @lenient_service
-    def equal(self, other):
-        return self.__eq__(other)
+    def equal(self, other, lenient=None):
+        """
+        Determine whether the associated metadata members are equivalent.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient equivalence. The default is to automatically
+            detect whether this lenient operation is enabled.
+
+        Returns:
+            Boolean.
+
+        """
+        if lenient is None:
+            result = self.__eq__(other)
+        else:
+            if lenient:
+                args, kwargs = (qualname(self.equal),), dict()
+            else:
+                args, kwargs = (), {qualname(self.equal): False}
+
+            with LENIENT.context(*args, **kwargs):
+                result = self.__eq__(other)
+
+        return result
 
     def name(self, default=None, token=False):
         """
@@ -452,18 +542,18 @@ class AncillaryVariableMetadata(BaseMetadata):
 
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
-    def combine(self, other):
-        return super().combine(other)
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
-    def difference(self, other):
-        return super().difference(other)
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
 
-    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
-    def equal(self, other):
-        return self.__eq__(other)
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
 
 class CellMeasureMetadata(BaseMetadata):
@@ -553,18 +643,18 @@ class CellMeasureMetadata(BaseMetadata):
 
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
-    def combine(self, other):
-        return super().combine(other)
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
-    def difference(self, other):
-        return super().difference(other)
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
 
-    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
-    def equal(self, other):
-        return self.__eq__(other)
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
 
 class CoordMetadata(BaseMetadata):
@@ -662,18 +752,18 @@ class CoordMetadata(BaseMetadata):
 
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
-    def combine(self, other):
-        return super().combine(other)
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
-    def difference(self, other):
-        return super().difference(other)
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
 
-    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
-    def equal(self, other):
-        return self.__eq__(other)
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
 
 class CubeMetadata(BaseMetadata):
@@ -790,18 +880,18 @@ class CubeMetadata(BaseMetadata):
 
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
-    def combine(self, other):
-        return super().combine(other)
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
-    def difference(self, other):
-        return super().difference(other)
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
 
-    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
-    def equal(self, other):
-        return self.__eq__(other)
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
     @wraps(BaseMetadata.name)
     def name(self, default=None, token=False):
@@ -968,3 +1058,35 @@ def MetadataManagerFactory(cls, **kwargs):
     metadata = Metadata(cls, **kwargs)
 
     return metadata
+
+
+COMBINE = (
+    AncillaryVariableMetadata.combine,
+    BaseMetadata.combine,
+    CellMeasureMetadata.combine,
+    CoordMetadata.combine,
+    CubeMetadata.combine,
+)
+
+
+DIFFERENCE = (
+    AncillaryVariableMetadata.difference,
+    BaseMetadata.difference,
+    CellMeasureMetadata.difference,
+    CoordMetadata.difference,
+    CubeMetadata.difference,
+)
+
+
+EQUAL = (
+    AncillaryVariableMetadata.__eq__,
+    AncillaryVariableMetadata.equal,
+    BaseMetadata.__eq__,
+    BaseMetadata.equal,
+    CellMeasureMetadata.__eq__,
+    CellMeasureMetadata.equal,
+    CoordMetadata.__eq__,
+    CoordMetadata.equal,
+    CubeMetadata.__eq__,
+    CubeMetadata.equal,
+)

@@ -62,7 +62,6 @@ def qualname(func):
     if callable(func):
         module = getmodule(func)
         result = f"{module.__name__}.{func.__qualname__}"
-    print(result)
 
     return result
 
@@ -122,9 +121,9 @@ class Lenient(threading.local):
         # self.__dict__[client] = services
 
         # XXX: testing...
-        client = "__main__.myfunc"
-        services = ("iris.common.metadata.CoordMetadata.__eq__",)
-        self.__dict__[client] = services
+        # client = "__main__.myfunc"
+        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
+        # self.__dict__[client] = services
 
     def __call__(self, func):
         """
