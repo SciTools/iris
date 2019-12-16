@@ -506,19 +506,19 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            Checks the auxiliary coordinates of the cubes match. This check
+            is not applied to auxiliary coordinates that span the dimension
+            the concatenation is occurring along. Defaults to True.
 
         * check_cell_measures
             Checks the cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            the concatenation is occurring along. Defaults to True.
 
         * check_ancils
             Checks the ancillary variables of the cubes match. This check
             is not applied to ancillary variables that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            the concatenation is occurring along. Defaults to True.
 
         .. note::
 
@@ -568,19 +568,19 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            Checks the auxiliary coordinates of the cubes match. This check
+            is not applied to auxiliary coordinates that span the dimension
+            the concatenation is occurring along. Defaults to True.
 
         * check_cell_measures
             Checks the cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            the concatenation is occurring along. Defaults to True.
 
         * check_ancils
             Checks the ancillary variables of the cubes match. This check
             is not applied to ancillary variables that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            the concatenation is occurring along. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
