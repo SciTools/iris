@@ -779,6 +779,25 @@ def regrid_area_weighted_rectilinear_src_and_grid(
         A new :class:`iris.cube.Cube` instance.
 
     """
+    regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+        src_cube, grid_cube
+    )
+    result = _regrid_area_weighted_rectilinear_src_and_grid__perform(
+        src_cube, regrid_info, mdtol
+    )
+    return result
+
+
+def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+    src_cube, grid_cube
+):
+    """
+    First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+
+    Check inputs and calculate related info. The 'regrid info' returned
+    can be re-used over many 2d slices.
+
+    """
     # Get the 1d monotonic (or scalar) src and grid coordinates.
     src_x, src_y = _get_xy_coords(src_cube)
     grid_x, grid_y = _get_xy_coords(grid_cube)
@@ -853,6 +872,9 @@ def regrid_area_weighted_rectilinear_src_and_grid(
     grid_x_bounds = _get_bounds_in_units(grid_x, x_units, dtype)
     grid_y_bounds = _get_bounds_in_units(grid_y, y_units, dtype)
 
+    # Create 2d meshgrids as required by _create_cube func.
+    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
+
     # Determine whether target grid bounds are decreasing. This must
     # be determined prior to wrap_lons being called.
     grid_x_decreasing = grid_x_bounds[-1, 0] < grid_x_bounds[0, 0]
@@ -881,6 +903,25 @@ def regrid_area_weighted_rectilinear_src_and_grid(
     else:
         area_func = _cartesian_area
 
+    return (src_x, src_y, src_x_dim, src_y_dim, src_x_bounds, src_y_bounds,
+            grid_x, grid_y, grid_x_bounds, grid_y_bounds, grid_x_decreasing,
+            grid_y_decreasing, meshgrid_x, meshgrid_y, area_func, circular)
+
+
+def _regrid_area_weighted_rectilinear_src_and_grid__perform(
+    src_cube, regrid_info, mdtol
+):
+    """
+    Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+
+    Perform the prepared regrid calculation on a single 2d cube.
+
+    """
+    (src_x, src_y, src_x_dim, src_y_dim, src_x_bounds, src_y_bounds, grid_x,
+     grid_y, grid_x_bounds, grid_y_bounds, grid_x_decreasing,
+     grid_y_decreasing, meshgrid_x, meshgrid_y, area_func, circular
+    ) = regrid_info
+
     # Calculate new data array for regridded cube.
     new_data = _regrid_area_weighted_array(
         src_cube.data,
@@ -898,8 +939,6 @@ def regrid_area_weighted_rectilinear_src_and_grid(
     )
 
     # Wrap up the data as a Cube.
-    # Create 2d meshgrids as required by _create_cube func.
-    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(
         new_data,
