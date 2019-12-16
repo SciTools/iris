@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cf-standard-name-table-1.1.xsd">
-   <version_number>69</version_number>
-   <last_modified>2019-10-15T14:39:18Z</last_modified>
+   <version_number>70</version_number>
+   <last_modified>2019-12-10T14:47:41Z</last_modified>
    <institution>Centre for Environmental Data Analysis</institution>
    <contact>support@ceda.ac.uk</contact>
 
@@ -1340,8 +1340,7 @@
       <canonical_units>kg m-2</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Volcanic_ash&quot; means the fine-grained products of explosive volcanic eruptions, such as minerals or crystals, older fragmented rock (e.g. andesite), and glass. Particles within a volcanic ash cloud have diameters less than 2 mm. &quot;Volcanic_ash&quot; does not include non-volcanic dust.
-</description>
+      <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. &quot;Volcanic_ash&quot; means the fine-grained products of explosive volcanic eruptions, such as minerals or crystals, older fragmented rock (e.g. andesite), and glass. Particles within a volcanic ash cloud have diameters less than 2 mm. &quot;Volcanic_ash&quot; does not include non-volcanic dust.</description>
    </entry>
   
    <entry id="atmosphere_mass_content_of_water">
@@ -2272,30 +2271,21 @@
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>The atmosphere_stability_k_index is an index that indicates the potential of severe convection and is often referred to a simply the k index. The index is derived from the difference in air temperature between 850 and 500 hPa, the dew point temperature at 850 hPa, and the difference between the air temperature and the dew point temperature at 
-700 hPa.
-</description>
+      <description>The atmosphere_stability_k_index is an index that indicates the potential of severe convection and is often referred to a simply the k index. The index is derived from the difference in air temperature between 850 and 500 hPa, the dew point temperature at 850 hPa, and the difference between the air temperature and the dew point temperature at 700 hPa.</description>
    </entry>
   
    <entry id="atmosphere_stability_showalter_index">
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>The atmosphere_stability_showalter_index is an index used to determine convective and thunderstorm potential and is often referred to as simply the showalter index. The index is defined as the temperature difference between a parcel of air lifted from 850 to 500 hPa (wet adiabatically) and the ambient air temperature at 500 hPa.
-</description>
+      <description>The atmosphere_stability_showalter_index is an index used to determine convective and thunderstorm potential and is often referred to as simply the showalter index. The index is defined as the temperature difference between a parcel of air lifted from 850 to 500 hPa (wet adiabatically) and the ambient air temperature at 500 hPa.</description>
    </entry>
   
    <entry id="atmosphere_stability_total_totals_index">
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>The atmosphere_stability_total_totals_index indicates the
-likelihood of severe convection and is often referred to as simply the
-total totals index. The index is derived from the difference in air
-temperature between 850 and 500 hPa (the vertical totals) and the
-difference between the dew point temperature at 850 hPa and the air
-temperature at 500 hPa (the cross totals). The vertical totals and cross
-totals are summed to obtain the index.</description>
+      <description>The atmosphere_stability_total_totals_index indicates thelikelihood of severe convection and is often referred to as simply thetotal totals index. The index is derived from the difference in airtemperature between 850 and 500 hPa (the vertical totals) and thedifference between the dew point temperature at 850 hPa and the airtemperature at 500 hPa (the cross totals). The vertical totals and crosstotals are summed to obtain the index.</description>
    </entry>
   
    <entry id="atmosphere_transformed_eulerian_mean_meridional_overturning_mass_streamfunction">
@@ -2659,7 +2649,7 @@ totals are summed to obtain the index.</description>
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>&quot;change_over_time_in_X&quot; means change in a quantity X over a time-interval, which should be defined by the bounds of the time coordinate. Conservative Temperature is defined as part of the Thermodynamic Equation of Seawater 2010 (TEOS-10) which was adopted in 2010 by the International Oceanographic Commission (IOC). Conservative Temperature is specific potential enthalpy (which has the standard name sea_water_specific_potential_enthalpy) divided by a fixed value of the specific heat capacity of sea water, namely cp_0 = 3991.86795711963 J kg-1 K-1. Conservative Temperature is a more accurate measure of the &quot;heat content&quot; of sea water, by a factor of one hundred, than is potential temperature. Because of this, it can be regarded as being proportional to the heat content of sea water per unit mass. Reference: www.teos-10.org; McDougall, 2003 doi: 10.1175/1520-0485(2003)033&lt;0945:PEACOV&gt;2.0.CO;2. </description>
+      <description>&quot;change_over_time_in_X&quot; means change in a quantity X over a time-interval, which should be defined by the bounds of the time coordinate. Conservative Temperature is defined as part of the Thermodynamic Equation of Seawater 2010 (TEOS-10) which was adopted in 2010 by the International Oceanographic Commission (IOC). Conservative Temperature is specific potential enthalpy (which has the standard name sea_water_specific_potential_enthalpy) divided by a fixed value of the specific heat capacity of sea water, namely cp_0 = 3991.86795711963 J kg-1 K-1. Conservative Temperature is a more accurate measure of the &quot;heat content&quot; of sea water, by a factor of one hundred, than is potential temperature. Because of this, it can be regarded as being proportional to the heat content of sea water per unit mass. Reference: www.teos-10.org; McDougall, 2003 doi: 10.1175/1520-0485(2003)033&lt;0945:PEACOV&gt;2.0.CO;2.</description>
    </entry>
   
    <entry id="change_over_time_in_sea_water_density">
@@ -3635,11 +3625,25 @@ totals are summed to obtain the index.</description>
       <description>A velocity is a vector quantity.  &quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward).  A phrase assuming_condition  indicates that the named quantity is the value which would obtain if all  aspects of the system were unaltered except for the assumption of the  circumstances specified by the condition.</description>
    </entry>
   
+   <entry id="eastward_sea_water_velocity_at_sea_floor">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). The velocity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
+   </entry>
+  
    <entry id="eastward_sea_water_velocity_due_to_parameterized_mesoscale_eddies">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>&quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Parameterized mesoscale eddies occur on a spatial scale of many tens of kilometres and an evolutionary time of weeks. Reference: James C. McWilliams 2016, Submesoscale currents in the ocean, Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences, volume 472, issue 2189. DOI: 10.1098/rspa.2016.0117. Parameterized mesoscale eddies are represented in ocean models using schemes such as the Gent-McWilliams scheme.</description>
+   </entry>
+  
+   <entry id="eastward_sea_water_velocity_due_to_tides">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Due to tides&quot; means due to all astronomical gravity changes which manifest as tides. No distinction is made between different tidal components.</description>
    </entry>
   
    <entry id="eastward_transformed_eulerian_mean_air_velocity">
@@ -12939,11 +12943,25 @@ totals are summed to obtain the index.</description>
       <description>A velocity is a vector quantity.  &quot;Northward&quot; indicates a vector component which is positive when directed northward (negative southward).  A phrase assuming_condition  indicates that the named quantity is the value which would obtain if all  aspects of the system were unaltered except for the assumption of the  circumstances specified by the condition.</description>
    </entry>
   
+   <entry id="northward_sea_water_velocity_at_sea_floor">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Northward&quot; indicates a vector component which is positive when directed northward (negative southward). The velocity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
+   </entry>
+  
    <entry id="northward_sea_water_velocity_due_to_parameterized_mesoscale_eddies">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
       <amip></amip>
       <description>&quot;Northward&quot; indicates a vector component which is positive when directed northward (negative southward). The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Parameterized mesoscale eddies occur on a spatial scale of many tens of kilometres and an evolutionary time of weeks. Reference: James C. McWilliams 2016, Submesoscale currents in the ocean, Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences, volume 472, issue 2189. DOI: 10.1098/rspa.2016.0117. Parameterized mesoscale eddies are represented in ocean models using schemes such as the Gent-McWilliams scheme.</description>
+   </entry>
+  
+   <entry id="northward_sea_water_velocity_due_to_tides">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Northward&quot; indicates a vector component which is positive when directed northward (negative southward). The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Due to tides&quot; means due to all astronomical gravity changes which manifest as tides. No distinction is made between different tidal components.</description>
    </entry>
   
    <entry id="northward_transformed_eulerian_mean_air_velocity">
@@ -17972,6 +17990,34 @@ totals are summed to obtain the index.</description>
       <description>Significant wave period is a statistic computed from wave measurements and corresponds to the mean wave period of the highest one third of the waves. A period is an interval of time, or the time-period of an oscillation. Wave period is the interval of time between repeated features on the waveform such as crests, troughs or upward passes through the mean level.</description>
    </entry>
   
+   <entry id="sea_surface_wave_stokes_drift_eastward_velocity">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). The Stokes drift velocity is the average velocity when following a specific fluid parcel as it travels with the fluid flow. For instance, a particle floating at the free surface of water waves, experiences a net Stokes drift velocity in the direction of wave propagation.</description>
+   </entry>
+  
+   <entry id="sea_surface_wave_stokes_drift_northward_velocity">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. &quot;Northward&quot; indicates a vector component which is positive when directed northward (negative southward). The Stokes drift velocity is the average velocity when following a specific fluid parcel as it travels with the fluid flow. For instance, a particle floating at the free surface of water waves, experiences a net Stokes drift velocity in the direction of wave propagation.</description>
+   </entry>
+  
+   <entry id="sea_surface_wave_stokes_drift_speed">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The Stokes drift velocity is the average velocity when following a specific fluid parcel as it travels with the fluid flow. For instance, a particle floating at the free surface of water waves, experiences a net Stokes drift velocity in the direction of wave propagation. Speed is the magnitude of velocity.</description>
+   </entry>
+  
+   <entry id="sea_surface_wave_stokes_drift_to_direction">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>The Stokes drift velocity is the average velocity when following a specific fluid parcel as it travels with the fluid flow. For instance, a particle floating at the free surface of water waves, experiences a net Stokes drift velocity in the direction of wave propagation. The phrase &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
+   </entry>
+  
    <entry id="sea_surface_wave_stokes_drift_x_velocity">
       <canonical_units>m s-1</canonical_units>
       <grib></grib>
@@ -18147,13 +18193,6 @@ totals are summed to obtain the index.</description>
       <description></description>
    </entry>
   
-   <entry id="sea_water_from_direction">
-      <canonical_units>degree</canonical_units>
-      <grib></grib>
-      <amip></amip>
-      <description>The phrase &quot;from_direction&quot; is used in the construction X_from_direction and indicates the direction from which the velocity vector of X is coming. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
-   </entry>
-  
    <entry id="sea_water_knudsen_salinity">
       <canonical_units>1e-3</canonical_units>
       <grib></grib>
@@ -18228,7 +18267,7 @@ totals are summed to obtain the index.</description>
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Potential temperature is the temperature a parcel of air or sea water would have if moved adiabatically to sea level pressure. The potential temperature at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model.</description>
+      <description>Potential temperature is the temperature a parcel of air or sea water would have if moved adiabatically to sea level pressure. The potential temperature at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
    </entry>
   
    <entry id="sea_water_potential_temperature_expressed_as_heat_content">
@@ -18249,7 +18288,7 @@ totals are summed to obtain the index.</description>
       <canonical_units>1</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>The salinity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model. Practical Salinity, S_P, is a determination of the salinity of sea water, based on its electrical conductance. The measured conductance, corrected for temperature and pressure, is compared to the conductance of a standard potassium chloride solution, producing a value on the Practical Salinity Scale of 1978 (PSS-78). The practical salinity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model. This name should not be used to describe salinity observations made before 1978, or ones not based on conductance measurements. Conversion of Practical Salinity to other precisely defined salinity measures should use the appropriate formulas specified by TEOS-10. Salinity quantities that do not match any of the precise definitions should be given the more general standard name of sea_water_salinity_at_sea_floor. Reference: www.teos-10.org; Lewis, 1980 doi:10.1109/JOE.1980.1145448.</description>
+      <description>The practical salinity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements. Practical Salinity, S_P, is a determination of the salinity of sea water, based on its electrical conductance. The measured conductance, corrected for temperature and pressure, is compared to the conductance of a standard potassium chloride solution, producing a value on the Practical Salinity Scale of 1978 (PSS-78).  This name should not be used to describe salinity observations made before 1978, or ones not based on conductance measurements. Conversion of Practical Salinity to other precisely defined salinity measures should use the appropriate formulas specified by TEOS-10. Salinity quantities that do not match any of the precise definitions should be given the more general standard name of sea_water_salinity_at_sea_floor. Reference: www.teos-10.org; Lewis, 1980 doi:10.1109/JOE.1980.1145448.</description>
    </entry>
   
    <entry id="sea_water_preformed_salinity">
@@ -18319,7 +18358,7 @@ totals are summed to obtain the index.</description>
       <canonical_units>1e-3</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>The salinity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model. Sea water salinity is the salt concentration of sea water, often on the Practical Salinity Scale of 1978. However, the unqualified term &#39;salinity&#39; is generic and does not necessarily imply any particular method of calculation. The units of salinity are dimensionless and the units attribute should normally be given as 1e-3 or 0.001 i.e. parts per thousand. There are standard names for the more precisely defined salinity quantities sea_water_knudsen_salinity, S_K (used for salinity observations between 1901 and 1966), sea_water_cox_salinity, S_C (used for salinity observations between 1967 and 1977), sea_water_practical_salinity, S_P (used for salinity observations from 1978 to the present day), sea_water_absolute_salinity, S_A, sea_water_preformed_salinity, S_*, and sea_water_reference_salinity. Practical Salinity is reported on the Practical Salinity Scale of 1978 (PSS-78), and is usually based on the electrical conductivity of sea water in observations since the 1960s. Conversion of data between the observed scales follows S_P = (S_K - 0.03) * (1.80655 / 1.805) and S_P = S_C, however the accuracy of the latter is dependent on whether chlorinity or conductivity was used to determine the S_C value, with this inconsistency driving the development of PSS-78. The more precise standard names should be used where appropriate for both modelled and observed salinities. In particular, the use of sea_water_salinity to describe salinity observations made from 1978 onwards is now deprecated in favor of the term sea_water_practical_salinity which is the salinity quantity stored by national data centers for post-1978 observations. The only exception to this is where the observed salinities are definitely known not to be recorded on the Practical Salinity Scale. Practical salinity units are dimensionless. The unit &quot;parts per thousand&quot; was used for sea_water_knudsen_salinity and sea_water_cox_salinity.</description>
+      <description>The salinity at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements. Sea water salinity is the salt concentration of sea water, often on the Practical Salinity Scale of 1978. However, the unqualified term &#39;salinity&#39; is generic and does not necessarily imply any particular method of calculation. The units of salinity are dimensionless and the units attribute should normally be given as 1e-3 or 0.001 i.e. parts per thousand. There are standard names for the more precisely defined salinity quantities sea_water_knudsen_salinity, S_K (used for salinity observations between 1901 and 1966), sea_water_cox_salinity, S_C (used for salinity observations between 1967 and 1977), sea_water_practical_salinity, S_P (used for salinity observations from 1978 to the present day), sea_water_absolute_salinity, S_A, sea_water_preformed_salinity, S_*, and sea_water_reference_salinity. Practical Salinity is reported on the Practical Salinity Scale of 1978 (PSS-78), and is usually based on the electrical conductivity of sea water in observations since the 1960s. Conversion of data between the observed scales follows S_P = (S_K - 0.03) * (1.80655 / 1.805) and S_P = S_C, however the accuracy of the latter is dependent on whether chlorinity or conductivity was used to determine the S_C value, with this inconsistency driving the development of PSS-78. The more precise standard names should be used where appropriate for both modelled and observed salinities. In particular, the use of sea_water_salinity to describe salinity observations made from 1978 onwards is now deprecated in favor of the term sea_water_practical_salinity which is the salinity quantity stored by national data centers for post-1978 observations. The only exception to this is where the observed salinities are definitely known not to be recorded on the Practical Salinity Scale. Practical salinity units are dimensionless. The unit &quot;parts per thousand&quot; was used for sea_water_knudsen_salinity and sea_water_cox_salinity.</description>
    </entry>
   
    <entry id="sea_water_sigma_t">
@@ -18364,6 +18403,20 @@ totals are summed to obtain the index.</description>
       <description>Speed is the magnitude of velocity.</description>
    </entry>
   
+   <entry id="sea_water_speed_at_sea_floor">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Speed is the magnitude of velocity. The speed at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
+   </entry>
+  
+   <entry id="sea_water_speed_due_to_tides">
+      <canonical_units>m s-1</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>Speed is the magnitude of velocity. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Due to tides&quot; means due to all astronomical gravity changes which manifest as tides. No distinction is made between different tidal components.</description>
+   </entry>
+  
    <entry id="sea_water_temperature">
       <canonical_units>K</canonical_units>
       <grib>80</grib>
@@ -18382,7 +18435,7 @@ totals are summed to obtain the index.</description>
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>Sea water temperature is the in situ temperature of the sea water. The temperature at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model.</description>
+      <description>Sea water temperature is the in situ temperature of the sea water. The temperature at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
    </entry>
   
    <entry id="sea_water_temperature_difference">
@@ -18390,13 +18443,6 @@ totals are summed to obtain the index.</description>
       <grib></grib>
       <amip></amip>
       <description>Sea water temperature is the in situ temperature of the sea water.</description>
-   </entry>
-  
-   <entry id="sea_water_to_direction">
-      <canonical_units>degree</canonical_units>
-      <grib>47</grib>
-      <amip></amip>
-      <description>The phrase &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
    </entry>
   
    <entry id="sea_water_transport_across_line">
@@ -18411,6 +18457,34 @@ totals are summed to obtain the index.</description>
       <grib></grib>
       <amip></amip>
       <description>Turbidity is a dimensionless quantity which is expressed in NTU (Nephelometric Turbidity Units). Turbidity expressed in NTU is the proportion of white light scattered back to a transceiver by the particulate load in a body of water, represented on an arbitrary scale referenced against measurements made in the laboratory on aqueous suspensions of formazine beads. Sea water turbidity may also be measured by the quantity with standard name secchi_depth_of_sea_water.</description>
+   </entry>
+  
+   <entry id="sea_water_velocity_from_direction">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. The phrase &quot;from_direction&quot; is used in the construction X_from_direction and indicates the direction from which the velocity vector of X is coming. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
+   </entry>
+  
+   <entry id="sea_water_velocity_to_direction">
+      <canonical_units>degree</canonical_units>
+      <grib>47</grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. The phrase &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
+   </entry>
+  
+   <entry id="sea_water_velocity_to_direction_at_sea_floor">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. The phrase &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north. The direction at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
+   </entry>
+  
+   <entry id="sea_water_velocity_to_direction_due_to_tides">
+      <canonical_units>degree</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>A velocity is a vector quantity. The phrase &quot;to_direction&quot; is used in the construction X_to_direction and indicates the direction towards which the velocity vector of X is headed. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Due to tides&quot; means due to all astronomical gravity changes which manifest as tides. No distinction is made between different tidal components.</description>
    </entry>
   
    <entry id="sea_water_volume">
@@ -29242,9 +29316,7 @@ final_air_pressure_of_lifted_parcel should be specified to indicate the specific
       <canonical_units>K</canonical_units>
       <grib></grib>
       <amip></amip>
-      <description>toa_brightness_temperature_bias_at_standard_scene_due_to_intercalibration is the difference between top-of-atmosphere (TOA) brightness temperature
-of the reference sensor and TOA brightness temperature of the
-monitored sensor. This TOA brightness temperature difference is a measure of the calibration difference between the monitored and reference sensors. The standard scene is a target area with typical Earth surface and atmospheric conditions that is accepted as a reference. Brightness temperature of a body is the temperature of a black body which radiates the same power per unit solid angle per unit area at a given wavenumber. TOA brightness temperature of the standard scene is calculated using a radiative transfer simulation for a given viewing geometry. The resultant top-of-atmosphere spectral radiance is then integrated with each sensor&#39;s spectral response function and converted to equivalent brightness temperature. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
+      <description>toa_brightness_temperature_bias_at_standard_scene_due_to_intercalibration is the difference between top-of-atmosphere (TOA) brightness temperatureof the reference sensor and TOA brightness temperature of themonitored sensor. This TOA brightness temperature difference is a measure of the calibration difference between the monitored and reference sensors. The standard scene is a target area with typical Earth surface and atmospheric conditions that is accepted as a reference. Brightness temperature of a body is the temperature of a black body which radiates the same power per unit solid angle per unit area at a given wavenumber. TOA brightness temperature of the standard scene is calculated using a radiative transfer simulation for a given viewing geometry. The resultant top-of-atmosphere spectral radiance is then integrated with each sensor&#39;s spectral response function and converted to equivalent brightness temperature. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
    </entry>
   
    <entry id="toa_brightness_temperature_of_standard_scene">
@@ -29975,6 +30047,13 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
       <description>The vertical_component_of_ocean_xy_tracer_diffusivity means the vertical component of the diffusivity of tracers in the ocean due to lateral mixing. This quantity could appear in formulations of lateral diffusivity in which &quot;lateral&quot; does not mean &quot;iso-level&quot;, e.g. it would not be used for isopycnal diffusivity. &quot;Tracer diffusivity&quot; means the diffusivity of heat and salinity due to motion which is not resolved on the grid scale of the model.</description>
    </entry>
   
+   <entry id="vertical_navigation_clearance_above_waterway_surface">
+      <canonical_units>m</canonical_units>
+      <grib></grib>
+      <amip></amip>
+      <description>&quot;Vertical navigation clearance&quot; is the vertical distance between the surface of a navigable waterway and a hazard above it such as a bridge. It is a time-varying quantity because the clearance distance is due to all processes that change the position of either the surface or the hazard. &quot;Waterway surface&quot; means the upper boundary of any body of navigable water.</description>
+   </entry>
+  
    <entry id="virtual_salt_flux_correction">
       <canonical_units>kg m-2 s-1</canonical_units>
       <grib></grib>
@@ -30592,16 +30671,16 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
    </entry>
  
   
-  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_potential_temperature">
-    <entry_id>integral_wrt_depth_of_product_of_potential_temperature_and_sea_water_density</entry_id>
+  <alias id="longwave_radiance">
+    <entry_id>isotropic_longwave_radiance_in_air</entry_id>
   </alias>
   
-  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_conservative_temperature">
-    <entry_id>integral_wrt_depth_of_product_of_conservative_temperature_and_sea_water_density</entry_id>
+  <alias id="shortwave_radiance">
+    <entry_id>isotropic_shortwave_radiance_in_air</entry_id>
   </alias>
   
-  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_salinity">
-    <entry_id>integral_wrt_depth_of_product_of_salinity_and_sea_water_density</entry_id>
+  <alias id="mole_fraction_of_o3_in_air">
+    <entry_id>mole_fraction_of_ozone_in_air</entry_id>
   </alias>
   
   <alias id="product_of_northward_wind_and_specific_humdity">
@@ -30628,18 +30707,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>surface_drag_coefficient_in_air</entry_id>
   </alias>
   
-  <alias id="longwave_radiance">
-    <entry_id>isotropic_longwave_radiance_in_air</entry_id>
-  </alias>
-  
-  <alias id="shortwave_radiance">
-    <entry_id>isotropic_shortwave_radiance_in_air</entry_id>
-  </alias>
-  
-  <alias id="mole_fraction_of_o3_in_air">
-    <entry_id>mole_fraction_of_ozone_in_air</entry_id>
-  </alias>
-  
   <alias id="swell_wave_period">
     <entry_id>sea_surface_swell_wave_period</entry_id>
   </alias>
@@ -30648,24 +30715,12 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>sea_surface_wind_wave_period</entry_id>
   </alias>
   
-  <alias id="concentration_of_suspended_matter_in_sea_water">
-    <entry_id>mass_concentration_of_suspended_matter_in_sea_water</entry_id>
+  <alias id="mass_fraction_of_convective_condensed_water_in_air">
+    <entry_id>mass_fraction_of_convective_cloud_condensed_water_in_air</entry_id>
   </alias>
   
-  <alias id="mole_concentration_of_mesozooplankton_in_sea_water_expressed_as_nitrogen">
-    <entry_id>mole_concentration_of_mesozooplankton_expressed_as_nitrogen_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="mole_concentration_of_microzooplankton_in_sea_water_expressed_as_nitrogen">
-    <entry_id>mole_concentration_of_microzooplankton_expressed_as_nitrogen_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="mole_concentration_of_organic_detritus_in_sea_water_expressed_as_nitrogen">
-    <entry_id>mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="mole_concentration_of_organic_detritus_in_sea_water_expressed_as_silicon">
-    <entry_id>mole_concentration_of_organic_detritus_expressed_as_silicon_in_sea_water</entry_id>
+  <alias id="mass_fraction_of_o3_in_air">
+    <entry_id>mass_fraction_of_ozone_in_air</entry_id>
   </alias>
   
   <alias id="sea_surface_wave_frequency">
@@ -30696,80 +30751,8 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>upward_eastward_momentum_flux_in_air_due_to_orographic_gravity_waves</entry_id>
   </alias>
   
-  <alias id="mass_fraction_of_convective_condensed_water_in_air">
-    <entry_id>mass_fraction_of_convective_cloud_condensed_water_in_air</entry_id>
-  </alias>
-  
-  <alias id="mass_fraction_of_o3_in_air">
-    <entry_id>mass_fraction_of_ozone_in_air</entry_id>
-  </alias>
-  
   <alias id="water_flux_into_ocean">
     <entry_id>water_flux_into_sea_water</entry_id>
-  </alias>
-  
-  <alias id="moles_of_carbon_monoxide_in_atmosphere">
-    <entry_id>atmosphere_moles_of_carbon_monoxide</entry_id>
-  </alias>
-  
-  <alias id="moles_of_methane_in_atmosphere">
-    <entry_id>atmosphere_moles_of_methane</entry_id>
-  </alias>
-  
-  <alias id="moles_of_methyl_bromide_in_atmosphere">
-    <entry_id>atmosphere_moles_of_methyl_bromide</entry_id>
-  </alias>
-  
-  <alias id="moles_of_methyl_chloride_in_atmosphere">
-    <entry_id>atmosphere_moles_of_methyl_chloride</entry_id>
-  </alias>
-  
-  <alias id="moles_of_molecular_hydrogen_in_atmosphere">
-    <entry_id>atmosphere_moles_of_molecular_hydrogen</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_turbulence">
-    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_turbulence</entry_id>
-  </alias>
-  
-  <alias id="moles_of_nitrous_oxide_in_atmosphere">
-    <entry_id>atmosphere_moles_of_nitrous_oxide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_bromide_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_methyl_bromide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_chloride_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_methyl_chloride</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_molecular_hydrogen_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_molecular_hydrogen</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_nitrous_oxide_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_nitrous_oxide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_melting_to_cloud_liquid">
-    <entry_id>tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_melting_to_cloud_liquid_water</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_riming_from_cloud_liquid">
-    <entry_id>tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_riming_from_cloud_liquid_water</entry_id>
-  </alias>
-  
-  <alias id="eastward_water_vapor_flux">
-    <entry_id>eastward_water_vapor_flux_in_air</entry_id>
-  </alias>
-  
-  <alias id="dissipation_in_atmosphere_boundary_layer">
-    <entry_id>kinetic_energy_dissipation_in_atmosphere_boundary_layer</entry_id>
-  </alias>
-  
-  <alias id="liquid_water_content_of_snow_layer">
-    <entry_id>liquid_water_content_of_surface_snow</entry_id>
   </alias>
   
   <alias id="wind_mixing_energy_flux_into_ocean">
@@ -30810,6 +30793,130 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
   
   <alias id="surface_upward_sensible_heat_flux_where_sea">
     <entry_id>surface_upward_sensible_heat_flux</entry_id>
+  </alias>
+  
+  <alias id="moles_of_carbon_monoxide_in_atmosphere">
+    <entry_id>atmosphere_moles_of_carbon_monoxide</entry_id>
+  </alias>
+  
+  <alias id="moles_of_methane_in_atmosphere">
+    <entry_id>atmosphere_moles_of_methane</entry_id>
+  </alias>
+  
+  <alias id="moles_of_methyl_bromide_in_atmosphere">
+    <entry_id>atmosphere_moles_of_methyl_bromide</entry_id>
+  </alias>
+  
+  <alias id="moles_of_methyl_chloride_in_atmosphere">
+    <entry_id>atmosphere_moles_of_methyl_chloride</entry_id>
+  </alias>
+  
+  <alias id="moles_of_molecular_hydrogen_in_atmosphere">
+    <entry_id>atmosphere_moles_of_molecular_hydrogen</entry_id>
+  </alias>
+  
+  <alias id="moles_of_nitrous_oxide_in_atmosphere">
+    <entry_id>atmosphere_moles_of_nitrous_oxide</entry_id>
+  </alias>
+  
+  <alias id="concentration_of_suspended_matter_in_sea_water">
+    <entry_id>mass_concentration_of_suspended_matter_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_mesozooplankton_in_sea_water_expressed_as_nitrogen">
+    <entry_id>mole_concentration_of_mesozooplankton_expressed_as_nitrogen_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_microzooplankton_in_sea_water_expressed_as_nitrogen">
+    <entry_id>mole_concentration_of_microzooplankton_expressed_as_nitrogen_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_organic_detritus_in_sea_water_expressed_as_nitrogen">
+    <entry_id>mole_concentration_of_organic_detritus_expressed_as_nitrogen_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_organic_detritus_in_sea_water_expressed_as_silicon">
+    <entry_id>mole_concentration_of_organic_detritus_expressed_as_silicon_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_bromide_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_methyl_bromide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_chloride_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_methyl_chloride</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_molecular_hydrogen_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_molecular_hydrogen</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_nitrous_oxide_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_nitrous_oxide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_carbon_monoxide_in_middle_atmosphere">
+    <entry_id>tendency_of_middle_atmosphere_moles_of_carbon_monoxide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methane_in_middle_atmosphere">
+    <entry_id>tendency_of_middle_atmosphere_moles_of_methane</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_bromide_in_middle_atmosphere">
+    <entry_id>tendency_of_middle_atmosphere_moles_of_methyl_bromide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_chloride_in_middle_atmosphere">
+    <entry_id>tendency_of_middle_atmosphere_moles_of_methyl_chloride</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_molecular_hydrogen_in_middle_atmosphere">
+    <entry_id>tendency_of_middle_atmosphere_moles_of_molecular_hydrogen</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_carbon_monoxide_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_carbon_monoxide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methane_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_methane</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_bromide_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_methyl_bromide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_methyl_chloride_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_methyl_chloride</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_molecular_hydrogen_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_molecular_hydrogen</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_convective_mass_flux">
+    <entry_id>atmosphere_net_upward_convective_mass_flux</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_melting_to_cloud_liquid">
+    <entry_id>tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_melting_to_cloud_liquid_water</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_riming_from_cloud_liquid">
+    <entry_id>tendency_of_mass_fraction_of_stratiform_cloud_ice_in_air_due_to_riming_from_cloud_liquid_water</entry_id>
+  </alias>
+  
+  <alias id="eastward_water_vapor_flux">
+    <entry_id>eastward_water_vapor_flux_in_air</entry_id>
+  </alias>
+  
+  <alias id="dissipation_in_atmosphere_boundary_layer">
+    <entry_id>kinetic_energy_dissipation_in_atmosphere_boundary_layer</entry_id>
+  </alias>
+  
+  <alias id="liquid_water_content_of_snow_layer">
+    <entry_id>liquid_water_content_of_surface_snow</entry_id>
   </alias>
   
   <alias id="lwe_large_scale_snowfall_rate">
@@ -30862,6 +30969,154 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
   
   <alias id="thickness_of_large_scale_snowfall_amount">
     <entry_id>thickness_of_stratiform_snowfall_amount</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_cloud_condensed_water_content">
+    <entry_id>atmosphere_mass_content_of_cloud_condensed_water</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_cloud_ice_content">
+    <entry_id>atmosphere_mass_content_of_cloud_ice</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_cloud_liquid_water_content">
+    <entry_id>atmosphere_mass_content_of_cloud_liquid_water</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_convective_cloud_condensed_water_content">
+    <entry_id>atmosphere_mass_content_of_convective_cloud_condensed_water</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_convective_cloud_liquid_water_content">
+    <entry_id>atmosphere_mass_content_of_convective_cloud_liquid_water</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_water_vapor_content">
+    <entry_id>atmosphere_mass_content_of_water_vapor</entry_id>
+  </alias>
+  
+  <alias id="surface_carbon_dioxide_mole_flux">
+    <entry_id>surface_downward_mole_flux_of_carbon_dioxide</entry_id>
+  </alias>
+  
+  <alias id="surface_carbon_dioxide_mole_flux">
+    <entry_id>surface_upward_mole_flux_of_carbon_dioxide</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_so4_content">
+    <entry_id>atmosphere_mass_content_of_sulfate</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_sulfate_content">
+    <entry_id>atmosphere_mass_content_of_sulfate</entry_id>
+  </alias>
+  
+  <alias id="change_over_time_in_atmosphere_water_content_due_to_advection">
+    <entry_id>change_over_time_in_atmosphere_mass_content_of_water_due_to_advection</entry_id>
+  </alias>
+  
+  <alias id="change_over_time_in_atmospheric_water_content_due_to_advection">
+    <entry_id>change_over_time_in_atmosphere_mass_content_of_water_due_to_advection</entry_id>
+  </alias>
+  
+  <alias id="lwe_thickness_of_atmosphere_water_vapor_content">
+    <entry_id>lwe_thickness_of_atmosphere_mass_content_of_water_vapor</entry_id>
+  </alias>
+  
+  <alias id="cloud_condensed_water_content_of_atmosphere_layer">
+    <entry_id>mass_content_of_cloud_condensed_water_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="cloud_ice_content_of_atmosphere_layer">
+    <entry_id>mass_content_of_cloud_ice_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="cloud_liquid_water_content_of_atmosphere_layer">
+    <entry_id>mass_content_of_cloud_liquid_water_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="water_content_of_atmosphere_layer">
+    <entry_id>mass_content_of_water_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="water_vapor_content_of_atmosphere_layer">
+    <entry_id>mass_content_of_water_vapor_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_content_due_to_advection">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_due_to_advection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_convection">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_deep_convection">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_deep_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_shallow_convection">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_shallow_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_turbulence">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_turbulence</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer">
+    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_convection">
+    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_deep_convection">
+    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_deep_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_shallow_convection">
+    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_shallow_convection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_turbulence">
+    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_turbulence</entry_id>
+  </alias>
+  
+  <alias id="equivalent_thickness_at_stp_of_atmosphere_o3_content">
+    <entry_id>equivalent_thickness_at_stp_of_atmosphere_ozone_content</entry_id>
+  </alias>
+  
+  <alias id="x_sea_water_velocity">
+    <entry_id>sea_water_x_velocity</entry_id>
+  </alias>
+  
+  <alias id="y_sea_water_velocity">
+    <entry_id>sea_water_y_velocity</entry_id>
+  </alias>
+  
+  <alias id="grid_eastward_wind">
+    <entry_id>x_wind</entry_id>
+  </alias>
+  
+  <alias id="grid_northward_wind">
+    <entry_id>y_wind</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_advection">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_advection</entry_id>
+  </alias>
+  
+  <alias id="land_ice_surface_specific_mass_balance">
+    <entry_id>land_ice_surface_specific_mass_balance_rate</entry_id>
+  </alias>
+  
+  <alias id="land_ice_lwe_surface_specific_mass_balance">
+    <entry_id>land_ice_lwe_surface_specific_mass_balance_rate</entry_id>
   </alias>
   
   <alias id="isotropic_spectral_radiance_in_air">
@@ -31244,114 +31499,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>tendency_of_atmosphere_moles_of_sulfate_dry_aerosol_particles</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_water_content_due_to_advection">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_due_to_advection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_convection">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_deep_convection">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_deep_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_shallow_convection">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_shallow_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_turbulence">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_turbulence</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer">
-    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_convection">
-    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_deep_convection">
-    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_deep_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_water_vapor_content_of_atmosphere_layer_due_to_shallow_convection">
-    <entry_id>tendency_of_mass_content_of_water_vapor_in_atmosphere_layer_due_to_shallow_convection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_carbon_monoxide_in_middle_atmosphere">
-    <entry_id>tendency_of_middle_atmosphere_moles_of_carbon_monoxide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methane_in_middle_atmosphere">
-    <entry_id>tendency_of_middle_atmosphere_moles_of_methane</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_bromide_in_middle_atmosphere">
-    <entry_id>tendency_of_middle_atmosphere_moles_of_methyl_bromide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_chloride_in_middle_atmosphere">
-    <entry_id>tendency_of_middle_atmosphere_moles_of_methyl_chloride</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_molecular_hydrogen_in_middle_atmosphere">
-    <entry_id>tendency_of_middle_atmosphere_moles_of_molecular_hydrogen</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_carbon_monoxide_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_carbon_monoxide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methane_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_methane</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_bromide_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_methyl_bromide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_methyl_chloride_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_methyl_chloride</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_molecular_hydrogen_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_molecular_hydrogen</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_convective_mass_flux">
-    <entry_id>atmosphere_net_upward_convective_mass_flux</entry_id>
-  </alias>
-  
-  <alias id="equivalent_thickness_at_stp_of_atmosphere_o3_content">
-    <entry_id>equivalent_thickness_at_stp_of_atmosphere_ozone_content</entry_id>
-  </alias>
-  
-  <alias id="x_sea_water_velocity">
-    <entry_id>sea_water_x_velocity</entry_id>
-  </alias>
-  
-  <alias id="y_sea_water_velocity">
-    <entry_id>sea_water_y_velocity</entry_id>
-  </alias>
-  
-  <alias id="grid_eastward_wind">
-    <entry_id>x_wind</entry_id>
-  </alias>
-  
-  <alias id="grid_northward_wind">
-    <entry_id>y_wind</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_water_vapor_content_due_to_advection">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_advection</entry_id>
-  </alias>
-  
   <alias id="tendency_of_atmosphere_mass_content_of_sulfate_dry_aerosol_due_to_emission">
     <entry_id>tendency_of_atmosphere_mass_content_of_sulfate_dry_aerosol_particles_due_to_emission</entry_id>
   </alias>
@@ -31408,78 +31555,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>tendency_of_atmosphere_mass_content_of_particulate_organic_matter_dry_aerosol_particles_expressed_as_carbon_due_to_emission_from_industrial_processes_and_combustion</entry_id>
   </alias>
   
-  <alias id="atmosphere_cloud_condensed_water_content">
-    <entry_id>atmosphere_mass_content_of_cloud_condensed_water</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_cloud_ice_content">
-    <entry_id>atmosphere_mass_content_of_cloud_ice</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_cloud_liquid_water_content">
-    <entry_id>atmosphere_mass_content_of_cloud_liquid_water</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_convective_cloud_condensed_water_content">
-    <entry_id>atmosphere_mass_content_of_convective_cloud_condensed_water</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_convective_cloud_liquid_water_content">
-    <entry_id>atmosphere_mass_content_of_convective_cloud_liquid_water</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_water_vapor_content">
-    <entry_id>atmosphere_mass_content_of_water_vapor</entry_id>
-  </alias>
-  
-  <alias id="surface_carbon_dioxide_mole_flux">
-    <entry_id>surface_downward_mole_flux_of_carbon_dioxide</entry_id>
-  </alias>
-  
-  <alias id="surface_carbon_dioxide_mole_flux">
-    <entry_id>surface_upward_mole_flux_of_carbon_dioxide</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_so4_content">
-    <entry_id>atmosphere_mass_content_of_sulfate</entry_id>
-  </alias>
-  
-  <alias id="atmosphere_sulfate_content">
-    <entry_id>atmosphere_mass_content_of_sulfate</entry_id>
-  </alias>
-  
-  <alias id="change_over_time_in_atmosphere_water_content_due_to_advection">
-    <entry_id>change_over_time_in_atmosphere_mass_content_of_water_due_to_advection</entry_id>
-  </alias>
-  
-  <alias id="change_over_time_in_atmospheric_water_content_due_to_advection">
-    <entry_id>change_over_time_in_atmosphere_mass_content_of_water_due_to_advection</entry_id>
-  </alias>
-  
-  <alias id="lwe_thickness_of_atmosphere_water_vapor_content">
-    <entry_id>lwe_thickness_of_atmosphere_mass_content_of_water_vapor</entry_id>
-  </alias>
-  
-  <alias id="cloud_condensed_water_content_of_atmosphere_layer">
-    <entry_id>mass_content_of_cloud_condensed_water_in_atmosphere_layer</entry_id>
-  </alias>
-  
-  <alias id="cloud_ice_content_of_atmosphere_layer">
-    <entry_id>mass_content_of_cloud_ice_in_atmosphere_layer</entry_id>
-  </alias>
-  
-  <alias id="cloud_liquid_water_content_of_atmosphere_layer">
-    <entry_id>mass_content_of_cloud_liquid_water_in_atmosphere_layer</entry_id>
-  </alias>
-  
-  <alias id="water_content_of_atmosphere_layer">
-    <entry_id>mass_content_of_water_in_atmosphere_layer</entry_id>
-  </alias>
-  
-  <alias id="water_vapor_content_of_atmosphere_layer">
-    <entry_id>mass_content_of_water_vapor_in_atmosphere_layer</entry_id>
-  </alias>
-  
   <alias id="land_cover">
     <entry_id>area_type</entry_id>
   </alias>
@@ -31498,114 +31573,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
   
   <alias id="significant_height_of_wind_and_swell_waves">
     <entry_id>sea_surface_wave_significant_height</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_downward_latent_heat_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_downward_latent_heat_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_downward_sensible_heat_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_downward_sensible_heat_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_net_downward_longwave_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_net_downward_longwave_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_net_downward_shortwave_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_net_downward_shortwave_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_toa_net_downward_shortwave_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_toa_net_downward_shortwave_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_toa_outgoing_longwave_flux_wrt_time">
-    <entry_id>integral_wrt_time_of_toa_outgoing_longwave_flux</entry_id>
-  </alias>
-  
-  <alias id="northward_ocean_freshwater_transport_due_to_bolus_advection">
-    <entry_id>northward_ocean_freshwater_transport_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="northward_ocean_salt_transport_due_to_bolus_advection">
-    <entry_id>northward_ocean_salt_transport_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_heat_x_transport_due_to_bolus_advection">
-    <entry_id>ocean_heat_x_transport_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_heat_y_transport_due_to_bolus_advection">
-    <entry_id>ocean_heat_y_transport_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_mass_x_transport_due_to_advection_and_bolus_advection">
-    <entry_id>ocean_mass_x_transport_due_to_advection_and_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_mass_y_transport_due_to_advection_and_bolus_advection">
-    <entry_id>ocean_mass_y_transport_due_to_advection_and_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_meridional_overturning_mass_streamfunction_due_to_bolus_advection">
-    <entry_id>ocean_meridional_overturning_mass_streamfunction_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_y_overturning_mass_streamfunction_due_to_bolus_advection">
-    <entry_id>ocean_y_overturning_mass_streamfunction_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_water_salinity_due_to_bolus_advection">
-    <entry_id>tendency_of_sea_water_salinity_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_water_temperature_due_to_bolus_advection">
-    <entry_id>tendency_of_sea_water_temperature_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="bolus_northward_sea_water_velocity">
-    <entry_id>northward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
-  </alias>
-  
-  <alias id="bolus_eastward_sea_water_velocity">
-    <entry_id>eastward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
-  </alias>
-  
-  <alias id="bolus_sea_water_x_velocity">
-    <entry_id>sea_water_x_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
-  </alias>
-  
-  <alias id="bolus_sea_water_y_velocity">
-    <entry_id>sea_water_y_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
-  </alias>
-  
-  <alias id="bolus_upward_sea_water_velocity">
-    <entry_id>upward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
-  </alias>
-  
-  <alias id="ocean_tracer_bolus_biharmonic_diffusivity">
-    <entry_id>ocean_tracer_biharmonic_diffusivity_due_to_parameterized_mesoscale_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="ocean_tracer_bolus_laplacian_diffusivity">
-    <entry_id>ocean_tracer_laplacian_diffusivity_due_to_parameterized_mesoscale_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_ocean_eddy_kinetic_energy_content_due_to_bolus_transport">
-    <entry_id>tendency_of_ocean_eddy_kinetic_energy_content_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="northward_ocean_heat_transport_due_to_bolus_advection">
-    <entry_id>northward_ocean_heat_transport_due_to_parameterized_eddy_advection</entry_id>
-  </alias>
-  
-  <alias id="land_ice_surface_specific_mass_balance">
-    <entry_id>land_ice_surface_specific_mass_balance_rate</entry_id>
-  </alias>
-  
-  <alias id="land_ice_lwe_surface_specific_mass_balance">
-    <entry_id>land_ice_lwe_surface_specific_mass_balance_rate</entry_id>
   </alias>
   
   <alias id="moisture_content_of_soil_layer">
@@ -31776,6 +31743,86 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>tendency_of_atmosphere_mass_content_of_pm2p5_sea_salt_dry_aerosol_particles_due_to_emission</entry_id>
   </alias>
   
+  <alias id="sea_floor_depth_below_sea_level">
+    <entry_id>sea_floor_depth_below_mean_sea_level</entry_id>
+  </alias>
+  
+  <alias id="sea_surface_height_above_sea_level">
+    <entry_id>sea_surface_height_above_mean_sea_level</entry_id>
+  </alias>
+  
+  <alias id="sea_surface_height">
+    <entry_id>sea_surface_height_above_mean_sea_level</entry_id>
+  </alias>
+  
+  <alias id="surface_geostrophic_eastward_sea_water_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_eastward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="surface_eastward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_eastward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="surface_geostrophic_northward_sea_water_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_northward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="surface_northward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_northward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="surface_geostrophic_sea_water_x_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_sea_water_x_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="surface_geostrophic_sea_water_y_velocity_assuming_sea_level_for_geoid">
+    <entry_id>surface_geostrophic_sea_water_y_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_sea_surface_height_above_sea_level">
+    <entry_id>tendency_of_sea_surface_height_above_mean_sea_level</entry_id>
+  </alias>
+  
+  <alias id="surface_northward_geostrophic_sea_water_velocity">
+    <entry_id>surface_geostrophic_northward_sea_water_velocity</entry_id>
+  </alias>
+  
+  <alias id="surface_eastward_geostrophic_sea_water_velocity">
+    <entry_id>surface_geostrophic_eastward_sea_water_velocity</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_dry_deposition">
+    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_dry_deposition</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_deposition">
+    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_deposition</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_absorption_optical_thickness_due_to_seasalt_ambient_aerosol_particles">
+    <entry_id>atmosphere_absorption_optical_thickness_due_to_sea_salt_ambient_aerosol_particles</entry_id>
+  </alias>
+  
+  <alias id="atmosphere_absorption_optical_thickness_due_to_seasalt_ambient_aerosol">
+    <entry_id>atmosphere_absorption_optical_thickness_due_to_sea_salt_ambient_aerosol_particles</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_seasalt_dry_aerosol_particles_due_to_emission">
+    <entry_id>tendency_of_atmosphere_mass_content_of_sea_salt_dry_aerosol_particles_due_to_emission</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_seasalt_dry_aerosol_due_to_emission">
+    <entry_id>tendency_of_atmosphere_mass_content_of_sea_salt_dry_aerosol_particles_due_to_emission</entry_id>
+  </alias>
+  
+  <alias id="sea_surface_elevation_anomaly">
+    <entry_id>sea_surface_height_above_geoid</entry_id>
+  </alias>
+  
+  <alias id="sea_surface_elevation">
+    <entry_id>sea_surface_height_above_geoid</entry_id>
+  </alias>
+  
   <alias id="sea_floor_depth">
     <entry_id>sea_floor_depth_below_geoid</entry_id>
   </alias>
@@ -31860,10 +31907,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>tendency_of_mass_concentration_of_elemental_carbon_dry_aerosol_particles_in_air_due_to_emission_from_aviation</entry_id>
   </alias>
   
-  <alias id="direction_of_sea_water_velocity">
-    <entry_id>sea_water_to_direction</entry_id>
-  </alias>
-  
   <alias id="integral_of_air_temperature_deficit_wrt_time">
     <entry_id>integral_wrt_time_of_air_temperature_deficit</entry_id>
   </alias>
@@ -31880,84 +31923,104 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>integral_wrt_time_of_surface_downward_northward_stress</entry_id>
   </alias>
   
-  <alias id="sea_floor_depth_below_sea_level">
-    <entry_id>sea_floor_depth_below_mean_sea_level</entry_id>
+  <alias id="integral_of_surface_downward_latent_heat_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_downward_latent_heat_flux</entry_id>
   </alias>
   
-  <alias id="sea_surface_height_above_sea_level">
-    <entry_id>sea_surface_height_above_mean_sea_level</entry_id>
+  <alias id="integral_of_surface_downward_sensible_heat_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_downward_sensible_heat_flux</entry_id>
   </alias>
   
-  <alias id="sea_surface_height">
-    <entry_id>sea_surface_height_above_mean_sea_level</entry_id>
+  <alias id="integral_of_surface_net_downward_longwave_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_net_downward_longwave_flux</entry_id>
   </alias>
   
-  <alias id="surface_geostrophic_eastward_sea_water_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_eastward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="integral_of_surface_net_downward_shortwave_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_net_downward_shortwave_flux</entry_id>
   </alias>
   
-  <alias id="surface_eastward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_eastward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="integral_of_toa_net_downward_shortwave_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_toa_net_downward_shortwave_flux</entry_id>
   </alias>
   
-  <alias id="surface_geostrophic_northward_sea_water_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_northward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="integral_of_toa_outgoing_longwave_flux_wrt_time">
+    <entry_id>integral_wrt_time_of_toa_outgoing_longwave_flux</entry_id>
   </alias>
   
-  <alias id="surface_northward_geostrophic_sea_water_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_northward_sea_water_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="northward_ocean_freshwater_transport_due_to_bolus_advection">
+    <entry_id>northward_ocean_freshwater_transport_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="surface_geostrophic_sea_water_x_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_sea_water_x_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="northward_ocean_salt_transport_due_to_bolus_advection">
+    <entry_id>northward_ocean_salt_transport_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="surface_geostrophic_sea_water_y_velocity_assuming_sea_level_for_geoid">
-    <entry_id>surface_geostrophic_sea_water_y_velocity_assuming_mean_sea_level_for_geoid</entry_id>
+  <alias id="ocean_heat_x_transport_due_to_bolus_advection">
+    <entry_id>ocean_heat_x_transport_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="tendency_of_sea_surface_height_above_sea_level">
-    <entry_id>tendency_of_sea_surface_height_above_mean_sea_level</entry_id>
+  <alias id="ocean_heat_y_transport_due_to_bolus_advection">
+    <entry_id>ocean_heat_y_transport_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="surface_northward_geostrophic_sea_water_velocity">
-    <entry_id>surface_geostrophic_northward_sea_water_velocity</entry_id>
+  <alias id="ocean_mass_x_transport_due_to_advection_and_bolus_advection">
+    <entry_id>ocean_mass_x_transport_due_to_advection_and_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="surface_eastward_geostrophic_sea_water_velocity">
-    <entry_id>surface_geostrophic_eastward_sea_water_velocity</entry_id>
+  <alias id="ocean_mass_y_transport_due_to_advection_and_bolus_advection">
+    <entry_id>ocean_mass_y_transport_due_to_advection_and_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_dry_deposition">
-    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_dry_deposition</entry_id>
+  <alias id="ocean_meridional_overturning_mass_streamfunction_due_to_bolus_advection">
+    <entry_id>ocean_meridional_overturning_mass_streamfunction_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_deposition">
-    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_deposition</entry_id>
+  <alias id="ocean_y_overturning_mass_streamfunction_due_to_bolus_advection">
+    <entry_id>ocean_y_overturning_mass_streamfunction_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="atmosphere_absorption_optical_thickness_due_to_seasalt_ambient_aerosol_particles">
-    <entry_id>atmosphere_absorption_optical_thickness_due_to_sea_salt_ambient_aerosol_particles</entry_id>
+  <alias id="tendency_of_sea_water_salinity_due_to_bolus_advection">
+    <entry_id>tendency_of_sea_water_salinity_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="atmosphere_absorption_optical_thickness_due_to_seasalt_ambient_aerosol">
-    <entry_id>atmosphere_absorption_optical_thickness_due_to_sea_salt_ambient_aerosol_particles</entry_id>
+  <alias id="tendency_of_sea_water_temperature_due_to_bolus_advection">
+    <entry_id>tendency_of_sea_water_temperature_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_mass_content_of_seasalt_dry_aerosol_particles_due_to_emission">
-    <entry_id>tendency_of_atmosphere_mass_content_of_sea_salt_dry_aerosol_particles_due_to_emission</entry_id>
+  <alias id="bolus_northward_sea_water_velocity">
+    <entry_id>northward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_mass_content_of_seasalt_dry_aerosol_due_to_emission">
-    <entry_id>tendency_of_atmosphere_mass_content_of_sea_salt_dry_aerosol_particles_due_to_emission</entry_id>
+  <alias id="bolus_eastward_sea_water_velocity">
+    <entry_id>eastward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
   </alias>
   
-  <alias id="sea_surface_elevation_anomaly">
-    <entry_id>sea_surface_height_above_geoid</entry_id>
+  <alias id="bolus_sea_water_x_velocity">
+    <entry_id>sea_water_x_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
   </alias>
   
-  <alias id="sea_surface_elevation">
-    <entry_id>sea_surface_height_above_geoid</entry_id>
+  <alias id="bolus_sea_water_y_velocity">
+    <entry_id>sea_water_y_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
+  </alias>
+  
+  <alias id="bolus_upward_sea_water_velocity">
+    <entry_id>upward_sea_water_velocity_due_to_parameterized_mesoscale_eddies</entry_id>
+  </alias>
+  
+  <alias id="ocean_tracer_bolus_biharmonic_diffusivity">
+    <entry_id>ocean_tracer_biharmonic_diffusivity_due_to_parameterized_mesoscale_eddy_advection</entry_id>
+  </alias>
+  
+  <alias id="ocean_tracer_bolus_laplacian_diffusivity">
+    <entry_id>ocean_tracer_laplacian_diffusivity_due_to_parameterized_mesoscale_eddy_advection</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_ocean_eddy_kinetic_energy_content_due_to_bolus_transport">
+    <entry_id>tendency_of_ocean_eddy_kinetic_energy_content_due_to_parameterized_eddy_advection</entry_id>
+  </alias>
+  
+  <alias id="northward_ocean_heat_transport_due_to_bolus_advection">
+    <entry_id>northward_ocean_heat_transport_due_to_parameterized_eddy_advection</entry_id>
   </alias>
   
   <alias id="mole_concentration_of_dissolved_inorganic_carbon13_in_sea_water">
@@ -32060,16 +32123,12 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>soil_mass_content_of_carbon</entry_id>
   </alias>
   
-  <alias id="platform_roll_angle">
-    <entry_id>platform_roll</entry_id>
+  <alias id="volume_scattering_coefficient_in_air_due_to_dried_aerosol_particles">
+    <entry_id>volume_scattering_coefficient_of_radiative_flux_in_air_due_to_dried_aerosol_particles</entry_id>
   </alias>
   
-  <alias id="platform_pitch_angle">
-    <entry_id>platform_pitch</entry_id>
-  </alias>
-  
-  <alias id="platform_yaw_angle">
-    <entry_id>platform_yaw</entry_id>
+  <alias id="volume_scattering_coefficient_in_air_due_to_ambient_aerosol_particles">
+    <entry_id>volume_scattering_coefficient_of_radiative_flux_in_air_due_to_ambient_aerosol_particles</entry_id>
   </alias>
   
   <alias id="integral_of_sea_water_practical_salinity_wrt_depth">
@@ -32104,42 +32163,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>water_flux_into_sea_water_from_rivers</entry_id>
   </alias>
   
-  <alias id="tendency_of_mole_concentration_of_dissolved_inorganic_phosphate_in_sea_water_due_to_biological_processes">
-    <entry_id>tendency_of_mole_concentration_of_dissolved_inorganic_phosphorus_in_sea_water_due_to_biological_processes</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_mole_concentration_of_dissolved_inorganic_silicate_in_sea_water_due_to_biological_processes">
-    <entry_id>tendency_of_mole_concentration_of_dissolved_inorganic_silicon_in_sea_water_due_to_biological_processes</entry_id>
-  </alias>
-  
-  <alias id="station_wmo_id">
-    <entry_id>platform_id</entry_id>
-  </alias>
-  
-  <alias id="station_description">
-    <entry_id>platform_name</entry_id>
-  </alias>
-  
-  <alias id="water_vapor_pressure">
-    <entry_id>water_vapor_partial_pressure_in_air</entry_id>
-  </alias>
-  
-  <alias id="volume_extinction_coefficient_in_air_due_to_ambient_aerosol">
-    <entry_id>volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_of_mole_concentration_of_carbon_monoxide_due_to_chemical_destruction">
-    <entry_id>tendency_of_atmosphere_mole_concentration_of_carbon_monoxide_due_to_chemical_destruction</entry_id>
-  </alias>
-  
-  <alias id="volume_scattering_coefficient_in_air_due_to_dried_aerosol_particles">
-    <entry_id>volume_scattering_coefficient_of_radiative_flux_in_air_due_to_dried_aerosol_particles</entry_id>
-  </alias>
-  
-  <alias id="volume_scattering_coefficient_in_air_due_to_ambient_aerosol_particles">
-    <entry_id>volume_scattering_coefficient_of_radiative_flux_in_air_due_to_ambient_aerosol_particles</entry_id>
-  </alias>
-  
   <alias id="toa_outgoing_shortwave_flux_assuming_clean_clear_sky">
     <entry_id>toa_outgoing_shortwave_flux_assuming_clear_sky_and_no_aerosol</entry_id>
   </alias>
@@ -32162,210 +32185,6 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
   
   <alias id="water_evaporation_flux">
     <entry_id>water_evapotranspiration_flux</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_downwelling_longwave_flux_in_air_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_downwelling_longwave_flux_in_air</entry_id>
-  </alias>
-  
-  <alias id="integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time">
-    <entry_id>integral_wrt_time_of_surface_downwelling_shortwave_flux_in_air</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_longwave_flux">
-    <entry_id>surface_downwelling_longwave_flux_in_air</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_photon_flux_in_sea_water">
-    <entry_id>surface_downwelling_photon_flux_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_photon_radiance_in_sea_water">
-    <entry_id>surface_downwelling_photon_radiance_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_photon_spherical_irradiance_in_sea_water">
-    <entry_id>surface_downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_radiance_in_sea_water">
-    <entry_id>surface_downwelling_radiance_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_radiative_flux_in_air">
-    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_radiative_flux_in_sea_water">
-    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_shortwave_flux">
-    <entry_id>surface_downwelling_shortwave_flux_in_air</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_shortwave_flux_assuming_clear_sky">
-    <entry_id>surface_downwelling_shortwave_flux_in_air_assuming_clear_sky</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_shortwave_flux_in_air_assuming_clean_clear_sky">
-    <entry_id>surface_downwelling_shortwave_flux_in_air_assuming_clear_sky_and_no_aerosol</entry_id>
-  </alias>
-  
-  <alias id="surface_downwelling_spectral_spherical_irradiance_in_sea_water">
-    <entry_id>surface_downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_ice_amount_due_to_snow_conversion">
-    <entry_id>tendency_of_sea_ice_amount_due_to_conversion_of_snow_to_sea_ice</entry_id>
-  </alias>
-  
-  <alias id="river_water_volume_transport_out_of_cell">
-    <entry_id>outgoing_water_volume_transport_along_river_channel</entry_id>
-  </alias>
-  
-  <alias id="precipitation_flux_onto_canopy_where_land">
-    <entry_id>precipitation_flux_onto_canopy</entry_id>
-  </alias>
-  
-  <alias id="water_evaporation_flux_from_canopy_where_land">
-    <entry_id>water_evaporation_flux_from_canopy</entry_id>
-  </alias>
-  
-  <alias id="surface_snow_and_ice_sublimation_flux">
-    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_sublimation_of_surface_snow_and_ice</entry_id>
-  </alias>
-  
-  <alias id="water_evaporation_amount_from_canopy_where_land">
-    <entry_id>water_evaporation_amount_from_canopy</entry_id>
-  </alias>
-  
-  <alias id="lwe_large_scale_precipitation_rate">
-    <entry_id>lwe_stratiform_precipitation_rate</entry_id>
-  </alias>
-  
-  <alias id="lwe_thickness_of_large_scale_precipitation_amount">
-    <entry_id>lwe_thickness_of_stratiform_precipitation_amount</entry_id>
-  </alias>
-  
-  <alias id="large_scale_precipitation_amount">
-    <entry_id>stratiform_precipitation_amount</entry_id>
-  </alias>
-  
-  <alias id="large_scale_precipitation_flux">
-    <entry_id>stratiform_precipitation_flux</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_air_temperature_due_to_large_scale_precipitation">
-    <entry_id>tendency_of_air_temperature_due_to_stratiform_precipitation</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_specific_humidity_due_to_large_scale_precipitation">
-    <entry_id>tendency_of_specific_humidity_due_to_stratiform_precipitation</entry_id>
-  </alias>
-  
-  <alias id="sea_ice_displacement">
-    <entry_id>magnitude_of_sea_ice_displacement</entry_id>
-  </alias>
-  
-  <alias id="mole_concentration_of_diatoms_in_sea_water_expressed_as_nitrogen">
-    <entry_id>mole_concentration_of_diatoms_expressed_as_nitrogen_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_calcareous_phytoplankton">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_calcareous_phytoplankton</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_diatoms">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_diatoms</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_diazotrophs">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_diazotrophs</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_phytoplankton">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_phytoplankton</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_picophytoplankton">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_picophytoplankton</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_due_to_nitrate_utilization">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_due_to_nitrate_utilization</entry_id>
-  </alias>
-  
-  <alias id="mole_concentration_of_phytoplankton_in_sea_water_expressed_as_nitrogen">
-    <entry_id>mole_concentration_of_phytoplankton_expressed_as_nitrogen_in_sea_water</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_wet_deposition">
-    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_wet_deposition</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_carbon_monoxide_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_carbon_monoxide</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_moles_of_carbon_tetrachloride_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_carbon_tetrachloride</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_water_conservative_temperature_expressed_as_heat_content_due_to_parameterized_eddy_dianeutral_mixing">
-    <entry_id>tendency_of_sea_water_conservative_temperature_expressed_as_heat_content_due_to_parameterized_dianeutral_mixing</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_water_potential_temperature_expressed_as_heat_content_due_to_parameterized_eddy_dianeutral_mixing">
-    <entry_id>tendency_of_sea_water_potential_temperature_expressed_as_heat_content_due_to_parameterized_dianeutral_mixing</entry_id>
-  </alias>
-  
-  <alias id="tendency_of_sea_water_salinity_expressed_as_salt_content_due_to_parameterized_eddy_dianeutral_mixing">
-    <entry_id>tendency_of_sea_water_salinity_expressed_as_salt_content_due_to_parameterized_dianeutral_mixing</entry_id>
-  </alias>
-  
-  <alias id="product_of_omega_and_air_temperature">
-    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_air_temperature</entry_id>
-  </alias>
-  
-  <alias id="product_of_air_temperature_and_omega">
-    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_air_temperature</entry_id>
-  </alias>
-  
-  <alias id="product_of_geopotential_height_and_omega">
-    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_geopotential_height</entry_id>
-  </alias>
-  
-  <alias id="product_of_omega_and_specific_humidity">
-    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_specific_humidity</entry_id>
-  </alias>
-  
-  <alias id="product_of_specific_humidity_and_omega">
-    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_specific_humidity</entry_id>
-  </alias>
-  
-  <alias id="volume_fraction_of_water_in_soil">
-    <entry_id>volume_fraction_of_condensed_water_in_soil</entry_id>
-  </alias>
-  
-  <alias id="volume_fraction_of_water_in_soil_at_critical_point">
-    <entry_id>volume_fraction_of_condensed_water_in_soil_at_critical_point</entry_id>
-  </alias>
-  
-  <alias id="volume_fraction_of_water_in_soil_at_field_capacity">
-    <entry_id>volume_fraction_of_condensed_water_in_soil_at_field_capacity</entry_id>
-  </alias>
-  
-  <alias id="volume_fraction_of_water_in_soil_at_wilting_point">
-    <entry_id>volume_fraction_of_condensed_water_in_soil_at_wilting_point</entry_id>
-  </alias>
-  
-  <alias id="mole_fraction_of_total_inorganic_bromine_in_air">
-    <entry_id>mole_fraction_of_inorganic_bromine_in_air</entry_id>
-  </alias>
-  
-  <alias id="net_primary_mole_productivity_of_carbon_by_miscellaneous_phytoplankton">
-    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_miscellaneous_phytoplankton</entry_id>
   </alias>
   
   <alias id="integral_wrt_depth_of_sea_ice_temperature_expressed_as_heat_content">
@@ -32482,6 +32301,210 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
   
   <alias id="downwelling_spectral_spherical_irradiance_in_sea_water">
     <entry_id>downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="integral_of_surface_downwelling_longwave_flux_in_air_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_downwelling_longwave_flux_in_air</entry_id>
+  </alias>
+  
+  <alias id="integral_of_surface_downwelling_shortwave_flux_in_air_wrt_time">
+    <entry_id>integral_wrt_time_of_surface_downwelling_shortwave_flux_in_air</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_longwave_flux">
+    <entry_id>surface_downwelling_longwave_flux_in_air</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_flux_in_sea_water">
+    <entry_id>surface_downwelling_photon_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_radiance_in_sea_water">
+    <entry_id>surface_downwelling_photon_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_photon_spherical_irradiance_in_sea_water">
+    <entry_id>surface_downwelling_photon_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiance_in_sea_water">
+    <entry_id>surface_downwelling_radiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiative_flux_in_air">
+    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_air</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_radiative_flux_in_sea_water">
+    <entry_id>surface_downwelling_radiative_flux_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_shortwave_flux">
+    <entry_id>surface_downwelling_shortwave_flux_in_air</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_shortwave_flux_assuming_clear_sky">
+    <entry_id>surface_downwelling_shortwave_flux_in_air_assuming_clear_sky</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_shortwave_flux_in_air_assuming_clean_clear_sky">
+    <entry_id>surface_downwelling_shortwave_flux_in_air_assuming_clear_sky_and_no_aerosol</entry_id>
+  </alias>
+  
+  <alias id="surface_downwelling_spectral_spherical_irradiance_in_sea_water">
+    <entry_id>surface_downwelling_spherical_irradiance_per_unit_wavelength_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="sea_ice_displacement">
+    <entry_id>magnitude_of_sea_ice_displacement</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_sea_ice_amount_due_to_snow_conversion">
+    <entry_id>tendency_of_sea_ice_amount_due_to_conversion_of_snow_to_sea_ice</entry_id>
+  </alias>
+  
+  <alias id="river_water_volume_transport_out_of_cell">
+    <entry_id>outgoing_water_volume_transport_along_river_channel</entry_id>
+  </alias>
+  
+  <alias id="precipitation_flux_onto_canopy_where_land">
+    <entry_id>precipitation_flux_onto_canopy</entry_id>
+  </alias>
+  
+  <alias id="water_evaporation_flux_from_canopy_where_land">
+    <entry_id>water_evaporation_flux_from_canopy</entry_id>
+  </alias>
+  
+  <alias id="surface_snow_and_ice_sublimation_flux">
+    <entry_id>tendency_of_atmosphere_mass_content_of_water_vapor_due_to_sublimation_of_surface_snow_and_ice</entry_id>
+  </alias>
+  
+  <alias id="water_evaporation_amount_from_canopy_where_land">
+    <entry_id>water_evaporation_amount_from_canopy</entry_id>
+  </alias>
+  
+  <alias id="lwe_large_scale_precipitation_rate">
+    <entry_id>lwe_stratiform_precipitation_rate</entry_id>
+  </alias>
+  
+  <alias id="lwe_thickness_of_large_scale_precipitation_amount">
+    <entry_id>lwe_thickness_of_stratiform_precipitation_amount</entry_id>
+  </alias>
+  
+  <alias id="large_scale_precipitation_amount">
+    <entry_id>stratiform_precipitation_amount</entry_id>
+  </alias>
+  
+  <alias id="large_scale_precipitation_flux">
+    <entry_id>stratiform_precipitation_flux</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_air_temperature_due_to_large_scale_precipitation">
+    <entry_id>tendency_of_air_temperature_due_to_stratiform_precipitation</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_specific_humidity_due_to_large_scale_precipitation">
+    <entry_id>tendency_of_specific_humidity_due_to_stratiform_precipitation</entry_id>
+  </alias>
+  
+  <alias id="platform_roll_angle">
+    <entry_id>platform_roll</entry_id>
+  </alias>
+  
+  <alias id="platform_pitch_angle">
+    <entry_id>platform_pitch</entry_id>
+  </alias>
+  
+  <alias id="platform_yaw_angle">
+    <entry_id>platform_yaw</entry_id>
+  </alias>
+  
+  <alias id="station_wmo_id">
+    <entry_id>platform_id</entry_id>
+  </alias>
+  
+  <alias id="station_description">
+    <entry_id>platform_name</entry_id>
+  </alias>
+  
+  <alias id="water_vapor_pressure">
+    <entry_id>water_vapor_partial_pressure_in_air</entry_id>
+  </alias>
+  
+  <alias id="volume_extinction_coefficient_in_air_due_to_ambient_aerosol">
+    <entry_id>volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_of_mole_concentration_of_carbon_monoxide_due_to_chemical_destruction">
+    <entry_id>tendency_of_atmosphere_mole_concentration_of_carbon_monoxide_due_to_chemical_destruction</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_mole_concentration_of_dissolved_inorganic_phosphate_in_sea_water_due_to_biological_processes">
+    <entry_id>tendency_of_mole_concentration_of_dissolved_inorganic_phosphorus_in_sea_water_due_to_biological_processes</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_mole_concentration_of_dissolved_inorganic_silicate_in_sea_water_due_to_biological_processes">
+    <entry_id>tendency_of_mole_concentration_of_dissolved_inorganic_silicon_in_sea_water_due_to_biological_processes</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_diatoms_in_sea_water_expressed_as_nitrogen">
+    <entry_id>mole_concentration_of_diatoms_expressed_as_nitrogen_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_calcareous_phytoplankton">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_calcareous_phytoplankton</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_diatoms">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_diatoms</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_diazotrophs">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_diazotrophs</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_phytoplankton">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_phytoplankton</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_picophytoplankton">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_picophytoplankton</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_due_to_nitrate_utilization">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_due_to_nitrate_utilization</entry_id>
+  </alias>
+  
+  <alias id="mole_concentration_of_phytoplankton_in_sea_water_expressed_as_nitrogen">
+    <entry_id>mole_concentration_of_phytoplankton_expressed_as_nitrogen_in_sea_water</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_nitrogen_due_to_wet_deposition">
+    <entry_id>tendency_of_atmosphere_mass_content_of_nitrogen_compounds_expressed_as_nitrogen_due_to_wet_deposition</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_carbon_monoxide_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_carbon_monoxide</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_carbon_tetrachloride_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_carbon_tetrachloride</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_mass_content_of_black_carbon_dry_aerosol_due_to_emission_from_agricultural_waste_burning">
+    <entry_id>tendency_of_atmosphere_mass_content_of_elemental_carbon_dry_aerosol_particles_due_to_emission_from_agricultural_waste_burning</entry_id>
+  </alias>
+  
+  <alias id="water_vapor_saturation_deficit">
+    <entry_id>water_vapor_saturation_deficit_in_air</entry_id>
+  </alias>
+  
+  <alias id="mole_fraction_of_total_inorganic_bromine_in_air">
+    <entry_id>mole_fraction_of_inorganic_bromine_in_air</entry_id>
+  </alias>
+  
+  <alias id="net_primary_mole_productivity_of_carbon_by_miscellaneous_phytoplankton">
+    <entry_id>net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_miscellaneous_phytoplankton</entry_id>
   </alias>
   
   <alias id="rate_of_ hydroxyl_radical_destruction_due_to_reaction_with_nmvoc">
@@ -32624,12 +32647,28 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>electrical_mobility_diameter_of_ambient_aerosol_particles</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_mass_content_of_black_carbon_dry_aerosol_due_to_emission_from_agricultural_waste_burning">
-    <entry_id>tendency_of_atmosphere_mass_content_of_elemental_carbon_dry_aerosol_particles_due_to_emission_from_agricultural_waste_burning</entry_id>
+  <alias id="upward_air_velocity_expressed_as_tendency_of_sigma">
+    <entry_id>lagrangian_tendency_of_atmosphere_sigma_coordinate</entry_id>
   </alias>
   
-  <alias id="water_vapor_saturation_deficit">
-    <entry_id>water_vapor_saturation_deficit_in_air</entry_id>
+  <alias id="vertical_air_velocity_expressed_as_tendency_of_sigma">
+    <entry_id>lagrangian_tendency_of_atmosphere_sigma_coordinate</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_atmosphere_number_content_of_aerosol_particles_due_to_turbulent_depostion">
+    <entry_id>tendency_of_atmosphere_number_content_of_aerosol_particles_due_to_turbulent_deposition</entry_id>
+  </alias>
+  
+  <alias id="moles_of_hcfc22_in_atmosphere">
+    <entry_id>atmosphere_moles_of_hcfc22</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_hcfc22_in_atmosphere">
+    <entry_id>tendency_of_atmosphere_moles_of_hcfc22</entry_id>
+  </alias>
+  
+  <alias id="tendency_of_moles_of_hcfc22_in_troposphere">
+    <entry_id>tendency_of_troposphere_moles_of_hcfc22</entry_id>
   </alias>
   
   <alias id="tendency_of_moles_of_hcc140a_in_middle_atmosphere">
@@ -32728,28 +32767,76 @@ monitored sensor. This TOA brightness temperature difference is a measure of the
     <entry_id>effective_radius_of_stratiform_cloud_snow_particles</entry_id>
   </alias>
   
-  <alias id="upward_air_velocity_expressed_as_tendency_of_sigma">
-    <entry_id>lagrangian_tendency_of_atmosphere_sigma_coordinate</entry_id>
+  <alias id="tendency_of_sea_water_conservative_temperature_expressed_as_heat_content_due_to_parameterized_eddy_dianeutral_mixing">
+    <entry_id>tendency_of_sea_water_conservative_temperature_expressed_as_heat_content_due_to_parameterized_dianeutral_mixing</entry_id>
   </alias>
   
-  <alias id="vertical_air_velocity_expressed_as_tendency_of_sigma">
-    <entry_id>lagrangian_tendency_of_atmosphere_sigma_coordinate</entry_id>
+  <alias id="tendency_of_sea_water_potential_temperature_expressed_as_heat_content_due_to_parameterized_eddy_dianeutral_mixing">
+    <entry_id>tendency_of_sea_water_potential_temperature_expressed_as_heat_content_due_to_parameterized_dianeutral_mixing</entry_id>
   </alias>
   
-  <alias id="tendency_of_atmosphere_number_content_of_aerosol_particles_due_to_turbulent_depostion">
-    <entry_id>tendency_of_atmosphere_number_content_of_aerosol_particles_due_to_turbulent_deposition</entry_id>
+  <alias id="tendency_of_sea_water_salinity_expressed_as_salt_content_due_to_parameterized_eddy_dianeutral_mixing">
+    <entry_id>tendency_of_sea_water_salinity_expressed_as_salt_content_due_to_parameterized_dianeutral_mixing</entry_id>
   </alias>
   
-  <alias id="moles_of_hcfc22_in_atmosphere">
-    <entry_id>atmosphere_moles_of_hcfc22</entry_id>
+  <alias id="product_of_omega_and_air_temperature">
+    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_air_temperature</entry_id>
   </alias>
   
-  <alias id="tendency_of_moles_of_hcfc22_in_atmosphere">
-    <entry_id>tendency_of_atmosphere_moles_of_hcfc22</entry_id>
+  <alias id="product_of_air_temperature_and_omega">
+    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_air_temperature</entry_id>
   </alias>
   
-  <alias id="tendency_of_moles_of_hcfc22_in_troposphere">
-    <entry_id>tendency_of_troposphere_moles_of_hcfc22</entry_id>
+  <alias id="product_of_geopotential_height_and_omega">
+    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_geopotential_height</entry_id>
+  </alias>
+  
+  <alias id="product_of_omega_and_specific_humidity">
+    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_specific_humidity</entry_id>
+  </alias>
+  
+  <alias id="product_of_specific_humidity_and_omega">
+    <entry_id>product_of_lagrangian_tendency_of_air_pressure_and_specific_humidity</entry_id>
+  </alias>
+  
+  <alias id="volume_fraction_of_water_in_soil">
+    <entry_id>volume_fraction_of_condensed_water_in_soil</entry_id>
+  </alias>
+  
+  <alias id="volume_fraction_of_water_in_soil_at_critical_point">
+    <entry_id>volume_fraction_of_condensed_water_in_soil_at_critical_point</entry_id>
+  </alias>
+  
+  <alias id="volume_fraction_of_water_in_soil_at_field_capacity">
+    <entry_id>volume_fraction_of_condensed_water_in_soil_at_field_capacity</entry_id>
+  </alias>
+  
+  <alias id="volume_fraction_of_water_in_soil_at_wilting_point">
+    <entry_id>volume_fraction_of_condensed_water_in_soil_at_wilting_point</entry_id>
+  </alias>
+  
+  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_potential_temperature">
+    <entry_id>integral_wrt_depth_of_product_of_potential_temperature_and_sea_water_density</entry_id>
+  </alias>
+  
+  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_conservative_temperature">
+    <entry_id>integral_wrt_depth_of_product_of_conservative_temperature_and_sea_water_density</entry_id>
+  </alias>
+  
+  <alias id="integral_wrt_depth_of_product_of_sea_water_density_and_salinity">
+    <entry_id>integral_wrt_depth_of_product_of_salinity_and_sea_water_density</entry_id>
+  </alias>
+  
+  <alias id="sea_water_to_direction">
+    <entry_id>sea_water_velocity_to_direction</entry_id>
+  </alias>
+  
+  <alias id="direction_of_sea_water_velocity">
+    <entry_id>sea_water_velocity_to_direction</entry_id>
+  </alias>
+  
+  <alias id="sea_water_from_direction">
+    <entry_id>sea_water_velocity_from_direction</entry_id>
   </alias>
  
 
