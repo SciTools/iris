@@ -884,6 +884,16 @@ class CellMeasure(AncillaryVariable):
         """
         return cube.cell_measure_dims(self)
 
+    def xml_element(self, doc):
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name
+        element = super().xml_element(doc=doc)
+
+        # Add the 'measure' property
+        element.setAttribute("measure", self.measure)
+
+        return element
+
 
 class CoordDefn(
     namedtuple(

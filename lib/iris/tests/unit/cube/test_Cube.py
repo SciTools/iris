@@ -273,6 +273,29 @@ class Test_xml(tests.IrisTest):
         cube = Cube(np.arange(3))
         self.assertIn("byteorder", cube.xml(byteorder=True))
 
+    def test_cell_measures(self):
+        cube = stock.simple_3d_w_multidim_coords()
+        cm_a = iris.coords.CellMeasure(
+            np.zeros(cube.shape[-2:]), measure="area"
+        )
+        cube.add_cell_measure(cm_a, (1, 2))
+        cm_v = iris.coords.CellMeasure(
+            np.zeros(cube.shape),
+            measure="volume",
+            long_name="madeup",
+            units="m3",
+        )
+        cube.add_cell_measure(cm_v, (0, 1, 2))
+        self.assertCML(cube)
+
+    def test_ancils(self):
+        cube = stock.simple_2d_w_multidim_coords()
+        av = iris.coords.AncillaryVariable(
+            np.zeros(cube.shape), long_name="xy", var_name="vxy", units="1"
+        )
+        cube.add_ancillary_variable(av, (0, 1))
+        self.assertCML(cube)
+
 
 class Test_collapsed__lazy(tests.IrisTest):
     def setUp(self):

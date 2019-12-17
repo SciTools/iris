@@ -3429,20 +3429,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             cube_xml_element.appendChild(attributes_element)
 
+        def dimensionedCubeElement(element, typename, dimscall):
+            xml_element = doc.createElement(typename)
+            dims = list(dimscall(element))
+            if dims:
+                xml_element.setAttribute("datadims", repr(dims))
+            xml_element.appendChild(element.xml_element(doc))
+            return xml_element
+
         coords_xml_element = doc.createElement("coords")
         for coord in sorted(self.coords(), key=lambda coord: coord.name()):
             # make a "cube coordinate" element which holds the dimensions (if
             # appropriate) which itself will have a sub-element of the
             # coordinate instance itself.
-            cube_coord_xml_element = doc.createElement("coord")
-            coords_xml_element.appendChild(cube_coord_xml_element)
-
-            dims = list(self.coord_dims(coord))
-            if dims:
-                cube_coord_xml_element.setAttribute("datadims", repr(dims))
-
-            coord_xml_element = coord.xml_element(doc)
-            cube_coord_xml_element.appendChild(coord_xml_element)
+            coords_xml_element.appendChild(
+                dimensionedCubeElement(coord, "coord", self.coord_dims)
+            )
         cube_xml_element.appendChild(coords_xml_element)
 
         # cell methods (no sorting!)
@@ -3458,7 +3460,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # This one is an optional subelement.
             cms_xml_element = doc.createElement("cellMeasures")
             for cm in cell_measures:
-                cms_xml_element.appendChild(cm.xml_element(doc))
+                cms_xml_element.appendChild(
+                    dimensionedCubeElement(
+                        cm, "cell-measure", self.cell_measure_dims
+                    )
+                )
             cube_xml_element.appendChild(cms_xml_element)
 
         # ancillary variables
@@ -3467,8 +3473,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # This one is an optional subelement.
             ancs_xml_element = doc.createElement("ancillaryVariables")
             for anc in ancils:
-                ancs_xml_element.appendChild(anc.xml_element(doc))
-            cube_xml_element.appendChild(cms_xml_element)
+                ancs_xml_element.appendChild(
+                    dimensionedCubeElement(
+                        anc, "ancillary-var", self.ancillary_variable_dims
+                    )
+                )
+            cube_xml_element.appendChild(ancs_xml_element)
 
         # data
         data_xml_element = doc.createElement("data")
