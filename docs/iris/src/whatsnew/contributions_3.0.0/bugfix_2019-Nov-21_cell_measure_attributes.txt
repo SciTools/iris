@@ -1,0 +1,2 @@
+* Fixed a bug where the attributes of cell measures in netcdf-CF files were discarded on
+  loading.  They now appear on the CellMeasure in the loaded cube.
