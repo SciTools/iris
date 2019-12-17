@@ -3452,8 +3452,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cell_methods_xml_element.appendChild(cell_method_xml_element)
         cube_xml_element.appendChild(cell_methods_xml_element)
 
-        data_xml_element = doc.createElement("data")
+        # cell measures
+        cell_measures = sorted(self.cell_measures(), key=lambda cm: cm.name())
+        if cell_measures:
+            # This one is an optional subelement.
+            cms_xml_element = doc.createElement("cellMeasures")
+            for cm in cell_measures:
+                cms_xml_element.appendChild(cm.xml_element(doc))
+            cube_xml_element.appendChild(cms_xml_element)
 
+        # ancillary variables
+        ancils = sorted(self.ancillary_variables(), key=lambda anc: anc.name())
+        if ancils:
+            # This one is an optional subelement.
+            ancs_xml_element = doc.createElement("ancillaryVariables")
+            for anc in ancils:
+                ancs_xml_element.appendChild(anc.xml_element(doc))
+            cube_xml_element.appendChild(cms_xml_element)
+
+        # data
+        data_xml_element = doc.createElement("data")
         data_xml_element.setAttribute("shape", str(self.shape))
 
         # NB. Getting a checksum triggers any deferred loading,

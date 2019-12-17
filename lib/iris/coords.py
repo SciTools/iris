@@ -627,12 +627,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term = "points"
         else:
             values_term = "data"
-        if hasattr(self._values, "to_xml_attr"):
-            element.setAttribute(values_term, self._values.to_xml_attr())
-        else:
-            element.setAttribute(
-                values_term, iris.util.format_array(self._values)
-            )
+        element.setAttribute(values_term, self._xml_array_repr(self._values))
+
         return element
 
     def _xml_id_extra(self, unique_value):
@@ -656,6 +652,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Mask to ensure consistency across Python versions & platforms.
         crc = zlib.crc32(unique_value) & 0xFFFFFFFF
         return "%08x" % (crc,)
+
+    @staticmethod
+    def _xml_array_repr(data):
+        if hasattr(data, "to_xml_attr"):
+            result = data._values.to_xml_attr()
+        else:
+            result = iris.util.format_array(data)
+        return result
 
     def _value_type_name(self):
         """
@@ -2368,19 +2372,11 @@ class Coord(_DimensionalMetadata):
         # class name
         element = super().xml_element(doc=doc)
 
-        if hasattr(self.points, "to_xml_attr"):
-            element.setAttribute("points", self.points.to_xml_attr())
-        else:
-            element.setAttribute("points", iris.util.format_array(self.points))
+        element.setAttribute("points", self._xml_array_repr(self.points))
 
         # Add bounds handling
         if self.has_bounds():
-            if hasattr(self.bounds, "to_xml_attr"):
-                element.setAttribute("bounds", self.bounds.to_xml_attr())
-            else:
-                element.setAttribute(
-                    "bounds", iris.util.format_array(self.bounds)
-                )
+            element.setAttribute("bounds", self._xml_array_repr(self.bounds))
 
         return element
 
