@@ -97,9 +97,7 @@ def _make_cube(
             cm = CellMeasure(x_range * 10, long_name="x-aux")
             cube.add_cell_measure(cm, (1,))
         if "xy" in cell_measure:
-            payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
-                y_size, x_size
-            )
+            payload = x_range + y_range[:, np.newaxis]
             cm = CellMeasure(payload * 100 + offset, long_name="xy-aux")
             cube.add_cell_measure(cm, (0, 1))
 
@@ -112,9 +110,7 @@ def _make_cube(
             av = AncillaryVariable(x_range * 10, long_name="x-aux")
             cube.add_ancillary_variable(av, (1,))
         if "xy" in ancil:
-            payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
-                y_size, x_size
-            )
+            payload = x_range + y_range[:, np.newaxis]
             av = AncillaryVariable(payload * 100 + offset, long_name="xy-aux")
             cube.add_ancillary_variable(av, (0, 1))
 
@@ -710,21 +706,23 @@ class Test2D(tests.IrisTest):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, cell_measure="x,y,xy"))
-        cubes.append(_make_cube(x, (4, 6), 2, cell_measure="x,y,xy"))
+        cubes.append(_make_cube(x, (4, 6), 1, cell_measure="x,y,xy"))
         result = concatenate(cubes)
-        # self.assertCML(result, ("concatenate", "concat_2y2d_cell_measure_x_y_xy.cml"))
+        com = _make_cube(x, (0, 6), 1, cell_measure="x,y,xy")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
+        self.assertEqual(result[0], com)
 
     def test_concat_2y2d_ancil_x_y_xy(self):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, ancil="x,y,xy"))
-        cubes.append(_make_cube(x, (4, 6), 2, ancil="x,y,xy"))
+        cubes.append(_make_cube(x, (4, 6), 1, ancil="x,y,xy"))
         result = concatenate(cubes)
-        # self.assertCML(result, ("concatenate", "concat_2y2d_ancil_x_y_xy.cml"))
+        com = _make_cube(x, (0, 6), 1, ancil="x,y,xy")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (6, 2))
+        self.assertEqual(result[0], com)
 
 
 class TestMulti2D(tests.IrisTest):
