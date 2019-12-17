@@ -1033,5 +1033,81 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         self.assertCML(r, ("cube_merge", "test_simple_attributes3.cml"))
 
 
+class TestCubeMergeWithAncils(tests.IrisTest):
+    def _makecube(self, y, cm=False, av=False):
+        cube = iris.cube.Cube([0, 0])
+        cube.add_dim_coord(iris.coords.DimCoord([0, 1], long_name="x"), 0)
+        cube.add_aux_coord(iris.coords.DimCoord(y, long_name="y"))
+        if cm:
+            cube.add_cell_measure(
+                iris.coords.CellMeasure([1, 1], long_name="foo"), 0,
+            )
+        if av:
+            cube.add_ancillary_variable(
+                iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0,
+            )
+        return cube
+
+    def test_fail_missing_cell_measure(self):
+        cube1 = self._makecube(0, cm=True)
+        cube2 = self._makecube(1)
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 2)
+
+    def test_fail_missing_ancillary_variable(self):
+        cube1 = self._makecube(0, av=True)
+        cube2 = self._makecube(1)
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 2)
+
+    def test_fail_different_cell_measure(self):
+        cube1 = self._makecube(0, cm=True)
+        cube2 = self._makecube(1)
+        cube2.add_cell_measure(
+            iris.coords.CellMeasure([2, 2], long_name="foo"), 0
+        )
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 2)
+
+    def test_fail_different_ancillary_variable(self):
+        cube1 = self._makecube(0, av=True)
+        cube2 = self._makecube(1)
+        cube2.add_ancillary_variable(
+            iris.coords.AncillaryVariable([2, 2], long_name="bar"), 0
+        )
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 2)
+
+    def test_merge_with_cell_measure(self):
+        cube1 = self._makecube(0, cm=True)
+        cube2 = self._makecube(1, cm=True)
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(cube1.cell_measures(), cubes[0].cell_measures())
+
+    def test_merge_with_ancillary_variable(self):
+        cube1 = self._makecube(0, av=True)
+        cube2 = self._makecube(1, av=True)
+        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(
+            cube1.ancillary_variables(), cubes[0].ancillary_variables()
+        )
+
+    def test_cell_measure_error_msg(self):
+        msg = "cube.cell_measures differ"
+        cube1 = self._makecube(0, cm=True)
+        cube2 = self._makecube(1)
+        with self.assertRaisesRegex(iris.exceptions.MergeError, msg):
+            _ = iris.cube.CubeList([cube1, cube2]).merge_cube()
+
+    def test_ancillary_variable_error_msg(self):
+        msg = "cube.ancillary_variables differ"
+        cube1 = self._makecube(0, av=True)
+        cube2 = self._makecube(1)
+        with self.assertRaisesRegex(iris.exceptions.MergeError, msg):
+            _ = iris.cube.CubeList([cube1, cube2]).merge_cube()
+
+
 if __name__ == "__main__":
     tests.main()
