@@ -128,7 +128,7 @@ class Test(tests.IrisTest):
             src1.coord(name).guess_bounds()
             src2.coord(name).guess_bounds()
 
-        target = self.cube(np.linspace(20, 32, 2), np.linspace(-6, 6, 2))
+        target = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
         for name in coord_names:
             # Remove coords system and units so it is no longer spherical.
             target.coord(name).coord_system = None
