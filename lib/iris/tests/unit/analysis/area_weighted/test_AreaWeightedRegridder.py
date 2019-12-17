@@ -15,7 +15,6 @@ import iris.tests as tests
 from unittest import mock
 
 import numpy as np
-
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
@@ -101,6 +100,66 @@ class Test(tests.IrisTest):
         target = mock.Mock()
         with self.assertRaises(ValueError):
             AreaWeightedRegridder(src, target)
+
+    def test_src_and_target_are_the_same(self):
+        src = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
+        target = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
+        for name in ["latitude", "longitude"]:
+            src.coord(name).guess_bounds()
+            target.coord(name).guess_bounds()
+        regridder = AreaWeightedRegridder(src, target)
+        result = regridder(src)
+        self.assertArrayAllClose(result.data, target.data)
+
+    def test_multiple_src_on_same_grid(self):
+        src1 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
+        src2 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
+        src2.data *= 4
+        self.assertArrayEqual(src1.data * 4, src2.data)
+        for name in ["latitude", "longitude"]:
+            src1.coord(name).guess_bounds()
+            src2.coord(name).guess_bounds()
+
+        # Ensure the bounds of the target cover the same range as the source.
+        target = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        target.coord("latitude").bounds = np.column_stack(
+            (
+                src1.coord("latitude").bounds[[0, 1], [0, 1]],
+                src1.coord("latitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+        target.coord("longitude").bounds = np.column_stack(
+            (
+                src1.coord("longitude").bounds[[0, 1], [0, 1]],
+                src1.coord("longitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+
+        regridder = AreaWeightedRegridder(src1, target)
+        result1 = regridder(src1)
+        result2 = regridder(src2)
+
+        reference1 = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        reference1.data = np.array(
+            [
+                [np.mean(src1.data[0:2, 0:2]), np.mean(src1.data[0:2, 2:4])],
+                [np.mean(src1.data[2:4, 0:2]), np.mean(src1.data[2:4, 2:4])],
+            ]
+        )
+        reference2 = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        reference2.data = np.array(
+            [
+                [np.mean(src2.data[0:2, 0:2]), np.mean(src2.data[0:2, 2:4])],
+                [np.mean(src2.data[2:4, 0:2]), np.mean(src2.data[2:4, 2:4])],
+            ]
+        )
+
+        self.assertArrayAllClose(
+            result1.data, reference1.data, atol=2e-2, rtol=2e-3
+        )
+        self.assertArrayAllClose(
+            result2.data, reference2.data, atol=1e-1, rtol=2e-3
+        )
 
 
 if __name__ == "__main__":
