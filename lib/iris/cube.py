@@ -489,7 +489,12 @@ class CubeList(list):
 
         return merged_cubes
 
-    def concatenate_cube(self, check_aux_coords=True):
+    def concatenate_cube(
+        self,
+        check_aux_coords=True,
+        check_cell_measures=True,
+        check_ancils=True,
+    ):
         """
         Return the concatenated contents of the :class:`CubeList` as a single
         :class:`Cube`.
@@ -501,9 +506,19 @@ class CubeList(list):
         Kwargs:
 
         * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            Checks the auxiliary coordinates of the cubes match. This check
+            is not applied to auxiliary coordinates that span the dimension
+            the concatenation is occurring along. Defaults to True.
+
+        * check_cell_measures
+            Checks the cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension
+            the concatenation is occurring along. Defaults to True.
+
+        * check_ancils
+            Checks the ancillary variables of the cubes match. This check
+            is not applied to ancillary variables that span the dimension
+            the concatenation is occurring along. Defaults to True.
 
         .. note::
 
@@ -517,7 +532,11 @@ class CubeList(list):
         unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
             res = iris._concatenate.concatenate(
-                self, error_on_mismatch=True, check_aux_coords=check_aux_coords
+                self,
+                error_on_mismatch=True,
+                check_aux_coords=check_aux_coords,
+                check_cell_measures=check_cell_measures,
+                check_ancils=check_ancils,
             )
             n_res_cubes = len(res)
             if n_res_cubes == 1:
@@ -537,16 +556,31 @@ class CubeList(list):
             )
             raise iris.exceptions.ConcatenateError(msgs)
 
-    def concatenate(self, check_aux_coords=True):
+    def concatenate(
+        self,
+        check_aux_coords=True,
+        check_cell_measures=True,
+        check_ancils=True,
+    ):
         """
         Concatenate the cubes over their common dimensions.
 
         Kwargs:
 
         * check_aux_coords
-            Checks the auxilliary coordinates of the cubes match. This check
-            is not applied to auxilliary coordinates that span the dimension
-            the concatenation is occuring along. Defaults to True.
+            Checks the auxiliary coordinates of the cubes match. This check
+            is not applied to auxiliary coordinates that span the dimension
+            the concatenation is occurring along. Defaults to True.
+
+        * check_cell_measures
+            Checks the cell measures of the cubes match. This check
+            is not applied to cell measures that span the dimension
+            the concatenation is occurring along. Defaults to True.
+
+        * check_ancils
+            Checks the ancillary variables of the cubes match. This check
+            is not applied to ancillary variables that span the dimension
+            the concatenation is occurring along. Defaults to True.
 
         Returns:
             A new :class:`iris.cube.CubeList` of concatenated
@@ -613,7 +647,10 @@ class CubeList(list):
 
         """
         return iris._concatenate.concatenate(
-            self, check_aux_coords=check_aux_coords
+            self,
+            check_aux_coords=check_aux_coords,
+            check_cell_measures=check_cell_measures,
+            check_ancils=check_ancils,
         )
 
     def realise_data(self):
@@ -1269,16 +1306,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         ]
 
     def remove_ancillary_variable(self, ancillary_variable):
-
         """
         Removes an ancillary variable from the cube.
 
         Args:
 
-        * ancillary_variable (AncillaryVariable)
-            The AncillaryVariable to remove from the cube.
+        * ancillary_variable (string or AncillaryVariable)
+            The (name of the) AncillaryVariable to remove from the cube.
 
         """
+        ancillary_variable = self.ancillary_variable(ancillary_variable)
+
         self._ancillary_variables_and_dims = [
             (ancillary_variable_, dim)
             for ancillary_variable_, dim in self._ancillary_variables_and_dims

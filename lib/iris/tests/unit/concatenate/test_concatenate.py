@@ -90,6 +90,16 @@ class TestMessages(tests.IrisTest):
             iris.coords.AuxCoord([0, 1, 2], long_name="foo", units="1"),
             data_dims=(1,),
         )
+        cube.add_cell_measure(
+            iris.coords.CellMeasure([0, 1, 2], long_name="bar", units="1"),
+            data_dims=(1,),
+        )
+        cube.add_ancillary_variable(
+            iris.coords.AncillaryVariable(
+                [0, 1, 2], long_name="baz", units="1"
+            ),
+            data_dims=(1,),
+        )
         self.cube = cube
 
     def test_definition_difference_message(self):
@@ -145,6 +155,38 @@ class TestMessages(tests.IrisTest):
         cube_2 = cube_1.copy()
         cube_2.coord("height").long_name = "alice"
         exc_regexp = "Scalar coordinates metadata differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_cell_measure_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_cell_measure("bar")
+        exc_regexp = "Cell measures differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_cell_measure_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.cell_measure("bar").units = "m"
+        exc_regexp = "Cell measures metadata differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_ancillary_variable_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_ancillary_variable("baz")
+        exc_regexp = "Ancillary variables differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_ancillary_variable_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.ancillary_variable("baz").units = "m"
+        exc_regexp = "Ancillary variables metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 

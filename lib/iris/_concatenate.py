@@ -162,6 +162,65 @@ class _CoordMetaData(
         return self.defn.name()
 
 
+class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"],)):
+    """
+    Container for the metadata that defines a cell measure or ancillary
+    variable.
+
+    Args:
+
+    * defn:
+        The :class:`iris.coords._DMDefn` or :class:`iris.coords._CellMeasureDefn`
+        metadata that represents a coordinate.
+
+    * dims:
+        The dimension(s) associated with the coordinate.
+
+    """
+
+    def __new__(cls, ancil, dims):
+        """
+        Create a new :class:`_OtherMetaData` instance.
+
+        Args:
+
+        * ancil:
+            The :class:`iris.coord.CellMeasure` or
+            :class:`iris.coord.AncillaryVariable`.
+
+        * dims:
+            The dimension(s) associated with ancil.
+
+        Returns:
+            The new class instance.
+
+        """
+        defn = ancil._as_defn()
+        metadata = super().__new__(cls, defn, dims)
+        return metadata
+
+    __slots__ = ()
+
+    def __hash__(self):
+        return super().__hash__()
+
+    def __eq__(self, other):
+        result = NotImplemented
+        if isinstance(other, _OtherMetaData):
+            result = self._asdict() == other._asdict()
+        return result
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
+
+    def name(self):
+        """Get the name from the coordinate definition."""
+        return self.defn.name()
+
+
 class _SkeletonCube(namedtuple("SkeletonCube", ["signature", "data"])):
     """
     Basis of a source-cube, containing the associated coordinate metadata,
@@ -217,7 +276,13 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     __slots__ = ()
 
 
-def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
+def concatenate(
+    cubes,
+    error_on_mismatch=False,
+    check_aux_coords=True,
+    check_cell_measures=True,
+    check_ancils=True,
+):
     """
     Concatenate the provided cubes over common existing dimensions.
 
@@ -252,7 +317,12 @@ def concatenate(cubes, error_on_mismatch=False, check_aux_coords=True):
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
             registered = proto_cube.register(
-                cube, axis, error_on_mismatch, check_aux_coords
+                cube,
+                axis,
+                error_on_mismatch,
+                check_aux_coords,
+                check_cell_measures,
+                check_ancils,
             )
             if registered:
                 axis = proto_cube.axis
@@ -306,7 +376,10 @@ class _CubeSignature:
         self.dim_metadata = []
         self.ndim = cube.ndim
         self.scalar_coords = []
-        self.cell_measures_and_dims = cube._cell_measures_and_dims
+        self.cell_measures_and_dims = []
+        self.cm_metadata = []
+        self.ancillary_variables_and_dims = []
+        self.av_metadata = []
         self.dim_mapping = []
 
         # Determine whether there are any anonymous cube dimensions.
@@ -348,6 +421,23 @@ class _CubeSignature:
                 self.aux_coords_and_dims.append(coord_and_dims)
             else:
                 self.scalar_coords.append(coord)
+
+        def meta_key_func(dm):
+            return (dm._as_defn(), dm.cube_dims(cube))
+
+        for cm in sorted(cube.cell_measures(), key=meta_key_func):
+            dims = cube.cell_measure_dims(cm)
+            metadata = _OtherMetaData(cm, dims)
+            self.cm_metadata.append(metadata)
+            cm_and_dims = _CoordAndDims(cm, tuple(dims))
+            self.cell_measures_and_dims.append(cm_and_dims)
+
+        for av in sorted(cube.ancillary_variables(), key=meta_key_func):
+            dims = cube.ancillary_variable_dims(av)
+            metadata = _OtherMetaData(av, dims)
+            self.av_metadata.append(metadata)
+            av_and_dims = _CoordAndDims(av, tuple(dims))
+            self.ancillary_variables_and_dims.append(av_and_dims)
 
     def _coordinate_differences(self, other, attr):
         """
@@ -442,6 +532,16 @@ class _CubeSignature:
             msgs.append(
                 msg_template.format("Auxiliary coordinates", *differences)
             )
+        # Check cell measures.
+        if self.cm_metadata != other.cm_metadata:
+            differences = self._coordinate_differences(other, "cm_metadata")
+            msgs.append(msg_template.format("Cell measures", *differences))
+        # Check ancillary variables.
+        if self.av_metadata != other.av_metadata:
+            differences = self._coordinate_differences(other, "av_metadata")
+            msgs.append(
+                msg_template.format("Ancillary variables", *differences)
+            )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
             differences = self._coordinate_differences(other, "scalar_coords")
@@ -460,17 +560,6 @@ class _CubeSignature:
             msgs.append(
                 msg_template.format(
                     "Data types", "", self.data_type, other.data_type
-                )
-            )
-
-        # Check _cell_measures_and_dims
-        if self.cell_measures_and_dims != other.cell_measures_and_dims:
-            msgs.append(
-                msg_template.format(
-                    "CellMeasures",
-                    "",
-                    self.cell_measures_and_dims,
-                    other.cell_measures_and_dims,
                 )
             )
 
@@ -500,6 +589,10 @@ class _CoordSignature:
 
         """
         self.aux_coords_and_dims = cube_signature.aux_coords_and_dims
+        self.cell_measures_and_dims = cube_signature.cell_measures_and_dims
+        self.ancillary_variables_and_dims = (
+            cube_signature.ancillary_variables_and_dims
+        )
         self.dim_coords = cube_signature.dim_coords
         self.dim_mapping = cube_signature.dim_mapping
         self.dim_extents = []
@@ -676,20 +769,23 @@ class _ProtoCube:
             # Concatenate the new auxiliary coordinates.
             aux_coords_and_dims = self._build_aux_coordinates()
 
+            # Concatenate the new cell measures
+            cell_measures_and_dims = self._build_cell_measures()
+
+            # Concatenate the new ancillary variables
+            ancillary_variables_and_dims = self._build_ancillary_variables()
+
             # Concatenate the new data payload.
             data = self._build_data()
 
             # Build the new cube.
             kwargs = cube_signature.defn._asdict()
-            new_cm_and_dims = [
-                (deepcopy(cm), dims)
-                for cm, dims in self._cube._cell_measures_and_dims
-            ]
             cube = iris.cube.Cube(
                 data,
                 dim_coords_and_dims=dim_coords_and_dims,
                 aux_coords_and_dims=aux_coords_and_dims,
-                cell_measures_and_dims=new_cm_and_dims,
+                cell_measures_and_dims=cell_measures_and_dims,
+                ancillary_variables_and_dims=ancillary_variables_and_dims,
                 **kwargs,
             )
         else:
@@ -700,7 +796,13 @@ class _ProtoCube:
         return cube
 
     def register(
-        self, cube, axis=None, error_on_mismatch=False, check_aux_coords=False
+        self,
+        cube,
+        axis=None,
+        error_on_mismatch=False,
+        check_aux_coords=False,
+        check_cell_measures=False,
+        check_ancils=False,
     ):
         """
         Determine whether the given source-cube is suitable for concatenation
@@ -761,7 +863,37 @@ class _ProtoCube:
                     self._cube_signature.aux_coords_and_dims,
                     cube_signature.aux_coords_and_dims,
                 ):
-                    # AuxCoords that span the candidate axis can difffer
+                    # AuxCoords that span the candidate axis can differ
+                    if (
+                        candidate_axis not in coord_a.dims
+                        or candidate_axis not in coord_b.dims
+                    ):
+                        if not coord_a == coord_b:
+                            match = False
+
+        # Check for compatible CellMeasures.
+        if match:
+            if check_cell_measures:
+                for coord_a, coord_b in zip(
+                    self._cube_signature.cell_measures_and_dims,
+                    cube_signature.cell_measures_and_dims,
+                ):
+                    # CellMeasures that span the candidate axis can differ
+                    if (
+                        candidate_axis not in coord_a.dims
+                        or candidate_axis not in coord_b.dims
+                    ):
+                        if not coord_a == coord_b:
+                            match = False
+
+        # Check for compatible AncillaryVariables.
+        if match:
+            if check_ancils:
+                for coord_a, coord_b in zip(
+                    self._cube_signature.ancillary_variables_and_dims,
+                    cube_signature.ancillary_variables_and_dims,
+                ):
+                    # AncillaryVariables that span the candidate axis can differ
                     if (
                         candidate_axis not in coord_a.dims
                         or candidate_axis not in coord_b.dims
@@ -870,6 +1002,84 @@ class _ProtoCube:
             aux_coords_and_dims.append((coord.copy(), ()))
 
         return aux_coords_and_dims
+
+    def _build_cell_measures(self):
+        """
+        Generate the cell measures with associated dimension(s)
+        mapping for the new concatenated cube.
+
+        Returns:
+            A list of cell measures and dimension(s) tuple pairs.
+
+        """
+        # Setup convenience hooks.
+        skeletons = self._skeletons
+        cube_signature = self._cube_signature
+
+        cell_measures_and_dims = []
+
+        # Generate all the cell measures for the new concatenated cube.
+        for i, (cm, dims) in enumerate(cube_signature.cell_measures_and_dims):
+            # Check whether the cell measure spans the nominated
+            # dimension of concatenation.
+            if self.axis in dims:
+                # Concatenate the data together.
+                dim = dims.index(self.axis)
+                data = [
+                    skton.signature.cell_measures_and_dims[i].coord.data
+                    for skton in skeletons
+                ]
+                data = np.concatenate(tuple(data), axis=dim)
+
+                # Generate the associated metadata.
+                kwargs = cube_signature.cm_metadata[i].defn._asdict()
+
+                # Build the concatenated coordinate.
+                cm = iris.coords.CellMeasure(data, **kwargs)
+
+            cell_measures_and_dims.append((cm.copy(), dims))
+
+        return cell_measures_and_dims
+
+    def _build_ancillary_variables(self):
+        """
+        Generate the ancillary variables with associated dimension(s)
+        mapping for the new concatenated cube.
+
+        Returns:
+            A list of ancillary variables and dimension(s) tuple pairs.
+
+        """
+        # Setup convenience hooks.
+        skeletons = self._skeletons
+        cube_signature = self._cube_signature
+
+        ancillary_variables_and_dims = []
+
+        # Generate all the ancillary variables for the new concatenated cube.
+        for i, (av, dims) in enumerate(
+            cube_signature.ancillary_variables_and_dims
+        ):
+            # Check whether the ancillary variable spans the nominated
+            # dimension of concatenation.
+            if self.axis in dims:
+                # Concatenate the data together.
+                dim = dims.index(self.axis)
+                data = [
+                    skton.signature.ancillary_variables_and_dims[i].coord.data
+                    for skton in skeletons
+                ]
+                data = np.concatenate(tuple(data), axis=dim)
+
+                # Generate the associated metadata.
+                kwargs = cube_signature.av_metadata[i].defn._asdict()
+
+                # Build the concatenated coordinate.
+                av = iris.coords.AncillaryVariable(data, **kwargs)
+
+            ancillary_variables_and_dims.append((av.copy(), dims))
+
+        return ancillary_variables_and_dims
 
     def _build_data(self):
         """

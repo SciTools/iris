@@ -368,7 +368,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def _as_defn(self):
-        defn = (
+        defn = _DMDefn(
             self.standard_name,
             self.long_name,
             self.var_name,
@@ -861,7 +861,7 @@ class CellMeasure(AncillaryVariable):
         return result
 
     def _as_defn(self):
-        defn = (
+        defn = CellMeasureDefn(
             self.standard_name,
             self.long_name,
             self.var_name,
@@ -931,6 +931,105 @@ class CoordDefn(
                 defn.units,
                 defn.coord_system is not None,
                 defn.coord_system,
+            )
+
+        return _sort_key(self) < _sort_key(other)
+
+
+class CellMeasureDefn(
+    namedtuple(
+        "CellMeasureDefn",
+        [
+            "standard_name",
+            "long_name",
+            "var_name",
+            "units",
+            "attributes",
+            "measure",
+        ],
+    )
+):
+    """
+    Criterion for identifying a specific type of :class:`CellMeasure`
+    based on its metadata.
+
+    """
+
+    __slots__ = ()
+
+    def name(self, default="unknown"):
+        """
+        Returns a human-readable name.
+
+        First it tries self.standard_name, then it tries the 'long_name'
+        attribute, then the 'var_name' attribute, before falling back to
+        the value of `default` (which itself defaults to 'unknown').
+
+        """
+        return self.standard_name or self.long_name or self.var_name or default
+
+    def __lt__(self, other):
+        if not isinstance(other, CellMeasureDefn):
+            return NotImplemented
+
+        def _sort_key(defn):
+            # Emulate Python 2 behaviour with None
+            return (
+                defn.standard_name is not None,
+                defn.standard_name,
+                defn.long_name is not None,
+                defn.long_name,
+                defn.var_name is not None,
+                defn.var_name,
+                defn.units is not None,
+                defn.units,
+                defn.measure is not None,
+                defn.measure,
+            )
+
+        return _sort_key(self) < _sort_key(other)
+
+
+class _DMDefn(
+    namedtuple(
+        "DMDefn",
+        ["standard_name", "long_name", "var_name", "units", "attributes",],
+    )
+):
+    """
+    Criterion for identifying a specific type of :class:`_DimensionalMetadata`
+    based on its metadata.
+
+    """
+
+    __slots__ = ()
+
+    def name(self, default="unknown"):
+        """
+        Returns a human-readable name.
+
+        First it tries self.standard_name, then it tries the 'long_name'
+        attribute, then the 'var_name' attribute, before falling back to
+        the value of `default` (which itself defaults to 'unknown').
+
+        """
+        return self.standard_name or self.long_name or self.var_name or default
+
+    def __lt__(self, other):
+        if not isinstance(other, _DMDefn):
+            return NotImplemented
+
+        def _sort_key(defn):
+            # Emulate Python 2 behaviour with None
+            return (
+                defn.standard_name is not None,
+                defn.standard_name,
+                defn.long_name is not None,
+                defn.long_name,
+                defn.var_name is not None,
+                defn.var_name,
+                defn.units is not None,
+                defn.units,
             )
 
         return _sort_key(self) < _sort_key(other)

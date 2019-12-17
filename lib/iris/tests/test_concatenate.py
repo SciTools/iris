@@ -16,11 +16,13 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.cube
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import DimCoord, AuxCoord, CellMeasure, AncillaryVariable
 import iris.tests.stock as stock
 
 
-def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
+def _make_cube(
+    x, y, data, aux=None, cell_measure=None, ancil=None, offset=0, scalar=None
+):
     """
     A convenience test function that creates a custom 2D cube.
 
@@ -85,6 +87,32 @@ def _make_cube(x, y, data, aux=None, offset=0, scalar=None):
             )
             coord = AuxCoord(payload * 100 + offset, long_name="xy-aux")
             cube.add_aux_coord(coord, (0, 1))
+
+    if cell_measure is not None:
+        cell_measure = cell_measure.split(",")
+        if "y" in cell_measure:
+            cm = CellMeasure(y_range * 10, long_name="y-aux")
+            cube.add_cell_measure(cm, (0,))
+        if "x" in cell_measure:
+            cm = CellMeasure(x_range * 10, long_name="x-aux")
+            cube.add_cell_measure(cm, (1,))
+        if "xy" in cell_measure:
+            payload = x_range + y_range[:, np.newaxis]
+            cm = CellMeasure(payload * 100 + offset, long_name="xy-aux")
+            cube.add_cell_measure(cm, (0, 1))
+
+    if ancil is not None:
+        ancil = ancil.split(",")
+        if "y" in ancil:
+            av = AncillaryVariable(y_range * 10, long_name="y-aux")
+            cube.add_ancillary_variable(av, (0,))
+        if "x" in ancil:
+            av = AncillaryVariable(x_range * 10, long_name="x-aux")
+            cube.add_ancillary_variable(av, (1,))
+        if "xy" in ancil:
+            payload = x_range + y_range[:, np.newaxis]
+            av = AncillaryVariable(payload * 100 + offset, long_name="xy-aux")
+            cube.add_ancillary_variable(av, (0, 1))
 
     if scalar is not None:
         data = np.array([scalar], dtype=np.float32)
@@ -303,6 +331,22 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
         cubes.append(_make_cube((6, 1, -1), y, 2))
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 2)
+
+    def test_cell_measure_missing(self):
+        cubes = []
+        y = (0, 2)
+        cubes.append(_make_cube((0, 2), y, 1, cell_measure="x"))
+        cubes.append(_make_cube((2, 4), y, 2))
+        result = concatenate(cubes)
+        self.assertEqual(len(result), 2)
+
+    def test_ancil_missing(self):
+        cubes = []
+        y = (0, 2)
+        cubes.append(_make_cube((0, 2), y, 1, ancil="x"))
+        cubes.append(_make_cube((2, 4), y, 2))
         result = concatenate(cubes)
         self.assertEqual(len(result), 2)
 
@@ -657,6 +701,28 @@ class Test2D(tests.IrisTest):
         )
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (2, 4))
+
+    def test_concat_2y2d_cell_measure_x_y_xy(self):
+        cubes = []
+        x = (0, 2)
+        cubes.append(_make_cube(x, (0, 4), 1, cell_measure="x,y,xy"))
+        cubes.append(_make_cube(x, (4, 6), 1, cell_measure="x,y,xy"))
+        result = concatenate(cubes)
+        com = _make_cube(x, (0, 6), 1, cell_measure="x,y,xy")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (6, 2))
+        self.assertEqual(result[0], com)
+
+    def test_concat_2y2d_ancil_x_y_xy(self):
+        cubes = []
+        x = (0, 2)
+        cubes.append(_make_cube(x, (0, 4), 1, ancil="x,y,xy"))
+        cubes.append(_make_cube(x, (4, 6), 1, ancil="x,y,xy"))
+        result = concatenate(cubes)
+        com = _make_cube(x, (0, 6), 1, ancil="x,y,xy")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].shape, (6, 2))
+        self.assertEqual(result[0], com)
 
 
 class TestMulti2D(tests.IrisTest):
