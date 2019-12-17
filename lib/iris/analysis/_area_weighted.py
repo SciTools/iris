@@ -59,7 +59,23 @@ class AreaWeightedRegridder:
 
         # The need for an actual Cube is an implementation quirk caused by the
         # current usage of the experimental regrid function.
+        self._src_grid_cube_cache = None
         self._target_grid_cube_cache = None
+
+        self._regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            self._src_grid_cube, self._target_grid_cube
+        )
+
+    @property
+    def _src_grid_cube(self):
+        if self._src_grid_cube_cache is None:
+            x, y = self._src_grid
+            data = np.empty((y.points.size, x.points.size))
+            cube = iris.cube.Cube(data)
+            cube.add_dim_coord(y, 0)
+            cube.add_dim_coord(x, 1)
+            self._src_grid_cube_cache = cube
+        return self._src_grid_cube_cache
 
     @property
     def _target_grid_cube(self):
@@ -97,6 +113,6 @@ class AreaWeightedRegridder:
                 "The given cube is not defined on the same "
                 "source grid as this regridder."
             )
-        return eregrid.regrid_area_weighted_rectilinear_src_and_grid(
-            cube, self._target_grid_cube, mdtol=self._mdtol
+        return eregrid._regrid_area_weighted_rectilinear_src_and_grid__perform(
+            cube, self._regrid_info, mdtol=self._mdtol
         )
