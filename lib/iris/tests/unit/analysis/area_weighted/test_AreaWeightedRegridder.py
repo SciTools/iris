@@ -15,6 +15,7 @@ import iris.tests as tests
 from unittest import mock
 
 import numpy as np
+
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
