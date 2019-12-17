@@ -903,9 +903,24 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     else:
         area_func = _cartesian_area
 
-    return (src_x, src_y, src_x_dim, src_y_dim, src_x_bounds, src_y_bounds,
-            grid_x, grid_y, grid_x_bounds, grid_y_bounds, grid_x_decreasing,
-            grid_y_decreasing, meshgrid_x, meshgrid_y, area_func, circular)
+    return (
+        src_x,
+        src_y,
+        src_x_dim,
+        src_y_dim,
+        src_x_bounds,
+        src_y_bounds,
+        grid_x,
+        grid_y,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        meshgrid_x,
+        meshgrid_y,
+        area_func,
+        circular,
+    )
 
 
 def _regrid_area_weighted_rectilinear_src_and_grid__perform(
@@ -917,10 +932,24 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     Perform the prepared regrid calculation on a single 2d cube.
 
     """
-    (src_x, src_y, src_x_dim, src_y_dim, src_x_bounds, src_y_bounds, grid_x,
-     grid_y, grid_x_bounds, grid_y_bounds, grid_x_decreasing,
-     grid_y_decreasing, meshgrid_x, meshgrid_y, area_func, circular
-     ) = regrid_info
+    (
+        src_x,
+        src_y,
+        src_x_dim,
+        src_y_dim,
+        src_x_bounds,
+        src_y_bounds,
+        grid_x,
+        grid_y,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        meshgrid_x,
+        meshgrid_y,
+        area_func,
+        circular,
+    ) = regrid_info
 
     # Calculate new data array for regridded cube.
     new_data = _regrid_area_weighted_array(
