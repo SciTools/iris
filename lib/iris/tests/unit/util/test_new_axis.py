@@ -173,5 +173,18 @@ class Test(tests.IrisTest):
         self.assertEqual(data_shape, mask_shape)
 
 
+class Test_aux_promotions(tests.IrisTest):
+    def SetUp(self):
+        self.data = np.array([[1, 2], [1, 2]])
+        self.cube = iris.cube.Cube(self.data)
+        lat = iris.coords.DimCoord([1, 2], standard_name="latitude")
+        lon = iris.coords.DimCoord([1, 2], standard_name="longitude")
+
+        time = iris.coords.DimCoord([1], standard_name="time")
+        wibble = iris.coords.AuxCoord([1], long_name="wibble")
+
+        foo = iris.coords.AuxCoord([1,2], long_name="foo")
+
+
 if __name__ == "__main__":
     unittest.main()
