@@ -51,8 +51,6 @@ class AreaWeightedRegridder:
         # impervious to external changes to the original source cubes.
         self._src_grid = snapshot_grid(src_grid_cube)
         self._target_grid = snapshot_grid(target_grid_cube)
-        self._src_grid_cube = src_grid_cube.copy()
-        self._target_grid_cube = target_grid_cube.copy()
         # Missing data tolerance.
         if not (0 <= mdtol <= 1):
             msg = "Value for mdtol must be in range 0 - 1, got {}."
@@ -61,6 +59,33 @@ class AreaWeightedRegridder:
 
         # Cache the regrid info.
         self._regrid_info_cache = None
+
+        # The need for an actual Cube is an implementation quirk caused by the
+        # current usage of the experimental regrid function.
+        self._src_grid_cube_cache = None
+        self._target_grid_cube_cache = None
+
+    @property
+    def _src_grid_cube(self):
+        if self._src_grid_cube_cache is None:
+            x, y = self._src_grid
+            data = np.empty((y.points.size, x.points.size))
+            cube = iris.cube.Cube(data)
+            cube.add_dim_coord(y, 0)
+            cube.add_dim_coord(x, 1)
+            self._src_grid_cube_cache = cube
+        return self._src_grid_cube_cache
+
+    @property
+    def _target_grid_cube(self):
+        if self._target_grid_cube_cache is None:
+            x, y = self._target_grid
+            data = np.empty((y.points.size, x.points.size))
+            cube = iris.cube.Cube(data)
+            cube.add_dim_coord(y, 0)
+            cube.add_dim_coord(x, 1)
+            self._target_grid_cube_cache = cube
+        return self._target_grid_cube_cache
 
     def _regrid_info(self):
         if self._regrid_info_cache is None:
