@@ -3429,7 +3429,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             cube_xml_element.appendChild(attributes_element)
 
-        def dimensionedCubeElement(element, typename, dimscall):
+        def dimmeta_xml_element(element, typename, dimscall):
+            # Make an inner xml element for a cube DimensionalMetadata element, with a
+            # 'datadims' property showing how it maps to the parent cube dims.
             xml_element = doc.createElement(typename)
             dims = list(dimscall(element))
             if dims:
@@ -3443,7 +3445,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # appropriate) which itself will have a sub-element of the
             # coordinate instance itself.
             coords_xml_element.appendChild(
-                dimensionedCubeElement(coord, "coord", self.coord_dims)
+                dimmeta_xml_element(coord, "coord", self.coord_dims)
             )
         cube_xml_element.appendChild(coords_xml_element)
 
@@ -3461,7 +3463,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cms_xml_element = doc.createElement("cellMeasures")
             for cm in cell_measures:
                 cms_xml_element.appendChild(
-                    dimensionedCubeElement(
+                    dimmeta_xml_element(
                         cm, "cell-measure", self.cell_measure_dims
                     )
                 )
@@ -3474,7 +3476,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ancs_xml_element = doc.createElement("ancillaryVariables")
             for anc in ancils:
                 ancs_xml_element.appendChild(
-                    dimensionedCubeElement(
+                    dimmeta_xml_element(
                         anc, "ancillary-var", self.ancillary_variable_dims
                     )
                 )
