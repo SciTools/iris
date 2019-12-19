@@ -174,8 +174,17 @@ class Test(tests.IrisTest):
 
     def test_mismatched_data_dims(self):
         coord_names = ["latitude", "longitude"]
-        src1 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
-        src2 = self.cube(np.linspace(10, 22, 4), np.linspace(20, 32, 4))
+        x = np.linspace(20, 32, 4)
+        y = np.linspace(10, 22, 4)
+        src1 = self.cube(x, y)
+
+        data = np.arange(len(y) * len(x)).reshape(len(x), len(y))
+        src2 = Cube(data)
+        lat = DimCoord(y, "latitude", units="degrees")
+        lon = DimCoord(x, "longitude", units="degrees")
+        # Add dim coords in opposite order to self.cube.
+        src2.add_dim_coord(lat, 1)
+        src2.add_dim_coord(lon, 0)
         for name in coord_names:
             # Ensure contiguous bounds exists.
             src1.coord(name).guess_bounds()
