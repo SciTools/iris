@@ -3450,20 +3450,24 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             cube_xml_element.appendChild(attributes_element)
 
+        def dimmeta_xml_element(element, typename, dimscall):
+            # Make an inner xml element for a cube DimensionalMetadata element, with a
+            # 'datadims' property showing how it maps to the parent cube dims.
+            xml_element = doc.createElement(typename)
+            dims = list(dimscall(element))
+            if dims:
+                xml_element.setAttribute("datadims", repr(dims))
+            xml_element.appendChild(element.xml_element(doc))
+            return xml_element
+
         coords_xml_element = doc.createElement("coords")
         for coord in sorted(self.coords(), key=lambda coord: coord.name()):
             # make a "cube coordinate" element which holds the dimensions (if
             # appropriate) which itself will have a sub-element of the
             # coordinate instance itself.
-            cube_coord_xml_element = doc.createElement("coord")
-            coords_xml_element.appendChild(cube_coord_xml_element)
-
-            dims = list(self.coord_dims(coord))
-            if dims:
-                cube_coord_xml_element.setAttribute("datadims", repr(dims))
-
-            coord_xml_element = coord.xml_element(doc)
-            cube_coord_xml_element.appendChild(coord_xml_element)
+            coords_xml_element.appendChild(
+                dimmeta_xml_element(coord, "coord", self.coord_dims)
+            )
         cube_xml_element.appendChild(coords_xml_element)
 
         # cell methods (no sorting!)
@@ -3473,8 +3477,34 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             cell_methods_xml_element.appendChild(cell_method_xml_element)
         cube_xml_element.appendChild(cell_methods_xml_element)
 
-        data_xml_element = doc.createElement("data")
+        # cell measures
+        cell_measures = sorted(self.cell_measures(), key=lambda cm: cm.name())
+        if cell_measures:
+            # This one is an optional subelement.
+            cms_xml_element = doc.createElement("cellMeasures")
+            for cm in cell_measures:
+                cms_xml_element.appendChild(
+                    dimmeta_xml_element(
+                        cm, "cell-measure", self.cell_measure_dims
+                    )
+                )
+            cube_xml_element.appendChild(cms_xml_element)
 
+        # ancillary variables
+        ancils = sorted(self.ancillary_variables(), key=lambda anc: anc.name())
+        if ancils:
+            # This one is an optional subelement.
+            ancs_xml_element = doc.createElement("ancillaryVariables")
+            for anc in ancils:
+                ancs_xml_element.appendChild(
+                    dimmeta_xml_element(
+                        anc, "ancillary-var", self.ancillary_variable_dims
+                    )
+                )
+            cube_xml_element.appendChild(ancs_xml_element)
+
+        # data
+        data_xml_element = doc.createElement("data")
         data_xml_element.setAttribute("shape", str(self.shape))
 
         # NB. Getting a checksum triggers any deferred loading,
