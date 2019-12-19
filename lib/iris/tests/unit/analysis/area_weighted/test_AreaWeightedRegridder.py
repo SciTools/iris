@@ -42,13 +42,17 @@ class Test(tests.IrisTest):
 
     def check_mdtol(self, mdtol=None):
         src_grid, target_grid = self.grids()
-        if mdtol is None:
-            regridder = AreaWeightedRegridder(src_grid, target_grid)
-            mdtol = 1
-        else:
-            regridder = AreaWeightedRegridder(
-                src_grid, target_grid, mdtol=mdtol
-            )
+        with mock.patch(
+            "iris.experimental.regrid."
+            "_regrid_area_weighted_rectilinear_src_and_grid__prepare"
+        ) as prepare:
+            if mdtol is None:
+                regridder = AreaWeightedRegridder(src_grid, target_grid)
+                mdtol = 1
+            else:
+                regridder = AreaWeightedRegridder(
+                    src_grid, target_grid, mdtol=mdtol
+                )
 
         # Make a new cube to regrid with different data so we can
         # distinguish between regridding the original src grid
@@ -58,14 +62,10 @@ class Test(tests.IrisTest):
 
         with mock.patch(
             "iris.experimental.regrid."
-            "_regrid_area_weighted_rectilinear_src_and_grid__prepare"
-        ) as prepare:
-            with mock.patch(
-                "iris.experimental.regrid."
-                "_regrid_area_weighted_rectilinear_src_and_grid__perform",
-                return_value=mock.sentinel.result,
-            ) as perform:
-                result = regridder(src)
+            "_regrid_area_weighted_rectilinear_src_and_grid__perform",
+            return_value=mock.sentinel.result,
+        ) as perform:
+            result = regridder(src)
 
         # Prepare:
         self.assertEqual(prepare.call_count, 1)
