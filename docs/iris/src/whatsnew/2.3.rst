@@ -201,6 +201,8 @@ Bugs Fixed
 
 Documentation Changes
 =====================
+* Adopted a
+  `new colour logo for Iris <https://scitools-docs.github.io/iris/v2.3.x/_static/Iris7_1_trim_full.png>`_
 * Added a gallery example showing `how to concatenate NEMO ocean model data
   <../examples/Oceanography/load_nemo.html>`_.
 * Added an example in the
