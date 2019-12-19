@@ -455,6 +455,14 @@ class CubeList(list):
 
         .. note::
 
+            Cubes may contain additional dimensional elements such as auxiliary
+            coordinates, cell measures or ancillary variables.
+            A group of similar cubes can only merge to a single result if all such
+            elements are identical in every input cube : they are then present,
+            unchanged, in the merged output cube.
+
+        .. note::
+
             If time coordinates in the list of cubes have differing epochs then
             the cubes will not be able to be merged. If this occurs, use
             :func:`iris.util.unify_time_units` to normalise the epochs of the
@@ -633,6 +641,19 @@ class CubeList(list):
 
         Contrast this with :meth:`iris.cube.CubeList.merge`, which makes a new
         dimension from values of an auxiliary scalar coordinate.
+
+        .. note::
+
+            Cubes may contain 'extra' dimensional elements such as auxiliary
+            coordinates, cell measures or ancillary variables.
+            For a group of similar cubes to concatenate together into one output, all
+            such elements which do not map to the concatenation axis must be identical
+            in every input cube : these then appear unchanged in the output.
+            Similarly, those elements which *do* map to the concatenation axis must
+            have matching properties, but may have different data values : these then
+            appear, concatenated, in the output cube.
+            If any cubes in a group have dimensional elements which do not match
+            correctly, the group will not concatenate to a single output cube.
 
         .. note::
 
