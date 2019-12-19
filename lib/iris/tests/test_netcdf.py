@@ -338,8 +338,10 @@ class TestNetCDFLoad(tests.IrisTest):
             long_name="qq status_flag",
             var_name="my_av",
             units="no_unit",
-            attributes={"flag_values": np.array([1, 2], dtype=np.int8),
-                        "flag_meanings": "a b"},
+            attributes={
+                "flag_values": np.array([1, 2], dtype=np.int8),
+                "flag_meanings": "a b",
+            },
         )
         self.assertEqual(avs[0], expected)
 
