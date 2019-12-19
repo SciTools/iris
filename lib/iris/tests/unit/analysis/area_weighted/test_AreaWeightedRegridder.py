@@ -172,6 +172,29 @@ class Test(tests.IrisTest):
         self.assertArrayEqual(result1.data, reference1.data)
         self.assertArrayEqual(result2.data, reference2.data)
 
+    def test_mismatched_data_dims(self):
+        coord_names = ["latitude", "longitude"]
+        src1 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
+        src2 = self.cube(np.linspace(10, 22, 4), np.linspace(20, 32, 4))
+        for name in coord_names:
+            # Ensure contiguous bounds exists.
+            src1.coord(name).guess_bounds()
+            src2.coord(name).guess_bounds()
+
+        target = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        for name in coord_names:
+            # Ensure the bounds of the target cover the same range as the
+            # source.
+            target.coord(name).bounds = np.column_stack(
+                (
+                    src1.coord(name).bounds[[0, 1], [0, 1]],
+                    src1.coord(name).bounds[[2, 3], [0, 1]],
+                )
+            )
+
+        regridder = AreaWeightedRegridder(src1, target)
+        self.assertRaises(ValueError, regridder, src2)
+
 
 if __name__ == "__main__":
     tests.main()
