@@ -1218,7 +1218,7 @@ def as_compatible_shape(src_cube, target_cube):
     dimension coordinates where necessary. It operates by matching coordinate
     metadata to infer the dimensions that need modifying, so the provided
     cubes must have coordinates with the same metadata
-    (see :class:`iris.coords.CoordDefn`).
+    (see :class:`iris.common.CoordMetadata`).
 
     .. note:: This function will load and copy the data payload of `src_cube`.
 

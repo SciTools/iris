@@ -68,7 +68,7 @@ class _CoordMetaData(
     Args:
 
     * defn:
-        The :class:`iris.coords.CoordDefn` metadata that represents a
+        The :class:`iris.common.CoordMetadata` metadata that represents a
         coordinate.
 
     * dims:
@@ -85,7 +85,7 @@ class _CoordMetaData(
 
     """
 
-    def __new__(cls, coord, dims):
+    def __new__(mcs, coord, dims):
         """
         Create a new :class:`_CoordMetaData` instance.
 
@@ -101,7 +101,7 @@ class _CoordMetaData(
             The new class instance.
 
         """
-        defn = coord._as_defn()
+        defn = coord.metadata
         points_dtype = coord.points.dtype
         bounds_dtype = coord.bounds.dtype if coord.bounds is not None else None
         kwargs = {}
@@ -120,7 +120,7 @@ class _CoordMetaData(
                 order = _DECREASING
             kwargs["order"] = order
         metadata = super().__new__(
-            cls, defn, dims, points_dtype, bounds_dtype, kwargs
+            mcs, defn, dims, points_dtype, bounds_dtype, kwargs
         )
         return metadata
 
@@ -403,11 +403,11 @@ class _CubeSignature:
         axes = dict(T=0, Z=1, Y=2, X=3)
 
         # Coordinate sort function - by guessed coordinate axis, then
-        # by coordinate definition, then by dimensions, in ascending order.
+        # by coordinate metadata, then by dimensions, in ascending order.
         def key_func(coord):
             return (
                 axes.get(guess_coord_axis(coord), len(axes) + 1),
-                coord._as_defn(),
+                coord.metadata,
                 cube.coord_dims(coord),
             )
 

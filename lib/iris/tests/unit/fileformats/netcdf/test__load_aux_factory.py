@@ -23,7 +23,9 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
     def setUp(self):
         standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
         self.requires = dict(formula_type=standard_name)
-        coordinates = [(mock.sentinel.b, "b"), (mock.sentinel.ps, "ps")]
+        self.ap = mock.MagicMock(units="units")
+        self.ps = mock.MagicMock(units="units")
+        coordinates = [(mock.sentinel.b, "b"), (self.ps, "ps")]
         self.provides = dict(coordinates=coordinates)
         self.engine = mock.Mock(requires=self.requires, provides=self.provides)
         self.cube = mock.create_autospec(Cube, spec_set=True, instance=True)
@@ -34,7 +36,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.addCleanup(patcher.stop)
 
     def test_formula_terms_ap(self):
-        self.provides["coordinates"].append((mock.sentinel.ap, "ap"))
+        self.provides["coordinates"].append((self.ap, "ap"))
         self.requires["formula_terms"] = dict(ap="ap", b="b", ps="ps")
         _load_aux_factory(self.engine, self.cube)
         # Check cube.add_aux_coord method.
@@ -44,9 +46,9 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         args, _ = self.cube.add_aux_factory.call_args
         self.assertEqual(len(args), 1)
         factory = args[0]
-        self.assertEqual(factory.delta, mock.sentinel.ap)
+        self.assertEqual(factory.delta, self.ap)
         self.assertEqual(factory.sigma, mock.sentinel.b)
-        self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
+        self.assertEqual(factory.surface_air_pressure, self.ps)
 
     def test_formula_terms_a_p0(self):
         coord_a = DimCoord(np.arange(5), units="Pa")
@@ -78,7 +80,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         factory = args[0]
         self.assertEqual(factory.delta, coord_expected)
         self.assertEqual(factory.sigma, mock.sentinel.b)
-        self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
+        self.assertEqual(factory.surface_air_pressure, self.ps)
 
     def test_formula_terms_p0_non_scalar(self):
         coord_p0 = DimCoord(np.arange(5))
@@ -113,7 +115,7 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         # Check that the factory has no delta term
         self.assertEqual(factory.delta, None)
         self.assertEqual(factory.sigma, mock.sentinel.b)
-        self.assertEqual(factory.surface_air_pressure, mock.sentinel.ps)
+        self.assertEqual(factory.surface_air_pressure, self.ps)
 
     def test_formula_terms_ap_missing_coords(self):
         self.requires["formula_terms"] = dict(ap="ap", b="b", ps="ps")

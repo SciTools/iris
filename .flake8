@@ -38,3 +38,7 @@ exclude =
     # ignore third-party files
     #
     gitwash_dumper.py,
+    #
+    # convenience imports
+    #
+    lib/iris/common/__init__.py

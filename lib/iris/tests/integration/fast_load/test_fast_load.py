@@ -9,7 +9,7 @@
 # before importing anything else.
 import iris.tests as tests
 
-from collections import Iterable
+from collections.abc import Iterable
 import tempfile
 import shutil
 

@@ -319,7 +319,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
                         eq = (
                             other_coord is coord
                             or other_coord.name() == coord.name()
-                            and other_coord._as_defn() == coord._as_defn()
+                            and other_coord.metadata == coord.metadata
                         )
                         if eq:
                             coord_to_add_to_group = other_coord
