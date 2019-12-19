@@ -57,9 +57,6 @@ class AreaWeightedRegridder:
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 
-        # Cache the regrid info.
-        self._regrid_info_cache = None
-
         # The need for an actual Cube is an implementation quirk caused by the
         # current usage of the experimental regrid function.
         self._target_grid_cube_cache = None
