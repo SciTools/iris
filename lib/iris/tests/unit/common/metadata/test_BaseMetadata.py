@@ -57,7 +57,7 @@ class Test(tests.IrisTest):
         self.assertEqual(BaseMetadata._fields, expected)
 
 
-class Test___le__(tests.IrisTest):
+class Test___lt__(tests.IrisTest):
     def setUp(self):
         self.one = BaseMetadata(1, 1, 1, 1, 1)
         self.two = BaseMetadata(1, 1, 1, 1, 2)
