@@ -2,7 +2,7 @@ What's New in Iris 2.3.0
 ************************
 
 :Release: 2.3.0
-:Date: 2019-10-04
+:Date: 2019-12-19
 
 This document explains the new/changed features of Iris in version 2.3.0
 (:doc:`View all changes <index>`.)
@@ -129,6 +129,10 @@ Iris 2.3.0 Features
   *weighted* calculation will still return a realised result, *and* force
   realisation of the original cube data.
 * Iris now supports NetCDF Climate and Forecast (CF) Metadata Conventions 1.7 (see `CF 1.7 Conventions Document <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html>`_ for more information)
+* Updated standard name support to
+  `CF standard name table version 70, 2019-12-10 <http://cfconventions.org/Data/cf-standard-names/70/build/cf-standard-name-table.html>`_
+* Updated UM STASH translations to
+  `metarelate/metOcean commit 448f2ef, 2019-11-29 <https://github.com/metarelate/metOcean/tree/448f2ef5e676edaaa27408b9f3ddbecbf05e3289>`_
 
 
 Iris 2.3.0 Dependency Updates
@@ -197,6 +201,8 @@ Bugs Fixed
 
 Documentation Changes
 =====================
+* Adopted a
+  `new colour logo for Iris <../_static/Iris7_1_trim_full.png>`_
 * Added a gallery example showing `how to concatenate NEMO ocean model data
   <../examples/Oceanography/load_nemo.html>`_.
 * Added an example in the
