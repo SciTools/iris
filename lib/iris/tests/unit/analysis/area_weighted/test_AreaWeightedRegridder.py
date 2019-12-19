@@ -67,14 +67,17 @@ class Test(tests.IrisTest):
             ) as perform:
                 result = regridder(src)
 
+        # Prepare:
         self.assertEqual(prepare.call_count, 1)
+        _, args, kwargs = prepare.mock_calls[0]
+        self.assertEqual(
+            self.extract_grid(args[1]), self.extract_grid(target_grid)
+        )
+
+        # Perform:
         self.assertEqual(perform.call_count, 1)
         _, args, kwargs = perform.mock_calls[0]
-
         self.assertEqual(args[0], src)
-        # self.assertEqual(
-        #    self.extract_grid(args[1]), self.extract_grid(target_grid)
-        # )
         self.assertEqual(kwargs, {"mdtol": mdtol})
         self.assertIs(result, mock.sentinel.result)
 
