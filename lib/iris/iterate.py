@@ -302,12 +302,13 @@ class _CoordWrapper:
         self._coord = coord
 
     # Methods of contained class we need to expose/use.
-    def _as_defn(self):
-        return self._coord._as_defn()
+    @property
+    def metadata(self):
+        return self._coord.metadata
 
-    # Methods of contained class we want to overide/customise.
+    # Methods of contained class we want to override/customise.
     def __eq__(self, other):
-        return self._coord._as_defn() == other._as_defn()
+        return self._coord.metadata == other.metadata
 
     # Force use of __eq__ for set operations.
     def __hash__(self):

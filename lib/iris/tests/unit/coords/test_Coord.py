@@ -1010,6 +1010,17 @@ class TestClimatology(tests.IrisTest):
         coord.bounds = None
         self.assertFalse(coord.climatological)
 
+    def test_change_units(self):
+        coord = AuxCoord(
+            points=[0, 1],
+            bounds=[[0, 1], [1, 2]],
+            units="days since 1970-01-01",
+            climatological=True,
+        )
+        self.assertTrue(coord.climatological)
+        coord.units = "K"
+        self.assertFalse(coord.climatological)
+
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):

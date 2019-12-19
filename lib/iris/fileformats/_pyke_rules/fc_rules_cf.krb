@@ -1173,6 +1173,7 @@ fc_extras
     import numpy.ma as ma
 
     import iris.aux_factory
+    from iris.common.mixin import _get_valid_standard_name
     import iris.coords
     import iris.coord_systems
     import iris.fileformats.cf as cf
@@ -1182,7 +1183,6 @@ fc_extras
     import iris.exceptions
     import iris.std_names
     import iris.util
-    from iris._cube_coord_common import get_valid_standard_name
     from iris._lazy_data import as_lazy_data
 
 
@@ -1298,7 +1298,7 @@ fc_extras
 
         if standard_name is not None:
             try:
-                cube.standard_name = get_valid_standard_name(standard_name)
+                cube.standard_name = _get_valid_standard_name(standard_name)
             except ValueError:
                 if cube.long_name is not None:
                     cube.attributes['invalid_standard_name'] = standard_name
@@ -1693,7 +1693,7 @@ fc_extras
 
         if standard_name is not None:
             try:
-                standard_name = get_valid_standard_name(standard_name)
+                standard_name = _get_valid_standard_name(standard_name)
             except ValueError:
                 if long_name is not None:
                     attributes['invalid_standard_name'] = standard_name

@@ -25,12 +25,17 @@ import numpy.ma as ma
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris.aux_factory
+from iris.common import (
+    AncillaryVariableMetadata,
+    BaseMetadata,
+    CFVariableMixin,
+    CellMeasureMetadata,
+    CoordMetadata,
+    MetadataManagerFactory,
+)
 import iris.exceptions
 import iris.time
 import iris.util
-
-from iris._cube_coord_common import CFVariableMixin
-from iris.util import points_step
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -91,6 +96,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # bounds-related getter/setter properties, and no bounds keywords in
         # its __init__ or __copy__ methods.  The only bounds-related behaviour
         # it provides is a 'has_bounds()' method, which always returns False.
+
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = MetadataManagerFactory(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -340,9 +349,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # If the other object has a means of getting its definition, then do
         # the  comparison, otherwise return a NotImplemented to let Python try
         # to resolve the operator elsewhere.
-        if hasattr(other, "_as_defn"):
+        if hasattr(other, "metadata"):
             # metadata comparison
-            eq = self._as_defn() == other._as_defn()
+            eq = self.metadata == other.metadata
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
@@ -366,17 +375,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if result is not NotImplemented:
             result = not result
         return result
-
-    def _as_defn(self):
-        defn = (
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-        )
-
-        return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
@@ -710,6 +708,12 @@ class AncillaryVariable(_DimensionalMetadata):
             A dictionary containing other cf and user-defined attributes.
 
         """
+        # Configure the metadata manager.
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = MetadataManagerFactory(
+                AncillaryVariableMetadata
+            )
+
         super().__init__(
             values=data,
             standard_name=standard_name,
@@ -817,6 +821,9 @@ class CellMeasure(AncillaryVariable):
             'area' and 'volume'. The default is 'area'.
 
         """
+        # Configure the metadata manager.
+        self._metadata_manager = MetadataManagerFactory(CellMeasureMetadata)
+
         super().__init__(
             data=data,
             standard_name=standard_name,
@@ -834,14 +841,14 @@ class CellMeasure(AncillaryVariable):
 
     @property
     def measure(self):
-        return self._measure
+        return self._metadata_manager.measure
 
     @measure.setter
     def measure(self, measure):
         if measure not in ["area", "volume"]:
             emsg = f"measure must be 'area' or 'volume', got {measure!r}"
             raise ValueError(emsg)
-        self._measure = measure
+        self._metadata_manager.measure = measure
 
     def __str__(self):
         result = repr(self)
@@ -860,17 +867,6 @@ class CellMeasure(AncillaryVariable):
         )
         return result
 
-    def _as_defn(self):
-        defn = (
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.measure,
-        )
-        return defn
-
     def cube_dims(self, cube):
         """
         Return the cube dimensions of this CellMeasure.
@@ -879,61 +875,6 @@ class CellMeasure(AncillaryVariable):
 
         """
         return cube.cell_measure_dims(self)
-
-
-class CoordDefn(
-    namedtuple(
-        "CoordDefn",
-        [
-            "standard_name",
-            "long_name",
-            "var_name",
-            "units",
-            "attributes",
-            "coord_system",
-            "climatological",
-        ],
-    )
-):
-    """
-    Criterion for identifying a specific type of :class:`DimCoord` or
-    :class:`AuxCoord` based on its metadata.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
-
-    def __lt__(self, other):
-        if not isinstance(other, CoordDefn):
-            return NotImplemented
-
-        def _sort_key(defn):
-            # Emulate Python 2 behaviour with None
-            return (
-                defn.standard_name is not None,
-                defn.standard_name,
-                defn.long_name is not None,
-                defn.long_name,
-                defn.var_name is not None,
-                defn.var_name,
-                defn.units is not None,
-                defn.units,
-                defn.coord_system is not None,
-                defn.coord_system,
-            )
-
-        return _sort_key(self) < _sort_key(other)
 
 
 class CoordExtent(
@@ -1377,7 +1318,11 @@ class Coord(_DimensionalMetadata):
             Will set to True when a climatological time axis is loaded
             from NetCDF.
             Always False if no bounds exist.
+
         """
+        # Configure the metadata manager.
+        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+
         super().__init__(
             values=points,
             standard_name=standard_name,
@@ -1476,7 +1421,7 @@ class Coord(_DimensionalMetadata):
         # Ensure the bounds are a compatible shape.
         if bounds is None:
             self._bounds_dm = None
-            self._climatological = False
+            self.climatological = False
         else:
             bounds = self._sanitise_array(bounds, 2)
             if self.shape != bounds.shape[:-1]:
@@ -1493,6 +1438,15 @@ class Coord(_DimensionalMetadata):
                 self._bounds_dm.data = bounds
 
     @property
+    def coord_system(self):
+        """The coordinate-system of the coordinate."""
+        return self._metadata_manager.coord_system
+
+    @coord_system.setter
+    def coord_system(self, value):
+        self._metadata_manager.coord_system = value
+
+    @property
     def climatological(self):
         """
         A boolean that controls whether the coordinate is a climatological
@@ -1502,8 +1456,13 @@ class Coord(_DimensionalMetadata):
         Always reads as False if there are no bounds.
         On set, the input value is cast to a boolean, exceptions raised
         if units are not time units or if there are no bounds.
+
         """
-        return self._climatological if self.has_bounds() else False
+        if not self.has_bounds():
+            self._metadata_manager.climatological = False
+        if not self.units.is_time_reference():
+            self._metadata_manager.climatological = False
+        return self._metadata_manager.climatological
 
     @climatological.setter
     def climatological(self, value):
@@ -1521,7 +1480,7 @@ class Coord(_DimensionalMetadata):
                 emsg = "Cannot set climatological coordinate, no bounds exist."
                 raise ValueError(emsg)
 
-        self._climatological = value
+        self._metadata_manager.climatological = value
 
     def lazy_points(self):
         """
@@ -1608,18 +1567,6 @@ class Coord(_DimensionalMetadata):
         if self.climatological:
             result += ", climatological={}".format(self.climatological)
         return result
-
-    def _as_defn(self):
-        defn = CoordDefn(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.coord_system,
-            self.climatological,
-        )
-        return defn
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
     # NOTE: Violates "objects which compare equal must have the same hash".
@@ -1874,7 +1821,7 @@ class Coord(_DimensionalMetadata):
 
         * other:
             An instance of :class:`iris.coords.Coord` or
-            :class:`iris.coords.CoordDefn`.
+            :class:`iris.common.CoordMetadata`.
         * ignore:
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all
@@ -2337,7 +2284,7 @@ class DimCoord(Coord):
 
         """
         points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
-        _, regular = points_step(points)
+        _, regular = iris.util.points_step(points)
         if not regular:
             points = (zeroth + step) + step * np.arange(
                 count, dtype=np.float64
@@ -2674,19 +2621,20 @@ class CellMethod(iris.util._OrderedHashable):
                 "'method' must be a string - got a '%s'" % type(method)
             )
 
-        default_name = CFVariableMixin._DEFAULT_NAME
+        default_name = BaseMetadata.DEFAULT_NAME
         _coords = []
+
         if coords is None:
             pass
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
         elif isinstance(coords, str):
-            _coords.append(CFVariableMixin.token(coords) or default_name)
+            _coords.append(BaseMetadata.token(coords) or default_name)
         else:
             normalise = (
                 lambda coord: coord.name(token=True)
                 if isinstance(coord, Coord)
-                else CFVariableMixin.token(coord) or default_name
+                else BaseMetadata.token(coord) or default_name
             )
             _coords.extend([normalise(coord) for coord in coords])
 
