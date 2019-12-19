@@ -99,6 +99,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_standard_name__invalid_token(self):
         token = "nope nope"
         metadata = _make_metadata(standard_name=token)
         result = metadata.name()
@@ -114,6 +115,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_long_name__invalid_token(self):
         token = "nope nope"
         metadata = _make_metadata(long_name=token)
         result = metadata.name()
@@ -129,6 +131,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_var_name__invalid_token(self):
         token = "nope nope"
         metadata = _make_metadata(var_name=token)
         result = metadata.name()
@@ -144,6 +147,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_attributes__invalid_token(self):
         token = "nope nope"
         metadata = _make_metadata(attributes=token)
         result = metadata.name()
@@ -165,7 +169,9 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, self.default)
 
+    def test_default__invalid_token(self):
         token = "nope nope"
+        metadata = _make_metadata()
         result = metadata.name(default=token)
         self.assertEqual(result, token)
         emsg = "Cannot retrieve a valid name token"
@@ -173,7 +179,7 @@ class Test_name(tests.IrisTest):
             _ = metadata.name(default=token, token=True)
 
 
-class Test_names(tests.IrisTest):
+class Test__names(tests.IrisTest):
     def test_standard_name(self):
         token = "standard_name"
         metadata = _make_metadata(standard_name=token)

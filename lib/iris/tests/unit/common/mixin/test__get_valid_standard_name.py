@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.mixin.get_valid_standard_name`.
+Unit tests for the :func:`iris.common.mixin._get_valid_standard_name`.
 
 """
 

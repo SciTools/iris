@@ -42,7 +42,7 @@ from iris.common import (
     CFVariableMixin,
     CoordMetadata,
     CubeMetadata,
-    MetadataFactory,
+    MetadataManagerFactory,
 )
 import iris.coord_systems
 import iris.coords
@@ -748,7 +748,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("Invalid data type: {!r}.".format(data))
 
         # Configure the metadata manager.
-        self._metadata = MetadataFactory(CubeMetadata)
+        self._metadata_manager = MetadataManagerFactory(CubeMetadata)
 
         # Initialise the cube data manager.
         self._data_manager = DataManager(data)
@@ -818,13 +818,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     @property
     def _names(self):
         """
-        A tuple containing the value of each name participating in the identify
+        A tuple containing the value of each name participating in the identity
         of a :class:`iris.cube.Cube`. This includes the standard name,
         long name, NetCDF variable name, and the STASH from the attributes
         dictionary.
 
         """
-        return self._metadata._names
+        return self._metadata_manager._names
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1904,11 +1904,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         done on the phenomenon.
 
         """
-        return self._metadata.cell_methods
+        return self._metadata_manager.cell_methods
 
     @cell_methods.setter
     def cell_methods(self, cell_methods):
-        self._metadata.cell_methods = (
+        self._metadata_manager.cell_methods = (
             tuple(cell_methods) if cell_methods else tuple()
         )
 

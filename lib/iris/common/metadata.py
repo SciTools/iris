@@ -17,7 +17,7 @@ __all__ = [
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
-    "MetadataFactory",
+    "MetadataManagerFactory",
 ]
 
 
@@ -25,7 +25,7 @@ __all__ = [
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 
-class _BaseMeta(ABCMeta):
+class _NamedTupleMeta(ABCMeta):
     """
     Meta-class to support the convenience of creating a namedtuple from
     names/members of the metadata class hierarchy.
@@ -71,7 +71,7 @@ class _BaseMeta(ABCMeta):
         return super().__new__(mcs, name, bases, namespace)
 
 
-class BaseMetadata(metaclass=_BaseMeta):
+class BaseMetadata(metaclass=_NamedTupleMeta):
     """
     Container for common metadata.
 
@@ -154,7 +154,8 @@ class BaseMetadata(metaclass=_BaseMeta):
     def __lt__(self, other):
         #
         # Support Python2 behaviour for a "<" operation involving a
-        # "NoneType" operand.
+        # "NoneType" operand. Require to at least implement this comparison
+        # operator to support sorting of instances.
         #
         if not isinstance(other, self.__class__):
             return NotImplemented
@@ -242,7 +243,7 @@ class CubeMetadata(BaseMetadata):
     @property
     def _names(self):
         """
-        A tuple containing the value of each name participating in the identify
+        A tuple containing the value of each name participating in the identity
         of a :class:`iris.cube.Cube`. This includes the standard name,
         long name, NetCDF variable name, and the STASH from the attributes
         dictionary.
@@ -267,7 +268,7 @@ class CubeMetadata(BaseMetadata):
         return (standard_name, long_name, var_name, stash_name)
 
 
-def MetadataFactory(cls, **kwargs):
+def MetadataManagerFactory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.
@@ -333,7 +334,7 @@ def MetadataFactory(cls, **kwargs):
         instance, and dump and load instance state successfully.
 
         """
-        return (MetadataFactory, (self.cls,), self.__getstate__())
+        return (MetadataManagerFactory, (self.cls,), self.__getstate__())
 
     def __repr__(self):
         args = ", ".join(
@@ -373,7 +374,7 @@ def MetadataFactory(cls, **kwargs):
             raise ValueError(emsg.format(cls.__name__, bad))
 
     # Define the name, (inheritance) bases and namespace of the dynamic class.
-    name = "Metadata"
+    name = "MetadataManager"
     bases = ()
     namespace = {
         "DEFAULT_NAME": cls.DEFAULT_NAME,

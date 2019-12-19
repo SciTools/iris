@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.common.metadata._BaseMeta`.
+Unit tests for the :class:`iris.common.metadata._NamedTupleMeta`.
 
 """
 
@@ -14,7 +14,7 @@ import iris.tests as tests
 
 from abc import abstractmethod
 
-from iris.common.metadata import _BaseMeta
+from iris.common.metadata import _NamedTupleMeta
 
 
 class Test(tests.IrisTest):
@@ -39,7 +39,7 @@ class Test(tests.IrisTest):
         return emsg.format(len(members), plural, args)
 
     def test__no_bases_with_abstract_members_property(self):
-        class Metadata(metaclass=_BaseMeta):
+        class Metadata(metaclass=_NamedTupleMeta):
             @property
             @abstractmethod
             def _members(self):
@@ -59,7 +59,7 @@ class Test(tests.IrisTest):
     def test__no_bases_single_member(self):
         member = "arg_one"
 
-        class Metadata(metaclass=_BaseMeta):
+        class Metadata(metaclass=_NamedTupleMeta):
             _members = member
 
         expected = ["MetadataNamedtuple"]
@@ -76,7 +76,7 @@ class Test(tests.IrisTest):
     def test__no_bases_multiple_members(self):
         members = ("arg_one", "arg_two")
 
-        class Metadata(metaclass=_BaseMeta):
+        class Metadata(metaclass=_NamedTupleMeta):
             _members = members
 
         expected = ["MetadataNamedtuple"]
@@ -96,7 +96,7 @@ class Test(tests.IrisTest):
         members_parent = ("arg_one", "arg_two")
         members_child = ("arg_three", "arg_four")
 
-        class MetadataParent(metaclass=_BaseMeta):
+        class MetadataParent(metaclass=_NamedTupleMeta):
             _members = members_parent
 
         class MetadataChild(MetadataParent):

@@ -57,6 +57,29 @@ class Test(tests.IrisTest):
         self.assertEqual(BaseMetadata._fields, expected)
 
 
+class Test___le__(tests.IrisTest):
+    def setUp(self):
+        self.one = BaseMetadata(1, 1, 1, 1, 1)
+        self.two = BaseMetadata(1, 1, 1, 1, 2)
+        self.none = BaseMetadata(1, 1, 1, 1, None)
+
+    def test__ascending_lt(self):
+        result = self.one < self.two
+        self.assertTrue(result)
+
+    def test__descending_lt(self):
+        result = self.two < self.one
+        self.assertFalse(result)
+
+    def test__none_rhs_operand(self):
+        result = self.one < self.none
+        self.assertFalse(result)
+
+    def test__none_lhs_operand(self):
+        result = self.none < self.one
+        self.assertTrue(result)
+
+
 class Test_token(tests.IrisTest):
     def test_passthru_None(self):
         result = BaseMetadata.token(None)
@@ -124,6 +147,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_standard_name__invalid_token(self):
         token = "nope nope"
         metadata = self._make(standard_name=token)
         result = metadata.name()
@@ -139,6 +163,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_long_name__invalid_token(self):
         token = "nope nope"
         metadata = self._make(long_name=token)
         result = metadata.name()
@@ -154,6 +179,7 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, token)
 
+    def test_var_name__invalid_token(self):
         token = "nope nope"
         metadata = self._make(var_name=token)
         result = metadata.name()
@@ -168,7 +194,9 @@ class Test_name(tests.IrisTest):
         result = metadata.name(token=True)
         self.assertEqual(result, self.default)
 
+    def test_default__invalid_token(self):
         token = "nope nope"
+        metadata = self._make()
         result = metadata.name(default=token)
         self.assertEqual(result, token)
         emsg = "Cannot retrieve a valid name token"

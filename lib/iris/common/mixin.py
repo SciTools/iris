@@ -121,7 +121,7 @@ class LimitedAttributeDict(dict):
 class CFVariableMixin:
     @wraps(BaseMetadata.name)
     def name(self, default=None, token=None):
-        return self._metadata.name(default=default, token=token)
+        return self._metadata_manager.name(default=default, token=token)
 
     def rename(self, name):
         """
@@ -145,60 +145,62 @@ class CFVariableMixin:
     @property
     def standard_name(self):
         """The CF Metadata standard name for the object."""
-        return self._metadata.standard_name
+        return self._metadata_manager.standard_name
 
     @standard_name.setter
     def standard_name(self, name):
-        self._metadata.standard_name = _get_valid_standard_name(name)
+        self._metadata_manager.standard_name = _get_valid_standard_name(name)
 
     @property
     def long_name(self):
         """The CF Metadata long name for the object."""
-        return self._metadata.long_name
+        return self._metadata_manager.long_name
 
     @long_name.setter
     def long_name(self, name):
-        self._metadata.long_name = name
+        self._metadata_manager.long_name = name
 
     @property
     def var_name(self):
         """The NetCDF variable name for the object."""
-        return self._metadata.var_name
+        return self._metadata_manager.var_name
 
     @var_name.setter
     def var_name(self, name):
         if name is not None:
-            result = self._metadata.token(name)
+            result = self._metadata_manager.token(name)
             if result is None or not name:
                 emsg = "{!r} is not a valid NetCDF variable name."
                 raise ValueError(emsg.format(name))
-        self._metadata.var_name = name
+        self._metadata_manager.var_name = name
 
     @property
     def units(self):
         """The S.I. unit of the object."""
-        return self._metadata.units
+        return self._metadata_manager.units
 
     @units.setter
     def units(self, unit):
-        self._metadata.units = cf_units.as_unit(unit)
+        self._metadata_manager.units = cf_units.as_unit(unit)
 
     @property
     def attributes(self):
-        return self._metadata.attributes
+        return self._metadata_manager.attributes
 
     @attributes.setter
     def attributes(self, attributes):
-        self._metadata.attributes = LimitedAttributeDict(attributes or {})
+        self._metadata_manager.attributes = LimitedAttributeDict(
+            attributes or {}
+        )
 
     @property
     def metadata(self):
-        return self._metadata.values
+        return self._metadata_manager.values
 
     @metadata.setter
     def metadata(self, metadata):
-        cls = self._metadata.cls
-        fields = self._metadata.fields
+        cls = self._metadata_manager.cls
+        fields = self._metadata_manager.fields
         arg = metadata
 
         try:

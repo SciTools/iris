@@ -31,7 +31,7 @@ from iris.common import (
     CFVariableMixin,
     CellMeasureMetadata,
     CoordMetadata,
-    MetadataFactory,
+    MetadataManagerFactory,
 )
 import iris.exceptions
 import iris.time
@@ -98,8 +98,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # it provides is a 'has_bounds()' method, which always returns False.
 
         # Configure the metadata manager.
-        if not hasattr(self, "_metadata"):
-            self._metadata = MetadataFactory(BaseMetadata)
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = MetadataManagerFactory(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -709,8 +709,10 @@ class AncillaryVariable(_DimensionalMetadata):
 
         """
         # Configure the metadata manager.
-        if not hasattr(self, "_metadata"):
-            self._metadata = MetadataFactory(AncillaryVariableMetadata)
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = MetadataManagerFactory(
+                AncillaryVariableMetadata
+            )
 
         super().__init__(
             values=data,
@@ -820,7 +822,7 @@ class CellMeasure(AncillaryVariable):
 
         """
         # Configure the metadata manager.
-        self._metadata = MetadataFactory(CellMeasureMetadata)
+        self._metadata_manager = MetadataManagerFactory(CellMeasureMetadata)
 
         super().__init__(
             data=data,
@@ -839,14 +841,14 @@ class CellMeasure(AncillaryVariable):
 
     @property
     def measure(self):
-        return self._metadata.measure
+        return self._metadata_manager.measure
 
     @measure.setter
     def measure(self, measure):
         if measure not in ["area", "volume"]:
             emsg = f"measure must be 'area' or 'volume', got {measure!r}"
             raise ValueError(emsg)
-        self._metadata.measure = measure
+        self._metadata_manager.measure = measure
 
     def __str__(self):
         result = repr(self)
@@ -1319,7 +1321,7 @@ class Coord(_DimensionalMetadata):
 
         """
         # Configure the metadata manager.
-        self._metadata = MetadataFactory(CoordMetadata)
+        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
 
         super().__init__(
             values=points,
@@ -1438,11 +1440,11 @@ class Coord(_DimensionalMetadata):
     @property
     def coord_system(self):
         """The coordinate-system of the coordinate."""
-        return self._metadata.coord_system
+        return self._metadata_manager.coord_system
 
     @coord_system.setter
     def coord_system(self, value):
-        self._metadata.coord_system = value
+        self._metadata_manager.coord_system = value
 
     @property
     def climatological(self):
@@ -1457,10 +1459,10 @@ class Coord(_DimensionalMetadata):
 
         """
         if not self.has_bounds():
-            self._metadata.climatological = False
+            self._metadata_manager.climatological = False
         if not self.units.is_time_reference():
-            self._metadata.climatological = False
-        return self._metadata.climatological
+            self._metadata_manager.climatological = False
+        return self._metadata_manager.climatological
 
     @climatological.setter
     def climatological(self, value):
@@ -1478,7 +1480,7 @@ class Coord(_DimensionalMetadata):
                 emsg = "Cannot set climatological coordinate, no bounds exist."
                 raise ValueError(emsg)
 
-        self._metadata.climatological = value
+        self._metadata_manager.climatological = value
 
     def lazy_points(self):
         """

@@ -40,7 +40,7 @@ class Test__getter(tests.IrisTest):
         )
 
         self.item = CFVariableMixin()
-        self.item._metadata = metadata
+        self.item._metadata_manager = metadata
 
     def test_standard_name(self):
         self.assertEqual(self.item.standard_name, self.standard_name)
@@ -73,16 +73,20 @@ class Test__setter(tests.IrisTest):
         )
 
         self.item = CFVariableMixin()
-        self.item._metadata = metadata
+        self.item._metadata_manager = metadata
 
-    def test_standard_name(self):
+    def test_standard_name__valid(self):
         standard_name = "air_temperature"
         self.item.standard_name = standard_name
-        self.assertEqual(self.item._metadata.standard_name, standard_name)
+        self.assertEqual(
+            self.item._metadata_manager.standard_name, standard_name
+        )
 
+    def test_standard_name__none(self):
         self.item.standard_name = None
-        self.assertIsNone(self.item._metadata.standard_name)
+        self.assertIsNone(self.item._metadata_manager.standard_name)
 
+    def test_standard_name__invalid(self):
         standard_name = "nope nope"
         emsg = f"{standard_name!r} is not a valid standard_name"
         with self.assertRaisesRegex(ValueError, emsg):
@@ -91,21 +95,24 @@ class Test__setter(tests.IrisTest):
     def test_long_name(self):
         long_name = "long_name"
         self.item.long_name = long_name
-        self.assertEqual(self.item._metadata.long_name, long_name)
+        self.assertEqual(self.item._metadata_manager.long_name, long_name)
 
+    def test_long_name__none(self):
         self.item.long_name = None
-        self.assertIsNone(self.item._metadata.long_name)
+        self.assertIsNone(self.item._metadata_manager.long_name)
 
     def test_var_name(self):
         var_name = "var_name"
         self.item.var_name = var_name
-        self.assertEqual(self.item._metadata.var_name, var_name)
+        self.assertEqual(self.item._metadata_manager.var_name, var_name)
 
+    def test_var_name__none(self):
         self.item.var_name = None
-        self.assertIsNone(self.item._metadata.var_name)
+        self.assertIsNone(self.item._metadata_manager.var_name)
 
+    def test_var_name__invalid_token(self):
         var_name = "nope nope"
-        self.item._metadata.token = lambda name: None
+        self.item._metadata_manager.token = lambda name: None
         emsg = f"{var_name!r} is not a valid NetCDF variable name."
         with self.assertRaisesRegex(ValueError, emsg):
             self.item.var_name = var_name
@@ -113,14 +120,15 @@ class Test__setter(tests.IrisTest):
     def test_attributes(self):
         attributes = dict(hello="world")
         self.item.attributes = attributes
-        self.assertEqual(self.item._metadata.attributes, attributes)
-        self.assertIsNot(self.item._metadata.attributes, attributes)
+        self.assertEqual(self.item._metadata_manager.attributes, attributes)
+        self.assertIsNot(self.item._metadata_manager.attributes, attributes)
         self.assertIsInstance(
-            self.item._metadata.attributes, LimitedAttributeDict
+            self.item._metadata_manager.attributes, LimitedAttributeDict
         )
 
+    def test_attributes__none(self):
         self.item.attributes = None
-        self.assertEqual(self.item._metadata.attributes, {})
+        self.assertEqual(self.item._metadata_manager.attributes, {})
 
 
 class Test__metadata_setter(tests.IrisTest):
@@ -148,7 +156,7 @@ class Test__metadata_setter(tests.IrisTest):
 
         metadata = Metadata()
         self.item = CFVariableMixin()
-        self.item._metadata = metadata
+        self.item._metadata_manager = metadata
         self.attributes = dict(one=1, two=2, three=3)
         self.args = OrderedDict(
             standard_name="air_temperature",
@@ -161,8 +169,10 @@ class Test__metadata_setter(tests.IrisTest):
     def test_dict(self):
         metadata = dict(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(self.item._metadata.values, metadata)
-        self.assertIsNot(self.item._metadata.attributes, self.attributes)
+        self.assertEqual(self.item._metadata_manager.values, metadata)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, self.attributes
+        )
 
     def test_dict__missing(self):
         metadata = dict(**self.args)
@@ -174,8 +184,10 @@ class Test__metadata_setter(tests.IrisTest):
     def test_ordereddict(self):
         metadata = self.args
         self.item.metadata = metadata
-        self.assertEqual(self.item._metadata.values, metadata)
-        self.assertIsNot(self.item._metadata.attributes, self.attributes)
+        self.assertEqual(self.item._metadata_manager.values, metadata)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, self.attributes
+        )
 
     def test_ordereddict__missing(self):
         metadata = self.args
@@ -190,12 +202,14 @@ class Test__metadata_setter(tests.IrisTest):
         self.item.metadata = metadata
         result = tuple(
             [
-                getattr(self.item._metadata, field)
-                for field in self.item._metadata.fields
+                getattr(self.item._metadata_manager, field)
+                for field in self.item._metadata_manager.fields
             ]
         )
         self.assertEqual(result, metadata)
-        self.assertIsNot(self.item._metadata.attributes, self.attributes)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, self.attributes
+        )
 
     def test_tuple__missing(self):
         metadata = list(self.args.values())
@@ -211,8 +225,12 @@ class Test__metadata_setter(tests.IrisTest):
         )
         metadata = Metadata(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(self.item._metadata.values, metadata._asdict())
-        self.assertIsNot(self.item._metadata.attributes, metadata.attributes)
+        self.assertEqual(
+            self.item._metadata_manager.values, metadata._asdict()
+        )
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
 
     def test_namedtuple__missing(self):
         Metadata = namedtuple(
@@ -226,8 +244,12 @@ class Test__metadata_setter(tests.IrisTest):
     def test_class(self):
         metadata = BaseMetadata(**self.args)
         self.item.metadata = metadata
-        self.assertEqual(self.item._metadata.values, metadata._asdict())
-        self.assertIsNot(self.item._metadata.attributes, metadata.attributes)
+        self.assertEqual(
+            self.item._metadata_manager.values, metadata._asdict()
+        )
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
 
 
 class Test_rename(tests.IrisTest):
@@ -243,20 +265,21 @@ class Test_rename(tests.IrisTest):
         )
 
         self.item = CFVariableMixin()
-        self.item._metadata = metadata
+        self.item._metadata_manager = metadata
 
-    def test(self):
+    def test__valid_standard_name(self):
         name = "air_temperature"
         self.item.rename(name)
-        self.assertEqual(self.item._metadata.standard_name, name)
-        self.assertIsNone(self.item._metadata.long_name)
-        self.assertIsNone(self.item._metadata.var_name)
+        self.assertEqual(self.item._metadata_manager.standard_name, name)
+        self.assertIsNone(self.item._metadata_manager.long_name)
+        self.assertIsNone(self.item._metadata_manager.var_name)
 
+    def test__invalid_standard_name(self):
         name = "nope nope"
         self.item.rename(name)
-        self.assertIsNone(self.item._metadata.standard_name)
-        self.assertEqual(self.item._metadata.long_name, name)
-        self.assertIsNone(self.item._metadata.var_name)
+        self.assertIsNone(self.item._metadata_manager.standard_name)
+        self.assertEqual(self.item._metadata_manager.long_name, name)
+        self.assertIsNone(self.item._metadata_manager.var_name)
 
 
 class Test_name(tests.IrisTest):
@@ -269,14 +292,14 @@ class Test_name(tests.IrisTest):
         metadata = Metadata(self.name)
 
         self.item = CFVariableMixin()
-        self.item._metadata = metadata
+        self.item._metadata_manager = metadata
 
     def test(self):
         default = mock.sentinel.default
         token = mock.sentinel.token
         result = self.item.name(default=default, token=token)
         self.assertEqual(result, self.name)
-        self.item._metadata.name.assert_called_with(
+        self.item._metadata_manager.name.assert_called_with(
             default=default, token=token
         )
 
