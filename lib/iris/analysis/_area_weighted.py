@@ -65,7 +65,8 @@ class AreaWeightedRegridder:
         self._target_grid_cube_cache = None
 
         self._regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-                src_grid_cube, self._target_grid_cube)
+            src_grid_cube, self._target_grid_cube
+        )
 
     @property
     def _target_grid_cube(self):
