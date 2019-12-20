@@ -402,21 +402,7 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
     return res
 
 
-def _regrid_area_weighted_array(
-    src_data,
-    x_dim,
-    y_dim,
-    src_x_bounds,
-    src_y_bounds,
-    grid_x_bounds,
-    grid_y_bounds,
-    grid_x_decreasing,
-    grid_y_decreasing,
-    area_func,
-    weights_info,
-    circular=False,
-    mdtol=0,
-):
+def _regrid_area_weighted_array(src_data, x_dim, y_dim, weights_info, mdtol=0):
     """
     Regrid the given data from its source grid to a new grid using
     an area weighted mean to determine the resulting data values.
@@ -435,30 +421,11 @@ def _regrid_area_weighted_array(
         The X dimension within `src_data`.
     * y_dim:
         The Y dimension within `src_data`.
-    * src_x_bounds:
-        A NumPy array of bounds along the X axis defining the source grid.
-    * src_y_bounds:
-        A NumPy array of bounds along the Y axis defining the source grid.
-    * grid_x_bounds:
-        A NumPy array of bounds along the X axis defining the new grid.
-    * grid_y_bounds:
-        A NumPy array of bounds along the Y axis defining the new grid.
-    * grid_x_decreasing:
-        Boolean indicating whether the X coordinate of the new grid is
-        in descending order.
-    * grid_y_decreasing:
-        Boolean indicating whether the Y coordinate of the new grid is
-        in descending order.
-    * area_func:
-        A function that returns an (p, q) array of weights given an (p, 2)
-        shaped array of Y bounds and an (q, 2) shaped array of X bounds.
-    * weights_info: The area weights to be used for area-weighted regridding.
+    * weights_info:
+        The area weights information to be used for area-weighted
+        regridding.
 
     Kwargs:
-
-    * circular:
-        A boolean indicating whether the `src_x_bounds` are periodic. Default
-        is False.
 
     * mdtol:
         Tolerance of missing data. The value returned in each element of the
@@ -934,19 +901,11 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         src_y,
         src_x_dim,
         src_y_dim,
-        src_x_bounds,
-        src_y_bounds,
         grid_x,
         grid_y,
-        grid_x_bounds,
-        grid_y_bounds,
-        grid_x_decreasing,
-        grid_y_decreasing,
         meshgrid_x,
         meshgrid_y,
-        area_func,
         weights_info,
-        circular,
     )
 
 
@@ -964,36 +923,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
         src_y,
         src_x_dim,
         src_y_dim,
-        src_x_bounds,
-        src_y_bounds,
         grid_x,
         grid_y,
-        grid_x_bounds,
-        grid_y_bounds,
-        grid_x_decreasing,
-        grid_y_decreasing,
         meshgrid_x,
         meshgrid_y,
-        area_func,
         weights_info,
-        circular,
     ) = regrid_info
 
     # Calculate new data array for regridded cube.
     new_data = _regrid_area_weighted_array(
-        src_cube.data,
-        src_x_dim,
-        src_y_dim,
-        src_x_bounds,
-        src_y_bounds,
-        grid_x_bounds,
-        grid_y_bounds,
-        grid_x_decreasing,
-        grid_y_decreasing,
-        area_func,
-        weights_info,
-        circular,
-        mdtol,
+        src_cube.data, src_x_dim, src_y_dim, weights_info, mdtol,
     )
 
     # Wrap up the data as a Cube.
