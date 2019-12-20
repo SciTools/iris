@@ -1,0 +1,2 @@
+* The area weights used when performing area weighted regridding are now
+  cached. 

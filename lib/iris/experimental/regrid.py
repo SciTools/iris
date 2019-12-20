@@ -803,6 +803,35 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         """
         Compute the area weights used for area-weighted regridding.
 
+        Args:
+
+        * src_x_bounds:
+            A NumPy array of bounds along the X axis defining the source grid.
+        * src_y_bounds:
+            A NumPy array of bounds along the Y axis defining the source grid.
+        * grid_x_bounds:
+            A NumPy array of bounds along the X axis defining the new grid.
+        * grid_y_bounds:
+            A NumPy array of bounds along the Y axis defining the new grid.
+        * grid_x_decreasing:
+            Boolean indicating whether the X coordinate of the new grid is
+            in descending order.
+        * grid_y_decreasing:
+            Boolean indicating whether the Y coordinate of the new grid is
+            in descending order.
+        * area_func:
+            A function that returns an (p, q) array of weights given an (p, 2)
+            shaped array of Y bounds and an (q, 2) shaped array of X bounds.
+
+        Kwargs:
+
+        * circular:
+            A boolean indicating whether the `src_x_bounds` are periodic.
+            Default is False.
+
+        Returns:
+            The area weights to be used for area-weighted regridding.
+
         """
         # Determine which grid bounds are within src extent.
         y_within_bounds = _within_bounds(
