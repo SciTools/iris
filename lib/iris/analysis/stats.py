@@ -14,19 +14,6 @@ import iris
 from iris.util import broadcast_to_shape
 
 
-def _ones_like(cube):
-    """
-    Return a copy of cube with the same mask, but all data values set to 1.
-
-    The operation is non-lazy.
-    """
-    ones_cube = cube.copy()
-    ones_cube.data = np.ones_like(cube.data)
-    ones_cube.rename("unknown")
-    ones_cube.units = 1
-    return ones_cube
-
-
 def pearsonr(
     cube_a,
     cube_b,
@@ -91,6 +78,8 @@ def pearsonr(
         cube_1 = cube_a
         cube_2 = cube_b
 
+    smaller_shape = cube_2.shape
+
     dim_coords_1 = [coord.name() for coord in cube_1.dim_coords]
     dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
     common_dim_coords = list(set(dim_coords_1) & set(dim_coords_2))
@@ -98,7 +87,21 @@ def pearsonr(
     if corr_coords is None:
         corr_coords = common_dim_coords
 
-    smaller_shape = cube_2.shape
+    def _ones_like(cube):
+        # Return a copy of cube with the same mask, but all data values set to 1.
+        # The operation is non-lazy.
+        # For safety we also discard any cell-measures and ancillary-variables, to
+        # avoid cube arithmetic possibly objecting to them, or inadvertently retaining
+        # them in the result where they might be inappropriate.
+        ones_cube = cube.copy()
+        ones_cube.data = np.ones_like(cube.data)
+        ones_cube.rename("unknown")
+        ones_cube.units = 1
+        for cm in ones_cube.cell_measures():
+            ones_cube.remove_cell_measure(cm)
+        for av in ones_cube.ancillary_variables():
+            ones_cube.remove_ancillary_variable(av)
+        return ones_cube
 
     # Match up data masks if required.
     if common_mask:
