@@ -78,6 +78,8 @@ def pearsonr(
         cube_1 = cube_a
         cube_2 = cube_b
 
+    smaller_shape = cube_2.shape
+
     dim_coords_1 = [coord.name() for coord in cube_1.dim_coords]
     dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
     common_dim_coords = list(set(dim_coords_1) & set(dim_coords_2))
@@ -127,7 +129,6 @@ def pearsonr(
             dim_coords_2 = [coord.name() for coord in cube_2.dim_coords]
 
     # Broadcast weights to shape of cubes if necessary.
-    smaller_shape = cube_2.shape
     if weights is None or cube_1.shape == smaller_shape:
         weights_1 = weights
         weights_2 = weights
