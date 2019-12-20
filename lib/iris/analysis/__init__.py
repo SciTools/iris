@@ -2316,7 +2316,7 @@ class _Groupby:
 
 def clear_phenomenon_identity(cube):
     """
-    Helper function to clear the standard_name, attributes and
+    Helper function to clear the standard_name, attributes, and
     cell_methods of a cube.
 
     """
