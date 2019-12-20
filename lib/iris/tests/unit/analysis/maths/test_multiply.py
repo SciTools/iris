@@ -72,7 +72,7 @@ class TestMaskedConstant(
 
 
 @tests.iristest_timing_decorator
-class TestMaskedConstant(
+class TestAncillaryHandling(
     tests.IrisTest_nometa, CubeArithmeticAncillaryHandlingTestMixin
 ):
     @property
