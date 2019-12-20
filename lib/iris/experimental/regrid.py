@@ -903,11 +903,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
     # Calculate new data array for regridded cube.
     new_data = _regrid_area_weighted_array(
-        src_cube.data,
-        src_x_dim,
-        src_y_dim,
-        weights_info,
-        mdtol,
+        src_cube.data, src_x_dim, src_y_dim, weights_info, mdtol,
     )
 
     # Wrap up the data as a Cube.
