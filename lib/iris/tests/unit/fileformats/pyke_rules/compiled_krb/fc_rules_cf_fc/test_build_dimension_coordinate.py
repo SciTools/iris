@@ -30,7 +30,7 @@ class RulesTestMixin:
             cube=mock.Mock(),
             cf_var=mock.Mock(dimensions=('foo', 'bar')),
             filename='DUMMY',
-            cube_bits=dict(coordinates=[]))
+            cube_parts=dict(coordinates=[]))
 
         # Create patch for deferred loading that prevents attempted
         # file access. This assumes that self.cf_coord_var and
@@ -258,9 +258,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.cube_bits container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.cube_bits['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
     def test_fastest_varying_vertex_dim(self):
@@ -286,9 +286,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.cube_bits container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.cube_bits['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
     def test_fastest_with_different_dim_names(self):
@@ -317,9 +317,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.cube_bits container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.cube_bits['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
 
