@@ -17,6 +17,7 @@ from iris.tests.unit.analysis.maths import (
     CubeArithmeticCoordsTest,
     CubeArithmeticMaskedConstantTestMixin,
     CubeArithmeticMaskingTestMixin,
+    CubeArithmeticAncillaryHandlingTestMixin,
 )
 
 
@@ -65,6 +66,15 @@ class TestMaskedConstant(
     def data_op(self):
         return operator.add
 
+    @property
+    def cube_func(self):
+        return add
+
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(
+    tests.IrisTest_nometa, CubeArithmeticAncillaryHandlingTestMixin
+):
     @property
     def cube_func(self):
         return add

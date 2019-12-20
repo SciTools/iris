@@ -11,7 +11,7 @@ import numpy as np
 from numpy import ma
 
 from iris.analysis import MEAN
-from iris.coords import DimCoord
+from iris.coords import DimCoord, CellMeasure, AncillaryVariable
 from iris.cube import Cube
 import iris.tests as tests
 import iris.tests.stock as stock
@@ -212,3 +212,36 @@ class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
         self.assertEqual(dtype, res.dtype)
         self.assertIsNot(res, cube)
+
+
+class CubeArithmeticAncillaryHandlingTestMixin(metaclass=ABCMeta):
+    @property
+    @abstractmethod
+    def cube_func(self):
+        # Define an iris arithmetic function to be called
+        # I.E. 'iris.analysis.maths.xx'.
+        pass
+
+    def test_cell_measure_removal(self):
+        cube1 = Cube([0])
+        cm = CellMeasure([0], long_name="cm")
+        cube1.add_cell_measure(cm)
+        cube2 = Cube([0])
+        res1 = cube1 + cube2
+        res2 = cube2 + cube1
+        res3 = cube1 + cube1
+        self.assertEqual(res1.cell_measures(), [])
+        self.assertEqual(res2.cell_measures(), [])
+        self.assertEqual(res3.cell_measures(), [])
+
+    def test_ancillary_removal(self):
+        cube1 = Cube([0])
+        av = AncillaryVariable([0], long_name="av")
+        cube1.add_ancillary_variable(av)
+        cube2 = Cube([0])
+        res1 = cube1 + cube2
+        res2 = cube2 + cube1
+        res3 = cube1 + cube1
+        self.assertEqual(res1.ancillary_variables(), [])
+        self.assertEqual(res2.ancillary_variables(), [])
+        self.assertEqual(res3.ancillary_variables(), [])

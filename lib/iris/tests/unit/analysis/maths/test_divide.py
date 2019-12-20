@@ -18,6 +18,7 @@ from iris.tests.unit.analysis.maths import (
     CubeArithmeticBroadcastingTestMixin,
     CubeArithmeticMaskingTestMixin,
     CubeArithmeticCoordsTest,
+    CubeArithmeticAncillaryHandlingTestMixin,
 )
 
 
@@ -84,6 +85,15 @@ class TestCoordMatch(CubeArithmeticCoordsTest):
         cube1, cube2 = self.SetUpReversed()
         with self.assertRaises(ValueError):
             divide(cube1, cube2)
+
+
+@tests.iristest_timing_decorator
+class TestMaskedConstant(
+    tests.IrisTest_nometa, CubeArithmeticAncillaryHandlingTestMixin
+):
+    @property
+    def cube_func(self):
+        return divide
 
 
 if __name__ == "__main__":
