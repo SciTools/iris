@@ -944,6 +944,10 @@ def _math_op_common(
         new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
 
     iris.analysis.clear_phenomenon_identity(new_cube)
+    for cm in cube.cell_measures():
+        cube.remove_cell_measure(cm)
+    for av in cube.ancillary_variables():
+        cube.remove_ancillary_variable(av)
     new_cube.units = new_unit
     return new_cube
 

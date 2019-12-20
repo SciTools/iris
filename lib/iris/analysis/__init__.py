@@ -2316,17 +2316,13 @@ class _Groupby:
 
 def clear_phenomenon_identity(cube):
     """
-    Helper function to clear the standard_name, attributes, cell_methods,
-    cell_measures and ancillary_variables of a cube.
+    Helper function to clear the standard_name, attributes and
+    cell_methods of a cube.
 
     """
     cube.rename(None)
     cube.attributes.clear()
     cube.cell_methods = tuple()
-    for cm in cube.cell_measures():
-        cube.remove_cell_measure(cm)
-    for av in cube.ancillary_variables():
-        cube.remove_ancillary_variable(av)
 
 
 ###############################################################################
