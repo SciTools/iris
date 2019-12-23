@@ -143,12 +143,13 @@ class Test(tests.IrisTest):
             target.coord(name).units = None
             # Ensure the bounds of the target cover the same range as the
             # source.
-            target.coord(name).bounds = np.column_stack(
+            target_bounds = np.column_stack(
                 (
                     src1.coord(name).bounds[[0, 1], [0, 1]],
                     src1.coord(name).bounds[[2, 3], [0, 1]],
                 )
             )
+            target.coord(name).bounds = target_bounds
 
         regridder = AreaWeightedRegridder(src1, target)
         result1 = regridder(src1)
@@ -169,8 +170,18 @@ class Test(tests.IrisTest):
             ]
         )
 
-        self.assertArrayEqual(result1.data, reference1.data)
-        self.assertArrayEqual(result2.data, reference2.data)
+        for name in coord_names:
+            # Remove coords system and units so it is no longer spherical.
+            reference1.coord(name).coord_system = None
+            reference1.coord(name).units = None
+            reference2.coord(name).coord_system = None
+            reference2.coord(name).units = None
+            reference1.coord(name).bounds = target_bounds
+            reference2.coord(name).bounds = target_bounds
+
+        # Compare the cubes rather than just the data.
+        self.assertEqual(result1, reference1)
+        self.assertEqual(result2, reference2)
 
     def test_mismatched_data_dims(self):
         coord_names = ["latitude", "longitude"]
