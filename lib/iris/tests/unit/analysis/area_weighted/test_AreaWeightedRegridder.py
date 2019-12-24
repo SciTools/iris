@@ -137,18 +137,26 @@ class Test(tests.IrisTest):
             src2.coord(name).guess_bounds()
 
         target = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        # Ensure the bounds of the target cover the same range as the
+        # source.
+        target_lat_bounds = np.column_stack(
+            (
+                src1.coord("latitude").bounds[[0, 1], [0, 1]],
+                src1.coord("latitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+        target.coord("latitude").bounds = target_lat_bounds
+        target_lon_bounds = np.column_stack(
+            (
+                src1.coord("longitude").bounds[[0, 1], [0, 1]],
+                src1.coord("longitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+        target.coord("longitude").bounds = target_lon_bounds
         for name in coord_names:
             # Remove coords system and units so it is no longer spherical.
             target.coord(name).coord_system = None
             target.coord(name).units = None
-            # Ensure the bounds of the target cover the same range as the
-            # source.
-            target.coord(name).bounds = np.column_stack(
-                (
-                    src1.coord(name).bounds[[0, 1], [0, 1]],
-                    src1.coord(name).bounds[[2, 3], [0, 1]],
-                )
-            )
 
         regridder = AreaWeightedRegridder(src1, target)
         result1 = regridder(src1)
@@ -161,6 +169,9 @@ class Test(tests.IrisTest):
                 [np.mean(src1.data[2:4, 0:2]), np.mean(src1.data[2:4, 2:4])],
             ]
         )
+        reference1.coord("latitude").bounds = target_lat_bounds
+        reference1.coord("longitude").bounds = target_lon_bounds
+
         reference2 = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
         reference2.data = np.array(
             [
@@ -168,9 +179,19 @@ class Test(tests.IrisTest):
                 [np.mean(src2.data[2:4, 0:2]), np.mean(src2.data[2:4, 2:4])],
             ]
         )
+        reference2.coord("latitude").bounds = target_lat_bounds
+        reference2.coord("longitude").bounds = target_lon_bounds
 
-        self.assertArrayEqual(result1.data, reference1.data)
-        self.assertArrayEqual(result2.data, reference2.data)
+        for name in coord_names:
+            # Remove coords system and units so it is no longer spherical.
+            reference1.coord(name).coord_system = None
+            reference1.coord(name).units = None
+            reference2.coord(name).coord_system = None
+            reference2.coord(name).units = None
+
+        # Compare the cubes rather than just the data.
+        self.assertEqual(result1, reference1)
+        self.assertEqual(result2, reference2)
 
     def test_mismatched_data_dims(self):
         coord_names = ["latitude", "longitude"]

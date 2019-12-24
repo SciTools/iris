@@ -881,9 +881,9 @@ class RectilinearRegridder:
         def copy_coords(src_coords, add_method):
             for coord in src_coords:
                 dims = src.coord_dims(coord)
-                if coord is src_x_coord:
+                if coord == src_x_coord:
                     coord = grid_x_coord
-                elif coord is src_y_coord:
+                elif coord == src_y_coord:
                     coord = grid_y_coord
                 elif x_dim in dims or y_dim in dims:
                     continue
