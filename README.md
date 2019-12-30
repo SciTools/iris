@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://scitools.org.uk/iris/docs/latest/" style="display: block; margin: 0 auto;">
-   <img src="https://raw.githubusercontent.com/SciTools/iris/master/docs/iris/src/_static/logo_banner.png"
+   <img src="docs/iris/src/_static/logo_banner.png"
         style="max-width: 40%;" alt="Iris"></a><br>
 </h1>
 
