@@ -232,6 +232,18 @@ class Test(tests.IrisTest):
         self.assertArrayShapeStats(
             result, (8, 5, 9), expected_mean, expected_std
         )
+        # Check data with dims in different order
+        # Reshape src so that the coords are ordered [y, x, z],
+        # the mean and std statistics should be the same
+        data = np.moveaxis(src.data.copy(), 2, 0)
+        src = Cube(data)
+        src.add_dim_coord(lat, 0)
+        src.add_dim_coord(lon, 1)
+        src.add_dim_coord(levels, 2)
+        result = regridder(src)
+        self.assertArrayShapeStats(
+            result, (9, 8, 5), expected_mean, expected_std
+        )
 
 
 if __name__ == "__main__":
