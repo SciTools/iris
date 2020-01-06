@@ -22,43 +22,43 @@ from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
 
 
 class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
-    def _test(self, inverse_flattening=False):
+    def _test(self, inverse_flattening=False, replace_props=None, remove_props=None):
         """
         Generic test that can check vertical perspective validity with or
         without inverse flattening.
         """
-        cf_grid_var_kwargs = {
-            'spec': [],
+        # Make a dictionary of the non-ellipsoid properties to be added to both a test
+        # coord-system, and a test grid-mapping cf_var.
+        non_ellipsoid_kwargs = {
             'latitude_of_projection_origin': 0.0,
             'longitude_of_projection_origin': 2.0,
             'perspective_point_height': 2000000.0,
             'sweep_angle_axis': 'x',
             'false_easting': 100.0,
-            'false_northing': 200.0,
-            'semi_major_axis': 6377563.396}
+            'false_northing': 200.0}
 
+        # Make specified adjustments to the non-ellipsoid properties.
+        if remove_props:
+            for key in remove_props:
+                non_ellipsoid_kwargs.pop(key, None)
+        if replace_props:
+            for key, value in replace_props.items():
+                non_ellipsoid_kwargs[key] = value
+
+        # Make a dictionary of ellipsoid properties, to be added to both a test
+        # ellipsoid and the grid-mapping cf_var.
         ellipsoid_kwargs = {'semi_major_axis': 6377563.396}
         if inverse_flattening:
             ellipsoid_kwargs['inverse_flattening'] = 299.3249646
         else:
             ellipsoid_kwargs['semi_minor_axis'] = 6356256.909
+
+        cf_grid_var_kwargs = non_ellipsoid_kwargs.copy()
         cf_grid_var_kwargs.update(ellipsoid_kwargs)
-
-        cf_grid_var = mock.Mock(**cf_grid_var_kwargs)
-        ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
-
+        cf_grid_var = mock.Mock(spec=[], **cf_grid_var_kwargs)
         cs = build_geostationary_coordinate_system(None, cf_grid_var)
-        expected = Geostationary(
-            latitude_of_projection_origin=cf_grid_var.
-            latitude_of_projection_origin,
-            longitude_of_projection_origin=cf_grid_var.
-            longitude_of_projection_origin,
-            perspective_point_height=cf_grid_var.perspective_point_height,
-            sweep_angle_axis=cf_grid_var.sweep_angle_axis,
-            false_easting=cf_grid_var.false_easting,
-            false_northing=cf_grid_var.false_northing,
-            ellipsoid=ellipsoid)
-
+        ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
+        expected = Geostationary(ellipsoid=ellipsoid, **non_ellipsoid_kwargs)
         self.assertEqual(cs, expected)
 
     def test_valid(self):
@@ -66,3 +66,13 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
 
     def test_inverse_flattening(self):
         self._test(inverse_flattening=True)
+
+    def test_false_offsets_missing(self):
+        self._test(remove_props=['false_easting', 'false_northing'])
+
+    def test_false_offsets_none(self):
+        self._test(replace_props={'false_easting':None, 'false_northing':None})
+
+
+if __name__ == "__main__":
+    tests.main()
