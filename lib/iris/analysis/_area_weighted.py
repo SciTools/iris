@@ -47,15 +47,9 @@ class AreaWeightedRegridder:
             the same cooordinate system.
 
         """
-        # Snapshot the state of the cubes to ensure that the regridder is
+        # Snapshot the state of the source cube to ensure that the regridder is
         # impervious to external changes to the original cubes.
         self._src_grid = snapshot_grid(src_grid_cube)
-        self._target_grid = snapshot_grid(target_grid_cube)
-
-        # Store the x_dim and y_dim of the source cube.
-        x, y = get_xy_dim_coords(src_grid_cube)
-        self._src_x_dim = src_grid_cube.coord_dims(x)
-        self._src_y_dim = src_grid_cube.coord_dims(y)
 
         # Missing data tolerance.
         if not (0 <= mdtol <= 1):
@@ -63,24 +57,21 @@ class AreaWeightedRegridder:
             raise ValueError(msg.format(mdtol))
         self._mdtol = mdtol
 
-        # The need for an actual Cube is an implementation quirk caused by the
-        # current usage of the experimental regrid function.
-        self._target_grid_cube_cache = None
-
-        self._regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-            src_grid_cube, self._target_grid_cube
+        # Store regridding information
+        _regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            src_grid_cube, target_grid_cube
         )
-
-    @property
-    def _target_grid_cube(self):
-        if self._target_grid_cube_cache is None:
-            x, y = self._target_grid
-            data = np.empty((y.points.size, x.points.size))
-            cube = iris.cube.Cube(data)
-            cube.add_dim_coord(y, 0)
-            cube.add_dim_coord(x, 1)
-            self._target_grid_cube_cache = cube
-        return self._target_grid_cube_cache
+        (
+            src_x,
+            src_y,
+            src_x_dim,
+            src_y_dim,
+            self.grid_x,
+            self.grid_y,
+            self.meshgrid_x,
+            self.meshgrid_y,
+            self.weights_info,
+        ) = _regrid_info
 
     def __call__(self, cube):
         """
@@ -102,22 +93,25 @@ class AreaWeightedRegridder:
             area-weighted regridding.
 
         """
-        if get_xy_dim_coords(cube) != self._src_grid or not (
-            _xy_data_dims_are_equal(cube, self._src_x_dim, self._src_y_dim)
-        ):
+        src_x, src_y = get_xy_dim_coords(cube)
+        if (src_x, src_y) != self._src_grid:
             raise ValueError(
                 "The given cube is not defined on the same "
                 "source grid as this regridder."
             )
-        return eregrid._regrid_area_weighted_rectilinear_src_and_grid__perform(
-            cube, self._regrid_info, mdtol=self._mdtol
+        src_x_dim = cube.coord_dims(src_x)[0]
+        src_y_dim = cube.coord_dims(src_y)[0]
+        _regrid_info = (
+            src_x,
+            src_y,
+            src_x_dim,
+            src_y_dim,
+            self.grid_x,
+            self.grid_y,
+            self.meshgrid_x,
+            self.meshgrid_y,
+            self.weights_info,
         )
-
-
-def _xy_data_dims_are_equal(cube, x_dim, y_dim):
-    """
-    Return whether the data dimensions of the x and y coordinates on the
-    the cube are equal to the values ``x_dim`` and ``y_dim``, respectively.
-    """
-    x1, y1 = get_xy_dim_coords(cube)
-    return cube.coord_dims(x1) == x_dim and cube.coord_dims(y1) == y_dim
+        return eregrid._regrid_area_weighted_rectilinear_src_and_grid__perform(
+            cube, _regrid_info, mdtol=self._mdtol
+        )
