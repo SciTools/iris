@@ -647,10 +647,16 @@ class Geostationary(CoordSystem):
 
     grid_mapping_name = 'geostationary'
 
-    def __init__(self, latitude_of_projection_origin,
-                 longitude_of_projection_origin,
-                 perspective_point_height, sweep_angle_axis, false_easting=0,
-                 false_northing=0, ellipsoid=None):
+    def __init__(
+        self,
+        latitude_of_projection_origin,
+        longitude_of_projection_origin,
+        perspective_point_height,
+        sweep_angle_axis,
+        false_easting=None,
+        false_northing=None,
+        ellipsoid=None,
+    ):
 
         """
         Constructs a Geostationary coord system.
@@ -697,9 +703,13 @@ class Geostationary(CoordSystem):
         self.perspective_point_height = float(perspective_point_height)
 
         #: X offset from planar origin in metres.
+        if false_easting is None:
+            false_easting = 0
         self.false_easting = float(false_easting)
 
         #: Y offset from planar origin in metres.
+        if false_northing is None:
+            false_northing = 0
         self.false_northing = float(false_northing)
 
         #: The axis along which the satellite instrument sweeps - 'x' or 'y'.
