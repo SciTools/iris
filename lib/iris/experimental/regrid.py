@@ -399,11 +399,7 @@ def _weighted_mean_with_mdtol(data, weights, axis=None, mdtol=0):
     return res
 
 
-def _regrid_area_weighted_array(src_data, x_dim, y_dim,
-                                src_x_bounds, src_y_bounds,
-                                grid_x_bounds, grid_y_bounds,
-                                grid_x_decreasing, grid_y_decreasing,
-                                area_func, circular=False, mdtol=0):
+def _regrid_area_weighted_array(src_data, x_dim, y_dim, weights_info, mdtol=0):
     """
     Regrid the given data from its source grid to a new grid using
     an area weighted mean to determine the resulting data values.
@@ -422,29 +418,11 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         The X dimension within `src_data`.
     * y_dim:
         The Y dimension within `src_data`.
-    * src_x_bounds:
-        A NumPy array of bounds along the X axis defining the source grid.
-    * src_y_bounds:
-        A NumPy array of bounds along the Y axis defining the source grid.
-    * grid_x_bounds:
-        A NumPy array of bounds along the X axis defining the new grid.
-    * grid_y_bounds:
-        A NumPy array of bounds along the Y axis defining the new grid.
-    * grid_x_decreasing:
-        Boolean indicating whether the X coordinate of the new grid is
-        in descending order.
-    * grid_y_decreasing:
-        Boolean indicating whether the Y coordinate of the new grid is
-        in descending order.
-    * area_func:
-        A function that returns an (p, q) array of weights given an (p, 2)
-        shaped array of Y bounds and an (q, 2) shaped array of X bounds.
+    * weights_info:
+        The area weights information to be used for area-weighted
+        regridding.
 
     Kwargs:
-
-    * circular:
-        A boolean indicating whether the `src_x_bounds` are periodic. Default
-        is False.
 
     * mdtol:
         Tolerance of missing data. The value returned in each element of the
@@ -461,116 +439,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         grid.
 
     """
-
-    def _calculate_regrid_area_weighted_weights(
-        src_x_bounds,
-        src_y_bounds,
-        grid_x_bounds,
-        grid_y_bounds,
-        grid_x_decreasing,
-        grid_y_decreasing,
-        area_func,
-        circular=False,
-    ):
-        """
-        Compute the area weights used for area-weighted regridding.
-
-        """
-        # Determine which grid bounds are within src extent.
-        y_within_bounds = _within_bounds(
-            src_y_bounds, grid_y_bounds, grid_y_decreasing
-        )
-        x_within_bounds = _within_bounds(
-            src_x_bounds, grid_x_bounds, grid_x_decreasing
-        )
-
-        # Cache which src_bounds are within grid bounds
-        cached_x_bounds = []
-        cached_x_indices = []
-        max_x_indices = 0
-        for (x_0, x_1) in grid_x_bounds:
-            if grid_x_decreasing:
-                x_0, x_1 = x_1, x_0
-            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
-            cached_x_bounds.append(x_bounds)
-            cached_x_indices.append(x_indices)
-            # Keep record of the largest slice
-            if isinstance(x_indices, slice):
-                x_indices_size = np.sum(x_indices.stop - x_indices.start)
-            else:  # is tuple of indices
-                x_indices_size = len(x_indices)
-            if x_indices_size > max_x_indices:
-                max_x_indices = x_indices_size
-
-        # Cache which y src_bounds areas and weights are within grid bounds
-        cached_y_indices = []
-        cached_weights = []
-        max_y_indices = 0
-        for j, (y_0, y_1) in enumerate(grid_y_bounds):
-            # Reverse lower and upper if dest grid is decreasing.
-            if grid_y_decreasing:
-                y_0, y_1 = y_1, y_0
-            y_bounds, y_indices = _cropped_bounds(src_y_bounds, y_0, y_1)
-            cached_y_indices.append(y_indices)
-            # Keep record of the largest slice
-            if isinstance(y_indices, slice):
-                y_indices_size = np.sum(y_indices.stop - y_indices.start)
-            else:  # is tuple of indices
-                y_indices_size = len(y_indices)
-            if y_indices_size > max_y_indices:
-                max_y_indices = y_indices_size
-
-            weights_i = []
-            for i, (x_0, x_1) in enumerate(grid_x_bounds):
-                # Reverse lower and upper if dest grid is decreasing.
-                if grid_x_decreasing:
-                    x_0, x_1 = x_1, x_0
-                x_bounds = cached_x_bounds[i]
-                x_indices = cached_x_indices[i]
-
-                # Determine whether element i, j overlaps with src and hence
-                # an area weight should be computed.
-                # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in
-                # the case of wrapped longitudes. However if the src grid is
-                # not global (i.e. circular) this new cell would include a
-                # region outside of the extent of the src grid and thus the
-                # weight is therefore invalid.
-                outside_extent = x_0 > x_1 and not circular
-                if (
-                    outside_extent or
-                    not y_within_bounds[j] or
-                    not x_within_bounds[i]
-                ):
-                    weights = False
-                else:
-                    # Calculate weights based on areas of cropped bounds.
-                    if isinstance(x_indices, tuple) and isinstance(
-                        y_indices, tuple
-                    ):
-                        raise RuntimeError(
-                            "Cannot handle split bounds " "in both x and y."
-                        )
-                    weights = area_func(y_bounds, x_bounds)
-                weights_i.append(weights)
-            cached_weights.append(weights_i)
-        return (
-            tuple(cached_x_indices),
-            tuple(cached_y_indices),
-            max_x_indices,
-            max_y_indices,
-            tuple(cached_weights),
-        )
-
-    weights_info = _calculate_regrid_area_weighted_weights(
-        src_x_bounds,
-        src_y_bounds,
-        grid_x_bounds,
-        grid_y_bounds,
-        grid_x_decreasing,
-        grid_y_decreasing,
-        area_func,
-        circular,
-    )
     (
         cached_x_indices,
         cached_y_indices,
@@ -578,11 +446,6 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim,
         max_y_indices,
         cached_weights,
     ) = weights_info
-    # Delete variables that are not needed and would not be available
-    # if _calculate_regrid_area_weighted_weights was refactored further
-    del src_x_bounds, src_y_bounds, grid_x_bounds, grid_y_bounds
-    del grid_x_decreasing, grid_y_decreasing
-    del area_func, circular
 
     # Ensure we have x_dim and y_dim.
     x_dim_orig = x_dim
@@ -766,6 +629,25 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
         A new :class:`iris.cube.Cube` instance.
 
     """
+    regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+        src_cube, grid_cube
+    )
+    result = _regrid_area_weighted_rectilinear_src_and_grid__perform(
+        src_cube, regrid_info, mdtol
+    )
+    return result
+
+
+def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+    src_cube, grid_cube
+):
+    """
+    First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+
+    Check inputs and calculate related info. The 'regrid info' returned
+    can be re-used over many 2d slices.
+
+    """
     # Get the 1d monotonic (or scalar) src and grid coordinates.
     src_x, src_y = _get_xy_coords(src_cube)
     grid_x, grid_y = _get_xy_coords(grid_cube)
@@ -821,6 +703,9 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     grid_x_bounds = _get_bounds_in_units(grid_x, x_units, dtype)
     grid_y_bounds = _get_bounds_in_units(grid_y, y_units, dtype)
 
+    # Create 2d meshgrids as required by _create_cube func.
+    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
+
     # Determine whether target grid bounds are decreasing. This must
     # be determined prior to wrap_lons being called.
     grid_x_decreasing = grid_x_bounds[-1, 0] < grid_x_bounds[0, 0]
@@ -847,17 +732,185 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube,
     else:
         area_func = _cartesian_area
 
+    def _calculate_regrid_area_weighted_weights(
+        src_x_bounds,
+        src_y_bounds,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        area_func,
+        circular=False,
+    ):
+        """
+        Compute the area weights used for area-weighted regridding.
+
+        Args:
+
+        * src_x_bounds:
+            A NumPy array of bounds along the X axis defining the source grid.
+        * src_y_bounds:
+            A NumPy array of bounds along the Y axis defining the source grid.
+        * grid_x_bounds:
+            A NumPy array of bounds along the X axis defining the new grid.
+        * grid_y_bounds:
+            A NumPy array of bounds along the Y axis defining the new grid.
+        * grid_x_decreasing:
+            Boolean indicating whether the X coordinate of the new grid is
+            in descending order.
+        * grid_y_decreasing:
+            Boolean indicating whether the Y coordinate of the new grid is
+            in descending order.
+        * area_func:
+            A function that returns an (p, q) array of weights given an (p, 2)
+            shaped array of Y bounds and an (q, 2) shaped array of X bounds.
+
+        Kwargs:
+
+        * circular:
+            A boolean indicating whether the `src_x_bounds` are periodic.
+            Default is False.
+
+        Returns:
+            The area weights to be used for area-weighted regridding.
+
+        """
+        # Determine which grid bounds are within src extent.
+        y_within_bounds = _within_bounds(
+            src_y_bounds, grid_y_bounds, grid_y_decreasing
+        )
+        x_within_bounds = _within_bounds(
+            src_x_bounds, grid_x_bounds, grid_x_decreasing
+        )
+
+        # Cache which src_bounds are within grid bounds
+        cached_x_bounds = []
+        cached_x_indices = []
+        max_x_indices = 0
+        for (x_0, x_1) in grid_x_bounds:
+            if grid_x_decreasing:
+                x_0, x_1 = x_1, x_0
+            x_bounds, x_indices = _cropped_bounds(src_x_bounds, x_0, x_1)
+            cached_x_bounds.append(x_bounds)
+            cached_x_indices.append(x_indices)
+            # Keep record of the largest slice
+            if isinstance(x_indices, slice):
+                x_indices_size = np.sum(x_indices.stop - x_indices.start)
+            else:  # is tuple of indices
+                x_indices_size = len(x_indices)
+            if x_indices_size > max_x_indices:
+                max_x_indices = x_indices_size
+
+        # Cache which y src_bounds areas and weights are within grid bounds
+        cached_y_indices = []
+        cached_weights = []
+        max_y_indices = 0
+        for j, (y_0, y_1) in enumerate(grid_y_bounds):
+            # Reverse lower and upper if dest grid is decreasing.
+            if grid_y_decreasing:
+                y_0, y_1 = y_1, y_0
+            y_bounds, y_indices = _cropped_bounds(src_y_bounds, y_0, y_1)
+            cached_y_indices.append(y_indices)
+            # Keep record of the largest slice
+            if isinstance(y_indices, slice):
+                y_indices_size = np.sum(y_indices.stop - y_indices.start)
+            else:  # is tuple of indices
+                y_indices_size = len(y_indices)
+            if y_indices_size > max_y_indices:
+                max_y_indices = y_indices_size
+
+            weights_i = []
+            for i, (x_0, x_1) in enumerate(grid_x_bounds):
+                # Reverse lower and upper if dest grid is decreasing.
+                if grid_x_decreasing:
+                    x_0, x_1 = x_1, x_0
+                x_bounds = cached_x_bounds[i]
+                x_indices = cached_x_indices[i]
+
+                # Determine whether element i, j overlaps with src and hence
+                # an area weight should be computed.
+                # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in the case
+                # of wrapped longitudes. However if the src grid is not global
+                # (i.e. circular) this new cell would include a region outside of
+                # the extent of the src grid and thus the weight is therefore
+                # invalid.
+                outside_extent = x_0 > x_1 and not circular
+                if (
+                    outside_extent
+                    or not y_within_bounds[j]
+                    or not x_within_bounds[i]
+                ):
+                    weights = False
+                else:
+                    # Calculate weights based on areas of cropped bounds.
+                    if isinstance(x_indices, tuple) and isinstance(
+                        y_indices, tuple
+                    ):
+                        raise RuntimeError(
+                            "Cannot handle split bounds " "in both x and y."
+                        )
+                    weights = area_func(y_bounds, x_bounds)
+                weights_i.append(weights)
+            cached_weights.append(weights_i)
+        return (
+            tuple(cached_x_indices),
+            tuple(cached_y_indices),
+            max_x_indices,
+            max_y_indices,
+            tuple(cached_weights),
+        )
+
+    weights_info = _calculate_regrid_area_weighted_weights(
+        src_x_bounds,
+        src_y_bounds,
+        grid_x_bounds,
+        grid_y_bounds,
+        grid_x_decreasing,
+        grid_y_decreasing,
+        area_func,
+        circular,
+    )
+
+    return (
+        src_x,
+        src_y,
+        src_x_dim,
+        src_y_dim,
+        grid_x,
+        grid_y,
+        meshgrid_x,
+        meshgrid_y,
+        weights_info,
+    )
+
+
+def _regrid_area_weighted_rectilinear_src_and_grid__perform(
+    src_cube, regrid_info, mdtol
+):
+    """
+    Second (regrid) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
+
+    Perform the prepared regrid calculation on a single 2d cube.
+
+    """
+    (
+        src_x,
+        src_y,
+        src_x_dim,
+        src_y_dim,
+        grid_x,
+        grid_y,
+        meshgrid_x,
+        meshgrid_y,
+        weights_info,
+    ) = regrid_info
+
     # Calculate new data array for regridded cube.
-    new_data = _regrid_area_weighted_array(src_cube.data, src_x_dim, src_y_dim,
-                                           src_x_bounds, src_y_bounds,
-                                           grid_x_bounds, grid_y_bounds,
-                                           grid_x_decreasing,
-                                           grid_y_decreasing,
-                                           area_func, circular, mdtol)
+    new_data = _regrid_area_weighted_array(
+        src_cube.data, src_x_dim, src_y_dim, weights_info, mdtol,
+    )
 
     # Wrap up the data as a Cube.
-    # Create 2d meshgrids as required by _create_cube func.
-    meshgrid_x, meshgrid_y = _meshgrid(grid_x.points, grid_y.points)
     regrid_callback = RectilinearRegridder._regrid
     new_cube = RectilinearRegridder._create_cube(new_data, src_cube,
                                                  src_x_dim, src_y_dim,
