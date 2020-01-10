@@ -11,6 +11,7 @@ Unit tests for :class:`iris.analysis._area_weighted.AreaWeightedRegridder`.
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
+import iris.experimental.regrid as eregrid
 
 from unittest import mock
 
@@ -30,11 +31,13 @@ class Test(tests.IrisTest):
         lon = DimCoord(x, "longitude", units="degrees")
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
+        cube.coord("latitude").guess_bounds()
+        cube.coord("longitude").guess_bounds()
         return cube
 
     def grids(self):
         src = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
-        target = self.cube(np.linspace(6, 18, 8), np.linspace(11, 22, 9))
+        target = self.cube(np.linspace(22, 28, 8), np.linspace(11, 22, 9))
         return src, target
 
     def extract_grid(self, cube):
@@ -42,34 +45,51 @@ class Test(tests.IrisTest):
 
     def check_mdtol(self, mdtol=None):
         src_grid, target_grid = self.grids()
-        if mdtol is None:
-            regridder = AreaWeightedRegridder(src_grid, target_grid)
-            mdtol = 1
-        else:
-            regridder = AreaWeightedRegridder(
-                src_grid, target_grid, mdtol=mdtol
-            )
-
-        # Make a new cube to regrid with different data so we can
-        # distinguish between regridding the original src grid
-        # definition cube and the cube passed to the regridder.
-        src = src_grid.copy()
-        src.data += 10
-
+        # Get _regrid_info result
+        _regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            src_grid, target_grid
+        )
+        self.assertEqual(len(_regrid_info), 9)
         with mock.patch(
             "iris.experimental.regrid."
-            "regrid_area_weighted_rectilinear_src_and_grid",
-            return_value=mock.sentinel.result,
-        ) as regrid:
-            result = regridder(src)
+            "_regrid_area_weighted_rectilinear_src_and_grid__prepare",
+            return_value=_regrid_info,
+        ) as prepare:
+            with mock.patch(
+                "iris.experimental.regrid."
+                "_regrid_area_weighted_rectilinear_src_and_grid__perform",
+                return_value=mock.sentinel.result,
+            ) as perform:
+                # Setup the regridder
+                if mdtol is None:
+                    regridder = AreaWeightedRegridder(src_grid, target_grid)
+                    mdtol = 1
+                else:
+                    regridder = AreaWeightedRegridder(
+                        src_grid, target_grid, mdtol=mdtol
+                    )
+                # Now regrid the source cube
+                src = src_grid
+                result = regridder(src)
 
-        self.assertEqual(regrid.call_count, 1)
-        _, args, kwargs = regrid.mock_calls[0]
+                # Make a new cube to regrid with different data so we can
+                # distinguish between regridding the original src grid
+                # definition cube and the cube passed to the regridder.
+                src = src_grid.copy()
+                src.data += 10
+                result = regridder(src)
 
-        self.assertEqual(args[0], src)
+        # Prepare:
+        self.assertEqual(prepare.call_count, 1)
+        _, args, kwargs = prepare.mock_calls[0]
         self.assertEqual(
             self.extract_grid(args[1]), self.extract_grid(target_grid)
         )
+
+        # Perform:
+        self.assertEqual(perform.call_count, 2)
+        _, args, kwargs = perform.mock_calls[1]
+        self.assertEqual(args[0], src)
         self.assertEqual(kwargs, {"mdtol": mdtol})
         self.assertIs(result, mock.sentinel.result)
 
@@ -101,6 +121,129 @@ class Test(tests.IrisTest):
         target = mock.Mock()
         with self.assertRaises(ValueError):
             AreaWeightedRegridder(src, target)
+
+    def test_src_and_target_are_the_same(self):
+        src = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
+        target = self.cube(np.linspace(20, 30, 3), np.linspace(10, 25, 4))
+        regridder = AreaWeightedRegridder(src, target)
+        result = regridder(src)
+        self.assertArrayAllClose(result.data, target.data)
+
+    def test_multiple_src_on_same_grid(self):
+        coord_names = ["latitude", "longitude"]
+        src1 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
+        src2 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))
+        src2.data *= 4
+        self.assertArrayEqual(src1.data * 4, src2.data)
+        for name in coord_names:
+            # Remove coords system and units so it is no longer spherical.
+            src1.coord(name).coord_system = None
+            src1.coord(name).units = None
+            src2.coord(name).coord_system = None
+            src2.coord(name).units = None
+
+        target = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        # Ensure the bounds of the target cover the same range as the
+        # source.
+        target_lat_bounds = np.column_stack(
+            (
+                src1.coord("latitude").bounds[[0, 1], [0, 1]],
+                src1.coord("latitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+        target.coord("latitude").bounds = target_lat_bounds
+        target_lon_bounds = np.column_stack(
+            (
+                src1.coord("longitude").bounds[[0, 1], [0, 1]],
+                src1.coord("longitude").bounds[[2, 3], [0, 1]],
+            )
+        )
+        target.coord("longitude").bounds = target_lon_bounds
+        for name in coord_names:
+            # Remove coords system and units so it is no longer spherical.
+            target.coord(name).coord_system = None
+            target.coord(name).units = None
+
+        regridder = AreaWeightedRegridder(src1, target)
+        result1 = regridder(src1)
+        result2 = regridder(src2)
+
+        reference1 = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        reference1.data = np.array(
+            [
+                [np.mean(src1.data[0:2, 0:2]), np.mean(src1.data[0:2, 2:4])],
+                [np.mean(src1.data[2:4, 0:2]), np.mean(src1.data[2:4, 2:4])],
+            ]
+        )
+        reference1.coord("latitude").bounds = target_lat_bounds
+        reference1.coord("longitude").bounds = target_lon_bounds
+
+        reference2 = self.cube(np.linspace(20, 32, 2), np.linspace(10, 22, 2))
+        reference2.data = np.array(
+            [
+                [np.mean(src2.data[0:2, 0:2]), np.mean(src2.data[0:2, 2:4])],
+                [np.mean(src2.data[2:4, 0:2]), np.mean(src2.data[2:4, 2:4])],
+            ]
+        )
+        reference2.coord("latitude").bounds = target_lat_bounds
+        reference2.coord("longitude").bounds = target_lon_bounds
+
+        for name in coord_names:
+            # Remove coords system and units so it is no longer spherical.
+            reference1.coord(name).coord_system = None
+            reference1.coord(name).units = None
+            reference2.coord(name).coord_system = None
+            reference2.coord(name).units = None
+
+        # Compare the cubes rather than just the data.
+        self.assertEqual(result1, reference1)
+        self.assertEqual(result2, reference2)
+
+    def test_src_data_different_dims(self):
+        src, target = self.grids()
+        regridder = AreaWeightedRegridder(src, target)
+        result = regridder(src)
+        expected_mean, expected_std = 4.772097735195653, 2.211698479817678
+        self.assertArrayShapeStats(result, (9, 8), expected_mean, expected_std)
+        # New source cube with additional "levels" dimension
+        # Each level has identical x-y data so the mean and std stats remain
+        # identical when x, y and z dims are reordered
+        levels = DimCoord(np.arange(5), "model_level_number")
+        lat = src.coord("latitude")
+        lon = src.coord("longitude")
+        data = np.repeat(src.data[np.newaxis, ...], 5, axis=0)
+        src = Cube(data)
+        src.add_dim_coord(levels, 0)
+        src.add_dim_coord(lat, 1)
+        src.add_dim_coord(lon, 2)
+        result = regridder(src)
+        self.assertArrayShapeStats(
+            result, (5, 9, 8), expected_mean, expected_std
+        )
+        # Check data with dims in different order
+        # Reshape src so that the coords are ordered [x, z, y],
+        # the mean and std statistics should be the same
+        data = np.moveaxis(src.data.copy(), 2, 0)
+        src = Cube(data)
+        src.add_dim_coord(lon, 0)
+        src.add_dim_coord(levels, 1)
+        src.add_dim_coord(lat, 2)
+        result = regridder(src)
+        self.assertArrayShapeStats(
+            result, (8, 5, 9), expected_mean, expected_std
+        )
+        # Check data with dims in different order
+        # Reshape src so that the coords are ordered [y, x, z],
+        # the mean and std statistics should be the same
+        data = np.moveaxis(src.data.copy(), 2, 0)
+        src = Cube(data)
+        src.add_dim_coord(lat, 0)
+        src.add_dim_coord(lon, 1)
+        src.add_dim_coord(levels, 2)
+        result = regridder(src)
+        self.assertArrayShapeStats(
+            result, (9, 8, 5), expected_mean, expected_std
+        )
 
 
 if __name__ == "__main__":
