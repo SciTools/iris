@@ -12,7 +12,9 @@ import iris.tests as tests
 from contextlib import contextmanager
 from itertools import repeat
 import os.path
+from os.path import join as path_join
 import shutil
+from subprocess import check_call
 import tempfile
 from unittest import mock
 import warnings
@@ -590,6 +592,80 @@ class TestStandardName(tests.IrisTest):
             iris.save(cube, fout)
             detection_limit_cube = iris.load_cube(fout)
             self.assertEqual(detection_limit_cube.standard_name, standard_name)
+
+
+class TestLoadMinimalGeostationary(tests.IrisTest):
+    """
+    Check we can load data with a geostationary grid-mapping, even when the
+    'false-easting' and 'false_northing' properties are missing.
+
+    """
+
+    _geostationary_problem_cdl = """
+netcdf geostationary_problem_case {
+dimensions:
+    y = 2 ;
+    x = 3 ;
+variables:
+    short radiance(y, x) ;
+        radiance:standard_name = "toa_outgoing_radiance_per_unit_wavelength" ;
+        radiance:units = "W m-2 sr-1 um-1" ;
+        radiance:coordinates = "y x" ;
+        radiance:grid_mapping = "imager_grid_mapping" ;
+    short y(y) ;
+        y:units = "rad" ;
+        y:axis = "Y" ;
+        y:long_name = "fixed grid projection y-coordinate" ;
+        y:standard_name = "projection_y_coordinate" ;
+    short x(x) ;
+        x:units = "rad" ;
+        x:axis = "X" ;
+        x:long_name = "fixed grid projection x-coordinate" ;
+        x:standard_name = "projection_x_coordinate" ;
+    int imager_grid_mapping ;
+        imager_grid_mapping:grid_mapping_name = "geostationary" ;
+        imager_grid_mapping:perspective_point_height = 35786023. ;
+        imager_grid_mapping:semi_major_axis = 6378137. ;
+        imager_grid_mapping:semi_minor_axis = 6356752.31414 ;
+        imager_grid_mapping:latitude_of_projection_origin = 0. ;
+        imager_grid_mapping:longitude_of_projection_origin = -75. ;
+        imager_grid_mapping:sweep_angle_axis = "x" ;
+
+data:
+
+ // coord values, just so these can be dim-coords
+ y = 0, 1 ;
+ x = 0, 1, 2 ;
+
+}
+"""
+
+    @classmethod
+    def setUpClass(cls):
+        # Create a temp directory for transient test files.
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.path_test_cdl = path_join(cls.temp_dir, "geos_problem.cdl")
+        cls.path_test_nc = path_join(cls.temp_dir, "geos_problem.nc")
+        # Create a reference file from the CDL text.
+        with open(cls.path_test_cdl, "w") as f_out:
+            f_out.write(cls._geostationary_problem_cdl)
+        # Call 'ncgen' to make an actual netCDF file from the CDL.
+        command = "ncgen -o {} {}".format(cls.path_test_nc, cls.path_test_cdl)
+        check_call(command, shell=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Destroy the temp directory.
+        shutil.rmtree(cls.temp_dir)
+
+    def test_geostationary_no_false_offsets(self):
+        # Check we can load the test data and coordinate system properties are correct.
+        cube = iris.load_cube(self.path_test_nc)
+        # Check the coordinate system properties has the correct default properties.
+        cs = cube.coord_system()
+        self.assertIsInstance(cs, iris.coord_systems.Geostationary)
+        self.assertEqual(cs.false_easting, 0.0)
+        self.assertEqual(cs.false_northing, 0.0)
 
 
 if __name__ == "__main__":
