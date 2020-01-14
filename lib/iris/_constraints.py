@@ -457,7 +457,7 @@ class AttributeConstraint(Constraint):
 
         """
         self._attributes = attributes
-        super().__init__(cube_func=self._cube_func)
+        Constraint.__init__(self, cube_func=self._cube_func)
 
     def _cube_func(self, cube):
         match = True
@@ -539,7 +539,7 @@ class NameConstraint(Constraint):
         self.var_name = var_name
         self.STASH = STASH
         self._names = ("standard_name", "long_name", "var_name", "STASH")
-        super().__init__(cube_func=self._cube_func)
+        Constraint.__init__(self, cube_func=self._cube_func)
 
     def _cube_func(self, cube):
         def matcher(target, value):
