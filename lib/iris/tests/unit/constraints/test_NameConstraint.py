@@ -12,7 +12,7 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
-from unittest.mock import Mock, sentinel
+from iris.tests import mock
 
 from iris._constraints import NameConstraint
 
@@ -29,14 +29,14 @@ class Test___init__(tests.IrisTest):
         self.assertEqual(constraint.STASH, self.default)
 
     def test_standard_name(self):
-        standard_name = sentinel.standard_name
+        standard_name = mock.sentinel.standard_name
         constraint = NameConstraint(standard_name=standard_name)
         self.assertEqual(constraint.standard_name, standard_name)
         constraint = NameConstraint(standard_name=standard_name)
         self.assertEqual(constraint.standard_name, standard_name)
 
     def test_long_name(self):
-        long_name = sentinel.long_name
+        long_name = mock.sentinel.long_name
         constraint = NameConstraint(long_name=long_name)
         self.assertEqual(constraint.standard_name, self.default)
         self.assertEqual(constraint.long_name, long_name)
@@ -45,7 +45,7 @@ class Test___init__(tests.IrisTest):
         self.assertEqual(constraint.long_name, long_name)
 
     def test_var_name(self):
-        var_name = sentinel.var_name
+        var_name = mock.sentinel.var_name
         constraint = NameConstraint(var_name=var_name)
         self.assertEqual(constraint.standard_name, self.default)
         self.assertEqual(constraint.long_name, self.default)
@@ -58,7 +58,7 @@ class Test___init__(tests.IrisTest):
         self.assertEqual(constraint.var_name, var_name)
 
     def test_STASH(self):
-        STASH = sentinel.STASH
+        STASH = mock.sentinel.STASH
         constraint = NameConstraint(STASH=STASH)
         self.assertEqual(constraint.standard_name, self.default)
         self.assertEqual(constraint.long_name, self.default)
@@ -75,11 +75,11 @@ class Test___init__(tests.IrisTest):
 
 class Test__cube_func(tests.IrisTest):
     def setUp(self):
-        self.standard_name = sentinel.standard_name
-        self.long_name = sentinel.long_name
-        self.var_name = sentinel.var_name
-        self.STASH = sentinel.STASH
-        self.cube = Mock(
+        self.standard_name = mock.sentinel.standard_name
+        self.long_name = mock.sentinel.long_name
+        self.var_name = mock.sentinel.var_name
+        self.STASH = mock.sentinel.STASH
+        self.cube = mock.Mock(
             standard_name=self.standard_name,
             long_name=self.long_name,
             var_name=self.var_name,
@@ -162,10 +162,10 @@ class Test__cube_func(tests.IrisTest):
 
 class Test___repr__(tests.IrisTest):
     def setUp(self):
-        self.standard_name = sentinel.standard_name
-        self.long_name = sentinel.long_name
-        self.var_name = sentinel.var_name
-        self.STASH = sentinel.STASH
+        self.standard_name = mock.sentinel.standard_name
+        self.long_name = mock.sentinel.long_name
+        self.var_name = mock.sentinel.var_name
+        self.STASH = mock.sentinel.STASH
         self.msg = "NameConstraint({})"
         self.f_standard_name = "standard_name={!r}".format(self.standard_name)
         self.f_long_name = "long_name={!r}".format(self.long_name)
