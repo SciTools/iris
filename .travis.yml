@@ -119,7 +119,7 @@ install:
   - >
     if [[ "${TEST_MINIMAL}" != true ]]; then
         if [[ "${PYTHON_VERSION}" == 2* ]]; then
-            conda install --quiet -n ${ENV_NAME} python-ecmwf_grib;
+            conda install --quiet -n ${ENV_NAME} python-eccodes;
         else
             conda install --quiet -n ${ENV_NAME} python-eccodes">=0.9.1, <2";
         fi
