@@ -84,7 +84,8 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
         self._test(remove_props=['false_easting', 'false_northing'])
 
     def test_false_offsets_none(self):
-        self._test(replace_props={'false_easting':None, 'false_northing':None})
+        self._test(replace_props={'false_easting': None,
+                                  'false_northing': None})
 
 
 if __name__ == "__main__":
