@@ -1,0 +1,16 @@
+dimensions:
+	dim0 = 10 ;
+	temp_0 = 10 ;
+variables:
+	double temp(dim0) ;
+		temp:standard_name = "air_temperature" ;
+		temp:units = "K" ;
+	double temp3(temp_0) ;
+		temp3:long_name = "air_temperature" ;
+		temp3:units = "K" ;
+	int64 temp_0(temp_0) ;
+		temp_0:units = "1" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}
