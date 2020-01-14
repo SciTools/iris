@@ -5,5 +5,5 @@
 # struggle. To install these extensions, ensure iris[core] has been installed
 # first.
 
-iris_grib;python_version<"3"  #conda:
+iris-grib  #conda:
 gdal
