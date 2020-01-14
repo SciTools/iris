@@ -829,16 +829,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
 
                 # Determine whether element i, j overlaps with src and hence
                 # an area weight should be computed.
-                # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in the case
-                # of wrapped longitudes. However if the src grid is not global
-                # (i.e. circular) this new cell would include a region outside of
-                # the extent of the src grid and thus the weight is therefore
-                # invalid.
+                # If x_0 > x_1 then we want [0]->x_1 and x_0->[0] + mod in
+                # the case of wrapped longitudes. However if the src grid is
+                # not global (i.e. circular) this new cell would include a
+                # region outside of the extent of the src grid and thus the
+                # weight is therefore invalid.
                 outside_extent = x_0 > x_1 and not circular
                 if (
-                    outside_extent
-                    or not y_within_bounds[j]
-                    or not x_within_bounds[i]
+                    outside_extent or
+                    not y_within_bounds[j] or
+                    not x_within_bounds[i]
                 ):
                     weights = False
                 else:

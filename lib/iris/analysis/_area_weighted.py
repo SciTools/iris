@@ -72,9 +72,10 @@ class AreaWeightedRegridder(object):
         self._mdtol = mdtol
 
         # Store regridding information
-        _regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-            src_grid_cube, target_grid_cube
-        )
+        _regrid_info =\
+            eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+                src_grid_cube, target_grid_cube
+            )
         (
             src_x,
             src_y,
