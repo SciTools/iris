@@ -35,13 +35,14 @@ from iris.tests import mock
 
 
 class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
-    def _test(self, inverse_flattening=False, replace_props=None, remove_props=None):
+    def _test(self, inverse_flattening=False, replace_props=None,
+              remove_props=None):
         """
         Generic test that can check vertical perspective validity with or
         without inverse flattening.
         """
-        # Make a dictionary of the non-ellipsoid properties to be added to both a test
-        # coord-system, and a test grid-mapping cf_var.
+        # Make a dictionary of the non-ellipsoid properties to be added to
+        # both a test coord-system, and a test grid-mapping cf_var.
         non_ellipsoid_kwargs = {
             'latitude_of_projection_origin': 0.0,
             'longitude_of_projection_origin': 2.0,
