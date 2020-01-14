@@ -602,9 +602,9 @@ data:
         shutil.rmtree(cls.temp_dir)
 
     def test_geostationary_no_false_offsets(self):
-        # Check we can load the test data and coordinate system properties are correct.
+        # Check we can load test data and coord system properties are correct.
         cube = iris.load_cube(self.path_test_nc)
-        # Check the coordinate system properties has the correct default properties.
+        # Check the coord system properties has the correct default properties.
         cs = cube.coord_system()
         self.assertIsInstance(cs, iris.coord_systems.Geostationary)
         self.assertEqual(cs.false_easting, 0.0)
