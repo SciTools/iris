@@ -38,7 +38,10 @@ from iris.util import is_regular
 if tests.GRIB_AVAILABLE:
     from iris_grib import load_pairs_from_fields
     from iris_grib.message import GribMessage
-    from iris_grib.grib_phenom_translation import GRIBCode
+    try:
+        from iris_grib.grib_phenom_translation import GRIBCode
+    except ImportError:
+        GRIBCode = None
 
 
 @tests.skip_data
@@ -148,7 +151,8 @@ class TestPDT40(tests.IrisTest):
         cube.add_aux_coord(tcoord)
         cube.add_aux_coord(fpcoord)
         cube.attributes["WMO_constituent_type"] = 0
-        cube.attributes["GRIB_PARAM"] = GRIBCode("GRIB2:d000c014n000")
+        if GRIBCode is not None:
+            cube.attributes["GRIB_PARAM"] = GRIBCode("GRIB2:d000c014n000")
 
         with self.temp_filename('test_grib_pdt40.grib2') as temp_file_path:
             save(cube, temp_file_path)
@@ -220,12 +224,14 @@ class TestGDT5(tests.TestGribMessage):
             self.assertEqual(test_cube.shape, (744, 744))
             self.assertEqual(test_cube.cell_methods, ())
 
-        # Check only the GRIB_PARAM attribute exists on the re-loaded cube.
-        # Note: this does *not* match the original, but is as expected.
-        self.assertEqual(
-            cube_loaded_from_saved.attributes,
-            {"GRIB_PARAM": GRIBCode("GRIB2:d000c003n001")},
-        )
+        if GRIBCode is not None:
+            # Python3 only --> iris-grib version >= 0.15
+            # Check only the GRIB_PARAM attribute exists on the re-loaded cube.
+            # Note: this does *not* match the original, but is as expected.
+            self.assertEqual(
+                cube_loaded_from_saved.attributes,
+                {"GRIB_PARAM": GRIBCode("GRIB2:d000c003n001")},
+            )
 
         # Now remaining to check: coordinates + data...
 
