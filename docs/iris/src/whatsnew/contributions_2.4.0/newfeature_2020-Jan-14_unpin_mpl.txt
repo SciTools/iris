@@ -1,1 +1,0 @@
-* Iris is now able to use the latest version of matplotlib.

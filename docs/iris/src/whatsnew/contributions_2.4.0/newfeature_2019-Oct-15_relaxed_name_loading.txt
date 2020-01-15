@@ -1,1 +1,0 @@
-* Name constraint matching against cubes during loading or extracting has been relaxed from strictly matching against the :meth:`~iris.cube.Cube.name`, to matching against either the ``standard_name``, ``long_name``, NetCDF ``var_name``, or ``STASH`` attributes metadata of a cube.

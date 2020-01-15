@@ -1,1 +1,0 @@
-* The :class:`~iris.NameConstraint` provides richer name constraint matching when loading or extracting against cubes, by supporting a constraint against any combination of ``standard_name``, ``long_name``, NetCDF ``var_name`` and ``STASH`` from the attributes dictionary of a :class:`~iris.cube.Cube`.
