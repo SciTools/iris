@@ -112,17 +112,14 @@ install:
 
   - python setup.py --quiet install
 
-  # JUST FOR NOW : Install latest version of iris-grib.
+  # Install latest version of iris-grib.
+  # ONLY for Python 3, as Iris grib tests now require iris-grib >= v0.15.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
   # test against the latest version of python-eccodes.
   # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
   - >
-    if [[ "${TEST_MINIMAL}" != true ]]; then
-        if [[ "${PYTHON_VERSION}" == 2* ]]; then
-            conda install --quiet -n ${ENV_NAME} python-eccodes;
-        else
-            conda install --quiet -n ${ENV_NAME} python-eccodes">=0.9.1, <2";
-        fi
+    if [[ "${TEST_MINIMAL}" != true && "${PYTHON_VERSION}" == 3* ]]; then
+        conda install --quiet -n ${ENV_NAME} python-eccodes">=0.9.1, <2";
         conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
     fi
 
