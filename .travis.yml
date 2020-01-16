@@ -112,11 +112,15 @@ install:
 
   - python setup.py --quiet install
 
-  # JUST FOR NOW : Install latest version of iris-grib.
+  # Install latest version of iris-grib.
+  # ONLY for Python 3, as Iris grib tests now require iris-grib >= v0.15.
   # TODO : remove when iris doesn't do an integration test requiring iris-grib.
-  - if [[ "${TEST_MINIMAL}" != true && ${PYTHON_VERSION} == 2* ]]; then
-        conda install --quiet -n ${ENV_NAME} python-ecmwf_grib;
-        pip install git+https://github.com/SciTools/iris-grib.git@v0.11.0;
+  # test against the latest version of python-eccodes.
+  # Conda-forge versioning is out of order (0.9.* is later than 2.12.*).
+  - >
+    if [[ "${TEST_MINIMAL}" != true && "${PYTHON_VERSION}" == 3* ]]; then
+        conda install --quiet -n ${ENV_NAME} python-eccodes">=0.9.1, <2";
+        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
     fi
 
 script:
@@ -127,11 +131,11 @@ script:
   - >
     if [[ ${TEST_TARGET} == 'default' ]]; then
       export IRIS_REPO_DIR=${INSTALL_DIR};
-      python -m iris.tests.runner --default-tests --system-tests --print-failed-images;
+      python -m iris.tests.runner --default-tests --system-tests;
     fi
 
   - if [[ ${TEST_TARGET} == 'example' ]]; then
-      python -m iris.tests.runner --example-tests --print-failed-images;
+      python -m iris.tests.runner --example-tests;
     fi
 
   # A call to check "whatsnew" contributions are valid, because the Iris test
@@ -164,12 +168,18 @@ script:
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
-  - ORG=(${TRAVIS_REPO_SLUG//\// })
+  # NOTE: a *separate* "export" command appears to be necessary here : A command of the
+  #   form "export ORG=.." failed to define ORG for the following command (?!)
+  - >
+    ORG=$(echo ${TRAVIS_REPO_SLUG} | cut -d/ -f1);
+    export ORG
+
+  - echo "Travis job context ORG=${ORG}; TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}; PUSH_BUILT_DOCS=${PUSH_BUILT_DOCS}"
 
   # When we merge a change to SciTools/iris, we can push docs to github pages.
   # At present, only the Python 3.7 "doctest" job does this.
   # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
-  - if [[ ${ORG} == "SciTools" && ${TRAVIS_EVENT_TYPE} == 'push' && ${PUSH_BUILT_DOCS} == 'true' ]]; then
+  - if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html

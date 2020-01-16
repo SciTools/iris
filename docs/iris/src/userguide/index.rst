@@ -13,7 +13,7 @@ fully before experimenting with your own data files.
 Much of the content has supplementary links to the reference documentation; you will not need to follow these
 links in order to understand the guide but they may serve as a useful reference for future exploration.
 
-.. htmlonly::
+.. only:: html
 
    Since later pages depend on earlier ones, try reading this user guide sequentially using the ``next`` and ``previous`` links.
 

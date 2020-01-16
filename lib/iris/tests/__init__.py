@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2020, Met Office
 #
 # This file is part of Iris.
 #
@@ -1210,9 +1210,10 @@ skip_grib = unittest.skipIf(not GRIB_AVAILABLE,
                             'which is not available.')
 
 
-skip_sample_data = unittest.skipIf(not SAMPLE_DATA_AVAILABLE,
-                                   ('Test(s) require "iris-sample-data", '
-                                    'which is not available.'))
+skip_sample_data = unittest.skipIf(
+    not SAMPLE_DATA_AVAILABLE,
+    ('Test(s) require "iris-sample-data", ' "which is not available."),
+)
 
 
 skip_nc_time_axis = unittest.skipIf(

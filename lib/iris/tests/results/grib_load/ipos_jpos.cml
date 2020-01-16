@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float64" standard_name="air_temperature" units="K">
+    <attributes>
+      <attribute name="GRIB_PARAM" value="GRIB2:d000c000n000"/>
+    </attributes>
     <coords>
       <coord>
         <dimCoord bounds="[[-28587.0, 6477.0]]" id="1d45e087" points="[-11055.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>

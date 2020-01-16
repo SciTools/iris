@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2020, Met Office
 #
 # This file is part of Iris.
 #
@@ -19,6 +19,8 @@ from __future__ import (absolute_import, division, print_function)
 from six.moves import (filter, input, map, range, zip)  # noqa
 import six
 
+
+from collections import namedtuple
 import re
 import string
 
@@ -29,6 +31,30 @@ import iris.std_names
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
 _TOKEN_PARSE = re.compile(r'''^[a-zA-Z0-9][\w\.\+\-@]*$''')
+
+
+class Names(
+    namedtuple("Names", ["standard_name", "long_name", "var_name", "STASH"])
+):
+    """
+    Immutable container for name metadata.
+
+    Args:
+
+    * standard_name:
+        A string representing the CF Conventions and Metadata standard name, or
+        None.
+    * long_name:
+        A string representing the CF Conventions and Metadata long name, or
+        None
+    * var_name:
+        A string representing the associated NetCDF variable name, or None.
+    * STASH:
+        A string representing the `~iris.fileformats.pp.STASH` code, or None.
+
+    """
+
+    __slots__ = ()
 
 
 def get_valid_standard_name(name):
@@ -176,6 +202,22 @@ class CFVariableMixin(object):
             raise ValueError(emsg.format(self))
 
         return result
+
+    @property
+    def names(self):
+        """
+        A tuple containing all of the metadata names. This includes the
+        standard name, long name, NetCDF variable name, and attributes
+        STASH name.
+
+        """
+        standard_name = self.standard_name
+        long_name = self.long_name
+        var_name = self.var_name
+        stash_name = self.attributes.get("STASH")
+        if stash_name is not None:
+            stash_name = str(stash_name)
+        return Names(standard_name, long_name, var_name, stash_name)
 
     def rename(self, name):
         """

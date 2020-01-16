@@ -5,5 +5,6 @@ mock
 nose
 pep8
 filelock
+pillow<7
 imagehash>=4.0
 requests
