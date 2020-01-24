@@ -55,8 +55,6 @@ class TestLoad(tests.IrisTest):
         nimrod_load_rules.name(cube, field)
         nimrod_load_rules.units(cube, field)
         nimrod_load_rules.reference_time(cube, field)
-        nimrod_load_rules.proj_biaxial_ellipsoid(cube, field)
-        nimrod_load_rules.tm_meridian_scaling(cube, field)
         nimrod_load_rules.vertical_coord(cube, field)
         nimrod_load_rules.attributes(cube, field)
 

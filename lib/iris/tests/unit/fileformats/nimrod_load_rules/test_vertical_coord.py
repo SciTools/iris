@@ -46,13 +46,6 @@ class Test(tests.IrisTest):
             "Vertical coord -1 not yet handled", TranslationWarning
         )
 
-    def test_orography(self):
-        name = "orography_vertical_coord"
-        with mock.patch(self.NIMROD_LOCATION + "." + name) as orog:
-            self.field.field_code = 73
-            self._call_vertical_coord(None)
-        orog.assert_called_once_with(self.cube, self.field)
-
     def test_height(self):
         name = "height_vertical_coord"
         with mock.patch(self.NIMROD_LOCATION + "." + name) as height:
