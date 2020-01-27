@@ -238,7 +238,7 @@ def time(cube, field):
             field.vt_minute,
             field.vt_second,
         )
-    point = TIME_UNIT.date2num(valid_date)
+    point = np.array(TIME_UNIT.date2num(valid_date), dtype=np.int64)
 
     lb_delta = None
     if field.period_minutes == 32767:
@@ -246,7 +246,7 @@ def time(cube, field):
     elif field.period_minutes != field.int_mdi and field.period_minutes != 0:
         lb_delta = int(field.period_minutes) * 60
     if lb_delta:
-        bounds = [point - lb_delta, point]
+        bounds = np.array([point - lb_delta, point], dtype=np.int64)
     else:
         bounds = None
 
@@ -269,7 +269,7 @@ def reference_time(cube, field):
         )
 
         ref_time_coord = DimCoord(
-            TIME_UNIT.date2num(data_date),
+            np.array(TIME_UNIT.date2num(data_date), dtype=np.int64),
             standard_name="forecast_reference_time",
             units=TIME_UNIT,
         )
@@ -411,15 +411,19 @@ def horizontal_grid(cube, field):
     else:
         raise TranslationError("Horizontal grid type {} not "
                                "implemented".format(field.horizontal_grid_type))
+    points = (np.arange(field.num_cols) * field.column_step +
+              field.x_origin).astype(np.float32)
     x_coord = DimCoord(
-        np.arange(field.num_cols) * field.column_step + field.x_origin,
+        points,
         standard_name=x_coord_name,
         units=units_name,
         coord_system=crs,
     )
     cube.add_dim_coord(x_coord, 1)
+    points = (np.arange(field.num_rows)[::-1] * -field.row_step +
+              field.y_origin).astype(np.float32)
     y_coord = DimCoord(
-        np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin,
+        points,
         standard_name=y_coord_name,
         units=units_name,
         coord_system=crs,
@@ -439,10 +443,11 @@ def vertical_coord(cube, field):
         # Relies on correct field.vertical_coord_type to distinguish between 
         # these meanings.
         coord_point = 0.
-
+    coord_point = np.array(coord_point, dtype=np.float32)
     if (field.reference_vertical_coord >= 0. and
             field.reference_vertical_coord != coord_point):
-        bounds = [coord_point, field.reference_vertical_coord]
+        bounds = np.array([coord_point, field.reference_vertical_coord],
+                          dtype=np.float32)
     else:
         bounds = None
         
@@ -465,7 +470,9 @@ def ensemble_member(cube, field):
     """Add an 'ensemble member' coord to the cube, if present in the field."""
     ensemble_member_value = getattr(field, "ensemble_member")
     if ensemble_member_value != field.int_mdi:
-        cube.add_aux_coord(DimCoord(ensemble_member_value, "realization"))
+        cube.add_aux_coord(DimCoord(np.array(ensemble_member_value,
+                                             dtype=np.int32),
+                                    "realization"))
 
 
 def origin_corner(cube, field):
@@ -538,9 +545,10 @@ def threshold_coord(cube, field):
         coord_keys = {"standard_name": "wind_speed_of_gust",
                       "units": "m/s"}
     if coord_keys:
-        cube.add_aux_coord(iris.coords.AuxCoord(field.threshold_value,
-                                                var_name='threshold',
-                                                **coord_keys))
+        cube.add_aux_coord(iris.coords.AuxCoord(
+            np.array(field.threshold_value, dtype=np.float32),
+            var_name='threshold',
+            **coord_keys))
         
         
 def probability_coord(cube, field):
@@ -584,7 +592,10 @@ def probability_coord(cube, field):
                       coord_val * (2. - field.threshold_fuzziness)]
         else:
             bounds = None
-        new_coord = iris.coords.AuxCoord(coord_val, bounds=bounds, **coord_keys)
+        new_coord = iris.coords.AuxCoord(
+            np.array(coord_val, dtype=np.float32),
+            bounds=np.array(bounds, dtype=np.float32),
+            **coord_keys)
         cube.add_aux_coord(new_coord)
         cube.units = '1'
         is_multi_member_field = True
@@ -637,7 +648,7 @@ def run(field):
         * A new :class:`~iris.cube.Cube`, created from the NimrodField.
 
     """
-    cube = iris.cube.Cube(field.data)
+    cube = iris.cube.Cube(field.data.astype(np.float32))
 
     name(cube, field)
     units(cube, field)
