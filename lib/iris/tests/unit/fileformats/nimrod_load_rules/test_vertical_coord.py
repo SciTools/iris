@@ -31,6 +31,9 @@ class Test(tests.IrisTest):
             vertical_coord_type=NIMROD_DEFAULT,
             int_mdi=mock.sentinel.int_mdi,
             field_code=mock.sentinel.field_code,
+            vertical_coord=mock.sentinel.vertical_coord,
+            reference_vertical_coord=mock.sentinel.reference_vertical_coord,
+            ensemble_member=NIMROD_DEFAULT,
             spec=NimrodField,
         )
         self.cube = mock.Mock()
@@ -47,7 +50,7 @@ class Test(tests.IrisTest):
         )
 
     def test_height(self):
-        name = "height_vertical_coord"
+        name = "vertical_coord"
         with mock.patch(self.NIMROD_LOCATION + "." + name) as height:
             self._call_vertical_coord(0)
         height.assert_called_once_with(self.cube, self.field)
