@@ -279,7 +279,7 @@ def reference_time(cube, field):
 
 def mask_cube(cube, field):
     """
-    Updates cube.data to be a masked array if appropriate.    
+    Updates cube.data to be a masked array if appropriate.
 
     """
 
@@ -440,7 +440,7 @@ def vertical_coord(cube, field):
         return
     if coord_point in [9999., 8888.]:
         # A bounded vertical coord starting from the surface
-        # Relies on correct field.vertical_coord_type to distinguish between 
+        # Relies on correct field.vertical_coord_type to distinguish between
         # these meanings.
         coord_point = 0.
     coord_point = np.array(coord_point, dtype=np.float32)
@@ -450,7 +450,7 @@ def vertical_coord(cube, field):
                           dtype=np.float32)
     else:
         bounds = None
-        
+
     coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
     if coord_args:
         new_coord = iris.coords.AuxCoord(coord_point, bounds=bounds,
@@ -458,7 +458,7 @@ def vertical_coord(cube, field):
         # Add coordinate to cube
         cube.add_aux_coord(new_coord)
         return
-    
+
     warnings.warn(
         "Vertical coord {!r} not yet handled" "".format(
             field.vertical_coord_type),
@@ -517,8 +517,8 @@ def attributes(cube, field):
     add_attr("sensor_id")
     add_attr("meteosat_id")
     add_attr("alphas_available")
-    for key in ["neighbourhood_radius", "recursive_filter_iterations", 
-                "recursive_filter_alpha", "threshold_vicinity_radius", 
+    for key in ["neighbourhood_radius", "recursive_filter_iterations",
+                "recursive_filter_alpha", "threshold_vicinity_radius",
                 "probability_period_of_event"]:
         add_attr(key)
 
@@ -549,11 +549,11 @@ def threshold_coord(cube, field):
             np.array(field.threshold_value, dtype=np.float32),
             var_name='threshold',
             **coord_keys))
-        
-        
+
+
 def probability_coord(cube, field):
     """
-    Adds a coord relating to probability meta-data from the header to the 
+    Adds a coord relating to probability meta-data from the header to the
     cube if appropriate.
     Returns True if this is a blended multi-member field
     """
@@ -582,7 +582,7 @@ def probability_coord(cube, field):
         coord_val = field.threshold_value
     if field.chead.find('pc') > 0:
         try:
-            coord_val = [int(x.strip('pc')) for x in field.chead.split(' ') 
+            coord_val = [int(x.strip('pc')) for x in field.chead.split(' ')
                          if x.find('pc') > 0][0]
         except IndexError:
             pass
@@ -676,7 +676,7 @@ def run(field):
     attributes(cube, field)
 
     origin_corner(cube, field)
-    
+
     cube.data = cube.data.astype(np.float32)
 
     return cube
