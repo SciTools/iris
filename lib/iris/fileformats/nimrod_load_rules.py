@@ -383,25 +383,25 @@ def proj_biaxial_ellipsoid(field):
 
     Based firstly on the value given by ellipsoid, then by grid if ellipsoid is
     missing, select the right pre-defined ellipsoid dictionary (Airy_1830 or
-    International_1924).
+    international_1924).
 
     """
-    # Reference for Airy_1830 and international_1924 ellipsoids:
+    # Reference for airy_1830 and international_1924 ellipsoids:
     # http://fcm9/projects/PostProc/wiki/PostProcDocDomains#ProjectionConstants
     # Reference for GRS80:
-    Airy_1830 = {'semi_major_axis': 6377563.396, 'semi_minor_axis': 6356256.910}
-    International_1924 = {'semi_major_axis': 6378388.000,
+    airy_1830 = {'semi_major_axis': 6377563.396, 'semi_minor_axis': 6356256.910}
+    international_1924 = {'semi_major_axis': 6378388.000,
                           'semi_minor_axis': 6356911.946}
     if field.proj_biaxial_ellipsoid == 0:
-        ellipsoid = Airy_1830
+        ellipsoid = airy_1830
     elif field.proj_biaxial_ellipsoid == 1:
-        ellipsoid = International_1924
+        ellipsoid = international_1924
     elif field.proj_biaxial_ellipsoid == field.int_mdi or \
             field.proj_biaxial_ellipsoid == -32767:
         if field.horizontal_grid_type == 0:
-            ellipsoid = Airy_1830
+            ellipsoid = airy_1830
         elif field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4:
-            ellipsoid = International_1924
+            ellipsoid = international_1924
         else:
             raise TranslationError('''Unsupported grid type, only NG, EuroPP
                                      and lat/long are possible''')
@@ -448,8 +448,8 @@ def coord_system(field):
         set_british_national_grid_defaults(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
         coord_sys = iris.coord_systems.TransverseMercator(
-            field.true_origin_latitude, field.true_origin_longitude, field.true_origin_easting,
-            field.true_origin_northing,
+            field.true_origin_latitude, field.true_origin_longitude,
+            field.true_origin_easting, field.true_origin_northing,
             field.tm_meridian_scaling, iris.coord_systems.GeogCS(**ellipsoid))
     elif field.horizontal_grid_type == 1:
         coord_sys = iris.coord_systems.GeogCS(**ellipsoid)
@@ -527,14 +527,14 @@ def vertical_coord(cube, field):
             cube.rename(f"{cube.name()}_at_mean_sea_level")
         coord_point = 0.
         if (field.reference_vertical_coord in [8888., field.int_mdi,
-                                                NIMROD_DEFAULT]):
+                                               NIMROD_DEFAULT]):
             # This describes a surface field. No changes needed.
             return
 
     coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
     if coord_point == 9999.:
         if (field.reference_vertical_coord in [9999., field.int_mdi,
-                                                NIMROD_DEFAULT]):
+                                               NIMROD_DEFAULT]):
             # This describes a surface field. No changes needed.
             return
         # A bounded vertical coord starting from the surface
