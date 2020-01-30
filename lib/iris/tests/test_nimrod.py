@@ -37,6 +37,50 @@ class TestLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("nimrod", "load_2flds.cml"))
 
+    def test_huge_field_load(self):
+        # load a wide range of cubes with all meta-data variations
+        for datafile in {"u1096_ng_ek07_precip0540_accum180_18km",
+                         "u1096_ng_ek00_cloud3d0060_2km",
+                         "u1096_ng_ek00_cloud_2km",
+                         "u1096_ng_ek00_convection_2km",
+                         "u1096_ng_ek00_convwind_2km",
+                         "u1096_ng_ek00_frzlev_2km",
+                         "u1096_ng_ek00_height_2km",
+                         "u1096_ng_ek00_precip_2km",
+                         "u1096_ng_ek00_precipaccum_2km",
+                         "u1096_ng_ek00_preciptype_2km",
+                         "u1096_ng_ek00_pressure_2km",
+                         "u1096_ng_ek00_radiation_2km",
+                         "u1096_ng_ek00_radiationuv_2km",
+                         "u1096_ng_ek00_refl_2km",
+                         "u1096_ng_ek00_relhumidity3d0060_2km",
+                         "u1096_ng_ek00_relhumidity_2km",
+                         "u1096_ng_ek00_snow_2km",
+                         "u1096_ng_ek00_soil3d0060_2km",
+                         "u1096_ng_ek00_soil_2km",
+                         "u1096_ng_ek00_temperature_2km",
+                         "u1096_ng_ek00_visibility_2km",
+                         "u1096_ng_ek00_wind_2km",
+                         "u1096_ng_ek00_winduv3d0015_2km",
+                         "u1096_ng_ek00_winduv_2km",
+                         "u1096_ng_ek01_cape_2km",
+                         "u1096_ng_umqv_fog_2km",
+                         "u1096_ng_bmr04_precip_2km",
+                         "u1096_ng_bsr05_precip_accum60_2km",
+                         "probability_fields",
+                         }:
+            cube = iris.load(
+                tests.get_data_path(
+                    (
+                        "NIMROD",
+                        "uk2km",
+                        "cutouts",
+                        datafile,
+                    )
+                )
+            )
+            self.assertCML(cube, ("nimrod", f"{datafile}.cml"))
+
     def test_orography(self):
         # Mock an orography field we've seen.
         field = mock_nimrod_field()
@@ -47,7 +91,11 @@ class TestLoad(tests.IrisTest):
         field.proj_biaxial_ellipsoid = 0
         field.tm_meridian_scaling = 0.999601
         field.field_code = 73
+        field.reference_vertical_coord_type = field.int_mdi  # Not bounded
+        field.reference_vertical_coord = field.int_mdi
         field.vertical_coord_type = 1
+        field.vertical_coord = 8888
+        field.ensemble_member = field.int_mdi
         field.title = "(MOCK) 2km mean orography"
         field.units = "metres"
         field.source = "GLOBE DTM"
@@ -67,6 +115,7 @@ class TestLoad(tests.IrisTest):
 
         field.field_code = -1  # Not orography
         field.reference_vertical_coord_type = field.int_mdi  # Not bounded
+        field.reference_vertical_coord = field.int_mdi
         field.vertical_coord_type = 12
         field.vertical_coord = 42
         nimrod_load_rules.vertical_coord(cube, field)

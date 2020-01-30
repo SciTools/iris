@@ -15,7 +15,7 @@ import numpy as np
 import iris
 import iris.coord_systems
 from iris.coords import DimCoord
-from iris.exceptions import TranslationError
+from iris.exceptions import TranslationError, CoordinateNotFoundError
 
 
 __all__ = ["run"]
@@ -32,14 +32,17 @@ TIME_UNIT = cf_units.Unit(
 
 
 DEFAULT_UNITS = {817: 'm s^-1',
+                 804: 'knots',
                  422: 'min^-1',
                  218: 'cm',
+                 172: 'oktas',
                  155: 'm',
                  101: 'm',
                  63: 'mm hr^-1',
                  61: 'mm',
                  58: 'Celsius',
-                 12: 'mb'}
+                 12: 'mb',
+                 8: '1'}
 FIELD_CODES = {73: "orography"}
 # VERTICAL_CODES contains conversions from the Nimrod Documentation for the
 # header entry 20 for the vertical coordinate type
@@ -47,10 +50,10 @@ VERTICAL_CODES = {0: {'standard_name': 'height', 'units': 'm',
                       'attributes': {"positive": "up"}},
                   1: {'standard_name': 'altitude', 'units': 'm',
                       'attributes': {"positive": "up"}},
-                  2: {'standard_name': 'pressure', 'units': 'hPa',
+                  2: {'standard_name': 'air_pressure', 'units': 'hPa',
                       'attributes': {"positive": "down"}},
-                  6: {'standard_name': 'temperature', 'units': 'K'},
-                  12: {'long_name': 'levels_below_ground', 'units': 'unknown',
+                  6: {'standard_name': 'air_temperature', 'units': 'K'},
+                  12: {'long_name': 'depth_below_ground', 'units': 'm',
                        'attributes': {"positive": "down"}}}
 # Unhandled VERTICAL_CODES values (no use case identified):
 #  3: ['sigma', 'model level'],
@@ -102,10 +105,10 @@ def name(cube, field):
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
     """
-    if field.field_code == 161 and field.threshold_value >= 0.:
-        field.title = "minimum_cloud_base_above_threshold"
     if field.field_code == 12:
-        field.title = "pressure"
+        field.title = "air_pressure"
+    if field.field_code == 27:
+        field.title = "snow fraction"
     if field.field_code == 28:
         field.title = "snow probability"
     if field.field_code == 29 and field.threshold_value >= 0.:
@@ -116,32 +119,51 @@ def name(cube, field):
         field.title = "precipitation"
     if field.field_code == 63:
         field.title = "precipitation"
-    if field.field_code == 817:
-        field.title = "wind_speed_of_gust"
+    if field.field_code == 101:
+        field.title = "snow_melting_level_above_sea_level"
+    if field.field_code == 102:
+        field.title = "rain_melted_level_above_sea_level"
     if field.field_code == 155:
         field.title = "Visibility"
+    if field.field_code == 156:
+        field.title = "Worst visibility in grid point"
+    if field.field_code == 161 and field.threshold_value >= 0.:
+        field.title = "minimum_cloud_base_above_threshold"
     if field.field_code == 218:
         field.title = "snowfall"
-    if field.field_code == 101:
-        field.title = "snowmelt_above_sea_level"
     if field.field_code == 172:
         field.title = "cloud_area_fraction_in_atmosphere"
     if field.field_code == 421:
         field.title = "precipitation type"
+    if field.field_code == 501:
+        field.title = 'vector_wind_shear'
+        field.source = ''
+    if field.field_code == 508:
+        field.title = 'low_level_jet_u_component'
+    if field.field_code == 509:
+        field.title = 'low_level_jet_curvature'
+    if field.field_code == 514:
+        field.title = 'low_level_jet_v_component'
     if field.field_code == 804 and field.vertical_coord >= 0.:
         field.title = "wind speed"
     if field.field_code == 806 and field.vertical_coord >= 0.:
         field.title = "wind direction"
+    if field.field_code == 817:
+        field.title = "wind_speed_of_gust"
     if field.field_code == 821:
         field.title = "Probabilistic Gust Risk Analysis from Observations"
         field.source = "Nimrod pwind routine"
     if field.source.strip() == "pwind":
         field.source = "Nimrod pwind routine"
 
-    if getattr(field, "ensemble_member") == -98 and 'mean' not in field.title:
-        field.title = 'mean_of_' + field.title
-    if getattr(field, "ensemble_member") == -99 and 'spread' not in field.title:
-        field.title = 'standard_deviation_of_' + field.title
+    if getattr(field, "ensemble_member") == -98:
+        if 'mean' not in field.title:
+            field.title = 'mean_of_' + field.title
+        field.ensemble_member = field.int_mdi
+    if getattr(field, "ensemble_member") == -99:
+        if 'spread' not in field.title:
+            field.title = 'standard_deviation_of_' + field.title
+        field.ensemble_member = field.int_mdi
 
     cube.rename(field.title.strip())
 
@@ -167,8 +189,7 @@ def units(cube, field):
                                  'logical': '',
                                  'Code': '',
                                  'mask': '',
-                                 'oktas': '',
-                                 'm/2-25k': '',
+                                 'mb': 'hPa',
                                  'g/Kg': '',
                                  'unitless': '',
                                  'Fraction': '1',
@@ -178,6 +199,10 @@ def units(cube, field):
                                  'n/a': ''}
 
     field_units = field.units.strip()
+    if field_units == 'm/2-25k':
+        # Handle strange visibility units
+        cube.data = (cube.data + 25000.) * 2
+        field_units = 'm'
     if '*' in field_units:
         # Split into unit string and integer
         unit_list = field_units.split('*')
@@ -200,6 +225,20 @@ def units(cube, field):
         if len(''.join(unit_list)) == 0:
             field_units = '1'
             cube.data = cube.data / 100.
+    if field_units == 'oktas':
+        field_units = '1'
+        cube.data /= 8.
+    if field_units == 'dBZ':
+        # cf_units doesn't recognise decibels (dBZ), but does know BZ
+        field_units = 'BZ'
+        cube.data /= 10.
+    if not field_units:
+        if field.field_code == 8:
+            # Relative Humidity data are unitless, but not "unknown"
+            field_units = '1'
+        if field.field_code in [505, 515]:
+            # CAPE units are not always set correctly. Assume J/kg
+            field_units = 'J/kg'
     if field_units in unit_exception_dictionary.keys():
         field_units = unit_exception_dictionary[field_units]
     if len(field_units) > 0 and field_units[0] == '/':
@@ -238,13 +277,13 @@ def time(cube, field):
             field.vt_minute,
             field.vt_second,
         )
-    point = np.array(TIME_UNIT.date2num(valid_date), dtype=np.int64)
+    point = np.around(TIME_UNIT.date2num(valid_date)).astype(np.int64)
 
     lb_delta = None
     if field.period_minutes == 32767:
-        lb_delta = int(field.period_seconds)
+        lb_delta = field.period_seconds
     elif field.period_minutes != field.int_mdi and field.period_minutes != 0:
-        lb_delta = int(field.period_minutes) * 60
+        lb_delta = field.period_minutes * 60
     if lb_delta:
         bounds = np.array([point - lb_delta, point], dtype=np.int64)
     else:
@@ -275,6 +314,38 @@ def reference_time(cube, field):
         )
 
         cube.add_aux_coord(ref_time_coord)
+
+
+def forecast_period(cube):
+    """
+    Add a forecast_period coord based on existing time and
+    forecast_reference_time coords.
+    """
+    try:
+        time_coord = cube.coord('time')
+        frt_coord = cube.coord('forecast_reference_time')
+    except CoordinateNotFoundError:
+        return
+    if len(time_coord.points) != 1 or len(frt_coord.points) != 1:
+        raise TranslationError(
+            "Unexpected number of points on time coordinates. Expected time:1; "
+            f"forecast_reference_time:1. Got {len(time_coord.points)}; "
+            f"{len(frt_coord.points)}")
+    time_delta = time_coord.cell(0).point - frt_coord.cell(0).point
+
+    points = np.array(time_delta.days * 24 * 60 * 60 + time_delta.seconds,
+                      dtype=np.int32)
+    forecast_period_unit = cf_units.Unit('second')
+    if cube.coord('time').has_bounds():
+        time_window = time_coord.cell(0).bound
+        time_window = (time_window[1] - time_window[0])
+        bounds = np.array([points - time_window.total_seconds(), points],
+                          dtype=np.int32)
+    else:
+        bounds = None
+    cube.add_aux_coord(
+        iris.coords.AuxCoord(points, standard_name='forecast_period',
+                             bounds=bounds, units=forecast_period_unit))
 
 
 def mask_cube(cube, field):
@@ -433,16 +504,43 @@ def horizontal_grid(cube, field):
 
 def vertical_coord(cube, field):
     """Add a vertical coord to the cube, if appropriate."""
-    coord_point = getattr(field, "vertical_coord")
-    if (coord_point == 9999. and
-            (field.reference_vertical_coord in [9999., field.int_mdi,
-                                                NIMROD_DEFAULT])):
+    if all([x in [field.int_mdi, NIMROD_DEFAULT] for x in [
+            field.vertical_coord, field.vertical_coord_type,
+            field.reference_vertical_coord,
+            field.reference_vertical_coord_type]]):
         return
-    if coord_point in [9999., 8888.]:
-        # A bounded vertical coord starting from the surface
-        # Relies on correct field.vertical_coord_type to distinguish between
-        # these meanings.
+
+    if (field.reference_vertical_coord_type not in [field.int_mdi,
+                                                    NIMROD_DEFAULT] and
+            field.reference_vertical_coord_type != field.vertical_coord_type
+            and field.reference_vertical_coord not in [field.int_mdi,
+                                                       NIMROD_DEFAULT]):
+        msg = ('Unmatched vertical coord types '
+               f'{field.vertical_coord_type} != '
+               f'{field.reference_vertical_coord_type}'
+               f'. Assuming {field.vertical_coord_type}')
+        warnings.warn(msg)
+
+    coord_point = field.vertical_coord
+    if coord_point == 8888.:
+        if "sea_level" not in cube.name():
+            cube.rename(f"{cube.name()}_at_mean_sea_level")
         coord_point = 0.
+        if (field.reference_vertical_coord in [8888., field.int_mdi,
+                                                NIMROD_DEFAULT]):
+            # This describes a surface field. No changes needed.
+            return
+
+    coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
+    if coord_point == 9999.:
+        if (field.reference_vertical_coord in [9999., field.int_mdi,
+                                                NIMROD_DEFAULT]):
+            # This describes a surface field. No changes needed.
+            return
+        # A bounded vertical coord starting from the surface
+        coord_point = 0.
+        coord_args = VERTICAL_CODES.get(field.reference_vertical_coord_type,
+                                        None)
     coord_point = np.array(coord_point, dtype=np.float32)
     if (field.reference_vertical_coord >= 0. and
             field.reference_vertical_coord != coord_point):
@@ -451,7 +549,6 @@ def vertical_coord(cube, field):
     else:
         bounds = None
 
-    coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
     if coord_args:
         new_coord = iris.coords.AuxCoord(coord_point, bounds=bounds,
                                          **coord_args)
@@ -494,6 +591,8 @@ def attributes(cube, field):
         if hasattr(field, item):
             value = getattr(field, item)
             if value not in [field.int_mdi, field.float32_mdi]:
+                if 'radius' in item:
+                    value = f'{value} km'
                 cube.attributes[item] = value
 
     add_attr("nimrod_version")
@@ -530,25 +629,38 @@ def attributes(cube, field):
     cube.attributes['source'] = source
 
 
-def threshold_coord(cube, field):
+def known_threshold_coord(field):
     """
-    Adds a scalar threshold coord to the cube for known use cases.
+    Supplies known threshold coord meta-data for known use cases.
     """
-    coord_keys = None
+    coord_keys = {}
     if field.field_code == 161 and field.threshold_value >= 0.:
-        coord_keys = {"standard_name": "cloud_area_fraction",
-                      "units": ""}
+        coord_keys = {"var_name": "threshold"}
+        if field.threshold_value_alt > 8.:
+            coord_keys["standard_name"] = "height"
+            coord_keys["units"] = "metres"
+        else:
+            coord_keys["standard_name"] = "cloud_area_fraction"
+            coord_keys["units"] = "oktas"
     if field.field_code == 29 and field.threshold_value >= 0.:
-        coord_keys = {"standard_name": "visibility_in_air",
-                      "units": "metres"}
+        if field.threshold_type == field.int_mdi:
+            coord_keys = {"standard_name": "visibility_in_air",
+                          "var_name": "threshold",
+                          "units": "metres"}
+        else:
+            coord_keys = {"long_name": "fog_fraction",
+                          "var_name": "threshold",
+                          "units": "1"}
+    if (field.field_code == 422
+            and field.threshold_value >= 0.
+            and field.threshold_type == field.int_mdi):
+        coord_keys = {"long_name": "radius_of_max",
+                      "units": "km"}
     if field.field_code == 821:
         coord_keys = {"standard_name": "wind_speed_of_gust",
+                      "var_name": "threshold",
                       "units": "m/s"}
-    if coord_keys:
-        cube.add_aux_coord(iris.coords.AuxCoord(
-            np.array(field.threshold_value, dtype=np.float32),
-            var_name='threshold',
-            **coord_keys))
+    return coord_keys
 
 
 def probability_coord(cube, field):
@@ -561,7 +673,7 @@ def probability_coord(cube, field):
                            'attributes': {'relative_to_threshold': 'above'}},
                        2: {'var_name': 'threshold',
                            'attributes': {'relative_to_threshold': 'below'}},
-                       3: {'standard_name': 'percentile', 'units': "%"},
+                       3: {'long_name': 'percentile', 'units': "1"},
                        4: {'var_name': 'threshold',
                            'attributes': {'relative_to_threshold': 'equal'}}}
     probmethod_lookup = {1: 'AOT (Any One Time)',
@@ -570,9 +682,10 @@ def probability_coord(cube, field):
                          8: 'AOL (Any One Location)',
                          16: 'SW (Some Where)'}
     is_multi_member_field = False
-    coord_keys = probtype_lookup.get(field.threshold_type, None)
-    if not coord_keys:
-        return is_multi_member_field
+    coord_keys = probtype_lookup.get(field.threshold_type, {})
+    if coord_keys:
+        is_multi_member_field = True
+    coord_keys.update(known_threshold_coord(field))
     if not coord_keys.get('units', None):
         coord_keys['units'] = DEFAULT_UNITS.get(field.field_code, None)
     coord_val = None
@@ -580,9 +693,9 @@ def probability_coord(cube, field):
         coord_val = field.threshold_value_alt
     elif field.threshold_value > -32766.:
         coord_val = field.threshold_value
-    if field.chead.find('pc') > 0:
+    if field.title.find('pc') > 0:
         try:
-            coord_val = [int(x.strip('pc')) for x in field.chead.split(' ')
+            coord_val = [int(x.strip('pc')) for x in field.title.split(' ')
                          if x.find('pc') > 0][0]
         except IndexError:
             pass
@@ -590,15 +703,25 @@ def probability_coord(cube, field):
         if field.threshold_fuzziness > -32766.:
             bounds = [coord_val * field.threshold_fuzziness,
                       coord_val * (2. - field.threshold_fuzziness)]
+            bounds = np.array(bounds, dtype=np.float32)
         else:
             bounds = None
+        if coord_keys.get('units', None) == 'oktas':
+            coord_keys['units'] = '1'
+            coord_val /= 8.
+            if bounds is not None:
+                bounds /= 8.
         new_coord = iris.coords.AuxCoord(
             np.array(coord_val, dtype=np.float32),
-            bounds=np.array(bounds, dtype=np.float32),
+            bounds=bounds,
             **coord_keys)
         cube.add_aux_coord(new_coord)
-        cube.units = '1'
-        is_multi_member_field = True
+        if field.threshold_type == 3:
+            pass
+        else:
+            if is_multi_member_field:
+                cube.units = '1'
+                cube.rename(f'probability_of_{cube.name()}')
 
     if field.probability_method > 0:
         probability_attributes = []
@@ -658,6 +781,7 @@ def run(field):
     # time
     time(cube, field)
     reference_time(cube, field)
+    forecast_period(cube)
 
     experiment(cube, field)
 
@@ -669,7 +793,6 @@ def run(field):
 
     # add other stuff, if present
     soil_type_coord(cube, field)
-    threshold_coord(cube, field)
     if not probability_coord(cube, field):
         ensemble_member(cube, field)
     time_averaging(cube, field)
