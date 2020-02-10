@@ -81,7 +81,7 @@ class TestAll(tests.IrisTest):
     @tests.skip_data
     def test_bad_resolution_non_numeric(self):
         cube = low_res_4d()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             project(cube, ROBINSON, nx=200, ny="abc")
 
     @tests.skip_data
