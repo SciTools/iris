@@ -108,8 +108,9 @@ def _resampled_coord(coord, samplefactor):
     delta = 0.00001 * np.sign(upper - lower) * abs(bounds[0, 1] - bounds[0, 0])
     lower = lower + delta
     upper = upper - delta
+    samples = int(len(bounds) * samplefactor)
     new_points, step = np.linspace(
-        lower, upper, len(bounds) * samplefactor, endpoint=False, retstep=True
+        lower, upper, samples, endpoint=False, retstep=True
     )
     new_points += step * 0.5
     new_coord = coord.copy(points=new_points)
