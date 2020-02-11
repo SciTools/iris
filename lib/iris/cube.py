@@ -2622,8 +2622,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         representer = CubeRepresentation(self)
         return representer.repr_html()
 
-    def __iter__(self):
-        raise TypeError("Cube is not iterable")
+    # Indicate that the iter option is not available. Python will raise
+    # TypeError with a useful message if a Cube is iterated over.
+    __iter__ = None
 
     def __getitem__(self, keys):
         """
