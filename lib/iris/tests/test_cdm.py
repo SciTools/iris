@@ -11,6 +11,7 @@ Test cube indexing, slicing, and extracting, and also the dot graphs.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests
 
+import collections
 import os
 import re
 
@@ -689,6 +690,9 @@ class TestIteration(TestCube2d):
         with self.assertRaises(TypeError):
             for subcube in self.t:
                 pass
+
+    def test_not_iterable(self):
+        self.assertFalse(isinstance(self.t, collections.Iterable))
 
 
 class Test2dSlicing(TestCube2d):
