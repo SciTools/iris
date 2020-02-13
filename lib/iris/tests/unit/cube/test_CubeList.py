@@ -7,6 +7,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import collections
+
 import iris.tests as tests
 import iris.tests.stock
 
@@ -290,6 +292,22 @@ class Test_extract(tests.IrisTest):
         res = self.scalar_cubes.extract(constraint)
         expected = CubeList([Cube(val, long_name=letter) for letter in "abcd"])
         self.assertEqual(res, expected)
+
+
+class Test_iteration(tests.IrisTest):
+    def setUp(self):
+        self.scalar_cubes = CubeList()
+        for i in range(5):
+            for letter in "abcd":
+                self.scalar_cubes.append(Cube(i, long_name=letter))
+
+    def test_iterable(self):
+        self.assertTrue(isinstance(self.scalar_cubes, collections.Iterable))
+
+    def test_iteration(self):
+        letters = 'abcd' * 5
+        for i, cube in enumerate(self.scalar_cubes):
+            self.assertEqual(cube.long_name, letters[i])
 
 
 class TestPrint(tests.IrisTest):
