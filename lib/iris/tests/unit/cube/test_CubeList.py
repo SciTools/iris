@@ -305,7 +305,7 @@ class Test_iteration(tests.IrisTest):
         self.assertTrue(isinstance(self.scalar_cubes, collections.Iterable))
 
     def test_iteration(self):
-        letters = 'abcd' * 5
+        letters = "abcd" * 5
         for i, cube in enumerate(self.scalar_cubes):
             self.assertEqual(cube.long_name, letters[i])
 
