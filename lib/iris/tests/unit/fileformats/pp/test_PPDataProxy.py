@@ -23,6 +23,8 @@ from six.moves import (filter, input, map, range, zip)  # noqa
 # importing anything else.
 import iris.tests as tests
 
+import numpy as np
+
 from iris.fileformats.pp import PPDataProxy, SplittableInt
 from iris.tests import mock
 
@@ -35,7 +37,7 @@ class Test_lbpack(tests.IrisTest):
         self.assertEqual(proxy.lbpack, lbpack)
         self.assertIs(proxy.lbpack, lbpack)
 
-    def test_lnpack_raw(self):
+    def test_lbpack_raw(self):
         lbpack = 4321
         proxy = PPDataProxy(None, None, None, None,
                             None, lbpack, None, None)
@@ -46,6 +48,26 @@ class Test_lbpack(tests.IrisTest):
         self.assertEqual(proxy.lbpack.n2, lbpack // 10 % 10)
         self.assertEqual(proxy.lbpack.n3, lbpack // 100 % 10)
         self.assertEqual(proxy.lbpack.n4, lbpack // 1000 % 10)
+
+    def test__getitem__emptyslice(self):
+        # Check that indexing with an "empty" slice will *not* open and read the file.
+        # This is necessary because, since Dask 2.0, the "from_array" function takes
+        # a zero-length slice of its array argument, to capture array metadata.
+        test_shape = (3, 4, 2, 5, 6, 3, 7)
+        test_dtype = np.dtype(np.float32)
+        proxy = PPDataProxy(shape=test_shape, src_dtype=test_dtype,
+                            path=None, offset=None, data_len=None, lbpack=None,
+                            boundary_packing=None, mdi=None)
+
+        builtin_open_func_name = '{}.open'.format(__name__)
+        with self.patch(builtin_open_func_name) as mock_fileopen:
+            # Test indexing with "empty" slices, "normal" slices and integers.
+            result = proxy[1:3, 2, 0:0, :, 1:1, :100]
+
+        self.assertEqual(mock_fileopen.called, False)
+        self.assertIsInstance(result, np.ndarray)
+        self.assertEqual(result.dtype, test_dtype)
+        self.assertEqual(result.shape, (2, 0, 5, 0, 3, 7))
 
 
 if __name__ == '__main__':

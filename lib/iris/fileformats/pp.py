@@ -644,14 +644,30 @@ class PPDataProxy(object):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        with open(self.path, 'rb') as pp_file:
-            pp_file.seek(self.offset, os.SEEK_SET)
-            data_bytes = pp_file.read(self.data_len)
-            data = _data_bytes_to_shaped_array(data_bytes,
-                                               self.lbpack,
-                                               self.boundary_packing,
-                                               self.shape, self.src_dtype,
-                                               self.mdi)
+        def is_emptyslice(key):
+            return (isinstance(key, slice)
+                    and isinstance(key.start, int)
+                    and key.start == key.stop)
+
+        if any(is_emptyslice(key) for key in keys):
+            # Fake the result for an 'empty' slice : do not open + read the file !!
+            # Since "dask.array.from_array" fetches a no-data slice to 'snapshot'
+            # the array metadata.
+            target_shape = list(self.shape)
+            for i_dim, key in enumerate(keys):
+                if is_emptyslice(key):
+                    target_shape[i_dim] = 0
+            data = np.zeros((1,), dtype=self.dtype)
+            data = np.broadcast_to(data, target_shape)
+        else:
+            with open(self.path, 'rb') as pp_file:
+                pp_file.seek(self.offset, os.SEEK_SET)
+                data_bytes = pp_file.read(self.data_len)
+                data = _data_bytes_to_shaped_array(data_bytes,
+                                                   self.lbpack,
+                                                   self.boundary_packing,
+                                                   self.shape, self.src_dtype,
+                                                   self.mdi)
         data = data.__getitem__(keys)
         return np.asanyarray(data, dtype=self.dtype)
 
