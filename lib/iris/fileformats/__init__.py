@@ -8,6 +8,9 @@ A package for converting cubes to and from specific file formats.
 
 """
 
+import importlib
+import pkgutil
+
 from iris.io.format_picker import (
     FileExtension,
     FormatAgent,
@@ -22,6 +25,7 @@ from . import name
 from . import netcdf
 from . import nimrod
 from . import pp
+import iris.io.plugins as plugins
 
 
 __all__ = ["FORMAT_AGENT"]
@@ -234,3 +238,14 @@ FORMAT_AGENT.add_spec(
         "ABL", FileExtension(), ".abl", abf.load_cubes, priority=3
     )
 )
+
+
+#
+# Plugin-based format support.
+#
+_module_names = [info.name for info in pkgutil.iter_modules(plugins.__path__)]
+_modules = [importlib.import_module(f'{plugins.__name__}.{name}')
+            for name in _module_names]
+for _module in _modules:
+    for _spec in getattr(_module, 'FORMAT_SPECIFICATIONS', []):
+        FORMAT_AGENT.add_spec(_spec)
