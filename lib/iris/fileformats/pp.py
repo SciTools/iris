@@ -650,9 +650,9 @@ class PPDataProxy(object):
                     and key.start == key.stop)
 
         if any(is_emptyslice(key) for key in keys):
-            # Fake the result for an 'empty' slice : do not open + read the file !!
-            # Since "dask.array.from_array" fetches a no-data slice to 'snapshot'
-            # the array metadata.
+            # Fake result for an 'empty' slice : do not open + read the file !!
+            # Since "dask.array.from_array" fetches a no-data slice to
+            # 'snapshot' the array metadata.
             target_shape = list(self.shape)
             for i_dim, key in enumerate(keys):
                 if is_emptyslice(key):

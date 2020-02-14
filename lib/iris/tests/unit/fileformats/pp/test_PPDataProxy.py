@@ -50,9 +50,10 @@ class Test_lbpack(tests.IrisTest):
         self.assertEqual(proxy.lbpack.n4, lbpack // 1000 % 10)
 
     def test__getitem__emptyslice(self):
-        # Check that indexing with an "empty" slice will *not* open and read the file.
-        # This is necessary because, since Dask 2.0, the "from_array" function takes
-        # a zero-length slice of its array argument, to capture array metadata.
+        # Check that fetching an "empty" slice does *not* read from the file.
+        # This is necessary because, since Dask 2.0, the "from_array" function
+        # takes a zero-length slice of its array argument,
+        # to capture array metadata.
         test_shape = (3, 4, 2, 5, 6, 3, 7)
         test_dtype = np.dtype(np.float32)
         proxy = PPDataProxy(shape=test_shape, src_dtype=test_dtype,
