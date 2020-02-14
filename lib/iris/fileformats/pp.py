@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2020, Met Office
 #
 # This file is part of Iris.
 #
@@ -645,9 +645,9 @@ class PPDataProxy(object):
 
     def __getitem__(self, keys):
         def is_emptyslice(key):
-            return (isinstance(key, slice)
-                    and isinstance(key.start, int)
-                    and key.start == key.stop)
+            return (isinstance(key, slice) and
+                    isinstance(key.start, int) and
+                    key.start == key.stop)
 
         if any(is_emptyslice(key) for key in keys):
             # Fake result for an 'empty' slice : do not open + read the file !!
