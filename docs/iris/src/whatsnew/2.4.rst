@@ -2,7 +2,7 @@ What's New in Iris 2.4.0
 ************************
 
 :Release: 2.4.0
-:Date: 2020-02-10
+:Date: 2020-02-14
 
 This document explains the new/changed features of Iris in version 2.4.0
 (:doc:`View all changes <index>`.)
