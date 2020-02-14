@@ -103,8 +103,8 @@ same way as loading with constraints:
 
 Cube iteration
 ^^^^^^^^^^^^^^^
-It is not possible to directly iterate over an Iris cube. That is, you cannot call `cube.next()` as
-happens in for loops and other forms of iteration. Instead you can iterate over cube slices, as this section details.
+It is not possible to directly iterate over an Iris cube. That is, you cannot use code such as
+``for x in cube:``. However, you can iterate over cube slices, as this section details.
 
 A useful way of dealing with a Cube in its **entirety** is by iterating over its layers or slices.
 For example, to deal with a 3 dimensional cube (z,y,x) you could iterate over all 2 dimensional slices in y and x
