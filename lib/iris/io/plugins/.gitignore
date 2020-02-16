@@ -1,4 +1,0 @@
-# Keep this directory empty...
-*
-# ... but keep this file so git retains the namespace package directory.
-!.gitignore
