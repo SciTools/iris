@@ -244,8 +244,10 @@ FORMAT_AGENT.add_spec(
 # Plugin-based format support.
 #
 _module_names = [info.name for info in pkgutil.iter_modules(plugins.__path__)]
-_modules = [importlib.import_module(f'{plugins.__name__}.{name}')
-            for name in _module_names]
+_modules = [
+    importlib.import_module(f"{plugins.__name__}.{name}")
+    for name in _module_names
+]
 for _module in _modules:
-    for _spec in getattr(_module, 'FORMAT_SPECIFICATIONS', []):
+    for _spec in getattr(_module, "FORMAT_SPECIFICATIONS", []):
         FORMAT_AGENT.add_spec(_spec)
