@@ -7,6 +7,7 @@
 
 import warnings
 import re
+import string
 
 import cf_units
 import cftime
@@ -100,6 +101,13 @@ class TranslationWarning(Warning):
     pass
 
 
+def is_missing(field, value):
+    """Returns True if value matches an "is-missing" number."""
+    return any(np.isclose(value, [field.int_mdi,
+                                  field.float32_mdi,
+                                  NIMROD_DEFAULT]))
+
+
 def name(cube, field):
     """Set the cube's name from the field.
     Modifies the Nimrod object title based on other meta-data in the
@@ -165,8 +173,15 @@ def name(cube, field):
             field.title = 'standard_deviation_of_' + field.title
         field.ensemble_member = field.int_mdi
 
-    cube.rename(field.title.strip())
+    cube.rename(remove_unprintable_chars(field.title))
 
+
+def remove_unprintable_chars(input_str):
+    """
+    Removes unprintable characters from a string and returns the result.
+    """
+    return ''.join(c if c in string.printable else ' ' for c in
+                   input_str).strip()
 
 def units(cube, field):
     """
@@ -186,19 +201,19 @@ def units(cube, field):
     unit_exception_dictionary = {'Knts': 'knots',
                                  'knts': 'knots',
                                  'J/Kg': 'J/kg',
-                                 'logical': '',
-                                 'Code': '',
-                                 'mask': '',
+                                 'logical': '1',
+                                 'Code': '1',
+                                 'mask': '1',
                                  'mb': 'hPa',
-                                 'g/Kg': '',
-                                 'unitless': '',
+                                 'g/Kg': '1',
+                                 'unitless': '1',
                                  'Fraction': '1',
-                                 'index': '',
+                                 'index': '1',
                                  'Beaufort': '',
                                  'mmh2o': 'kg/m2',
-                                 'n/a': ''}
+                                 'n/a': '1'}
 
-    field_units = field.units.strip()
+    field_units = remove_unprintable_chars(field.units)
     if field_units == 'm/2-25k':
         # Handle strange visibility units
         cube.data = (cube.data + 25000.) * 2
@@ -282,7 +297,8 @@ def time(cube, field):
     lb_delta = None
     if field.period_minutes == 32767:
         lb_delta = field.period_seconds
-    elif field.period_minutes != field.int_mdi and field.period_minutes != 0:
+    elif not is_missing(field, field.period_minutes) and \
+            field.period_minutes != 0:
         lb_delta = field.period_minutes * 60
     if lb_delta:
         bounds = np.array([point - lb_delta, point], dtype=np.int64)
@@ -298,7 +314,7 @@ def time(cube, field):
 
 def reference_time(cube, field):
     """Add a 'reference time' to the cube, if present in the field."""
-    if field.dt_year != field.int_mdi and field.dt_year > 0:
+    if not is_missing(field, field.dt_year) and field.dt_year > 0:
         data_date = cftime.datetime(
             field.dt_year,
             field.dt_month,
@@ -370,7 +386,7 @@ def mask_cube(cube, field):
 
 def experiment(cube, field):
     """Add an 'experiment number' to the cube, if present in the field."""
-    if field.experiment_num != field.int_mdi:
+    if not is_missing(field, field.experiment_num):
         cube.add_aux_coord(
             DimCoord(field.experiment_num, long_name="experiment_number")
         )
@@ -396,8 +412,7 @@ def proj_biaxial_ellipsoid(field):
         ellipsoid = airy_1830
     elif field.proj_biaxial_ellipsoid == 1:
         ellipsoid = international_1924
-    elif field.proj_biaxial_ellipsoid == field.int_mdi or \
-            field.proj_biaxial_ellipsoid == -32767:
+    elif is_missing(field, field.proj_biaxial_ellipsoid):
         if field.horizontal_grid_type == 0:
             ellipsoid = airy_1830
         elif field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4:
@@ -417,17 +432,16 @@ def set_british_national_grid_defaults(field):
     """Check for missing coord-system meta-data and set default values for
     the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
     files are missing these."""
-    invalid_values = (-32767., float(field.int_mdi))
 
-    if np.any([field.true_origin_latitude == v for v in invalid_values]):
+    if is_missing(field, field.true_origin_latitude):
         field.true_origin_latitude = 49.
-    if np.any([field.true_origin_longitude == v for v in invalid_values]):
+    if is_missing(field, field.true_origin_longitude):
         field.true_origin_longitude = -2.
-    if np.any([field.true_origin_easting == v for v in invalid_values]):
+    if is_missing(field, field.true_origin_easting):
         field.true_origin_easting = 400000.
-    if np.any([field.true_origin_northing == v for v in invalid_values]):
+    if is_missing(field, field.true_origin_northing):
         field.true_origin_northing = -100000.
-    if np.any([field.tm_meridian_scaling == v for v in invalid_values]):
+    if is_missing(field, field.tm_meridian_scaling):
         field.tm_meridian_scaling = 0.9996012717
 
     ng_central_meridian_sf_dp = 0.9996012717
@@ -504,17 +518,15 @@ def horizontal_grid(cube, field):
 
 def vertical_coord(cube, field):
     """Add a vertical coord to the cube, if appropriate."""
-    if all([x in [field.int_mdi, NIMROD_DEFAULT] for x in [
+    if all([is_missing(field, x) for x in [
             field.vertical_coord, field.vertical_coord_type,
             field.reference_vertical_coord,
             field.reference_vertical_coord_type]]):
         return
 
-    if (field.reference_vertical_coord_type not in [field.int_mdi,
-                                                    NIMROD_DEFAULT] and
+    if (not is_missing(field, field.reference_vertical_coord_type) and
             field.reference_vertical_coord_type != field.vertical_coord_type
-            and field.reference_vertical_coord not in [field.int_mdi,
-                                                       NIMROD_DEFAULT]):
+            and not is_missing(field, field.reference_vertical_coord)):
         msg = ('Unmatched vertical coord types '
                f'{field.vertical_coord_type} != '
                f'{field.reference_vertical_coord_type}'
@@ -526,15 +538,15 @@ def vertical_coord(cube, field):
         if "sea_level" not in cube.name():
             cube.rename(f"{cube.name()}_at_mean_sea_level")
         coord_point = 0.
-        if (field.reference_vertical_coord in [8888., field.int_mdi,
-                                               NIMROD_DEFAULT]):
+        if (np.isclose(field.reference_vertical_coord, 8888.) or
+                is_missing(field, field.reference_vertical_coord)):
             # This describes a surface field. No changes needed.
             return
 
     coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
-    if coord_point == 9999.:
-        if (field.reference_vertical_coord in [9999., field.int_mdi,
-                                               NIMROD_DEFAULT]):
+    if np.isclose(coord_point, 9999.):
+        if (np.isclose(field.reference_vertical_coord, 9999.) or
+            is_missing(field, field.reference_vertical_coord)):
             # This describes a surface field. No changes needed.
             return
         # A bounded vertical coord starting from the surface
@@ -566,7 +578,7 @@ def vertical_coord(cube, field):
 def ensemble_member(cube, field):
     """Add an 'ensemble member' coord to the cube, if present in the field."""
     ensemble_member_value = getattr(field, "ensemble_member")
-    if ensemble_member_value != field.int_mdi:
+    if not is_missing(field, ensemble_member_value):
         cube.add_aux_coord(DimCoord(np.array(ensemble_member_value,
                                              dtype=np.int32),
                                     "realization"))
@@ -590,10 +602,11 @@ def attributes(cube, field):
         """Add an attribute to the cube."""
         if hasattr(field, item):
             value = getattr(field, item)
-            if value not in [field.int_mdi, field.float32_mdi]:
-                if 'radius' in item:
-                    value = f'{value} km'
-                cube.attributes[item] = value
+            if is_missing(field, value):
+                return
+            if 'radius' in item:
+                value = f'{value} km'
+            cube.attributes[item] = value
 
     add_attr("nimrod_version")
     add_attr("field_code")
@@ -643,7 +656,7 @@ def known_threshold_coord(field):
             coord_keys["standard_name"] = "cloud_area_fraction"
             coord_keys["units"] = "oktas"
     if field.field_code == 29 and field.threshold_value >= 0.:
-        if field.threshold_type == field.int_mdi:
+        if is_missing(field, field.threshold_type):
             coord_keys = {"standard_name": "visibility_in_air",
                           "var_name": "threshold",
                           "units": "metres"}
@@ -653,7 +666,7 @@ def known_threshold_coord(field):
                           "units": "1"}
     if (field.field_code == 422
             and field.threshold_value >= 0.
-            and field.threshold_type == field.int_mdi):
+            and is_missing(field, field.threshold_type)):
         coord_keys = {"long_name": "radius_of_max",
                       "units": "km"}
     if field.field_code == 821:

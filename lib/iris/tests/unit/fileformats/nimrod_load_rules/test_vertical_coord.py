@@ -33,6 +33,7 @@ class Test(tests.IrisTest):
             reference_vertical_coord=NIMROD_DEFAULT,
             reference_vertical_coord_type=NIMROD_DEFAULT,
             int_mdi=mock.sentinel.int_mdi,
+            float32_mdi=NIMROD_DEFAULT,
             spec=NimrodField,
         )
         self.cube = mock.Mock()
