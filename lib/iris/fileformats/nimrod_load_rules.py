@@ -546,7 +546,7 @@ def vertical_coord(cube, field):
     coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
     if np.isclose(coord_point, 9999.):
         if (np.isclose(field.reference_vertical_coord, 9999.) or
-            is_missing(field, field.reference_vertical_coord)):
+                is_missing(field, field.reference_vertical_coord)):
             # This describes a surface field. No changes needed.
             return
         # A bounded vertical coord starting from the surface
