@@ -644,18 +644,20 @@ class PPDataProxy(object):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        def is_emptyslice(key):
-            return (isinstance(key, slice) and
-                    isinstance(key.start, int) and
-                    key.start == key.stop)
+        # Convert a single key to a 1-tuple, for empty-slice testing.
+        if isinstance(keys, tuple):
+            keys_tuple = keys
+        else:
+            keys_tuple = (keys,)
 
-        if any(is_emptyslice(key) for key in keys):
-            # Fake result for an 'empty' slice : do not open + read the file !!
-            # Since "dask.array.from_array" fetches a no-data slice to
-            # 'snapshot' the array metadata.
+        if any(key == slice(0, 0) for key in keys_tuple):
+            # An 'empty' slice has no data : do not open + read the file !!
+            # In these cases, return a 'fake' data array instead.
+            # Needed because, for Dask >= 2.0, "dask.array.from_array" does a
+            # fetch like [0:0, 0:0, ...], to 'snapshot' the array metadata.
             target_shape = list(self.shape)
-            for i_dim, key in enumerate(keys):
-                if is_emptyslice(key):
+            for i_dim, key in enumerate(keys_tuple):
+                if key == slice(0, 0):
                     target_shape[i_dim] = 0
             data = np.zeros((1,), dtype=self.dtype)
             data = np.broadcast_to(data, target_shape)
