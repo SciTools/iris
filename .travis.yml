@@ -84,7 +84,7 @@ install:
 # iris test data
   - >
     if [[ "${TEST_MINIMAL}" != true ]]; then
-      wget --quiet -O iris-test-data.zip https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
+      wget --quiet -O iris-test-data.zip https://github.com/MoseleyS/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip;
       unzip -q iris-test-data.zip;
       mv "iris-test-data-${IRIS_TEST_DATA_SUFFIX}" iris-test-data;
     fi
