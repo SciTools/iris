@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="vector_wind_shear" units="m/s">
     <attributes>
       <attribute name="field_code" value="501"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -47,9 +49,11 @@
   <cube dtype="float32" long_name="Dir. wind shear 1-6km" units="unknown">
     <attributes>
       <attribute name="field_code" value="504"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -91,9 +95,11 @@
   <cube dtype="float32" long_name="low_level_jet_u_component" units="m/s">
     <attributes>
       <attribute name="field_code" value="508"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -135,9 +141,11 @@
   <cube dtype="float32" long_name="low_level_jet_v_component" units="m/s">
     <attributes>
       <attribute name="field_code" value="514"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -179,9 +187,11 @@
   <cube dtype="float32" long_name="low_level_jet_curvature" units="S^-1">
     <attributes>
       <attribute name="field_code" value="509"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -223,9 +233,11 @@
   <cube dtype="float32" long_name="10m convective wind gust" units="m/s">
     <attributes>
       <attribute name="field_code" value="800"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="convective cloud base" units="m">
     <attributes>
       <attribute name="field_code" value="87"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,9 +42,11 @@
   <cube dtype="float32" long_name="convective cloud top" units="m">
     <attributes>
       <attribute name="field_code" value="88"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -77,10 +81,12 @@
   <cube dtype="float32" long_name="Worst Convective Cloud T" units="m">
     <attributes>
       <attribute name="field_code" value="88"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="neighbourhood_radius" value="10.0 km"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="CDP"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -115,10 +121,12 @@
   <cube dtype="float32" long_name="Worst Convective Cloud B" units="m">
     <attributes>
       <attribute name="field_code" value="87"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="neighbourhood_radius" value="10.0 km"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="CDP"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -153,9 +161,11 @@
   <cube dtype="float32" long_name="cloud_area_fraction_in_atmosphere" units="1">
     <attributes>
       <attribute name="field_code" value="172"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="ek00cloud diagnostics"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -202,9 +212,11 @@
   <cube dtype="float32" long_name="cloud top" units="m">
     <attributes>
       <attribute name="field_code" value="207"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="ek00cloud diagnostics"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -239,9 +251,11 @@
   <cube dtype="float32" long_name="minimum_cloud_base_above_threshold" units="m">
     <attributes>
       <attribute name="field_code" value="161"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="ek00cloud diagnostics"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord datadims="[0]">

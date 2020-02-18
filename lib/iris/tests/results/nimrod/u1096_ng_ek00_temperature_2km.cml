@@ -3,10 +3,12 @@
   <cube dtype="float32" long_name="temperature" units="degC">
     <attributes>
       <attribute name="field_code" value="58"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['minimum in period']"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -48,10 +50,12 @@
   <cube dtype="float32" long_name="temperature" units="degC">
     <attributes>
       <attribute name="field_code" value="58"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['maximum in period']"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -93,9 +97,11 @@
   <cube dtype="float32" long_name="temperature" units="degC">
     <attributes>
       <attribute name="field_code" value="58"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="UM?"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -137,9 +143,11 @@
   <cube dtype="float32" long_name="screen dewpoint" units="degC">
     <attributes>
       <attribute name="field_code" value="154"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="UM?"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

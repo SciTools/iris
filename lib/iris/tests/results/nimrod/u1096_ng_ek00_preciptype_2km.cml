@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="snow probability" units="1">
     <attributes>
       <attribute name="field_code" value="28"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,10 +42,12 @@
   <cube dtype="float32" long_name="snow probability" units="1">
     <attributes>
       <attribute name="field_code" value="28"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['warm bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -78,10 +82,12 @@
   <cube dtype="float32" long_name="snow probability" units="1">
     <attributes>
       <attribute name="field_code" value="28"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['cold bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -116,9 +122,11 @@
   <cube dtype="float32" long_name="snow fraction" units="1">
     <attributes>
       <attribute name="field_code" value="27"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -153,10 +161,12 @@
   <cube dtype="float32" long_name="snow fraction" units="1">
     <attributes>
       <attribute name="field_code" value="27"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['warm bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -191,10 +201,12 @@
   <cube dtype="float32" long_name="snow fraction" units="1">
     <attributes>
       <attribute name="field_code" value="27"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['cold bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -229,9 +241,11 @@
   <cube dtype="float32" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -266,10 +280,12 @@
   <cube dtype="float32" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['warm bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -304,10 +320,12 @@
   <cube dtype="float32" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['cold bias applied']"/>
       <attribute name="source" value="rainfc"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

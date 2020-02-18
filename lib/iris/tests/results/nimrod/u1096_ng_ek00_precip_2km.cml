@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="precipitation" units="mm/hr">
     <attributes>
       <attribute name="field_code" value="63"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,10 +42,12 @@
   <cube dtype="float32" long_name="Min rainrate in last hr" units="mm/hr">
     <attributes>
       <attribute name="field_code" value="213"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['minimum in period']"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -78,10 +82,12 @@
   <cube dtype="float32" long_name="Max rainrate in last hr" units="mm/hr">
     <attributes>
       <attribute name="field_code" value="213"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['maximum in period']"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="surfpressure" units="hPa">
     <attributes>
       <attribute name="field_code" value="205"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,9 +42,11 @@
   <cube dtype="float32" standard_name="air_pressure_at_mean_sea_level" units="hPa">
     <attributes>
       <attribute name="field_code" value="12"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

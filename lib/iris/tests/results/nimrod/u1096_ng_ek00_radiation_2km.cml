@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="total down surf SW flux" units="W/m2">
     <attributes>
       <attribute name="field_code" value="91"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,9 +42,11 @@
   <cube dtype="float32" long_name="diffuse down surf LW flx" units="W/m2">
     <attributes>
       <attribute name="field_code" value="92"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -77,9 +81,11 @@
   <cube dtype="float32" long_name="surface sensible heat fl" units="W/m2">
     <attributes>
       <attribute name="field_code" value="303"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -114,9 +120,11 @@
   <cube dtype="float32" long_name="net surf SW flux" units="W/m2">
     <attributes>
       <attribute name="field_code" value="91"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -151,9 +159,11 @@
   <cube dtype="float32" long_name="direct down surf SW flux" units="W/m2">
     <attributes>
       <attribute name="field_code" value="91"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -188,9 +198,11 @@
   <cube dtype="float32" long_name="diffuse down surf SW flx" units="W/m2">
     <attributes>
       <attribute name="field_code" value="91"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -225,9 +237,11 @@
   <cube dtype="float32" long_name="net surf LW flux" units="W/m2">
     <attributes>
       <attribute name="field_code" value="92"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

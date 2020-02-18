@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="Absolute helicity 0-1km" units="m^2/s^2">
     <attributes>
       <attribute name="field_code" value="502"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -47,9 +49,11 @@
   <cube dtype="float32" long_name="Tornado index" units="unknown">
     <attributes>
       <attribute name="field_code" value="503"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -84,9 +88,11 @@
   <cube dtype="float32" long_name="Total precipitable water" units="mm">
     <attributes>
       <attribute name="field_code" value="506"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -121,9 +127,11 @@
   <cube dtype="float32" long_name="Lifted Index" units="unknown">
     <attributes>
       <attribute name="field_code" value="507"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -159,6 +167,7 @@
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="422"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="neighbourhood_radius" value="60.0 km"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
@@ -166,6 +175,7 @@
       <attribute name="recursive_filter_iterations" value="2"/>
       <attribute name="source" value=""/>
       <attribute name="threshold_vicinity_radius" value="1.0 km"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -207,9 +217,11 @@
   <cube dtype="float32" long_name="Davies parameter" units="unknown">
     <attributes>
       <attribute name="field_code" value="511"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -244,9 +256,11 @@
   <cube dtype="float32" long_name="Hail size" units="mm">
     <attributes>
       <attribute name="field_code" value="512"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value=""/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -281,9 +295,11 @@
   <cube dtype="float32" long_name="lightning rate" units="min^-1">
     <attributes>
       <attribute name="field_code" value="422"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -321,9 +337,11 @@
   <cube dtype="float32" long_name="lightning rate (for Auto" units="min^-1">
     <attributes>
       <attribute name="field_code" value="422"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

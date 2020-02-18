@@ -629,10 +629,11 @@ def attributes(cube, field):
     add_attr("sensor_id")
     add_attr("meteosat_id")
     add_attr("alphas_available")
-    for key in ["neighbourhood_radius", "recursive_filter_iterations",
-                "recursive_filter_alpha", "threshold_vicinity_radius",
-                "probability_period_of_event"]:
-        add_attr(key)
+    if 'radar' not in field.source:
+        for key in ["neighbourhood_radius", "recursive_filter_iterations",
+                    "recursive_filter_alpha", "threshold_vicinity_radius",
+                    "probability_period_of_event"]:
+            add_attr(key)
 
     source = field.source.strip()
     rematcher = re.compile('^ek\d\d$')
@@ -640,6 +641,8 @@ def attributes(cube, field):
             or source.find('umek') == 0):
         source = 'MOGREPS-UK'
     cube.attributes['source'] = source
+    cube.attributes['title'] = 'Unknown'
+    cube.attributes['institution'] = 'Met Office'
 
 
 def known_threshold_coord(field):

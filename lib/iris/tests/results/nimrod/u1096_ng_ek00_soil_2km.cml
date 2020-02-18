@@ -3,9 +3,11 @@
   <cube dtype="float32" long_name="surftemp" units="degC">
     <attributes>
       <attribute name="field_code" value="18"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -40,9 +42,11 @@
   <cube dtype="float32" long_name="tile surftemp" units="degC">
     <attributes>
       <attribute name="field_code" value="301"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>
@@ -82,9 +86,11 @@
   <cube dtype="float32" long_name="tile screen temp" units="degC">
     <attributes>
       <attribute name="field_code" value="302"/>
+      <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
       <coord>

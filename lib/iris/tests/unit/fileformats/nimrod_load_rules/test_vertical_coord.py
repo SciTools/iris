@@ -32,7 +32,7 @@ class Test(tests.IrisTest):
             vertical_coord_type=NIMROD_DEFAULT,
             reference_vertical_coord=NIMROD_DEFAULT,
             reference_vertical_coord_type=NIMROD_DEFAULT,
-            int_mdi=mock.sentinel.int_mdi,
+            int_mdi=-32767,
             float32_mdi=NIMROD_DEFAULT,
             spec=NimrodField,
         )
