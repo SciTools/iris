@@ -70,7 +70,7 @@ Slices = SliceTranslator()
 
 class Test__getitem__slicing(tests.IrisTest):
     def _check_slicing(self, test_shape, indices, result_shape,
-                              data_was_fetched=True):
+                       data_was_fetched=True):
         # Check behaviour of the getitem call with specific slicings.
         # Especially: check cases where a fetch does *not* read from the file.
         # This is necessary because, since Dask 2.0, the "from_array" function
