@@ -37,6 +37,7 @@ class TestLoad(tests.IrisTest):
         )
         self.assertCML(cube, ("nimrod", "load_2flds.cml"))
 
+    @tests.skip_data
     def test_huge_field_load(self):
         # load a wide range of cubes with all meta-data variations
         for datafile in {"u1096_ng_ek07_precip0540_accum180_18km",
