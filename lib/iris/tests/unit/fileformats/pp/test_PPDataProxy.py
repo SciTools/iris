@@ -28,12 +28,12 @@ import iris.tests as tests
 import numpy as np
 
 from iris.fileformats.pp import PPDataProxy, SplittableInt
-from unittest.mock import Mock, MagicMock
+from iris.tests import mock
 
 
 class Test_lbpack(tests.IrisTest):
     def test_lbpack_SplittableInt(self):
-        lbpack = Mock(spec_set=SplittableInt)
+        lbpack = mock.Mock(spec_set=SplittableInt)
         proxy = PPDataProxy(None, None, None, None,
                             None, lbpack, None, None)
         self.assertEqual(proxy.lbpack, lbpack)
@@ -93,7 +93,7 @@ class Test__getitem__slicing(tests.IrisTest):
         # operation in the cases where file-open *does* get called.
         fake_data = np.zeros(test_shape, dtype=test_dtype)
         self.patch('iris.fileformats.pp._data_bytes_to_shaped_array',
-                   MagicMock(return_value=fake_data))
+                   mock.MagicMock(return_value=fake_data))
 
         # Test the requested indexing operation.
         result = proxy.__getitem__(indices)
