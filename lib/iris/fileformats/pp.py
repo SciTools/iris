@@ -52,7 +52,7 @@ from iris.fileformats._pp_lbproc_pairs import (LBPROC_PAIRS,
                                                LBPROC_MAP as lbproc_map)
 import iris.fileformats.rules
 import iris.coord_systems
-
+from iris.util import _array_slice_ifempty
 
 try:
     import mo_pack
@@ -644,24 +644,11 @@ class PPDataProxy(object):
         return len(self.shape)
 
     def __getitem__(self, keys):
-        # Convert a single key to a 1-tuple, for empty-slice testing.
-        if isinstance(keys, tuple):
-            keys_tuple = keys
-        else:
-            keys_tuple = (keys,)
-
-        if any(key == slice(0, 0) for key in keys_tuple):
-            # An 'empty' slice has no data : do not open + read the file !!
-            # In these cases, return a 'fake' data array instead.
-            # Needed because, for Dask >= 2.0, "dask.array.from_array" does a
-            # fetch like [0:0, 0:0, ...], to 'snapshot' the array metadata.
-            target_shape = list(self.shape)
-            for i_dim, key in enumerate(keys_tuple):
-                if key == slice(0, 0):
-                    target_shape[i_dim] = 0
-            data = np.zeros((1,), dtype=self.dtype)
-            data = np.broadcast_to(data, target_shape)
-        else:
+        # Check for 'empty' slicings, in which case don't fetch the data.
+        # Because, since Dask v2, 'dask.array.from_array' performs an empty
+        # slicing and we must not fetch the data at that time.
+        result = _array_slice_ifempty(keys, self.shape, self.dtype)
+        if result is None:
             with open(self.path, 'rb') as pp_file:
                 pp_file.seek(self.offset, os.SEEK_SET)
                 data_bytes = pp_file.read(self.data_len)
@@ -670,8 +657,9 @@ class PPDataProxy(object):
                                                    self.boundary_packing,
                                                    self.shape, self.src_dtype,
                                                    self.mdi)
-        data = data.__getitem__(keys)
-        return np.asanyarray(data, dtype=self.dtype)
+            result = data.__getitem__(keys)
+
+        return np.asanyarray(result, dtype=self.dtype)
 
     def __repr__(self):
         fmt = '<{self.__class__.__name__} shape={self.shape}' \

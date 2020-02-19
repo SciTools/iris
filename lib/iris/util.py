@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2019, Met Office
+# (C) British Crown Copyright 2010 - 2020, Met Office
 #
 # This file is part of Iris.
 #
@@ -913,6 +913,63 @@ class _OrderedHashable(six.with_metaclass(_MetaOrderedHashable,
             return self._identity() < other._identity()
         else:
             return NotImplemented
+
+
+def _array_slice_ifempty(keys, shape, dtype):
+    """
+    Detect cases where an array slice will contain no data, as it contains a
+    zero-length dimension, and produce an equivalent result for those cases.
+
+    The function indicates 'empty' slicing cases, by returning an array equal
+    to the slice result in those cases.
+
+    Args:
+
+    * keys (indexing key, or tuple of keys):
+        The argument from an array __getitem__ call.
+        Only tuples of integers and slices are supported, in particular no
+        newaxis, ellipsis or array keys.
+        These are the types of array access usage we expect from Dask.
+    * shape (tuple of int):
+        The shape of the array being indexed.
+    * dtype (numpy.dtype):
+        The dtype of the array being indexed.
+
+    Returns:
+        result (np.ndarray or None):
+            If 'keys' contains a slice(0, 0), this is an ndarray of the correct
+            resulting shape and provided dtype.
+            Otherwise it is None.
+
+    .. Note:
+    This is used to prevent Proxy array objects being wrapped as Dask arrays
+    from fetching their file data in these cases.
+    This is because, for Dask >= 2.0, the "dask.array.from_array" call does a
+    fetch like [0:0, 0:0, ...], to 'snapshot' array metadata.
+    This function enables us to avoid triggering a file data fetch in those
+    cases :  This is a consistent because the indexing does not request any
+    actual data content.
+
+    """
+    # Convert a single key to a 1-tuple, for empty-slice testing.
+    if isinstance(keys, tuple):
+        keys_tuple = keys
+    else:
+        keys_tuple = (keys,)
+
+    if any(key == slice(0, 0) for key in keys_tuple):
+        # When an 'empty' slice is present, return a 'fake' array instead.
+        target_shape = list(shape)
+        for i_dim, key in enumerate(keys_tuple):
+            if key == slice(0, 0):
+                target_shape[i_dim] = 0
+        result = np.zeros((1,), dtype=dtype)
+        result = np.broadcast_to(result, target_shape)
+        result = result[keys]
+    else:
+        result = None
+
+    return result
 
 
 def create_temp_filename(suffix=''):
