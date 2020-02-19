@@ -120,14 +120,6 @@ class Test__getitem__slicing(tests.IrisTest):
             result_shape=(0,),
             data_was_fetched=False)
 
-    def test_slicing_1d_unrecognised_empty(self):
-        # When empty slice is not "0:0" : for now, we *don't* detect these.
-        self._check_slicing(
-            test_shape=(3,),
-            indices=Slices[1:1],
-            result_shape=(0,),
-            data_was_fetched=True)
-
     def test_slicing_2d_normal(self):
         # A 2d testcase with no empty slices.
         self._check_slicing(
