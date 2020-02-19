@@ -941,30 +941,34 @@ def _array_slice_ifempty(keys, shape, dtype):
             resulting shape and provided dtype.
             Otherwise it is None.
 
-    .. Note:
-    This is used to prevent Proxy array objects being wrapped as Dask arrays
-    from fetching their file data in these cases.
-    This is because, for Dask >= 2.0, the "dask.array.from_array" call does a
-    fetch like [0:0, 0:0, ...], to 'snapshot' array metadata.
-    This function enables us to avoid triggering a file data fetch in those
-    cases :  This is a consistent because the indexing does not request any
-    actual data content.
+    .. note::
+
+        This is used to prevent DataProxy arraylike objects from fetching their
+        file data when wrapped as Dask arrays.
+        This is because, for Dask >= 2.0, the "dask.array.from_array" call
+        performs a fetch like [0:0, 0:0, ...], to 'snapshot' array metadata.
+        This function enables us to avoid triggering a file data fetch in those
+        cases :  This is consistent because the result will not contain any
+        actual data content.
 
     """
-    # Convert a single key to a 1-tuple, for empty-slice testing.
+    # Convert a single key into a 1-tuple, so we always have a tuple of keys.
     if isinstance(keys, tuple):
         keys_tuple = keys
     else:
         keys_tuple = (keys,)
 
     if any(key == slice(0, 0) for key in keys_tuple):
-        # When an 'empty' slice is present, return a 'fake' array instead.
+        # An 'empty' slice is present :  Return a 'fake' array instead.
         target_shape = list(shape)
         for i_dim, key in enumerate(keys_tuple):
             if key == slice(0, 0):
+                # Reduce dims with empty slicing to length 0.
                 target_shape[i_dim] = 0
-        result = np.zeros((1,), dtype=dtype)
-        result = np.broadcast_to(result, target_shape)
+        # Create a prototype result : no memory usage, as some dims are 0.
+        result = np.zeros(target_shape, dtype=dtype)
+        # Index with original keys to produce the desired result shape.
+        # Note : also ok in 0-length dims, as the slice is always '0:0'.
         result = result[keys]
     else:
         result = None
