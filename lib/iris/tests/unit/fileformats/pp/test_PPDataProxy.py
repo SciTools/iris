@@ -137,7 +137,7 @@ class Test__getitem__slicing(tests.IrisTest):
             data_was_fetched=True)
 
     def test_slicing_2d_allempty(self):
-        # A 2d testcase with an empty slice.
+        # A 2d testcase with all empty slices.
         self._check_slicing(
             test_shape=(3, 4),
             indices=Slices[0:0, 0:0],
