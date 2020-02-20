@@ -2,7 +2,7 @@ What's New in Iris 2.4.0
 ************************
 
 :Release: 2.4.0
-:Date: 2020-01-15
+:Date: 2020-02-20
 
 This document explains the new/changed features of Iris in version 2.4.0
 (:doc:`View all changes <index>`.)
@@ -47,3 +47,13 @@ Iris 2.4.0 Features
 Iris 2.4.0 Dependency Updates
 =============================
 * Iris is now able to use the latest version of matplotlib.
+
+
+Bugs Fixed
+==========
+* Fixed a problem which was causing file loads to fetch *all* field data
+  whenever UM files (PP or Fieldsfiles) were loaded.
+  With large sourcefiles, initial file loads are slow, with large memory usage
+  before any cube data is even fetched.  Large enough files will cause a crash.
+  The problem occurs only with Dask versions >= 2.0.
+
