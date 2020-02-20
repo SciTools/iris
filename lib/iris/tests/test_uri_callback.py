@@ -9,6 +9,8 @@ import iris.tests as tests
 
 import os
 
+import iris
+
 
 @tests.skip_data
 class TestCallbacks(tests.IrisTest):
