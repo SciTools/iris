@@ -76,19 +76,6 @@ class SystemInitialTest(tests.IrisTest):
                 new_cube, ("system", "supported_filetype_%s.cml" % filetype)
             )
 
-    @tests.skip_grib
-    def system_test_grib_patch(self):
-        import gribapi
-
-        gm = gribapi.grib_new_from_samples("GRIB2")
-        _ = gribapi.grib_get_double(gm, "missingValue")
-
-        new_missing_value = 123456.0
-        gribapi.grib_set_double(gm, "missingValue", new_missing_value)
-        new_result = gribapi.grib_get_double(gm, "missingValue")
-
-        self.assertEqual(new_result, new_missing_value)
-
     def system_test_imports_general(self):
         if tests.MPL_AVAILABLE:
             import matplotlib  # noqa
