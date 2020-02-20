@@ -1,0 +1,5 @@
+* Fixed a problem which was causing file loads to fetch *all* field data
+  whenever UM files (PP or Fieldsfiles) were loaded.
+  With large sourcefiles, initial file loads are slow, with large memory usage
+  before any cube data is even fetched.  Large enough files will cause a crash.
+  The problem occurs only with Dask versions >= 2.0.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of Iris.
 #
@@ -79,7 +79,11 @@ class TestAll(tests.IrisTest):
     @tests.skip_data
     def test_bad_resolution_non_numeric(self):
         cube = low_res_4d()
-        with self.assertRaises(ValueError):
+        if np.__version__ < '1.18':
+            target_error = ValueError
+        else:
+            target_error = TypeError
+        with self.assertRaises(target_error):
             project(cube, ROBINSON, nx=200, ny='abc')
 
     @tests.skip_data
