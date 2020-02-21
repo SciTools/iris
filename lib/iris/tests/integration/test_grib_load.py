@@ -23,14 +23,6 @@ import iris
 import iris.exceptions
 import iris.tests.stock
 import iris.util
-from unittest import skipIf
-
-# Skip out some tests that fail now that grib edition 2 files no longer use
-# the GribWrapper.
-# TODO: either fix these problems, or remove the tests.
-skip_irisgrib_fails = skipIf(
-    True, "Test(s) are not currently usable with the new " "grib 2 loader."
-)
 
 
 @tests.skip_data
@@ -67,13 +59,6 @@ class TestBasicLoad(tests.GraphicsTest):
         )
         cubes = iris.load(gribfile)
         self.assertCML(cubes, ("grib_load", "missing_values_grib2.cml"))
-
-    @skip_irisgrib_fails
-    def test_y_fastest(self):
-        cubes = iris.load(
-            tests.get_data_path(("GRIB", "y_fastest", "y_fast.grib2"))
-        )
-        self.assertCML(cubes, ("grib_load", "y_fastest.cml"))
 
     def test_polar_stereo_grib1(self):
         cube = iris.load_cube(
