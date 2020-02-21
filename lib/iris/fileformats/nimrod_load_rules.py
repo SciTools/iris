@@ -437,9 +437,13 @@ def set_british_national_grid_defaults(field):
         field.true_origin_latitude = 49.
     if is_missing(field, field.true_origin_longitude):
         field.true_origin_longitude = -2.
-    if is_missing(field, field.true_origin_easting):
+    if is_missing(field, field.true_origin_easting) or np.isclose(
+            # Some old files misquote the value in km instead of m
+            field.true_origin_easting, 400.):
         field.true_origin_easting = 400000.
-    if is_missing(field, field.true_origin_northing):
+    if is_missing(field, field.true_origin_northing) or np.isclose(
+            # Some old files misquote the value in km instead of m
+            field.true_origin_northing, -100.):
         field.true_origin_northing = -100000.
     if is_missing(field, field.tm_meridian_scaling):
         field.tm_meridian_scaling = 0.9996012717
