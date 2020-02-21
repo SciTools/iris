@@ -61,13 +61,6 @@ class Test(tests.IrisTest):
             "Vertical coord -1 not yet handled", TranslationWarning
         )
 
-    def test_height(self):
-        name = "vertical_coord"
-        with mock.patch(self.NIMROD_LOCATION + "." + name) as height:
-            self._call_vertical_coord(vertical_coord_val=1.,
-                                      vertical_coord_type=0)
-        height.assert_called_once_with(self.cube, self.field)
-
     def test_null(self):
         with mock.patch("warnings.warn") as warn:
             self._call_vertical_coord(vertical_coord_type=NIMROD_DEFAULT)
