@@ -32,30 +32,46 @@ TIME_UNIT = cf_units.Unit(
 )
 
 
-DEFAULT_UNITS = {817: 'm s^-1',
-                 804: 'knots',
-                 422: 'min^-1',
-                 218: 'cm',
-                 172: 'oktas',
-                 155: 'm',
-                 101: 'm',
-                 63: 'mm hr^-1',
-                 61: 'mm',
-                 58: 'Celsius',
-                 12: 'mb',
-                 8: '1'}
+DEFAULT_UNITS = {
+    817: "m s^-1",
+    804: "knots",
+    422: "min^-1",
+    218: "cm",
+    172: "oktas",
+    155: "m",
+    101: "m",
+    63: "mm hr^-1",
+    61: "mm",
+    58: "Celsius",
+    12: "mb",
+    8: "1",
+}
 FIELD_CODES = {73: "orography"}
 # VERTICAL_CODES contains conversions from the Nimrod Documentation for the
 # header entry 20 for the vertical coordinate type
-VERTICAL_CODES = {0: {'standard_name': 'height', 'units': 'm',
-                      'attributes': {"positive": "up"}},
-                  1: {'standard_name': 'altitude', 'units': 'm',
-                      'attributes': {"positive": "up"}},
-                  2: {'standard_name': 'air_pressure', 'units': 'hPa',
-                      'attributes': {"positive": "down"}},
-                  6: {'standard_name': 'air_temperature', 'units': 'K'},
-                  12: {'long_name': 'depth_below_ground', 'units': 'm',
-                       'attributes': {"positive": "down"}}}
+VERTICAL_CODES = {
+    0: {
+        "standard_name": "height",
+        "units": "m",
+        "attributes": {"positive": "up"},
+    },
+    1: {
+        "standard_name": "altitude",
+        "units": "m",
+        "attributes": {"positive": "up"},
+    },
+    2: {
+        "standard_name": "air_pressure",
+        "units": "hPa",
+        "attributes": {"positive": "down"},
+    },
+    6: {"standard_name": "air_temperature", "units": "K"},
+    12: {
+        "long_name": "depth_below_ground",
+        "units": "m",
+        "attributes": {"positive": "down"},
+    },
+}
 # Unhandled VERTICAL_CODES values (no use case identified):
 #  3: ['sigma', 'model level'],
 #  4: ['eta', 'model level'],
@@ -66,34 +82,35 @@ VERTICAL_CODES = {0: {'standard_name': 'height', 'units': 'm',
 #  10: ['potential vorticity', 'unknown'],
 #  11: ['cloud boundary', 'unknown'],
 
-SOIL_TYPE_CODES = {1: "broadleaf_tree",
-                   2: "needleleaf_tree",
-                   3: "c3_grass",
-                   4: "c4_grass",
-                   5: "crop",
-                   6: "shrub",
-                   7: "urban",
-                   8: "water",
-                   9: "soil",
-                   10: "ice",
-                   601: "urban_canyon",
-                   602: "urban_roof",
-                   }
+SOIL_TYPE_CODES = {
+    1: "broadleaf_tree",
+    2: "needleleaf_tree",
+    3: "c3_grass",
+    4: "c4_grass",
+    5: "crop",
+    6: "shrub",
+    7: "urban",
+    8: "water",
+    9: "soil",
+    10: "ice",
+    601: "urban_canyon",
+    602: "urban_roof",
+}
 TIME_AVERAGING_CODES = {
     8192: "maximum in period",
-    4096: 'minimum in period',
-    2048: 'unknown(2048)',
-    1024: 'unknown(1024)',
-    512: 'time lagged',
-    256: 'extrapolation',
-    128: 'accumulation or average',
-    64: 'from UM 150m',
-    32: 'scaled to UM resolution',
-    16: 'averaged over multiple surface types',
-    8: 'only observations used',
-    4: 'smoothed',
-    2: 'cold bias applied',
-    1: 'warm bias applied',
+    4096: "minimum in period",
+    2048: "unknown(2048)",
+    1024: "unknown(1024)",
+    512: "time lagged",
+    256: "extrapolation",
+    128: "accumulation or average",
+    64: "from UM 150m",
+    32: "scaled to UM resolution",
+    16: "averaged over multiple surface types",
+    8: "only observations used",
+    4: "smoothed",
+    2: "cold bias applied",
+    1: "warm bias applied",
 }
 
 
@@ -103,9 +120,9 @@ class TranslationWarning(Warning):
 
 def is_missing(field, value):
     """Returns True if value matches an "is-missing" number."""
-    return any(np.isclose(value, [field.int_mdi,
-                                  field.float32_mdi,
-                                  NIMROD_DEFAULT]))
+    return any(
+        np.isclose(value, [field.int_mdi, field.float32_mdi, NIMROD_DEFAULT])
+    )
 
 
 def name(cube, field):
@@ -119,7 +136,7 @@ def name(cube, field):
         field.title = "snow fraction"
     if field.field_code == 28:
         field.title = "snow probability"
-    if field.field_code == 29 and field.threshold_value >= 0.:
+    if field.field_code == 29 and field.threshold_value >= 0.0:
         field.title = "fog fraction"
     if field.field_code == 58:
         field.title = "temperature"
@@ -135,7 +152,7 @@ def name(cube, field):
         field.title = "Visibility"
     if field.field_code == 156:
         field.title = "Worst visibility in grid point"
-    if field.field_code == 161 and field.threshold_value >= 0.:
+    if field.field_code == 161 and field.threshold_value >= 0.0:
         field.title = "minimum_cloud_base_above_threshold"
     if field.field_code == 218:
         field.title = "snowfall"
@@ -144,17 +161,17 @@ def name(cube, field):
     if field.field_code == 421:
         field.title = "precipitation type"
     if field.field_code == 501:
-        field.title = 'vector_wind_shear'
-        field.source = ''
+        field.title = "vector_wind_shear"
+        field.source = ""
     if field.field_code == 508:
-        field.title = 'low_level_jet_u_component'
+        field.title = "low_level_jet_u_component"
     if field.field_code == 509:
-        field.title = 'low_level_jet_curvature'
+        field.title = "low_level_jet_curvature"
     if field.field_code == 514:
-        field.title = 'low_level_jet_v_component'
-    if field.field_code == 804 and field.vertical_coord >= 0.:
+        field.title = "low_level_jet_v_component"
+    if field.field_code == 804 and field.vertical_coord >= 0.0:
         field.title = "wind speed"
-    if field.field_code == 806 and field.vertical_coord >= 0.:
+    if field.field_code == 806 and field.vertical_coord >= 0.0:
         field.title = "wind direction"
     if field.field_code == 817:
         field.title = "wind_speed_of_gust"
@@ -165,12 +182,12 @@ def name(cube, field):
         field.source = "Nimrod pwind routine"
 
     if getattr(field, "ensemble_member") == -98:
-        if 'mean' not in field.title:
-            field.title = 'mean_of_' + field.title
+        if "mean" not in field.title:
+            field.title = "mean_of_" + field.title
         field.ensemble_member = field.int_mdi
     if getattr(field, "ensemble_member") == -99:
-        if 'spread' not in field.title:
-            field.title = 'standard_deviation_of_' + field.title
+        if "spread" not in field.title:
+            field.title = "standard_deviation_of_" + field.title
         field.ensemble_member = field.int_mdi
 
     cube.rename(remove_unprintable_chars(field.title))
@@ -180,8 +197,10 @@ def remove_unprintable_chars(input_str):
     """
     Removes unprintable characters from a string and returns the result.
     """
-    return ''.join(c if c in string.printable else ' ' for c in
-                   input_str).strip()
+    return "".join(
+        c if c in string.printable else " " for c in input_str
+    ).strip()
+
 
 def units(cube, field):
     """
@@ -198,75 +217,79 @@ def units(cube, field):
     Unhandled units are stored in an "invalid_units" attribute instead.
 
     """
-    unit_exception_dictionary = {'Knts': 'knots',
-                                 'knts': 'knots',
-                                 'J/Kg': 'J/kg',
-                                 'logical': '1',
-                                 'Code': '1',
-                                 'mask': '1',
-                                 'mb': 'hPa',
-                                 'g/Kg': '1',
-                                 'unitless': '1',
-                                 'Fraction': '1',
-                                 'index': '1',
-                                 'Beaufort': '',
-                                 'mmh2o': 'kg/m2',
-                                 'n/a': '1'}
+    unit_exception_dictionary = {
+        "Knts": "knots",
+        "knts": "knots",
+        "J/Kg": "J/kg",
+        "logical": "1",
+        "Code": "1",
+        "mask": "1",
+        "mb": "hPa",
+        "g/Kg": "1",
+        "unitless": "1",
+        "Fraction": "1",
+        "index": "1",
+        "Beaufort": "",
+        "mmh2o": "kg/m2",
+        "n/a": "1",
+    }
 
     field_units = remove_unprintable_chars(field.units)
-    if field_units == 'm/2-25k':
+    if field_units == "m/2-25k":
         # Handle strange visibility units
-        cube.data = (cube.data + 25000.) * 2
-        field_units = 'm'
-    if '*' in field_units:
+        cube.data = (cube.data + 25000.0) * 2
+        field_units = "m"
+    if "*" in field_units:
         # Split into unit string and integer
-        unit_list = field_units.split('*')
-        if '^' in unit_list[1]:
+        unit_list = field_units.split("*")
+        if "^" in unit_list[1]:
             # Split out magnitude
-            unit_sublist = unit_list[1].split('^')
+            unit_sublist = unit_list[1].split("^")
             cube.data = cube.data / float(unit_sublist[0]) ** float(
-                unit_sublist[1])
+                unit_sublist[1]
+            )
         else:
             cube.data = cube.data / float(unit_list[1])
         field_units = unit_list[0]
-    if 'ug/m3E1' in field_units:
+    if "ug/m3E1" in field_units:
         # Split into unit string and integer
-        unit_list = field_units.split('E')
-        cube.data = cube.data / 10.**float(unit_list[1])
+        unit_list = field_units.split("E")
+        cube.data = cube.data / 10.0 ** float(unit_list[1])
         field_units = unit_list[0]
-    if '%' in field_units:
+    if "%" in field_units:
         # Convert any percentages into fraction
-        unit_list = field_units.split('%')
-        if len(''.join(unit_list)) == 0:
-            field_units = '1'
-            cube.data = cube.data / 100.
-    if field_units == 'oktas':
-        field_units = '1'
-        cube.data /= 8.
-    if field_units == 'dBZ':
+        unit_list = field_units.split("%")
+        if len("".join(unit_list)) == 0:
+            field_units = "1"
+            cube.data = cube.data / 100.0
+    if field_units == "oktas":
+        field_units = "1"
+        cube.data /= 8.0
+    if field_units == "dBZ":
         # cf_units doesn't recognise decibels (dBZ), but does know BZ
-        field_units = 'BZ'
-        cube.data /= 10.
+        field_units = "BZ"
+        cube.data /= 10.0
     if not field_units:
         if field.field_code == 8:
             # Relative Humidity data are unitless, but not "unknown"
-            field_units = '1'
+            field_units = "1"
         if field.field_code in [505, 515]:
             # CAPE units are not always set correctly. Assume J/kg
-            field_units = 'J/kg'
+            field_units = "J/kg"
     if field_units in unit_exception_dictionary.keys():
         field_units = unit_exception_dictionary[field_units]
-    if len(field_units) > 0 and field_units[0] == '/':
+    if len(field_units) > 0 and field_units[0] == "/":
         # Deal with the case where the units are of the form '/unit' eg
         # '/second' in the Nimrod file. This converts to the form unit^-1
-        field_units = field_units[1:] + '^-1'
+        field_units = field_units[1:] + "^-1"
     try:
         cube.units = field_units
     except ValueError:
         # Just add it as an attribute.
         warnings.warn(
             "Unhandled units '{0}' recorded in cube attributes.".format(
-                field_units)
+                field_units
+            )
         )
         cube.attributes["invalid_units"] = field_units
 
@@ -281,8 +304,7 @@ def time(cube, field):
         # although if the valid time is missing too, it will be
         # made to be the same, so the forecast_period will always
         # be zero for these files.
-        valid_date = cftime.datetime(
-            2016, 1, 1, 0, 0, 0)
+        valid_date = cftime.datetime(2016, 1, 1, 0, 0, 0)
     else:
         valid_date = cftime.datetime(
             field.vt_year,
@@ -297,8 +319,10 @@ def time(cube, field):
     lb_delta = None
     if field.period_minutes == 32767:
         lb_delta = field.period_seconds
-    elif not is_missing(field, field.period_minutes) and \
-            field.period_minutes != 0:
+    elif (
+        not is_missing(field, field.period_minutes)
+        and field.period_minutes != 0
+    ):
         lb_delta = field.period_minutes * 60
     if lb_delta:
         bounds = np.array([point - lb_delta, point], dtype=np.int64)
@@ -338,30 +362,38 @@ def forecast_period(cube):
     forecast_reference_time coords.
     """
     try:
-        time_coord = cube.coord('time')
-        frt_coord = cube.coord('forecast_reference_time')
+        time_coord = cube.coord("time")
+        frt_coord = cube.coord("forecast_reference_time")
     except CoordinateNotFoundError:
         return
     if len(time_coord.points) != 1 or len(frt_coord.points) != 1:
         raise TranslationError(
             "Unexpected number of points on time coordinates. Expected time:1; "
             f"forecast_reference_time:1. Got {len(time_coord.points)}; "
-            f"{len(frt_coord.points)}")
+            f"{len(frt_coord.points)}"
+        )
     time_delta = time_coord.cell(0).point - frt_coord.cell(0).point
 
-    points = np.array(time_delta.days * 24 * 60 * 60 + time_delta.seconds,
-                      dtype=np.int32)
-    forecast_period_unit = cf_units.Unit('second')
-    if cube.coord('time').has_bounds():
+    points = np.array(
+        time_delta.days * 24 * 60 * 60 + time_delta.seconds, dtype=np.int32
+    )
+    forecast_period_unit = cf_units.Unit("second")
+    if cube.coord("time").has_bounds():
         time_window = time_coord.cell(0).bound
-        time_window = (time_window[1] - time_window[0])
-        bounds = np.array([points - time_window.total_seconds(), points],
-                          dtype=np.int32)
+        time_window = time_window[1] - time_window[0]
+        bounds = np.array(
+            [points - time_window.total_seconds(), points], dtype=np.int32
+        )
     else:
         bounds = None
     cube.add_aux_coord(
-        iris.coords.AuxCoord(points, standard_name='forecast_period',
-                             bounds=bounds, units=forecast_period_unit))
+        iris.coords.AuxCoord(
+            points,
+            standard_name="forecast_period",
+            bounds=bounds,
+            units=forecast_period_unit,
+        )
+    )
 
 
 def mask_cube(cube, field):
@@ -373,15 +405,13 @@ def mask_cube(cube, field):
     if field.datum_type == 1:
         # field.data are integers
         if np.any(field.data == field.int_mdi):
-            cube.data = np.ma.masked_equal(field.data,
-                                           field.int_mdi)
+            cube.data = np.ma.masked_equal(field.data, field.int_mdi)
     elif field.datum_type == 0:
         # field.data are floats
         if np.any(np.isclose(field.data, field.float32_mdi)):
             cube.data = np.ma.masked_inside(
-                field.data,
-                field.float32_mdi - 0.5,
-                field.float32_mdi + 0.5)
+                field.data, field.float32_mdi - 0.5, field.float32_mdi + 0.5
+            )
 
 
 def experiment(cube, field):
@@ -405,9 +435,14 @@ def proj_biaxial_ellipsoid(field):
     # Reference for airy_1830 and international_1924 ellipsoids:
     # http://fcm9/projects/PostProc/wiki/PostProcDocDomains#ProjectionConstants
     # Reference for GRS80:
-    airy_1830 = {'semi_major_axis': 6377563.396, 'semi_minor_axis': 6356256.910}
-    international_1924 = {'semi_major_axis': 6378388.000,
-                          'semi_minor_axis': 6356911.946}
+    airy_1830 = {
+        "semi_major_axis": 6377563.396,
+        "semi_minor_axis": 6356256.910,
+    }
+    international_1924 = {
+        "semi_major_axis": 6378388.000,
+        "semi_minor_axis": 6356911.946,
+    }
     if field.proj_biaxial_ellipsoid == 0:
         ellipsoid = airy_1830
     elif field.proj_biaxial_ellipsoid == 1:
@@ -415,16 +450,22 @@ def proj_biaxial_ellipsoid(field):
     elif is_missing(field, field.proj_biaxial_ellipsoid):
         if field.horizontal_grid_type == 0:
             ellipsoid = airy_1830
-        elif field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4:
+        elif (
+            field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4
+        ):
             ellipsoid = international_1924
         else:
-            raise TranslationError('''Unsupported grid type, only NG, EuroPP
-                                     and lat/long are possible''')
+            raise TranslationError(
+                """Unsupported grid type, only NG, EuroPP
+                                     and lat/long are possible"""
+            )
     else:
         raise TranslationError(
-            'Ellipsoid not supported, proj_biaxial_ellipsoid:{}, '
-            'horizontal_grid_type:{}'.format(field.proj_biaxial_ellipsoid,
-                                             field.horizontal_grid_type))
+            "Ellipsoid not supported, proj_biaxial_ellipsoid:{}, "
+            "horizontal_grid_type:{}".format(
+                field.proj_biaxial_ellipsoid, field.horizontal_grid_type
+            )
+        )
     return ellipsoid
 
 
@@ -434,17 +475,21 @@ def set_british_national_grid_defaults(field):
     files are missing these."""
 
     if is_missing(field, field.true_origin_latitude):
-        field.true_origin_latitude = 49.
+        field.true_origin_latitude = 49.0
     if is_missing(field, field.true_origin_longitude):
-        field.true_origin_longitude = -2.
+        field.true_origin_longitude = -2.0
     if is_missing(field, field.true_origin_easting) or np.isclose(
-            # Some old files misquote the value in km instead of m
-            field.true_origin_easting, 400.):
-        field.true_origin_easting = 400000.
+        # Some old files misquote the value in km instead of m
+        field.true_origin_easting,
+        400.0,
+    ):
+        field.true_origin_easting = 400000.0
     if is_missing(field, field.true_origin_northing) or np.isclose(
-            # Some old files misquote the value in km instead of m
-            field.true_origin_northing, -100.):
-        field.true_origin_northing = -100000.
+        # Some old files misquote the value in km instead of m
+        field.true_origin_northing,
+        -100.0,
+    ):
+        field.true_origin_northing = -100000.0
     if is_missing(field, field.tm_meridian_scaling):
         field.tm_meridian_scaling = 0.9996012717
 
@@ -466,9 +511,13 @@ def coord_system(field):
         set_british_national_grid_defaults(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
         coord_sys = iris.coord_systems.TransverseMercator(
-            field.true_origin_latitude, field.true_origin_longitude,
-            field.true_origin_easting, field.true_origin_northing,
-            field.tm_meridian_scaling, iris.coord_systems.GeogCS(**ellipsoid))
+            field.true_origin_latitude,
+            field.true_origin_longitude,
+            field.true_origin_easting,
+            field.true_origin_northing,
+            field.tm_meridian_scaling,
+            iris.coord_systems.GeogCS(**ellipsoid),
+        )
     elif field.horizontal_grid_type == 1:
         coord_sys = iris.coord_systems.GeogCS(**ellipsoid)
     else:
@@ -490,91 +539,107 @@ def horizontal_grid(cube, field):
         )
     crs = coord_system(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
-        units_name = 'm'
-        x_coord_name = 'projection_x_coordinate'
-        y_coord_name = 'projection_y_coordinate'
+        units_name = "m"
+        x_coord_name = "projection_x_coordinate"
+        y_coord_name = "projection_y_coordinate"
     elif field.horizontal_grid_type == 1:
-        units_name = 'degrees'
-        x_coord_name = 'longitude'
-        y_coord_name = 'latitude'
+        units_name = "degrees"
+        x_coord_name = "longitude"
+        y_coord_name = "latitude"
     else:
-        raise TranslationError("Horizontal grid type {} not "
-                               "implemented".format(field.horizontal_grid_type))
-    points = (np.arange(field.num_cols) * field.column_step +
-              field.x_origin).astype(np.float32)
+        raise TranslationError(
+            "Horizontal grid type {} not "
+            "implemented".format(field.horizontal_grid_type)
+        )
+    points = (
+        np.arange(field.num_cols) * field.column_step + field.x_origin
+    ).astype(np.float32)
     x_coord = DimCoord(
-        points,
-        standard_name=x_coord_name,
-        units=units_name,
-        coord_system=crs,
+        points, standard_name=x_coord_name, units=units_name, coord_system=crs,
     )
     cube.add_dim_coord(x_coord, 1)
-    points = (np.arange(field.num_rows)[::-1] * -field.row_step +
-              field.y_origin).astype(np.float32)
+    points = (
+        np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin
+    ).astype(np.float32)
     y_coord = DimCoord(
-        points,
-        standard_name=y_coord_name,
-        units=units_name,
-        coord_system=crs,
+        points, standard_name=y_coord_name, units=units_name, coord_system=crs,
     )
     cube.add_dim_coord(y_coord, 0)
 
 
 def vertical_coord(cube, field):
     """Add a vertical coord to the cube, if appropriate."""
-    if all([is_missing(field, x) for x in [
-            field.vertical_coord, field.vertical_coord_type,
-            field.reference_vertical_coord,
-            field.reference_vertical_coord_type]]):
+    if all(
+        [
+            is_missing(field, x)
+            for x in [
+                field.vertical_coord,
+                field.vertical_coord_type,
+                field.reference_vertical_coord,
+                field.reference_vertical_coord_type,
+            ]
+        ]
+    ):
         return
 
-    if (not is_missing(field, field.reference_vertical_coord_type) and
-            field.reference_vertical_coord_type != field.vertical_coord_type
-            and not is_missing(field, field.reference_vertical_coord)):
-        msg = ('Unmatched vertical coord types '
-               f'{field.vertical_coord_type} != '
-               f'{field.reference_vertical_coord_type}'
-               f'. Assuming {field.vertical_coord_type}')
+    if (
+        not is_missing(field, field.reference_vertical_coord_type)
+        and field.reference_vertical_coord_type != field.vertical_coord_type
+        and not is_missing(field, field.reference_vertical_coord)
+    ):
+        msg = (
+            "Unmatched vertical coord types "
+            f"{field.vertical_coord_type} != "
+            f"{field.reference_vertical_coord_type}"
+            f". Assuming {field.vertical_coord_type}"
+        )
         warnings.warn(msg)
 
     coord_point = field.vertical_coord
-    if coord_point == 8888.:
+    if coord_point == 8888.0:
         if "sea_level" not in cube.name():
             cube.rename(f"{cube.name()}_at_mean_sea_level")
-        coord_point = 0.
-        if (np.isclose(field.reference_vertical_coord, 8888.) or
-                is_missing(field, field.reference_vertical_coord)):
+        coord_point = 0.0
+        if np.isclose(field.reference_vertical_coord, 8888.0) or is_missing(
+            field, field.reference_vertical_coord
+        ):
             # This describes a surface field. No changes needed.
             return
 
     coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
-    if np.isclose(coord_point, 9999.):
-        if (np.isclose(field.reference_vertical_coord, 9999.) or
-                is_missing(field, field.reference_vertical_coord)):
+    if np.isclose(coord_point, 9999.0):
+        if np.isclose(field.reference_vertical_coord, 9999.0) or is_missing(
+            field, field.reference_vertical_coord
+        ):
             # This describes a surface field. No changes needed.
             return
         # A bounded vertical coord starting from the surface
-        coord_point = 0.
-        coord_args = VERTICAL_CODES.get(field.reference_vertical_coord_type,
-                                        None)
+        coord_point = 0.0
+        coord_args = VERTICAL_CODES.get(
+            field.reference_vertical_coord_type, None
+        )
     coord_point = np.array(coord_point, dtype=np.float32)
-    if (field.reference_vertical_coord >= 0. and
-            field.reference_vertical_coord != coord_point):
-        bounds = np.array([coord_point, field.reference_vertical_coord],
-                          dtype=np.float32)
+    if (
+        field.reference_vertical_coord >= 0.0
+        and field.reference_vertical_coord != coord_point
+    ):
+        bounds = np.array(
+            [coord_point, field.reference_vertical_coord], dtype=np.float32
+        )
     else:
         bounds = None
 
     if coord_args:
-        new_coord = iris.coords.AuxCoord(coord_point, bounds=bounds,
-                                         **coord_args)
+        new_coord = iris.coords.AuxCoord(
+            coord_point, bounds=bounds, **coord_args
+        )
         # Add coordinate to cube
         cube.add_aux_coord(new_coord)
         return
 
     warnings.warn(
-        "Vertical coord {!r} not yet handled" "".format(
-            field.vertical_coord_type),
+        "Vertical coord {!r} not yet handled"
+        "".format(field.vertical_coord_type),
         TranslationWarning,
     )
 
@@ -583,9 +648,11 @@ def ensemble_member(cube, field):
     """Add an 'ensemble member' coord to the cube, if present in the field."""
     ensemble_member_value = getattr(field, "ensemble_member")
     if not is_missing(field, ensemble_member_value):
-        cube.add_aux_coord(DimCoord(np.array(ensemble_member_value,
-                                             dtype=np.int32),
-                                    "realization"))
+        cube.add_aux_coord(
+            DimCoord(
+                np.array(ensemble_member_value, dtype=np.int32), "realization"
+            )
+        )
 
 
 def origin_corner(cube, field):
@@ -608,8 +675,8 @@ def attributes(cube, field):
             value = getattr(field, item)
             if is_missing(field, value):
                 return
-            if 'radius' in item:
-                value = f'{value} km'
+            if "radius" in item:
+                value = f"{value} km"
             cube.attributes[item] = value
 
     add_attr("nimrod_version")
@@ -633,20 +700,23 @@ def attributes(cube, field):
     add_attr("sensor_id")
     add_attr("meteosat_id")
     add_attr("alphas_available")
-    if 'radar' not in field.source:
-        for key in ["neighbourhood_radius", "recursive_filter_iterations",
-                    "recursive_filter_alpha", "threshold_vicinity_radius",
-                    "probability_period_of_event"]:
+    if "radar" not in field.source:
+        for key in [
+            "neighbourhood_radius",
+            "recursive_filter_iterations",
+            "recursive_filter_alpha",
+            "threshold_vicinity_radius",
+            "probability_period_of_event",
+        ]:
             add_attr(key)
 
     source = field.source.strip()
-    rematcher = re.compile('^ek\d\d$')
-    if (rematcher.match(source) is not None
-            or source.find('umek') == 0):
-        source = 'MOGREPS-UK'
-    cube.attributes['source'] = source
-    cube.attributes['title'] = 'Unknown'
-    cube.attributes['institution'] = 'Met Office'
+    rematcher = re.compile("^ek\d\d$")
+    if rematcher.match(source) is not None or source.find("umek") == 0:
+        source = "MOGREPS-UK"
+    cube.attributes["source"] = source
+    cube.attributes["title"] = "Unknown"
+    cube.attributes["institution"] = "Met Office"
 
 
 def known_threshold_coord(field):
@@ -654,32 +724,39 @@ def known_threshold_coord(field):
     Supplies known threshold coord meta-data for known use cases.
     """
     coord_keys = {}
-    if field.field_code == 161 and field.threshold_value >= 0.:
+    if field.field_code == 161 and field.threshold_value >= 0.0:
         coord_keys = {"var_name": "threshold"}
-        if field.threshold_value_alt > 8.:
+        if field.threshold_value_alt > 8.0:
             coord_keys["standard_name"] = "height"
             coord_keys["units"] = "metres"
         else:
             coord_keys["standard_name"] = "cloud_area_fraction"
             coord_keys["units"] = "oktas"
-    if field.field_code == 29 and field.threshold_value >= 0.:
+    if field.field_code == 29 and field.threshold_value >= 0.0:
         if is_missing(field, field.threshold_type):
-            coord_keys = {"standard_name": "visibility_in_air",
-                          "var_name": "threshold",
-                          "units": "metres"}
+            coord_keys = {
+                "standard_name": "visibility_in_air",
+                "var_name": "threshold",
+                "units": "metres",
+            }
         else:
-            coord_keys = {"long_name": "fog_fraction",
-                          "var_name": "threshold",
-                          "units": "1"}
-    if (field.field_code == 422
-            and field.threshold_value >= 0.
-            and is_missing(field, field.threshold_type)):
-        coord_keys = {"long_name": "radius_of_max",
-                      "units": "km"}
+            coord_keys = {
+                "long_name": "fog_fraction",
+                "var_name": "threshold",
+                "units": "1",
+            }
+    if (
+        field.field_code == 422
+        and field.threshold_value >= 0.0
+        and is_missing(field, field.threshold_type)
+    ):
+        coord_keys = {"long_name": "radius_of_max", "units": "km"}
     if field.field_code == 821:
-        coord_keys = {"standard_name": "wind_speed_of_gust",
-                      "var_name": "threshold",
-                      "units": "m/s"}
+        coord_keys = {
+            "standard_name": "wind_speed_of_gust",
+            "var_name": "threshold",
+            "units": "m/s",
+        }
     return coord_keys
 
 
@@ -689,59 +766,73 @@ def probability_coord(cube, field):
     cube if appropriate.
     Returns True if this is a blended multi-member field
     """
-    probtype_lookup = {1: {'var_name': 'threshold',
-                           'attributes': {'relative_to_threshold': 'above'}},
-                       2: {'var_name': 'threshold',
-                           'attributes': {'relative_to_threshold': 'below'}},
-                       3: {'long_name': 'percentile', 'units': "1"},
-                       4: {'var_name': 'threshold',
-                           'attributes': {'relative_to_threshold': 'equal'}}}
-    probmethod_lookup = {1: 'AOT (Any One Time)',
-                         2: 'ST (Some Time)',
-                         4: 'AT (All Time)',
-                         8: 'AOL (Any One Location)',
-                         16: 'SW (Some Where)'}
+    probtype_lookup = {
+        1: {
+            "var_name": "threshold",
+            "attributes": {"relative_to_threshold": "above"},
+        },
+        2: {
+            "var_name": "threshold",
+            "attributes": {"relative_to_threshold": "below"},
+        },
+        3: {"long_name": "percentile", "units": "1"},
+        4: {
+            "var_name": "threshold",
+            "attributes": {"relative_to_threshold": "equal"},
+        },
+    }
+    probmethod_lookup = {
+        1: "AOT (Any One Time)",
+        2: "ST (Some Time)",
+        4: "AT (All Time)",
+        8: "AOL (Any One Location)",
+        16: "SW (Some Where)",
+    }
     is_multi_member_field = False
     coord_keys = probtype_lookup.get(field.threshold_type, {})
     if coord_keys:
         is_multi_member_field = True
     coord_keys.update(known_threshold_coord(field))
-    if not coord_keys.get('units', None):
-        coord_keys['units'] = DEFAULT_UNITS.get(field.field_code, None)
+    if not coord_keys.get("units", None):
+        coord_keys["units"] = DEFAULT_UNITS.get(field.field_code, None)
     coord_val = None
-    if field.threshold_value_alt > -32766.:
+    if field.threshold_value_alt > -32766.0:
         coord_val = field.threshold_value_alt
-    elif field.threshold_value > -32766.:
+    elif field.threshold_value > -32766.0:
         coord_val = field.threshold_value
-    if field.title.find('pc') > 0:
+    if field.title.find("pc") > 0:
         try:
-            coord_val = [int(x.strip('pc')) for x in field.title.split(' ')
-                         if x.find('pc') > 0][0]
+            coord_val = [
+                int(x.strip("pc"))
+                for x in field.title.split(" ")
+                if x.find("pc") > 0
+            ][0]
         except IndexError:
             pass
     if coord_val is not None:
-        if field.threshold_fuzziness > -32766.:
-            bounds = [coord_val * field.threshold_fuzziness,
-                      coord_val * (2. - field.threshold_fuzziness)]
+        if field.threshold_fuzziness > -32766.0:
+            bounds = [
+                coord_val * field.threshold_fuzziness,
+                coord_val * (2.0 - field.threshold_fuzziness),
+            ]
             bounds = np.array(bounds, dtype=np.float32)
         else:
             bounds = None
-        if coord_keys.get('units', None) == 'oktas':
-            coord_keys['units'] = '1'
-            coord_val /= 8.
+        if coord_keys.get("units", None) == "oktas":
+            coord_keys["units"] = "1"
+            coord_val /= 8.0
             if bounds is not None:
-                bounds /= 8.
+                bounds /= 8.0
         new_coord = iris.coords.AuxCoord(
-            np.array(coord_val, dtype=np.float32),
-            bounds=bounds,
-            **coord_keys)
+            np.array(coord_val, dtype=np.float32), bounds=bounds, **coord_keys
+        )
         cube.add_aux_coord(new_coord)
         if field.threshold_type == 3:
             pass
         else:
             if is_multi_member_field:
-                cube.units = '1'
-                cube.rename(f'probability_of_{cube.name()}')
+                cube.units = "1"
+                cube.rename(f"probability_of_{cube.name()}")
 
     if field.probability_method > 0:
         probability_attributes = []
@@ -750,7 +841,7 @@ def probability_coord(cube, field):
             if num >= key:
                 probability_attributes.append(probmethod_lookup[key])
                 num = num - key
-        cube.attributes['Probability methods'] = probability_attributes
+        cube.attributes["Probability methods"] = probability_attributes
     if field.member_count == 1:
         is_multi_member_field = False
     return is_multi_member_field
@@ -761,9 +852,11 @@ def soil_type_coord(cube, field):
     if field.threshold_type != 0:
         soil_name = SOIL_TYPE_CODES.get(field.soil_type, None)
         if soil_name:
-            cube.add_aux_coord(iris.coords.AuxCoord(
-                soil_name,
-                standard_name='soil_type', units=None))
+            cube.add_aux_coord(
+                iris.coords.AuxCoord(
+                    soil_name, standard_name="soil_type", units=None
+                )
+            )
 
 
 def time_averaging(cube, field):
@@ -775,7 +868,7 @@ def time_averaging(cube, field):
             averaging_attributes.append(TIME_AVERAGING_CODES[key])
             num = num - key
     if averaging_attributes:
-        cube.attributes['processing'] = averaging_attributes
+        cube.attributes["processing"] = averaging_attributes
 
 
 def run(field):
