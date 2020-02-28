@@ -69,27 +69,31 @@ When saving to GRIB or PP, the save process may be intercepted between the trans
 
 For example, a GRIB2 message with a particular known long_name may need to be saved to a specific parameter code and type of statistical process.  This can be achieved by::
 
+        from iris_grib import (save_pairs_from_cube as grib_save_pairs,
+                               save_messages as grib_save_grib_messages)
         def tweaked_messages(cube):
-            for cube, grib_message in iris.fileformats.grib.as_pairs(cube):
+            for cube, grib_message in grib_save_pairs(cube):
                 # post process the GRIB2 message, prior to saving
                 if cube.name() == 'carefully_customised_precipitation_amount':
                     gribapi.grib_set_long(grib_message, "typeOfStatisticalProcess", 1)
                     gribapi.grib_set_long(grib_message, "parameterCategory", 1)
                     gribapi.grib_set_long(grib_message, "parameterNumber", 1)
                 yield grib_message
-        iris.fileformats.grib.save_messages(tweaked_messages(cubes[0]), '/tmp/agrib2.grib2')
+        grib_save_grib_messages(tweaked_messages(cubes[0]), '/tmp/agrib2.grib2')
 
 Similarly a PP field may need to be written out with a specific value for LBEXP.  This can be achieved by::
 
+        from iris.fileformats.pp import (save_pairs_from_cube as pp_save_pairs,
+                                         save_fields as pp_save_ppfields)
         def tweaked_fields(cube):
-            for cube, field in iris.fileformats.pp.save_pairs_from_cube(cube):
+            for cube, field in pp_save_pairs(cube):
                 # post process the PP field, prior to saving
                 if cube.name() == 'air_pressure':
-                    field.lbexp = 'meaxp'
+                    field.lbexp = 1
                 elif cube.name() == 'air_density':
-                    field.lbexp = 'meaxr'
+                    field.lbexp = 2
                 yield field
-        iris.fileformats.pp.save_fields(tweaked_fields(cubes[0]), '/tmp/app.pp')
+        pp_save_ppfields(tweaked_fields(cubes[0]), '/tmp/app.pp')
 
 
 netCDF
