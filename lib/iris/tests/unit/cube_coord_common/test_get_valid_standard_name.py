@@ -31,10 +31,6 @@ class Test(tests.IrisTest):
         name = '       '
         self.assertEqual(get_valid_standard_name(name), name)
 
-    def test_none_is_valid(self):
-        name = None
-        self.assertEqual(get_valid_standard_name(name), name)
-
     def test_valid_standard_name(self):
         name = "air_temperature"
         self.assertEqual(get_valid_standard_name(name), name)
