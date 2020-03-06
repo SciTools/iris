@@ -59,12 +59,11 @@ class TestOSGBToLatLon(tests.IrisTest):
 
     def test_linear(self):
         res = self._regrid("linear")
-        self.assertArrayShapeStats(res, (73, 96), -15539.099752, 5825.651452)
+        self.assertArrayShapeStats(res, (73, 96), 17799.296120, 11207.701323)
 
     def test_nearest(self):
         res = self._regrid("nearest")
-        self.assertArrayShapeStats(res, (73, 96), -15542.226501, 5839.922010)
-
+        self.assertArrayShapeStats(res, (73, 96), 17808.068828, 11225.314310)
 
 @tests.skip_data
 class TestGlobalSubsample(tests.IrisTest):
