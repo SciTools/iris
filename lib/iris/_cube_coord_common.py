@@ -55,18 +55,17 @@ def get_valid_standard_name(name):
             "status_flag",
         ]
 
-        valid_name_pattern = re.compile(r"""^([a-zA-Z_]+)( *)([a-zA-Z_]*)$""")
-        name_groups = valid_name_pattern.match(name)
+        name_groups = name.split(maxsplit=1)
+        std_name = name_groups[0]
+        name_is_valid = std_name in iris.std_names.STD_NAMES
+        try:
+            std_name_modifier = name_groups[1]
+        except IndexError:
+            pass  # No modifier
+        else:
+            name_is_valid &= (std_name_modifier in valid_std_name_modifiers)
 
-        if name_groups:
-            std_name, whitespace, std_name_modifier = name_groups.groups()
-            if (std_name in iris.std_names.STD_NAMES) and (
-                bool(whitespace)
-                == (std_name_modifier in valid_std_name_modifiers)
-            ):
-                name_is_valid = True
-
-        if name_is_valid is False:
+        if not name_is_valid:
             raise ValueError("{!r} is not a valid standard_name".format(name))
 
     return name

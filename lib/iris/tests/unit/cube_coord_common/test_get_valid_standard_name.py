@@ -23,6 +23,14 @@ class Test(tests.IrisTest):
         name = "air_temperature"
         self.assertEqual(get_valid_standard_name(name), name)
 
+    def test_standard_name_alias(self):
+        name = "atmosphere_optical_thickness_due_to_pm1_ambient_aerosol"
+        self.assertEqual(get_valid_standard_name(name), name)
+
+    def test_valid_standard_name(self):
+        name = "air_temperature"
+        self.assertEqual(get_valid_standard_name(name), name)
+
     def test_invalid_standard_name(self):
         name = "not_a_standard_name"
         with self.assertRaisesRegex(ValueError, self.emsg.format(name)):
