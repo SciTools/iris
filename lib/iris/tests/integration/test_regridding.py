@@ -65,6 +65,7 @@ class TestOSGBToLatLon(tests.IrisTest):
         res = self._regrid("nearest")
         self.assertArrayShapeStats(res, (73, 96), 17808.068828, 11225.314310)
 
+
 @tests.skip_data
 class TestGlobalSubsample(tests.IrisTest):
     def setUp(self):
