@@ -711,7 +711,7 @@ def attributes(cube, field):
             add_attr(key)
 
     source = field.source.strip()
-    rematcher = re.compile("^ek\d\d$")
+    rematcher = re.compile(r"^ek\d\d$")
     if rematcher.match(source) is not None or source.find("umek") == 0:
         source = "MOGREPS-UK"
     cube.attributes["source"] = source
