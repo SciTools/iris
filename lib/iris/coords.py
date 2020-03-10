@@ -1453,8 +1453,8 @@ class Coord(_DimensionalMetadata):
         Args:
 
         * points:
-            The values (or value in the case of a scalar coordinate) of the
-            coordinate for each cell.
+            The values (or value in the case of a scalar coordinate) for each
+            cell of the coordinate.
 
         Kwargs:
 
@@ -2484,6 +2484,54 @@ class DimCoord(Coord):
         """
         Create a 1D, numeric, and strictly monotonic :class:`Coord` with
         read-only points and bounds.
+
+        Args:
+
+        * points:
+            1D numpy array-like of values (or single value in the case of a
+            scalar coordinate) for each cell of the coordinate.  The values
+            must be strictly monotonic and masked values are not allowed.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the coordinate.
+        * long_name:
+            Descriptive name of the coordinate.
+        * var_name:
+            The netCDF variable name for the coordinate.
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * bounds
+            An array of values describing the bounds of each cell. Given n
+            bounds and m cells, the shape of the bounds array should be
+            (m, n). For each bound, the values must be strictly monotonic along
+            the cells, and the direction of monotonicity must be consistent
+            across the bounds.  For example, a DimCoord with 100 points and two
+            bounds per cell would have a bounds array of shape (100, 2), and
+            the slices ``bounds[:, 0]`` and ``bounds[:, 1]`` would be monotonic
+            in the same direction.  Masked values are not allowed.
+            Note if the data is a climatology, `climatological`
+            should be set.
+        * attributes
+            A dictionary containing other cf and user-defined attributes.
+        * coord_system
+            A :class:`~iris.coord_systems.CoordSystem` representing the
+            coordinate system of the coordinate,
+            e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+        * circular (bool)
+            For units with a modulus (e.g. degrees), do the points wrap around
+            the full circle?
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
+            '<coordinate-name>_climatology' in place of a standard bounds
+            attribute and bounds variable.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
 
         """
         super().__init__(
