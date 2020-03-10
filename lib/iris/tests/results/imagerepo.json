@@ -842,7 +842,8 @@
     ],
     "iris.tests.test_plot.TestSymbols.test_cloud_cover.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e95a330c96a5ccf2695a330c96a5ccf2695a330c96b5ccf3694a330c96b5ccf3.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eb52916494ad6e1b6b5291e494ad6e1b6b5291e494ad6e1b6b5291e494ad6e1b.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eb52916494ad6e1b6b5291e494ad6e1b6b5291e494ad6e1b6b5291e494ad6e1b.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eb5291e494ad6e136b5291ec94ad6e136b5291ec94ad6e136b5291ec94ad6e13.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_alignment.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa95350f952ad2f0c1f66ac1c55a4af4e550a52b3e05905e1e419e6f937e3b21.png",
