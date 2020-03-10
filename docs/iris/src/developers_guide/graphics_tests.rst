@@ -75,43 +75,54 @@ If you notice that a graphics test in the Iris testing suite has failed
 following changes in Iris or any of its dependencies, this is the process
 you now need to follow:
 
-#. Create a directory in iris/lib/iris/tests called 'result_image_comparison'.
-#. From your Iris root directory, run the tests by using the command: 
-   ``python setup.py test``.
-#. Navigate to iris/lib/iris/tests and run the command: ``python idiff.py``.
-   This will open a window for you to visually inspect the changes to the
-   graphic and then either accept or reject the new result.
-#. Upon acceptance of a change or a new image, a copy of the output PNG file
-   is added to the reference image repository in
-   https://github.com/SciTools/test-images-scitools.  The file is named
-   according to the image hash value, as ``<hash>.png``.
-#. The hash value of the new result is added into the relevant set of 'valid
-   result hashes' in the image result database file,
-   ``tests/results/imagerepo.json``.
-#. The tests must now be re-run, and the 'new' result should be accepted.
-   Occasionally there are several graphics checks in a single test, only the
-   first of which will be run should it fail.  If this is the case, then you
-   may well encounter further graphical test failures in your next runs, and
-   you must repeat the process until all the graphical tests pass.
-#. To add your changes to Iris, you need to make two pull requests.  The first
-   should be made to the test-images-scitools repository, and this should
-   contain all the newly-generated png files copied into the folder named
-   'image_files'.
-#. The second pull request should be created in the Iris repository, and should
-   only include the change to the image results database
-   (``tests/results/imagerepo.json``) :
-   This pull request must contain a reference to the matching one in
-   test-images-scitools.
+#. Create a new, empty directory to store temporary image results, at the path
+   ``lib/iris/tests/result_image_comparison`` in your Iris repository checkout.
+
+#. From your Iris root directory, run test sourcefiles directly as python
+   scripts, or by using a command such as
+   ``python -m unittest discover paths/to/test/files``.
+
+#. Navigate to ``iris/lib/iris/tests`` and run the command: ``python idiff.py``.
+   This will open a window for you to visually inspect 'old', 'new' and
+   'change' images for each failed graphics test output.
+   Hit a button to either accept or reject each new result.
+
+#. Upon acceptance of a change or a new image :
+
+   * (A) The imagehash value of the new result image is added into the relevant
+     set of 'valid result hashes' in the image result database file,
+     ``tests/results/imagerepo.json`` ;
+
+   * (B) the relevant output file in ``tests/result_image_comparison`` is
+     renamed according to the image hash value, as ``<hash>.png``.
+     A copy of this new PNG file must be added into the reference image
+     repository at https://github.com/SciTools/test-images-scitools.
+     (See below).
+
+#. Now re-run the tests.  The 'new' result should now be recognised and the
+   relevant test should pass.  However, certain tests do perform *multiple*
+   graphics checks within a single test function : In those cases, any failing
+   check will prevent the others from being run, so a test re-run can encounter
+   further (new) graphical test failures.  Simply repeat the check-and-accept
+   process until all graphical tests pass.
+
+#. To add your changes to Iris, you need to make two pull requests :
+
+   * (A) The first PR is made in the test-images-scitools repository, at
+     https://github.com/SciTools/test-images-scitools.  This should contain all
+     the newly-generated PNG files, which must be added to the ``images/v4``
+     directory.  In your Iris repo, these files are to be found in the
+     temporary results folder ``iris/tests/result_image_comparison``.
+     **Note**: this location is covered by a project ``.gitignore`` setting,
+     so those files do not show up in a ``git status`` output.
+
+   * (B) The second PR is created in the Iris repository, and
+     should only include the change to the image results database,
+     ``tests/results/imagerepo.json`` :
+     The description box of this pull request should contain a reference to
+     the matching one in test-images-scitools.
 
 Note: the Iris pull-request will not test out successfully in Travis until the
 test-images-scitools pull request has been merged :  This is because there is
 an Iris test which ensures the existence of the reference images (uris) for all
 the targets in the image results database.
-
-
-Fixing a failing graphics test
-==============================
-
-
-Adding a new graphics test
-==========================
