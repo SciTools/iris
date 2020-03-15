@@ -10,5 +10,6 @@ cftime
 dask[array]>=2  #conda: dask>=2
 matplotlib
 netcdf4
+gridded
 numpy>=1.14
 scipy
