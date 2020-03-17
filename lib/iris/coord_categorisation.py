@@ -182,7 +182,7 @@ def add_day_of_year(cube, coord, name="day_of_year"):
 def add_weekday_number(cube, coord, name="weekday_number"):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
     add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).weekday()
+        cube, name, coord, lambda coord, x: _pt_date(coord, x).dayofwk
     )
 
 
@@ -192,7 +192,7 @@ def add_weekday_fullname(cube, coord, name="weekday_fullname"):
         cube,
         name,
         coord,
-        lambda coord, x: calendar.day_name[_pt_date(coord, x).weekday()],
+        lambda coord, x: calendar.day_name[_pt_date(coord, x).dayofwk],
         units="no_unit",
     )
 
@@ -203,7 +203,7 @@ def add_weekday(cube, coord, name="weekday"):
         cube,
         name,
         coord,
-        lambda coord, x: calendar.day_abbr[_pt_date(coord, x).weekday()],
+        lambda coord, x: calendar.day_abbr[_pt_date(coord, x).dayofwk],
         units="no_unit",
     )
 
