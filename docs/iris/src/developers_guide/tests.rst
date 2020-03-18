@@ -139,16 +139,5 @@ This the only way of testing the modules :mod:`iris.plot` and
 :mod:`iris.quickplot`, but is also used for some other legacy and integration-
 style testcases.
 
-Prior to Iris version 1.10, a single reference image for each testcase was
-stored in the main Iris repository, and a 'tolerant' comparison was performed
-against this.
-
-From version 1.11 onwards, graphics testcase outputs are compared against
-possibly *multiple* known-good images, of which only the signature is stored.
-This uses a sophisticated perceptual "image hashing" scheme (see: 
-<https://github.com/JohannesBuchner/imagehash>).
-Only imagehash signatures are stored in the Iris repo itself, thus freeing up
-valuable space.  Meanwhile, the actual reference *images* -- which are required
-for human-eyes evaluation of proposed new "good results" -- are all stored
-elsewhere in a separate public repository.
+There are specific mechanisms for handling this.
 See :ref:`developer_graphics_tests`.
