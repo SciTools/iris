@@ -51,7 +51,7 @@ This consists of :
  * The 'check_graphic' function uses a perceptual 'image hash' of the outputs
    (see https://github.com/JohannesBuchner/imagehash) as the basis for checking
    test results.
- * The hashes of 'known accepted results' for each test are stored in a
+ * The hashes of known 'acceptable' results for each test are stored in a
    lookup dictionary, saved to the repo file
    ``lib/iris/tests/results/imagerepo.json`` .
  * An actual reference image for each hash value is stored in a *separate*
