@@ -48,7 +48,7 @@ repository itself, to avoid space problems.
 
 This consists of :
 
- * The 'check_graphic' funciton uses a perceptual 'image hash' of the outputs
+ * The 'check_graphic' function uses a perceptual 'image hash' of the outputs
    (see https://github.com/JohannesBuchner/imagehash) as the basis for checking
    test results.
  * The hashes of 'known accepted results' for each test are stored in a
