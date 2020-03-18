@@ -59,7 +59,7 @@ This consists of :
  * The reference images allow human-eye assessment of whether a new output is
    judged to be 'close enough' to the older ones, or not.
  * The utility script ``iris/tests/idiff.py`` automates checking, enabling the
-   developer to easily compare proposed new 'correct' result images against the
+   developer to easily compare proposed new 'acceptable' result images against the
    existing accepted reference images, for each failing test.
 
 
