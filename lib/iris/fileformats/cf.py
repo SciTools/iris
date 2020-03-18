@@ -1039,7 +1039,7 @@ class CFReader:
 
         self._check_monotonic = monotonic
 
-        self.exclude_var_names = exclude_var_names
+        self.exclude_var_names = exclude_var_names or []
         self._translate()
         self._build_cf_groups()
         self._reset()
@@ -1072,8 +1072,8 @@ class CFReader:
         for variable_type in self._variable_types:
             # Prevent grid mapping variables being mis-identified as CF coordinate variables.
             ignore = self.exclude_var_names
-            if issubclass(variable_type, CFGridMappingVariable):
-                ignore = (ignore or []) + coordinate_names
+            if not issubclass(variable_type, CFGridMappingVariable):
+                ignore += coordinate_names
             self.cf_group.update(
                 variable_type.identify(self._dataset.variables, ignore=ignore)
             )
@@ -1131,8 +1131,8 @@ class CFReader:
                 # Prevent grid mapping variables being mis-identified as
                 # CF coordinate variables.
                 ignore = self.exclude_var_names
-                if issubclass(variable_type, CFGridMappingVariable):
-                    ignore = (ignore or []) + coordinate_names
+                if not issubclass(variable_type, CFGridMappingVariable):
+                    ignore += coordinate_names
                 match = variable_type.identify(
                     self._dataset.variables,
                     ignore=ignore,

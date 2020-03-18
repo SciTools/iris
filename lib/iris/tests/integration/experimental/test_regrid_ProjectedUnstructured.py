@@ -27,7 +27,7 @@ from iris.experimental.regrid import (
 class TestProjectedUnstructured(tests.IrisTest):
     def setUp(self):
         path = tests.get_data_path(
-            ("NetCDF", "unstructured_grid", "theta_nodal_xios.nc")
+            ("NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc")
         )
         self.src = iris.load_cube(path, "Potential Temperature")
 
