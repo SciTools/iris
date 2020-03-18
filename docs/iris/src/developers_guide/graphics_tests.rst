@@ -42,7 +42,7 @@ Graphics Testing Strategy
 In the Iris Travis matrix, and over time, graphics tests must run with
 multiple versions of Python, and of key dependencies such as matplotlib.
 To make this manageable, the "check_graphic" test routine tests against
-multiple alternative 'correct' results.  It does this using an image "hash"
+multiple alternative 'acceptable' results.  It does this using an image "hash"
 comparison technique which avoids storing reference images in the Iris
 repository itself, to avoid space problems.
 
