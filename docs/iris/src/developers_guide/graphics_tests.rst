@@ -63,7 +63,7 @@ This consists of :
    existing accepted reference images, for each failing test.
 
 
-How to Add New Known-Valid Result Images
+How to Add New 'Acceptable' Result Images to Existing Tests
 ========================================
 
 When you find that a graphics test in the Iris testing suite has failed,
