@@ -5,6 +5,6 @@
 # licensing details.
 """
 Integration tests for the
-:mod:`iris.fileformats._ugrid_cf_reader` package.
+:mod:`iris.fileformats.ugrid_cf_reader` package.
 
 """

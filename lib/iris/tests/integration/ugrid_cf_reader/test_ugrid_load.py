@@ -5,7 +5,7 @@
 # licensing details.
 """
 Integration tests for the
-:mod:`iris.fileformats._ugrid_cf_reader.UGridCFReader` class.
+:mod:`iris.fileformats.ugrid_cf_reader.UGridCFReader` class.
 
 """
 
@@ -16,7 +16,7 @@ import iris.tests as tests
 from gridded.pyugrid.ugrid import UGrid
 
 from iris.cube import CubeList
-from iris.fileformats._ugrid_cf_reader import CubeUgrid
+from iris.fileformats.ugrid_cf_reader import CubeUgrid
 from iris import Constraint
 from iris.fileformats.netcdf import load_cubes
 
