@@ -144,7 +144,7 @@ class UGridCFReader:
                 edges_varname = mesh_var.edge_node_connectivity
                 edges_var = dataset.variables[edges_varname]
                 if "edge_dimension" in edges_var.ncattrs():
-                    edges_dim_index = faces_var.getncattr("face_dimension")
+                    edges_dim_index = faces_var.getncattr("edge_dimension")
                 else:
                     edges_dim_index = 0
                 edges_dim_name = edges_var.dimensions[edges_dim_index]
