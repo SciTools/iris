@@ -43,6 +43,9 @@ _UGRID_LINK_PROPERTIES += [
     for e2 in _UGRID_ELEMENT_TYPE_NAMES
 ]
 
+# Also allow for boundary information.
+_UGRID_LINK_PROPERTIES += ["boundary_node_connectivity"]
+
 
 class CubeUgrid(
     namedtuple("CubeUgrid", ["cube_dim", "grid", "mesh_location"])
