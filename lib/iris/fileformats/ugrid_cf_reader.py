@@ -134,23 +134,26 @@ class UGridCFReader:
                 if "face_dimension" in mesh_var.ncattrs():
                     faces_dim_name = mesh_var.getncattr("face_dimension")
                 else:
-                    # Assume default ordering.
+                    # Assume default dimension ordering, and get the dim name
+                    # from dims of a non-optional connectivity variable.
                     faces_varname = mesh_var.face_node_connectivity
                     faces_var = dataset.variables[faces_varname]
                     faces_dim_name = faces_var.dimensions[0]
                 meshdims_map[faces_dim_name] = (mesh, "face")
             if mesh.edges is not None:
                 # Work out name of edges dimension and record it.
-                edges_varname = mesh_var.edge_node_connectivity
-                edges_var = dataset.variables[edges_varname]
-                if "edge_dimension" in edges_var.ncattrs():
-                    edges_dim_index = faces_var.getncattr("edge_dimension")
+                if "edge_dimension" in mesh_var.ncattrs():
+                    edges_dim_name = mesh_var.getncattr("edge_dimension")
                 else:
-                    edges_dim_index = 0
-                edges_dim_name = edges_var.dimensions[edges_dim_index]
+                    # Assume default dimension ordering, and get the dim name
+                    # from dims of a non-optional connectivity variable.
+                    edges_varname = mesh_var.edge_node_connectivity
+                    edges_var = dataset.variables[edges_varname]
+                    edges_dim_name = edges_var.dimensions[0]
                 meshdims_map[edges_dim_name] = (mesh, "edge")
             if mesh.nodes is not None:
                 # Work out name of nodes dimension and record it.
+                # Get it from a non-optional coordinate variable.
                 nodes_varname = mesh_var.node_coordinates.split()[0]
                 nodes_var = dataset.variables[nodes_varname]
                 nodes_dim_name = nodes_var.dimensions[0]
