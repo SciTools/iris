@@ -2553,18 +2553,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
                 summary += "\n     ugrid information:\n"
                 summary += "\n".join(ugrid_mesh_summary)
-                if ugrid_mesh.topology_dimension:
-                    summary += "\n{pad:{width}}topology_dimension: {val}".format(
-                        pad=" ",
-                        width=indent,
-                        val=ugrid_mesh.topology_dimension,
-                    )
-                if ugrid_mesh.node_coordinates:
-                    summary += "\n{pad:{width}}node_coordinates: {val}".format(
-                        pad=" ",
-                        width=indent,
-                        val=" ".join(ugrid_mesh.node_coordinates),
-                    )
+                summary += "\n{pad:{width}}topology_dimension: {val}".format(
+                    pad=" ", width=indent, val=ugrid_mesh.topology_dimension,
+                )
+                summary += "\n{pad:{width}}node_coordinates: {val}".format(
+                    pad=" ",
+                    width=indent,
+                    val=" ".join(ugrid_mesh.node_coordinates),
+                )
 
             #
             # Generate textual summary of cube scalar coordinates.

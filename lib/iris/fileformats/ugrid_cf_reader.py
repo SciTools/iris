@@ -57,7 +57,6 @@ class CubeUgrid(
             "topology_dimension",
             "node_coordinates",
         ],
-        defaults=(None,) * 2,
     )
 ):
     """
@@ -74,12 +73,11 @@ class CubeUgrid(
         Which element of the mesh the cube is mapped to.
         Can be 'face', 'edge' or 'node'.  A 'volume' is not supported.
 
-    Optional:
     * topology_dimension (int):
-        The highest dimensionality of the geometric elements in the mesh. Defaults to None.
+        The highest dimensionality of the geometric elements in the mesh.
 
-    * node_coordinates (string):
-        A list of the names of the spatial coordinates, used to geolocate the nodes. Defaults to None.
+    * node_coordinates (set):
+        A set of the names of the spatial coordinates, used to geolocate the nodes.
 
     """
 
@@ -88,14 +86,12 @@ class CubeUgrid(
         result += "\n   cube dimension = {}".format(self.cube_dim)
         result += '\n   mesh_location = "{}"'.format(self.mesh_location)
         result += '\n   mesh "{}" :'.format(self.grid.mesh_name)
-        if self.topology_dimension:
-            result += '\n   topology_dimension "{}" :'.format(
-                self.topology_dimension
-            )
-        if self.node_coordinates:
-            result += '\n   node_coordinates "{}" :\n'.format(
-                " ".join(self.node_coordinates)
-            )
+        result += '\n   topology_dimension "{}" :'.format(
+            self.topology_dimension
+        )
+        result += '\n   node_coordinates "{}" :\n'.format(
+            " ".join(self.node_coordinates)
+        )
         try:
             mesh_str = str(self.grid.info)
         except TypeError:
