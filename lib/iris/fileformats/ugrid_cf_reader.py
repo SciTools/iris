@@ -131,13 +131,13 @@ class UGridCFReader:
             mesh_var = dataset.variables[mesh.mesh_name]
             if mesh.faces is not None:
                 # Work out name of faces dimension and record it.
-                faces_varname = mesh_var.face_node_connectivity
-                faces_var = dataset.variables[faces_varname]
-                if "face_dimension" in faces_var.ncattrs():
-                    faces_dim_index = faces_var.getncattr("face_dimension")
+                if "face_dimension" in mesh_var.ncattrs():
+                    faces_dim_name = mesh_var.getncattr("face_dimension")
                 else:
-                    faces_dim_index = 0
-                faces_dim_name = faces_var.dimensions[faces_dim_index]
+                    # Assume default ordering.
+                    faces_varname = mesh_var.face_node_connectivity
+                    faces_var = dataset.variables[faces_varname]
+                    faces_dim_name = faces_var.dimensions[0]
                 meshdims_map[faces_dim_name] = (mesh, "face")
             if mesh.edges is not None:
                 # Work out name of edges dimension and record it.
