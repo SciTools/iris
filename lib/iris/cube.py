@@ -2233,6 +2233,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         versus length and optionally relevant coordinate information.
 
         """
+        try:
+            ugrid_mesh = self.ugrid
+        except AttributeError:
+            ugrid_mesh = None
+
         # Create a set to contain the axis names for each data dimension.
         dim_names = [set() for dim in range(len(self.shape))]
 
@@ -2241,10 +2246,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for dim in range(len(self.shape)):
             dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
             if dim_coords:
-                dim_names[dim].add(dim_coords[0].name())
+                dim_name = dim_coords[0].name()
             else:
-                dim_names[dim].add("-- ")
+                dim_name = "-- "
 
+            if ugrid_mesh:
+                # Identify the unstructured dimension with an `*`.
+                if dim == ugrid_mesh.cube_dim:
+                    dim_name = "*" + dim_name
+
+            dim_names[dim].add(dim_name)
         # Convert axes sets to lists and sort.
         dim_names = [sorted(names, key=sorted_axes) for names in dim_names]
 
@@ -2336,6 +2347,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 max_line_offset,
                 cell_measures=None,
                 ancillary_variables=None,
+                ugrid_mesh=None,
             ):
                 """
                 Generates a list of suitably aligned strings containing coord
@@ -2351,6 +2363,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     cell_measures = []
                 if ancillary_variables is None:
                     ancillary_variables = []
+                if ugrid_mesh is None:
+                    ugrid_mesh = []
+                else:
+                    ugrid_mesh = [ugrid_mesh]
                 vector_summary = []
                 vectors = []
 
@@ -2366,7 +2382,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Generate basic textual summary for each vector coordinate
                 # - WITHOUT dimension markers.
                 for dim_meta in (
-                    vector_coords + cell_measures + ancillary_variables
+                    vector_coords
+                    + cell_measures
+                    + ancillary_variables
+                    + ugrid_mesh
                 ):
                     vector_summary.append(
                         "%*s%s"
@@ -2427,17 +2446,42 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             )
                             vector_summary[index] += line
                     vectors = vectors + ancillary_variables
-                # Interleave any extra lines that are needed to distinguish
-                # the coordinates.
-                vector_summary = self._summary_extra(
-                    vectors, vector_summary, extra_indent
-                )
+                if ugrid_mesh:
+                    # Generate full textual summary for the ugrid mesh - WITH
+                    # dimension markers.
+                    # Note: Only one ugrid_mesh, which maps along single
+                    # dimension, should exist.
+                    index = 0
+                    dims = [ugrid_mesh[index].cube_dim]
+                    for dim in range(len(self.shape)):
+                        width = alignment[dim] - len(vector_summary[index])
+                        char = "x" if dim in dims else "-"
+                        line = "{pad:{width}}{char}".format(
+                            pad=" ", width=width, char=char
+                        )
+                        vector_summary[index] += line
+
+                if vector_coords:
+                    # Interleave any extra lines that are needed to distinguish
+                    # the coordinates.
+                    # TODO: This should also be done for cell measures and
+                    # ancillary variables.
+                    vector_summary = self._summary_extra(
+                        vectors, vector_summary, extra_indent
+                    )
 
                 return vector_summary, cube_header
 
             # Calculate the maximum line offset.
             max_line_offset = 0
-            for coord in all_coords:
+            dimension_metadata_to_check = (
+                list(all_coords)
+                + vector_cell_measures
+                + vector_ancillary_variables
+            )
+            if ugrid_mesh:
+                dimension_metadata_to_check += [ugrid_mesh]
+            for coord in dimension_metadata_to_check:
                 max_line_offset = max(
                     max_line_offset,
                     len(
@@ -2499,6 +2543,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
                 summary += "\n     Ancillary variables:\n"
                 summary += "\n".join(ancillary_variable_summary)
+
+            #
+            # Generate summary of ugrid mesh object.
+            #
+            if ugrid_mesh:
+                ugrid_mesh_summary, cube_header = vector_summary(
+                    [], cube_header, max_line_offset, ugrid_mesh=ugrid_mesh,
+                )
+                summary += "\n     ugrid information:\n"
+                summary += "\n".join(ugrid_mesh_summary)
+                if ugrid_mesh.topology_dimension:
+                    summary += "\n{pad:{width}}topology_dimension: {val}".format(
+                        pad=" ",
+                        width=indent,
+                        val=ugrid_mesh.topology_dimension,
+                    )
+                if ugrid_mesh.node_coordinates:
+                    summary += "\n{pad:{width}}node_coordinates: {val}".format(
+                        pad=" ",
+                        width=indent,
+                        val=" ".join(ugrid_mesh.node_coordinates),
+                    )
 
             #
             # Generate textual summary of cube scalar coordinates.

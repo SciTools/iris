@@ -56,6 +56,10 @@ class TestUgrid(tests.IrisTest):
         self.assertIsInstance(cubegrid, CubeUgrid)
         self.assertEqual(cubegrid.cube_dim, 2)
         self.assertEqual(cubegrid.mesh_location, "node")
+        self.assertEqual(cubegrid.topology_dimension, 2)
+        self.assertEqual(
+            cubegrid.node_coordinates, set(["latitude", "longitude"])
+        )
 
         # Check cube.ugrid.grid : a gridded Grid type.
         ugrid = cubegrid.grid

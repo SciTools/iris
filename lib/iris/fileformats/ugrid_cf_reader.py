@@ -48,7 +48,17 @@ _UGRID_LINK_PROPERTIES += ["boundary_node_connectivity"]
 
 
 class CubeUgrid(
-    namedtuple("CubeUgrid", ["cube_dim", "grid", "mesh_location"])
+    namedtuple(
+        "CubeUgrid",
+        [
+            "cube_dim",
+            "grid",
+            "mesh_location",
+            "topology_dimension",
+            "node_coordinates",
+        ],
+        defaults=(None,) * 2,
+    )
 ):
     """
     Object recording the unstructured grid dimension of a cube.
@@ -64,13 +74,28 @@ class CubeUgrid(
         Which element of the mesh the cube is mapped to.
         Can be 'face', 'edge' or 'node'.  A 'volume' is not supported.
 
+    Optional:
+    * topology_dimension (int):
+        The highest dimensionality of the geometric elements in the mesh. Defaults to None.
+
+    * node_coordinates (string):
+        A list of the names of the spatial coordinates, used to geolocate the nodes. Defaults to None.
+
     """
 
     def __str__(self):
         result = "Cube unstructured-grid dimension:"
         result += "\n   cube dimension = {}".format(self.cube_dim)
         result += '\n   mesh_location = "{}"'.format(self.mesh_location)
-        result += '\n   mesh "{}" :\n'.format(self.grid.mesh_name)
+        result += '\n   mesh "{}" :'.format(self.grid.mesh_name)
+        if self.topology_dimension:
+            result += '\n   topology_dimension "{}" :'.format(
+                self.topology_dimension
+            )
+        if self.node_coordinates:
+            result += '\n   node_coordinates "{}" :\n'.format(
+                " ".join(self.node_coordinates)
+            )
         try:
             mesh_str = str(self.grid.info)
         except TypeError:
@@ -78,6 +103,9 @@ class CubeUgrid(
         result += "\n".join(["     " + line for line in mesh_str.split("\n")])
         result += "\n"
         return result
+
+    def name(self):
+        return ".".join([self.grid.mesh_name, self.mesh_location])
 
 
 class UGridCFReader:
@@ -188,8 +216,23 @@ class UGridCFReader:
             raise ValueError(msg.format(meshes_info))
         if meshes_info:
             i_dim, (mesh, mesh_location) = meshes_info[0]
+            mesh_var = self.dataset.variables[mesh.mesh_name]
+
+            topology_dimension = mesh_var.getncattr("topology_dimension")
+            node_coordinates = []
+            for node_var_name in mesh_var.getncattr("node_coordinates").split(
+                " "
+            ):
+                node_var = self.dataset.variables[node_var_name]
+                node_coordinates.append(node_var.getncattr("standard_name"))
+            node_coordinates = set(node_coordinates)
+
             cube.ugrid = CubeUgrid(
-                cube_dim=i_dim, grid=mesh, mesh_location=mesh_location
+                cube_dim=i_dim,
+                grid=mesh,
+                mesh_location=mesh_location,
+                topology_dimension=topology_dimension,
+                node_coordinates=node_coordinates,
             )
         else:
             # Add an empty 'cube.ugrid' to all cubes otherwise.
