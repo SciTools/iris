@@ -2339,18 +2339,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             )
 
             #
-            # Generate textual summary of cube vector coordinates.
+            # Generate textual summary of cube vector coordinates, cell measures, ancillary variables and ugrid_mesh.
             #
             def vector_summary(
-                vector_coords,
+                vector_items,
+                dim_function,
                 cube_header,
                 max_line_offset,
-                cell_measures=None,
-                ancillary_variables=None,
-                ugrid_mesh=None,
+                add_extra_lines=False,
             ):
                 """
-                Generates a list of suitably aligned strings containing coord
+                Generates a list of suitably aligned strings containing item
                 names and dimensions indicated by one or more 'x' symbols.
 
                 .. note::
@@ -2359,16 +2358,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     returned with the list of strings.
 
                 """
-                if cell_measures is None:
-                    cell_measures = []
-                if ancillary_variables is None:
-                    ancillary_variables = []
-                if ugrid_mesh is None:
-                    ugrid_mesh = []
-                else:
-                    ugrid_mesh = [ugrid_mesh]
                 vector_summary = []
-                vectors = []
 
                 # Identify offsets for each dimension text marker.
                 alignment = np.array(
@@ -2379,14 +2369,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     ]
                 )
 
-                # Generate basic textual summary for each vector coordinate
+                # Generate basic textual summary for each vector item
                 # - WITHOUT dimension markers.
-                for dim_meta in (
-                    vector_coords
-                    + cell_measures
-                    + ancillary_variables
-                    + ugrid_mesh
-                ):
+                for dim_meta in vector_items:
                     vector_summary.append(
                         "%*s%s"
                         % (indent, " ", iris.util.clip_string(dim_meta.name()))
@@ -2394,7 +2379,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 min_alignment = min(alignment)
 
                 # Determine whether the cube header requires realignment
-                # due to one or more longer vector coordinate summaries.
+                # due to one or more longer vector item summaries.
                 if max_line_offset >= min_alignment:
                     delta = max_line_offset - min_alignment + 5
                     cube_header = "%-*s (%s)" % (
@@ -2404,55 +2389,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     )
                     alignment += delta
 
-                if vector_coords:
-                    # Generate full textual summary for each vector coordinate
-                    # - WITH dimension markers.
-                    for index, coord in enumerate(vector_coords):
-                        dims = self.coord_dims(coord)
+                # Generate full textual summary for each vector item
+                # - WITH dimension markers.
+                for index, coord in enumerate(vector_items):
+                    dims = dim_function(coord)
 
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + vector_coords
-                if cell_measures:
-                    # Generate full textual summary for each vector cell
-                    # measure - WITH dimension markers.
-                    for index, cell_measure in enumerate(cell_measures):
-                        dims = self.cell_measure_dims(cell_measure)
-
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + cell_measures
-                if ancillary_variables:
-                    # Generate full textual summary for each vector ancillary
-                    # variable - WITH dimension markers.
-                    for index, av in enumerate(ancillary_variables):
-                        dims = self.ancillary_variable_dims(av)
-
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + ancillary_variables
-                if ugrid_mesh:
-                    # Generate full textual summary for the ugrid mesh - WITH
-                    # dimension markers.
-                    # Note: Only one ugrid_mesh, which maps along single
-                    # dimension, should exist.
-                    index = 0
-                    dims = [ugrid_mesh[index].cube_dim]
                     for dim in range(len(self.shape)):
                         width = alignment[dim] - len(vector_summary[index])
                         char = "x" if dim in dims else "-"
@@ -2461,13 +2402,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                         )
                         vector_summary[index] += line
 
-                if vector_coords:
+                if add_extra_lines:
                     # Interleave any extra lines that are needed to distinguish
                     # the coordinates.
                     # TODO: This should also be done for cell measures and
                     # ancillary variables.
                     vector_summary = self._summary_extra(
-                        vectors, vector_summary, extra_indent
+                        vector_items, vector_summary, extra_indent
                     )
 
                 return vector_summary, cube_header
@@ -2496,7 +2437,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if vector_dim_coords:
                 dim_coord_summary, cube_header = vector_summary(
-                    vector_dim_coords, cube_header, max_line_offset
+                    vector_dim_coords,
+                    self.coord_dims,
+                    cube_header,
+                    max_line_offset,
+                    add_extra_lines=True,
                 )
                 summary += "\n     Dimension coordinates:\n" + "\n".join(
                     dim_coord_summary
@@ -2504,7 +2449,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if vector_aux_coords:
                 aux_coord_summary, cube_header = vector_summary(
-                    vector_aux_coords, cube_header, max_line_offset
+                    vector_aux_coords,
+                    self.coord_dims,
+                    cube_header,
+                    max_line_offset,
+                    add_extra_lines=True,
                 )
                 summary += "\n     Auxiliary coordinates:\n" + "\n".join(
                     aux_coord_summary
@@ -2512,7 +2461,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if vector_derived_coords:
                 derived_coord_summary, cube_header = vector_summary(
-                    vector_derived_coords, cube_header, max_line_offset
+                    vector_derived_coords,
+                    self.coord_dims,
+                    cube_header,
+                    max_line_offset,
+                    add_extra_lines=True,
                 )
                 summary += "\n     Derived coordinates:\n" + "\n".join(
                     derived_coord_summary
@@ -2523,10 +2476,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if vector_cell_measures:
                 cell_measure_summary, cube_header = vector_summary(
-                    [],
+                    vector_cell_measures,
+                    self.cell_measure_dims,
                     cube_header,
                     max_line_offset,
-                    cell_measures=vector_cell_measures,
                 )
                 summary += "\n     Cell measures:\n"
                 summary += "\n".join(cell_measure_summary)
@@ -2536,10 +2489,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if vector_ancillary_variables:
                 ancillary_variable_summary, cube_header = vector_summary(
-                    [],
+                    vector_ancillary_variables,
+                    self.ancillary_variable_dims,
                     cube_header,
                     max_line_offset,
-                    ancillary_variables=vector_ancillary_variables,
                 )
                 summary += "\n     Ancillary variables:\n"
                 summary += "\n".join(ancillary_variable_summary)
@@ -2549,7 +2502,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if ugrid_mesh:
                 ugrid_mesh_summary, cube_header = vector_summary(
-                    [], cube_header, max_line_offset, ugrid_mesh=ugrid_mesh,
+                    [ugrid_mesh],
+                    lambda mesh: [mesh.cube_dim],
+                    cube_header,
+                    max_line_offset,
                 )
                 summary += "\n     ugrid information:\n"
                 summary += "\n".join(ugrid_mesh_summary)

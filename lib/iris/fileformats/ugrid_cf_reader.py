@@ -220,15 +220,19 @@ class UGridCFReader:
                 " "
             ):
                 node_var = self.dataset.variables[node_var_name]
-                node_coordinates.append(node_var.getncattr("standard_name"))
-            node_coordinates = set(node_coordinates)
+                name = (
+                    getattr(node_var, "standard_name", None)
+                    or getattr(node_var, "long_name", None)
+                    or node_var_name
+                )
+                node_coordinates.append(name)
 
             cube.ugrid = CubeUgrid(
                 cube_dim=i_dim,
                 grid=mesh,
                 mesh_location=mesh_location,
                 topology_dimension=topology_dimension,
-                node_coordinates=node_coordinates,
+                node_coordinates=sorted(node_coordinates),
             )
         else:
             # Add an empty 'cube.ugrid' to all cubes otherwise.
