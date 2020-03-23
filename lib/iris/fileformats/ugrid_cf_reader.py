@@ -76,8 +76,8 @@ class CubeUgrid(
     * topology_dimension (int):
         The highest dimensionality of the geometric elements in the mesh.
 
-    * node_coordinates (set):
-        A set of the names of the spatial coordinates, used to geolocate the nodes.
+    * node_coordinates (list):
+        A list of the names of the spatial coordinates, used to geolocate the nodes.
 
     """
 
