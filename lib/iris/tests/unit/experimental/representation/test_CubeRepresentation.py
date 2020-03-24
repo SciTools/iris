@@ -126,8 +126,11 @@ class Test__get_bits(tests.IrisTest):
         self.representer._get_bits(self.representer._get_lines())
 
     def test_population(self):
-        for v in self.representer.str_headings.values():
-            self.assertIsNotNone(v)
+        for k, v in self.representer.str_headings.items():
+            if k == "ugrid information:":
+                self.assertIsNone(v)
+            else:
+                self.assertIsNotNone(v)
 
     def test_headings__dimcoords(self):
         contents = self.representer.str_headings["Dimension coordinates:"]

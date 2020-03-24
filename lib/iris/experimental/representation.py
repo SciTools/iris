@@ -91,6 +91,7 @@ class CubeRepresentation:
             "Derived coordinates:": None,
             "Cell measures:": None,
             "Ancillary variables:": None,
+            "ugrid information:": None,
             "Scalar coordinates:": None,
             "Scalar cell measures:": None,
             "Attributes:": None,
@@ -102,6 +103,7 @@ class CubeRepresentation:
             "Derived coordinates:",
             "Cell measures:",
             "Ancillary variables:",
+            "ugrid information:",
         ]
 
         self.two_cell_headers = ["Scalar coordinates:", "Attributes:"]
@@ -123,6 +125,11 @@ class CubeRepresentation:
         Note: borrows from `cube.summary`.
 
         """
+        try:
+            ugrid_mesh = self.cube.ugrid
+        except AttributeError:
+            ugrid_mesh = None
+
         # Create a set to contain the axis names for each data dimension.
         dim_names = list(range(len(self.cube.shape)))
 
@@ -133,9 +140,16 @@ class CubeRepresentation:
                 contains_dimension=dim, dim_coords=True
             )
             if dim_coords:
-                dim_names[dim] = dim_coords[0].name()
+                dim_name = dim_coords[0].name()
             else:
-                dim_names[dim] = "--"
+                dim_name = "--"
+
+            if ugrid_mesh:
+                # Identify the unstructured dimension with an `*`.
+                if dim == ugrid_mesh.cube_dim:
+                    dim_name = "*" + dim_name
+
+            dim_names[dim] = dim_name
         return dim_names
 
     def _dim_names(self):
@@ -285,7 +299,7 @@ class CubeRepresentation:
                 for line in v:
                     # Add every other row in the sub-heading.
                     if k in self.dim_desc_coords:
-                        body = re.findall(r"[\w-]+", line)
+                        body = re.findall(r"[\w\.-]+", line)
                         title = body.pop(0)
                         colspan = 0
                     elif k in self.two_cell_headers:
