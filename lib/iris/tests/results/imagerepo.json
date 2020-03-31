@@ -192,6 +192,9 @@
     "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_non_latlon_2d_coords.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/afac26367251d3493617632df45c26a6e126c6f392593b4937266f26ccf232d0.png"
     ],
+    "iris.tests.integration.ugrid.test_ucube_operations.TestPlotCubesphere.test_plot.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e1a531999612ce349a699a63cde4718c3196365934dacf33633933d92671ce67.png"
+    ],
     "iris.tests.test_analysis.TestProject.test_cartopy_projection.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/9e1952c9c165b4fc668a9d47c1461d7a60fb2e853eb426bd62fd229c9f04c16d.png"
     ],
