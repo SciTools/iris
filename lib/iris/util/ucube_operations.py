@@ -14,11 +14,82 @@ unstructured mesh.
 import math
 
 from gridded.pyugrid.ugrid import UGrid
+import matplotlib.pyplot as plt
 import numpy as np
 
+import cartopy.crs as ccrs
 from iris.fileformats.ugrid_cf_reader import CubeUgrid
 from iris.cube import Cube
 from iris.coords import DimCoord
+
+
+def ugrid_plot(cube, axes=None, set_global=True, show=True, crs_plot=None):
+    """
+    Plot unstructured cube.
+
+    The last dimension must be unstructured.
+    Any other dimensions are reduced by taking the first point.
+
+    Args:
+
+    * cube
+        cube to draw.
+    * axes (matplotlib.Axes or None):
+        axes to draw on.  If None create one, with coastlines and gridlines.
+    * set_global (bool):
+        whether to call "axes.set_global()".
+    * show (bool):
+        whether to call "plt.show()".
+    * crs_plot (cartopy.crs.Projection or None):
+        If axes is None, create an axes with this projection.
+        If None, a default Orthographic projection is used.
+
+    """
+    assert cube.ugrid is not None
+    assert cube.ugrid.cube_dim == cube.ndim - 1
+
+    # Select first point in any additional dimensions.
+    while cube.ndim > 1:
+        temp = cube[0]
+        temp.ugrid = cube.ugrid
+        # Note: cube indexing does not preserve grid : JUST HACK IT for now
+        cube = temp
+
+    if not axes:
+        plt.figure(figsize=(12, 8))
+        if crs_plot is None:
+            crs_plot = ccrs.Orthographic(
+                central_longitude=-27, central_latitude=27.0
+            )
+            # Force fine drawing of curved lines.
+            crs_plot._threshold *= 0.01
+        axes = plt.axes(projection=crs_plot)
+        axes.coastlines()
+        axes.gridlines()
+    if set_global:
+        axes.set_global()
+    assert cube.ndim == 1
+    assert cube.ugrid is not None
+    ug = cube.ugrid.grid
+    data = cube.data
+    elem_type = cube.ugrid.mesh_location  # E.G. face
+    crs_cube = ccrs.Geodetic()
+    if elem_type == "node":
+        xx = ug.node_lon
+        yy = ug.node_lat
+        plt.scatter(xx, yy, c=data, transform=crs_cube)
+    elif elem_type == "edge":
+        # Don't bother with this, for now.
+        raise ValueError("No edge plots yet.")
+    elif elem_type == "face":
+        for i_face in range(cube.shape[0]):
+            i_nodes = ug.faces[i_face]
+            xx = ug.node_lon[i_nodes]
+            yy = ug.node_lat[i_nodes]
+            plt.fill(xx, yy, data[i_face], transform=crs_cube)
+
+    if show:
+        plt.show()
 
 
 def remap_element_numbers(elems, indices, n_old_elements=None):
@@ -588,3 +659,82 @@ def pseudo_cube(cube, shape, new_dim_names=None):
         result.add_dim_coord(coord, (i_dim))
 
     return result
+
+
+class PseudoshapedCubeIndexer:
+    """
+    Indexable object to provide a syntax for a "pseudocube slicing" operation.
+
+    Wraps up a cube with a related 'structure shape'.
+    When you index it, it returns a derived 'subset cube' with a subset mesh.
+
+    This is an alternative to having a "pseudo-structured cube" with multiple
+    dimensions in its mesh, as we haven't yet defined such a thing.
+    See 'pseduo_cube' function above for something more like that, but which
+    returns an "ordinary" (i.e. not unstructured) cube.
+
+    .. for example:
+
+        >>> print(cube)
+        sample_data / (1)                   (*-- : 96)
+             ugrid information:
+                  topology.face                  x
+                  topology_dimension: 2
+                  node_coordinates: latitude longitude
+
+        >>> cubesphere_shape = identify_cubesphere(cube.ugrid.grid)
+        >>> print(cubesphere_shape)
+        (6, 4, 4)
+
+        >>> cs_indexer = PseudoshapedCubeIndexer(cube, cubesphere_shape)
+        >>> face_cube = cs_indexer[0]
+        >>> print(face_cube)
+        sample_data / (1)                   (*-- : 16)
+             ugrid information:
+                  mesh.face                      x
+                  topology_dimension: 2
+                  node_coordinates: latitude longitude
+
+    """
+
+    def __init__(self, cube, shape):
+        self.cube = cube
+        self.shape = shape
+
+    def __getitem__(self, keys):
+        # Return a subset cube
+        n_elems = np.prod(self.shape)
+        all_elem_numbers = np.arange(n_elems).reshape(self.shape)
+        reqd_elem_inds = list(all_elem_numbers[keys].flatten())
+        return ucube_subset(self.cube, reqd_elem_inds)
+
+
+def latlon_extract_faces(cube, region_lon01_lat01):
+    """
+    Extract a latlon region from a structured cube.
+
+    This version only works with face data, and returns faces whose centres
+    lie within the region.
+
+    """
+    lon_0, lon_1, lat_0, lat_1 = region_lon01_lat01
+
+    # Get face centre info.
+    ug = cube.ugrid.grid
+    if ug.face_coordinates is None:
+        ug.build_face_coordinates()
+    face_points = ug.face_coordinates
+
+    # Get face lons, normalise to -180..+180
+    xx = (face_points[..., 0] + 360.0 + 180.0) % 360.0 - 180.0
+    # Get lats
+    yy = face_points[..., 1]
+    # Build a boolean array from 4 threshold tests.
+    faces_wanted = xx > lon_0
+    faces_wanted = faces_wanted & (xx < lon_1)
+    faces_wanted = faces_wanted & (yy > lat_0)
+    faces_wanted = faces_wanted & (yy < lat_1)
+
+    # Return a cube subset based on the selected points.
+    region_cube = ucube_subset(cube, faces_wanted)
+    return region_cube
