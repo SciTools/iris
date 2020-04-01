@@ -417,6 +417,8 @@ def my_neighbours(n_side):
 
     .. Note:
 
+        The painful panel-to-panel connectivity stitching is based on the
+        analysis of the "C4 cube" by @hdyson.
         As remarked above, this approach is now considered obsolete.
 
     """
@@ -670,7 +672,7 @@ class PseudoshapedCubeIndexer:
 
     This is an alternative to having a "pseudo-structured cube" with multiple
     dimensions in its mesh, as we haven't yet defined such a thing.
-    See 'pseduo_cube' function above for something more like that, but which
+    See 'pseudo_cube' function above for something more like that, but which
     returns an "ordinary" (i.e. not unstructured) cube.
 
     .. for example:
