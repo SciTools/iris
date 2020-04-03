@@ -40,6 +40,7 @@ def load_unstructured_testcube():
     return cube
 
 
+@tests.skip_data
 class TestUgridSubset(tests.IrisTest):
     # For now, only testing the 'face' extract functionality.
     def test_faces_subset(self):
@@ -64,6 +65,7 @@ class TestUgridSubset(tests.IrisTest):
         self.assertTrue(np.all(subset_grid.faces == grid.faces[faces_yesno]))
 
 
+@tests.skip_data
 class TestUcubeSubset(tests.IrisTest):
     # NOTE: the testdata we're using here has data mapped to faces.
     # For now, test just + only that functionality.
@@ -89,6 +91,7 @@ class TestUcubeSubset(tests.IrisTest):
         self.assertTrue(np.all(subset_cube.data == cube.data[faces_yesno]))
 
 
+@tests.skip_data
 class TestIdentifyCubesphere(tests.IrisTest):
     def test_identify(self):
         cube = load_unstructured_testcube()
@@ -96,6 +99,7 @@ class TestIdentifyCubesphere(tests.IrisTest):
         self.assertEqual(cube_shape, (6, 4, 4))
 
 
+@tests.skip_data
 class TestPlotCubesphere(tests.GraphicsTest):
     def test_plot(self):
         cube = load_unstructured_testcube()
@@ -103,6 +107,7 @@ class TestPlotCubesphere(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_data
 class TestPseudoCube(tests.IrisTest):
     def test_pseudocube(self):
         cube = load_unstructured_testcube()
@@ -116,6 +121,7 @@ class TestPseudoCube(tests.IrisTest):
         self.assertEqual(coord_names, names)
 
 
+@tests.skip_data
 class TestPseudoshapedCubeIndexer(tests.IrisTest):
     def test_indexer(self):
         cube = load_unstructured_testcube()
@@ -127,6 +133,7 @@ class TestPseudoshapedCubeIndexer(tests.IrisTest):
         self.assertTrue(np.all(cs_partial_cube.data == cube.data[20:32]))
 
 
+@tests.skip_data
 class TestlatlonExtract(tests.IrisTest):
     def test_indexer(self):
         cube = load_unstructured_testcube()
