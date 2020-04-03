@@ -282,7 +282,8 @@ class CubeList(list):
 
         * strict - boolean
             If strict is True, then there must be exactly one cube which is
-            filtered per constraint.
+            filtered per constraint. Note: if a single constraint is given, a
+            Cube is returned rather than a CubeList.
 
         """
         return self._extract_and_merge(

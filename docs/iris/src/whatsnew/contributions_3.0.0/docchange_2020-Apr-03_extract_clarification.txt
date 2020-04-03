@@ -1,0 +1,1 @@
+* Updated the documentation for the :meth:`iris.cube.CubeList.extract` method, to specify when a single cube, as opposed to a CubeList, may be returned.
