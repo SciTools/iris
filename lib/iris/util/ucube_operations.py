@@ -711,7 +711,7 @@ class PseudoshapedCubeIndexer:
         return ucube_subset(self.cube, reqd_elem_inds)
 
 
-def latlon_extract_faces(cube, region_lon01_lat01):
+def latlon_extract_faces(cube, region_lon01_lat01, slice_type="enclose"):
     """
     Extract a latlon region from a structured cube.
 
@@ -719,24 +719,212 @@ def latlon_extract_faces(cube, region_lon01_lat01):
     lie within the region.
 
     """
+    ug = cube.ugrid.grid
     lon_0, lon_1, lat_0, lat_1 = region_lon01_lat01
 
-    # Get face centre info.
-    ug = cube.ugrid.grid
-    if ug.face_coordinates is None:
-        ug.build_face_coordinates()
-    face_points = ug.face_coordinates
+    def check_coords(coord_array):
+        # Get x coords, normalise to -180..+180 .
+        xx = (coord_array[..., 0] + 360.0 + 180.0) % 360.0 - 180.0
+        # Get y coords
+        yy = coord_array[..., 1]
 
-    # Get face lons, normalise to -180..+180
-    xx = (face_points[..., 0] + 360.0 + 180.0) % 360.0 - 180.0
-    # Get lats
-    yy = face_points[..., 1]
-    # Build a boolean array from 4 threshold tests.
-    faces_wanted = xx > lon_0
-    faces_wanted = faces_wanted & (xx < lon_1)
-    faces_wanted = faces_wanted & (yy > lat_0)
-    faces_wanted = faces_wanted & (yy < lat_1)
+        # Build a boolean array from 4 threshold tests.
+        coords_wanted = xx > lon_0
+        coords_wanted = coords_wanted & (xx < lon_1)
+        coords_wanted = coords_wanted & (yy > lat_0)
+        coords_wanted = coords_wanted & (yy < lat_1)
+
+        return coords_wanted
+
+    # Alternative behaviours for filtering the faces with the bounding region.
+    if slice_type == "centre":
+        # Get face centre info.
+        if ug.face_coordinates is None:
+            ug.build_face_coordinates()
+        faces_wanted = check_coords(ug.face_coordinates)
+    elif slice_type in ("intersect", "enclose"):
+        nodes_wanted = check_coords(ug.nodes)
+        face_nodes = ug.faces
+        face_nodes_wanted = nodes_wanted[face_nodes]
+        if type == "intersect":
+            agg_method = np.any
+        else:
+            agg_method = np.all
+        faces_wanted = agg_method(face_nodes_wanted, axis=1)
+    else:
+        msg = "Unsupported slicing type: {}"
+        raise ValueError(msg.format(type))
 
     # Return a cube subset based on the selected points.
     region_cube = ucube_subset(cube, faces_wanted)
+    return region_cube
+
+
+def coords_within_regions(coords_array, regions_array_xy0_xy1):
+    """
+    Check that a given array of coordinates is within a given array of
+    bounded regions.
+
+    Args:
+        * coords_array:
+            The array of coordinate(s) to be checked.
+        * regions_array_xy0_xy1:
+            The array of region(s) the coordinates must lie within. Each region
+            is formatted as a quad of bounds; x, y lower then x, y upper. If a
+            bound value is None, the region is considered 'open-ended' in that
+            direction (useful in defining a band for example).
+
+    Returns:
+        * result:
+            A boolean array indicating which coordinates are within at least
+            one of the regions.
+
+    """
+
+    def standardise_array(array, final_dim_len):
+        """
+        Ensure array is in correct format for checking coords are in regions.
+
+        Args:
+            * array:
+                The array to be checked.
+            * final_dim_len:
+                The expected length of the array's final dimension e.g. an
+                array of xy coordinates should == 2.
+
+        Returns:
+            * result (`numpy.ndarray`):
+                A numpy array of exactly two dimensions, where the final
+                dimension's length is equal to the final_dim_len argument.
+
+        """
+        array = np.array(array)
+        assert array.ndim in (1, 2)
+        assert array.shape[-1] == final_dim_len
+        if array.ndim == 1:
+            array = np.expand_dims(array, axis=0)
+
+        return array
+
+    coords_array = standardise_array(coords_array, 2)
+    coords_list = []
+    # Get x coords, normalise to -180..+180 .
+    coords_list.append((coords_array[..., 0] + 360.0 + 180.0) % 360.0 - 180.0)
+    # Get y coords
+    coords_list.append(coords_array[..., 1])
+
+    regions_array_xy0_xy1 = standardise_array(regions_array_xy0_xy1, 4)
+    # List arrays of: x_lowers, y_lowers, x_uppers, y_uppers
+    bounds_list = list(np.swapaxes(regions_array_xy0_xy1, axis1=0, axis2=1))
+
+    # Add axes help broadcasting in downstream checks.
+    coords_list = [np.expand_dims(c, axis=0) for c in coords_list]
+    bounds_list = [np.expand_dims(b, axis=1) for b in bounds_list]
+
+    # Check that x and y are either higher or lower than the relevant bounds,
+    # allowing for any of the bounds to 'skipped' if set to None (e.g. if the
+    # user wants to constrain on just one axis).
+    checks_list = []
+    for i in (0, 1):  # The lower bounds.
+        checks_list.append(
+            (coords_list[i] >= bounds_list[i])
+            | np.equal(bounds_list[i], [None])
+        )
+    for i in (2, 3):  # The upper bounds.
+        # coord list half length of bounds list so % 2 for index.
+        checks_list.append(
+            (coords_list[i % 2] <= bounds_list[i])
+            | np.equal(bounds_list[i], [None])
+        )
+
+    # Collapse the individual bounds checks into sub-arrays of whether each
+    # coord is in each region.
+    coords_within_each = np.logical_and.reduce(checks_list)
+    # Collapse the region checks to give an array of whether each coord is
+    # in any of the regions.
+    coords_within_any = np.logical_or.reduce(coords_within_each)
+
+    return coords_within_any
+
+
+def xy_region_extract(cube, regions_xy0_xy1, slice_type="enclose"):
+    """
+    Extract regions from a cube with an unstructured dimension. Based on the
+    mesh's data locations (faces/edges/nodes).
+
+    Args:
+
+    * cube (`iris.cube.Cube`):
+        The cube that provides the data locations to be regionally constrained.
+    * regions_xy0_xy1
+        A list/array of regions the data locations must lie within. See
+        :meth: utils.ucube_operations.coords_within_regions for more detail.
+    * slice_type
+        * enclose
+            data locations must fall entirely within at least one of the
+            region(s). I.e. all of the associated nodes are within.
+        * intersect
+            data locations must fall at least partially within at least
+            one of the region(s). I.e. >0 of the associated nodes are within.
+        * centre
+            the data locations' centres must fall within at least one of the
+            region(s). Appropriate when data is located on nodes.
+
+    Returns:
+
+    * result (`iris.cube.Cube`):
+        An unstructured cube with only data for locations that are within
+        the input region(s).
+
+    """
+    ug = cube.ugrid.grid
+    element_type = cube.ugrid.mesh_location
+    if element_type not in ("node", "edge", "face"):
+        msg = "Unsupported data location: {}"
+        raise ValueError(msg.format(element_type))
+
+    if slice_type == "centre":
+        # Alternative behaviours for filtering the element coords by the
+        # bounding region(s).
+        if element_type == "node":
+            coords_to_check = ug.nodes
+        elif element_type == "edge":
+            if ug.edge_coordinates is None:
+                ug.build_edge_coordinates()
+            coords_to_check = ug.edge_coordinates
+        elif element_type == "face":
+            if ug.face_coordinates is None:
+                ug.build_face_coordinates()
+            coords_to_check = ug.face_coordinates
+        elements_wanted = coords_within_regions(
+            coords_to_check, regions_xy0_xy1
+        )
+
+    elif slice_type in ("intersect", "enclose"):
+        if element_type == "node":
+            msg = "slice_type '{}' is inappropriate when data is located on nodes."
+            raise ValueError(msg.format(slice_type))
+        # Get the full list of nodes that are within the region(s).
+        nodes_within = coords_within_regions(ug.nodes, regions_xy0_xy1)
+        if element_type == "edge":
+            element_nodes = ug.edges
+        elif element_type == "face":
+            element_nodes = ug.faces
+        # Index those nodes within the region(s) to find which ones are part of
+        # the elements.
+        element_nodes_within = nodes_within[element_nodes]
+        # Alternative behaviours for filtering the elements by the bounding
+        # region(s).
+        if slice_type == "intersect":
+            agg_method = np.any
+        else:
+            agg_method = np.all
+        elements_wanted = agg_method(element_nodes_within, axis=1)
+
+    else:
+        msg = "Unsupported slice_type: {}"
+        raise ValueError(msg.format(slice_type))
+
+    # Return a cube subset based on the selected elements.
+    region_cube = ucube_subset(cube, elements_wanted)
     return region_cube

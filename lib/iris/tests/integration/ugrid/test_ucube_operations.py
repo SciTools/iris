@@ -138,7 +138,7 @@ class TestlatlonExtract(tests.IrisTest):
     def test_indexer(self):
         cube = load_unstructured_testcube()
         region = [-20, 60, 20, 65]
-        region_cube = latlon_extract_faces(cube, region)
+        region_cube = latlon_extract_faces(cube, region, "centre")
         self.assertIsNotNone(region_cube.ugrid)
         self.assertEqual(region_cube.ugrid.grid.mesh_name, "mesh")
         self.assertEqual(region_cube.shape, (7,))
