@@ -812,6 +812,8 @@ def coords_within_regions(coords_array, regions_array_xy0_xy1):
     coords_list.append((coords_array[..., 0] + 360.0 + 180.0) % 360.0 - 180.0)
     # Get y coords
     coords_list.append(coords_array[..., 1])
+    coord_mins = [min(c) for c in coords_list]
+    coord_maxs = [max(c) for c in coords_list]
 
     regions_array_xy0_xy1 = standardise_array(regions_array_xy0_xy1, 4)
     # List arrays of: x_lowers, y_lowers, x_uppers, y_uppers
@@ -822,20 +824,25 @@ def coords_within_regions(coords_array, regions_array_xy0_xy1):
     bounds_list = [np.expand_dims(b, axis=1) for b in bounds_list]
 
     # Check that x and y are either higher or lower than the relevant bounds,
-    # allowing for any of the bounds to 'skipped' if set to None (e.g. if the
-    # user wants to constrain on just one axis).
+    # allowing for any of the bounds to be 'skipped' if set to None (e.g. if
+    # the user wants to constrain on just one axis).
     checks_list = []
     for i in (0, 1):  # The lower bounds.
-        checks_list.append(
-            (coords_list[i] >= bounds_list[i])
-            | np.equal(bounds_list[i], [None])
+        bounds_array = bounds_list[i]
+        # Replace None with a small number - guaranteeing True.
+        bounds_array = np.where(
+            np.equal(bounds_array, [None]), coord_mins[i], bounds_array
         )
+        checks_list.append(coords_list[i] >= bounds_array)
     for i in (2, 3):  # The upper bounds.
         # coord list half length of bounds list so % 2 for index.
-        checks_list.append(
-            (coords_list[i % 2] <= bounds_list[i])
-            | np.equal(bounds_list[i], [None])
+        coord_ix = i % 2
+        bounds_array = bounds_list[i]
+        # Replace None with a large number - guaranteeing True.
+        bounds_array = np.where(
+            np.equal(bounds_array, [None]), coord_maxs[coord_ix], bounds_array
         )
+        checks_list.append(coords_list[coord_ix] <= bounds_array)
 
     # Collapse the individual bounds checks into sub-arrays of whether each
     # coord is in each region.
