@@ -711,55 +711,6 @@ class PseudoshapedCubeIndexer:
         return ucube_subset(self.cube, reqd_elem_inds)
 
 
-def latlon_extract_faces(cube, region_lon01_lat01, slice_type="enclose"):
-    """
-    Extract a latlon region from a structured cube.
-
-    This version only works with face data, and returns faces whose centres
-    lie within the region.
-
-    """
-    ug = cube.ugrid.grid
-    lon_0, lon_1, lat_0, lat_1 = region_lon01_lat01
-
-    def check_coords(coord_array):
-        # Get x coords, normalise to -180..+180 .
-        xx = (coord_array[..., 0] + 360.0 + 180.0) % 360.0 - 180.0
-        # Get y coords
-        yy = coord_array[..., 1]
-
-        # Build a boolean array from 4 threshold tests.
-        coords_wanted = xx > lon_0
-        coords_wanted = coords_wanted & (xx < lon_1)
-        coords_wanted = coords_wanted & (yy > lat_0)
-        coords_wanted = coords_wanted & (yy < lat_1)
-
-        return coords_wanted
-
-    # Alternative behaviours for filtering the faces with the bounding region.
-    if slice_type == "centre":
-        # Get face centre info.
-        if ug.face_coordinates is None:
-            ug.build_face_coordinates()
-        faces_wanted = check_coords(ug.face_coordinates)
-    elif slice_type in ("intersect", "enclose"):
-        nodes_wanted = check_coords(ug.nodes)
-        face_nodes = ug.faces
-        face_nodes_wanted = nodes_wanted[face_nodes]
-        if type == "intersect":
-            agg_method = np.any
-        else:
-            agg_method = np.all
-        faces_wanted = agg_method(face_nodes_wanted, axis=1)
-    else:
-        msg = "Unsupported slicing type: {}"
-        raise ValueError(msg.format(type))
-
-    # Return a cube subset based on the selected points.
-    region_cube = ucube_subset(cube, faces_wanted)
-    return region_cube
-
-
 def coords_within_regions(coords_array, regions_array_xy0_xy1):
     """
     Check that a given array of coordinates is within a given array of

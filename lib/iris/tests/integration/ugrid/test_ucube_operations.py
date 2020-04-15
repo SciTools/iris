@@ -24,7 +24,7 @@ from iris.util.ucube_operations import (
     ugrid_subset,
     pseudo_cube,
     PseudoshapedCubeIndexer,
-    latlon_extract_faces,
+    xy_region_extract,
 )
 
 
@@ -134,18 +134,34 @@ class TestPseudoshapedCubeIndexer(tests.IrisTest):
 
 
 @tests.skip_data
-class TestlatlonExtract(tests.IrisTest):
-    def test_indexer(self):
+class TestXYExtract(tests.IrisTest):
+    def indexer_generic(self, regions, slice_type, target_indices):
         cube = load_unstructured_testcube()
-        region = [-20, 60, 20, 65]
-        region_cube = latlon_extract_faces(cube, region, "centre")
+        region_cube = xy_region_extract(cube, regions, slice_type)
         self.assertIsNotNone(region_cube.ugrid)
         self.assertEqual(region_cube.ugrid.grid.mesh_name, "mesh")
-        self.assertEqual(region_cube.shape, (7,))
-        selected_face_indices = [1, 2, 3, 16, 68, 72, 76]
-        self.assertTrue(
-            np.all(region_cube.data == cube.data[selected_face_indices])
-        )
+        self.assertEqual(region_cube.shape, (len(target_indices),))
+        self.assertTrue(np.all(region_cube.data == cube.data[target_indices]))
+
+    def test_centre(self):
+        region = [-20, 20, 60, 65]
+        target_indices = [1, 2, 3, 16, 68, 72, 76]
+        self.indexer_generic(region, "centre", target_indices)
+
+    def test_intersect(self):
+        region = [-20, 20, 60, 65]
+        target_indices = [1, 2, 3, 5, 6, 7, 16, 68, 72, 73, 76, 77]
+        self.indexer_generic(region, "intersect", target_indices)
+
+    def test_enclose(self):
+        region = [-20, 20, 60, 65]
+        target_indices = [2]
+        self.indexer_generic(region, "enclose", target_indices)
+
+    def test_multiple(self):
+        regions = [[-20, 20, 60, 65], [-40, -25, 10, 10]]
+        target_indices = [2, 9]
+        self.indexer_generic(regions, "enclose", target_indices)
 
 
 if __name__ == "__main__":
