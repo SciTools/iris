@@ -19,7 +19,6 @@ from iris.cube import Cube
 from iris.fileformats.nimrod_load_rules import (
     units,
     NIMROD_DEFAULT,
-    TranslationWarning,
 )
 from iris.fileformats.nimrod import NimrodField
 
