@@ -405,12 +405,12 @@ def mask_cube(cube, field):
     if field.datum_type == 1:
         # field.data are integers
         if np.any(field.data == field.int_mdi):
-            cube.data = np.ma.masked_equal(field.data, field.int_mdi)
+            cube.data = np.ma.masked_equal(cube.data, field.int_mdi)
     elif field.datum_type == 0:
         # field.data are floats
         if np.any(np.isclose(field.data, field.float32_mdi)):
             cube.data = np.ma.masked_inside(
-                field.data, field.float32_mdi - 0.5, field.float32_mdi + 0.5
+                cube.data, field.float32_mdi - 0.5, field.float32_mdi + 0.5
             )
 
 
@@ -887,9 +887,8 @@ def run(field):
     cube = iris.cube.Cube(field.data.astype(np.float32))
 
     name(cube, field)
-    units(cube, field)
-
     mask_cube(cube, field)
+    units(cube, field)
 
     # time
     time(cube, field)
