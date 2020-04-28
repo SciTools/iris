@@ -11,6 +11,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import _map_complete_blocks
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     extend_circular_coord_and_data,
@@ -1040,16 +1041,22 @@ class RectilinearRegridder:
         # Compute the interpolated data values.
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
-        data = self._regrid(
-            src.data,
-            x_dim,
-            y_dim,
-            src_x_coord,
-            src_y_coord,
-            sample_grid_x,
-            sample_grid_y,
-            self._method,
-            self._extrapolation_mode,
+
+        # Define regrid function
+        regrid = functools.partial(
+            self._regrid,
+            x_dim=x_dim,
+            y_dim=y_dim,
+            src_x_coord=src_x_coord,
+            src_y_coord=src_y_coord,
+            sample_grid_x=sample_grid_x,
+            sample_grid_y=sample_grid_y,
+            method=self._method,
+            extrapolation_mode=self._extrapolation_mode,
+        )
+
+        data = _map_complete_blocks(
+            src, regrid, (y_dim, x_dim), sample_grid_x.shape
         )
 
         # Wrap up the data as a Cube.
