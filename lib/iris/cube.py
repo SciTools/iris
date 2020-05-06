@@ -4144,7 +4144,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Determine aggregation result data type for the aggregate-by
                 # cube data on first pass.
                 if i == 0:
-                    if ma.isMaskedArray(self.data):
+                    if ma.isMaskedArray(self.core_data()):
                         aggregateby_data = ma.zeros(
                             data_shape, dtype=result.dtype
                         )
