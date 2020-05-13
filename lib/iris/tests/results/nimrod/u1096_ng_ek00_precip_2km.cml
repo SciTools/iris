@@ -37,7 +37,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x3badcc06" dtype="float32" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="Min rainrate in last hr" units="mm/hr">
     <attributes>
@@ -117,6 +117,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x3badcc06" dtype="float32" shape="(3, 3)"/>
   </cube>
 </cubes>

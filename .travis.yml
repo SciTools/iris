@@ -28,7 +28,7 @@ git:
 
 install:
   - >
-    export IRIS_TEST_DATA_REF="06e3c7d289d4ae177539e71134a2a6f6a1bc8117";
+    export IRIS_TEST_DATA_REF="22166475999c4ba0f106b9214b71b667b8aee016";
     export IRIS_TEST_DATA_SUFFIX=$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//");
 
   # Install miniconda
