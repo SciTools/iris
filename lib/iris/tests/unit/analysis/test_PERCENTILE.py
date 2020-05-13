@@ -108,7 +108,7 @@ class Test_aggregate_shape(tests.IrisTest):
         with self.assertRaisesRegex(ValueError, emsg):
             PERCENTILE.aggregate_shape()
         with self.assertRaisesRegex(ValueError, emsg):
-            kwargs = dict()
+            kwargs = {}
             PERCENTILE.aggregate_shape(**kwargs)
         with self.assertRaisesRegex(ValueError, emsg):
             kwargs = dict(point=10)

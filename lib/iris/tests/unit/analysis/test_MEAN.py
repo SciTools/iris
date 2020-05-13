@@ -99,7 +99,7 @@ class Test_name(tests.IrisTest):
 class Test_aggregate_shape(tests.IrisTest):
     def test(self):
         shape = ()
-        kwargs = dict()
+        kwargs = {}
         self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)
         kwargs = dict(one=1, two=2)
         self.assertTupleEqual(MEAN.aggregate_shape(**kwargs), shape)

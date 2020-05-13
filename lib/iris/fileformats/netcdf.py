@@ -239,7 +239,7 @@ def parse_cell_methods(nc_cell_methods):
             name = d[_CM_NAME]
             name = name.replace(" ", "")
             name = name.rstrip(":")
-            d[_CM_NAME] = tuple([n for n in name.split(":")])
+            d[_CM_NAME] = tuple(n for n in name.split(":"))
             interval = []
             comment = []
             if d[_CM_EXTRA] is not None:
@@ -1992,10 +1992,10 @@ class Saver:
                 names += "%s: " % name
 
             interval = " ".join(
-                ["interval: %s" % interval for interval in cm.intervals or []]
+                "interval: %s" % interval for interval in cm.intervals or []
             )
             comment = " ".join(
-                ["comment: %s" % comment for comment in cm.comments or []]
+                "comment: %s" % comment for comment in cm.comments or []
             )
             extra = " ".join([interval, comment]).strip()
 
@@ -2402,7 +2402,7 @@ class Saver:
                 value = str(value)
 
             if attr_name == "ukmo__process_flags":
-                value = " ".join([x.replace(" ", "_") for x in value])
+                value = " ".join(x.replace(" ", "_") for x in value)
 
             if attr_name in _CF_GLOBAL_ATTRS:
                 msg = (

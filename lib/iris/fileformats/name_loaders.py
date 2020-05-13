@@ -128,13 +128,13 @@ def _read_data_arrays(file_handle, n_arrays, shape):
     return data_arrays
 
 
-def _build_lat_lon_for_NAME_field(
-    header, dimindex, x_or_y, coord_names=["longitude", "latitude"]
-):
+def _build_lat_lon_for_NAME_field(header, dimindex, x_or_y, coord_names=None):
     """
     Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
     """
+    if coord_names is None:
+        coord_names = ["longitude", "latitude"]
 
     if x_or_y == "X":
         start = header["X grid origin"]

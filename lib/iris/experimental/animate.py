@@ -112,8 +112,8 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
         warnings.warn(msg, UserWarning)
 
     # Determine plot range.
-    vmin = kwargs.pop("vmin", min([cc.data.min() for cc in cubes]))
-    vmax = kwargs.pop("vmax", max([cc.data.max() for cc in cubes]))
+    vmin = kwargs.pop("vmin", min(cc.data.min() for cc in cubes))
+    vmax = kwargs.pop("vmax", max(cc.data.max() for cc in cubes))
 
     update = update_animation_iris
     frames = range(len(cubes))

@@ -1227,7 +1227,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         if point is not None:
             point = point % mod
         if bound is not None:
-            bound = tuple([val % mod for val in bound])
+            bound = tuple(val % mod for val in bound)
         return Cell(point, bound)
 
     def __add__(self, mod):
@@ -1236,7 +1236,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         if point is not None:
             point = point + mod
         if bound is not None:
-            bound = tuple([val + mod for val in bound])
+            bound = tuple(val + mod for val in bound)
         return Cell(point, bound)
 
     def __hash__(self):
@@ -2075,7 +2075,7 @@ class Coord(_DimensionalMetadata):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(x):
-                return "|".join([str(i) for i in x.flatten()])
+                return "|".join(str(i) for i in x.flatten())
 
             bounds = None
             if self.has_bounds():

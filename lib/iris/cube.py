@@ -200,7 +200,7 @@ class CubeList(list):
         # checking does not guarantee that a CubeList instance *always* has
         # just cubes in its list as the append & __getitem__ methods have not
         # been overridden.
-        if not all([isinstance(cube, Cube) for cube in cube_list]):
+        if not all(isinstance(cube, Cube) for cube in cube_list):
             raise ValueError(
                 "All items in list_of_cubes must be Cube " "instances."
             )
@@ -220,7 +220,7 @@ class CubeList(list):
 
     def __repr__(self):
         """Runs repr on every cube."""
-        return "[%s]" % ",\n".join([repr(cube) for cube in self])
+        return "[%s]" % ",\n".join(repr(cube) for cube in self)
 
     def _repr_html_(self):
         from iris.experimental.representation import CubeListRepresentation
@@ -1064,7 +1064,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def _check_multi_dim_metadata(self, metadata, data_dims):
         # Convert to a tuple of integers
         if data_dims is None:
-            data_dims = tuple()
+            data_dims = ()
         elif isinstance(data_dims, Container):
             data_dims = tuple(int(d) for d in data_dims)
         else:
@@ -2254,10 +2254,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             dimension_header = "scalar cube"
         else:
             dimension_header = "; ".join(
-                [
-                    ", ".join(dim_names[dim]) + ": %d" % dim_shape
-                    for dim, dim_shape in enumerate(self.shape)
-                ]
+                ", ".join(dim_names[dim]) + ": %d" % dim_shape
+                for dim, dim_shape in enumerate(self.shape)
             )
 
         nameunit = "{name} / ({units})".format(
@@ -2692,7 +2690,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # Slice the coords
         for coord in self.aux_coords:
             coord_keys = tuple(
-                [full_slice[dim] for dim in self.coord_dims(coord)]
+                full_slice[dim] for dim in self.coord_dims(coord)
             )
             try:
                 new_coord = coord[coord_keys]
@@ -2705,7 +2703,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         for coord in self.dim_coords:
             coord_keys = tuple(
-                [full_slice[dim] for dim in self.coord_dims(coord)]
+                full_slice[dim] for dim in self.coord_dims(coord)
             )
             new_dims = new_coord_dims(coord)
             # Try/Catch to handle slicing that makes the points/bounds
@@ -2731,14 +2729,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # slice the cell measures and add them to the cube
         for cellmeasure in self.cell_measures():
             dims = self.cell_measure_dims(cellmeasure)
-            cm_keys = tuple([full_slice[dim] for dim in dims])
+            cm_keys = tuple(full_slice[dim] for dim in dims)
             new_cm = cellmeasure[cm_keys]
             cube.add_cell_measure(new_cm, new_cell_measure_dims(cellmeasure))
 
         # slice the ancillary variables and add them to the cube
         for ancvar in self.ancillary_variables():
             dims = self.ancillary_variable_dims(ancvar)
-            av_keys = tuple([full_slice[dim] for dim in dims])
+            av_keys = tuple(full_slice[dim] for dim in dims)
             new_av = ancvar[av_keys]
             cube.add_ancillary_variable(
                 new_av, new_ancillary_variable_dims(ancvar)

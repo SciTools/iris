@@ -784,11 +784,9 @@ class CFLabelVariable(CFVariable):
             )
 
         return tuple(
-            [
-                dim_name
-                for dim_name in self.dimensions
-                if dim_name in cf_data_var.dimensions
-            ]
+            dim_name
+            for dim_name in self.dimensions
+            if dim_name in cf_data_var.dimensions
         )
 
     def spans(self, cf_variable):

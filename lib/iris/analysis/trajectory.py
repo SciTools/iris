@@ -79,7 +79,7 @@ class Trajectory:
         ]
 
         # calculate our total length
-        self.length = sum([seg.length for seg in segments])
+        self.length = sum(seg.length for seg in segments)
 
         # generate our sampled points
         #: The trajectory points, as dictionaries of {coord_name: value}.

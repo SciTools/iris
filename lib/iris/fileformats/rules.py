@@ -337,8 +337,10 @@ def _make_cube(field, converter):
 
 
 def _resolve_factory_references(
-    cube, factories, concrete_reference_targets, regrid_cache={}
+    cube, factories, concrete_reference_targets, regrid_cache=None
 ):
+    if regrid_cache is None:
+        regrid_cache = {}
     # Attach the factories for a cube, building them from references.
     # Note: the regrid_cache argument lets us share and reuse regridded data
     # across multiple result cubes.

@@ -228,9 +228,7 @@ class GeogCS(CoordSystem):
         if len(attrs) == 1 and attrs[0][0] == "semi_major_axis":
             return "GeogCS(%r)" % self.semi_major_axis
         else:
-            return "GeogCS(%s)" % ", ".join(
-                ["%s=%r" % (k, v) for k, v in attrs]
-            )
+            return "GeogCS(%s)" % ", ".join("%s=%r" % (k, v) for k, v in attrs)
 
     def __str__(self):
         attrs = self._pretty_attrs()
@@ -340,7 +338,7 @@ class RotatedGeogCS(CoordSystem):
     def __repr__(self):
         attrs = self._pretty_attrs()
         result = "RotatedGeogCS(%s)" % ", ".join(
-            ["%s=%r" % (k, v) for k, v in attrs]
+            "%s=%r" % (k, v) for k, v in attrs
         )
         # Extra prettiness
         result = result.replace("grid_north_pole_latitude=", "")

@@ -68,7 +68,7 @@ class Test_lazy_masked(tests.IrisTest):
 class Test_aggregate_shape(tests.IrisTest):
     def test(self):
         shape = ()
-        kwargs = dict()
+        kwargs = {}
         self.assertTupleEqual(MAX.aggregate_shape(**kwargs), shape)
         kwargs = dict(wibble="wobble")
         self.assertTupleEqual(MAX.aggregate_shape(**kwargs), shape)

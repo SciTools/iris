@@ -231,7 +231,7 @@ def _cropped_bounds(bounds, lower, upper):
         if upper < bounds[0, 0]:
             # Region outside src bounds.
             new_bounds_left = bounds[0:0]
-            indices_left = tuple()
+            indices_left = ()
             slice_left = slice(0, 0)
         else:
             if upper > bounds[-1, 1]:
@@ -255,7 +255,7 @@ def _cropped_bounds(bounds, lower, upper):
         if lower > bounds[-1, 1]:
             # Region is outside src bounds.
             new_bounds_right = bounds[0:0]
-            indices_right = tuple()
+            indices_right = ()
             slice_right = slice(0, 0)
         else:
             if lower < bounds[0, 0]:
