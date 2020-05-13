@@ -296,6 +296,55 @@ class TestNetCDFLoad(tests.IrisTest):
         )
         self.assertEqual(avs[0], expected)
 
+    def test_status_flags(self):
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+            variables:
+                int64 qqv(axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:units = "1" ;
+                    qqv:ancillary_variables = "my_av" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                byte my_av(axv) ;
+                    my_av:long_name = "qq status_flag" ;
+                    my_av:flag_values = 1b, 2b ;
+                    my_av:flag_meanings = "a b" ;
+            data:
+                axv = 11, 21, 31;
+                my_av = 1b, 1b, 2b;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        avs = cubes[0].ancillary_variables()
+        self.assertEqual(len(avs), 1)
+        expected = AncillaryVariable(
+            np.ma.array([1, 1, 2], dtype=np.int8),
+            long_name="qq status_flag",
+            var_name="my_av",
+            units="unknown",
+            attributes={
+                "flag_values": np.array([1, 2], dtype=np.int8),
+                "flag_meanings": "a b",
+            },
+        )
+        self.assertEqual(avs[0], expected)
+
     def test_cell_measures(self):
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
