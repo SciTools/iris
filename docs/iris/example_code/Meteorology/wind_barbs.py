@@ -25,15 +25,16 @@ def main():
     uwind = iris.load_cube(infile, "x_wind")
     vwind = iris.load_cube(infile, "y_wind")
 
-    uwind.convert_units('knot')
-    vwind.convert_units('knot')
+    uwind.convert_units("knot")
+    vwind.convert_units("knot")
 
     # To illustrate the full range of barbs scale the wind speed up to pretend
     # that a storm is passing over
     magnitude = (uwind ** 2 + vwind ** 2) ** 0.5
-    magnitude.convert_units('knot')
-    max_speed = magnitude.collapsed(('latitude', 'longitude'),
-                                    iris.analysis.MAX).data
+    magnitude.convert_units("knot")
+    max_speed = magnitude.collapsed(
+        ("latitude", "longitude"), iris.analysis.MAX
+    ).data
     max_desired = 65
 
     uwind = uwind / max_speed * max_desired
@@ -41,8 +42,8 @@ def main():
 
     # Create a cube containing the wind speed
     windspeed = (uwind ** 2 + vwind ** 2) ** 0.5
-    windspeed.rename('windspeed')
-    windspeed.convert_units('knot')
+    windspeed.rename("windspeed")
+    windspeed.convert_units("knot")
 
     plt.figure()
 
@@ -51,7 +52,7 @@ def main():
 
     # Add wind barbs except for the outermost values which overhang the edge
     # of the plot if left
-    iplt.barbs(uwind[1:-1, 1:-1], vwind[1:-1, 1:-1], pivot='middle', length=6)
+    iplt.barbs(uwind[1:-1, 1:-1], vwind[1:-1, 1:-1], pivot="middle", length=6)
 
     plt.title("Wind speed over Lake Victoria\nduring a simulated storm")
     qplt.show()
