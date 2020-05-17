@@ -51,7 +51,7 @@ def main():
 
     # Add wind barbs except for the outermost values which overhang the edge
     # of the plot if left
-    iplt.barbs(uwind[1:-1, 1:-1], vwind[1:-1, 1:-1], pivot='middle')
+    iplt.barbs(uwind[1:-1, 1:-1], vwind[1:-1, 1:-1], pivot='middle', length=6)
 
     plt.title("Wind speed over Lake Victoria\nduring a simulated storm")
     qplt.show()
