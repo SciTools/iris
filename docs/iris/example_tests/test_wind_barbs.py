@@ -18,7 +18,7 @@ from .extest_util import (
 class TestWindBarbs(tests.GraphicsTest):
     """Test the wind_barbs example code."""
 
-    def test_wind_speed(self):
+    def test_wind_barbs(self):
         with fail_any_deprecation_warnings():
             with add_examples_to_path():
                 import wind_barbs
