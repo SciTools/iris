@@ -1760,7 +1760,7 @@ class Saver:
         # Add the data to the CF-netCDF variable.
         cf_var[:] = data
 
-        if dimensional_metadata.units != "unknown":
+        if dimensional_metadata.units not in ("no_unit", "unknown"):
             _setncattr(cf_var, "units", str(dimensional_metadata.units))
 
         if dimensional_metadata.standard_name is not None:
@@ -1926,7 +1926,7 @@ class Saver:
         # Deal with CF-netCDF units and standard name.
         standard_name, long_name, units = self._cf_coord_identity(coord)
 
-        if units != "unknown":
+        if units not in ("no_unit", "unknown"):
             _setncattr(cf_var, "units", units)
 
         if standard_name is not None:
@@ -2371,7 +2371,7 @@ class Saver:
         if cube.long_name:
             _setncattr(cf_var, "long_name", cube.long_name)
 
-        if cube.units != "unknown":
+        if cube.units not in ("no_unit", "unknown"):
             _setncattr(cf_var, "units", str(cube.units))
 
         # Add the CF-netCDF calendar attribute.
