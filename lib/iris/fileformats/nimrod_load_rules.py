@@ -460,7 +460,7 @@ def horizontal_grid(cube, field):
     )
     cube.add_dim_coord(x_coord, 1)
     points = np.linspace(
-        field.y_origin - (field.num_rows-1) * field.row_step,
+        field.y_origin - (field.num_rows - 1) * field.row_step,
         field.y_origin,
         field.num_rows,
         endpoint=True,
