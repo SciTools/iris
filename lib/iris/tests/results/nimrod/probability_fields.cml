@@ -1123,7 +1123,7 @@
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[40.0, 40.0]]" id="9801205b" points="[40.0]" shape="(1,)" units="Unit('unknown')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[[40.0, 40.0]]" id="537282f0" points="[40.0]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="equal"/>
           </attributes>

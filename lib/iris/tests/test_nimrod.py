@@ -91,6 +91,7 @@ class TestLoad(tests.IrisTest):
         field.vertical_coord_type = 1
         field.vertical_coord = 8888
         field.ensemble_member = field.int_mdi
+        field.threshold_value = field.int_mdi
         field.title = "(MOCK) 2km mean orography"
         field.units = "metres"
         field.source = "GLOBE DTM"

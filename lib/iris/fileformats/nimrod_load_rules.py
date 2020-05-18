@@ -32,88 +32,6 @@ TIME_UNIT = cf_units.Unit(
 )
 
 
-DEFAULT_UNITS = {
-    817: "m s^-1",
-    804: "knots",
-    422: "min^-1",
-    218: "cm",
-    172: "oktas",
-    155: "m",
-    101: "m",
-    63: "mm hr^-1",
-    61: "mm",
-    58: "Celsius",
-    12: "mb",
-    8: "1",
-}
-FIELD_CODES = {73: "orography"}
-# VERTICAL_CODES contains conversions from the Nimrod Documentation for the
-# header entry 20 for the vertical coordinate type
-VERTICAL_CODES = {
-    0: {
-        "standard_name": "height",
-        "units": "m",
-        "attributes": {"positive": "up"},
-    },
-    1: {
-        "standard_name": "altitude",
-        "units": "m",
-        "attributes": {"positive": "up"},
-    },
-    2: {
-        "standard_name": "air_pressure",
-        "units": "hPa",
-        "attributes": {"positive": "down"},
-    },
-    6: {"standard_name": "air_temperature", "units": "K"},
-    12: {
-        "long_name": "depth_below_ground",
-        "units": "m",
-        "attributes": {"positive": "down"},
-    },
-}
-# Unhandled VERTICAL_CODES values (no use case identified):
-#  3: ['sigma', 'model level'],
-#  4: ['eta', 'model level'],
-#  5: ['radar beam number', 'unknown'],
-#  7: ['potential temperature', 'unknown'],
-#  8: ['equivalent potential temperature', 'unknown'],
-#  9: ['wet bulb potential temperature', 'unknown'],
-#  10: ['potential vorticity', 'unknown'],
-#  11: ['cloud boundary', 'unknown'],
-
-SOIL_TYPE_CODES = {
-    1: "broadleaf_tree",
-    2: "needleleaf_tree",
-    3: "c3_grass",
-    4: "c4_grass",
-    5: "crop",
-    6: "shrub",
-    7: "urban",
-    8: "water",
-    9: "soil",
-    10: "ice",
-    601: "urban_canyon",
-    602: "urban_roof",
-}
-TIME_AVERAGING_CODES = {
-    8192: "maximum in period",
-    4096: "minimum in period",
-    2048: "unknown(2048)",
-    1024: "unknown(1024)",
-    512: "time lagged",
-    256: "extrapolation",
-    128: "accumulation or average",
-    64: "from UM 150m",
-    32: "scaled to UM resolution",
-    16: "averaged over multiple surface types",
-    8: "only observations used",
-    4: "smoothed",
-    2: "cold bias applied",
-    1: "warm bias applied",
-}
-
-
 class TranslationWarning(Warning):
     pass
 
@@ -130,67 +48,55 @@ def name(cube, field):
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
     """
-    if field.field_code == 12:
-        field.title = "air_pressure"
-    if field.field_code == 27:
-        field.title = "snow fraction"
-    if field.field_code == 28:
-        field.title = "snow probability"
-    if field.field_code == 29 and field.threshold_value >= 0.0:
-        field.title = "fog fraction"
-    if field.field_code == 58:
-        field.title = "temperature"
-    if field.field_code == 61:
-        field.title = "precipitation"
-    if field.field_code == 63:
-        field.title = "precipitation"
-    if field.field_code == 101:
-        field.title = "snow_melting_level_above_sea_level"
-    if field.field_code == 102:
-        field.title = "rain_melted_level_above_sea_level"
-    if field.field_code == 155:
-        field.title = "Visibility"
-    if field.field_code == 156:
-        field.title = "Worst visibility in grid point"
-    if field.field_code == 161 and field.threshold_value >= 0.0:
-        field.title = "minimum_cloud_base_above_threshold"
-    if field.field_code == 218:
-        field.title = "snowfall"
-    if field.field_code == 172:
-        field.title = "cloud_area_fraction_in_atmosphere"
-    if field.field_code == 421:
-        field.title = "precipitation type"
-    if field.field_code == 501:
-        field.title = "vector_wind_shear"
-        field.source = ""
-    if field.field_code == 508:
-        field.title = "low_level_jet_u_component"
-    if field.field_code == 509:
-        field.title = "low_level_jet_curvature"
-    if field.field_code == 514:
-        field.title = "low_level_jet_v_component"
-    if field.field_code == 804 and field.vertical_coord >= 0.0:
-        field.title = "wind speed"
-    if field.field_code == 806 and field.vertical_coord >= 0.0:
-        field.title = "wind direction"
-    if field.field_code == 817:
-        field.title = "wind_speed_of_gust"
-    if field.field_code == 821:
-        field.title = "Probabilistic Gust Risk Analysis from Observations"
-        field.source = "Nimrod pwind routine"
-    if field.source.strip() == "pwind":
-        field.source = "Nimrod pwind routine"
+    title_from_field_code = {
+        12: "air_pressure",
+        27: "snow fraction",
+        28: "snow probability",
+        58: "temperature",
+        61: "precipitation",
+        63: "precipitation",
+        101: "snow_melting_level_above_sea_level",
+        102: "rain_melted_level_above_sea_level",
+        155: "Visibility",
+        156: "Worst visibility in grid point",
+        172: "cloud_area_fraction_in_atmosphere",
+        218: "snowfall",
+        421: "precipitation type",
+        501: "vector_wind_shear",
+        508: "low_level_jet_u_component",
+        509: "low_level_jet_curvature",
+        514: "low_level_jet_v_component",
+        817: "wind_speed_of_gust",
+        821: "Probabilistic Gust Risk Analysis from Observations",
+    }
+    # threshold_value >= 0
+    title_from_field_code_and_threshold = {
+        29: "fog fraction",
+        161: "minimum_cloud_base_above_threshold",
+    }
+    # vertical_coord >= 0
+    title_from_field_code_and_vcoord = {
+        804: "wind speed",
+        806: "wind direction",
+    }
+    cube_title = title_from_field_code.get(field.field_code, field.title)
+    if field.threshold_value >= 0:
+        cube_title = title_from_field_code_and_threshold.get(
+            field.field_code, cube_title
+        )
+    if field.vertical_coord >= 0:
+        cube_title = title_from_field_code_and_vcoord.get(
+            field.field_code, cube_title
+        )
 
-    if getattr(field, "ensemble_member") == -98:
-        if "mean" not in field.title:
-            field.title = "mean_of_" + field.title
-        field.ensemble_member = field.int_mdi
-    if getattr(field, "ensemble_member") == -99:
-        if "spread" not in field.title:
-            field.title = "standard_deviation_of_" + field.title
-        field.ensemble_member = field.int_mdi
+    if field.ensemble_member == -98:
+        if "mean" not in cube_title:
+            cube_title = "mean_of_" + cube_title
+    if field.ensemble_member == -99:
+        if "spread" not in cube_title:
+            cube_title = "standard_deviation_of_" + cube_title
 
-    cube.rename(remove_unprintable_chars(field.title))
+    cube.rename(remove_unprintable_chars(cube_title))
 
 
 def remove_unprintable_chars(input_str):
@@ -256,12 +162,10 @@ def units(cube, field):
         unit_list = field_units.split("E")
         cube.data = cube.data / 10.0 ** float(unit_list[1])
         field_units = unit_list[0]
-    if "%" in field_units:
+    if field_units == "%":
         # Convert any percentages into fraction
-        unit_list = field_units.split("%")
-        if len("".join(unit_list)) == 0:
-            field_units = "1"
-            cube.data = cube.data / 100.0
+        field_units = "1"
+        cube.data = cube.data / 100.0
     if field_units == "oktas":
         field_units = "1"
         cube.data /= 8.0
@@ -298,13 +202,8 @@ def time(cube, field):
     """Add a time coord to the cube."""
     if field.vt_year <= 0:
         # Some ancillary files, eg land sea mask do not
-        # have a validity time. So make one up for the
-        # start of the year.
-        # This will screw up the forecast_period for these fields,
-        # although if the valid time is missing too, it will be
-        # made to be the same, so the forecast_period will always
-        # be zero for these files.
-        valid_date = cftime.datetime(2016, 1, 1, 0, 0, 0)
+        # have a validity time.
+        return
     else:
         valid_date = cftime.datetime(
             field.vt_year,
@@ -401,17 +300,15 @@ def mask_cube(cube, field):
     Updates cube.data to be a masked array if appropriate.
 
     """
-
+    masked_points = None
     if field.datum_type == 1:
         # field.data are integers
-        if np.any(field.data == field.int_mdi):
-            cube.data = np.ma.masked_equal(cube.data, field.int_mdi)
+        masked_points = field.data == field.int_mdi
     elif field.datum_type == 0:
         # field.data are floats
-        if np.any(np.isclose(field.data, field.float32_mdi)):
-            cube.data = np.ma.masked_inside(
-                cube.data, field.float32_mdi - 0.5, field.float32_mdi + 0.5
-            )
+        masked_points = np.isclose(field.data, field.float32_mdi)
+    if np.any(masked_points):
+        cube.data = np.ma.masked_array(cube.data, mask=masked_points)
 
 
 def experiment(cube, field):
@@ -551,16 +448,24 @@ def horizontal_grid(cube, field):
             "Horizontal grid type {} not "
             "implemented".format(field.horizontal_grid_type)
         )
-    points = (
-        np.arange(field.num_cols) * field.column_step + field.x_origin
-    ).astype(np.float32)
+    points = np.linspace(
+        field.x_origin,
+        field.x_origin + field.num_cols * field.column_step,
+        field.num_cols,
+        endpoint=False,
+        dtype=np.float32,
+    )
     x_coord = DimCoord(
         points, standard_name=x_coord_name, units=units_name, coord_system=crs,
     )
     cube.add_dim_coord(x_coord, 1)
-    points = (
-        np.arange(field.num_rows)[::-1] * -field.row_step + field.y_origin
-    ).astype(np.float32)
+    points = np.linspace(
+        field.y_origin - (field.num_rows-1) * field.row_step,
+        field.y_origin,
+        field.num_rows,
+        endpoint=True,
+        dtype=np.float32,
+    )
     y_coord = DimCoord(
         points, standard_name=y_coord_name, units=units_name, coord_system=crs,
     )
@@ -569,6 +474,40 @@ def horizontal_grid(cube, field):
 
 def vertical_coord(cube, field):
     """Add a vertical coord to the cube, if appropriate."""
+    # vertical_codes contains conversions from the Nimrod Documentation for the
+    # header entry 20 for the vertical coordinate type
+    # Unhandled vertical_codes values (no use case identified):
+    #  3: ['sigma', 'model level'],
+    #  4: ['eta', 'model level'],
+    #  5: ['radar beam number', 'unknown'],
+    #  7: ['potential temperature', 'unknown'],
+    #  8: ['equivalent potential temperature', 'unknown'],
+    #  9: ['wet bulb potential temperature', 'unknown'],
+    #  10: ['potential vorticity', 'unknown'],
+    #  11: ['cloud boundary', 'unknown'],
+    vertical_codes = {
+        0: {
+            "standard_name": "height",
+            "units": "m",
+            "attributes": {"positive": "up"},
+        },
+        1: {
+            "standard_name": "altitude",
+            "units": "m",
+            "attributes": {"positive": "up"},
+        },
+        2: {
+            "standard_name": "air_pressure",
+            "units": "hPa",
+            "attributes": {"positive": "down"},
+        },
+        6: {"standard_name": "air_temperature", "units": "K"},
+        12: {
+            "long_name": "depth_below_ground",
+            "units": "m",
+            "attributes": {"positive": "down"},
+        },
+    }
     if all(
         [
             is_missing(field, x)
@@ -606,7 +545,7 @@ def vertical_coord(cube, field):
             # This describes a surface field. No changes needed.
             return
 
-    coord_args = VERTICAL_CODES.get(field.vertical_coord_type, None)
+    coord_args = vertical_codes.get(field.vertical_coord_type, None)
     if np.isclose(coord_point, 9999.0):
         if np.isclose(field.reference_vertical_coord, 9999.0) or is_missing(
             field, field.reference_vertical_coord
@@ -615,7 +554,7 @@ def vertical_coord(cube, field):
             return
         # A bounded vertical coord starting from the surface
         coord_point = 0.0
-        coord_args = VERTICAL_CODES.get(
+        coord_args = vertical_codes.get(
             field.reference_vertical_coord_type, None
         )
     coord_point = np.array(coord_point, dtype=np.float32)
@@ -646,7 +585,11 @@ def vertical_coord(cube, field):
 
 def ensemble_member(cube, field):
     """Add an 'ensemble member' coord to the cube, if present in the field."""
-    ensemble_member_value = getattr(field, "ensemble_member")
+    ensemble_member_value = field.ensemble_member
+
+    if ensemble_member_value in [-98, -99]:
+        # ignore these special values handled in name()
+        return
     if not is_missing(field, ensemble_member_value):
         cube.add_aux_coord(
             DimCoord(
@@ -700,7 +643,16 @@ def attributes(cube, field):
     add_attr("sensor_id")
     add_attr("meteosat_id")
     add_attr("alphas_available")
-    if "radar" not in field.source:
+    cube_source = field.source.strip()
+
+    # Handle a few known meta-data errors:
+    if field.field_code == 501:
+        cube_source = ""
+    if field.field_code == 821:
+        cube_source = "Nimrod pwind routine"
+    if field.source.strip() == "pwind":
+        cube_source = "Nimrod pwind routine"
+    if "radar" not in cube_source:
         for key in [
             "neighbourhood_radius",
             "recursive_filter_iterations",
@@ -710,11 +662,13 @@ def attributes(cube, field):
         ]:
             add_attr(key)
 
-    source = field.source.strip()
     rematcher = re.compile(r"^ek\d\d$")
-    if rematcher.match(source) is not None or source.find("umek") == 0:
-        source = "MOGREPS-UK"
-    cube.attributes["source"] = source
+    if (
+        rematcher.match(cube_source) is not None
+        or cube_source.find("umek") == 0
+    ):
+        cube_source = "MOGREPS-UK"
+    cube.attributes["source"] = cube_source
     cube.attributes["title"] = "Unknown"
     cube.attributes["institution"] = "Met Office"
 
@@ -732,7 +686,7 @@ def known_threshold_coord(field):
         else:
             coord_keys["standard_name"] = "cloud_area_fraction"
             coord_keys["units"] = "oktas"
-    if field.field_code == 29 and field.threshold_value >= 0.0:
+    elif field.field_code == 29 and field.threshold_value >= 0.0:
         if is_missing(field, field.threshold_type):
             coord_keys = {
                 "standard_name": "visibility_in_air",
@@ -745,13 +699,13 @@ def known_threshold_coord(field):
                 "var_name": "threshold",
                 "units": "1",
             }
-    if (
+    elif (
         field.field_code == 422
         and field.threshold_value >= 0.0
         and is_missing(field, field.threshold_type)
     ):
         coord_keys = {"long_name": "radius_of_max", "units": "km"}
-    if field.field_code == 821:
+    elif field.field_code == 821:
         coord_keys = {
             "standard_name": "wind_speed_of_gust",
             "var_name": "threshold",
@@ -764,7 +718,7 @@ def probability_coord(cube, field):
     """
     Adds a coord relating to probability meta-data from the header to the
     cube if appropriate.
-    Returns True if this is a blended multi-member field
+    Must be run after the name method.
     """
     probtype_lookup = {
         1: {
@@ -788,23 +742,42 @@ def probability_coord(cube, field):
         8: "AOL (Any One Location)",
         16: "SW (Some Where)",
     }
-    is_multi_member_field = False
+    # The units for the threshold coord are not defined in the Nimrod meta-data.
+    # These represent the known use-cases.
+    units_from_field_code = {
+        817: "m s^-1",
+        804: "knots",
+        422: "min^-1",
+        421: "1",
+        218: "cm",
+        172: "oktas",
+        155: "m",
+        101: "m",
+        63: "mm hr^-1",
+        61: "mm",
+        58: "Celsius",
+        12: "mb",
+        8: "1",
+    }
+    is_probability_field = False
     coord_keys = probtype_lookup.get(field.threshold_type, {})
     if coord_keys:
-        is_multi_member_field = True
+        is_probability_field = True
     coord_keys.update(known_threshold_coord(field))
-    if not coord_keys.get("units", None):
-        coord_keys["units"] = DEFAULT_UNITS.get(field.field_code, None)
+    if not coord_keys.get("units"):
+        coord_keys["units"] = units_from_field_code.get(
+            field.field_code, "unknown"
+        )
     coord_val = None
     if field.threshold_value_alt > -32766.0:
         coord_val = field.threshold_value_alt
     elif field.threshold_value > -32766.0:
         coord_val = field.threshold_value
-    if field.title.find("pc") > 0:
+    if cube.name().find("pc") > 0:
         try:
             coord_val = [
                 int(x.strip("pc"))
-                for x in field.title.split(" ")
+                for x in cube.name().split(" ")
                 if x.find("pc") > 0
             ][0]
         except IndexError:
@@ -823,6 +796,15 @@ def probability_coord(cube, field):
             coord_val /= 8.0
             if bounds is not None:
                 bounds /= 8.0
+        if coord_keys["units"] == "unknown":
+            coord_name = coord_keys.get(
+                "standard_name",
+                coord_keys.get("long_name", coord_keys.get("var_name", None)),
+            )
+            warnings.warn(
+                f"No default units for {coord_name} coord of {cube.name()}. "
+                "Meta-data may be incomplete."
+            )
         new_coord = iris.coords.AuxCoord(
             np.array(coord_val, dtype=np.float32), bounds=bounds, **coord_keys
         )
@@ -830,7 +812,7 @@ def probability_coord(cube, field):
         if field.threshold_type == 3:
             pass
         else:
-            if is_multi_member_field:
+            if is_probability_field:
                 cube.units = "1"
                 cube.rename(f"probability_of_{cube.name()}")
 
@@ -842,15 +824,27 @@ def probability_coord(cube, field):
                 probability_attributes.append(probmethod_lookup[key])
                 num = num - key
         cube.attributes["Probability methods"] = probability_attributes
-    if field.member_count == 1:
-        is_multi_member_field = False
-    return is_multi_member_field
+    return
 
 
 def soil_type_coord(cube, field):
     """Add soil type as a coord if appropriate"""
+    soil_type_codes = {
+        1: "broadleaf_tree",
+        2: "needleleaf_tree",
+        3: "c3_grass",
+        4: "c4_grass",
+        5: "crop",
+        6: "shrub",
+        7: "urban",
+        8: "water",
+        9: "soil",
+        10: "ice",
+        601: "urban_canyon",
+        602: "urban_roof",
+    }
     if field.threshold_type != 0:
-        soil_name = SOIL_TYPE_CODES.get(field.soil_type, None)
+        soil_name = soil_type_codes.get(field.soil_type, None)
         if soil_name:
             cube.add_aux_coord(
                 iris.coords.AuxCoord(
@@ -861,11 +855,28 @@ def soil_type_coord(cube, field):
 
 def time_averaging(cube, field):
     """Decode the averagingtype code - similar to the PP LBPROC code."""
+    time_averaging_codes = {
+        8192: "maximum in period",
+        4096: "minimum in period",
+        2048: "unknown(2048)",
+        1024: "unknown(1024)",
+        512: "time lagged",
+        256: "extrapolation",
+        128: "accumulation or average",
+        64: "from UM 150m",
+        32: "scaled to UM resolution",
+        16: "averaged over multiple surface types",
+        8: "only observations used",
+        4: "smoothed",
+        2: "cold bias applied",
+        1: "warm bias applied",
+    }
+
     num = field.averagingtype
     averaging_attributes = []
-    for key in sorted(TIME_AVERAGING_CODES.keys(), reverse=True):
+    for key in sorted(time_averaging_codes.keys(), reverse=True):
         if num >= key:
-            averaging_attributes.append(TIME_AVERAGING_CODES[key])
+            averaging_attributes.append(time_averaging_codes[key])
             num = num - key
     if averaging_attributes:
         cube.attributes["processing"] = averaging_attributes
@@ -905,8 +916,8 @@ def run(field):
 
     # add other stuff, if present
     soil_type_coord(cube, field)
-    if not probability_coord(cube, field):
-        ensemble_member(cube, field)
+    probability_coord(cube, field)
+    ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)
 
