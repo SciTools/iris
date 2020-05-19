@@ -59,7 +59,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="no-unit",
+        units=None,
         attributes=None,
     ):
         """
@@ -688,7 +688,7 @@ class AncillaryVariable(_DimensionalMetadata):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="no-unit",
+        units=None,
         attributes=None,
     ):
         """
@@ -788,7 +788,7 @@ class CellMeasure(AncillaryVariable):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         attributes=None,
         measure=None,
     ):
@@ -1440,7 +1440,7 @@ class Coord(_DimensionalMetadata):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         bounds=None,
         attributes=None,
         coord_system=None,
@@ -2411,7 +2411,7 @@ class DimCoord(Coord):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         attributes=None,
         coord_system=None,
         circular=False,
@@ -2474,7 +2474,7 @@ class DimCoord(Coord):
         standard_name=None,
         long_name=None,
         var_name=None,
-        units="1",
+        units=None,
         bounds=None,
         attributes=None,
         coord_system=None,
