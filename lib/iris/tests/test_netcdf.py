@@ -337,7 +337,7 @@ class TestNetCDFLoad(tests.IrisTest):
             np.ma.array([1, 1, 2], dtype=np.int8),
             long_name="qq status_flag",
             var_name="my_av",
-            units="unknown",
+            units="no_unit",
             attributes={
                 "flag_values": np.array([1, 2], dtype=np.int8),
                 "flag_meanings": "a b",

@@ -614,8 +614,13 @@ def _load_cube(engine, cf, cf_var, filename):
 
     def add_unused_attributes(iris_object, cf_var):
         tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
+        null_units = False
         for attr_name, attr_value in tmpvar:
             _set_attributes(iris_object.attributes, attr_name, attr_value)
+            if attr_name in ["flag_meanings", "flag_values", "flag_masks"]:
+                null_units = True
+        if null_units:
+            iris_object.units = "no_unit"
 
     def fix_attributes_all_elements(role_name):
         elements_and_names = engine.provides.get(role_name, [])
