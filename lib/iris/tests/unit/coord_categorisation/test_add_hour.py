@@ -70,7 +70,7 @@ class Test_add_hour(tests.IrisTest):
         cube = self.cube
         time_coord = self.time_coord
         expected_coord = iris.coords.AuxCoord(
-            self.hour_numbers % 24, long_name=coord_name
+            self.hour_numbers % 24, long_name=coord_name, units="1"
         )
 
         ccat.add_hour(cube, time_coord, coord_name)

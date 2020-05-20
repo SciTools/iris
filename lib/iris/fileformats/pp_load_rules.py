@@ -198,6 +198,7 @@ def _convert_vertical_coords(
                 model_level_number,
                 long_name="soil_model_level_number",
                 attributes={"positive": "down"},
+                units="1",
             )
             coords_and_dims.append((coord, dim))
         elif np.any(brsvd1 != brlev):
@@ -855,7 +856,7 @@ def _convert_scalar_realization_coords(lbrsvd4):
     coords_and_dims = []
     if lbrsvd4 != 0:
         coords_and_dims.append(
-            (DimCoord(lbrsvd4, standard_name="realization"), None)
+            (DimCoord(lbrsvd4, standard_name="realization", units="1"), None)
         )
     return coords_and_dims
 
@@ -1087,7 +1088,7 @@ def _all_other_rules(f):
         and f.lbmon == f.lbmond
     ):
         aux_coords_and_dims.append(
-            (AuxCoord(f.lbmon, long_name="month_number"), None)
+            (AuxCoord(f.lbmon, long_name="month_number", units="1"), None)
         )
         aux_coords_and_dims.append(
             (
