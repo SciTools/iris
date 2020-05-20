@@ -147,6 +147,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "down"},
+            units="1",
         )
         coords_and_dims.append((coord, dim))
 
@@ -235,6 +236,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "up"},
+            units="1",
         )
         level_pressure = _dim_or_aux(
             bhlev,
@@ -243,7 +245,10 @@ def _convert_vertical_coords(
             bounds=np.vstack((bhrlev, brsvd2)).T,
         )
         sigma = AuxCoord(
-            blev, long_name="sigma", bounds=np.vstack((brlev, brsvd1)).T
+            blev,
+            long_name="sigma",
+            bounds=np.vstack((brlev, brsvd1)).T,
+            units="1"
         )
         coords_and_dims.extend(
             [(model_level_number, dim), (level_pressure, dim), (sigma, dim)]
@@ -265,6 +270,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "up"},
+            units="1",
         )
         level_height = _dim_or_aux(
             blev,
@@ -274,7 +280,10 @@ def _convert_vertical_coords(
             attributes={"positive": "up"},
         )
         sigma = AuxCoord(
-            bhlev, long_name="sigma", bounds=np.vstack((bhrlev, brsvd2)).T
+            bhlev,
+            long_name="sigma",
+            bounds=np.vstack((bhrlev, brsvd2)).T,
+            units="1",
         )
         coords_and_dims.extend(
             [(model_level_number, dim), (level_height, dim), (sigma, dim)]
