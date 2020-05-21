@@ -737,6 +737,7 @@ class TestLBVC065_HybridHeight(TestField):
                     bhlev,
                     long_name="sigma",
                     bounds=np.vstack((bhrlev, brsvd2)).T,
+                    units="1"
                 ),
                 dim,
             )
