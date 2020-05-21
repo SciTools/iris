@@ -608,10 +608,10 @@ class TestNetCDFSave(tests.IrisTest):
 
     def test_netcdf_multi_wtih_samedimcoord(self):
         time1 = iris.coords.DimCoord(
-            np.arange(10), standard_name="time", var_name="time"
+            np.arange(10), standard_name="time", var_name="time", units="1"
         )
         time2 = iris.coords.DimCoord(
-            np.arange(20), standard_name="time", var_name="time"
+            np.arange(20), standard_name="time", var_name="time", units="1"
         )
 
         self.cube4.add_dim_coord(time1, 0)
@@ -630,11 +630,13 @@ class TestNetCDFSave(tests.IrisTest):
     def test_netcdf_multi_conflict_name_dup_coord(self):
         # Duplicate coordinates with modified variable names lookup.
         latitude1 = iris.coords.DimCoord(
-            np.arange(10), standard_name="latitude"
+            np.arange(10), standard_name="latitude", units="1"
         )
-        time2 = iris.coords.DimCoord(np.arange(2), standard_name="time")
+        time2 = iris.coords.DimCoord(
+            np.arange(2), standard_name="time", units="1"
+        )
         latitude2 = iris.coords.DimCoord(
-            np.arange(2), standard_name="latitude"
+            np.arange(2), standard_name="latitude", units="1"
         )
 
         self.cube6.add_dim_coord(latitude1, 0)
@@ -711,10 +713,10 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving CF-netCDF with multi-dimensional auxiliary coordinates,
         # with conflicts.
         self.cube4.add_aux_coord(
-            iris.coords.AuxCoord(np.arange(10), "time"), 0
+            iris.coords.AuxCoord(np.arange(10), "time", units="1"), 0
         )
         self.cube6.add_aux_coord(
-            iris.coords.AuxCoord(np.arange(10, 20), "time"), 0
+            iris.coords.AuxCoord(np.arange(10, 20), "time", units="1"), 0
         )
 
         cubes = iris.cube.CubeList([self.cube4, self.cube6])
@@ -811,9 +813,11 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving CF-netCDF with a dimension name corresponding to
         # an existing variable name (conflict).
         self.cube4.add_dim_coord(
-            iris.coords.DimCoord(np.arange(10), "time"), 0
+            iris.coords.DimCoord(np.arange(10), "time", units="1"), 0
         )
-        self.cube6.add_aux_coord(iris.coords.AuxCoord(1, "time"), None)
+        self.cube6.add_aux_coord(
+            iris.coords.AuxCoord(1, "time", units="1"), None
+        )
 
         cubes = iris.cube.CubeList([self.cube4, self.cube6])
         with self.temp_filename(suffix=".nc") as file_out:
