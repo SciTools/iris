@@ -1077,7 +1077,7 @@ def create_cube(lon_min, lon_max, bounds=False):
         0,
     )
     cube.add_aux_coord(
-        iris.coords.AuxCoord([1.0, 0.9, 0.8, 0.6], long_name="sigma"), 0
+        iris.coords.AuxCoord([1.0, 0.9, 0.8, 0.6], long_name="sigma", units="1"), 0
     )
     cube.add_dim_coord(
         iris.coords.DimCoord([-45, 0, 45], "latitude", units="degrees"), 1

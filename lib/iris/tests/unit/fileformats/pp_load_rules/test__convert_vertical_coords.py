@@ -210,6 +210,7 @@ class TestLBVC002_Depth(TestField):
                         lblev,
                         standard_name="model_level_number",
                         attributes={"positive": "down"},
+                        units="1",
                     ),
                     dim,
                 )
@@ -604,6 +605,7 @@ class TestLBVC009_HybridPressure(TestField):
                     lblev,
                     standard_name="model_level_number",
                     attributes={"positive": "up"},
+                    units="1",
                 ),
                 dim,
             )
