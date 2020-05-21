@@ -335,6 +335,7 @@ class Test(tests.IrisTest):
             points,
             long_name="soil_model_level_number",
             attributes={"positive": "down"},
+            units="1",
         )
         coords_and_dims = [(LONGITUDE, 2), (LATITUDE, 1), (level, (0,))]
         self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
@@ -416,6 +417,7 @@ class Test(tests.IrisTest):
                     [1, 2, 3],
                     "model_level_number",
                     attributes={"positive": "up"},
+                    units="1",
                 ),
                 (0,),
             ),
