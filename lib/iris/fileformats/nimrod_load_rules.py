@@ -22,9 +22,6 @@ from iris.exceptions import TranslationError, CoordinateNotFoundError
 __all__ = ["run"]
 
 
-# Meridian scaling for British National grid.
-MERIDIAN_SCALING_BNG = 0.9996012717
-
 NIMROD_DEFAULT = -32767.0
 
 TIME_UNIT = cf_units.Unit(
@@ -199,7 +196,7 @@ def units(cube, field):
 
 
 def time(cube, field):
-    """Add a time coord to the cube."""
+    """Add a time coord to the cube based on validity time and time-window."""
     if field.vt_year <= 0:
         # Some ancillary files, eg land sea mask do not
         # have a validity time.
@@ -215,16 +212,16 @@ def time(cube, field):
         )
     point = np.around(TIME_UNIT.date2num(valid_date)).astype(np.int64)
 
-    lb_delta = None
+    period_seconds = None
     if field.period_minutes == 32767:
-        lb_delta = field.period_seconds
+        period_seconds = field.period_seconds
     elif (
         not is_missing(field, field.period_minutes)
         and field.period_minutes != 0
     ):
-        lb_delta = field.period_minutes * 60
-    if lb_delta:
-        bounds = np.array([point - lb_delta, point], dtype=np.int64)
+        period_seconds = field.period_minutes * 60
+    if period_seconds:
+        bounds = np.array([point - period_seconds, point], dtype=np.int64)
     else:
         bounds = None
 
@@ -265,17 +262,9 @@ def forecast_period(cube):
         frt_coord = cube.coord("forecast_reference_time")
     except CoordinateNotFoundError:
         return
-    if len(time_coord.points) != 1 or len(frt_coord.points) != 1:
-        raise TranslationError(
-            "Unexpected number of points on time coordinates. Expected time:1; "
-            f"forecast_reference_time:1. Got {len(time_coord.points)}; "
-            f"{len(frt_coord.points)}"
-        )
     time_delta = time_coord.cell(0).point - frt_coord.cell(0).point
 
-    points = np.array(
-        time_delta.days * 24 * 60 * 60 + time_delta.seconds, dtype=np.int32
-    )
+    points = np.array(time_delta.total_seconds(), dtype=np.int32)
     forecast_period_unit = cf_units.Unit("second")
     if cube.coord("time").has_bounds():
         time_window = time_coord.cell(0).bound
@@ -430,10 +419,6 @@ def horizontal_grid(cube, field):
     """Add X and Y coordinates to the cube.
 
     """
-    if field.origin_corner != 0:
-        raise TranslationError(
-            "Corner {0} not yet implemented".format(field.origin_corner)
-        )
     crs = coord_system(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
         units_name = "m"
@@ -473,7 +458,8 @@ def horizontal_grid(cube, field):
 
 
 def vertical_coord(cube, field):
-    """Add a vertical coord to the cube, if appropriate."""
+    """Add a vertical coord to the cube, with bounds, if appropriate.
+    Handles special numbers for "at-sea-level" (8888) and "at-ground-level" (9999)."""
     # vertical_codes contains conversions from the Nimrod Documentation for the
     # header entry 20 for the vertical coordinate type
     # Unhandled vertical_codes values (no use case identified):
@@ -629,20 +615,6 @@ def attributes(cube, field):
     add_attr("sat_space_count")
     add_attr("ducting_index")
     add_attr("elevation_angle")
-    add_attr("radar_num")
-    add_attr("radars_bitmask")
-    add_attr("more_radars_bitmask")
-    add_attr("clutter_map_num")
-    add_attr("calibration_type")
-    add_attr("bright_band_height")
-    add_attr("bright_band_intensity")
-    add_attr("bright_band_test1")
-    add_attr("bright_band_test2")
-    add_attr("infill_flag")
-    add_attr("stop_elevation")
-    add_attr("sensor_id")
-    add_attr("meteosat_id")
-    add_attr("alphas_available")
     cube_source = field.source.strip()
 
     # Handle a few known meta-data errors:
@@ -652,15 +624,14 @@ def attributes(cube, field):
         cube_source = "Nimrod pwind routine"
     if field.source.strip() == "pwind":
         cube_source = "Nimrod pwind routine"
-    if "radar" not in cube_source:
-        for key in [
-            "neighbourhood_radius",
-            "recursive_filter_iterations",
-            "recursive_filter_alpha",
-            "threshold_vicinity_radius",
-            "probability_period_of_event",
-        ]:
-            add_attr(key)
+    for key in [
+        "neighbourhood_radius",
+        "recursive_filter_iterations",
+        "recursive_filter_alpha",
+        "threshold_vicinity_radius",
+        "probability_period_of_event",
+    ]:
+        add_attr(key)
 
     rematcher = re.compile(r"^ek\d\d$")
     if (
@@ -676,6 +647,7 @@ def attributes(cube, field):
 def known_threshold_coord(field):
     """
     Supplies known threshold coord meta-data for known use cases.
+    threshold_value_alt exists because some meta-data are mis-assigned in the Nimrod data.
     """
     coord_keys = {}
     if field.field_code == 161 and field.threshold_value >= 0.0:

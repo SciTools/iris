@@ -47,7 +47,7 @@ general_header_int16s = (
     "num_model_levels",
     "proj_biaxial_ellipsoid",
     "ensemble_member",
-    "spare1",
+    "model_origin_id",
     "averagingtype",
 )
 
@@ -80,7 +80,7 @@ data_header_float32s = (
     "tl_y",
     "tl_x",
     "tr_y",
-    "ty_x",
+    "tr_x",
     "br_y",
     "br_x",
     "bl_y",
@@ -94,34 +94,6 @@ data_header_float32s = (
     "recursive_filter_alpha",
     "threshold_fuzziness",
     "threshold_duration_fuzziness",
-    "data_header_float32_05",
-    "data_header_float32_06",
-    "data_header_float32_07",
-    "data_header_float32_08",
-    "data_header_float32_09",
-    "data_header_float32_10",
-    "data_header_float32_11",
-    "data_header_float32_12",
-    "data_header_float32_13",
-    "data_header_float32_14",
-    "data_header_float32_15",
-    "data_header_float32_16",
-    "data_header_float32_17",
-    "data_header_float32_18",
-    "data_header_float32_19",
-    "data_header_float32_20",
-    "data_header_float32_21",
-    "data_header_float32_22",
-    "data_header_float32_23",
-    "data_header_float32_24",
-    "data_header_float32_25",
-    "data_header_float32_26",
-    "data_header_float32_27",
-    "data_header_float32_28",
-    "data_header_float32_29",
-    "data_header_float32_30",
-    "data_header_float32_31",
-    "data_header_float32_32",
 )
 
 
@@ -194,6 +166,11 @@ class NimrodField:
     A data field from a NIMROD file.
 
     Capable of converting itself into a :class:`~iris.cube.Cube`
+
+    References:
+        Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
+        NCAS British Atmospheric Data Centre, date of citation.
+        http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
 
     """
 
@@ -298,9 +275,6 @@ class NimrodField:
                 "Expected data leading_length of %d" % num_data_bytes
             )
 
-        # TODO: Deal appropriately with MDI. Can't just create masked arrays
-        #       as cube merge converts masked arrays with no masks to ndarrays,
-        #       thus mergable cube can split one mergable cube into two.
         self.data = np.fromfile(infile, dtype=numpy_dtype, count=num_data)
 
         if sys.byteorder == "little":
