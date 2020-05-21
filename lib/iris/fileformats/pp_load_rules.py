@@ -249,7 +249,7 @@ def _convert_vertical_coords(
             blev,
             long_name="sigma",
             bounds=np.vstack((brlev, brsvd1)).T,
-            units="1"
+            units="1",
         )
         coords_and_dims.extend(
             [(model_level_number, dim), (level_pressure, dim), (sigma, dim)]
