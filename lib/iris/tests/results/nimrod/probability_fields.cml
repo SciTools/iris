@@ -670,7 +670,7 @@
     <cellMethods/>
     <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="mean_of_precipitation" units="mm">
+  <cube dtype="float32" long_name="mean_of_amount_of_precipitation" units="mm">
     <attributes>
       <attribute name="field_code" value="61"/>
       <attribute name="institution" value="Met Office"/>
@@ -707,7 +707,7 @@
     <cellMethods/>
     <data checksum="0xf756b79b" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="precipitation" units="mm">
+  <cube dtype="float32" long_name="amount_of_precipitation" units="mm">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="61"/>
@@ -748,7 +748,7 @@
     <cellMethods/>
     <data checksum="0x9e426676" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="standard_deviation_of_precipitation" units="mm">
+  <cube dtype="float32" long_name="standard_deviation_of_amount_of_precipitation" units="mm">
     <attributes>
       <attribute name="field_code" value="61"/>
       <attribute name="institution" value="Met Office"/>
@@ -785,7 +785,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_precipitation" units="1">
+  <cube dtype="float32" long_name="probability_of_amount_of_precipitation" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="61"/>
@@ -834,7 +834,7 @@
     <cellMethods/>
     <data checksum="0x58caefce" dtype="float32" shape="(2, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_precipitation" units="1">
+  <cube dtype="float32" long_name="probability_of_amount_of_precipitation" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="61"/>
@@ -879,7 +879,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_precipitation" units="1">
+  <cube dtype="float32" long_name="probability_of_rate_of_precipitation" units="1">
     <attributes>
       <attribute name="Probability methods" value="['AT (All Time)']"/>
       <attribute name="field_code" value="63"/>
@@ -928,7 +928,7 @@
     <cellMethods/>
     <data checksum="0x4b899d7a" dtype="float32" shape="(2, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_precipitation" units="1">
+  <cube dtype="float32" long_name="probability_of_rate_of_precipitation" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="63"/>
@@ -975,7 +975,7 @@
     <cellMethods/>
     <data checksum="0x71c55e9c" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="mean_of_precipitation" units="mm/hr">
+  <cube dtype="float32" long_name="mean_of_rate_of_precipitation" units="mm/hr">
     <attributes>
       <attribute name="field_code" value="63"/>
       <attribute name="institution" value="Met Office"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="precipitation" units="mm">
+  <cube dtype="float32" long_name="amount_of_precipitation" units="mm">
     <attributes>
       <attribute name="field_code" value="61"/>
       <attribute name="institution" value="Met Office"/>
