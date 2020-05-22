@@ -117,7 +117,7 @@
     <cellMethods/>
     <data checksum="0x39d927b5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="net surf SW flux" units="W/m2">
+  <cube dtype="int16" long_name="net surf SW flux" units="W/m2">
     <attributes>
       <attribute name="field_code" value="91"/>
       <attribute name="institution" value="Met Office"/>
@@ -154,7 +154,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="direct down surf SW flux" units="W/m2">
     <attributes>

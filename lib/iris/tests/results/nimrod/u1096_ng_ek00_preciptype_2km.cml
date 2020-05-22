@@ -238,7 +238,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="precipitation type" units="1">
+  <cube dtype="int16" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
       <attribute name="institution" value="Met Office"/>
@@ -275,9 +275,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="precipitation type" units="1">
+  <cube dtype="int16" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
       <attribute name="institution" value="Met Office"/>
@@ -315,9 +315,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="precipitation type" units="1">
+  <cube dtype="int16" long_name="precipitation type" units="1">
     <attributes>
       <attribute name="field_code" value="421"/>
       <attribute name="institution" value="Met Office"/>
@@ -355,6 +355,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
 </cubes>

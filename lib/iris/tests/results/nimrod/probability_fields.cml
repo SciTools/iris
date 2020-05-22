@@ -297,7 +297,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="minimum_cloud_base_above_threshold" units="m">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -309,9 +309,6 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="dbc1787e" long_name="percentile" points="[0.0625]" shape="(1,)" standard_name="cloud_area_fraction" units="Unit('1')" value_type="float32" var_name="threshold"/>
-      </coord>
-      <coord>
         <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
@@ -319,6 +316,9 @@
       </coord>
       <coord>
         <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+      </coord>
+      <coord>
+        <dimCoord id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
         <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
@@ -335,9 +335,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf44a90b3" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x893e4bf1" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
+  <cube dtype="int16" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -382,9 +382,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf3b8fb55" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xdb5506bd" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
+  <cube dtype="int16" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -426,9 +426,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" mask_checksum="0xbaf1fd57" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" mask_checksum="0xbaf1fd57" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="mean_of_minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="mean_of_minimum_cloud_base_above_threshold" units="m">
     <attributes>
       <attribute name="field_code" value="161"/>
       <attribute name="institution" value="Met Office"/>
@@ -465,9 +465,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" mask_checksum="0xbaf1fd57" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" mask_checksum="0xbaf1fd57" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="mean_of_snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="mean_of_snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
@@ -501,9 +501,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x2bd3271d" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x145c9e9b" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="101"/>
@@ -541,9 +541,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xc35c9b30" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x6797d44a" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="standard_deviation_of_snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="standard_deviation_of_snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
@@ -577,9 +577,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x0823be11" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xc598511a" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_snow_melting_level_above_sea_level" units="1">
+  <cube dtype="int16" long_name="probability_of_snow_melting_level_above_sea_level" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="101"/>
@@ -624,9 +624,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_snow_melting_level_above_sea_level" units="1">
+  <cube dtype="int16" long_name="probability_of_snow_melting_level_above_sea_level" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="101"/>
@@ -668,7 +668,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="mean_of_precipitation" units="mm">
     <attributes>
@@ -1089,7 +1089,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="probability_of_precipitation type" units="1">
+  <cube dtype="int16" long_name="probability_of_precipitation type" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="421"/>
@@ -1134,7 +1134,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="mean_of_air_pressure_at_mean_sea_level" units="hPa">
     <attributes>
@@ -1309,7 +1309,7 @@
     <cellMethods/>
     <data checksum="0x2e5a1745" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="mean_of_wind direction" units="Degrees">
+  <cube dtype="int16" long_name="mean_of_wind direction" units="Degrees">
     <attributes>
       <attribute name="field_code" value="806"/>
       <attribute name="institution" value="Met Office"/>
@@ -1350,7 +1350,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xcc7b95fa" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x4e5005ce" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="mean_of_wind_speed_of_gust" units="m/s">
     <attributes>

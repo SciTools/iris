@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="boundary layer depth" units="m">
+  <cube dtype="int16" long_name="boundary layer depth" units="m">
     <attributes>
       <attribute name="field_code" value="300"/>
       <attribute name="institution" value="Met Office"/>
@@ -37,6 +37,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xbb2adeb0" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xbe59e70e" dtype="int16" shape="(3, 3)"/>
   </cube>
 </cubes>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="vector_wind_shear" units="m/s">
+  <cube dtype="int16" long_name="vector_wind_shear" units="m/s">
     <attributes>
       <attribute name="field_code" value="501"/>
       <attribute name="institution" value="Met Office"/>
@@ -44,9 +44,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x12fe62e0" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x3c8d8db4" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Dir. wind shear 1-6km" units="unknown">
+  <cube dtype="int16" long_name="Dir. wind shear 1-6km" units="unknown">
     <attributes>
       <attribute name="field_code" value="504"/>
       <attribute name="institution" value="Met Office"/>
@@ -90,7 +90,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x0997faaf" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x64886ccf" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="low_level_jet_u_component" units="m/s">
     <attributes>
@@ -184,7 +184,7 @@
     <cellMethods/>
     <data checksum="0x73adc713" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="low_level_jet_curvature" units="S^-1">
+  <cube dtype="int16" long_name="low_level_jet_curvature" units="S^-1">
     <attributes>
       <attribute name="field_code" value="509"/>
       <attribute name="institution" value="Met Office"/>
@@ -228,7 +228,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xff58ad2a" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x5d256d59" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="10m convective wind gust" units="m/s">
     <attributes>

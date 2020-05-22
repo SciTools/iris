@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="convective cloud base" units="m">
+  <cube dtype="int16" long_name="convective cloud base" units="m">
     <attributes>
       <attribute name="field_code" value="87"/>
       <attribute name="institution" value="Met Office"/>
@@ -37,9 +37,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf36b3887" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x5a5fe010" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="convective cloud top" units="m">
+  <cube dtype="int16" long_name="convective cloud top" units="m">
     <attributes>
       <attribute name="field_code" value="88"/>
       <attribute name="institution" value="Met Office"/>
@@ -76,9 +76,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x8afc86d8" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x360ca59c" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Worst Convective Cloud T" units="m">
+  <cube dtype="int16" long_name="Worst Convective Cloud T" units="m">
     <attributes>
       <attribute name="field_code" value="88"/>
       <attribute name="institution" value="Met Office"/>
@@ -116,9 +116,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x37edcc74" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x333dd849" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Worst Convective Cloud B" units="m">
+  <cube dtype="int16" long_name="Worst Convective Cloud B" units="m">
     <attributes>
       <attribute name="field_code" value="87"/>
       <attribute name="institution" value="Met Office"/>
@@ -156,7 +156,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x85466921" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x57caf570" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="cloud_area_fraction_in_atmosphere" units="1">
     <attributes>
@@ -209,7 +209,7 @@
     <cellMethods/>
     <data checksum="0x65d23858" dtype="float32" shape="(6, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="cloud top" units="m">
+  <cube dtype="int16" long_name="cloud top" units="m">
     <attributes>
       <attribute name="field_code" value="207"/>
       <attribute name="institution" value="Met Office"/>
@@ -246,9 +246,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x77a91fa9" dtype="float32" mask_checksum="0x96de79a8" shape="(3, 3)"/>
+    <data checksum="0x403bd137" dtype="int16" mask_checksum="0x96de79a8" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="minimum_cloud_base_above_threshold" units="m">
     <attributes>
       <attribute name="field_code" value="161"/>
       <attribute name="institution" value="Met Office"/>
@@ -288,6 +288,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6a3b16b4" dtype="float32" mask_checksum="0x3cc24726" shape="(6, 3, 3)"/>
+    <data checksum="0x697afce7" dtype="int16" mask_checksum="0x3cc24726" shape="(6, 3, 3)"/>
   </cube>
 </cubes>

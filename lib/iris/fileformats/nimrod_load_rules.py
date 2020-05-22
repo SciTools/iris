@@ -140,7 +140,7 @@ def units(cube, field):
     field_units = remove_unprintable_chars(field.units)
     if field_units == "m/2-25k":
         # Handle strange visibility units
-        cube.data = (cube.data + 25000.0) * 2
+        cube.data = (cube.data.astype(np.float32) + 25000.0) * 2
         field_units = "m"
     if "*" in field_units:
         # Split into unit string and integer
@@ -148,28 +148,28 @@ def units(cube, field):
         if "^" in unit_list[1]:
             # Split out magnitude
             unit_sublist = unit_list[1].split("^")
-            cube.data = cube.data / float(unit_sublist[0]) ** float(
-                unit_sublist[1]
-            )
+            cube.data = cube.data.astype(np.float32) / float(
+                unit_sublist[0]
+            ) ** float(unit_sublist[1])
         else:
-            cube.data = cube.data / float(unit_list[1])
+            cube.data = cube.data.astype(np.float32) / float(unit_list[1])
         field_units = unit_list[0]
     if "ug/m3E1" in field_units:
         # Split into unit string and integer
         unit_list = field_units.split("E")
-        cube.data = cube.data / 10.0 ** float(unit_list[1])
+        cube.data = cube.data.astype(np.float32) / 10.0 ** float(unit_list[1])
         field_units = unit_list[0]
     if field_units == "%":
         # Convert any percentages into fraction
         field_units = "1"
-        cube.data = cube.data / 100.0
+        cube.data = cube.data.astype(np.float32) / 100.0
     if field_units == "oktas":
         field_units = "1"
-        cube.data /= 8.0
+        cube.data = cube.data.astype(np.float32) / 8.0
     if field_units == "dBZ":
         # cf_units doesn't recognise decibels (dBZ), but does know BZ
         field_units = "BZ"
-        cube.data /= 10.0
+        cube.data = cube.data.astype(np.float32) / 10.0
     if not field_units:
         if field.field_code == 8:
             # Relative Humidity data are unitless, but not "unknown"
@@ -193,6 +193,10 @@ def units(cube, field):
             )
         )
         cube.attributes["invalid_units"] = field_units
+
+    if cube.dtype == np.float64:
+        # Demote any float64 that may have arisen from unit conversions to float32.
+        cube.data = cube.data.astype(np.float32)
 
 
 def time(cube, field):
@@ -289,6 +293,7 @@ def mask_cube(cube, field):
     Updates cube.data to be a masked array if appropriate.
 
     """
+    dtype = cube.dtype
     masked_points = None
     if field.datum_type == 1:
         # field.data are integers
@@ -297,7 +302,9 @@ def mask_cube(cube, field):
         # field.data are floats
         masked_points = np.isclose(field.data, field.float32_mdi)
     if np.any(masked_points):
-        cube.data = np.ma.masked_array(cube.data, mask=masked_points)
+        cube.data = np.ma.masked_array(
+            cube.data, mask=masked_points, dtype=dtype
+        )
 
 
 def experiment(cube, field):
@@ -650,7 +657,11 @@ def known_threshold_coord(field):
     threshold_value_alt exists because some meta-data are mis-assigned in the Nimrod data.
     """
     coord_keys = {}
-    if field.field_code == 161 and field.threshold_value >= 0.0:
+    if (
+        field.field_code == 161
+        and field.threshold_value >= 0.0
+        and "pc" not in field.title
+    ):
         coord_keys = {"var_name": "threshold"}
         if field.threshold_value_alt > 8.0:
             coord_keys["standard_name"] = "height"
@@ -733,7 +744,7 @@ def probability_coord(cube, field):
     }
     is_probability_field = False
     coord_keys = probtype_lookup.get(field.threshold_type, {})
-    if coord_keys:
+    if coord_keys.get("var_name") == "threshold":
         is_probability_field = True
     coord_keys.update(known_threshold_coord(field))
     if not coord_keys.get("units"):
@@ -741,11 +752,19 @@ def probability_coord(cube, field):
             field.field_code, "unknown"
         )
     coord_val = None
+    # coord_val could come from the threshold_value or threshold_value_alt:
     if field.threshold_value_alt > -32766.0:
         coord_val = field.threshold_value_alt
     elif field.threshold_value > -32766.0:
         coord_val = field.threshold_value
-    if cube.name().find("pc") > 0:
+
+    # coord_val could also be encoded in the cube name if we have a percentile
+    # (this overrides the threshold_value which may be unrelated in the case of
+    # the 50th %ile of 3okta cloud cover)
+    if (
+        coord_keys.get("long_name") == "percentile"
+        and cube.name().find("pc") > 0
+    ):
         try:
             coord_val = [
                 int(x.strip("pc"))
@@ -754,6 +773,8 @@ def probability_coord(cube, field):
             ][0]
         except IndexError:
             pass
+
+    # If we found a coord_val, build the coord (with bounds) and add to cube)
     if coord_val is not None:
         if field.threshold_fuzziness > -32766.0:
             bounds = [
@@ -785,6 +806,11 @@ def probability_coord(cube, field):
             pass
         else:
             if is_probability_field:
+                # Some probability fields have inappropriate units (those of the threshold)
+                if "%" in cube.name():
+                    # If the cube name has % in it, convert to fraction
+                    cube.rename(cube.name().replace("%", "fraction"))
+                    cube.data = cube.data.astype(np.float32) / 100.0
                 cube.units = "1"
                 cube.rename(f"probability_of_{cube.name()}")
 
@@ -867,7 +893,7 @@ def run(field):
         * A new :class:`~iris.cube.Cube`, created from the NimrodField.
 
     """
-    cube = iris.cube.Cube(field.data.astype(np.float32))
+    cube = iris.cube.Cube(field.data)
 
     name(cube, field)
     mask_cube(cube, field)
@@ -894,7 +920,5 @@ def run(field):
     attributes(cube, field)
 
     origin_corner(cube, field)
-
-    cube.data = cube.data.astype(np.float32)
 
     return cube

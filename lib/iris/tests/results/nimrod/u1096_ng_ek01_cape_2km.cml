@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="CDP Dilute CAPE" units="J/kg">
+  <cube dtype="int16" long_name="CDP Dilute CAPE" units="J/kg">
     <attributes>
       <attribute name="field_code" value="505"/>
       <attribute name="institution" value="Met Office"/>
@@ -37,9 +37,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x0d128a0c" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xcb4c13f3" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Most-sig Non-surf CAPE" units="J/kg">
+  <cube dtype="int16" long_name="Most-sig Non-surf CAPE" units="J/kg">
     <attributes>
       <attribute name="field_code" value="515"/>
       <attribute name="institution" value="Met Office"/>
@@ -76,9 +76,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf1d9a15b" dtype="float32" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
+    <data checksum="0x8e0b3b05" dtype="int16" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Non-surf Thermo-CAPE" units="J/kg">
+  <cube dtype="int16" long_name="Non-surf Thermo-CAPE" units="J/kg">
     <attributes>
       <attribute name="field_code" value="515"/>
       <attribute name="institution" value="Met Office"/>
@@ -118,9 +118,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xf1d9a15b" dtype="float32" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
+    <data checksum="0x8e0b3b05" dtype="int16" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Non-surf CAPE base" units="m">
+  <cube dtype="int16" long_name="Non-surf CAPE base" units="m">
     <attributes>
       <attribute name="field_code" value="516"/>
       <attribute name="institution" value="Met Office"/>
@@ -157,9 +157,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xeaff8fb8" dtype="float32" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
+    <data checksum="0x7f432c4e" dtype="int16" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Non-surf CAPE ceiling" units="m">
+  <cube dtype="int16" long_name="Non-surf CAPE ceiling" units="m">
     <attributes>
       <attribute name="field_code" value="517"/>
       <attribute name="institution" value="Met Office"/>
@@ -196,9 +196,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xc4ce69e8" dtype="float32" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
+    <data checksum="0xdeb9446b" dtype="int16" mask_checksum="0x1f97a18e" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="CIN" units="J/kg">
+  <cube dtype="int16" long_name="CIN" units="J/kg">
     <attributes>
       <attribute name="field_code" value="513"/>
       <attribute name="institution" value="Met Office"/>
@@ -235,6 +235,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x09fb766c" dtype="float32" mask_checksum="0x08ecb5cd" shape="(3, 3)"/>
+    <data checksum="0x6d409164" dtype="int16" mask_checksum="0x08ecb5cd" shape="(3, 3)"/>
   </cube>
 </cubes>

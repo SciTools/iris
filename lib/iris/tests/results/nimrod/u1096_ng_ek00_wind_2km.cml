@@ -93,7 +93,7 @@
     <cellMethods/>
     <data checksum="0xae453cdb" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="wind direction" units="Degrees">
+  <cube dtype="int16" long_name="wind direction" units="Degrees">
     <attributes>
       <attribute name="field_code" value="806"/>
       <attribute name="institution" value="Met Office"/>
@@ -137,7 +137,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x237da010" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xeedca4e5" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="Speed" units="m/s">
     <attributes>

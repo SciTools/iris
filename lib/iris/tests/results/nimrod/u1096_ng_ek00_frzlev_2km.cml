@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="wet bulb freezing level" units="m">
+  <cube dtype="int16" long_name="wet bulb freezing level" units="m">
     <attributes>
       <attribute name="field_code" value="206"/>
       <attribute name="institution" value="Met Office"/>
@@ -37,9 +37,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xd43a3d5b" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xe849137a" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="dry bulb freezing level" units="m">
+  <cube dtype="int16" long_name="dry bulb freezing level" units="m">
     <attributes>
       <attribute name="field_code" value="50"/>
       <attribute name="institution" value="Met Office"/>
@@ -76,9 +76,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x868d8af6" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xd2182a2b" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
@@ -115,9 +115,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x9f6dc756" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x96f9bb30" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
@@ -155,9 +155,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x91f423fd" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x5c5155a1" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="snow_melting_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="snow_melting_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
@@ -195,9 +195,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xdc2afe76" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x5dc81136" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="rain_melted_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="rain_melted_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="102"/>
       <attribute name="institution" value="Met Office"/>
@@ -234,9 +234,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x36f387a2" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xd854dd1a" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="rain_melted_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="rain_melted_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="102"/>
       <attribute name="institution" value="Met Office"/>
@@ -274,9 +274,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x9499e11e" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x62edb9ad" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="rain_melted_level_above_sea_level" units="m">
+  <cube dtype="int16" long_name="rain_melted_level_above_sea_level" units="m">
     <attributes>
       <attribute name="field_code" value="102"/>
       <attribute name="institution" value="Met Office"/>
@@ -314,6 +314,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xe264ea3e" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x07d5fc99" dtype="int16" shape="(3, 3)"/>
   </cube>
 </cubes>

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="Absolute helicity 0-1km" units="m^2/s^2">
+  <cube dtype="int16" long_name="Absolute helicity 0-1km" units="m^2/s^2">
     <attributes>
       <attribute name="field_code" value="502"/>
       <attribute name="institution" value="Met Office"/>
@@ -44,9 +44,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x1fa56f5a" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xb2daedae" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Tornado index" units="unknown">
+  <cube dtype="int16" long_name="Tornado index" units="unknown">
     <attributes>
       <attribute name="field_code" value="503"/>
       <attribute name="institution" value="Met Office"/>
@@ -83,9 +83,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Total precipitable water" units="mm">
+  <cube dtype="int16" long_name="Total precipitable water" units="mm">
     <attributes>
       <attribute name="field_code" value="506"/>
       <attribute name="institution" value="Met Office"/>
@@ -122,7 +122,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xdf4dea86" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0xf8525bec" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="Lifted Index" units="unknown">
     <attributes>
@@ -214,7 +214,7 @@
     <cellMethods/>
     <data checksum="0xac92962f" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Davies parameter" units="unknown">
+  <cube dtype="int16" long_name="Davies parameter" units="unknown">
     <attributes>
       <attribute name="field_code" value="511"/>
       <attribute name="institution" value="Met Office"/>
@@ -251,9 +251,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="Hail size" units="mm">
+  <cube dtype="int16" long_name="Hail size" units="mm">
     <attributes>
       <attribute name="field_code" value="512"/>
       <attribute name="institution" value="Met Office"/>
@@ -290,7 +290,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x671bcf4d" dtype="int16" shape="(3, 3)"/>
   </cube>
   <cube dtype="float32" long_name="lightning rate" units="min^-1">
     <attributes>
