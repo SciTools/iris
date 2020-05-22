@@ -295,8 +295,61 @@ class CubeList(list):
             self, constraints, strict, merge_unique=None
         )
 
+    def extract_cube(self, constraint):
+        """
+        Extract a single cube from a CubeList, and return it.
+        Raise an error if the extract produces no cubes, or more than one.
+
+        Args:
+
+        * constraint (:class:`~iris.Constraint`):
+            The constraint to extract with.
+
+        .. see also::
+            :meth:`~iris.cube.CubeList.extract`
+
+        """
+        # Just validate this, so we can accept strings etc, but not multiples.
+        constraint = iris._constraints.as_constraint(constraint)
+        return self._extract_and_merge(
+            self,
+            constraint,
+            strict=True,
+            merge_unique=None,
+            return_single_as_cube=True,
+        )
+
+    def extract_cubes(self, constraints):
+        """
+        Extract specific cubes from a CubeList, one for each given constraint.
+        Each constraint must produce exactly one cube, otherwise an error is
+        raised.
+
+        Args:
+
+        * constraints (iterable of, or single, :class:`~iris.Constraint`):
+            The constraints to extract with.
+
+        .. see also::
+            :meth:`~iris.cube.CubeList.extract`
+
+        """
+        return self._extract_and_merge(
+            self,
+            constraints,
+            strict=True,
+            merge_unique=None,
+            return_single_as_cube=False,
+        )
+
     @staticmethod
-    def _extract_and_merge(cubes, constraints, strict, merge_unique=False):
+    def _extract_and_merge(
+        cubes,
+        constraints,
+        strict,
+        merge_unique=False,
+        return_single_as_cube=True,
+    ):
         # * merge_unique - if None: no merging, if false: non unique merging,
         # else unique merging (see merge)
 
@@ -327,7 +380,7 @@ class CubeList(list):
                 raise iris.exceptions.ConstraintMismatchError(msg)
             result.extend(constraint_cubes)
 
-        if strict and len(constraints) == 1:
+        if return_single_as_cube and strict and len(constraints) == 1:
             result = result[0]
 
         return result

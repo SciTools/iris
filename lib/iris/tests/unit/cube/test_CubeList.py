@@ -17,6 +17,7 @@ from unittest import mock
 from cf_units import Unit
 import numpy as np
 
+from iris import Constraint
 from iris.cube import Cube, CubeList
 from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
@@ -292,6 +293,247 @@ class Test_extract(tests.IrisTest):
         res = self.scalar_cubes.extract(constraint)
         expected = CubeList([Cube(val, long_name=letter) for letter in "abcd"])
         self.assertEqual(res, expected)
+
+
+class ExtractMixin:
+    # Choose "which" extract method to test.
+    # Effectively "abstract" -- inheritor must define this property :
+    #   method_name = 'extract_cube' / 'extract_cubes'
+
+    def setUp(self):
+        self.cube_x = Cube(0, long_name="x")
+        self.cube_y = Cube(0, long_name="y")
+        self.cons_x = Constraint("x")
+        self.cons_y = Constraint("y")
+        self.cons_any = Constraint(cube_func=lambda cube: True)
+        self.cons_none = Constraint(cube_func=lambda cube: False)
+
+    def check_extract(self, cubes, constraints, expected):
+        # Check that extracting a cubelist with the given arguments has the
+        # expected result.
+        # 'expected' and the operation results can be:
+        #  * None
+        #  * a single cube
+        #  * a list of cubes --> cubelist (with cubes matching)
+        #  * string --> a ConstraintMatchException matching the string
+        cubelist = CubeList(cubes)
+        method = getattr(cubelist, self.method_name)
+        if isinstance(expected, str):
+            with self.assertRaisesRegex(
+                iris.exceptions.ConstraintMismatchError, expected
+            ):
+                method(constraints)
+        else:
+            result = method(constraints)
+            if expected is None:
+                self.assertIsNone(result)
+            elif isinstance(expected, Cube):
+                self.assertIsInstance(result, Cube)
+                self.assertEqual(result, expected)
+            else:
+                self.assertIsInstance(expected, list)
+                self.assertIsInstance(result, CubeList)
+                self.assertEqual(result, expected)
+
+
+class Test_extract_cube(ExtractMixin, tests.IrisTest):
+    method_name = "extract_cube"
+
+    def test_empty(self):
+        self.check_extract([], self.cons_x, "Got 0 cubes .* expecting 1")
+
+    def test_single_cube_ok(self):
+        self.check_extract([self.cube_x], self.cons_x, self.cube_x)
+
+    def test_single_cube_fail__too_few(self):
+        self.check_extract(
+            [self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1"
+        )
+
+    def test_single_cube_fail__too_many(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            self.cons_any,
+            "Got 2 cubes .* expecting 1",
+        )
+
+    def test_string_as_constraint(self):
+        # Check that we can use a string, that converts to a constraint
+        # ( via "as_constraint" ).
+        self.check_extract([self.cube_x], "x", self.cube_x)
+
+    def test_none_as_constraint(self):
+        # Check that we can use a None, that converts to a constraint
+        # ( via "as_constraint" ).
+        self.check_extract([self.cube_x], None, self.cube_x)
+
+    def test_constraint_in_list__fail(self):
+        # Check that we *cannot* use [constraint]
+        msg = "cannot be cast to a constraint"
+        with self.assertRaisesRegex(TypeError, msg):
+            self.check_extract([], [self.cons_x], [])
+
+    def test_multi_cube_ok(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y], self.cons_x, self.cube_x
+        )  # NOTE: returns a cube
+
+    def test_multi_cube_fail__too_few(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            self.cons_none,
+            "Got 0 cubes .* expecting 1",
+        )
+
+    def test_multi_cube_fail__too_many(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            self.cons_any,
+            "Got 2 cubes .* expecting 1",
+        )
+
+
+class ExtractCubesMixin(ExtractMixin):
+    method_name = "extract_cubes"
+
+
+class Test_extract_cubes__noconstraint(ExtractCubesMixin, tests.IrisTest):
+    """Test with an empty list of constraints."""
+
+    def test_empty(self):
+        self.check_extract([], [], [])
+
+    def test_single_cube(self):
+        self.check_extract([self.cube_x], [], [])
+
+    def test_multi_cubes(self):
+        self.check_extract([self.cube_x, self.cube_y], [], [])
+
+
+class ExtractCubesSingleConstraintMixin(ExtractCubesMixin):
+    """
+    Common code for testing extract_cubes with a single constraint.
+    Generalised, so that we can do the same tests for a "bare" constraint,
+    and a list containing a single [constraint].
+
+    """
+
+    # Effectively "abstract" -- inheritor must define this property :
+    #   wrap_test_constraint_as_list_of_one = True / False
+
+    def check_extract(self, cubes, constraint, result):
+        # Overload standard test operation.
+        if self.wrap_test_constraint_as_list_of_one:
+            constraint = [constraint]
+        super().check_extract(cubes, constraint, result)
+
+    def test_empty(self):
+        self.check_extract([], self.cons_x, "Got 0 cubes .* expecting 1")
+
+    def test_single_cube_ok(self):
+        self.check_extract(
+            [self.cube_x], self.cons_x, [self.cube_x]
+        )  # NOTE: always returns list NOT cube
+
+    def test_single_cube__fail_mismatch(self):
+        self.check_extract(
+            [self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1"
+        )
+
+    def test_multi_cube_ok(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y], self.cons_x, [self.cube_x]
+        )  # NOTE: always returns list NOT cube
+
+    def test_multi_cube__fail_too_few(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            self.cons_none,
+            "Got 0 cubes .* expecting 1",
+        )
+
+    def test_multi_cube__fail_too_many(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            self.cons_any,
+            "Got 2 cubes .* expecting 1",
+        )
+
+
+class Test_extract_cubes__bare_single_constraint(
+    ExtractCubesSingleConstraintMixin, tests.IrisTest
+):
+    """Testing with a single constraint as the argument."""
+
+    wrap_test_constraint_as_list_of_one = False
+
+
+class Test_extract_cubes__list_single_constraint(
+    ExtractCubesSingleConstraintMixin, tests.IrisTest
+):
+    """Testing with a list of one constraint as the argument."""
+
+    wrap_test_constraint_as_list_of_one = True
+
+
+class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
+    """
+    Testing when the 'constraints' arg is a list of multiple constraints.
+    """
+
+    def test_empty(self):
+        # Always fails.
+        self.check_extract(
+            [], [self.cons_x, self.cons_any], "Got 0 cubes .* expecting 1"
+        )
+
+    def test_single_cube_ok(self):
+        # Possible if the one cube matches all the constraints.
+        self.check_extract(
+            [self.cube_x],
+            [self.cons_x, self.cons_any],
+            [self.cube_x, self.cube_x],
+        )
+
+    def test_single_cube__fail_too_few(self):
+        self.check_extract(
+            [self.cube_x],
+            [self.cons_x, self.cons_y],
+            "Got 0 cubes .* expecting 1",
+        )
+
+    def test_multi_cube_ok(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            [self.cons_y, self.cons_x],  # N.B. reverse order !
+            [self.cube_y, self.cube_x],
+        )
+
+    def test_multi_cube_castable_constraint_args(self):
+        # Check with args that *aren't* constraints, but can be converted
+        # ( via "as_constraint" ).
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            ["y", "x", self.cons_y],
+            [self.cube_y, self.cube_x, self.cube_y],
+        )
+
+    # NOTE: not bothering to check we can cast a 'None', as it will anyway
+    # fail with multiple input cubes.
+
+    def test_multi_cube__fail_too_few(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            [self.cons_x, self.cons_y, self.cons_none],
+            "Got 0 cubes .* expecting 1",
+        )
+
+    def test_multi_cube__fail_too_many(self):
+        self.check_extract(
+            [self.cube_x, self.cube_y],
+            [self.cons_x, self.cons_y, self.cons_any],
+            "Got 2 cubes .* expecting 1",
+        )
 
 
 class Test_iteration(tests.IrisTest):
