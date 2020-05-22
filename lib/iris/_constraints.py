@@ -428,7 +428,7 @@ def list_of_constraints(constraints):
     using :func:`as_constraint`.
 
     """
-    if not isinstance(constraints, (list, tuple)):
+    if isinstance(constraints, str) or not isinstance(constraints, Iterable):
         constraints = [constraints]
 
     return [as_constraint(constraint) for constraint in constraints]

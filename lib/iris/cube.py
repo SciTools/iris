@@ -278,9 +278,14 @@ class CubeList(list):
         **n** when filtered with **m** constraints can generate a maximum of
         **m * n** cubes.
 
+        Args:
+
+        * constraints (:class:`~iris.Constraint` or iterable of constraints):
+            A single constraint or an iterable.
+
         Keywords:
 
-        * strict - boolean
+        * strict (bool):
             If strict is True, then there must be exactly one cube which is
             filtered per constraint. Note: if a single constraint is given, a
             Cube is returned rather than a CubeList.
