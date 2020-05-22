@@ -926,6 +926,7 @@ def run(field):
     experiment(cube, field)
 
     # horizontal grid
+    origin_corner(cube, field)
     horizontal_grid(cube, field)
 
     # vertical
@@ -937,7 +938,5 @@ def run(field):
     ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)
-
-    origin_corner(cube, field)
 
     return cube
