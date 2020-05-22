@@ -268,7 +268,7 @@ class CubeList(list):
         # return our newly created XML string
         return doc.toprettyxml(indent="  ")
 
-    def extract(self, constraints, strict=False):
+    def extract(self, constraints):
         """
         Filter each of the cubes which can be filtered by the given
         constraints.
@@ -283,16 +283,9 @@ class CubeList(list):
         * constraints (:class:`~iris.Constraint` or iterable of constraints):
             A single constraint or an iterable.
 
-        Keywords:
-
-        * strict (bool):
-            If strict is True, then there must be exactly one cube which is
-            filtered per constraint. Note: if a single constraint is given, a
-            Cube is returned rather than a CubeList.
-
         """
         return self._extract_and_merge(
-            self, constraints, strict, merge_unique=None
+            self, constraints, strict=False, merge_unique=None
         )
 
     def extract_cube(self, constraint):
@@ -384,13 +377,6 @@ class CubeList(list):
             result = result[0]
 
         return result
-
-    def extract_strict(self, constraints):
-        """
-        Calls :meth:`CubeList.extract` with the strict keyword set to True.
-
-        """
-        return self.extract(constraints, strict=True)
 
     def extract_overlapping(self, coord_names):
         """
