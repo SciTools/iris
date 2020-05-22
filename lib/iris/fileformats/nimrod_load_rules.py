@@ -848,14 +848,13 @@ def soil_type_coord(cube, field):
         601: "urban_canyon",
         602: "urban_roof",
     }
-    if field.threshold_type != 0:
-        soil_name = soil_type_codes.get(field.soil_type, None)
-        if soil_name:
-            cube.add_aux_coord(
-                iris.coords.AuxCoord(
-                    soil_name, standard_name="soil_type", units=None
-                )
+    soil_name = soil_type_codes.get(field.soil_type, None)
+    if soil_name:
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(
+                soil_name, standard_name="soil_type", units=None
             )
+        )
 
 
 def time_averaging(cube, field):
