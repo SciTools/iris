@@ -536,9 +536,8 @@ def vertical_coord(cube, field):
     ):
         msg = (
             "Unmatched vertical coord types "
-            f"{field.vertical_coord_type} != "
-            f"{field.reference_vertical_coord_type}"
-            f". Assuming {field.vertical_coord_type}"
+            f"{field.vertical_coord_type} != {field.reference_vertical_coord_type}. "
+            f"Assuming {field.vertical_coord_type}"
         )
         warnings.warn(msg)
 
