@@ -87,10 +87,10 @@ def name(cube, field):
         )
 
     if field.ensemble_member == -98:
-        if "mean" not in cube_title:
+        if not re.match("(?i)^.*(mean).*", cube_title):
             cube_title = "mean_of_" + cube_title
     if field.ensemble_member == -99:
-        if "spread" not in cube_title:
+        if not re.match("(?i)^.*(spread).*", cube_title):
             cube_title = "standard_deviation_of_" + cube_title
 
     cube.rename(remove_unprintable_chars(cube_title))
