@@ -6,7 +6,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="4"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -52,7 +52,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="4"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -98,7 +98,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="4"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -144,7 +144,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="4"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>

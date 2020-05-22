@@ -677,7 +677,7 @@
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['accumulation or average']"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek00"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -715,7 +715,7 @@
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['accumulation or average']"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -755,7 +755,7 @@
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['accumulation or average']"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -796,7 +796,7 @@
       <attribute name="processing" value="['accumulation or average']"/>
       <attribute name="recursive_filter_alpha" value="0.6"/>
       <attribute name="recursive_filter_iterations" value="2"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -842,7 +842,7 @@
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['accumulation or average']"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -890,7 +890,7 @@
       <attribute name="probability_period_of_event" value="30"/>
       <attribute name="recursive_filter_alpha" value="0.6"/>
       <attribute name="recursive_filter_iterations" value="2"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -938,7 +938,7 @@
       <attribute name="num_model_levels" value="1"/>
       <attribute name="recursive_filter_alpha" value="0.6"/>
       <attribute name="recursive_filter_iterations" value="2"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -981,7 +981,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek00"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1142,7 +1142,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek00"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1358,7 +1358,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek00"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1405,7 +1405,7 @@
       <attribute name="num_model_levels" value="1"/>
       <attribute name="recursive_filter_alpha" value="0.5"/>
       <attribute name="recursive_filter_iterations" value="2"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="threshold_vicinity_radius" value="32.0 km"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
@@ -1457,7 +1457,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1746,7 +1746,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="umek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1789,7 +1789,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="umek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>
@@ -1833,7 +1833,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
-      <attribute name="source" value="MOGREPS-UK"/>
+      <attribute name="source" value="ek11"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
     <coords>

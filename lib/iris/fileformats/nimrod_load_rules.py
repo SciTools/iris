@@ -640,12 +640,18 @@ def attributes(cube, field):
     ]:
         add_attr(key)
 
-    rematcher = re.compile(r"^ek\d\d$")
-    if (
-        rematcher.match(cube_source) is not None
-        or cube_source.find("umek") == 0
-    ):
-        cube_source = "MOGREPS-UK"
+    # Remove member number from cube_source
+    match = re.match(
+        r"^(?P<model_code>\w\w)(?P<realization>\d\d)$", cube_source
+    )
+    try:
+        r_coord = cube.coord("realization")
+    except CoordinateNotFoundError:
+        r_coord = None
+    if match is not None:
+        if r_coord:
+            if int(match["realization"]) == r_coord.points[0]:
+                cube_source = match["model_code"]
     cube.attributes["source"] = cube_source
     cube.attributes["title"] = "Unknown"
     cube.attributes["institution"] = "Met Office"
