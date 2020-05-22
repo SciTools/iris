@@ -260,6 +260,9 @@ def forecast_period(cube):
     """
     Add a forecast_period coord based on existing time and
     forecast_reference_time coords.
+
+    Must be run after time() and reference_time()
+
     """
     try:
         time_coord = cube.coord("time")
@@ -404,13 +407,20 @@ def coord_system(field):
         # Some Radarnet files are missing these.
         set_british_national_grid_defaults(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
-        coord_sys = iris.coord_systems.TransverseMercator(
+        crs_args = (
             field.true_origin_latitude,
             field.true_origin_longitude,
             field.true_origin_easting,
             field.true_origin_northing,
             field.tm_meridian_scaling,
-            iris.coord_systems.GeogCS(**ellipsoid),
+        )
+        if any([is_missing(field, v) for v in crs_args]):
+            warnings.warn(
+                f"Coordinate Reference System is not completely defined. "
+                f"Plotting and reprojection may be impaired."
+            )
+        coord_sys = iris.coord_systems.TransverseMercator(
+            *crs_args, iris.coord_systems.GeogCS(**ellipsoid),
         )
     elif field.horizontal_grid_type == 1:
         coord_sys = iris.coord_systems.GeogCS(**ellipsoid)
