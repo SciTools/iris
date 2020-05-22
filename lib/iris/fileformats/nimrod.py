@@ -16,7 +16,7 @@ from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules
 
 
-# general header (int16) elements
+# general header (int16) elements 1-31 (Fortran bytes 1-62)
 general_header_int16s = (
     "vt_year",
     "vt_month",
@@ -52,7 +52,7 @@ general_header_int16s = (
 )
 
 
-# general header (float32) elements
+# general header (float32) elements 32-59 (Fortran bytes 63-174)
 general_header_float32s = (
     "vertical_coord",
     "reference_vertical_coord",
@@ -75,7 +75,7 @@ general_header_float32s = (
 )
 
 
-# data specific header (float32) elements
+# data specific header (float32) elements 60-104 (Fortran bytes 175-354)
 data_header_float32s = (
     "tl_y",
     "tl_x",
@@ -97,7 +97,11 @@ data_header_float32s = (
 )
 
 
-# data specific header (int16) elements
+# data specific header (char) elements 105-107 (bytes 355-410)
+# units, source and title
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
 data_header_int16s = (
     "threshold_type",
     "probability_method",
