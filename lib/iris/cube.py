@@ -355,7 +355,7 @@ class CubeList(list):
         if return_single_cube:
             if len(result) != 1:
                 # Practically this should never occur, as we now *only* request
-                # single cube results for 'extract_cube'.
+                # single cube result for 'extract_cube'.
                 msg = "Got {!s} cubes for constraints {!r}, expecting 1."
                 raise iris.exceptions.ConstraintMismatchError(
                     msg.format(len(result), constraints)
