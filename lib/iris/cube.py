@@ -284,9 +284,7 @@ class CubeList(list):
             A single constraint or an iterable.
 
         """
-        return self._extract_and_merge(
-            self, constraints, strict=False, merge_unique=None
-        )
+        return self._extract_and_merge(self, constraints, strict=False)
 
     def extract_cube(self, constraint):
         """
@@ -305,11 +303,7 @@ class CubeList(list):
         # Just validate this, so we can accept strings etc, but not multiples.
         constraint = iris._constraints.as_constraint(constraint)
         return self._extract_and_merge(
-            self,
-            constraint,
-            strict=True,
-            merge_unique=None,
-            return_single_as_cube=True,
+            self, constraint, strict=True, return_single_cube=True
         )
 
     def extract_cubes(self, constraints):
@@ -328,24 +322,13 @@ class CubeList(list):
 
         """
         return self._extract_and_merge(
-            self,
-            constraints,
-            strict=True,
-            merge_unique=None,
-            return_single_as_cube=False,
+            self, constraints, strict=True, return_single_cube=False
         )
 
     @staticmethod
     def _extract_and_merge(
-        cubes,
-        constraints,
-        strict,
-        merge_unique=False,
-        return_single_as_cube=True,
+        cubes, constraints, strict=False, return_single_cube=False
     ):
-        # * merge_unique - if None: no merging, if false: non unique merging,
-        # else unique merging (see merge)
-
         constraints = iris._constraints.list_of_constraints(constraints)
 
         # group the resultant cubes by constraints in a dictionary
@@ -358,10 +341,6 @@ class CubeList(list):
                 if sub_cube is not None:
                     cube_list.append(sub_cube)
 
-        if merge_unique is not None:
-            for constraint, cubelist in constraint_groups.items():
-                constraint_groups[constraint] = cubelist.merge(merge_unique)
-
         result = CubeList()
         for constraint in constraints:
             constraint_cubes = constraint_groups[constraint]
@@ -373,7 +352,14 @@ class CubeList(list):
                 raise iris.exceptions.ConstraintMismatchError(msg)
             result.extend(constraint_cubes)
 
-        if return_single_as_cube and strict and len(constraints) == 1:
+        if return_single_cube:
+            if len(result) != 1:
+                # Practically this should never occur, as we now *only* request
+                # single cube results for 'extract_cube'.
+                msg = "Got {!s} cubes for constraints {!r}, expecting 1."
+                raise iris.exceptions.ConstraintMismatchError(
+                    msg.format(len(result), constraints)
+                )
             result = result[0]
 
         return result

@@ -79,9 +79,7 @@ class TestMultiCube(tests.IrisTest, TestMixin):
         # Load slices, decorating a coord with custom attributes
         cubes = iris.load_raw(self._data_path, callback=custom_coord_callback)
         # Merge
-        merged = iris.cube.CubeList._extract_and_merge(
-            cubes, constraints=None, strict=False, merge_unique=False
-        )
+        merged = iris.cube.CubeList(cubes).merge()
         # Check the custom attributes are in the merged cube
         for cube in merged:
             assert cube.coord("time").attributes["monty"] == "python"
