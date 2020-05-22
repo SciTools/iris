@@ -324,10 +324,11 @@ def proj_biaxial_ellipsoid(field):
     missing, select the right pre-defined ellipsoid dictionary (Airy_1830 or
     international_1924).
 
+    References:
+        Airy 1830: https://georepository.com/ellipsoid_7001/Airy-1830.html
+        International 1924: https://georepository.com/ellipsoid_7022/International-1924.html
+
     """
-    # Reference for airy_1830 and international_1924 ellipsoids:
-    # http://fcm9/projects/PostProc/wiki/PostProcDocDomains#ProjectionConstants
-    # Reference for GRS80:
     airy_1830 = {
         "semi_major_axis": 6377563.396,
         "semi_minor_axis": 6356256.910,
