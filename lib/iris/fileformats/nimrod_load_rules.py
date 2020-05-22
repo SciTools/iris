@@ -399,7 +399,12 @@ def set_british_national_grid_defaults(field):
 
 
 def coord_system(field):
-    """Define the coordinate system for the field."""
+    """Define the coordinate system for the field.
+    Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
+
+    Transverse Mercator projections will default to the British National Grid if any
+    parameters are missing.
+    """
     ellipsoid = proj_biaxial_ellipsoid(field)
 
     if field.horizontal_grid_type == 0:
@@ -425,16 +430,15 @@ def coord_system(field):
     elif field.horizontal_grid_type == 1:
         coord_sys = iris.coord_systems.GeogCS(**ellipsoid)
     else:
-        raise TranslationError(
-            "Coordinate system for field type {} not implemented".format(
-                field.horizontal_grid_type
-            )
-        )
+        coord_sys = None
     return coord_sys
 
 
 def horizontal_grid(cube, field):
     """Add X and Y coordinates to the cube.
+    Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
+
+    coordinate reference system is supplied by coord_system(field)
 
     """
     crs = coord_system(field)
