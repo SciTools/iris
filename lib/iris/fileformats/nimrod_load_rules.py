@@ -44,6 +44,7 @@ def name(cube, field):
     """Set the cube's name from the field.
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
+    Adds "mean_of" or "standard_deviation_of_" to the cube name if appropriate.
     """
     title_from_field_code = {
         12: "air_pressure",
@@ -52,10 +53,12 @@ def name(cube, field):
         58: "temperature",
         61: "amount_of_precipitation",
         63: "rate_of_precipitation",
+        29: "fog fraction",
         101: "snow_melting_level_above_sea_level",
         102: "rain_melted_level_above_sea_level",
         155: "Visibility",
         156: "Worst visibility in grid point",
+        161: "minimum_cloud_base_above_threshold",
         172: "cloud_area_fraction_in_atmosphere",
         218: "snowfall",
         421: "precipitation type",
@@ -63,29 +66,13 @@ def name(cube, field):
         508: "low_level_jet_u_component",
         509: "low_level_jet_curvature",
         514: "low_level_jet_v_component",
+        804: "wind speed",
+        806: "wind direction",
         817: "wind_speed_of_gust",
         821: "Probabilistic Gust Risk Analysis from Observations",
     }
-    # threshold_value >= 0
-    title_from_field_code_and_threshold = {
-        29: "fog fraction",
-        161: "minimum_cloud_base_above_threshold",
-    }
-    # vertical_coord >= 0
-    title_from_field_code_and_vcoord = {
-        804: "wind speed",
-        806: "wind direction",
-    }
-    cube_title = title_from_field_code.get(field.field_code, field.title)
-    if field.threshold_value >= 0:
-        cube_title = title_from_field_code_and_threshold.get(
-            field.field_code, cube_title
-        )
-    if field.vertical_coord >= 0:
-        cube_title = title_from_field_code_and_vcoord.get(
-            field.field_code, cube_title
-        )
 
+    cube_title = title_from_field_code.get(field.field_code, field.title)
     if field.ensemble_member == -98:
         if not re.match("(?i)^.*(mean).*", cube_title):
             cube_title = "mean_of_" + cube_title
