@@ -128,7 +128,6 @@ def units(cube, field):
         "Code": "1",
         "mask": "1",
         "mb": "hPa",
-        "g/Kg": "1",
         "unitless": "1",
         "Fraction": "1",
         "index": "1",
@@ -157,7 +156,7 @@ def units(cube, field):
     if "ug/m3E1" in field_units:
         # Split into unit string and integer
         unit_list = field_units.split("E")
-        cube.data = cube.data.astype(np.float32) / 10.0 ** float(unit_list[1])
+        cube.data = cube.data.astype(np.float32) / 10.0
         field_units = unit_list[0]
     if field_units == "%":
         # Convert any percentages into fraction
@@ -170,6 +169,9 @@ def units(cube, field):
         # cf_units doesn't recognise decibels (dBZ), but does know BZ
         field_units = "BZ"
         cube.data = cube.data.astype(np.float32) / 10.0
+    if field_units == "g/Kg":
+        field_units = "kg/kg"
+        cube.data = cube.data.astype(np.float32) / 1000.0
     if not field_units:
         if field.field_code == 8:
             # Relative Humidity data are unitless, but not "unknown"
@@ -193,10 +195,6 @@ def units(cube, field):
             )
         )
         cube.attributes["invalid_units"] = field_units
-
-    if cube.dtype == np.float64:
-        # Demote any float64 that may have arisen from unit conversions to float32.
-        cube.data = cube.data.astype(np.float32)
 
 
 def time(cube, field):
