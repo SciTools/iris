@@ -330,10 +330,15 @@ class ExtractMixin:
             elif isinstance(expected, Cube):
                 self.assertIsInstance(result, Cube)
                 self.assertEqual(result, expected)
-            else:
-                self.assertIsInstance(expected, list)
+            elif isinstance(expected, list):
                 self.assertIsInstance(result, CubeList)
                 self.assertEqual(result, expected)
+            else:
+                msg = (
+                    'Unhandled usage in "check_extract" call: '
+                    '"expected" arg has type {}, value {}.'
+                )
+                raise ValueError(msg.format(type(expected), expected))
 
 
 class Test_extract_cube(ExtractMixin, tests.IrisTest):
