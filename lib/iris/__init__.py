@@ -240,7 +240,7 @@ else:
     _update(site_configuration)
 
 
-def _generate_cubes(uris, callback, constraints):
+def _generate_cubes(uris, callback, constraints, loader_kwargs=None):
     """Returns a generator of cubes given the URIs and a callback."""
     if isinstance(uris, (str, pathlib.PurePath)):
         uris = [uris]
@@ -253,21 +253,25 @@ def _generate_cubes(uris, callback, constraints):
         # Call each scheme handler with the appropriate URIs
         if scheme == "file":
             part_names = [x[1] for x in groups]
-            for cube in iris.io.load_files(part_names, callback, constraints):
+            for cube in iris.io.load_files(
+                part_names, callback, constraints, loader_kwargs
+            ):
                 yield cube
         elif scheme in ["http", "https"]:
             urls = [":".join(x) for x in groups]
-            for cube in iris.io.load_http(urls, callback):
+            for cube in iris.io.load_http(urls, callback, loader_kwargs):
                 yield cube
         else:
             raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)
 
 
-def _load_collection(uris, constraints=None, callback=None):
+def _load_collection(
+    uris, constraints=None, callback=None, loader_kwargs=None
+):
     from iris.cube import _CubeFilterCollection
 
     try:
-        cubes = _generate_cubes(uris, callback, constraints)
+        cubes = _generate_cubes(uris, callback, constraints, loader_kwargs)
         result = _CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
@@ -276,7 +280,7 @@ def _load_collection(uris, constraints=None, callback=None):
     return result
 
 
-def load(uris, constraints=None, callback=None):
+def load(uris, constraints=None, callback=None, loader_kwargs=None):
     """
     Loads any number of Cubes for each constraint.
 
@@ -294,6 +298,8 @@ def load(uris, constraints=None, callback=None):
         One or more constraints.
     * callback:
         A modifier/filter function.
+    * loader_kwargs (dict):
+        Additional settings, specific to the file-format loader.
 
     Returns:
         An :class:`iris.cube.CubeList`. Note that there is no inherent order
@@ -301,10 +307,14 @@ def load(uris, constraints=None, callback=None):
         were random.
 
     """
-    return _load_collection(uris, constraints, callback).merged().cubes()
+    return (
+        _load_collection(uris, constraints, callback, loader_kwargs)
+        .merged()
+        .cubes()
+    )
 
 
-def load_cube(uris, constraint=None, callback=None):
+def load_cube(uris, constraint=None, callback=None, loader_kwargs=None):
     """
     Loads a single cube.
 
@@ -322,6 +332,8 @@ def load_cube(uris, constraint=None, callback=None):
         A constraint.
     * callback:
         A modifier/filter function.
+    * loader_kwargs (dict):
+        Additional settings, specific to the file-format loader.
 
     Returns:
         An :class:`iris.cube.Cube`.
@@ -331,7 +343,9 @@ def load_cube(uris, constraint=None, callback=None):
     if len(constraints) != 1:
         raise ValueError("only a single constraint is allowed")
 
-    cubes = _load_collection(uris, constraints, callback).cubes()
+    cubes = _load_collection(
+        uris, constraints, callback, loader_kwargs
+    ).cubes()
 
     try:
         cube = cubes.merge_cube()
@@ -343,7 +357,7 @@ def load_cube(uris, constraint=None, callback=None):
     return cube
 
 
-def load_cubes(uris, constraints=None, callback=None):
+def load_cubes(uris, constraints=None, callback=None, loader_kwargs=None):
     """
     Loads exactly one Cube for each constraint.
 
@@ -361,6 +375,8 @@ def load_cubes(uris, constraints=None, callback=None):
         One or more constraints.
     * callback:
         A modifier/filter function.
+    * loader_kwargs (dict):
+        Additional settings, specific to the file-format loader.
 
     Returns:
         An :class:`iris.cube.CubeList`. Note that there is no inherent order
@@ -369,7 +385,9 @@ def load_cubes(uris, constraints=None, callback=None):
 
     """
     # Merge the incoming cubes
-    collection = _load_collection(uris, constraints, callback).merged()
+    collection = _load_collection(
+        uris, constraints, callback, loader_kwargs
+    ).merged()
 
     # Make sure we have exactly one merged cube per constraint
     bad_pairs = [pair for pair in collection.pairs if len(pair) != 1]
@@ -382,7 +400,7 @@ def load_cubes(uris, constraints=None, callback=None):
     return collection.cubes()
 
 
-def load_raw(uris, constraints=None, callback=None):
+def load_raw(uris, constraints=None, callback=None, loader_kwargs=None):
     """
     Loads non-merged cubes.
 
@@ -406,6 +424,8 @@ def load_raw(uris, constraints=None, callback=None):
         One or more constraints.
     * callback:
         A modifier/filter function.
+    * loader_kwargs (dict):
+        Additional settings, specific to the file-format loader.
 
     Returns:
         An :class:`iris.cube.CubeList`.
@@ -414,7 +434,9 @@ def load_raw(uris, constraints=None, callback=None):
     from iris.fileformats.um._fast_load import _raw_structured_loading
 
     with _raw_structured_loading():
-        return _load_collection(uris, constraints, callback).cubes()
+        return _load_collection(
+            uris, constraints, callback, loader_kwargs
+        ).cubes()
 
 
 save = iris.io.save

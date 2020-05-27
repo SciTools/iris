@@ -176,7 +176,7 @@ def expand_filespecs(file_specs):
     return [fname for fnames in all_expanded for fname in fnames]
 
 
-def load_files(filenames, callback, constraints=None):
+def load_files(filenames, callback, constraints=None, loader_kwargs=None):
     """
     Takes a list of filenames which may also be globs, and optionally a
     constraint set and a callback function, and returns a
@@ -202,19 +202,24 @@ def load_files(filenames, callback, constraints=None):
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the approriate filenames
+    if loader_kwargs is None:
+        loader_kwargs = {}
+
     for handling_format_spec in sorted(handler_map):
         fnames = handler_map[handling_format_spec]
         if handling_format_spec.constraint_aware_handler:
             for cube in handling_format_spec.handler(
-                fnames, callback, constraints
+                fnames, callback, constraints, **loader_kwargs
             ):
                 yield cube
         else:
-            for cube in handling_format_spec.handler(fnames, callback):
+            for cube in handling_format_spec.handler(
+                fnames, callback, **loader_kwargs
+            ):
                 yield cube
 
 
-def load_http(urls, callback):
+def load_http(urls, callback, loader_kwargs=None):
     """
     Takes a list of urls and a callback function, and returns a generator
     of Cubes from the given URLs.
@@ -234,9 +239,14 @@ def load_http(urls, callback):
         handler_map[handling_format_spec].append(url)
 
     # Call each iris format handler with the appropriate filenames
+    if loader_kwargs is None:
+        loader_kwargs = {}
+
     for handling_format_spec in sorted(handler_map):
         fnames = handler_map[handling_format_spec]
-        for cube in handling_format_spec.handler(fnames, callback):
+        for cube in handling_format_spec.handler(
+            fnames, callback, **loader_kwargs
+        ):
             yield cube
 
 
