@@ -268,7 +268,7 @@ class CubeList(list):
         # return our newly created XML string
         return doc.toprettyxml(indent="  ")
 
-    def extract(self, constraints, strict=False):
+    def extract(self, constraints):
         """
         Filter each of the cubes which can be filtered by the given
         constraints.
@@ -278,23 +278,57 @@ class CubeList(list):
         **n** when filtered with **m** constraints can generate a maximum of
         **m * n** cubes.
 
-        Keywords:
+        Args:
 
-        * strict - boolean
-            If strict is True, then there must be exactly one cube which is
-            filtered per constraint. Note: if a single constraint is given, a
-            Cube is returned rather than a CubeList.
+        * constraints (:class:`~iris.Constraint` or iterable of constraints):
+            A single constraint or an iterable.
+
+        """
+        return self._extract_and_merge(self, constraints, strict=False)
+
+    def extract_cube(self, constraint):
+        """
+        Extract a single cube from a CubeList, and return it.
+        Raise an error if the extract produces no cubes, or more than one.
+
+        Args:
+
+        * constraint (:class:`~iris.Constraint`):
+            The constraint to extract with.
+
+        .. see also::
+            :meth:`~iris.cube.CubeList.extract`
+
+        """
+        # Just validate this, so we can accept strings etc, but not multiples.
+        constraint = iris._constraints.as_constraint(constraint)
+        return self._extract_and_merge(
+            self, constraint, strict=True, return_single_cube=True
+        )
+
+    def extract_cubes(self, constraints):
+        """
+        Extract specific cubes from a CubeList, one for each given constraint.
+        Each constraint must produce exactly one cube, otherwise an error is
+        raised.
+
+        Args:
+
+        * constraints (iterable of, or single, :class:`~iris.Constraint`):
+            The constraints to extract with.
+
+        .. see also::
+            :meth:`~iris.cube.CubeList.extract`
 
         """
         return self._extract_and_merge(
-            self, constraints, strict, merge_unique=None
+            self, constraints, strict=True, return_single_cube=False
         )
 
     @staticmethod
-    def _extract_and_merge(cubes, constraints, strict, merge_unique=False):
-        # * merge_unique - if None: no merging, if false: non unique merging,
-        # else unique merging (see merge)
-
+    def _extract_and_merge(
+        cubes, constraints, strict=False, return_single_cube=False
+    ):
         constraints = iris._constraints.list_of_constraints(constraints)
 
         # group the resultant cubes by constraints in a dictionary
@@ -307,10 +341,6 @@ class CubeList(list):
                 if sub_cube is not None:
                     cube_list.append(sub_cube)
 
-        if merge_unique is not None:
-            for constraint, cubelist in constraint_groups.items():
-                constraint_groups[constraint] = cubelist.merge(merge_unique)
-
         result = CubeList()
         for constraint in constraints:
             constraint_cubes = constraint_groups[constraint]
@@ -322,17 +352,17 @@ class CubeList(list):
                 raise iris.exceptions.ConstraintMismatchError(msg)
             result.extend(constraint_cubes)
 
-        if strict and len(constraints) == 1:
+        if return_single_cube:
+            if len(result) != 1:
+                # Practically this should never occur, as we now *only* request
+                # single cube result for 'extract_cube'.
+                msg = "Got {!s} cubes for constraints {!r}, expecting 1."
+                raise iris.exceptions.ConstraintMismatchError(
+                    msg.format(len(result), constraints)
+                )
             result = result[0]
 
         return result
-
-    def extract_strict(self, constraints):
-        """
-        Calls :meth:`CubeList.extract` with the strict keyword set to True.
-
-        """
-        return self.extract(constraints, strict=True)
 
     def extract_overlapping(self, coord_names):
         """
