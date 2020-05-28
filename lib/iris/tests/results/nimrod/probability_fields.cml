@@ -297,7 +297,7 @@
     <cellMethods/>
     <data checksum="0x6ab6b2d5" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="int16" long_name="minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="minimum_cloud_base" units="m">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -337,7 +337,7 @@
     <cellMethods/>
     <data checksum="0x893e4bf1" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="int16" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
+  <cube dtype="int16" long_name="probability_of_minimum_cloud_base" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -384,7 +384,7 @@
     <cellMethods/>
     <data checksum="0xdb5506bd" dtype="int16" shape="(3, 3)"/>
   </cube>
-  <cube dtype="int16" long_name="probability_of_minimum_cloud_base_above_threshold" units="1">
+  <cube dtype="int16" long_name="probability_of_minimum_cloud_base" units="1">
     <attributes>
       <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="161"/>
@@ -428,7 +428,7 @@
     <cellMethods/>
     <data checksum="0x671bcf4d" dtype="int16" mask_checksum="0xbaf1fd57" shape="(3, 3)"/>
   </cube>
-  <cube dtype="int16" long_name="mean_of_minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="mean_of_minimum_cloud_base" units="m">
     <attributes>
       <attribute name="field_code" value="161"/>
       <attribute name="institution" value="Met Office"/>

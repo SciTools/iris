@@ -58,7 +58,7 @@ def name(cube, field, handle_metadata_errors):
         102: "rain_melted_level_above_sea_level",
         155: "Visibility",
         156: "Worst visibility in grid point",
-        161: "minimum_cloud_base_above_threshold",
+        161: "minimum_cloud_base",
         172: "cloud_area_fraction_in_atmosphere",
         218: "snowfall",
         421: "precipitation type",
@@ -792,12 +792,16 @@ def probability_coord(cube, field, handle_metadata_errors):
 
     # If we found a coord_val, build the coord (with bounds) and add to cube)
     if coord_val is not None:
-        if field.threshold_fuzziness > -32766.0:
+        if not is_missing(field, field.threshold_fuzziness):
             bounds = [
                 coord_val * field.threshold_fuzziness,
                 coord_val * (2.0 - field.threshold_fuzziness),
             ]
             bounds = np.array(bounds, dtype=np.float32)
+            # TODO: Enable filtering of zero-length bounds once Iris doesn't strip bounds
+            #  in merge_cube
+            # if np.isclose(bounds[0], bounds[1]):
+            #    bounds = None
         else:
             bounds = None
         if coord_keys.get("units", None) == "oktas":

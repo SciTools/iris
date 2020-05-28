@@ -86,10 +86,11 @@ class TestLoad(tests.IrisTest):
             TranslationError,
             "Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
         ):
-            iris.load(
-                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)),
-                handle_metadata_errors=False,
-            )
+            with open(tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)), "rb") as infile:
+                iris.fileformats.nimrod_load_rules.run(
+                    iris.fileformats.nimrod.NimrodField(infile),
+                    handle_metadata_errors=False,
+                )
 
     def test_orography(self):
         # Mock an orography field we've seen.

@@ -248,7 +248,7 @@
     <cellMethods/>
     <data checksum="0x403bd137" dtype="int16" mask_checksum="0x96de79a8" shape="(3, 3)"/>
   </cube>
-  <cube dtype="int16" long_name="minimum_cloud_base_above_threshold" units="m">
+  <cube dtype="int16" long_name="minimum_cloud_base" units="m">
     <attributes>
       <attribute name="field_code" value="161"/>
       <attribute name="institution" value="Met Office"/>
