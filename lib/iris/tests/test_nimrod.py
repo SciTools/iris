@@ -86,7 +86,10 @@ class TestLoad(tests.IrisTest):
             TranslationError,
             "Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
         ):
-            with open(tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)), "rb") as infile:
+            with open(
+                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)),
+                "rb",
+            ) as infile:
                 iris.fileformats.nimrod_load_rules.run(
                     iris.fileformats.nimrod.NimrodField(infile),
                     handle_metadata_errors=False,
