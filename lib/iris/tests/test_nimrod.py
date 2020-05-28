@@ -12,6 +12,7 @@ import numpy as np
 
 import iris
 import iris.fileformats.nimrod_load_rules as nimrod_load_rules
+from iris.exceptions import TranslationError
 
 
 def mock_nimrod_field():
@@ -75,6 +76,20 @@ class TestLoad(tests.IrisTest):
                 tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,))
             )
             self.assertCML(cube, ("nimrod", f"{datafile}.cml"))
+
+    @tests.skip_data
+    def test_load_kwarg(self):
+        """Tests that the handle_metadata_errors kwarg is effective by setting it to
+        False with a file with known incomplete meta-data (missing ellipsoid)."""
+        datafile = "u1096_ng_ek00_pressure_2km"
+        with self.assertRaisesRegex(
+            TranslationError,
+            "Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
+        ):
+            iris.load(
+                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)),
+                handle_metadata_errors=False,
+            )
 
     def test_orography(self):
         # Mock an orography field we've seen.
