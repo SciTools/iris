@@ -440,6 +440,7 @@ def horizontal_grid(cube, field):
 
     coordinate reference system is supplied by coord_system(field)
 
+    Must be run AFTER origin_corner()
     """
     crs = coord_system(field)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
@@ -654,7 +655,9 @@ def attributes(cube, field):
     ]:
         add_attr(key)
 
-    # Remove member number from cube_source
+    # Remove member number from cube_source. This commonly takes the form ek04 where ek
+    # indicates the model and 04 is the realization number. As the number is represented
+    # by a realization coord, stripping it from here allows cubes to be merged.
     match = re.match(
         r"^(?P<model_code>\w\w)(?P<realization>\d\d)$", cube_source
     )
