@@ -40,7 +40,7 @@ def is_missing(field, value):
     )
 
 
-def name(cube, field):
+def name(cube, field, handle_metadata_errors):
     """Set the cube's name from the field.
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
@@ -71,8 +71,10 @@ def name(cube, field):
         817: "wind_speed_of_gust",
         821: "Probabilistic Gust Risk Analysis from Observations",
     }
-
-    cube_title = title_from_field_code.get(field.field_code, field.title)
+    if handle_metadata_errors:
+        cube_title = title_from_field_code.get(field.field_code, field.title)
+    else:
+        cube_title = field.title
     if field.ensemble_member == -98:
         if not re.match("(?i)^.*(mean).*", cube_title):
             cube_title = "mean_of_" + cube_title
@@ -303,7 +305,7 @@ def experiment(cube, field):
         )
 
 
-def proj_biaxial_ellipsoid(field):
+def proj_biaxial_ellipsoid(field, handle_metadata_errors):
     """
     Returns the correct dictionary of arguments needed to define an
     iris.coord_systems.GeogCS.
@@ -329,7 +331,10 @@ def proj_biaxial_ellipsoid(field):
         ellipsoid = airy_1830
     elif field.proj_biaxial_ellipsoid == 1:
         ellipsoid = international_1924
-    elif is_missing(field, field.proj_biaxial_ellipsoid):
+    elif (
+        is_missing(field, field.proj_biaxial_ellipsoid)
+        and handle_metadata_errors
+    ):
         if field.horizontal_grid_type == 0:
             ellipsoid = airy_1830
         elif (
@@ -351,29 +356,30 @@ def proj_biaxial_ellipsoid(field):
     return ellipsoid
 
 
-def set_british_national_grid_defaults(field):
+def set_british_national_grid_defaults(field, handle_metadata_errors):
     """Check for missing coord-system meta-data and set default values for
     the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
     files are missing these."""
 
-    if is_missing(field, field.true_origin_latitude):
-        field.true_origin_latitude = 49.0
-    if is_missing(field, field.true_origin_longitude):
-        field.true_origin_longitude = -2.0
-    if is_missing(field, field.true_origin_easting) or np.isclose(
-        # Some old files misquote the value in km instead of m
-        field.true_origin_easting,
-        400.0,
-    ):
-        field.true_origin_easting = 400000.0
-    if is_missing(field, field.true_origin_northing) or np.isclose(
-        # Some old files misquote the value in km instead of m
-        field.true_origin_northing,
-        -100.0,
-    ):
-        field.true_origin_northing = -100000.0
-    if is_missing(field, field.tm_meridian_scaling):
-        field.tm_meridian_scaling = 0.9996012717
+    if handle_metadata_errors:
+        if is_missing(field, field.true_origin_latitude):
+            field.true_origin_latitude = 49.0
+        if is_missing(field, field.true_origin_longitude):
+            field.true_origin_longitude = -2.0
+        if is_missing(field, field.true_origin_easting) or np.isclose(
+            # Some old files misquote the value in km instead of m
+            field.true_origin_easting,
+            400.0,
+        ):
+            field.true_origin_easting = 400000.0
+        if is_missing(field, field.true_origin_northing) or np.isclose(
+            # Some old files misquote the value in km instead of m
+            field.true_origin_northing,
+            -100.0,
+        ):
+            field.true_origin_northing = -100000.0
+        if is_missing(field, field.tm_meridian_scaling):
+            field.tm_meridian_scaling = 0.9996012717
 
     ng_central_meridian_sf_dp = 0.9996012717
     if abs(field.tm_meridian_scaling - ng_central_meridian_sf_dp) < 1.0e-04:
@@ -383,19 +389,19 @@ def set_british_national_grid_defaults(field):
         field.tm_meridian_scaling = ng_central_meridian_sf_dp
 
 
-def coord_system(field):
+def coord_system(field, handle_metadata_errors):
     """Define the coordinate system for the field.
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
     Transverse Mercator projections will default to the British National Grid if any
     parameters are missing.
     """
-    ellipsoid = proj_biaxial_ellipsoid(field)
+    ellipsoid = proj_biaxial_ellipsoid(field, handle_metadata_errors)
 
     if field.horizontal_grid_type == 0:
         # Check for missing grid meta-data and insert OSGB definitions.
         # Some Radarnet files are missing these.
-        set_british_national_grid_defaults(field)
+        set_british_national_grid_defaults(field, handle_metadata_errors)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
         crs_args = (
             field.true_origin_latitude,
@@ -419,7 +425,7 @@ def coord_system(field):
     return coord_sys
 
 
-def horizontal_grid(cube, field):
+def horizontal_grid(cube, field, handle_metadata_errors):
     """Add X and Y coordinates to the cube.
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
@@ -427,7 +433,7 @@ def horizontal_grid(cube, field):
 
     Must be run AFTER origin_corner()
     """
-    crs = coord_system(field)
+    crs = coord_system(field, handle_metadata_errors)
     if field.horizontal_grid_type == 0 or field.horizontal_grid_type == 4:
         units_name = "m"
         x_coord_name = "projection_x_coordinate"
@@ -705,7 +711,7 @@ def known_threshold_coord(field):
     return coord_keys
 
 
-def probability_coord(cube, field):
+def probability_coord(cube, field, handle_metadata_errors):
     """
     Adds a coord relating to probability meta-data from the header to the
     cube if appropriate.
@@ -754,7 +760,8 @@ def probability_coord(cube, field):
     coord_keys = probtype_lookup.get(field.threshold_type, {})
     if coord_keys.get("var_name") == "threshold":
         is_probability_field = True
-    coord_keys.update(known_threshold_coord(field))
+    if handle_metadata_errors:
+        coord_keys.update(known_threshold_coord(field))
     if not coord_keys.get("units"):
         coord_keys["units"] = units_from_field_code.get(
             field.field_code, "unknown"
@@ -772,6 +779,7 @@ def probability_coord(cube, field):
     if (
         coord_keys.get("long_name") == "percentile"
         and cube.name().find("pc") > 0
+        and handle_metadata_errors
     ):
         try:
             coord_val = [
@@ -887,13 +895,16 @@ def time_averaging(cube, field):
         cube.attributes["processing"] = averaging_attributes
 
 
-def run(field):
+def run(field, handle_metadata_errors=True):
     """
     Convert a NIMROD field to an Iris cube.
 
     Args:
 
         * field - a :class:`~iris.fileformats.nimrod.NimrodField`
+
+        * handle_metadata_errors - Set to False to omit handling of known meta-data deficiencies
+                                   in Nimrod-format data
 
     Returns:
 
@@ -902,7 +913,7 @@ def run(field):
     """
     cube = iris.cube.Cube(field.data)
 
-    name(cube, field)
+    name(cube, field, handle_metadata_errors)
     mask_cube(cube, field)
     units(cube, field)
 
@@ -915,14 +926,14 @@ def run(field):
 
     # horizontal grid
     origin_corner(cube, field)
-    horizontal_grid(cube, field)
+    horizontal_grid(cube, field, handle_metadata_errors)
 
     # vertical
     vertical_coord(cube, field)
 
     # add other stuff, if present
     soil_type_coord(cube, field)
-    probability_coord(cube, field)
+    probability_coord(cube, field, handle_metadata_errors)
     ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)

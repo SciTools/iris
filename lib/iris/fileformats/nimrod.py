@@ -294,7 +294,7 @@ class NimrodField:
         self.data = self.data.reshape(self.num_rows, self.num_cols)
 
 
-def load_cubes(filenames, callback=None):
+def load_cubes(filenames, callback=None, handle_metadata_errors=True):
     """
     Loads cubes from a list of NIMROD filenames.
 
@@ -306,6 +306,9 @@ def load_cubes(filenames, callback=None):
 
     * callback - a function which can be passed on to
                  :func:`iris.io.run_callback`
+
+    * handle_metadata_errors - Set to False to omit handling of known meta-data deficiencies
+                               in Nimrod-format data
 
     .. note::
 
@@ -325,7 +328,9 @@ def load_cubes(filenames, callback=None):
                         # End of file. Move on to the next file.
                         break
 
-                    cube = iris.fileformats.nimrod_load_rules.run(field)
+                    cube = iris.fileformats.nimrod_load_rules.run(
+                        field, handle_metadata_errors=handle_metadata_errors
+                    )
 
                     # Were we given a callback?
                     if callback is not None:

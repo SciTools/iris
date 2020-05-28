@@ -96,7 +96,7 @@ class TestLoad(tests.IrisTest):
         field.units = "metres"
         field.source = "GLOBE DTM"
 
-        nimrod_load_rules.name(cube, field)
+        nimrod_load_rules.name(cube, field, handle_metadata_errors=True)
         nimrod_load_rules.units(cube, field)
         nimrod_load_rules.reference_time(cube, field)
         nimrod_load_rules.vertical_coord(cube, field)
