@@ -33,9 +33,7 @@ class Test(tests.IrisTest):
             float32_mdi=NIMROD_DEFAULT,
             spec=NimrodField,
         )
-        self.cube = mock.Mock(
-            data=np.zeros((3, 3), dtype=np.float32), spec=Cube
-        )
+        self.cube = Cube(np.ones((3, 3), dtype=np.float32))
 
     def _call_units(
         self, data=None, units_str=None,
@@ -48,7 +46,7 @@ class Test(tests.IrisTest):
 
     def test_null(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_units(data=np.ones_like(self.cube.data), units_str="m")
+            self._call_units(units_str="m")
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "m")
         self.assertArrayAlmostEqual(
@@ -65,6 +63,88 @@ class Test(tests.IrisTest):
         self.assertArrayAlmostEqual(
             self.cube.data, np.ones_like(self.cube.data)
         )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_visibility_units(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(
+                data=((np.ones_like(self.cube.data) / 2) - 25000),
+                units_str="m/2-25k",
+            )
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "m")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_power_in_units(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(
+                data=np.ones_like(self.cube.data) * 1000, units_str="mm*10^3"
+            )
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "mm")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_ug_per_m3_units(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(
+                data=((np.ones_like(self.cube.data) * 10)),
+                units_str="ug/m3E1",
+            )
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "ug/m3")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_g_per_kg(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(
+                data=((np.ones_like(self.cube.data) * 1000)), units_str="g/Kg",
+            )
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "kg/kg")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_unit_expection_dictionary(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(units_str="mb",)
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "hPa")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_per_second(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(units_str="/s",)
+        self.assertEqual(warn.call_count, 0)
+        self.assertEqual(self.cube.units, "s^-1")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+
+    def test_unhandled_unit(self):
+        with mock.patch("warnings.warn") as warn:
+            self._call_units(units_str="kittens",)
+        self.assertEqual(warn.call_count, 1)
+        self.assertEqual(self.cube.units, "")
+        self.assertArrayAlmostEqual(
+            self.cube.data, np.ones_like(self.cube.data)
+        )
+        self.assertEqual(self.cube.data.dtype, np.float32)
+        self.assertEqual(self.cube.attributes["invalid_units"], "kittens")
 
 
 if __name__ == "__main__":
