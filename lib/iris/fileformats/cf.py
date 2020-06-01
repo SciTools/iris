@@ -14,7 +14,7 @@ References:
 
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractclassmethod
 
 from collections.abc import Iterable, MutableMapping
 import os
@@ -70,23 +70,34 @@ def _is_str_dtype(var):
 
 ################################################################################
 class CFVariable(metaclass=ABCMeta):
-    """Abstract base class wrapper for a CF-netCDF variable."""
+    """
+    Abstract base class wrapper for a CF-netCDF variable.
+
+    Each object of this sort contains a netcdf variable object, and "wraps" it
+    so that its nc-related properties are accessible as properties of *this*
+    object, e.g. "cf_var.dimensions".
+
+    This class is abstract : various concrete subclasses encode the different
+    cf roles that a file variable may have.
+
+    """
 
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.
     cf_identity = None
 
-    def __init__(self, name, data):
+    def __init__(self, name, nc_variable):
         # Accessing the list of netCDF attributes is surprisingly slow.
         # Since it's used repeatedly, caching the list makes things
         # quite a bit faster.
-        self._nc_attrs = data.ncattrs()
+        # Get all names: see also __getitem__, which will cache their values.
+        self._nc_attrs = nc_variable.ncattrs()
 
         #: NetCDF variable name.
         self.cf_name = name
 
         #: NetCDF4 Variable data instance.
-        self.cf_data = data
+        self.nc_variable = nc_variable
 
         #: Collection of CF-netCDF variables associated with this variable.
         self.cf_group = None
@@ -115,8 +126,8 @@ class CFVariable(metaclass=ABCMeta):
 
         return (ignore, target)
 
-    @abstractmethod
-    def identify(self, variables, ignore=None, target=None, warn=True):
+    @abstractclassmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
         """
         Identify all variables that match the criterion for this CF-netCDF variable class.
 
@@ -173,26 +184,33 @@ class CFVariable(metaclass=ABCMeta):
         return hash(self.cf_name)
 
     def __getattr__(self, name):
-        # Accessing netCDF attributes is surprisingly slow. Since
-        # they're often read repeatedly, caching the values makes things
-        # quite a bit faster.
+        # Extend the "wrapper" object by adding all the additional properties
+        # of the "wrapped" nc_variable.
+        value = getattr(self.nc_variable, name)
+
+        # Maintain the record of the "used" (cf-recognised) attributes.
         if name in self._nc_attrs:
             self._cf_attrs.add(name)
-        value = getattr(self.cf_data, name)
+
+        # Also *cache* these properties, on the wrapper object.
+        # Accessing netCDF attributes is surprisingly slow, as they're often
+        # read repeatedly.  This makes things quite a bit faster.
         setattr(self, name, value)
         return value
 
+    # NOTE: getitem and len need to be provided *explicitly*, i.e. not via
+    # wrapping, for "magic" syntaxes to work : "len(x)" and "x[k]".
     def __getitem__(self, key):
-        return self.cf_data.__getitem__(key)
+        return self.nc_variable.__getitem__(key)
 
     def __len__(self):
-        return self.cf_data.__len__()
+        return self.nc_variable.__len__()
 
     def __repr__(self):
         return "%s(%r, %r)" % (
             self.__class__.__name__,
             self.cf_name,
-            self.cf_data,
+            self.nc_variable,
         )
 
     def cf_attrs(self):
@@ -557,8 +575,8 @@ class _CFFormulaTermsVariable(CFVariable):
 
     cf_identity = "formula_terms"
 
-    def __init__(self, name, data, formula_root, formula_term):
-        CFVariable.__init__(self, name, data)
+    def __init__(self, name, nc_variable, formula_root, formula_term):
+        CFVariable.__init__(self, name, nc_variable)
         # Register the formula root and term relationship.
         self.add_formula_term(formula_root, formula_term)
 
@@ -607,7 +625,7 @@ class _CFFormulaTermsVariable(CFVariable):
         return "%s(%r, %r, %r)" % (
             self.__class__.__name__,
             self.cf_name,
-            self.cf_data,
+            self.nc_variable,
             self.cf_terms_by_root,
         )
 
@@ -832,8 +850,8 @@ class CFMeasureVariable(CFVariable):
 
     cf_identity = "cell_measures"
 
-    def __init__(self, name, data, measure):
-        CFVariable.__init__(self, name, data)
+    def __init__(self, name, nc_variable, measure):
+        CFVariable.__init__(self, name, nc_variable)
         #: Associated cell measure of the cell variable
         self.cf_measure = measure
 
@@ -1092,7 +1110,7 @@ class CFReader:
                     cf_name = cf_var.cf_name
                     if cf_var.cf_name not in self.cf_group:
                         self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
-                            cf_name, cf_var.cf_data
+                            cf_name, cf_var.nc_variable
                         )
                     self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
@@ -1232,7 +1250,7 @@ class CFReader:
                     cf_term in terms
                     and cf_var_name not in self.cf_group.promoted
                 ):
-                    data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
+                    data_var = CFDataVariable(cf_var_name, cf_var.nc_variable)
                     self.cf_group.promoted[cf_var_name] = data_var
                     _build(data_var)
                     break
@@ -1246,7 +1264,7 @@ class CFReader:
                 and cf_name not in self.cf_group.promoted
             ):
                 data_var = CFDataVariable(
-                    cf_name, self.cf_group[cf_name].cf_data
+                    cf_name, self.cf_group[cf_name].nc_variable
                 )
                 self.cf_group.promoted[cf_name] = data_var
                 _build(data_var)

@@ -51,12 +51,12 @@ class TestCoordAttributes(tests.IrisTest):
             cf_group[name] = mock.Mock(cf_attrs_unused=cf_attrs_unused)
         cf = mock.Mock(cf_group=cf_group)
 
-        cf_data = mock.Mock(_FillValue=None)
-        cf_data.chunking = mock.MagicMock(return_value=shape)
+        nc_variable = mock.Mock(_FillValue=None)
+        nc_variable.chunking = mock.MagicMock(return_value=shape)
         cf_var = mock.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
             dtype=np.dtype("i4"),
-            cf_data=cf_data,
+            nc_variable=nc_variable,
             cf_name="DUMMY_VAR",
             cf_group=coords,
             shape=shape,
@@ -129,12 +129,12 @@ class TestCubeAttributes(tests.IrisTest):
     def _make(self, attrs):
         shape = (1,)
         cf_attrs_unused = mock.Mock(return_value=attrs)
-        cf_data = mock.Mock(_FillValue=None)
-        cf_data.chunking = mock.MagicMock(return_value=shape)
+        nc_variable = mock.Mock(_FillValue=None)
+        nc_variable.chunking = mock.MagicMock(return_value=shape)
         cf_var = mock.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
             dtype=np.dtype("i4"),
-            cf_data=cf_data,
+            nc_variable=nc_variable,
             cf_name="DUMMY_VAR",
             cf_group=mock.Mock(),
             cf_attrs_unused=cf_attrs_unused,

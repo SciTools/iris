@@ -559,7 +559,7 @@ def _get_cf_var_data(cf_var, filename):
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(
-        cf_var.cf_data,
+        cf_var.nc_variable,
         "_FillValue",
         netCDF4.default_fillvals[cf_var.dtype.str[1:]],
     )
@@ -568,7 +568,7 @@ def _get_cf_var_data(cf_var, filename):
     )
     # Get the chunking specified for the variable : this is either a shape, or
     # maybe the string "contiguous".
-    chunks = cf_var.cf_data.chunking()
+    chunks = cf_var.nc_variable.chunking()
     # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
     if chunks == "contiguous":
         chunks = None

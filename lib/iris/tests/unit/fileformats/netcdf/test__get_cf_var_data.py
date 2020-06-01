@@ -26,12 +26,12 @@ class Test__get_cf_var_data(tests.IrisTest):
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
     def _make(self, chunksizes):
-        cf_data = mock.Mock(_FillValue=None)
-        cf_data.chunking = mock.MagicMock(return_value=chunksizes)
+        nc_variable = mock.Mock(_FillValue=None)
+        nc_variable.chunking = mock.MagicMock(return_value=chunksizes)
         cf_var = mock.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
             dtype=np.dtype("i4"),
-            cf_data=cf_data,
+            nc_variable=nc_variable,
             cf_name="DUMMY_VAR",
             shape=self.shape,
         )
