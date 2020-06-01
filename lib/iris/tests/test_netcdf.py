@@ -16,9 +16,11 @@ import os
 import os.path
 import shutil
 import stat
+from subprocess import check_call
 import tempfile
 from unittest import mock
 
+from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -27,6 +29,7 @@ import iris
 import iris.analysis.trajectory
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
+from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
@@ -291,6 +294,42 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(
             cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml")
         )
+
+    def test_default_units(self):
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(cubes[0].units, as_unit("unknown"))
+        self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
+        self.assertEqual(cubes[0].coord("x").units, as_unit(1))
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
