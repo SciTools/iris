@@ -1195,8 +1195,8 @@ fc_extras
     UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e',
                     'degreee', 'degreese', 'degrees', 'degrees east',
                     'degree east', 'degree e', 'degrees e']
-    UNKNOWN_UNIT_STRING = str(cf_units.as_unit(None))
-    NO_UNIT_STRING = str(cf_units.as_unit("no_unit"))
+    UNKNOWN_UNIT_STRING = "?"
+    NO_UNIT_STRING = "-"
 
     #
     # CF Dimensionless Vertical Coordinates
