@@ -89,7 +89,9 @@ class TestAggregateBy(tests.IrisTest):
         )
 
         model_level = iris.coords.DimCoord(
-            np.arange(z_points.size), standard_name="model_level_number"
+            np.arange(z_points.size),
+            standard_name="model_level_number",
+            units="1",
         )
 
         self.cube_single.add_aux_coord(self.coord_z_single, 0)
@@ -124,7 +126,9 @@ class TestAggregateBy(tests.IrisTest):
         )
 
         model_level = iris.coords.DimCoord(
-            np.arange(z1_points.size), standard_name="model_level_number"
+            np.arange(z1_points.size),
+            standard_name="model_level_number",
+            units="1",
         )
 
         self.cube_multi.add_aux_coord(self.coord_z1_multi, 0)

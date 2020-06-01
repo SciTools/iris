@@ -299,7 +299,7 @@ class TestVertical(tests.IrisTest):
         delta_lower, delta, delta_upper = 150, 200, 250
 
         cube = Cube(np.zeros((ny, nx)), "air_temperature")
-        level_coord = AuxCoord(0, "model_level_number")
+        level_coord = AuxCoord(0, "model_level_number", units="1")
         cube.add_aux_coord(level_coord)
         delta_coord = AuxCoord(
             delta,
@@ -308,7 +308,10 @@ class TestVertical(tests.IrisTest):
             units="m",
         )
         sigma_coord = AuxCoord(
-            sigma, bounds=[[sigma_lower, sigma_upper]], long_name="mavis"
+            sigma,
+            bounds=[[sigma_lower, sigma_upper]],
+            long_name="mavis",
+            units="1",
         )
         surface_altitude_coord = AuxCoord(
             np.zeros((ny, nx)), "surface_altitude", units="m"
@@ -343,7 +346,7 @@ class TestVertical(tests.IrisTest):
         delta_lower, delta, delta_upper = 0.15, 0.2, 0.25
 
         cube = Cube(np.zeros((ny, nx)), "air_temperature")
-        level_coord = AuxCoord(0, "model_level_number")
+        level_coord = AuxCoord(0, "model_level_number", units="1")
         cube.add_aux_coord(level_coord)
         delta_coord = AuxCoord(
             delta,
@@ -352,7 +355,10 @@ class TestVertical(tests.IrisTest):
             units="Pa",
         )
         sigma_coord = AuxCoord(
-            sigma, bounds=[[sigma_lower, sigma_upper]], long_name="mavis"
+            sigma,
+            bounds=[[sigma_lower, sigma_upper]],
+            long_name="mavis",
+            units="1",
         )
         surface_air_pressure_coord = AuxCoord(
             np.zeros((ny, nx)), "surface_air_pressure", units="Pa"

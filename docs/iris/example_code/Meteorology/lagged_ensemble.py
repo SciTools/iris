@@ -40,7 +40,7 @@ def realization_metadata(cube, field, fname):
         import iris.coords
 
         realization_coord = iris.coords.AuxCoord(
-            np.int32(realization_number), "realization"
+            np.int32(realization_number), "realization", units="1"
         )
         cube.add_aux_coord(realization_coord)
 

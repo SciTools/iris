@@ -147,6 +147,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "down"},
+            units="1",
         )
         coords_and_dims.append((coord, dim))
 
@@ -197,6 +198,7 @@ def _convert_vertical_coords(
                 model_level_number,
                 long_name="soil_model_level_number",
                 attributes={"positive": "down"},
+                units="1",
             )
             coords_and_dims.append((coord, dim))
         elif np.any(brsvd1 != brlev):
@@ -235,6 +237,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "up"},
+            units="1",
         )
         level_pressure = _dim_or_aux(
             bhlev,
@@ -243,7 +246,10 @@ def _convert_vertical_coords(
             bounds=np.vstack((bhrlev, brsvd2)).T,
         )
         sigma = AuxCoord(
-            blev, long_name="sigma", bounds=np.vstack((brlev, brsvd1)).T
+            blev,
+            long_name="sigma",
+            bounds=np.vstack((brlev, brsvd1)).T,
+            units="1",
         )
         coords_and_dims.extend(
             [(model_level_number, dim), (level_pressure, dim), (sigma, dim)]
@@ -265,6 +271,7 @@ def _convert_vertical_coords(
             model_level_number,
             standard_name="model_level_number",
             attributes={"positive": "up"},
+            units="1",
         )
         level_height = _dim_or_aux(
             blev,
@@ -274,7 +281,10 @@ def _convert_vertical_coords(
             attributes={"positive": "up"},
         )
         sigma = AuxCoord(
-            bhlev, long_name="sigma", bounds=np.vstack((bhrlev, brsvd2)).T
+            bhlev,
+            long_name="sigma",
+            bounds=np.vstack((bhrlev, brsvd2)).T,
+            units="1",
         )
         coords_and_dims.extend(
             [(model_level_number, dim), (level_height, dim), (sigma, dim)]
@@ -846,7 +856,7 @@ def _convert_scalar_realization_coords(lbrsvd4):
     coords_and_dims = []
     if lbrsvd4 != 0:
         coords_and_dims.append(
-            (DimCoord(lbrsvd4, standard_name="realization"), None)
+            (DimCoord(lbrsvd4, standard_name="realization", units="1"), None)
         )
     return coords_and_dims
 
@@ -1078,7 +1088,7 @@ def _all_other_rules(f):
         and f.lbmon == f.lbmond
     ):
         aux_coords_and_dims.append(
-            (AuxCoord(f.lbmon, long_name="month_number"), None)
+            (AuxCoord(f.lbmon, long_name="month_number", units="1"), None)
         )
         aux_coords_and_dims.append(
             (

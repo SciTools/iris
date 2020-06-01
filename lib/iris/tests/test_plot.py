@@ -875,6 +875,7 @@ class TestPlotCoordinatesGiven(tests.GraphicsTest):
             pts,
             standard_name="model_level_number",
             attributes={"positive": "up"},
+            units="1",
         )
         self.draw("contourf", cube, coords=["grid_latitude", x])
 

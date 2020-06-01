@@ -802,7 +802,9 @@ class PercentileAggregator(_Aggregator):
         # order cube.
         for point in points:
             cube = collapsed_cube.copy()
-            coord = iris.coords.AuxCoord(point, long_name=coord_name)
+            coord = iris.coords.AuxCoord(
+                point, long_name=coord_name, units="percent"
+            )
             cube.add_aux_coord(coord)
             cubes.append(cube)
 

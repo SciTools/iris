@@ -9,7 +9,7 @@
         <dimCoord circular="True" id="62e940e0" points="[-180, -90, 0, 90]" shape="(4,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="cf515091" long_name="percentile_over_wibble" points="[75]" shape="(1,)" units="Unit('1')" value_type="int64"/>
+        <dimCoord id="47527651" long_name="percentile_over_wibble" points="[75]" shape="(1,)" units="Unit('percent')" value_type="int64"/>
       </coord>
       <coord>
         <dimCoord bounds="[[10.0, 30.0]]" id="10b8e1fc" long_name="wibble" points="[20.0]" shape="(1,)" units="Unit('1')" value_type="float32"/>

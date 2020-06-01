@@ -475,17 +475,24 @@ class TestIterateFunctions(tests.IrisTest):
     def test_izip_nd_ortho(self):
         cube1 = iris.cube.Cube(np.zeros((5, 5, 5, 5, 5), dtype="f8"))
         cube1.add_dim_coord(
-            iris.coords.DimCoord(np.arange(5, dtype="i8"), long_name="z"), [0]
+            iris.coords.DimCoord(
+                np.arange(5, dtype="i8"), long_name="z", units="1"
+            ),
+            [0],
         )
         cube1.add_aux_coord(
             iris.coords.AuxCoord(
-                np.arange(25, dtype="i8").reshape(5, 5), long_name="y"
+                np.arange(25, dtype="i8").reshape(5, 5),
+                long_name="y",
+                units="1",
             ),
             [1, 2],
         )
         cube1.add_aux_coord(
             iris.coords.AuxCoord(
-                np.arange(25, dtype="i8").reshape(5, 5), long_name="x"
+                np.arange(25, dtype="i8").reshape(5, 5),
+                long_name="x",
+                units="1",
             ),
             [3, 4],
         )
