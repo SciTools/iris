@@ -63,12 +63,12 @@ def get_valid_standard_name(name):
             except IndexError:
                 pass  # No modifier
             else:
-                name_is_valid &= (
-                    std_name_modifier in valid_std_name_modifiers)
+                name_is_valid &= std_name_modifier in valid_std_name_modifiers
 
             if not name_is_valid:
                 raise ValueError(
-                    "{!r} is not a valid standard_name".format(name))
+                    "{!r} is not a valid standard_name".format(name)
+                )
 
     return name
 

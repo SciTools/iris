@@ -24,11 +24,11 @@ class Test(tests.IrisTest):
         self.assertEqual(get_valid_standard_name(name), name)
 
     def test_pass_thru_empty(self):
-        name = ''
+        name = ""
         self.assertEqual(get_valid_standard_name(name), name)
 
     def test_pass_thru_whitespace(self):
-        name = '       '
+        name = "       "
         self.assertEqual(get_valid_standard_name(name), name)
 
     def test_valid_standard_name(self):
