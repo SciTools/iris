@@ -19,8 +19,24 @@ class Test(tests.IrisTest):
     def setUp(self):
         self.emsg = "'{}' is not a valid standard_name"
 
+    def test_pass_thru_none(self):
+        name = None
+        self.assertEqual(get_valid_standard_name(name), name)
+
+    def test_pass_thru_empty(self):
+        name = ""
+        self.assertEqual(get_valid_standard_name(name), name)
+
+    def test_pass_thru_whitespace(self):
+        name = "       "
+        self.assertEqual(get_valid_standard_name(name), name)
+
     def test_valid_standard_name(self):
         name = "air_temperature"
+        self.assertEqual(get_valid_standard_name(name), name)
+
+    def test_standard_name_alias(self):
+        name = "atmosphere_optical_thickness_due_to_pm1_ambient_aerosol"
         self.assertEqual(get_valid_standard_name(name), name)
 
     def test_invalid_standard_name(self):
