@@ -92,7 +92,7 @@ class TestBoundsVertexDim(tests.IrisTest):
     def _make_array_and_cf_data(cls, dimension_names):
         shape = tuple(cls.dim_names_lens[name]
                       for name in dimension_names)
-        cf_data = mock.Mock(_FillValue=None)
+        cf_data = mock.MagicMock(_FillValue=None)
         cf_data.chunking = mock.MagicMock(return_value=shape)
         return np.zeros(shape), cf_data
 
@@ -145,7 +145,7 @@ class TestDtype(tests.IrisTest):
     def setUp(self):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
-        cf_data = mock.Mock(_FillValue=None)
+        cf_data = mock.MagicMock(_FillValue=None)
         cf_data.chunking = mock.MagicMock(return_value=points.shape)
 
         self.cf_coord_var = mock.Mock(

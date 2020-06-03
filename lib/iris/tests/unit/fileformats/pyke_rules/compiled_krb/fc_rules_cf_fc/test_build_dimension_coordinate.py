@@ -221,7 +221,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
         RulesTestMixin.setUp(self)
         # Create test coordinate cf variable.
         points = np.arange(6)
-        self.cf_coord_var = mock.Mock(
+        self.cf_coord_var = mock.MagicMock(
             dimensions=('foo',),
             cf_name='wibble',
             standard_name=None,
@@ -332,7 +332,7 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
 
     def _make_vars(self, points, bounds=None, units='degrees'):
         points = np.array(points)
-        self.cf_coord_var = mock.Mock(
+        self.cf_coord_var = mock.MagicMock(
             dimensions=('foo',),
             cf_name='wibble',
             standard_name=None,
@@ -429,7 +429,7 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
         # Note that for a scalar the shape of the array from
         # the cf var is (), rather than (1,).
         points = np.array([0.])
-        self.cf_coord_var = mock.Mock(
+        self.cf_coord_var = mock.MagicMock(
             dimensions=(),
             cf_name='wibble',
             standard_name=None,
