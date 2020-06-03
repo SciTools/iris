@@ -1689,8 +1689,7 @@ fc_extras
         if np.issubdtype(cf_var.dtype, np.str_):
             attr_units = cf_units._NO_UNIT_STRING
 
-        if "flag_values" in cf_var._nc_attrs or "flag_masks" in cf_var._nc_attrs \
-                or "flag_meanings" in cf_var._nc_attrs:
+        if any(hasattr(cf_var.cf_data, name) for name in ("flag_values", "flag_masks", "flag_meanings")):
             attr_units = cf_units._NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
