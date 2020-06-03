@@ -69,8 +69,6 @@ def get_valid_standard_name(name):
             if not name_is_valid:
                 raise ValueError(
                     "{!r} is not a valid standard_name".format(name))
-        else:
-            name_is_valid = False
 
     return name
 
