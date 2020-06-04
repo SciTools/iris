@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="3dreflectivity" units="BZ">
+    <attributes>
+      <attribute name="field_code" value="480"/>
+      <attribute name="institution" value="Met Office"/>
+      <attribute name="nimrod_version" value="2"/>
+      <attribute name="num_model_levels" value="1"/>
+      <attribute name="source" value="ek"/>
+      <attribute name="title" value="Unknown"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord id="0e2ae68b" points="[30.0, 50.0, 70.0, 100.0, 150.0, 200.0, 250.0,
+		300.0, 400.0, 500.0, 600.0, 700.0, 850.0, 925.0,
+		1000.0]" shape="(15,)" standard_name="air_pressure" units="Unit('hPa')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="down"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+      </coord>
+      <coord>
+        <dimCoord id="b40ecfd3" points="[7200]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord id="784eb7ff" points="[102000.0, 104000.0, 106000.0]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+          <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord id="1c8167bb" points="[94000.0, 96000.0, 98000.0]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+          <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="36e56a08" points="[0]" shape="(1,)" standard_name="realization" units="Unit('1')" value_type="int32"/>
+      </coord>
+      <coord>
+        <dimCoord id="90a3bd1c" points="[1580187600]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='gregorian')" value_type="int64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x6133dffc" dtype="float32" mask_checksum="0xa0966f7c" shape="(15, 3, 3)"/>
+  </cube>
+</cubes>

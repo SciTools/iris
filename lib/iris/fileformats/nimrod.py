@@ -16,7 +16,7 @@ from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules
 
 
-# general header (int16) elements
+# general header (int16) elements 1-31 (Fortran bytes 1-62)
 general_header_int16s = (
     "vt_year",
     "vt_month",
@@ -47,12 +47,12 @@ general_header_int16s = (
     "num_model_levels",
     "proj_biaxial_ellipsoid",
     "ensemble_member",
-    "spare1",
-    "spare2",
+    "model_origin_id",
+    "averagingtype",
 )
 
 
-# general header (float32) elements
+# general header (float32) elements 32-59 (Fortran bytes 63-174)
 general_header_float32s = (
     "vertical_coord",
     "reference_vertical_coord",
@@ -70,15 +70,17 @@ general_header_float32s = (
     "true_origin_easting",
     "true_origin_northing",
     "tm_meridian_scaling",
+    "threshold_value_alt",
+    "threshold_value",
 )
 
 
-# data specific header (float32) elements
+# data specific header (float32) elements 60-104 (Fortran bytes 175-354)
 data_header_float32s = (
     "tl_y",
     "tl_x",
     "tr_y",
-    "ty_x",
+    "tr_x",
     "br_y",
     "br_x",
     "bl_y",
@@ -87,46 +89,71 @@ data_header_float32s = (
     "sat_space_count",
     "ducting_index",
     "elevation_angle",
+    "neighbourhood_radius",
+    "threshold_vicinity_radius",
+    "recursive_filter_alpha",
+    "threshold_fuzziness",
+    "threshold_duration_fuzziness",
 )
 
 
-# data specific header (int16) elements
+# data specific header (char) elements 105-107 (bytes 355-410)
+# units, source and title
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
 data_header_int16s = (
-    "radar_num",
-    "radars_bitmask",
-    "more_radars_bitmask",
-    "clutter_map_num",
-    "calibration_type",
-    "bright_band_height",
-    "bright_band_intensity",
-    "bright_band_test1",
-    "bright_band_test2",
-    "infill_flag",
-    "stop_elevation",
-    "int16_vertical_coord",
-    "int16_reference_vertical_coord",
-    "int16_y_origin",
-    "int16_row_step",
-    "int16_x_origin",
-    "int16_column_step",
-    "int16_float32_mdi",
-    "int16_data_scaling",
-    "int16_data_offset",
-    "int16_x_offset",
-    "int16_y_offset",
-    "int16_true_origin_latitude",
-    "int16_true_origin_longitude",
-    "int16_tl_y",
-    "int16_tl_x",
-    "int16_tr_y",
-    "int16_ty_x",
-    "int16_br_y",
-    "int16_br_x",
-    "int16_bl_y",
-    "int16_bl_x",
-    "sensor_id",
-    "meteosat_id",
-    "alphas_available",
+    "threshold_type",
+    "probability_method",
+    "recursive_filter_iterations",
+    "member_count",
+    "probability_period_of_event",
+    "data_header_int16_05",
+    "soil_type",
+    "radiation_code",
+    "data_header_int16_08",
+    "data_header_int16_09",
+    "data_header_int16_10",
+    "data_header_int16_11",
+    "data_header_int16_12",
+    "data_header_int16_13",
+    "data_header_int16_14",
+    "data_header_int16_15",
+    "data_header_int16_16",
+    "data_header_int16_17",
+    "data_header_int16_18",
+    "data_header_int16_19",
+    "data_header_int16_20",
+    "data_header_int16_21",
+    "data_header_int16_22",
+    "data_header_int16_23",
+    "data_header_int16_24",
+    "data_header_int16_25",
+    "data_header_int16_26",
+    "data_header_int16_27",
+    "data_header_int16_28",
+    "data_header_int16_29",
+    "data_header_int16_30",
+    "data_header_int16_31",
+    "data_header_int16_32",
+    "data_header_int16_33",
+    "data_header_int16_34",
+    "data_header_int16_35",
+    "data_header_int16_36",
+    "data_header_int16_37",
+    "data_header_int16_38",
+    "data_header_int16_39",
+    "data_header_int16_40",
+    "data_header_int16_41",
+    "data_header_int16_42",
+    "data_header_int16_43",
+    "data_header_int16_44",
+    "data_header_int16_45",
+    "data_header_int16_46",
+    "data_header_int16_47",
+    "data_header_int16_48",
+    "data_header_int16_49",
+    "period_seconds",
 )
 
 
@@ -143,6 +170,11 @@ class NimrodField:
     A data field from a NIMROD file.
 
     Capable of converting itself into a :class:`~iris.cube.Cube`
+
+    References:
+        Met Office (2003): Met Office Rain Radar Data from the NIMROD System.
+        NCAS British Atmospheric Data Centre, date of citation.
+        http://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499
 
     """
 
@@ -247,9 +279,6 @@ class NimrodField:
                 "Expected data leading_length of %d" % num_data_bytes
             )
 
-        # TODO: Deal appropriately with MDI. Can't just create masked arrays
-        #       as cube merge converts masked arrays with no masks to ndarrays,
-        #       thus mergable cube can split one mergable cube into two.
         self.data = np.fromfile(infile, dtype=numpy_dtype, count=num_data)
 
         if sys.byteorder == "little":
