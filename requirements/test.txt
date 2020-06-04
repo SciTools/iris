@@ -3,7 +3,7 @@
 
 black==19.10b0  #conda: black=19.10b0
 filelock
-imagehash<=4.1
+imagehash<=4.0
 nose
 pre-commit
 requests
