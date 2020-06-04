@@ -31,6 +31,7 @@ class TestGetAttrUnits(tests.IrisTest):
 
         cf_var = mock.MagicMock(
             cf_name='sound_frequency',
+            cf_data=mock.Mock(spec=[]),
             standard_name=None,
             long_name=None,
             units=u'\u266b',

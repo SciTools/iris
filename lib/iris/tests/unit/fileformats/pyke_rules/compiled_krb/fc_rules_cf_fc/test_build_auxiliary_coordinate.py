@@ -92,7 +92,7 @@ class TestBoundsVertexDim(tests.IrisTest):
     def _make_array_and_cf_data(cls, dimension_names):
         shape = tuple(cls.dim_names_lens[name]
                       for name in dimension_names)
-        cf_data = mock.MagicMock(_FillValue=None)
+        cf_data = mock.MagicMock(_FillValue=None, spec=[])
         cf_data.chunking = mock.MagicMock(return_value=shape)
         return np.zeros(shape), cf_data
 
@@ -219,7 +219,7 @@ class TestCoordConstruction(tests.IrisTest):
             scale_factor=1,
             add_offset=0,
             cf_name='wibble',
-            cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None)),
+            cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
             standard_name=None,
             long_name='wibble',
             units='days since 1970-01-01',

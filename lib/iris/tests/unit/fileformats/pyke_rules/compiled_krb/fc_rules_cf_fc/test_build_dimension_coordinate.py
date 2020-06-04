@@ -75,6 +75,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
             cf_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             standard_name=None,
             long_name='wibble',
             units='days since 1970-01-01',
@@ -221,11 +222,12 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
         RulesTestMixin.setUp(self)
         # Create test coordinate cf variable.
         points = np.arange(6)
-        self.cf_coord_var = mock.MagicMock(
+        self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units='m',
             shape=points.shape,
             dtype=points.dtype,
@@ -337,6 +339,7 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units=units,
             shape=points.shape,
             dtype=points.dtype,
@@ -429,12 +432,13 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
         # Note that for a scalar the shape of the array from
         # the cf var is (), rather than (1,).
         points = np.array([0.])
-        self.cf_coord_var = mock.MagicMock(
+        self.cf_coord_var = mock.Mock(
             dimensions=(),
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
             units='degrees',
+            cf_data=mock.Mock(spec=[]),
             shape=(),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])
