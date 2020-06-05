@@ -75,6 +75,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
             cf_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             standard_name=None,
             long_name='wibble',
             units='days since 1970-01-01',
@@ -226,6 +227,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units='m',
             shape=points.shape,
             dtype=points.dtype,
@@ -332,11 +334,12 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
 
     def _make_vars(self, points, bounds=None, units='degrees'):
         points = np.array(points)
-        self.cf_coord_var = mock.Mock(
+        self.cf_coord_var = mock.MagicMock(
             dimensions=('foo',),
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units=units,
             shape=points.shape,
             dtype=points.dtype,
@@ -435,6 +438,7 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
             standard_name=None,
             long_name='wibble',
             units='degrees',
+            cf_data=mock.Mock(spec=[]),
             shape=(),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])

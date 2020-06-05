@@ -1689,6 +1689,9 @@ fc_extras
         if np.issubdtype(cf_var.dtype, np.str_):
             attr_units = cf_units._NO_UNIT_STRING
 
+        if any(hasattr(cf_var.cf_data, name) for name in ("flag_values", "flag_masks", "flag_meanings")):
+            attr_units = cf_units._NO_UNIT_STRING
+
         # Get any assoicated calendar for a time reference coordinate.
         if cf_units.as_unit(attr_units).is_time_reference():
             attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
