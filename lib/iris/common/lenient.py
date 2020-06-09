@@ -11,6 +11,14 @@ from inspect import getmodule
 import threading
 
 
+__all__ = [
+    "lenient_client",
+    "lenient_service",
+    "qualname",
+    "LENIENT",
+]
+
+
 # TODO: allow *args to specify the ephemeral services that the client wishes to
 #       use which are then unpacked in the LENIENT.context
 def lenient_client(func):
@@ -43,6 +51,34 @@ def lenient_client(func):
     return lenient_inner
 
 
+def lenient_service(func):
+    """
+    Decorator that allows a function/method to declare that it supports lenient
+    behaviour.
+
+    Args:
+
+    * func (callable):
+        Callable function/method to be wrapped by the decorator.
+
+    Returns:
+        Closure wrapped function/method.
+
+    """
+    LENIENT.register(func)
+
+    @wraps(func)
+    def register_inner(*args, **kwargs):
+        """
+        Closure wrapper function to execute the lenient service
+        function/method.
+
+        """
+        return func(*args, **kwargs)
+
+    return register_inner
+
+
 def qualname(func):
     """
     Return the fully qualified function/method string name.
@@ -64,34 +100,6 @@ def qualname(func):
         result = f"{module.__name__}.{func.__qualname__}"
 
     return result
-
-
-def lenient_service(func):
-    """
-    Decorator that allows a function/method to declare that it supports lenient
-    behaviour.
-
-    Args:
-
-    * func (callable):
-        Callable function/method to be wrapped by the decorator.
-
-    Returns:
-        Closure wrapped function/method.
-
-    """
-    LENIENT.register(qualname(func))
-
-    @wraps(func)
-    def register_inner(*args, **kwargs):
-        """
-        Closure wrapper function to execute the lenient service
-        function/method.
-
-        """
-        return func(*args, **kwargs)
-
-    return register_inner
 
 
 class Lenient(threading.local):
@@ -239,10 +247,11 @@ class Lenient(threading.local):
 
         Args:
 
-        * name (string):
-            Fully qualified string name of the function/method.
+        * name (callable/string):
+            A function/method or fully qualified string name of the function/method.
 
         """
+        name = qualname(name)
         self.__dict__[name] = True
 
     def unregister(self, name):
@@ -251,10 +260,11 @@ class Lenient(threading.local):
 
         Args:
 
-        * name (string):
-            Fully qualified string name of the function/method.
+        * name (callable/string):
+            A function/method or fully qualified string name of the function/method.
 
         """
+        name = qualname(name)
         if name in self.__dict__:
             self.__dict__[name] = False
         else:

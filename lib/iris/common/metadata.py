@@ -10,10 +10,13 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
-from ._lenient import LENIENT, lenient_service, qualname
+from .lenient import LENIENT, lenient_service, qualname
 
 
 __all__ = [
+    "COMBINE",
+    "DIFFERENCE",
+    "EQUAL",
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
@@ -876,7 +879,7 @@ class CubeMetadata(BaseMetadata):
         if stash_name is not None:
             stash_name = str(stash_name)
 
-        return (standard_name, long_name, var_name, stash_name)
+        return standard_name, long_name, var_name, stash_name
 
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
@@ -923,6 +926,7 @@ class CubeMetadata(BaseMetadata):
         return result
 
 
+# TODO: rename to metadata_manager_factory
 def MetadataManagerFactory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
@@ -991,7 +995,7 @@ def MetadataManagerFactory(cls, **kwargs):
         instance, and dump and load instance state successfully.
 
         """
-        return (MetadataManagerFactory, (self.cls,), self.__getstate__())
+        return MetadataManagerFactory, (self.cls,), self.__getstate__()
 
     def __repr__(self):
         args = ", ".join(
@@ -1060,6 +1064,7 @@ def MetadataManagerFactory(cls, **kwargs):
     return metadata
 
 
+#: Convenience collection of lenient metadata combine services.
 COMBINE = (
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
@@ -1069,6 +1074,7 @@ COMBINE = (
 )
 
 
+#: Convenience collection of lenient metadata difference services.
 DIFFERENCE = (
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
@@ -1078,6 +1084,7 @@ DIFFERENCE = (
 )
 
 
+#: Convenience collection of lenient metadata equality services.
 EQUAL = (
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,

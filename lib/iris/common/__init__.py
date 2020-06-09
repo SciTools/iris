@@ -5,5 +5,6 @@
 # licensing details.
 
 
+from .lenient import *
 from .metadata import *
 from .mixin import *
