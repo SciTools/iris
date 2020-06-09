@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.common.metadata.MetadataManagerFactory`.
+Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`.
 
 """
 
@@ -23,7 +23,7 @@ from iris.common.metadata import (
     CellMeasureMetadata,
     CoordMetadata,
     CubeMetadata,
-    MetadataManagerFactory,
+    metadata_manager_factory,
 )
 
 
@@ -43,12 +43,12 @@ class Test_factory(tests.IrisTest):
 
         emsg = "Require a subclass of 'BaseMetadata'"
         with self.assertRaisesRegex(TypeError, emsg):
-            _ = MetadataManagerFactory(Other)
+            _ = metadata_manager_factory(Other)
 
     def test__kwargs_invalid(self):
         emsg = "Invalid 'BaseMetadata' field parameters, got 'wibble'."
         with self.assertRaisesRegex(ValueError, emsg):
-            MetadataManagerFactory(BaseMetadata, wibble="nope")
+            metadata_manager_factory(BaseMetadata, wibble="nope")
 
 
 class Test_instance(tests.IrisTest):
@@ -71,7 +71,7 @@ class Test_instance(tests.IrisTest):
             "values",
         ]
         for base in self.bases:
-            metadata = MetadataManagerFactory(base)
+            metadata = metadata_manager_factory(base)
             for name in namespace:
                 self.assertTrue(hasattr(metadata, name))
             if base is CubeMetadata:
@@ -81,33 +81,33 @@ class Test_instance(tests.IrisTest):
     def test__kwargs_default(self):
         for base in self.bases:
             kwargs = dict(zip(base._fields, [None] * len(base._fields)))
-            metadata = MetadataManagerFactory(base)
+            metadata = metadata_manager_factory(base)
             self.assertEqual(metadata.values._asdict(), kwargs)
 
     def test__kwargs(self):
         for base in self.bases:
             kwargs = dict(zip(base._fields, range(len(base._fields))))
-            metadata = MetadataManagerFactory(base, **kwargs)
+            metadata = metadata_manager_factory(base, **kwargs)
             self.assertEqual(metadata.values._asdict(), kwargs)
 
 
 class Test_instance___eq__(tests.IrisTest):
     def setUp(self):
-        self.metadata = MetadataManagerFactory(BaseMetadata)
+        self.metadata = metadata_manager_factory(BaseMetadata)
 
     def test__not_implemented(self):
         self.assertNotEqual(self.metadata, 1)
 
     def test__not_is_cls(self):
         base = BaseMetadata
-        other = MetadataManagerFactory(base)
+        other = metadata_manager_factory(base)
         self.assertIs(other.cls, base)
         other.cls = CoordMetadata
         self.assertNotEqual(self.metadata, other)
 
     def test__not_values(self):
         standard_name = mock.sentinel.standard_name
-        other = MetadataManagerFactory(
+        other = metadata_manager_factory(
             BaseMetadata, standard_name=standard_name
         )
         self.assertEqual(other.standard_name, standard_name)
@@ -118,22 +118,22 @@ class Test_instance___eq__(tests.IrisTest):
         self.assertNotEqual(self.metadata, other)
 
     def test__same_default(self):
-        other = MetadataManagerFactory(BaseMetadata)
+        other = metadata_manager_factory(BaseMetadata)
         self.assertEqual(self.metadata, other)
 
     def test__same(self):
         kwargs = dict(
             standard_name=1, long_name=2, var_name=3, units=4, attributes=5
         )
-        metadata = MetadataManagerFactory(BaseMetadata, **kwargs)
-        other = MetadataManagerFactory(BaseMetadata, **kwargs)
+        metadata = metadata_manager_factory(BaseMetadata, **kwargs)
+        other = metadata_manager_factory(BaseMetadata, **kwargs)
         self.assertEqual(metadata.values._asdict(), kwargs)
         self.assertEqual(metadata, other)
 
 
 class Test_instance____repr__(tests.IrisTest):
     def setUp(self):
-        self.metadata = MetadataManagerFactory(BaseMetadata)
+        self.metadata = metadata_manager_factory(BaseMetadata)
 
     def test(self):
         standard_name = mock.sentinel.standard_name
@@ -169,7 +169,7 @@ class Test_instance__pickle(tests.IrisTest):
             self.attributes,
         )
         self.kwargs = dict(zip(BaseMetadata._fields, values))
-        self.metadata = MetadataManagerFactory(BaseMetadata, **self.kwargs)
+        self.metadata = metadata_manager_factory(BaseMetadata, **self.kwargs)
 
     def test_pickle(self):
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
@@ -188,7 +188,7 @@ class Test_instance__fields(tests.IrisTest):
     def test(self):
         for base in self.bases:
             fields = base._fields
-            metadata = MetadataManagerFactory(base)
+            metadata = metadata_manager_factory(base)
             self.assertEqual(metadata.fields, fields)
             for field in fields:
                 hasattr(metadata, field)
@@ -200,7 +200,7 @@ class Test_instance__values(tests.IrisTest):
 
     def test(self):
         for base in self.bases:
-            metadata = MetadataManagerFactory(base)
+            metadata = metadata_manager_factory(base)
             result = metadata.values
             self.assertIsInstance(result, base)
             self.assertEqual(result._fields, base._fields)

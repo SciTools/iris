@@ -22,7 +22,7 @@ __all__ = [
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
-    "MetadataManagerFactory",
+    "metadata_manager_factory",
 ]
 
 
@@ -926,8 +926,7 @@ class CubeMetadata(BaseMetadata):
         return result
 
 
-# TODO: rename to metadata_manager_factory
-def MetadataManagerFactory(cls, **kwargs):
+def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.
@@ -995,7 +994,7 @@ def MetadataManagerFactory(cls, **kwargs):
         instance, and dump and load instance state successfully.
 
         """
-        return MetadataManagerFactory, (self.cls,), self.__getstate__()
+        return metadata_manager_factory, (self.cls,), self.__getstate__()
 
     def __repr__(self):
         args = ", ".join(

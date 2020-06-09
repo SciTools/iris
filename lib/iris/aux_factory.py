@@ -14,7 +14,7 @@ import warnings
 import dask.array as da
 import numpy as np
 
-from iris.common import CFVariableMixin, CoordMetadata, MetadataManagerFactory
+from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 
 
@@ -35,7 +35,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
     def __init__(self):
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+            self._metadata_manager = metadata_manager_factory(CoordMetadata)
 
         #: Descriptive name of the coordinate made by the factory
         self.long_name = None
@@ -385,7 +385,7 @@ class HybridHeightFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         if delta and delta.nbounds not in (0, 2):
@@ -574,7 +574,7 @@ class HybridPressureFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coords meet necessary conditions.
@@ -779,7 +779,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1080,7 +1080,7 @@ class OceanSigmaFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1263,7 +1263,7 @@ class OceanSg1Factory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1486,7 +1486,7 @@ class OceanSFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1704,7 +1704,7 @@ class OceanSg2Factory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
