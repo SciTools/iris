@@ -42,7 +42,7 @@ fc_provides_grid_mapping_rotated_latitude_longitude
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_rotated_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, rotated_latitude_longitude)
         python engine.rule_triggered.add(rule.name)
 
@@ -62,7 +62,7 @@ fc_provides_grid_mapping_latitude_longitude
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_coordinate_system(cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, latitude_longitude)
         python engine.rule_triggered.add(rule.name)
 
@@ -81,7 +81,7 @@ fc_provides_grid_mapping_transverse_mercator
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_transverse_mercator_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, transverse_mercator)
         python engine.rule_triggered.add(rule.name)
 
@@ -102,7 +102,7 @@ fc_provides_grid_mapping_mercator
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_mercator_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, mercator)
         python engine.rule_triggered.add(rule.name)
 
@@ -123,7 +123,7 @@ fc_provides_grid_mapping_stereographic
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_stereographic_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, stereographic)
         python engine.rule_triggered.add(rule.name)
 
@@ -142,7 +142,7 @@ fc_provides_grid_mapping_lambert_conformal
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_lambert_conformal_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, lambert_conformal)
         python engine.rule_triggered.add(rule.name)
 
@@ -161,7 +161,7 @@ fc_provides_grid_mapping_lambert_azimuthal_equal_area
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, lambert_azimuthal_equal_area)
         python engine.rule_triggered.add(rule.name)
 
@@ -180,7 +180,7 @@ fc_provides_grid_mapping_albers_equal_area
     assert
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = build_albers_equal_area_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, albers_equal_area)
         python engine.rule_triggered.add(rule.name)
 
@@ -200,7 +200,7 @@ fc_provides_grid_mapping_vertical_perspective
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = \
             build_vertical_perspective_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, vertical_perspective)
         python engine.rule_triggered.add(rule.name)
 
@@ -221,7 +221,7 @@ fc_provides_grid_mapping_geostationary
         python cf_grid_var = engine.cf_var.cf_group.grid_mappings[$grid_mapping]
         python coordinate_system = \
             build_geostationary_coordinate_system(engine, cf_grid_var)
-        python engine.provides['coordinate_system'] = coordinate_system
+        python engine.cube_parts['coordinate_system'] = coordinate_system
         facts_cf.provides(coordinate_system, geostationary)
         python engine.rule_triggered.add(rule.name)
 
@@ -500,6 +500,22 @@ fc_build_cell_measure
 
 #
 # Context:
+#   This rule will trigger for each ancillary_variable case specific fact.
+#
+# Purpose:
+#   Add the ancillary variable to the cube.
+#
+fc_build_ancil_var
+    foreach
+        facts_cf.ancillary_variable($var)
+    assert
+        python ancil_var = engine.cf_var.cf_group.ancillary_variables[$var]
+        python build_ancil_var(engine, ancil_var)
+        python engine.rule_triggered.add(rule.name)
+
+
+#
+# Context:
 #   This rule will trigger iff a CF latitude coordinate exists and
 #   a lat/lon coordinate system exists.
 #
@@ -515,7 +531,7 @@ fc_build_coordinate_latitude
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_LAT,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -536,7 +552,7 @@ fc_build_coordinate_latitude_rotated
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_GRID_LAT,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -557,7 +573,7 @@ fc_build_coordinate_longitude
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_LON,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -578,7 +594,7 @@ fc_build_coordinate_longitude_rotated
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_GRID_LON,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -644,7 +660,7 @@ fc_build_coordinate_projection_x_transverse_mercator
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -664,7 +680,7 @@ fc_build_coordinate_projection_y_transverse_mercator
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -683,7 +699,7 @@ fc_build_coordinate_projection_x_lambert_conformal
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -703,7 +719,7 @@ fc_build_coordinate_projection_y_lambert_conformal
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -723,7 +739,7 @@ fc_build_coordinate_projection_x_mercator
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -742,7 +758,7 @@ fc_build_coordinate_projection_y_mercator
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -761,7 +777,7 @@ fc_build_coordinate_projection_x_stereographic
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -780,7 +796,7 @@ fc_build_coordinate_projection_y_stereographic
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -800,7 +816,7 @@ fc_build_coordinate_projection_x_lambert_azimuthal_equal_area
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -820,7 +836,7 @@ fc_build_coordinate_projection_y_lambert_azimuthal_equal_area
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -839,7 +855,7 @@ fc_build_coordinate_projection_x_albers_equal_area
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -859,7 +875,7 @@ fc_build_coordinate_projection_y_albers_equal_area
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -878,7 +894,7 @@ fc_build_coordinate_projection_x_vertical_perspective
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -898,7 +914,7 @@ fc_build_coordinate_projection_y_vertical_perspective
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -917,7 +933,7 @@ fc_build_coordinate_projection_x_geostationary
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_X,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -937,7 +953,7 @@ fc_build_coordinate_projection_y_geostationary
         python cf_coord_var = engine.cf_var.cf_group.coordinates[$coordinate]
         python build_dimension_coordinate(engine, cf_coord_var,
                                           coord_name=CF_VALUE_STD_NAME_PROJ_Y,
-                                          coord_system=engine.provides['coordinate_system'])
+                                          coord_system=engine.cube_parts['coordinate_system'])
         python engine.rule_triggered.add(rule.name)
 
 
@@ -1673,6 +1689,9 @@ fc_extras
         if np.issubdtype(cf_var.dtype, np.str_):
             attr_units = cf_units._NO_UNIT_STRING
 
+        if any(hasattr(cf_var.cf_data, name) for name in ("flag_values", "flag_masks", "flag_meanings")):
+            attr_units = cf_units._NO_UNIT_STRING
+
         # Get any assoicated calendar for a time reference coordinate.
         if cf_units.as_unit(attr_units).is_time_reference():
             attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
@@ -1876,7 +1895,7 @@ fc_extras
                 cube.add_aux_coord(coord, data_dims)
 
         # Update the coordinate to CF-netCDF variable mapping.
-        engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+        engine.cube_parts['coordinates'].append((coord, cf_coord_var.cf_name))
 
 
     ################################################################################
@@ -1941,25 +1960,26 @@ fc_extras
         # Add it to the cube
         cube.add_aux_coord(coord, data_dims)
 
-        # Update the coordinate to CF-netCDF variable mapping.
-        engine.provides['coordinates'].append((coord, cf_coord_var.cf_name))
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts['coordinates'].append((coord, cf_coord_var.cf_name))
 
 
     ################################################################################
-    def build_cell_measures(engine, cf_cm_attr, coord_name=None):
+    def build_cell_measures(engine, cf_cm_var):
         """Create a CellMeasure instance and add it to the cube."""
         cf_var = engine.cf_var
         cube = engine.cube
         attributes = {}
 
         # Get units
-        attr_units = get_attr_units(cf_cm_attr, attributes)
+        attr_units = get_attr_units(cf_cm_var, attributes)
 
-        data = _get_cf_var_data(cf_cm_attr, engine.filename)
+        # Get (lazy) content array
+        data = _get_cf_var_data(cf_cm_var, engine.filename)
 
         # Determine the name of the dimension/s shared between the CF-netCDF data variable
         # and the coordinate being built.
-        common_dims = [dim for dim in cf_cm_attr.dimensions
+        common_dims = [dim for dim in cf_cm_var.dimensions
                        if dim in cf_var.dimensions]
         data_dims = None
         if common_dims:
@@ -1967,10 +1987,10 @@ fc_extras
             data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
 
         # Determine the standard_name, long_name and var_name
-        standard_name, long_name, var_name = get_names(cf_cm_attr, coord_name, attributes)
+        standard_name, long_name, var_name = get_names(cf_cm_var, None, attributes)
 
         # Obtain the cf_measure.
-        measure = cf_cm_attr.cf_measure
+        measure = cf_cm_var.cf_measure
 
         # Create the CellMeasure
         cell_measure = iris.coords.CellMeasure(data,
@@ -1983,6 +2003,51 @@ fc_extras
 
         # Add it to the cube
         cube.add_cell_measure(cell_measure, data_dims)
+
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts['cell_measures'].append((cell_measure, cf_cm_var.cf_name))
+
+
+
+    ################################################################################
+    def build_ancil_var(engine, cf_av_var):
+        """Create an AncillaryVariable instance and add it to the cube."""
+        cf_var = engine.cf_var
+        cube = engine.cube
+        attributes = {}
+
+        # Get units
+        attr_units = get_attr_units(cf_av_var, attributes)
+
+        # Get (lazy) content array
+        data = _get_cf_var_data(cf_av_var, engine.filename)
+
+        # Determine the name of the dimension/s shared between the CF-netCDF data variable
+        # and the AV being built.
+        common_dims = [dim for dim in cf_av_var.dimensions
+                       if dim in cf_var.dimensions]
+        data_dims = None
+        if common_dims:
+            # Calculate the offset of each common dimension.
+            data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+        # Determine the standard_name, long_name and var_name
+        standard_name, long_name, var_name = get_names(cf_av_var, None, attributes)
+
+        # Create the AncillaryVariable
+        av = iris.coords.AncillaryVariable(
+            data,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=attr_units,
+            attributes=attributes)
+
+        # Add it to the cube
+        cube.add_ancillary_variable(av, data_dims)
+
+        # Make a list with names, stored on the engine, so we can find them all later.
+        engine.cube_parts['ancillary_variables'].append((av, cf_av_var.cf_name))
 
 
 
