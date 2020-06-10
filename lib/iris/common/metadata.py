@@ -14,9 +14,10 @@ from .lenient import LENIENT, lenient_service, qualname
 
 
 __all__ = [
-    "COMBINE",
-    "DIFFERENCE",
-    "EQUAL",
+    "SERVICES_COMBINE",
+    "SERVICES_DIFFERENCE",
+    "SERVICES_EQUAL",
+    "SERVICES",
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
@@ -1064,7 +1065,7 @@ def metadata_manager_factory(cls, **kwargs):
 
 
 #: Convenience collection of lenient metadata combine services.
-COMBINE = (
+SERVICES_COMBINE = (
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
@@ -1074,7 +1075,7 @@ COMBINE = (
 
 
 #: Convenience collection of lenient metadata difference services.
-DIFFERENCE = (
+SERVICES_DIFFERENCE = (
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
@@ -1084,7 +1085,7 @@ DIFFERENCE = (
 
 
 #: Convenience collection of lenient metadata equality services.
-EQUAL = (
+SERVICES_EQUAL = (
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,
     BaseMetadata.__eq__,
@@ -1096,3 +1097,7 @@ EQUAL = (
     CubeMetadata.__eq__,
     CubeMetadata.equal,
 )
+
+
+#: Convenience collection of lenient metadata services.
+SERVICES = SERVICES_COMBINE + SERVICES_DIFFERENCE + SERVICES_EQUAL

@@ -19,42 +19,107 @@ __all__ = [
 ]
 
 
-# TODO: allow *args to specify the ephemeral services that the client wishes to
-#       use which are then unpacked in the LENIENT.context
-def lenient_client(func):
+def lenient_client(*dargs, services=None):
     """
     Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
     lenient service function/method.
 
+    This decorator supports being called with no arguments e.g.,
+
+        @lenient_client()
+        def func():
+            pass
+
+    This is equivalent to using it as a simple naked decorator e.g.,
+
+        @lenient_client
+        def func()
+            pass
+
+    Alternatively, this decorator supports the lenient client explicitly
+    declaring the lenient services that it wishes to use e.g.,
+
+        @lenient_client(services=(service1, service2, ...)
+        def func():
+            pass
+
     Args:
 
-    * func (callable):
-        Callable function/method to be wrapped by the decorator.
+    * dargs (tuple of callable):
+        A tuple containing the callable lenient client function/method to be
+        wrapped by the decorator. This is automatically populated by Python
+        through the decorator interface. No argument requires to be manually
+        provided.
+
+    Kwargs:
+
+    * services (callable or str or iterable of callable/str)
+        Zero or more function/methods, or equivalent fully qualified string names, of
+        lenient service function/methods.
 
     Returns:
         Closure wrapped function/method.
 
     """
+    ndargs = len(dargs)
 
-    @wraps(func)
-    def lenient_inner(*args, **kwargs):
-        """
-        Closure wrapper function to register the wrapped function/method as
-        active at runtime before executing it.
+    if ndargs:
+        assert ndargs == 1, f"Invalid lenient client arguments, expecting 1 got {ndargs}."
+        assert callable(dargs[0]), f"Invalid lenient client argument, expecting callable."
 
-        """
-        with LENIENT.context(active=qualname(func)):
-            result = func(*args, **kwargs)
-        return result
+    assert not(ndargs and services), f"Invalid lenient client arguments."
 
-    return lenient_inner
+    if ndargs:
+        # The decorator has been used as a simple naked decorator.
+        func = dargs[0]
+
+        @wraps(func)
+        def lenient_inner(*args, **kwargs):
+            """
+            Closure wrapper function to register the wrapped function/method
+            as active at runtime before executing it.
+
+            """
+            with LENIENT.context(active=qualname(func)):
+                result = func(*args, **kwargs)
+            return result
+
+        result = lenient_inner
+    else:
+        # The decorator has been called with None, zero or more explicit lenient services.
+        if services is None:
+            services = ()
+
+        if isinstance(services, str) or not isinstance(services, Iterable):
+            services = (services,)
+
+        def lenient_outer(func):
+
+            @wraps(func)
+            def lenient_inner(*args, **kwargs):
+                """
+                Closure wrapper function to register the wrapped function/method
+                as active at runtime before executing it.
+
+                """
+                with LENIENT.context(*services, active=qualname(func)):
+                    result = func(*args, **kwargs)
+                return result
+
+            return lenient_inner
+
+        result = lenient_outer
+
+    return result
 
 
 def lenient_service(func):
     """
     Decorator that allows a function/method to declare that it supports lenient
     behaviour.
+
+    Registration is at Python interpreter parse time.
 
     Args:
 
@@ -123,16 +188,6 @@ class Lenient(threading.local):
         # Currently executing lenient client at runtime.
         self.__dict__["active"] = None
 
-        # Define lenient client/service relationships.
-        # client = "iris.analysis.maths.add"
-        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
-        # self.__dict__[client] = services
-
-        # XXX: testing...
-        # client = "__main__.myfunc"
-        # services = ("iris.common.metadata.CoordMetadata.__eq__",)
-        # self.__dict__[client] = services
-
     def __call__(self, func):
         """
         Determine whether it is valid for the function/method to provide a
@@ -140,8 +195,8 @@ class Lenient(threading.local):
 
         Args:
 
-        * func (callable):
-            Callable function/method providing the lenient service.
+        * func (callable or str):
+            A function/method or fully qualified string name of the function/method.
 
         Returns:
             Boolean.
@@ -241,35 +296,35 @@ class Lenient(threading.local):
             self.__dict__.clear()
             self.__dict__.update(current_state)
 
-    def register(self, name):
+    def register(self, func):
         """
         Register the provided function/method as providing a lenient service.
 
         Args:
 
-        * name (callable/string):
+        * func (callable or str):
             A function/method or fully qualified string name of the function/method.
 
         """
-        name = qualname(name)
-        self.__dict__[name] = True
+        func = qualname(func)
+        self.__dict__[func] = True
 
-    def unregister(self, name):
+    def unregister(self, func):
         """
         Unregister the provided function/method as providing a lenient service.
 
         Args:
 
-        * name (callable/string):
+        * func (callable or str):
             A function/method or fully qualified string name of the function/method.
 
         """
-        name = qualname(name)
-        if name in self.__dict__:
-            self.__dict__[name] = False
+        func = qualname(func)
+        if func in self.__dict__:
+            self.__dict__[func] = False
         else:
             cls = self.__class__.__name__
-            emsg = f"Cannot unregister invalid {cls!r} service, got {name!r}."
+            emsg = f"Cannot unregister invalid {cls!r} service, got {func!r}."
             raise ValueError(emsg)
 
 
