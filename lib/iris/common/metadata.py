@@ -75,6 +75,20 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     """
     Container for common metadata.
 
+    * This and the derived types are NamedTuples.
+      They are immutable, and have "_fields" = list of tuple names.
+      The names are signature properties of Iris data elements,
+      e.g. 'long_name', 'units' etc.
+
+    * each _DimensionalMetadata subclass defines a specific subclass of
+      BaseMetadata for its signature type.
+      It also defines public getters + setters for its extra signature fields.
+      The universal ones are inherited from `~iris.common.mixin.CFVariableMixin`.
+
+    * each _DimensionalMetadata instance has a "self._metadata_manager",
+      creating by calling MetadataManagerFactory, passing its own specific
+      signature subclass of BaseMetadata.
+
     """
 
     DEFAULT_NAME = "unknown"  # the fall-back name for metadata identity
@@ -396,8 +410,8 @@ def MetadataManagerFactory(cls, **kwargs):
         namespace["_names"] = cls._names
 
     # Dynamically create the class.
-    Metadata = type(name, bases, namespace)
+    MetadataManagerClass = type(name, bases, namespace)
     # Now manufacture an instance of that class.
-    metadata = Metadata(cls, **kwargs)
+    manager = MetadataManagerClass(cls, **kwargs)
 
-    return metadata
+    return manager
