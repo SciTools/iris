@@ -31,7 +31,7 @@ from iris.common import (
     CFVariableMixin,
     CellMeasureMetadata,
     CoordMetadata,
-    MetadataManagerFactory,
+    create_metadata_manager,
 )
 import iris.exceptions
 import iris.time
@@ -40,7 +40,28 @@ import iris.util
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     """
-    Superclass for dimensional metadata.
+    Abstract superclass for dimensional metadata.
+
+    Various subclasses of this represent the different types of 'cube component'
+    which contain array data.  For example : cubes, coords, cell-measures.
+
+    Each instance contains a `self._metadata_manager`, created by calling
+    :func:`iris.common.metadata.create_metadata_manager` passing the appropriate
+    subclass of iris.common.metdata.BaseMetadata to define the signature
+    properties it uses.
+
+    Each subclass must *also* define all the appropriate (public) getter and
+    setter methods for the signature properties.
+    At this top level, those are just the ones inherited from
+    :class:`iris.common.mixin.CFVariableMixin`.
+
+    ..note::
+
+        An :class:`~iris.aux_factory.AuxCoordFactory` is also a type of "cube
+        component".  It uses the same "self._metadata_manager" mechanism to
+        provide a CoordMetadata signature, and the relevant accessor properties.
+        But it does not inherit from this, and does not provide most of the
+        other behaviours of a Coord.
 
     """
 
@@ -97,9 +118,13 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # its __init__ or __copy__ methods.  The only bounds-related behaviour
         # it provides is a 'has_bounds()' method, which always returns False.
 
-        # Configure the metadata manager.
+        # Configure the metadata manager, unless already provided by a
+        # subclass init (to handle a different signature).
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(BaseMetadata)
+            # Note: manager is configured by specifying a Metadata type
+            # (subclass of BaseMetadata).
+            # The type of the manager itself will vary, depending on that.
+            self._metadata_manager = create_metadata_manager(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -710,7 +735,7 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(
+            self._metadata_manager = create_metadata_manager(
                 AncillaryVariableMetadata
             )
 
@@ -822,7 +847,7 @@ class CellMeasure(AncillaryVariable):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CellMeasureMetadata)
+        self._metadata_manager = create_metadata_manager(CellMeasureMetadata)
 
         super().__init__(
             data=data,
@@ -1321,7 +1346,7 @@ class Coord(_DimensionalMetadata):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
 
         super().__init__(
             values=points,

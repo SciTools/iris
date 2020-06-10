@@ -119,6 +119,16 @@ class LimitedAttributeDict(dict):
 
 
 class CFVariableMixin:
+    """
+    Provides properties and methods common to all types of Iris
+    "cube components".
+
+    Such "cube components" include all the subtypes of
+    :class:`~iris.coords._DimensionalMetadata`,
+    and also :class:`~iris.aux_factory.AuxCoordFactory`.
+
+    """
+
     @wraps(BaseMetadata.name)
     def name(self, default=None, token=None):
         return self._metadata_manager.name(default=default, token=token)

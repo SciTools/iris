@@ -42,7 +42,7 @@ from iris.common import (
     CFVariableMixin,
     CoordMetadata,
     CubeMetadata,
-    MetadataManagerFactory,
+    create_metadata_manager,
 )
 import iris.coord_systems
 import iris.coords
@@ -748,7 +748,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("Invalid data type: {!r}.".format(data))
 
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CubeMetadata)
+        self._metadata_manager = create_metadata_manager(CubeMetadata)
 
         # Initialise the cube data manager.
         self._data_manager = DataManager(data)

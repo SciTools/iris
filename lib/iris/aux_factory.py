@@ -14,7 +14,7 @@ import warnings
 import dask.array as da
 import numpy as np
 
-from iris.common import CFVariableMixin, CoordMetadata, MetadataManagerFactory
+from iris.common import CFVariableMixin, CoordMetadata, create_metadata_manager
 import iris.coords
 
 
@@ -30,12 +30,23 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
     `coord_system` of the factory are used to set the corresponding
     properties of the resulting auxiliary coordinates.
 
+    ..note::
+
+        This is a type of "cube component", somewhat like a cube or coord.
+        It uses the same "self._metadata_manager" mechanism as
+        :class:`iris.coords.Coord` to provide a "signature", and the relevant
+        property getter/setters, mostly inherited from
+        :class:`iris.common.mixin.CFVariableMixin`.
+        However, it does not provide most of the other behaviours of a Coord,
+        and it defines the 'coord_system' and 'climatological' properties
+        independently.
+
     """
 
     def __init__(self):
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+            self._metadata_manager = create_metadata_manager(CoordMetadata)
 
         #: Descriptive name of the coordinate made by the factory
         self.long_name = None
@@ -47,6 +58,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         # See the climatological property getter.
         self._metadata_manager.climatological = False
 
+    # Note: "coord_system" implementation, identical to Coord.coord_system.
     @property
     def coord_system(self):
         """
@@ -55,10 +67,16 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._metadata_manager.coord_system
 
+    # TODO: should this really be read-only, like 'climatological' ??
+    # We suspect that changing the coord-system of an aux factory is a no-no.
+    # We also suspect that they all load without one, but the coord_system
+    # of the result is derived from the depdendencies ??
     @coord_system.setter
     def coord_system(self, value):
         self._metadata_manager.coord_system = value
 
+    # Note: "climatalogical" implementation, to mimic Coord.climatalogical.
+    # But in this case provide no setter, so it is *read-only*.
     @property
     def climatological(self):
         """
@@ -385,7 +403,7 @@ class HybridHeightFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         if delta and delta.nbounds not in (0, 2):
@@ -574,7 +592,7 @@ class HybridPressureFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coords meet necessary conditions.
@@ -779,7 +797,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1080,7 +1098,7 @@ class OceanSigmaFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1263,7 +1281,7 @@ class OceanSg1Factory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1486,7 +1504,7 @@ class OceanSFactory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.
@@ -1704,7 +1722,7 @@ class OceanSg2Factory(AuxCoordFactory):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = create_metadata_manager(CoordMetadata)
         super().__init__()
 
         # Check that provided coordinates meet necessary conditions.

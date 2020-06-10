@@ -17,7 +17,7 @@ __all__ = [
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
-    "MetadataManagerFactory",
+    "create_metadata_manager",
 ]
 
 
@@ -27,8 +27,15 @@ _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 class _NamedTupleMeta(ABCMeta):
     """
-    Meta-class to support the convenience of creating a namedtuple from
-    names/members of the metadata class hierarchy.
+    Meta-class to support the convenience of creating a namedtuple-derived
+    class whose tuple elements are controlled by '_members' properties in the
+    class hierarchy.
+
+    It makes a class whose "_fields" are those of its parent class(es), *plus*
+    any listed in its own "_members" property (if any).
+
+    ( "_fields" is the list of the tuple element names, as provided by
+    :class:`collections.namedtuple`. )
 
     """
 
@@ -75,24 +82,33 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     """
     Container for common metadata.
 
-    * This and the derived types are NamedTuples.
-      They are immutable, and have "_fields" = list of tuple names.
-      The names are signature properties of Iris data elements,
-      e.g. 'long_name', 'units' etc.
+    Represents a 'signature' of a cube component type (e.g. a cube or coord).
+    Being a 'namedtuple', this is an immutable, hashable value.
 
-    * each _DimensionalMetadata subclass defines a specific subclass of
-      BaseMetadata for its signature type.
-      It also defines public getters + setters for its extra signature fields.
-      The universal ones are inherited from `~iris.common.mixin.CFVariableMixin`.
+    It's `_fields` property is a list of the 'signature' properties used by an
+    Iris cube component.  I.E. property names such as 'long_name', 'units' etc.
 
-    * each _DimensionalMetadata instance has a "self._metadata_manager",
-      creating by calling MetadataManagerFactory, passing its own specific
-      signature subclass of BaseMetadata.
+    * this 'top-level' class defines a minimal set of signature properties,
+      common to all component signatures (see below).
+
+    * each subclass of BaseMetadata can define a "_members" property to add
+      additional signature properties.
+      This is the :class:`iris.common.metadata._NamedTupleMeta` behaviour.
+
+    * these subclasses represent the signature types of various components.
+
+    * The various Metadata ("signature") types are used by the classes
+      implementing different types of cube components.
+      That is, in the various subclasses of
+      :class:`iris.coords._DimensionalMetadata`, and also in
+      :class:`iris.aux_factory.AuxCoordFactory`.
 
     """
 
     DEFAULT_NAME = "unknown"  # the fall-back name for metadata identity
 
+    # Define the minimal, common set of signature fields used by *all* types of
+    # cube "component" (cubes, coords, cell-measures, aux-factories etc..)
     _members = (
         "standard_name",
         "long_name",
@@ -282,13 +298,18 @@ class CubeMetadata(BaseMetadata):
         return (standard_name, long_name, var_name, stash_name)
 
 
-def MetadataManagerFactory(cls, **kwargs):
+def create_metadata_manager(cls, **kwargs):
     """
-    A class instance factory function responsible for manufacturing
-    metadata instances dynamically at runtime.
+    A factory function returning a "metadata manager" for a specific subclass
+    of BaseMetadata.
 
-    The factory instances returned by the factory are capable of managing
-    their metadata state, which can be proxied by the owning container.
+    The manager object returned by the factory is capable of managing
+    a metadata state of the appropriate type, so that operations on it can be
+    easily proxied by the owning container.
+
+    The manager is an instance of a dynamically-created manager class, the
+    properties of which are based on the contents (property name list) of the
+    provided Metadata subclass, 'cls'.
 
     Args:
 
@@ -303,7 +324,16 @@ def MetadataManagerFactory(cls, **kwargs):
         fields will default to a value of 'None'.
 
     """
+    # Restrict factory to appropriate metadata classes only.
+    if not issubclass(cls, BaseMetadata):
+        emsg = "Require a subclass of {!r}, got {!r}."
+        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
+    # First, define all the functions which will be instance functions of
+    # out dynamically-created MetadataManager class.
+    # NOTE: we are not defining class functions here!  So we can reference
+    # variables from the call if wanted, and the "self" args are just
+    # conventional placeholders.
     def __init__(self, cls, **kwargs):
         # Restrict to only dealing with appropriate metadata classes.
         if not issubclass(cls, BaseMetadata):
@@ -348,7 +378,7 @@ def MetadataManagerFactory(cls, **kwargs):
         instance, and dump and load instance state successfully.
 
         """
-        return (MetadataManagerFactory, (self.cls,), self.__getstate__())
+        return (create_metadata_manager, (self.cls,), self.__getstate__())
 
     def __repr__(self):
         args = ", ".join(
@@ -374,11 +404,6 @@ def MetadataManagerFactory(cls, **kwargs):
         fields = {field: getattr(self, field) for field in self.fields}
         return self.cls(**fields)
 
-    # Restrict factory to appropriate metadata classes only.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
     # Check whether kwargs have valid fields for the specified metadata.
     if kwargs:
         extra = [field for field in kwargs.keys() if field not in cls._fields]
@@ -400,8 +425,8 @@ def MetadataManagerFactory(cls, **kwargs):
         "__repr__": __repr__,
         "__setstate__": __setstate__,
         "fields": fields,
-        "name": cls.name,
-        "token": cls.token,
+        "name": cls.name,  # generally == BaseMetadata.name
+        "token": cls.token,  # generally == BaseMetadata.token
         "values": values,
     }
 
