@@ -301,7 +301,9 @@ def experiment(cube, field):
     """Add an 'experiment number' to the cube, if present in the field."""
     if not is_missing(field, field.experiment_num):
         cube.add_aux_coord(
-            DimCoord(field.experiment_num, long_name="experiment_number")
+            DimCoord(
+                field.experiment_num, long_name="experiment_number", units="1"
+            )
         )
 
 
@@ -592,7 +594,9 @@ def ensemble_member(cube, field):
     if not is_missing(field, ensemble_member_value):
         cube.add_aux_coord(
             DimCoord(
-                np.array(ensemble_member_value, dtype=np.int32), "realization"
+                np.array(ensemble_member_value, dtype=np.int32),
+                "realization",
+                units="1",
             )
         )
 
