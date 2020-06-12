@@ -85,7 +85,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     This is the 'signature' of some cube component type (e.g. a cube or coord).
     Being a 'namedtuple', it is an immutable, hashable value.
 
-    It's `_fields` property is a list of the 'signature' properties used by an
+    Its `_fields` property is a list of the 'signature' properties used by an
     Iris cube component.  I.E. property names such as 'long_name', 'units' etc.
 
     * this 'top-level' class defines a minimal set of signature properties,
