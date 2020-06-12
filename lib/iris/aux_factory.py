@@ -32,13 +32,14 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     ..note::
 
-        This is a type of "cube component", somewhat like a cube or coord.
-        It uses the same "self._metadata_manager" mechanism as
-        :class:`iris.coords.Coord` to provide a "signature", and the relevant
-        property getter/setters, mostly inherited from
-        :class:`iris.common.mixin.CFVariableMixin`.
-        However, it does not provide most of the other behaviours of a Coord,
-        and it defines the 'coord_system' and 'climatological' properties
+        This is a type of "cube component", very much like a
+        :class:`iris.coords.Coord`.
+        Like a :class:`iris.coords._DimensionalMetadata`, it creates a
+        "self._metadata_manager", and inherits
+        :class:`iris.common.mixin.CFVariableMixin`, thus providing a signature
+        and signature properties.
+        However, it does not provide any of the other behaviours of a Coord,
+        and it defines its 'coord_system' and 'climatological' properties
         independently.
 
     """
@@ -58,7 +59,9 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         # See the climatological property getter.
         self._metadata_manager.climatological = False
 
-    # Note: "coord_system" implementation, identical to Coord.coord_system.
+    # Define "coord_system" getter+setter, identical to Coord.coord_system.
+    # TODO: this is probably unused + could be dropped.
+    # See https://github.com/SciTools/iris/issues/3738
     @property
     def coord_system(self):
         """
@@ -67,16 +70,12 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._metadata_manager.coord_system
 
-    # TODO: should this really be read-only, like 'climatological' ??
-    # We suspect that changing the coord-system of an aux factory is a no-no.
-    # We also suspect that they all load without one, but the coord_system
-    # of the result is derived from the depdendencies ??
     @coord_system.setter
     def coord_system(self, value):
         self._metadata_manager.coord_system = value
 
-    # Note: "climatalogical" implementation, to mimic Coord.climatalogical.
-    # But in this case provide no setter, so it is *read-only*.
+    # Define "climatological" getter, to mimic Coord.climatological.
+    # In this case we provide no setter, so it is *read-only*.
     @property
     def climatological(self):
         """

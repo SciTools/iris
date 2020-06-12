@@ -46,22 +46,24 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     which contain array data.  For example : cubes, coords, cell-measures.
 
     Each instance contains a `self._metadata_manager`, created by calling
-    :func:`iris.common.metadata.create_metadata_manager` passing the appropriate
-    subclass of iris.common.metdata.BaseMetadata to define the signature
-    properties it uses.
+    :func:`iris.common.metadata.create_metadata_manager`, and passing it the
+    appropriate subclass of :class:`iris.common.metdata.BaseMetadata`, to
+    define the signature properties it uses.
 
     Each subclass must *also* define all the appropriate (public) getter and
     setter methods for the signature properties.
-    At this top level, those are just the ones inherited from
+    At the top level (here), those are just the ones inherited from
     :class:`iris.common.mixin.CFVariableMixin`.
 
     ..note::
 
         An :class:`~iris.aux_factory.AuxCoordFactory` is also a type of "cube
         component".  It uses the same "self._metadata_manager" mechanism to
-        provide a CoordMetadata signature, and the relevant accessor properties.
-        But it does not inherit from this, and does not provide most of the
-        other behaviours of a Coord.
+        provide a CoordMetadata signature, and also inherits
+        :class:`iris.common.mixin.CFVariableMixin` to provide the common
+        properties and methods.
+        But it does *not* inherit from here, and so does not provide most of
+        the other behaviours of a Coord.
 
     """
 
@@ -118,12 +120,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # its __init__ or __copy__ methods.  The only bounds-related behaviour
         # it provides is a 'has_bounds()' method, which always returns False.
 
-        # Configure the metadata manager, unless already provided by a
-        # subclass init (to handle a different signature).
+        # Configure the metadata manager, *unless* already setup in a subclass
+        # init (to give a different signature type).
         if not hasattr(self, "_metadata_manager"):
-            # Note: manager is configured by specifying a Metadata type
-            # (subclass of BaseMetadata).
-            # The type of the manager itself will vary, depending on that.
             self._metadata_manager = create_metadata_manager(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.

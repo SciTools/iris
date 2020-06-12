@@ -82,8 +82,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     """
     Container for common metadata.
 
-    Represents a 'signature' of a cube component type (e.g. a cube or coord).
-    Being a 'namedtuple', this is an immutable, hashable value.
+    This is the 'signature' of some cube component type (e.g. a cube or coord).
+    Being a 'namedtuple', it is an immutable, hashable value.
 
     It's `_fields` property is a list of the 'signature' properties used by an
     Iris cube component.  I.E. property names such as 'long_name', 'units' etc.
@@ -95,7 +95,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
       additional signature properties.
       This is the :class:`iris.common.metadata._NamedTupleMeta` behaviour.
 
-    * these subclasses represent the signature types of various components.
+    * the subclasses represent signature types of various components.
 
     * The various Metadata ("signature") types are used by the classes
       implementing different types of cube components.
@@ -304,12 +304,11 @@ def create_metadata_manager(cls, **kwargs):
     of BaseMetadata.
 
     The manager object returned by the factory is capable of managing
-    a metadata state of the appropriate type, so that operations on it can be
-    easily proxied by the owning container.
+    a metadata state of the appropriate type, so that operations on it can
+    easily be proxied by the owning container.
 
-    The manager is an instance of a dynamically-created manager class, the
-    properties of which are based on the contents (property name list) of the
-    provided Metadata subclass, 'cls'.
+    The manager is an instance of a dynamically-created manager class, whose
+    properties match the element names of 'cls', i.e. its namedtuple '_fields'.
 
     Args:
 
@@ -330,8 +329,8 @@ def create_metadata_manager(cls, **kwargs):
         raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
     # First, define all the functions which will be instance functions of
-    # out dynamically-created MetadataManager class.
-    # NOTE: we are not defining class functions here!  So we can reference
+    # our dynamically-created MetadataManager class.
+    # NOTE: we are not defining functions in a class here!  So we can reference
     # variables from the call if wanted, and the "self" args are just
     # conventional placeholders.
     def __init__(self, cls, **kwargs):
