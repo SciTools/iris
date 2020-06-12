@@ -14,26 +14,33 @@ import iris.tests as tests
 
 from collections import Iterable
 
-from iris.common.lenient import LENIENT_PROTECTED, Lenient, qualname
+from iris.common.lenient import (
+    LENIENT_ENABLE,
+    LENIENT_PROTECTED,
+    Lenient,
+    qualname,
+)
 
 
 class Test___init__(tests.IrisTest):
+    def setUp(self):
+        self.expected = dict(active=None, enable=LENIENT_ENABLE)
+
     def test_default(self):
         lenient = Lenient()
-        expected = dict(active=None)
-        self.assertEqual(expected, lenient.__dict__)
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_args_service_str(self):
         service = "service1"
         lenient = Lenient(service)
-        expected = dict(active=None, service1=True)
-        self.assertEqual(expected, lenient.__dict__)
+        self.expected.update(dict(service1=True))
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_args_services_str(self):
         services = ("service1", "service2")
         lenient = Lenient(*services)
-        expected = dict(active=None, service1=True, service2=True)
-        self.assertEqual(expected, lenient.__dict__)
+        self.expected.update(dict(service1=True, service2=True))
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_args_services_callable(self):
         def service1():
@@ -44,26 +51,24 @@ class Test___init__(tests.IrisTest):
 
         services = (service1, service2)
         lenient = Lenient(*services)
-        expected = {
-            "active": None,
-            qualname(service1): True,
-            qualname(service2): True,
-        }
-        self.assertEqual(expected, lenient.__dict__)
+        self.expected.update(
+            {qualname(service1): True, qualname(service2): True,}
+        )
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_kwargs_client_str(self):
         client = dict(client1="service1")
         lenient = Lenient(**client)
-        expected = dict(active=None, client1=("service1",))
-        self.assertEqual(expected, lenient.__dict__)
+        self.expected.update(dict(client1=("service1",)))
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_kwargs_clients_str(self):
         clients = dict(client1="service1", client2="service2")
         lenient = Lenient(**clients)
-        expected = dict(
-            active=None, client1=("service1",), client2=("service2",)
+        self.expected.update(
+            dict(client1=("service1",), client2=("service2",))
         )
-        self.assertEqual(expected, lenient.__dict__)
+        self.assertEqual(self.expected, lenient.__dict__)
 
     def test_kwargs_clients_callable(self):
         def client1():
@@ -85,12 +90,13 @@ class Test___init__(tests.IrisTest):
             qualname_client2: (service1, service2),
         }
         lenient = Lenient(**clients)
-        expected = {
-            "active": None,
-            qualname(client1): (qualname(service1),),
-            qualname(client2): (qualname(service1), qualname(service2)),
-        }
-        self.assertEqual(expected, lenient.__dict__)
+        self.expected.update(
+            {
+                qualname(client1): (qualname(service1),),
+                qualname(client2): (qualname(service1), qualname(service2)),
+            }
+        )
+        self.assertEqual(self.expected, lenient.__dict__)
 
 
 class Test___call__(tests.IrisTest):
@@ -253,6 +259,15 @@ class Test___call__(tests.IrisTest):
         self.lenient.__dict__[qualname_client] = qualname_service
         self.assertTrue(self.lenient(myservice))
 
+    def test_enable(self):
+        service = "myservice"
+        self.lenient.__dict__[service] = True
+        self.lenient.__dict__["active"] = self.client
+        self.lenient.__dict__[self.client] = service
+        self.assertTrue(self.lenient(service))
+        self.lenient.__dict__["enable"] = False
+        self.assertFalse(self.lenient(service))
+
 
 class Test___contains__(tests.IrisTest):
     def setUp(self):
@@ -383,6 +398,19 @@ class Test___setattr__(tests.IrisTest):
         self.assertIsNone(self.lenient.__dict__[active])
         self.lenient.active = client
         self.assertEqual(self.lenient.__dict__[active], qualname_client)
+
+    def test_enable(self):
+        enable = "enable"
+        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE)
+        self.lenient.enable = True
+        self.assertTrue(self.lenient.__dict__[enable])
+        self.lenient.enable = False
+        self.assertFalse(self.lenient.__dict__[enable])
+
+    def test_enable_invalid(self):
+        emsg = "Invalid .* option 'enable'"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.lenient.enable = None
 
 
 class Test___setitem__(tests.IrisTest):
@@ -527,11 +555,24 @@ class Test___setitem__(tests.IrisTest):
         self.lenient[active] = client
         self.assertEqual(self.lenient.__dict__[active], qualname_client)
 
+    def test_enable(self):
+        enable = "enable"
+        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE)
+        self.lenient[enable] = True
+        self.assertTrue(self.lenient.__dict__[enable])
+        self.lenient[enable] = False
+        self.assertFalse(self.lenient.__dict__[enable])
+
+    def test_enable_invalid(self):
+        emsg = "Invalid .* option 'enable'"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.lenient["enable"] = None
+
 
 class Test_context(tests.IrisTest):
     def setUp(self):
         self.lenient = Lenient()
-        self.default = dict(active=None)
+        self.default = dict(active=None, enable=LENIENT_ENABLE)
 
     def copy(self):
         return self.lenient.__dict__.copy()
@@ -552,7 +593,9 @@ class Test_context(tests.IrisTest):
             context = self.copy()
         post = self.copy()
         self.assertEqual(pre, self.default)
-        self.assertEqual(context, dict(active=client))
+        expected = self.default.copy()
+        expected.update(dict(active=client))
+        self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 
     def test_active_callable(self):
@@ -565,7 +608,9 @@ class Test_context(tests.IrisTest):
         post = self.copy()
         qualname_client = qualname(client)
         self.assertEqual(pre, self.default)
-        self.assertEqual(context, dict(active=qualname_client))
+        expected = self.default.copy()
+        expected.update(dict(active=qualname_client))
+        self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 
     def test_kwargs(self):
@@ -576,11 +621,12 @@ class Test_context(tests.IrisTest):
         with self.lenient.context(active=client, service1=True, service2=True):
             context = self.copy()
         post = self.copy()
-        default = dict(active=None, service1=False, service2=False)
-        self.assertEqual(pre, default)
-        expected = dict(active=client, service1=True, service2=True)
+        self.default.update(dict(service1=False, service2=False))
+        self.assertEqual(pre, self.default)
+        expected = self.default.copy()
+        expected.update(dict(active=client, service1=True, service2=True))
         self.assertEqual(context, expected)
-        self.assertEqual(post, default)
+        self.assertEqual(post, self.default)
 
     def test_args_str(self):
         client = "client"
@@ -590,7 +636,8 @@ class Test_context(tests.IrisTest):
             context = self.copy()
         post = self.copy()
         self.assertEqual(pre, self.default)
-        expected = dict(active=client, client=services)
+        expected = self.default.copy()
+        expected.update(dict(active=client, client=services))
         self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 
@@ -609,7 +656,8 @@ class Test_context(tests.IrisTest):
         post = self.copy()
         qualname_services = tuple([qualname(service) for service in services])
         self.assertEqual(pre, self.default)
-        expected = dict(active=client, client=qualname_services)
+        expected = self.default.copy()
+        expected.update(dict(active=client, client=qualname_services))
         self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 
@@ -620,7 +668,8 @@ class Test_context(tests.IrisTest):
             context = self.copy()
         post = self.copy()
         self.assertEqual(pre, self.default)
-        expected = dict(active="context", context=services)
+        expected = self.default.copy()
+        expected.update(dict(active="context", context=services))
         self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 

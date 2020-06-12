@@ -13,6 +13,7 @@ import threading
 
 __all__ = [
     "LENIENT",
+    "LENIENT_ENABLE",
     "LENIENT_PROTECTED",
     "Lenient",
     "lenient_client",
@@ -20,6 +21,9 @@ __all__ = [
     "qualname",
 ]
 
+
+#: Default Lenient services global activation state.
+LENIENT_ENABLE = True
 
 #: Protected Lenient internal non-client, non-service controlled keys.
 LENIENT_PROTECTED = ("active", "enable")
@@ -254,6 +258,8 @@ class Lenient(threading.local):
         """
         # The executing lenient client at runtime.
         self.__dict__["active"] = None
+        # The global lenient services state activation switch.
+        self.__dict__["enable"] = LENIENT_ENABLE
 
         for service in args:
             self.register_service(service)
@@ -276,16 +282,17 @@ class Lenient(threading.local):
 
         """
         result = False
-        service = qualname(func)
-        if service in self and self.__dict__[service]:
-            active = self.__dict__["active"]
-            if active is not None and active in self:
-                services = self.__dict__[active]
-                if isinstance(services, str) or not isinstance(
-                    services, Iterable
-                ):
-                    services = (services,)
-                result = service in services
+        if self.__dict__["enable"]:
+            service = qualname(func)
+            if service in self and self.__dict__[service]:
+                active = self.__dict__["active"]
+                if active is not None and active in self:
+                    services = self.__dict__[active]
+                    if isinstance(services, str) or not isinstance(
+                        services, Iterable
+                    ):
+                        services = (services,)
+                    result = service in services
         return result
 
     def __contains__(self, name):
@@ -333,6 +340,10 @@ class Lenient(threading.local):
         if name == "active":
             value = qualname(value)
             if not isinstance(value, str) and value is not None:
+                emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
+                raise ValueError(emsg)
+        elif name == "enable":
+            if not isinstance(value, bool):
                 emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
                 raise ValueError(emsg)
         else:
