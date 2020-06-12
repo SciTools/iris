@@ -11,12 +11,19 @@ from inspect import getmodule
 import threading
 
 
+# TODO: make qualname private
 __all__ = [
+    "LENIENT",
+    "LENIENT_PROTECTED",
+    "Lenient",
     "lenient_client",
     "lenient_service",
     "qualname",
-    "LENIENT",
 ]
+
+
+#: Protected Lenient internal non-client, non-service controlled keys.
+LENIENT_PROTECTED = ("active", "enable")
 
 
 def lenient_client(*dargs, services=None):
@@ -65,14 +72,20 @@ def lenient_client(*dargs, services=None):
     ndargs = len(dargs)
 
     if ndargs:
-        assert ndargs == 1, f"Invalid lenient client arguments, expecting 1 got {ndargs}."
-        assert callable(dargs[0]), f"Invalid lenient client argument, expecting callable."
+        assert (
+            ndargs == 1
+        ), f"Invalid lenient client arguments, expecting 1 got {ndargs}."
+        assert callable(
+            dargs[0]
+        ), "Invalid lenient client argument, expecting a callable."
 
-    assert not(ndargs and services), f"Invalid lenient client arguments."
+    assert not (
+        ndargs and services
+    ), "Invalid lenient client, got both arguments and keyword arguments."
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.
-        func = dargs[0]
+        (func,) = dargs
 
         @wraps(func)
         def lenient_inner(*args, **kwargs):
@@ -95,7 +108,6 @@ def lenient_client(*dargs, services=None):
             services = (services,)
 
         def lenient_outer(func):
-
             @wraps(func)
             def lenient_inner(*args, **kwargs):
                 """
@@ -114,34 +126,82 @@ def lenient_client(*dargs, services=None):
     return result
 
 
-def lenient_service(func):
+def lenient_service(*dargs):
     """
     Decorator that allows a function/method to declare that it supports lenient
-    behaviour.
+    behaviour as a service.
 
     Registration is at Python interpreter parse time.
 
+    The decorator supports being called with no arguments e.g.,
+
+        @lenient_service()
+        def func():
+            pass
+
+    This is equivalent to using it as a simple naked decorator e.g.,
+
+        @lenient_service
+        def func():
+            pass
+
     Args:
 
-    * func (callable):
-        Callable function/method to be wrapped by the decorator.
+    * dargs (tuple of callable):
+        A tuple containing the callable lenient service function/method to be
+        wrapped by the decorator. This is automatically populated by Python
+        through the decorator interface. No argument requires to be manually
+        provided.
 
     Returns:
         Closure wrapped function/method.
 
     """
-    LENIENT.register(func)
+    ndargs = len(dargs)
 
-    @wraps(func)
-    def register_inner(*args, **kwargs):
-        """
-        Closure wrapper function to execute the lenient service
-        function/method.
+    if ndargs:
+        assert (
+            ndargs == 1
+        ), f"Invalid lenient service arguments, expecting 1 got {ndargs}."
+        assert callable(
+            dargs[0]
+        ), "Invalid lenient service argument, expecting a callable."
 
-        """
-        return func(*args, **kwargs)
+    if ndargs:
+        # The decorator has been used as a simple naked decorator.
+        (func,) = dargs
 
-    return register_inner
+        LENIENT.register_service(func)
+
+        @wraps(func)
+        def register_inner(*args, **kwargs):
+            """
+            Closure wrapper function to execute the lenient service
+            function/method.
+
+            """
+            return func(*args, **kwargs)
+
+        result = register_inner
+    else:
+        # The decorator has been called with no arguments.
+        def lenient_outer(func):
+            LENIENT.register_service(func)
+
+            @wraps(func)
+            def lenient_inner(*args, **kwargs):
+                """
+                Closure wrapper function to execute the lenient service
+                function/method.
+
+                """
+                return func(*args, **kwargs)
+
+            return lenient_inner
+
+        result = lenient_outer
+
+    return result
 
 
 def qualname(func):
@@ -168,25 +228,39 @@ def qualname(func):
 
 
 class Lenient(threading.local):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """
-        A container for managing the run-time lenient options for
-        pre-defined Iris functions and/or methods.
+        A container for managing the run-time lenient services and client
+        options for pre-defined functions/methods.
 
-        To adjust the values simply update the relevant attribute.
+        Args:
+
+        * args (callable or str or iterable of callable/str)
+            A function/method or fully qualified string name of the function/method
+            acting as a lenient service.
+
+        Kwargs:
+
+        * kwargs (dict of callable/str or iterable of callable/str)
+            Mapping of lenient client function/method, or fully qualified sting name
+            of the function/method, to one or more lenient service
+            function/methods or fully qualified string name of function/methods.
+
         For example::
 
-            iris.LENIENT.example_lenient_flag = False
-
-        Or, equivalently::
-
-            iris.LENIENT["example_lenient_flag"] = False
+            Lenient(service1, service2, client1=service1, client2=(service1, service2))
 
         Note that, the values of these options are thread-specific.
 
         """
-        # Currently executing lenient client at runtime.
+        # The executing lenient client at runtime.
         self.__dict__["active"] = None
+
+        for service in args:
+            self.register_service(service)
+
+        for client, services in kwargs.items():
+            self.register_client(client, services)
 
     def __call__(self, func):
         """
@@ -218,7 +292,6 @@ class Lenient(threading.local):
     def __contains__(self, name):
         return name in self.__dict__
 
-    # TODO: Confirm whether this should be part of the API.
     def __getattr__(self, name):
         if name not in self.__dict__:
             cls = self.__class__.__name__
@@ -226,8 +299,8 @@ class Lenient(threading.local):
             raise AttributeError(emsg)
         return self.__dict__[name]
 
-    # TODO: Confirm whether this should be part of the API.
     def __getitem__(self, name):
+        name = qualname(name)
         if name not in self.__dict__:
             cls = self.__class__.__name__
             emsg = f"Invalid {cls!r} option, got {name!r}."
@@ -245,17 +318,31 @@ class Lenient(threading.local):
         return "{}({})".format(cls, joiner.join(kwargs))
 
     def __setattr__(self, name, value):
-        if name not in self.__dict__:
-            cls = self.__class__.__name__
-            emsg = f"Invalid {cls!r} option, got {name!r}."
-            raise AttributeError(emsg)
-        self.__dict__[name] = value
+        self._common_setter(name, value, AttributeError)
 
     def __setitem__(self, name, value):
+        name = qualname(name)
+        self._common_setter(name, value, KeyError)
+
+    def _common_setter(self, name, value, exception):
+        cls = self.__class__.__name__
+
         if name not in self.__dict__:
-            cls = self.__class__.__name__
             emsg = f"Invalid {cls!r} option, got {name!r}."
-            raise KeyError(emsg)
+            raise exception(emsg)
+
+        if name == "active":
+            value = qualname(value)
+            if not isinstance(value, str) and value is not None:
+                emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
+                raise ValueError(emsg)
+        else:
+            if isinstance(value, str) or callable(value):
+                value = (value,)
+
+            if isinstance(value, Iterable):
+                value = tuple([qualname(item) for item in value])
+
         self.__dict__[name] = value
 
     @contextmanager
@@ -278,7 +365,7 @@ class Lenient(threading.local):
 
         """
         # Save the original state.
-        current_state = self.__dict__.copy()
+        original_state = self.__dict__.copy()
         # Temporarily update the state with the kwargs first.
         for name, value in kwargs.items():
             setattr(self, name, value)
@@ -294,24 +381,91 @@ class Lenient(threading.local):
         finally:
             # Restore the original state.
             self.__dict__.clear()
-            self.__dict__.update(current_state)
+            self.__dict__.update(original_state)
 
-    def register(self, func):
+    def register_client(self, func, services):
         """
-        Register the provided function/method as providing a lenient service.
+        Add the provided mapping of lenient client function/method to
+        required lenient service function/methods.
 
         Args:
 
         * func (callable or str):
-            A function/method or fully qualified string name of the function/method.
+            A client function/method or fully qualified string name of the
+            client function/method.
+
+        * services (callable or str or iterable of callable/str):
+            One or more service function/methods or fully qualified string names
+            of the required service function/method.
 
         """
         func = qualname(func)
+        cls = self.__class__.__name__
+
+        if func in LENIENT_PROTECTED:
+            emsg = (
+                f"Cannot register {cls!r} protected non-client, got {func!r}."
+            )
+            raise ValueError(emsg)
+        if isinstance(services, str) or not isinstance(services, Iterable):
+            services = (services,)
+        if not len(services):
+            emsg = f"Require at least one {cls!r} lenient client service."
+            raise ValueError(emsg)
+        services = tuple([qualname(service) for service in services])
+        self.__dict__[func] = services
+
+    def register_service(self, func):
+        """
+        Add the provided function/method as providing a lenient service and
+        activate it.
+
+        Args:
+
+        * func (callable or str):
+            A service function/method or fully qualified string name of the
+            service function/method.
+
+        """
+        func = qualname(func)
+        if func in LENIENT_PROTECTED:
+            cls = self.__class__.__name__
+            emsg = (
+                f"Cannot register {cls!r} protected non-service, got {func!r}."
+            )
+            raise ValueError(emsg)
         self.__dict__[func] = True
 
-    def unregister(self, func):
+    def unregister_client(self, func):
         """
-        Unregister the provided function/method as providing a lenient service.
+        Remove the provided function/method as a lenient client using lenient services.
+
+        Args:
+
+        * func (callable or str):
+            A function/method of fully qualified string name of the function/method.
+
+        """
+        func = qualname(func)
+        cls = self.__class__.__name__
+
+        if func in LENIENT_PROTECTED:
+            emsg = f"Cannot unregister {cls!r} protected non-client, got {func!r}."
+            raise ValueError(emsg)
+
+        if func in self.__dict__:
+            value = self.__dict__[func]
+            if isinstance(value, bool):
+                emsg = f"Cannot unregister {cls!r} non-client, got {func!r}."
+                raise ValueError(emsg)
+            del self.__dict__[func]
+        else:
+            emsg = f"Cannot unregister unknown {cls!r} client, got {func!r}."
+            raise ValueError(emsg)
+
+    def unregister_service(self, func):
+        """
+        Remove the provided function/method as providing a lenient service.
 
         Args:
 
@@ -320,13 +474,22 @@ class Lenient(threading.local):
 
         """
         func = qualname(func)
+        cls = self.__class__.__name__
+
+        if func in LENIENT_PROTECTED:
+            emsg = f"Cannot unregister {cls!r} protected non-service, got {func!r}."
+            raise ValueError(emsg)
+
         if func in self.__dict__:
-            self.__dict__[func] = False
+            value = self.__dict__[func]
+            if not isinstance(value, bool):
+                emsg = f"Cannot unregister {cls!r} non-service, got {func!r}."
+                raise ValueError(emsg)
+            del self.__dict__[func]
         else:
-            cls = self.__class__.__name__
-            emsg = f"Cannot unregister invalid {cls!r} service, got {func!r}."
+            emsg = f"Cannot unregister unknown {cls!r} service, got {func!r}."
             raise ValueError(emsg)
 
 
-#: Instance that manages all Iris run-time lenient options.
+#: Instance that manages all Iris run-time lenient client and service options.
 LENIENT = Lenient()
