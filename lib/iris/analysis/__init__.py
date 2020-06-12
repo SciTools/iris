@@ -187,18 +187,18 @@ class _CoordGroup:
 
 def _dimensional_metadata_comparison(*cubes, object_get=None):
     """
-    Convenience function to help compare coordinates, cell-measures or
-    ancillary-variables, on one or more cubes, by their metadata.
+    Convenience function to help compare cube 'components' such as coordinates,
+    cell-measures or ancillary-variables, on one or more cubes, by their metadata.
 
     .. Note::
 
         Up to Iris 2.x, this _used_ to be the public API method
         "iris.analysis.coord_comparison".
         It has since been generalised, and made private.
-        However, the cube elements handled are still mostly referred to as 'coords' /
-        'coordinates' throughout, for simplicity :  In fact, they will all be either
-        `iris.coords.Coord`, `iris.coords.CellMeasure` or
-        `iris.coords.AncillaryVariable`, the cube element type being controlled by the
+        In the code, however, the cube components handled are still mostly referred
+        to as 'coords' / 'coordinates' throughout, for simplicity :
+        In fact, they will all be either `iris.coords.Coord`, `iris.coords.CellMeasure` or
+        `iris.coords.AncillaryVariable`, the component type being controlled by the
         'object_get' keyword.
 
     Args:
@@ -210,7 +210,7 @@ def _dimensional_metadata_comparison(*cubes, object_get=None):
     Kwargs:
 
     * object_get (callable(cube) or None):
-        If not None, this must be a cube method returning a list of all cube elements
+        If not None, this must be a cube method returning a list of all cube components
         of the required type, i.e. one of `iris.cube.Cube.coords`,
         `iris.cube.Cube.cell_measures`, or `iris.cube.Cube.ancillary_variables`.
         If not specified, defaults to `iris.cube.Cube.coords`

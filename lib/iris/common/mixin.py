@@ -206,7 +206,7 @@ class CFVariableMixin:
     @property
     def metadata(self):
         """
-        The defining signature of this Iris data element
+        The defining signature of this cube component.
         (e.g. this :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`).
 
         ??? can we rename this as "signature" or "identity" ???
@@ -216,24 +216,26 @@ class CFVariableMixin:
         correct length, or a dictionary whose keys are the appropriate property
         names.
 
-        The elements 'signature' is the values of those properties which
-        determine the element's distinct meaning in CF, allowing it to be
-        matched to or sorted with other objects of the same type.
+        A component's 'signature' is the values of those properties which
+        determine its distinct meaning in CF, allowing it to be matched to or
+        sorted with other objects of the same type.
 
         This includes at least the "xxx_name" properties, units and attributes.
         It also includes anything which bears on phenomenon identity, such as
         'cell_methods' of a Cube, or 'climatological' of a Coord.
-        It does *not* include the dimensions or values of any element array
-        data, such as Cube.data or Coord.points.
-        For a cube, it also does *not* include the array-valued sub-elements,
-        such as Coords, CellMeasures or Ancillary Variables.
+        It does *not* include the shape or values of a component's data array,
+        such as Cube.data or Coord.points.
+        For a cube, it also does *not* include any of the sub-components, such
+        as its Coords, CellMeasures or Ancillary Variables.
 
         For example:
             >>> print(cube.signature)
             CubeMetadata(standard_name=None, long_name='q', var_name=None, units=Unit('unknown'), attributes={}, cell_methods=())
             >>> print(cube.signature._fields)
             ('standard_name', 'long_name', 'var_name', 'units', 'attributes', 'cell_methods')
-            >>> cube_1.signature = cube_2.signature
+            >>> cube_1.signature == cube_2.signature
+            True
+            >>> cube_1.signature = cube_3.signature
 
         """
         return self._metadata_manager.values

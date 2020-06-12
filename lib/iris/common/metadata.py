@@ -334,11 +334,6 @@ def create_metadata_manager(cls, **kwargs):
     # variables from the call if wanted, and the "self" args are just
     # conventional placeholders.
     def __init__(self, cls, **kwargs):
-        # Restrict to only dealing with appropriate metadata classes.
-        if not issubclass(cls, BaseMetadata):
-            emsg = "Require a subclass of {!r}, got {!r}."
-            raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
