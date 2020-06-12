@@ -233,9 +233,8 @@ def reference_time(cube, field):
             field.dt_hour,
             field.dt_minute,
         )
-
         ref_time_coord = DimCoord(
-            np.array(TIME_UNIT.date2num(data_date), dtype=np.int64),
+            np.array(np.round(TIME_UNIT.date2num(data_date)), dtype=np.int64),
             standard_name="forecast_reference_time",
             units=TIME_UNIT,
         )
