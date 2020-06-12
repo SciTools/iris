@@ -229,13 +229,14 @@ class CFVariableMixin:
         as its Coords, CellMeasures or Ancillary Variables.
 
         For example:
-            >>> print(cube.signature)
+
+            >>> print(cube.signature)  #doctest:+SKIP
             CubeMetadata(standard_name=None, long_name='q', var_name=None, units=Unit('unknown'), attributes={}, cell_methods=())
-            >>> print(cube.signature._fields)
+            >>> print(cube.signature._fields)  #doctest:+SKIP
             ('standard_name', 'long_name', 'var_name', 'units', 'attributes', 'cell_methods')
-            >>> cube_1.signature == cube_2.signature
+            >>> cube_1.signature == cube_2.signature  #doctest:+SKIP
             True
-            >>> cube_1.signature = cube_3.signature
+            >>> cube_1.signature = cube_3.signature  #doctest:+SKIP
 
         """
         return self._metadata_manager.values
