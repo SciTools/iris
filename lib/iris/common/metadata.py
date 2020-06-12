@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
-from .lenient import LENIENT, lenient_service, qualname
+from .lenient import LENIENT, lenient_service
 
 
 __all__ = [
@@ -380,9 +380,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             values = self._combine(other)
         else:
             if lenient:
-                args, kwargs = (qualname(self.combine),), dict()
+                args, kwargs = (self.combine,), dict()
             else:
-                args, kwargs = (), {qualname(self.combine): False}
+                args, kwargs = (), {self.combine: False}
 
             with LENIENT.context(*args, **kwargs):
                 values = self._combine(other)
@@ -425,9 +425,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             values = self._difference(other)
         else:
             if lenient:
-                args, kwargs = (qualname(self.difference),), dict()
+                args, kwargs = (self.difference,), dict()
             else:
-                args, kwargs = (), {qualname(self.difference): False}
+                args, kwargs = (), {self.difference: False}
 
             with LENIENT.context(*args, **kwargs):
                 values = self._difference(other)
@@ -458,9 +458,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             result = self.__eq__(other)
         else:
             if lenient:
-                args, kwargs = (qualname(self.equal),), dict()
+                args, kwargs = (self.equal,), dict()
             else:
-                args, kwargs = (), {qualname(self.equal): False}
+                args, kwargs = (), {self.equal: False}
 
             with LENIENT.context(*args, **kwargs):
                 result = self.__eq__(other)

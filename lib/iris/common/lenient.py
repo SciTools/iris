@@ -11,7 +11,6 @@ from inspect import getmodule
 import threading
 
 
-# TODO: make qualname private
 __all__ = [
     "LENIENT",
     "LENIENT_PROTECTED",
