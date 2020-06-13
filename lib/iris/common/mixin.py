@@ -215,9 +215,8 @@ class CFVariableMixin:
                     metadata = metadata._asdict()
 
                 if isinstance(metadata, Mapping):
-                    missing = [
-                        field for field in fields if field not in metadata
-                    ]
+                    missing = False
+                    fields = [field for field in fields if field in metadata]
                 else:
                     # Generic iterable/container with no associated keys.
                     missing = [

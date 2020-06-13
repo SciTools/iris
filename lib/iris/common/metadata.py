@@ -1014,6 +1014,7 @@ def metadata_manager_factory(cls, **kwargs):
     @property
     def fields(self):
         """Return the name of the metadata members."""
+        # Proxy for built-in namedtuple._fields property.
         return self.cls._fields
 
     @property
