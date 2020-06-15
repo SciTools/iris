@@ -407,7 +407,7 @@ class Lenient(threading.local):
             raise ValueError(emsg)
         self.__dict__["enable"] = state
 
-    def register_client(self, func, services):
+    def register_client(self, func, services, append=False):
         """
         Add the provided mapping of lenient client function/method to
         required lenient service function/methods.
@@ -421,6 +421,12 @@ class Lenient(threading.local):
         * services (callable or str or iterable of callable/str):
             One or more service function/methods or fully qualified string names
             of the required service function/method.
+
+        Kwargs:
+
+        * append (bool):
+            If True, append the lenient services to any pre-registered lenient
+            services for the provided lenient client. Default is False.
 
         """
         func = qualname(func)
@@ -437,6 +443,11 @@ class Lenient(threading.local):
             emsg = f"Require at least one {cls!r} lenient client service."
             raise ValueError(emsg)
         services = tuple([qualname(service) for service in services])
+        if append:
+            # Service order is not significant, therefore there is no
+            # requirement to preserve it.
+            existing = self.__dict__[func] if func in self else ()
+            services = tuple(sorted(set(existing) | set(services)))
         self.__dict__[func] = services
 
     def register_service(self, func):

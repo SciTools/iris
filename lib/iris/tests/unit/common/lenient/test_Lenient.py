@@ -467,9 +467,7 @@ class Test___setitem__(tests.IrisTest):
 
     def test_enable(self):
         enable = "enable"
-        self.assertEqual(
-            self.lenient.__dict__[enable], LENIENT_ENABLE_DEFAULT
-        )
+        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE_DEFAULT)
         self.lenient[enable] = True
         self.assertTrue(self.lenient.__dict__[enable])
         self.lenient[enable] = False
@@ -665,6 +663,27 @@ class Test_register_client(tests.IrisTest):
         emsg = "Require at least one .* lenient client service."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.register_client("client", ())
+
+    def test_services_overwrite(self):
+        client = "client"
+        services = ("service1", "service2")
+        self.lenient.__dict__[client] = services
+        self.assertEqual(self.lenient[client], services)
+        new_services = ("service3", "service4")
+        self.lenient.register_client(client, services=new_services)
+        self.assertEqual(self.lenient[client], new_services)
+
+    def test_services_append(self):
+        client = "client"
+        services = ("service1", "service2")
+        self.lenient.__dict__[client] = services
+        self.assertEqual(self.lenient[client], services)
+        new_services = ("service3", "service4")
+        self.lenient.register_client(
+            client, services=new_services, append=True
+        )
+        expected = set(services + new_services)
+        self.assertEqual(set(self.lenient[client]), expected)
 
 
 class Test_register_service(tests.IrisTest):

@@ -156,14 +156,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 value = getattr(self, field)
                 return value if value == getattr(other, field) else None
 
-            # Note that, we use "_fields" not "_members".
+            # Note that, for strict we use "_fields" not "_members".
             values = [func(field) for field in self._fields]
 
         return values
 
     def _combine_lenient(self, other):
         """
-        Perform lenient metadata member combination.
+        Perform lenient combination of metadata members.
 
         Args:
 
@@ -221,7 +221,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     def _compare_lenient(self, other):
         """
-        Support lenient metadata equality for coordinates.
+        Perform lenient equality of metadata memberss.
 
         Args:
 
@@ -262,14 +262,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     result = None if left == right else (left, right)
                 return result
 
-            # Note that, we use "_fields" not "_members".
+            # Note that, for strict we use "_fields" not "_members".
             values = [func(field) for field in self._fields]
 
         return values
 
     def _difference_lenient(self, other):
         """
-        Perform lenient metadata member difference.
+        Perform lenient difference of metadata members.
 
         Args:
 
@@ -380,9 +380,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             values = self._combine(other)
         else:
             if lenient:
-                args, kwargs = (self.combine,), dict()
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(self.combine),), dict()
             else:
-                # Require to qualname the method to make it a hashable key.
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
                 args, kwargs = (), {qualname(self.combine): False}
 
             with LENIENT.context(*args, **kwargs):
@@ -426,9 +428,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             values = self._difference(other)
         else:
             if lenient:
-                args, kwargs = (self.difference,), dict()
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(self.difference),), dict()
             else:
-                # Require to qualname the method to make it a hashable key.
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
                 args, kwargs = (), {qualname(self.difference): False}
 
             with LENIENT.context(*args, **kwargs):
@@ -460,9 +464,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             result = self.__eq__(other)
         else:
             if lenient:
-                args, kwargs = (self.equal,), dict()
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(self.equal),), dict()
             else:
-                # Require to qualname the method to make it a hashable key.
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
                 args, kwargs = (), {qualname(self.equal): False}
 
             with LENIENT.context(*args, **kwargs):
@@ -580,7 +586,7 @@ class CellMeasureMetadata(BaseMetadata):
 
     def _combine_lenient(self, other):
         """
-        Perform lenient metadata member combination for cell measures.
+        Perform lenient combination of metadata members for cell measures.
 
         Args:
 
@@ -602,7 +608,7 @@ class CellMeasureMetadata(BaseMetadata):
 
     def _compare_lenient(self, other):
         """
-        Perform lenient metadata equality for cell measures.
+        Perform lenient equality of metadata members for cell measures.
 
         Args:
 
@@ -624,7 +630,7 @@ class CellMeasureMetadata(BaseMetadata):
 
     def _difference_lenient(self, other):
         """
-        Perform lenient metadata member difference for cell measures.
+        Perform lenient difference of metadata members for cell measures.
 
         Args:
 
@@ -681,7 +687,7 @@ class CoordMetadata(BaseMetadata):
 
     def _combine_lenient(self, other):
         """
-        Perform lenient metadata member combination for coordinates.
+        Perform lenient combination of metadata members for coordinates.
 
         Args:
 
@@ -707,7 +713,7 @@ class CoordMetadata(BaseMetadata):
 
     def _compare_lenient(self, other):
         """
-        Perform lenient metadata equality for coordinates.
+        Perform lenient equality of metadata members for coordinates.
 
         Args:
 
@@ -732,7 +738,7 @@ class CoordMetadata(BaseMetadata):
 
     def _difference_lenient(self, other):
         """
-        Perform lenient metadata member difference for coordinates.
+        Perform lenient differnece of metadata members for coordinates.
 
         Args:
 
@@ -790,7 +796,7 @@ class CubeMetadata(BaseMetadata):
 
     def _combine_lenient(self, other):
         """
-        Perform lenient metadata member combination for cubes.
+        Perform lenient combination of metadata members for cubes.
 
         Args:
 
@@ -815,7 +821,7 @@ class CubeMetadata(BaseMetadata):
 
     def _compare_lenient(self, other):
         """
-        Perform lenient metadata equality for cubes.
+        Perform lenient equality of metadata members for cubes.
 
         Args:
 
@@ -835,7 +841,7 @@ class CubeMetadata(BaseMetadata):
 
     def _difference_lenient(self, other):
         """
-        Perform lenient metadata member difference for cubes.
+        Perform lenient difference of metadata members for cubes.
 
         Args:
 
