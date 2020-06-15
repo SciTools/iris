@@ -1,0 +1,2 @@
+* The method :meth:`~iris.Cube.cube.remove_coord` would fail to remove derived
+  coordinates, will now remove derived coordinates by removing aux_factories.
