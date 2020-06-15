@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from functools import wraps
 import re
 
-from .lenient import LENIENT, lenient_service
+from .lenient import LENIENT, lenient_service, qualname
 
 
 __all__ = [
@@ -39,12 +39,11 @@ class _NamedTupleMeta(ABCMeta):
     """
 
     def __new__(mcs, name, bases, namespace):
-        token = "_members"
         names = []
 
         for base in bases:
-            if hasattr(base, token):
-                base_names = getattr(base, token)
+            if hasattr(base, "_members"):
+                base_names = getattr(base, "_members")
                 is_abstract = getattr(
                     base_names, "__isabstractmethod__", False
                 )
@@ -55,10 +54,10 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
-        if token in namespace and not getattr(
-            namespace[token], "__isabstractmethod__", False
+        if "_members" in namespace and not getattr(
+            namespace["_members"], "__isabstractmethod__", False
         ):
-            namespace_names = namespace[token]
+            namespace_names = namespace["_members"]
 
             if (not isinstance(namespace_names, Iterable)) or isinstance(
                 namespace_names, str
@@ -194,6 +193,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     result = left
             return result
 
+        # Note that, we use "_members" not "_fields".
         return [func(field) for field in BaseMetadata._members]
 
     @staticmethod
@@ -382,7 +382,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             if lenient:
                 args, kwargs = (self.combine,), dict()
             else:
-                args, kwargs = (), {self.combine: False}
+                # Require to qualname the method to make it a hashable key.
+                args, kwargs = (), {qualname(self.combine): False}
 
             with LENIENT.context(*args, **kwargs):
                 values = self._combine(other)
@@ -427,7 +428,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             if lenient:
                 args, kwargs = (self.difference,), dict()
             else:
-                args, kwargs = (), {self.difference: False}
+                # Require to qualname the method to make it a hashable key.
+                args, kwargs = (), {qualname(self.difference): False}
 
             with LENIENT.context(*args, **kwargs):
                 values = self._difference(other)
@@ -460,7 +462,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             if lenient:
                 args, kwargs = (self.equal,), dict()
             else:
-                args, kwargs = (), {self.equal: False}
+                # Require to qualname the method to make it a hashable key.
+                args, kwargs = (), {qualname(self.equal): False}
 
             with LENIENT.context(*args, **kwargs):
                 result = self.__eq__(other)

@@ -15,7 +15,7 @@ import iris.tests as tests
 from collections import Iterable
 
 from iris.common.lenient import (
-    LENIENT_ENABLE,
+    LENIENT_ENABLE_DEFAULT,
     LENIENT_PROTECTED,
     Lenient,
     qualname,
@@ -24,7 +24,7 @@ from iris.common.lenient import (
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.expected = dict(active=None, enable=LENIENT_ENABLE)
+        self.expected = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
 
     def test_default(self):
         lenient = Lenient()
@@ -323,96 +323,6 @@ class Test__getitem__(tests.IrisTest):
             _ = self.lenient[service]
 
 
-class Test___setattr__(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
-
-    def test_not_in(self):
-        emsg = "Invalid .* option, got 'wibble'."
-        with self.assertRaisesRegex(AttributeError, emsg):
-            self.lenient.wibble = None
-
-    def test_in_value_str(self):
-        client = "client"
-        service = "service"
-        self.lenient.__dict__[client] = None
-        self.lenient.client = service
-        self.assertEqual(self.lenient.__dict__[client], (service,))
-
-    def test_in_value_callable(self):
-        def service():
-            pass
-
-        client = "client"
-        qualname_service = qualname(service)
-        self.lenient.__dict__[client] = None
-        self.lenient.client = service
-        self.assertEqual(self.lenient.__dict__[client], (qualname_service,))
-
-    def test_in_value_bool(self):
-        client = "client"
-        self.lenient.__dict__[client] = None
-        self.lenient.client = True
-        self.assertTrue(self.lenient.__dict__[client])
-        self.assertFalse(isinstance(self.lenient.__dict__[client], Iterable))
-
-    def test_in_value_iterable(self):
-        client = "client"
-        services = ("service1", "service2")
-        self.lenient.__dict__[client] = None
-        self.lenient.client = services
-        self.assertEqual(self.lenient.__dict__[client], services)
-
-    def test_in_value_iterable_callable(self):
-        def service1():
-            pass
-
-        def service2():
-            pass
-
-        client = "client"
-        self.lenient.__dict__[client] = None
-        qualname_services = (qualname(service1), qualname(service2))
-        self.lenient.client = (service1, service2)
-        self.assertEqual(self.lenient.__dict__[client], qualname_services)
-
-    def test_active_iterable(self):
-        self.assertIsNone(self.lenient.__dict__["active"])
-        emsg = "Invalid .* option 'active'"
-        with self.assertRaisesRegex(ValueError, emsg):
-            self.lenient.active = (None,)
-
-    def test_active_str(self):
-        active = "active"
-        client = "client1"
-        self.assertIsNone(self.lenient.__dict__[active])
-        self.lenient.active = client
-        self.assertEqual(self.lenient.__dict__[active], client)
-
-    def test_active_callable(self):
-        def client():
-            pass
-
-        active = "active"
-        qualname_client = qualname(client)
-        self.assertIsNone(self.lenient.__dict__[active])
-        self.lenient.active = client
-        self.assertEqual(self.lenient.__dict__[active], qualname_client)
-
-    def test_enable(self):
-        enable = "enable"
-        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE)
-        self.lenient.enable = True
-        self.assertTrue(self.lenient.__dict__[enable])
-        self.lenient.enable = False
-        self.assertFalse(self.lenient.__dict__[enable])
-
-    def test_enable_invalid(self):
-        emsg = "Invalid .* option 'enable'"
-        with self.assertRaisesRegex(ValueError, emsg):
-            self.lenient.enable = None
-
-
 class Test___setitem__(tests.IrisTest):
     def setUp(self):
         self.lenient = Lenient()
@@ -557,7 +467,9 @@ class Test___setitem__(tests.IrisTest):
 
     def test_enable(self):
         enable = "enable"
-        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE)
+        self.assertEqual(
+            self.lenient.__dict__[enable], LENIENT_ENABLE_DEFAULT
+        )
         self.lenient[enable] = True
         self.assertTrue(self.lenient.__dict__[enable])
         self.lenient[enable] = False
@@ -572,7 +484,7 @@ class Test___setitem__(tests.IrisTest):
 class Test_context(tests.IrisTest):
     def setUp(self):
         self.lenient = Lenient()
-        self.default = dict(active=None, enable=LENIENT_ENABLE)
+        self.default = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
 
     def copy(self):
         return self.lenient.__dict__.copy()
@@ -672,6 +584,24 @@ class Test_context(tests.IrisTest):
         expected.update(dict(active="context", context=services))
         self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
+
+
+class Test_enable(tests.IrisTest):
+    def setUp(self):
+        self.lenient = Lenient()
+
+    def test_getter(self):
+        self.assertEqual(self.lenient.enable, LENIENT_ENABLE_DEFAULT)
+
+    def test_setter_invalid(self):
+        emsg = "Invalid .* option 'enable'"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.lenient.enable = 0
+
+    def test_setter(self):
+        self.assertEqual(self.lenient.enable, LENIENT_ENABLE_DEFAULT)
+        self.lenient.enable = False
+        self.assertFalse(self.lenient.enable)
 
 
 class Test_register_client(tests.IrisTest):

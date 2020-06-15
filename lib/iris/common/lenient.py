@@ -13,8 +13,6 @@ import threading
 
 __all__ = [
     "LENIENT",
-    "LENIENT_ENABLE",
-    "LENIENT_PROTECTED",
     "Lenient",
     "lenient_client",
     "lenient_service",
@@ -23,9 +21,9 @@ __all__ = [
 
 
 #: Default Lenient services global activation state.
-LENIENT_ENABLE = True
+LENIENT_ENABLE_DEFAULT = True
 
-#: Protected Lenient internal non-client, non-service controlled keys.
+#: Protected Lenient internal non-client, non-service keys.
 LENIENT_PROTECTED = ("active", "enable")
 
 
@@ -259,7 +257,7 @@ class Lenient(threading.local):
         # The executing lenient client at runtime.
         self.__dict__["active"] = None
         # The global lenient services state activation switch.
-        self.__dict__["enable"] = LENIENT_ENABLE
+        self.__dict__["enable"] = LENIENT_ENABLE_DEFAULT
 
         for service in args:
             self.register_service(service)
@@ -323,37 +321,28 @@ class Lenient(threading.local):
         joiner = ",\n{}".format(" " * width)
         return "{}({})".format(cls, joiner.join(kwargs))
 
-    def __setattr__(self, name, value):
-        self._common_setter(name, value, AttributeError)
-
     def __setitem__(self, name, value):
         name = qualname(name)
-        self._common_setter(name, value, KeyError)
-
-    def _common_setter(self, name, value, exception):
         cls = self.__class__.__name__
 
         if name not in self.__dict__:
             emsg = f"Invalid {cls!r} option, got {name!r}."
-            raise exception(emsg)
+            raise KeyError(emsg)
 
         if name == "active":
             value = qualname(value)
             if not isinstance(value, str) and value is not None:
                 emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
                 raise ValueError(emsg)
+            self.__dict__[name] = value
         elif name == "enable":
-            if not isinstance(value, bool):
-                emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
-                raise ValueError(emsg)
+            self.enable = value
         else:
             if isinstance(value, str) or callable(value):
                 value = (value,)
-
             if isinstance(value, Iterable):
                 value = tuple([qualname(item) for item in value])
-
-        self.__dict__[name] = value
+            self.__dict__[name] = value
 
     @contextmanager
     def context(self, *args, **kwargs):
@@ -378,7 +367,7 @@ class Lenient(threading.local):
         original_state = self.__dict__.copy()
         # Temporarily update the state with the kwargs first.
         for name, value in kwargs.items():
-            setattr(self, name, value)
+            self[name] = value
         # Temporarily update the client/services, if provided.
         if args:
             active = self.__dict__["active"]
@@ -392,6 +381,31 @@ class Lenient(threading.local):
             # Restore the original state.
             self.__dict__.clear()
             self.__dict__.update(original_state)
+
+    @property
+    def enable(self):
+        """Return the activation state of the lenient services."""
+        return self.__dict__["enable"]
+
+    @enable.setter
+    def enable(self, state):
+        """
+        Set the activate state of the lenient services.
+
+        Setting the state to `False` disables all lenient services, and
+        setting the state to `True` enables all lenient services.
+
+        Args:
+
+        * state (bool):
+            Activate state for lenient services.
+
+        """
+        if not isinstance(state, bool):
+            cls = self.__class__.__name__
+            emsg = f"Invalid {cls!r} option 'enable', got {state!r}."
+            raise ValueError(emsg)
+        self.__dict__["enable"] = state
 
     def register_client(self, func, services):
         """
