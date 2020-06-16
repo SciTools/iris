@@ -219,6 +219,60 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
+    def _common(
+        self, other, func_service, func_operation, action, lenient=None
+    ):
+        """
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        * func_service (callable):
+            The parent service method offering the API entry-point to the service.
+
+        * func_operation (callable):
+            The parent service method that provides the actual service.
+
+        * action (str):
+            The verb describing the service operation.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable the lenient service operation. The default is to automatically
+            detect whether this lenient service operation is enabled.
+
+        Returns:
+            The result of the service operation to the parent service caller.
+
+        """
+        if (
+            not hasattr(other, "__class__")
+            or other.__class__ is not self.__class__
+        ):
+            emsg = "Cannot {} {!r} with {!r}."
+            raise TypeError(
+                emsg.format(action, self.__class__.__name__, type(other))
+            )
+
+        if lenient is None:
+            result = func_operation(other)
+        else:
+            if lenient:
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(func_service),), dict()
+            else:
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
+                args, kwargs = (), {qualname(func_service): False}
+
+            with LENIENT.context(*args, **kwargs):
+                result = func_operation(other)
+
+        return result
+
     def _compare_lenient(self, other):
         """
         Perform lenient equality of metadata memberss.
@@ -369,28 +423,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Metadata instance.
 
         """
-        if (
-            not hasattr(other, "__class__")
-            or other.__class__ is not self.__class__
-        ):
-            emsg = "Cannot combine {!r} with {!r}."
-            raise ValueError(emsg.format(self.__class__.__name__, type(other)))
-
-        if lenient is None:
-            values = self._combine(other)
-        else:
-            if lenient:
-                # Use qualname to disassociate from the instance bounded method.
-                args, kwargs = (qualname(self.combine),), dict()
-            else:
-                # Use qualname to guarantee that the instance bounded method
-                # is a hashable key.
-                args, kwargs = (), {qualname(self.combine): False}
-
-            with LENIENT.context(*args, **kwargs):
-                values = self._combine(other)
-
-        return self.__class__(*values)
+        result = self._common(
+            other, self.combine, self._combine, "combine", lenient=lenient
+        )
+        return self.__class__(*result)
 
     @lenient_service
     def difference(self, other, lenient=None):
@@ -398,7 +434,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         Return a new metadata instance created by performing a difference
         comparison between each of the associated metadata members.
 
-        A returned metadata member with a value of "None" indicates that there
+        A metadata member returned with a value of "None" indicates that there
         is no difference between the members being compared. Otherwise, a tuple
         of the different values is returned.
 
@@ -417,28 +453,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Metadata instance.
 
         """
-        if (
-            not hasattr(other, "__class__")
-            or other.__class__ is not self.__class__
-        ):
-            emsg = "Cannot differ {!r} with {!r}."
-            raise ValueError(emsg.format(self.__class__.__name__, type(other)))
-
-        if lenient is None:
-            values = self._difference(other)
-        else:
-            if lenient:
-                # Use qualname to disassociate from the instance bounded method.
-                args, kwargs = (qualname(self.difference),), dict()
-            else:
-                # Use qualname to guarantee that the instance bounded method
-                # is a hashable key.
-                args, kwargs = (), {qualname(self.difference): False}
-
-            with LENIENT.context(*args, **kwargs):
-                values = self._difference(other)
-
-        return self.__class__(*values)
+        result = self._common(
+            other, self.difference, self._difference, "differ", lenient=lenient
+        )
+        return self.__class__(*result)
 
     @lenient_service
     def equal(self, other, lenient=None):
@@ -460,20 +478,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Boolean.
 
         """
-        if lenient is None:
-            result = self.__eq__(other)
-        else:
-            if lenient:
-                # Use qualname to disassociate from the instance bounded method.
-                args, kwargs = (qualname(self.equal),), dict()
-            else:
-                # Use qualname to guarantee that the instance bounded method
-                # is a hashable key.
-                args, kwargs = (), {qualname(self.equal): False}
-
-            with LENIENT.context(*args, **kwargs):
-                result = self.__eq__(other)
-
+        result = self._common(
+            other, self.equal, self.__eq__, "compare", lenient=lenient
+        )
         return result
 
     def name(self, default=None, token=False):
@@ -738,7 +745,7 @@ class CoordMetadata(BaseMetadata):
 
     def _difference_lenient(self, other):
         """
-        Perform lenient differnece of metadata members for coordinates.
+        Perform lenient difference of metadata members for coordinates.
 
         Args:
 

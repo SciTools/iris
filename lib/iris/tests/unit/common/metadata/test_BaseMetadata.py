@@ -326,13 +326,13 @@ class Test_combine(tests.IrisTest):
 
     def test_cannot_combine_non_class(self):
         emsg = "Cannot combine"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             self.metadata.combine(None)
 
     def test_cannot_combine(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         emsg = "Cannot combine"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with self.assertRaisesRegex(TypeError, emsg):
             self.metadata.combine(other)
 
     def test_lenient_default(self):
