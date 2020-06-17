@@ -579,7 +579,7 @@ class FF2PP:
         lbtim_default = 11
         if field.lbtim not in (0, lbtim_default):
             raise ValueError(
-                "LBC field has LBTIM of {:d}, expected only "
+                "LBC field has LBTIM of {}, expected only "
                 "0 or {:d}.".format(field.lbtim, lbtim_default)
             )
         field.lbtim = lbtim_default
