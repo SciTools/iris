@@ -15,7 +15,6 @@ from .extest_util import (
 )
 
 
-@tests.skip_grib
 class TestPolarStereo(tests.GraphicsTest):
     """Test the polar_stereo example code."""
 
