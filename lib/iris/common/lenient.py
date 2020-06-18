@@ -372,6 +372,10 @@ class Lenient(threading.local):
         if args:
             active = self.__dict__["active"]
             if active is None:
+                # Ensure not to use "context" as the ephemeral name
+                # of the context manager runtime "active" lenient client,
+                # as this causes a namespace clash with this method
+                # i.e., Lenient.context, via Lenient.__getattr__
                 active = "_context"
                 self.__dict__["active"] = active
             self.__dict__[active] = tuple([qualname(arg) for arg in args])
