@@ -99,7 +99,8 @@ class Test__extract_field__LBC_format(tests.IrisTest):
     def _mock_lbc(self, **kwargs):
         """Return a Mock object representing an LBC field."""
         # Default kwargs for a valid LBC field mapping just 1 model-level.
-        field_kwargs = dict(lbtim=0, lblev=7777, lbvc=0, lbhem=101)
+        field_kwargs = dict(lbtim=pp.SplittableInt(0), lblev=7777, lbvc=0,
+                            lbhem=101)
         # Apply provided args (replacing any defaults if specified).
         field_kwargs.update(kwargs)
         # Return a mock with just those properties pre-defined.
@@ -498,7 +499,7 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         # Create a mock LBC type PPField.
         self.mock_field = mock.Mock()
         field = self.mock_field
-        field.lbtim = 0
+        field.lbtim = pp.SplittableInt(0)
         field.lblev = 7777
         field.lbvc = 0
         field.lbnpt = 1001
@@ -522,14 +523,6 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
         self.assertEqual(field.boundary_packing.x_halo, 4)
         self.assertEqual(field.lbnpt, 1009)
         self.assertEqual(field.lbrow, 2011)
-
-    def test__bad_lbtim(self):
-        self.mock_field.lbtim = 717
-        ff2pp = FF2PP("dummy_filename")
-        with self.assertRaisesRegex(
-            ValueError, "LBTIM of 717, expected only 0 or 11"
-        ):
-            ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
