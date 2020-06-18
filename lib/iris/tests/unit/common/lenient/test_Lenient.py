@@ -579,7 +579,7 @@ class Test_context(tests.IrisTest):
         post = self.copy()
         self.assertEqual(pre, self.default)
         expected = self.default.copy()
-        expected.update(dict(active="context", context=services))
+        expected.update(dict(active="_context", _context=services))
         self.assertEqual(context, expected)
         self.assertEqual(post, self.default)
 

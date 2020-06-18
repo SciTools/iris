@@ -144,6 +144,61 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
+    def _api_common(
+        self, other, func_service, func_operation, action, lenient=None
+    ):
+        """
+        Common entry-point for API facing lenient service methods.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        * func_service (callable):
+            The parent service method offering the API entry-point to the service.
+
+        * func_operation (callable):
+            The parent service method that provides the actual service.
+
+        * action (str):
+            The verb describing the service operation.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable the lenient service operation. The default is to automatically
+            detect whether this lenient service operation is enabled.
+
+        Returns:
+            The result of the service operation to the parent service caller.
+
+        """
+        if (
+            not hasattr(other, "__class__")
+            or other.__class__ is not self.__class__
+        ):
+            emsg = "Cannot {} {!r} with {!r}."
+            raise TypeError(
+                emsg.format(action, self.__class__.__name__, type(other))
+            )
+
+        if lenient is None:
+            result = func_operation(other)
+        else:
+            if lenient:
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(func_service),), dict()
+            else:
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
+                args, kwargs = (), {qualname(func_service): False}
+
+            with LENIENT.context(*args, **kwargs):
+                result = func_operation(other)
+
+        return result
+
     def _combine(self, other):
         """Perform associated metadata member combination."""
         if LENIENT(self.combine):
@@ -201,13 +256,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         """Leniently combine the dictionary members together."""
         sleft = set(left.items())
         sright = set(right.items())
-        # Union of common items.
+        # Intersection of common items.
         common = sleft & sright
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
         dsright = dict(sright - sleft)
-        # Union of common item keys with different values.
+        # Intersection of common item keys with different values.
         keys = set(dsleft.keys()) & set(dsright.keys())
         # Remove (in-place) common item keys with different values.
         [dsleft.pop(key) for key in keys]
@@ -216,60 +271,6 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         result = dict(common)
         result.update(dsleft)
         result.update(dsright)
-
-        return result
-
-    def _common(
-        self, other, func_service, func_operation, action, lenient=None
-    ):
-        """
-
-        Args:
-
-        * other (metadata):
-            A metadata instance of the same type.
-
-        * func_service (callable):
-            The parent service method offering the API entry-point to the service.
-
-        * func_operation (callable):
-            The parent service method that provides the actual service.
-
-        * action (str):
-            The verb describing the service operation.
-
-        Kwargs:
-
-        * lenient (boolean):
-            Enable/disable the lenient service operation. The default is to automatically
-            detect whether this lenient service operation is enabled.
-
-        Returns:
-            The result of the service operation to the parent service caller.
-
-        """
-        if (
-            not hasattr(other, "__class__")
-            or other.__class__ is not self.__class__
-        ):
-            emsg = "Cannot {} {!r} with {!r}."
-            raise TypeError(
-                emsg.format(action, self.__class__.__name__, type(other))
-            )
-
-        if lenient is None:
-            result = func_operation(other)
-        else:
-            if lenient:
-                # Use qualname to disassociate from the instance bounded method.
-                args, kwargs = (qualname(func_service),), dict()
-            else:
-                # Use qualname to guarantee that the instance bounded method
-                # is a hashable key.
-                args, kwargs = (), {qualname(func_service): False}
-
-            with LENIENT.context(*args, **kwargs):
-                result = func_operation(other)
 
         return result
 
@@ -363,7 +364,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
         dsright = dict(sright - sleft)
-        # Union of common item keys with different values.
+        # Intersection of common item keys with different values.
         keys = set(dsleft.keys()) & set(dsright.keys())
         # Keep (in-place) common item keys with different values.
         [dsleft.pop(key) for key in list(dsleft.keys()) if key not in keys]
@@ -423,7 +424,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Metadata instance.
 
         """
-        result = self._common(
+        result = self._api_common(
             other, self.combine, self._combine, "combine", lenient=lenient
         )
         return self.__class__(*result)
@@ -453,7 +454,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Metadata instance.
 
         """
-        result = self._common(
+        result = self._api_common(
             other, self.difference, self._difference, "differ", lenient=lenient
         )
         return self.__class__(*result)
@@ -478,7 +479,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             Boolean.
 
         """
-        result = self._common(
+        result = self._api_common(
             other, self.equal, self.__eq__, "compare", lenient=lenient
         )
         return result

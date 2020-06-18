@@ -89,7 +89,7 @@ def lenient_client(*dargs, services=None):
         (func,) = dargs
 
         @wraps(func)
-        def lenient_inner(*args, **kwargs):
+        def lenient_inner_naked(*args, **kwargs):
             """
             Closure wrapper function to register the wrapped function/method
             as active at runtime before executing it.
@@ -99,7 +99,7 @@ def lenient_client(*dargs, services=None):
                 result = func(*args, **kwargs)
             return result
 
-        result = lenient_inner
+        result = lenient_inner_naked
     else:
         # The decorator has been called with None, zero or more explicit lenient services.
         if services is None:
@@ -372,7 +372,7 @@ class Lenient(threading.local):
         if args:
             active = self.__dict__["active"]
             if active is None:
-                active = "context"
+                active = "_context"
                 self.__dict__["active"] = active
             self.__dict__[active] = tuple([qualname(arg) for arg in args])
         try:
