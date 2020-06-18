@@ -89,7 +89,7 @@ def lenient_client(*dargs, services=None):
         (func,) = dargs
 
         @wraps(func)
-        def lenient_inner_naked(*args, **kwargs):
+        def lenient_client_inner_naked(*args, **kwargs):
             """
             Closure wrapper function to register the wrapped function/method
             as active at runtime before executing it.
@@ -99,7 +99,7 @@ def lenient_client(*dargs, services=None):
                 result = func(*args, **kwargs)
             return result
 
-        result = lenient_inner_naked
+        result = lenient_client_inner_naked
     else:
         # The decorator has been called with None, zero or more explicit lenient services.
         if services is None:
@@ -108,9 +108,9 @@ def lenient_client(*dargs, services=None):
         if isinstance(services, str) or not isinstance(services, Iterable):
             services = (services,)
 
-        def lenient_outer(func):
+        def lenient_client_outer(func):
             @wraps(func)
-            def lenient_inner(*args, **kwargs):
+            def lenient_client_inner(*args, **kwargs):
                 """
                 Closure wrapper function to register the wrapped function/method
                 as active at runtime before executing it.
@@ -120,9 +120,9 @@ def lenient_client(*dargs, services=None):
                     result = func(*args, **kwargs)
                 return result
 
-            return lenient_inner
+            return lenient_client_inner
 
-        result = lenient_outer
+        result = lenient_client_outer
 
     return result
 
@@ -175,7 +175,7 @@ def lenient_service(*dargs):
         LENIENT.register_service(func)
 
         @wraps(func)
-        def register_inner(*args, **kwargs):
+        def lenient_service_inner_naked(*args, **kwargs):
             """
             Closure wrapper function to execute the lenient service
             function/method.
@@ -183,14 +183,14 @@ def lenient_service(*dargs):
             """
             return func(*args, **kwargs)
 
-        result = register_inner
+        result = lenient_service_inner_naked
     else:
         # The decorator has been called with no arguments.
-        def lenient_outer(func):
+        def lenient_service_outer(func):
             LENIENT.register_service(func)
 
             @wraps(func)
-            def lenient_inner(*args, **kwargs):
+            def lenient_service_inner(*args, **kwargs):
                 """
                 Closure wrapper function to execute the lenient service
                 function/method.
@@ -198,9 +198,9 @@ def lenient_service(*dargs):
                 """
                 return func(*args, **kwargs)
 
-            return lenient_inner
+            return lenient_service_inner
 
-        result = lenient_outer
+        result = lenient_service_outer
 
     return result
 
