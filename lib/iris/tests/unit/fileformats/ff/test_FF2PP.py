@@ -99,8 +99,9 @@ class Test__extract_field__LBC_format(tests.IrisTest):
     def _mock_lbc(self, **kwargs):
         """Return a Mock object representing an LBC field."""
         # Default kwargs for a valid LBC field mapping just 1 model-level.
-        field_kwargs = dict(lbtim=pp.SplittableInt(0), lblev=7777, lbvc=0,
-                            lbhem=101)
+        field_kwargs = dict(
+            lbtim=pp.SplittableInt(0), lblev=7777, lbvc=0, lbhem=101
+        )
         # Apply provided args (replacing any defaults if specified).
         field_kwargs.update(kwargs)
         # Return a mock with just those properties pre-defined.
