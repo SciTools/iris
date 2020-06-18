@@ -15,7 +15,7 @@ import iris.quickplot as qplt
 
 
 def main():
-    file_path = iris.sample_data_path("polar_stereo.grib2")
+    file_path = iris.sample_data_path("toa_brightness_stereographic.nc")
     cube = iris.load_cube(file_path)
     qplt.contourf(cube)
     ax = plt.gca()
