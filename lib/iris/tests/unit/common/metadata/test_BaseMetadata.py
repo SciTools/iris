@@ -83,6 +83,49 @@ class Test___lt__(tests.IrisTest):
         self.assertTrue(result)
 
 
+class Test___ne__(tests.IrisTest):
+    def setUp(self):
+        self.metadata = BaseMetadata(*(None,) * len(BaseMetadata._fields))
+        self.other = sentinel.other
+
+    def test_notimplemented(self):
+        return_value = NotImplemented
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as mocker:
+            result = self.metadata.__ne__(self.other)
+
+        self.assertIs(return_value, result)
+        self.assertEqual(1, mocker.call_count)
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(self.other, arg)
+        self.assertEqual(dict(), kwargs)
+
+    def test_negate_true(self):
+        return_value = True
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as mocker:
+            result = self.metadata.__ne__(self.other)
+
+        self.assertFalse(result)
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(self.other, arg)
+        self.assertEqual(dict(), kwargs)
+
+    def test_negate_false(self):
+        return_value = False
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as mocker:
+            result = self.metadata.__ne__(self.other)
+
+        self.assertTrue(result)
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(self.other, arg)
+        self.assertEqual(dict(), kwargs)
+
+
 class Test__combine(tests.IrisTest):
     def setUp(self):
         self.kwargs = dict(
