@@ -63,6 +63,16 @@ class Test(tests.IrisTest):
 
 
 class Test___eq__(tests.IrisTest):
+    def setUp(self):
+        self.values = dict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+        self.dummy = sentinel.dummy
+
     def test_wraps_docstring(self):
         self.assertEqual(
             BaseMetadata.__eq__.__doc__,
@@ -75,7 +85,7 @@ class Test___eq__(tests.IrisTest):
         self.assertTrue(LENIENT[qualname___eq__])
         self.assertTrue(LENIENT[AncillaryVariableMetadata.__eq__])
 
-    def test(self):
+    def test_call(self):
         other = sentinel.other
         return_value = sentinel.return_value
         metadata = AncillaryVariableMetadata(
@@ -92,8 +102,74 @@ class Test___eq__(tests.IrisTest):
         self.assertEqual(other, arg)
         self.assertEqual(dict(), kwargs)
 
+    def test_op_lenient_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
+
+    def test_op_lenient_same_none(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["var_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
+
+    def test_op_lenient_different(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["units"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertFalse(lmetadata.__eq__(rmetadata))
+            self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_strict_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
+
+    def test_op_strict_different(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["long_name"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertFalse(lmetadata.__eq__(rmetadata))
+            self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_strict_different_none(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["long_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertFalse(lmetadata.__eq__(rmetadata))
+            self.assertFalse(rmetadata.__eq__(lmetadata))
+
 
 class Test_combine(tests.IrisTest):
+    def setUp(self):
+        self.values = dict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+        self.dummy = sentinel.dummy
+
     def test_wraps_docstring(self):
         self.assertEqual(
             BaseMetadata.combine.__doc__,
@@ -141,8 +217,86 @@ class Test_combine(tests.IrisTest):
         self.assertEqual(other, arg)
         self.assertEqual(dict(lenient=lenient), kwargs)
 
+    def test_op_lenient_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+        expected = self.values
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
+    def test_op_lenient_same_none(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["var_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+        expected = self.values
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
+    def test_op_lenient_different(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["units"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+        expected = self.values.copy()
+        expected["units"] = None
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
+    def test_op_strict_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+        expected = self.values.copy()
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
+    def test_op_strict_different(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["long_name"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+        expected = self.values.copy()
+        expected["long_name"] = None
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
+    def test_op_strict_different_none(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["long_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+        expected = self.values.copy()
+        expected["long_name"] = None
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+
 
 class Test_difference(tests.IrisTest):
+    def setUp(self):
+        self.values = dict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+        self.dummy = sentinel.dummy
+        self.none = AncillaryVariableMetadata(
+            *(None,) * len(AncillaryVariableMetadata._fields)
+        )._asdict()
+
     def test_wraps_docstring(self):
         self.assertEqual(
             BaseMetadata.difference.__doc__,
@@ -189,6 +343,104 @@ class Test_difference(tests.IrisTest):
         (arg,), kwargs = mocker.call_args
         self.assertEqual(other, arg)
         self.assertEqual(dict(lenient=lenient), kwargs)
+
+    def test_op_lenient_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+        expected = self.none.copy()
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(
+                expected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                expected, rmetadata.difference(lmetadata)._asdict()
+            )
+
+    def test_op_lenient_same_none(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        right = self.values.copy()
+        right["var_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+        expected = self.none.copy()
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(
+                expected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                expected, rmetadata.difference(lmetadata)._asdict()
+            )
+
+    def test_op_lenient_different(self):
+        left = self.values.copy()
+        lmetadata = AncillaryVariableMetadata(**left)
+        right = self.values.copy()
+        right["units"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+        lexpected = self.none.copy()
+        lexpected["units"] = (left["units"], right["units"])
+        rexpected = self.none.copy()
+        rexpected["units"] = lexpected["units"][::-1]
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+            self.assertEqual(
+                lexpected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                rexpected, rmetadata.difference(lmetadata)._asdict()
+            )
+
+    def test_op_strict_same(self):
+        lmetadata = AncillaryVariableMetadata(**self.values)
+        rmetadata = AncillaryVariableMetadata(**self.values)
+        expected = self.none.copy()
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(
+                expected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                expected, rmetadata.difference(lmetadata)._asdict()
+            )
+
+    def test_op_strict_different(self):
+        left = self.values.copy()
+        lmetadata = AncillaryVariableMetadata(**left)
+        right = self.values.copy()
+        right["long_name"] = self.dummy
+        rmetadata = AncillaryVariableMetadata(**right)
+        lexpected = self.none.copy()
+        lexpected["long_name"] = (left["long_name"], right["long_name"])
+        rexpected = self.none.copy()
+        rexpected["long_name"] = lexpected["long_name"][::-1]
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(
+                lexpected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                rexpected, rmetadata.difference(lmetadata)._asdict()
+            )
+
+    def test_op_strict_different_none(self):
+        left = self.values.copy()
+        lmetadata = AncillaryVariableMetadata(**left)
+        right = self.values.copy()
+        right["long_name"] = None
+        rmetadata = AncillaryVariableMetadata(**right)
+        lexpected = self.none.copy()
+        lexpected["long_name"] = (left["long_name"], right["long_name"])
+        rexpected = self.none.copy()
+        rexpected["long_name"] = lexpected["long_name"][::-1]
+
+        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+            self.assertEqual(
+                lexpected, lmetadata.difference(rmetadata)._asdict()
+            )
+            self.assertEqual(
+                rexpected, rmetadata.difference(lmetadata)._asdict()
+            )
 
 
 class Test_equal(tests.IrisTest):
