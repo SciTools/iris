@@ -6,6 +6,7 @@
 
 from collections.abc import Iterable
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import wraps
 from inspect import getmodule
 import threading
@@ -364,7 +365,7 @@ class Lenient(threading.local):
 
         """
         # Save the original state.
-        original_state = self.__dict__.copy()
+        original_state = deepcopy(self.__dict__)
         # Temporarily update the state with the kwargs first.
         for name, value in kwargs.items():
             self[name] = value

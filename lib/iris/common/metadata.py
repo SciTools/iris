@@ -111,11 +111,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         result = NotImplemented
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if LENIENT(self.__eq__) or LENIENT(self.equal):
-                # Perform "lenient" comparison.
+                # Perform "lenient" equality.
                 print("lenient __eq__")
                 result = self._compare_lenient(other)
             else:
-                # Perform "strict" comparison.
+                # Perform "strict" equality.
+                print("strict __eq__")
                 result = super().__eq__(other)
 
         return result
@@ -202,9 +203,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     def _combine(self, other):
         """Perform associated metadata member combination."""
         if LENIENT(self.combine):
+            # Perform "lenient" combine.
             print("lenient combine")
             values = self._combine_lenient(other)
         else:
+            # Perform "strict" combine.
             print("strict combine")
 
             def func(field):
@@ -276,36 +279,62 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     def _compare_lenient(self, other):
         """
-        Perform lenient equality of metadata memberss.
+        Perform lenient equality of metadata members.
 
         Args:
 
-        * other (CoordMetadata):
-            The other coordinate metadata participating in the lenient
-            comparison.
+        * other (BaseMetadata):
+            The other metadata participating in the lenient comparison.
 
         Returns:
             Boolean.
 
         """
         result = False
+
         # Use the "name" method to leniently compare "standard_name",
-        # "long_name" and "var_name" in a well defined way.
+        # "long_name", and "var_name" in a well defined way.
         if self.name() == other.name():
-            # Perform "strict" comparison for "units".
-            result = self.units == other.units
-            # Perform "lenient" comparison for "attributes".
-            # This effectively means they are always equal, therefore there is
-            # no further work to do here.
+
+            def func(field):
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if field == "units":
+                    # Perform "strict" compare for "units".
+                    result = left == right
+                elif self._is_attributes(field, left, right):
+                    result = self._compare_lenient_attributes(left, right)
+                else:
+                    # Perform "lenient" compare for members.
+                    result = (left == right) or left is None or right is None
+                return result
+
+            result = all([func(field) for field in BaseMetadata._members])
 
         return result
+
+    @staticmethod
+    def _compare_lenient_attributes(left, right):
+        """Perform lenient compare between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Intersection of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+
+        return not bool(keys)
 
     def _difference(self, other):
         """Perform associated metadata member difference."""
         if LENIENT(self.difference):
+            # Perform "lenient" difference.
             print("lenient difference")
             values = self._difference_lenient(other)
         else:
+            # Perform "strict" difference.
             print("strict difference")
 
             def func(field):

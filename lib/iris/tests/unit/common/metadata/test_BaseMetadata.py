@@ -13,6 +13,7 @@ Unit tests for the :class:`iris.common.metadata.BaseMetadata`.
 import iris.tests as tests
 
 from collections import OrderedDict
+from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
@@ -58,6 +59,65 @@ class Test(tests.IrisTest):
             "attributes",
         )
         self.assertEqual(expected, BaseMetadata._fields)
+
+
+class Test___eq__(tests.IrisTest):
+    def setUp(self):
+        self.kwargs = dict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+        self.metadata = BaseMetadata(**self.kwargs)
+
+    def test_lenient_service(self):
+        qualname___eq__ = qualname(BaseMetadata.__eq__)
+        self.assertIn(qualname___eq__, LENIENT)
+        self.assertTrue(LENIENT[qualname___eq__])
+
+    def test_cannot_compare_non_class(self):
+        result = self.metadata.__eq__(None)
+        self.assertIs(NotImplemented, result)
+
+    def test_cannot_compare(self):
+        other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
+        result = self.metadata.__eq__(other)
+        self.assertIs(NotImplemented, result)
+
+    def test_lenient(self):
+        return_value = sentinel.return_value
+        with mock.patch(
+            "iris.common.metadata.LENIENT", return_value=True
+        ) as mlenient:
+            with mock.patch.object(
+                BaseMetadata, "_compare_lenient", return_value=return_value
+            ) as mcompare:
+                result = self.metadata.__eq__(self.metadata)
+
+        self.assertEqual(return_value, result)
+        self.assertEqual(1, mcompare.call_count)
+        (arg,), kwargs = mcompare.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+        self.assertEqual(1, mlenient.call_count)
+        (arg,), kwargs = mlenient.call_args
+        self.assertEqual(qualname(BaseMetadata.__eq__), qualname(arg))
+        self.assertEqual(dict(), kwargs)
+
+    def test_strict_same(self):
+        self.assertTrue(self.metadata.__eq__(self.metadata))
+        other = deepcopy(self.metadata)
+        self.assertTrue(self.metadata.__eq__(other))
+        self.assertTrue(other.__eq__(self.metadata))
+
+    def test_strict_different(self):
+        self.kwargs["var_name"] = None
+        other = BaseMetadata(**self.kwargs)
+        self.assertFalse(self.metadata.__eq__(other))
+        self.assertFalse(other.__eq__(self.metadata))
 
 
 class Test___lt__(tests.IrisTest):
@@ -149,14 +209,14 @@ class Test__combine(tests.IrisTest):
                 result = self.metadata._combine(other)
 
                 self.assertEqual(1, mlenient.call_count)
-                (args,), kwargs = mlenient.call_args
-                self.assertEqual(self.metadata.combine, args)
+                (arg,), kwargs = mlenient.call_args
+                self.assertEqual(self.metadata.combine, arg)
                 self.assertEqual(dict(), kwargs)
 
                 self.assertEqual(return_value, result)
                 self.assertEqual(1, mcombine.call_count)
-                (args,), kwargs = mcombine.call_args
-                self.assertEqual(other, args)
+                (arg,), kwargs = mcombine.call_args
+                self.assertEqual(other, arg)
                 self.assertEqual(dict(), kwargs)
 
     def test_strict(self):
@@ -381,90 +441,209 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         self.assertEqual(dict(expected), result)
 
 
-class Test_combine(tests.IrisTest):
+class Test__compare_lenient(tests.IrisTest):
     def setUp(self):
-        kwargs = dict(
-            standard_name="standard_name",
-            long_name="long_name",
-            var_name="var_name",
-            units="units",
-            attributes="attributes",
-        )
-        self.metadata = BaseMetadata(**kwargs)
-        self.mock_kwargs = OrderedDict(
+        self.none = BaseMetadata(
+            *(None,) * len(BaseMetadata._fields)
+        )._asdict()
+        self.names = dict(
             standard_name=sentinel.standard_name,
             long_name=sentinel.long_name,
             var_name=sentinel.var_name,
-            units=sentinel.units,
-            attributes=sentinel.attributes,
         )
 
-    def test_lenient_service(self):
-        qualname_combine = qualname(BaseMetadata.combine)
-        self.assertIn(qualname_combine, LENIENT)
-        self.assertTrue(LENIENT[qualname_combine])
+    def test_name_same(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
 
-    def test_cannot_combine_non_class(self):
-        emsg = "Cannot combine"
-        with self.assertRaisesRegex(TypeError, emsg):
-            self.metadata.combine(None)
-
-    def test_cannot_combine(self):
-        other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
-        emsg = "Cannot combine"
-        with self.assertRaisesRegex(TypeError, emsg):
-            self.metadata.combine(other)
-
-    def test_lenient_default(self):
-        return_value = self.mock_kwargs.values()
         with mock.patch.object(
-            BaseMetadata, "_combine", return_value=return_value
+            BaseMetadata, "_is_attributes", return_value=False
         ) as mocker:
-            result = self.metadata.combine(self.metadata)
+            self.assertTrue(lmetadata._compare_lenient(rmetadata))
+            self.assertTrue(rmetadata._compare_lenient(lmetadata))
 
-        self.assertEqual(self.mock_kwargs, result._asdict())
-        self.assertEqual(1, mocker.call_count)
-        (args,), kwargs = mocker.call_args
-        self.assertEqual(id(self.metadata), id(args))
-        self.assertEqual(dict(), kwargs)
+        expected = (len(BaseMetadata._fields) - 1) * 2
+        self.assertEqual(expected, mocker.call_count)
 
-    def test_lenient_true(self):
-        return_value = self.mock_kwargs.values()
+    def test_name_same_lenient_false(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = self.none.copy()
+        right["long_name"] = sentinel.standard_name
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
         with mock.patch.object(
-            BaseMetadata, "_combine", return_value=return_value
-        ) as mcombine:
-            with mock.patch.object(LENIENT, "context") as mcontext:
-                result = self.metadata.combine(self.metadata, lenient=True)
+            BaseMetadata, "_is_attributes", return_value=False
+        ) as mocker:
+            self.assertFalse(lmetadata._compare_lenient(rmetadata))
+            self.assertFalse(rmetadata._compare_lenient(lmetadata))
 
-        self.assertEqual(1, mcontext.call_count)
-        (args,), kwargs = mcontext.call_args
-        self.assertEqual(qualname(BaseMetadata.combine), args)
-        self.assertEqual(dict(), kwargs)
+        expected = (len(BaseMetadata._fields) - 1) * 2
+        self.assertEqual(expected, mocker.call_count)
 
-        self.assertEqual(result._asdict(), self.mock_kwargs)
-        self.assertEqual(1, mcombine.call_count)
-        (args,), kwargs = mcombine.call_args
-        self.assertEqual(id(self.metadata), id(args))
-        self.assertEqual(dict(), kwargs)
+    def test_name_different(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        right["standard_name"] = None
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
 
-    def test_lenient_false(self):
-        return_value = self.mock_kwargs.values()
+        with mock.patch.object(BaseMetadata, "_is_attributes") as mocker:
+            self.assertFalse(lmetadata._compare_lenient(rmetadata))
+            self.assertFalse(rmetadata._compare_lenient(lmetadata))
+
+        self.assertEqual(0, mocker.call_count)
+
+    def test_strict_units(self):
+        left = self.none.copy()
+        left.update(self.names)
+        left["units"] = "K"
+        right = left.copy()
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
         with mock.patch.object(
-            BaseMetadata, "_combine", return_value=return_value
-        ) as mcombine:
-            with mock.patch.object(LENIENT, "context") as mcontext:
-                result = self.metadata.combine(self.metadata, lenient=False)
+            BaseMetadata, "_is_attributes", return_value=False
+        ) as mocker:
+            self.assertTrue(lmetadata._compare_lenient(rmetadata))
+            self.assertTrue(rmetadata._compare_lenient(lmetadata))
 
-        self.assertEqual(1, mcontext.call_count)
-        args, kwargs = mcontext.call_args
-        self.assertEqual((), args)
-        self.assertEqual({qualname(BaseMetadata.combine): False}, kwargs)
+        expected = (len(BaseMetadata._fields) - 1) * 2
+        self.assertEqual(expected, mocker.call_count)
 
-        self.assertEqual(self.mock_kwargs, result._asdict())
-        self.assertEqual(1, mcombine.call_count)
-        (args,), kwargs = mcombine.call_args
-        self.assertEqual(id(self.metadata), id(args))
-        self.assertEqual(dict(), kwargs)
+    def test_strict_units_different(self):
+        left = self.none.copy()
+        left.update(self.names)
+        left["units"] = "K"
+        right = left.copy()
+        right["units"] = "m"
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
+        with mock.patch.object(
+            BaseMetadata, "_is_attributes", return_value=False
+        ) as mocker:
+            self.assertFalse(lmetadata._compare_lenient(rmetadata))
+            self.assertFalse(rmetadata._compare_lenient(lmetadata))
+
+        expected = (len(BaseMetadata._fields) - 1) * 2
+        self.assertEqual(expected, mocker.call_count)
+
+    def test_attributes(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        ldict = dict(item=sentinel.left)
+        rdict = dict(item=sentinel.right)
+        left["attributes"] = ldict
+        right["attributes"] = rdict
+        rmetadata = BaseMetadata(**right)
+        with mock.patch.object(
+            BaseMetadata, "_compare_lenient_attributes", return_value=True,
+        ) as mocker:
+            lmetadata = BaseMetadata(**left)
+            self.assertTrue(lmetadata._compare_lenient(rmetadata))
+            self.assertTrue(rmetadata._compare_lenient(lmetadata))
+
+        self.assertEqual(2, mocker.call_count)
+        expected = [((ldict, rdict),), ((rdict, ldict),)]
+        self.assertEqual(expected, mocker.call_args_list)
+
+    def test_attributes_non_mapping_different(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        ldict = dict(item=sentinel.left)
+        rdict = sentinel.right
+        left["attributes"] = ldict
+        right["attributes"] = rdict
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
+        self.assertFalse(lmetadata._compare_lenient(rmetadata))
+        self.assertFalse(rmetadata._compare_lenient(lmetadata))
+
+    def test_attributes_non_mapping_different_none(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        ldict = dict(item=sentinel.left)
+        left["attributes"] = ldict
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
+        self.assertTrue(lmetadata._compare_lenient(rmetadata))
+        self.assertTrue(rmetadata._combine_lenient(lmetadata))
+
+    def test_names(self):
+        left = self.none.copy()
+        left.update(self.names)
+        left["long_name"] = None
+        right = self.none.copy()
+        right["long_name"] = left["standard_name"]
+        lmetadata = BaseMetadata(**left)
+        rmetadata = BaseMetadata(**right)
+
+        self.assertTrue(lmetadata._compare_lenient(rmetadata))
+        self.assertTrue(rmetadata._combine_lenient(lmetadata))
+
+
+class Test__compare_lenient_attributes(tests.IrisTest):
+    def setUp(self):
+        self.values = OrderedDict(
+            one=sentinel.one,
+            two=sentinel.two,
+            three=sentinel.three,
+            four=sentinel.four,
+            five=sentinel.five,
+        )
+        self.metadata = BaseMetadata(*(None,) * len(BaseMetadata._fields))
+        self.dummy = sentinel.dummy
+
+    def test_same(self):
+        left = self.values.copy()
+        right = self.values.copy()
+
+        self.assertTrue(self.metadata._compare_lenient_attributes(left, right))
+        self.assertTrue(self.metadata._compare_lenient_attributes(right, left))
+
+    def test_different(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["two"] = left["four"] = self.dummy
+
+        self.assertFalse(
+            self.metadata._compare_lenient_attributes(left, right)
+        )
+        self.assertFalse(
+            self.metadata._compare_lenient_attributes(right, left)
+        )
+
+    def test_different_none(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["one"] = left["three"] = left["five"] = None
+
+        self.assertFalse(
+            self.metadata._compare_lenient_attributes(left, right)
+        )
+        self.assertFalse(
+            self.metadata._compare_lenient_attributes(right, left)
+        )
+
+    def test_extra(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["extra_left"] = sentinel.extra_left
+        right["extra_right"] = sentinel.extra_right
+
+        self.assertTrue(self.metadata._compare_lenient_attributes(left, right))
+        self.assertTrue(self.metadata._compare_lenient_attributes(right, left))
 
 
 class Test__difference(tests.IrisTest):
@@ -490,14 +669,14 @@ class Test__difference(tests.IrisTest):
                 result = self.metadata._difference(other)
 
                 self.assertEqual(1, mlenient.call_count)
-                (args,), kwargs = mlenient.call_args
-                self.assertEqual(self.metadata.difference, args)
+                (arg,), kwargs = mlenient.call_args
+                self.assertEqual(self.metadata.difference, arg)
                 self.assertEqual(dict(), kwargs)
 
                 self.assertEqual(return_value, result)
                 self.assertEqual(1, mdifference.call_count)
-                (args,), kwargs = mdifference.call_args
-                self.assertEqual(other, args)
+                (arg,), kwargs = mdifference.call_args
+                self.assertEqual(other, arg)
                 self.assertEqual(dict(), kwargs)
 
     def test_strict(self):
@@ -873,6 +1052,110 @@ class Test__difference_strict_attributes(tests.IrisTest):
         self.assertEqual(expected, result)
 
 
+class Test__is_attributes(tests.IrisTest):
+    def setUp(self):
+        self.metadata = BaseMetadata(*(None,) * len(BaseMetadata._fields))
+        self.field = "attributes"
+
+    def test_field(self):
+        self.assertTrue(self.metadata._is_attributes(self.field, {}, {}))
+
+    def test_field_not_attributes(self):
+        self.assertFalse(self.metadata._is_attributes(None, {}, {}))
+
+    def test_left_not_mapping(self):
+        self.assertFalse(self.metadata._is_attributes(self.field, None, {}))
+
+    def test_right_not_mapping(self):
+        self.assertFalse(self.metadata._is_attributes(self.field, {}, None))
+
+
+class Test_combine(tests.IrisTest):
+    def setUp(self):
+        kwargs = dict(
+            standard_name="standard_name",
+            long_name="long_name",
+            var_name="var_name",
+            units="units",
+            attributes="attributes",
+        )
+        self.metadata = BaseMetadata(**kwargs)
+        self.mock_kwargs = OrderedDict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+
+    def test_lenient_service(self):
+        qualname_combine = qualname(BaseMetadata.combine)
+        self.assertIn(qualname_combine, LENIENT)
+        self.assertTrue(LENIENT[qualname_combine])
+
+    def test_cannot_combine_non_class(self):
+        emsg = "Cannot combine"
+        with self.assertRaisesRegex(TypeError, emsg):
+            self.metadata.combine(None)
+
+    def test_cannot_combine(self):
+        other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
+        emsg = "Cannot combine"
+        with self.assertRaisesRegex(TypeError, emsg):
+            self.metadata.combine(other)
+
+    def test_lenient_default(self):
+        return_value = self.mock_kwargs.values()
+        with mock.patch.object(
+            BaseMetadata, "_combine", return_value=return_value
+        ) as mocker:
+            result = self.metadata.combine(self.metadata)
+
+        self.assertEqual(self.mock_kwargs, result._asdict())
+        self.assertEqual(1, mocker.call_count)
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+    def test_lenient_true(self):
+        return_value = self.mock_kwargs.values()
+        with mock.patch.object(
+            BaseMetadata, "_combine", return_value=return_value
+        ) as mcombine:
+            with mock.patch.object(LENIENT, "context") as mcontext:
+                result = self.metadata.combine(self.metadata, lenient=True)
+
+        self.assertEqual(1, mcontext.call_count)
+        (arg,), kwargs = mcontext.call_args
+        self.assertEqual(qualname(BaseMetadata.combine), arg)
+        self.assertEqual(dict(), kwargs)
+
+        self.assertEqual(result._asdict(), self.mock_kwargs)
+        self.assertEqual(1, mcombine.call_count)
+        (arg,), kwargs = mcombine.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+    def test_lenient_false(self):
+        return_value = self.mock_kwargs.values()
+        with mock.patch.object(
+            BaseMetadata, "_combine", return_value=return_value
+        ) as mcombine:
+            with mock.patch.object(LENIENT, "context") as mcontext:
+                result = self.metadata.combine(self.metadata, lenient=False)
+
+        self.assertEqual(1, mcontext.call_count)
+        args, kwargs = mcontext.call_args
+        self.assertEqual((), args)
+        self.assertEqual({qualname(BaseMetadata.combine): False}, kwargs)
+
+        self.assertEqual(self.mock_kwargs, result._asdict())
+        self.assertEqual(1, mcombine.call_count)
+        (arg,), kwargs = mcombine.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+
 class Test_difference(tests.IrisTest):
     def setUp(self):
         kwargs = dict(
@@ -916,8 +1199,8 @@ class Test_difference(tests.IrisTest):
 
         self.assertEqual(self.mock_kwargs, result._asdict())
         self.assertEqual(1, mocker.call_count)
-        (args,), kwargs = mocker.call_args
-        self.assertEqual(id(self.metadata), id(args))
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(id(self.metadata), id(arg))
         self.assertEqual(dict(), kwargs)
 
     def test_lenient_true(self):
@@ -928,16 +1211,16 @@ class Test_difference(tests.IrisTest):
             with mock.patch.object(LENIENT, "context") as mcontext:
                 result = self.metadata.difference(self.metadata, lenient=True)
 
-        self.assertEqual(mcontext.call_count, 1)
-        (args,), kwargs = mcontext.call_args
-        self.assertEqual(args, qualname(BaseMetadata.difference))
-        self.assertEqual(kwargs, dict())
+        self.assertEqual(1, mcontext.call_count)
+        (arg,), kwargs = mcontext.call_args
+        self.assertEqual(qualname(BaseMetadata.difference), arg)
+        self.assertEqual(dict(), kwargs)
 
-        self.assertEqual(result._asdict(), self.mock_kwargs)
-        self.assertEqual(mdifference.call_count, 1)
-        (args,), kwargs = mdifference.call_args
-        self.assertEqual(id(args), id(self.metadata))
-        self.assertEqual(kwargs, dict())
+        self.assertEqual(self.mock_kwargs, result._asdict())
+        self.assertEqual(1, mdifference.call_count)
+        (arg,), kwargs = mdifference.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
 
     def test_lenient_false(self):
         return_value = self.mock_kwargs.values()
@@ -954,27 +1237,88 @@ class Test_difference(tests.IrisTest):
 
         self.assertEqual(self.mock_kwargs, result._asdict())
         self.assertEqual(1, mdifference.call_count)
-        (args,), kwargs = mdifference.call_args
-        self.assertEqual(id(self.metadata), id(args))
+        (arg,), kwargs = mdifference.call_args
+        self.assertEqual(id(self.metadata), id(arg))
         self.assertEqual(dict(), kwargs)
 
 
-class Test__is_attributes(tests.IrisTest):
+class Test_equal(tests.IrisTest):
     def setUp(self):
-        self.metadata = BaseMetadata(*(None,) * len(BaseMetadata._fields))
-        self.field = "attributes"
+        kwargs = dict(
+            standard_name=sentinel.standard_name,
+            long_name=sentinel.long_name,
+            var_name=sentinel.var_name,
+            units=sentinel.units,
+            attributes=sentinel.attributes,
+        )
+        self.metadata = BaseMetadata(**kwargs)
 
-    def test_field(self):
-        self.assertTrue(self.metadata._is_attributes(self.field, {}, {}))
+    def test_lenient_service(self):
+        qualname_equal = qualname(BaseMetadata.equal)
+        self.assertIn(qualname_equal, LENIENT)
+        self.assertTrue(LENIENT[qualname_equal])
 
-    def test_field_not_attributes(self):
-        self.assertFalse(self.metadata._is_attributes(None, {}, {}))
+    def test_cannot_compare_non_class(self):
+        emsg = "Cannot compare"
+        with self.assertRaisesRegex(TypeError, emsg):
+            self.metadata.equal(None)
 
-    def test_left_not_mapping(self):
-        self.assertFalse(self.metadata._is_attributes(self.field, None, {}))
+    def test_cannot_compare(self):
+        other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
+        emsg = "Cannot compare"
+        with self.assertRaisesRegex(TypeError, emsg):
+            self.metadata.equal(other)
 
-    def test_right_not_mapping(self):
-        self.assertFalse(self.metadata._is_attributes(self.field, {}, None))
+    def test_lenient_default(self):
+        return_value = sentinel.return_value
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as mocker:
+            result = self.metadata.equal(self.metadata)
+
+        self.assertEqual(return_value, result)
+        self.assertEqual(1, mocker.call_count)
+        (arg,), kwargs = mocker.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+    def test_lenient_true(self):
+        return_value = sentinel.return_value
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as m__eq__:
+            with mock.patch.object(LENIENT, "context") as mcontext:
+                result = self.metadata.equal(self.metadata, lenient=True)
+
+        self.assertEqual(return_value, result)
+        self.assertEqual(1, mcontext.call_count)
+        (arg,), kwargs = mcontext.call_args
+        self.assertEqual(qualname(BaseMetadata.equal), arg)
+        self.assertEqual(dict(), kwargs)
+
+        self.assertEqual(1, m__eq__.call_count)
+        (arg,), kwargs = m__eq__.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
+
+    def test_lenient_false(self):
+        return_value = sentinel.return_value
+        with mock.patch.object(
+            BaseMetadata, "__eq__", return_value=return_value
+        ) as m__eq__:
+            with mock.patch.object(LENIENT, "context") as mcontext:
+                result = self.metadata.equal(self.metadata, lenient=False)
+
+        self.assertEqual(1, mcontext.call_count)
+        args, kwargs = mcontext.call_args
+        self.assertEqual((), args)
+        self.assertEqual({qualname(BaseMetadata.equal): False}, kwargs)
+
+        self.assertEqual(return_value, result)
+        self.assertEqual(1, m__eq__.call_count)
+        (arg,), kwargs = m__eq__.call_args
+        self.assertEqual(id(self.metadata), id(arg))
+        self.assertEqual(dict(), kwargs)
 
 
 class Test_name(tests.IrisTest):
