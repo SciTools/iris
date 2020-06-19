@@ -76,6 +76,7 @@ class Test___eq__(tests.IrisTest):
         qualname___eq__ = qualname(BaseMetadata.__eq__)
         self.assertIn(qualname___eq__, LENIENT)
         self.assertTrue(LENIENT[qualname___eq__])
+        self.assertTrue(LENIENT[BaseMetadata.__eq__])
 
     def test_cannot_compare_non_class(self):
         result = self.metadata.__eq__(None)
@@ -1092,6 +1093,7 @@ class Test_combine(tests.IrisTest):
         qualname_combine = qualname(BaseMetadata.combine)
         self.assertIn(qualname_combine, LENIENT)
         self.assertTrue(LENIENT[qualname_combine])
+        self.assertTrue(LENIENT[BaseMetadata.combine])
 
     def test_cannot_combine_non_class(self):
         emsg = "Cannot combine"
@@ -1178,6 +1180,7 @@ class Test_difference(tests.IrisTest):
         qualname_difference = qualname(BaseMetadata.difference)
         self.assertIn(qualname_difference, LENIENT)
         self.assertTrue(LENIENT[qualname_difference])
+        self.assertTrue(LENIENT[BaseMetadata.difference])
 
     def test_cannot_differ_non_class(self):
         emsg = "Cannot differ"
@@ -1257,6 +1260,7 @@ class Test_equal(tests.IrisTest):
         qualname_equal = qualname(BaseMetadata.equal)
         self.assertIn(qualname_equal, LENIENT)
         self.assertTrue(LENIENT[qualname_equal])
+        self.assertTrue((LENIENT[BaseMetadata.equal]))
 
     def test_cannot_compare_non_class(self):
         emsg = "Cannot compare"

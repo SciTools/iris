@@ -116,7 +116,6 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" equality.
-                print("strict __eq__")
                 result = super().__eq__(other)
 
         return result
