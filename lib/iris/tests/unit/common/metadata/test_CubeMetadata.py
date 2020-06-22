@@ -51,9 +51,10 @@ class Test(tests.IrisTest):
         self.units = mock.sentinel.units
         self.attributes = mock.sentinel.attributes
         self.cell_methods = mock.sentinel.cell_methods
+        self.cls = CubeMetadata
 
     def test_repr(self):
-        metadata = CubeMetadata(
+        metadata = self.cls(
             standard_name=self.standard_name,
             long_name=self.long_name,
             var_name=self.var_name,
@@ -84,10 +85,10 @@ class Test(tests.IrisTest):
             "attributes",
             "cell_methods",
         )
-        self.assertEqual(CubeMetadata._fields, expected)
+        self.assertEqual(self.cls._fields, expected)
 
     def test_bases(self):
-        self.assertTrue(issubclass(CubeMetadata, BaseMetadata))
+        self.assertTrue(issubclass(self.cls, BaseMetadata))
 
 
 class Test___eq__(tests.IrisTest):
