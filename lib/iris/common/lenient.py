@@ -171,35 +171,24 @@ def lenient_service(*dargs):
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.
+        # Thus the (single) argument is a function to be wrapped.
+        # We just register the argument function as a lenient service, and
+        # return it unchanged
         (func,) = dargs
 
         LENIENT.register_service(func)
 
-        @wraps(func)
-        def lenient_service_inner_naked(*args, **kwargs):
-            """
-            Closure wrapper function to execute the lenient service
-            function/method.
+        # This decorator registers 'func': the func itself is unchanged.
+        result = func
 
-            """
-            return func(*args, **kwargs)
-
-        result = lenient_service_inner_naked
     else:
         # The decorator has been called with no arguments.
+        # Return a decorator, to apply to 'func' immediately following.
         def lenient_service_outer(func):
             LENIENT.register_service(func)
 
-            @wraps(func)
-            def lenient_service_inner(*args, **kwargs):
-                """
-                Closure wrapper function to execute the lenient service
-                function/method.
-
-                """
-                return func(*args, **kwargs)
-
-            return lenient_service_inner
+            # Decorator registers 'func', but func itself is unchanged.
+            return func
 
         result = lenient_service_outer
 
