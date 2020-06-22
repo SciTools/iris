@@ -739,9 +739,11 @@ class CoordMetadata(BaseMetadata):
         """
         # Perform "strict" combination for "coord_system" and "climatological".
         def func(field):
-            value = getattr(self, field)
-            return value if value == getattr(other, field) else None
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
 
+        # Note that, we use "_members" not "_fields".
         values = [func(field) for field in self._members]
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
@@ -794,6 +796,7 @@ class CoordMetadata(BaseMetadata):
             right = getattr(other, field)
             return None if left == right else (left, right)
 
+        # Note that, we use "_members" not "_fields".
         values = [func(field) for field in self._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
