@@ -159,7 +159,7 @@ class Test(tests.IrisTest):
         qualname_client = self.client.format("test_call_kwargs_iterable")
         self.assertEqual(result[self.active], qualname_client)
         self.assertIn(qualname_client, result)
-        self.assertEqual(result[qualname_client], services)
+        self.assertEqual(set(result[qualname_client]), set(services))
 
     def test_call_client_args_kwargs(self):
         @lenient_client()

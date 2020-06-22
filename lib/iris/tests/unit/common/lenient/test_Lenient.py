@@ -548,7 +548,8 @@ class Test_context(tests.IrisTest):
         self.assertEqual(pre, self.default)
         expected = self.default.copy()
         expected.update(dict(active=client, client=services))
-        self.assertEqual(context, expected)
+        self.assertEqual(context["active"], expected["active"])
+        self.assertEqual(set(context["client"]), set(expected["client"]))
         self.assertEqual(post, self.default)
 
     def test_args_callable(self):
@@ -568,7 +569,8 @@ class Test_context(tests.IrisTest):
         self.assertEqual(pre, self.default)
         expected = self.default.copy()
         expected.update(dict(active=client, client=qualname_services))
-        self.assertEqual(context, expected)
+        self.assertEqual(context["active"], expected["active"])
+        self.assertEqual(set(context["client"]), set(expected["client"]))
         self.assertEqual(post, self.default)
 
     def test_context_runtime(self):

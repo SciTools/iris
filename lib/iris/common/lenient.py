@@ -353,14 +353,29 @@ class Lenient(threading.local):
             provided only as an example.
 
         """
+
+        def update_client(client, services):
+            if client in self.__dict__:
+                existing_services = self.__dict__[client]
+            else:
+                existing_services = ()
+
+            self.__dict__[client] = tuple(set(existing_services + services))
+
         # Save the original state.
         original_state = deepcopy(self.__dict__)
+
         # Temporarily update the state with the kwargs first.
         for name, value in kwargs.items():
             self[name] = value
-        # Temporarily update the client/services, if provided.
+
+        # Get the active client.
+        active = self.__dict__["active"]
+
         if args:
-            active = self.__dict__["active"]
+            # Update the client with the provided services.
+            new_services = tuple([qualname(arg) for arg in args])
+
             if active is None:
                 # Ensure not to use "context" as the ephemeral name
                 # of the context manager runtime "active" lenient client,
@@ -368,7 +383,20 @@ class Lenient(threading.local):
                 # i.e., Lenient.context, via Lenient.__getattr__
                 active = "__context"
                 self.__dict__["active"] = active
-            self.__dict__[active] = tuple([qualname(arg) for arg in args])
+                self.__dict__[active] = new_services
+            else:
+                # Append provided services to any pre-existing services of the active client.
+                update_client(active, new_services)
+        else:
+            # Append previous ephemeral services (for non-specific client) to the active client.
+            if (
+                active is not None
+                and active != "__context"
+                and "__context" in self.__dict__
+            ):
+                new_services = self.__dict__["__context"]
+                update_client(active, new_services)
+
         try:
             yield
         finally:
