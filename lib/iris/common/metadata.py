@@ -841,7 +841,7 @@ class CubeMetadata(BaseMetadata):
 
         Args:
 
-        * other (CubeMeatadata):
+        * other (CubeMetadata):
             The other cube metadata participating in the lenient combination.
 
         Returns:
