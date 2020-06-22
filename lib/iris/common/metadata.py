@@ -308,6 +308,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     result = (left == right) or left is None or right is None
                 return result
 
+            # Note that, we use "_members" not "_fields".
             result = all([func(field) for field in BaseMetadata._members])
 
         return result
@@ -381,6 +382,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 )
             return result
 
+        # Note that, we use "_members" not "_fields".
         return [func(field) for field in BaseMetadata._members]
 
     @staticmethod
