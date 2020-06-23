@@ -8,6 +8,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from functools import wraps
+import logging
 import re
 
 from .lenient import LENIENT, lenient_service, qualname
@@ -29,6 +30,9 @@ __all__ = [
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
+
+# Configure the logger.
+logger = logging.getLogger(__name__)
 
 
 class _NamedTupleMeta(ABCMeta):
@@ -112,10 +116,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if LENIENT(self.__eq__) or LENIENT(self.equal):
                 # Perform "lenient" equality.
-                print("lenient __eq__")
+                logger.debug(
+                    "lenient", extra=dict(cls=self.__class__.__name__)
+                )
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" equality.
+                logger.debug("strict", extra=dict(cls=self.__class__.__name__))
                 result = super().__eq__(other)
 
         return result
@@ -203,11 +210,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         """Perform associated metadata member combination."""
         if LENIENT(self.combine):
             # Perform "lenient" combine.
-            print("lenient combine")
+            logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
             values = self._combine_lenient(other)
         else:
             # Perform "strict" combine.
-            print("strict combine")
+            logger.debug("strict", extra=dict(cls=self.__class__.__name__))
 
             def func(field):
                 value = getattr(self, field)
@@ -331,11 +338,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         """Perform associated metadata member difference."""
         if LENIENT(self.difference):
             # Perform "lenient" difference.
-            print("lenient difference")
+            logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
             values = self._difference_lenient(other)
         else:
             # Perform "strict" difference.
-            print("strict difference")
+            logger.debug("strict", extra=dict(cls=self.__class__.__name__))
 
             def func(field):
                 left = getattr(self, field)

@@ -1,0 +1,29 @@
+version: 1
+
+formatters:
+  basic:
+    format: "%(asctime)s %(name)s %(levelname)s - %(message)s"
+    datefmt: "%d-%m-%Y %H:%M:%S"
+  basic-func:
+    format: "%(asctime)s %(name)s %(levelname)s - %(message)s [%(cls)s.%(funcName)s]"
+    datefmt: "%d-%m-%Y %H:%M:%S"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: basic
+    stream: ext://sys.stdout
+  console-func:
+    class: logging.StreamHandler
+    formatter: basic-func
+    stream: ext://sys.stdout
+
+loggers:
+  iris.common.metadata:
+    level: INFO
+    handlers: [console-func]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console]
