@@ -144,6 +144,9 @@ class TestRunner:
             "--process-timeout=180",
         ]
 
+        if self.stop:
+            args.append("--stop")
+
         result = True
         for test in tests:
             args[1] = test
