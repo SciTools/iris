@@ -143,12 +143,6 @@ class TestRunner:
             regexp_pat,
             "--process-timeout=180",
         ]
-        try:
-            import gribapi  # noqa
-        except ImportError:
-            args.append("--exclude=^grib$")
-        if self.stop:
-            args.append("--stop")
 
         result = True
         for test in tests:
