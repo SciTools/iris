@@ -6,8 +6,8 @@ Saving Iris cubes
 
 Iris supports the saving of cubes and cube lists to:
 
-* CF netCDF (1.5)
-* GRIB (edition 2)
+* CF netCDF (version 1.6)
+* GRIB edition 2  (if `iris-grib  <https://github.com/SciTools/iris-grib>`_ is installed)
 * Met Office PP
 
 
@@ -57,7 +57,6 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
 See 
 
 * :py:func:`iris.fileformats.netcdf.save`
-* :py:func:`iris.fileformats.grib.save_grib2`
 * :py:func:`iris.fileformats.pp.save`
 
 for more details on supported arguments for the individual savers.
@@ -70,14 +69,14 @@ When saving to GRIB or PP, the save process may be intercepted between the trans
 For example, a GRIB2 message with a particular known long_name may need to be saved to a specific parameter code and type of statistical process.  This can be achieved by::
 
         def tweaked_messages(cube):
-            for cube, grib_message in iris.fileformats.grib.as_pairs(cube):
+            for cube, grib_message in iris_grib.save_pairs_from_cube(cube):
                 # post process the GRIB2 message, prior to saving
                 if cube.name() == 'carefully_customised_precipitation_amount':
                     gribapi.grib_set_long(grib_message, "typeOfStatisticalProcess", 1)
                     gribapi.grib_set_long(grib_message, "parameterCategory", 1)
                     gribapi.grib_set_long(grib_message, "parameterNumber", 1)
                 yield grib_message
-        iris.fileformats.grib.save_messages(tweaked_messages(cubes[0]), '/tmp/agrib2.grib2')
+        iris_grib.save_messages(tweaked_messages(cubes[0]), '/tmp/agrib2.grib2')
 
 Similarly a PP field may need to be written out with a specific value for LBEXP.  This can be achieved by::
 
