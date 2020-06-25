@@ -51,6 +51,11 @@ class TestRealistic4d(tests.GraphicsTest):
         _ = cube.coord("altitude")
         self.assertCML(cube, ("derived", "column.cml"))
 
+    def test_removing_derived_coord(self):
+        cube = self.cube
+        cube.remove_coord("altitude")
+        self.assertCML(cube, ("derived", "removed_derived_coord.cml"))
+
     def test_removing_sigma(self):
         # Check the cube remains OK when sigma is removed.
         cube = self.cube

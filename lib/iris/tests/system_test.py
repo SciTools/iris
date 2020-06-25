@@ -65,8 +65,6 @@ class SystemInitialTest(tests.IrisTest):
         )
 
         filetypes = (".nc", ".pp")
-        if tests.GRIB_AVAILABLE:
-            filetypes += (".grib2",)
         for filetype in filetypes:
             saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
             iris.save(cm, saved_tmpfile)
