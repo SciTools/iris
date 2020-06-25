@@ -140,7 +140,6 @@ modindex_common_prefix = ["iris"]
 
 intersphinx_mapping = {
     "cartopy": ("http://scitools.org.uk/cartopy/docs/latest/", None),
-    "iris-grib": ("http://iris-grib.readthedocs.io/en/latest/", None),
     "matplotlib": ("http://matplotlib.org/", None),
     "numpy": ("http://docs.scipy.org/doc/numpy/", None),
     "python": ("http://docs.python.org/2.7", None),

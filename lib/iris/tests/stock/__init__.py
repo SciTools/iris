@@ -721,12 +721,6 @@ def realistic_4d_w_missing_data():
     return cube
 
 
-def global_grib2():
-    path = tests.get_data_path(("GRIB", "global_t", "global.grib2"))
-    cube = iris.load_cube(path)
-    return cube
-
-
 def ocean_sigma_z():
     """
     Return a sample cube with an
