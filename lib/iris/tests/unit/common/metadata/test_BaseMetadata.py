@@ -13,7 +13,6 @@ Unit tests for the :class:`iris.common.metadata.BaseMetadata`.
 import iris.tests as tests
 
 from collections import OrderedDict
-from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
@@ -112,7 +111,7 @@ class Test___eq__(tests.IrisTest):
 
     def test_strict_same(self):
         self.assertTrue(self.metadata.__eq__(self.metadata))
-        other = deepcopy(self.metadata)
+        other = self.cls(**self.kwargs)
         self.assertTrue(self.metadata.__eq__(other))
         self.assertTrue(other.__eq__(self.metadata))
 
