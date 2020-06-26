@@ -100,13 +100,6 @@ install:
 
   - python setup.py --quiet install
 
-  # Docs builds and examples tests also need grib, for gallery examples.
-  - >
-    if [[ "${TEST_TARGET}" == 'docstest' || "${TEST_TARGET}" == 'example' ]]; then
-        conda install --quiet -n ${ENV_NAME} python-eccodes;
-        conda install --quiet -n ${ENV_NAME} --no-deps iris-grib;
-    fi
-
 script:
   # Capture install-dir: As a test command must be last for get Travis to check
   # the RC, so it's best to start each operation with an absolute cd.

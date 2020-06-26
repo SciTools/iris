@@ -108,7 +108,8 @@
     ],
     "example_tests.test_polar_stereo.TestPolarStereo.test_polar_stereo.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e168317a92d36d89c5bb9e94c55e6f0c9a93c15a6ec584763b21716791de3a81.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/b9e16079971e9e93c8ce0f84c31e3b929f92c0ff3ca1c17e39e03961c07e3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/b9e16079971e9e93c8ce0f84c31e3b929f92c0ff3ca1c17e39e03961c07e3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ba1e615ec7e097a9961f9cb190f838e091c2c1e73f07c11f6f386b3cc1783e11.png"
     ],
     "example_tests.test_polynomial_fit.TestPolynomialFit.test_polynomial_fit.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/abff4a9df26435886520c97f12414695c4b69d23934bc86adc969237d68ccc6f.png",
