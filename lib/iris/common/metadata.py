@@ -488,13 +488,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             detect whether this lenient operation is enabled.
 
         Returns:
-            Metadata instance.
+            Metadata instance of member differences or None.
 
         """
         result = self._api_common(
             other, self.difference, self._difference, "differ", lenient=lenient
         )
-        return self.__class__(*result)
+        result = (
+            None
+            if all([item is None for item in result])
+            else self.__class__(*result)
+        )
+        return result
 
     @lenient_service
     def equal(self, other, lenient=None):

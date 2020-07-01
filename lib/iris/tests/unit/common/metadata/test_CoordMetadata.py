@@ -468,30 +468,20 @@ class Test_difference(tests.IrisTest):
     def test_op_lenient_same(self):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
-        expected = deepcopy(self.none)._asdict()
 
         with mock.patch("iris.common.metadata.LENIENT", return_value=True):
-            self.assertEqual(
-                expected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                expected, rmetadata.difference(lmetadata)._asdict()
-            )
+            self.assertIsNone(lmetadata.difference(rmetadata))
+            self.assertIsNone(rmetadata.difference(lmetadata))
 
     def test_op_lenient_same_none(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["var_name"] = None
         rmetadata = self.cls(**right)
-        expected = deepcopy(self.none)._asdict()
 
         with mock.patch("iris.common.metadata.LENIENT", return_value=True):
-            self.assertEqual(
-                expected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                expected, rmetadata.difference(lmetadata)._asdict()
-            )
+            self.assertIsNone(lmetadata.difference(rmetadata))
+            self.assertIsNone(rmetadata.difference(lmetadata))
 
     def test_op_lenient_same_members_none(self):
         for member in self.cls._members:
@@ -555,15 +545,10 @@ class Test_difference(tests.IrisTest):
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
-        expected = deepcopy(self.none)._asdict()
 
         with mock.patch("iris.common.metadata.LENIENT", return_value=False):
-            self.assertEqual(
-                expected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                expected, rmetadata.difference(lmetadata)._asdict()
-            )
+            self.assertIsNone(lmetadata.difference(rmetadata))
+            self.assertIsNone(rmetadata.difference(lmetadata))
 
     def test_op_strict_different(self):
         left = self.values.copy()
