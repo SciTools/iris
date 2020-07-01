@@ -15,7 +15,7 @@ import iris.tests as tests
 from inspect import getmodule
 from unittest.mock import sentinel
 
-from iris.common.lenient import LENIENT, lenient_client
+from iris.common.lenient import _LENIENT, lenient_client
 
 
 class Test(tests.IrisTest):
@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
     def test_call_naked(self):
         @lenient_client
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = myclient()
         self.assertIn(self.active, result)
@@ -60,7 +60,7 @@ class Test(tests.IrisTest):
 
     def test_call_naked_alternative(self):
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = lenient_client(myclient)()
         self.assertIn(self.active, result)
@@ -87,7 +87,7 @@ class Test(tests.IrisTest):
     def test_call_no_kwargs(self):
         @lenient_client()
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = myclient()
         self.assertIn(self.active, result)
@@ -97,7 +97,7 @@ class Test(tests.IrisTest):
 
     def test_call_no_kwargs_alternative(self):
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = (lenient_client())(myclient)()
         self.assertIn(self.active, result)
@@ -108,7 +108,7 @@ class Test(tests.IrisTest):
     def test_call_kwargs_none(self):
         @lenient_client(services=None)
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = myclient()
         self.assertIn(self.active, result)
@@ -121,7 +121,7 @@ class Test(tests.IrisTest):
 
         @lenient_client(services=service)
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = myclient()
         self.assertIn(self.active, result)
@@ -136,7 +136,7 @@ class Test(tests.IrisTest):
 
         @lenient_client(services=myservice)
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         test_name = "test_call_kwargs_single_callable"
         result = myclient()
@@ -152,7 +152,7 @@ class Test(tests.IrisTest):
 
         @lenient_client(services=services)
         def myclient():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         result = myclient()
         self.assertIn(self.active, result)

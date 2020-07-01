@@ -11,7 +11,7 @@ from functools import wraps
 import logging
 import re
 
-from .lenient import LENIENT, lenient_service, qualname
+from .lenient import _LENIENT, lenient_service, qualname
 
 
 __all__ = [
@@ -114,7 +114,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         """
         result = NotImplemented
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
-            if LENIENT(self.__eq__) or LENIENT(self.equal):
+            if _LENIENT(self.__eq__) or _LENIENT(self.equal):
                 # Perform "lenient" equality.
                 logger.debug(
                     "lenient", extra=dict(cls=self.__class__.__name__)
@@ -201,14 +201,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 # is a hashable key.
                 args, kwargs = (), {qualname(func_service): False}
 
-            with LENIENT.context(*args, **kwargs):
+            with _LENIENT.context(*args, **kwargs):
                 result = func_operation(other)
 
         return result
 
     def _combine(self, other):
         """Perform associated metadata member combination."""
-        if LENIENT(self.combine):
+        if _LENIENT(self.combine):
             # Perform "lenient" combine.
             logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
             values = self._combine_lenient(other)
@@ -336,7 +336,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     def _difference(self, other):
         """Perform associated metadata member difference."""
-        if LENIENT(self.difference):
+        if _LENIENT(self.difference):
             # Perform "lenient" difference.
             logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
             values = self._difference_lenient(other)

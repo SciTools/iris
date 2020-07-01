@@ -16,7 +16,7 @@ from collections import OrderedDict
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-from iris.common.lenient import LENIENT, qualname
+from iris.common.lenient import _LENIENT, qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
 
 
@@ -75,9 +75,9 @@ class Test___eq__(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname___eq__ = qualname(self.cls.__eq__)
-        self.assertIn(qualname___eq__, LENIENT)
-        self.assertTrue(LENIENT[qualname___eq__])
-        self.assertTrue(LENIENT[self.cls.__eq__])
+        self.assertIn(qualname___eq__, _LENIENT)
+        self.assertTrue(_LENIENT[qualname___eq__])
+        self.assertTrue(_LENIENT[self.cls.__eq__])
 
     def test_cannot_compare_non_class(self):
         result = self.metadata.__eq__(None)
@@ -91,7 +91,7 @@ class Test___eq__(tests.IrisTest):
     def test_lenient(self):
         return_value = sentinel.return_value
         with mock.patch(
-            "iris.common.metadata.LENIENT", return_value=True
+            "iris.common.metadata._LENIENT", return_value=True
         ) as mlenient:
             with mock.patch.object(
                 self.cls, "_compare_lenient", return_value=return_value
@@ -206,7 +206,7 @@ class Test__combine(tests.IrisTest):
         return_value = sentinel._combine_lenient
         other = sentinel.other
         with mock.patch(
-            "iris.common.metadata.LENIENT", return_value=True
+            "iris.common.metadata._LENIENT", return_value=True
         ) as mlenient:
             with mock.patch.object(
                 self.cls, "_combine_lenient", return_value=return_value
@@ -231,7 +231,7 @@ class Test__combine(tests.IrisTest):
         values["var_name"] = dummy
         values["attributes"] = dummy
         other = self.cls(**values)
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             result = self.metadata._combine(other)
 
         expected = [
@@ -665,7 +665,7 @@ class Test__difference(tests.IrisTest):
         return_value = sentinel._difference_lenient
         other = sentinel.other
         with mock.patch(
-            "iris.common.metadata.LENIENT", return_value=True
+            "iris.common.metadata._LENIENT", return_value=True
         ) as mlenient:
             with mock.patch.object(
                 self.cls, "_difference_lenient", return_value=return_value
@@ -690,7 +690,7 @@ class Test__difference(tests.IrisTest):
         values["units"] = dummy
         other = self.cls(**values)
         method = "_difference_strict_attributes"
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             with mock.patch.object(
                 self.cls, method, return_value=None
             ) as mdifference:
@@ -1097,9 +1097,9 @@ class Test_combine(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_combine = qualname(self.cls.combine)
-        self.assertIn(qualname_combine, LENIENT)
-        self.assertTrue(LENIENT[qualname_combine])
-        self.assertTrue(LENIENT[self.cls.combine])
+        self.assertIn(qualname_combine, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_combine])
+        self.assertTrue(_LENIENT[self.cls.combine])
 
     def test_cannot_combine_non_class(self):
         emsg = "Cannot combine"
@@ -1130,7 +1130,7 @@ class Test_combine(tests.IrisTest):
         with mock.patch.object(
             self.cls, "_combine", return_value=return_value
         ) as mcombine:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.combine(self.metadata, lenient=True)
 
         self.assertEqual(1, mcontext.call_count)
@@ -1149,7 +1149,7 @@ class Test_combine(tests.IrisTest):
         with mock.patch.object(
             self.cls, "_combine", return_value=return_value
         ) as mcombine:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.combine(self.metadata, lenient=False)
 
         self.assertEqual(1, mcontext.call_count)
@@ -1185,9 +1185,9 @@ class Test_difference(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_difference = qualname(self.cls.difference)
-        self.assertIn(qualname_difference, LENIENT)
-        self.assertTrue(LENIENT[qualname_difference])
-        self.assertTrue(LENIENT[self.cls.difference])
+        self.assertIn(qualname_difference, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_difference])
+        self.assertTrue(_LENIENT[self.cls.difference])
 
     def test_cannot_differ_non_class(self):
         emsg = "Cannot differ"
@@ -1218,7 +1218,7 @@ class Test_difference(tests.IrisTest):
         with mock.patch.object(
             self.cls, "_difference", return_value=return_value
         ) as mdifference:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.difference(self.metadata, lenient=True)
 
         self.assertEqual(1, mcontext.call_count)
@@ -1237,7 +1237,7 @@ class Test_difference(tests.IrisTest):
         with mock.patch.object(
             self.cls, "_difference", return_value=return_value
         ) as mdifference:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.difference(self.metadata, lenient=False)
 
         self.assertEqual(mcontext.call_count, 1)
@@ -1266,9 +1266,9 @@ class Test_equal(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_equal = qualname(self.cls.equal)
-        self.assertIn(qualname_equal, LENIENT)
-        self.assertTrue(LENIENT[qualname_equal])
-        self.assertTrue((LENIENT[self.cls.equal]))
+        self.assertIn(qualname_equal, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_equal])
+        self.assertTrue((_LENIENT[self.cls.equal]))
 
     def test_cannot_compare_non_class(self):
         emsg = "Cannot compare"
@@ -1299,7 +1299,7 @@ class Test_equal(tests.IrisTest):
         with mock.patch.object(
             self.cls, "__eq__", return_value=return_value
         ) as m__eq__:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.equal(self.metadata, lenient=True)
 
         self.assertEqual(return_value, result)
@@ -1318,7 +1318,7 @@ class Test_equal(tests.IrisTest):
         with mock.patch.object(
             self.cls, "__eq__", return_value=return_value
         ) as m__eq__:
-            with mock.patch.object(LENIENT, "context") as mcontext:
+            with mock.patch.object(_LENIENT, "context") as mcontext:
                 result = self.metadata.equal(self.metadata, lenient=False)
 
         self.assertEqual(1, mcontext.call_count)

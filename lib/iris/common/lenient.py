@@ -13,8 +13,6 @@ import threading
 
 
 __all__ = [
-    "LENIENT",
-    "Lenient",
     "lenient_client",
     "lenient_service",
     "qualname",
@@ -96,7 +94,7 @@ def lenient_client(*dargs, services=None):
             as active at runtime before executing it.
 
             """
-            with LENIENT.context(active=qualname(func)):
+            with _LENIENT.context(active=qualname(func)):
                 result = func(*args, **kwargs)
             return result
 
@@ -117,7 +115,7 @@ def lenient_client(*dargs, services=None):
                 as active at runtime before executing it.
 
                 """
-                with LENIENT.context(*services, active=qualname(func)):
+                with _LENIENT.context(*services, active=qualname(func)):
                     result = func(*args, **kwargs)
                 return result
 
@@ -176,7 +174,7 @@ def lenient_service(*dargs):
         # return it unchanged
         (func,) = dargs
 
-        LENIENT.register_service(func)
+        _LENIENT.register_service(func)
 
         # This decorator registers 'func': the func itself is unchanged.
         result = func
@@ -185,7 +183,7 @@ def lenient_service(*dargs):
         # The decorator has been called with no arguments.
         # Return a decorator, to apply to 'func' immediately following.
         def lenient_service_outer(func):
-            LENIENT.register_service(func)
+            _LENIENT.register_service(func)
 
             # Decorator registers 'func', but func itself is unchanged.
             return func
@@ -218,7 +216,7 @@ def qualname(func):
     return result
 
 
-class Lenient(threading.local):
+class _Lenient(threading.local):
     def __init__(self, *args, **kwargs):
         """
         A container for managing the run-time lenient services and client
@@ -239,7 +237,7 @@ class Lenient(threading.local):
 
         For example::
 
-            Lenient(service1, service2, client1=service1, client2=(service1, service2))
+            _Lenient(service1, service2, client1=service1, client2=(service1, service2))
 
         Note that, the values of these options are thread-specific.
 
@@ -345,11 +343,11 @@ class Lenient(threading.local):
         state is restored.
 
         For example::
-            with iris.LENIENT.context(example_lenient_flag=False):
+            with iris._LENIENT.context(example_lenient_flag=False):
                 # ... code that expects some non-lenient behaviour
 
         .. note::
-            iris.LENIENT.example_lenient_flag does not exist and is
+            iris._LENIENT.example_lenient_flag does not exist and is
             provided only as an example.
 
         """
@@ -380,7 +378,7 @@ class Lenient(threading.local):
                 # Ensure not to use "context" as the ephemeral name
                 # of the context manager runtime "active" lenient client,
                 # as this causes a namespace clash with this method
-                # i.e., Lenient.context, via Lenient.__getattr__
+                # i.e., _Lenient.context, via _Lenient.__getattr__
                 active = "__context"
                 self.__dict__["active"] = active
                 self.__dict__[active] = new_services
@@ -549,4 +547,4 @@ class Lenient(threading.local):
 
 
 #: Instance that manages all Iris run-time lenient client and service options.
-LENIENT = Lenient()
+_LENIENT = _Lenient()

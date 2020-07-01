@@ -16,7 +16,7 @@ from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-from iris.common.lenient import LENIENT, qualname
+from iris.common.lenient import _LENIENT, qualname
 from iris.common.metadata import BaseMetadata, CellMeasureMetadata
 
 
@@ -88,9 +88,9 @@ class Test___eq__(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname___eq__ = qualname(self.cls.__eq__)
-        self.assertIn(qualname___eq__, LENIENT)
-        self.assertTrue(LENIENT[qualname___eq__])
-        self.assertTrue(LENIENT[self.cls.__eq__])
+        self.assertIn(qualname___eq__, _LENIENT)
+        self.assertTrue(_LENIENT[qualname___eq__])
+        self.assertTrue(_LENIENT[self.cls.__eq__])
 
     def test_call(self):
         other = sentinel.other
@@ -111,7 +111,7 @@ class Test___eq__(tests.IrisTest):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertTrue(lmetadata.__eq__(rmetadata))
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
@@ -121,7 +121,7 @@ class Test___eq__(tests.IrisTest):
         right["var_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertTrue(lmetadata.__eq__(rmetadata))
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
@@ -131,7 +131,7 @@ class Test___eq__(tests.IrisTest):
         right["measure"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -141,7 +141,7 @@ class Test___eq__(tests.IrisTest):
         right["units"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -151,7 +151,7 @@ class Test___eq__(tests.IrisTest):
         right["measure"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -159,7 +159,7 @@ class Test___eq__(tests.IrisTest):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertTrue(lmetadata.__eq__(rmetadata))
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
@@ -169,7 +169,7 @@ class Test___eq__(tests.IrisTest):
         right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -179,7 +179,7 @@ class Test___eq__(tests.IrisTest):
         right["measure"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -189,7 +189,7 @@ class Test___eq__(tests.IrisTest):
         right["long_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -199,7 +199,7 @@ class Test___eq__(tests.IrisTest):
         right["measure"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
@@ -225,9 +225,9 @@ class Test_combine(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_combine = qualname(self.cls.combine)
-        self.assertIn(qualname_combine, LENIENT)
-        self.assertTrue(LENIENT[qualname_combine])
-        self.assertTrue(LENIENT[self.cls.combine])
+        self.assertIn(qualname_combine, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_combine])
+        self.assertTrue(_LENIENT[self.cls.combine])
 
     def test_lenient_default(self):
         other = sentinel.other
@@ -263,7 +263,7 @@ class Test_combine(tests.IrisTest):
         rmetadata = self.cls(**self.values)
         expected = self.values
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -274,7 +274,7 @@ class Test_combine(tests.IrisTest):
         rmetadata = self.cls(**right)
         expected = self.values
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -285,7 +285,7 @@ class Test_combine(tests.IrisTest):
         rmetadata = self.cls(**right)
         expected = right.copy()
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertTrue(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertTrue(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -297,7 +297,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["units"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -309,7 +309,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["measure"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -318,7 +318,7 @@ class Test_combine(tests.IrisTest):
         rmetadata = self.cls(**self.values)
         expected = self.values.copy()
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -330,7 +330,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["long_name"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -342,7 +342,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["measure"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -354,7 +354,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["long_name"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -366,7 +366,7 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["measure"] = None
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
@@ -392,9 +392,9 @@ class Test_difference(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_difference = qualname(self.cls.difference)
-        self.assertIn(qualname_difference, LENIENT)
-        self.assertTrue(LENIENT[qualname_difference])
-        self.assertTrue(LENIENT[self.cls.difference])
+        self.assertIn(qualname_difference, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_difference])
+        self.assertTrue(_LENIENT[self.cls.difference])
 
     def test_lenient_default(self):
         other = sentinel.other
@@ -429,7 +429,7 @@ class Test_difference(tests.IrisTest):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertIsNone(lmetadata.difference(rmetadata))
             self.assertIsNone(rmetadata.difference(lmetadata))
 
@@ -439,7 +439,7 @@ class Test_difference(tests.IrisTest):
         right["var_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertIsNone(lmetadata.difference(rmetadata))
             self.assertIsNone(rmetadata.difference(lmetadata))
 
@@ -453,7 +453,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["measure"] = (None, sentinel.measure)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -472,7 +472,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["units"] = lexpected["units"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -491,7 +491,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["measure"] = lexpected["measure"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=True):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -503,7 +503,7 @@ class Test_difference(tests.IrisTest):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertIsNone(lmetadata.difference(rmetadata))
             self.assertIsNone(rmetadata.difference(lmetadata))
 
@@ -518,7 +518,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["long_name"] = lexpected["long_name"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -537,7 +537,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["measure"] = lexpected["measure"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -556,7 +556,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["long_name"] = lexpected["long_name"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -575,7 +575,7 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["measure"] = lexpected["measure"][::-1]
 
-        with mock.patch("iris.common.metadata.LENIENT", return_value=False):
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
             self.assertEqual(
                 lexpected, lmetadata.difference(rmetadata)._asdict()
             )
@@ -594,9 +594,9 @@ class Test_equal(tests.IrisTest):
 
     def test_lenient_service(self):
         qualname_equal = qualname(self.cls.equal)
-        self.assertIn(qualname_equal, LENIENT)
-        self.assertTrue(LENIENT[qualname_equal])
-        self.assertTrue(LENIENT[self.cls.equal])
+        self.assertIn(qualname_equal, _LENIENT)
+        self.assertTrue(_LENIENT[qualname_equal])
+        self.assertTrue(_LENIENT[self.cls.equal])
 
     def test_lenient_default(self):
         other = sentinel.other

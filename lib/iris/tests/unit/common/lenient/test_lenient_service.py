@@ -15,7 +15,7 @@ import iris.tests as tests
 from inspect import getmodule
 from unittest.mock import sentinel
 
-from iris.common.lenient import LENIENT, lenient_service
+from iris.common.lenient import _LENIENT, lenient_service
 
 
 class Test(tests.IrisTest):
@@ -38,10 +38,10 @@ class Test(tests.IrisTest):
     def test_call_naked(self):
         @lenient_service
         def myservice():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call_naked")
-        state = LENIENT.__dict__
+        state = _LENIENT.__dict__
         self.assertIn(qualname_service, state)
         self.assertTrue(state[qualname_service])
         result = myservice()
@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
 
     def test_call_naked_alternative(self):
         def myservice():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call_naked_alternative")
         result = lenient_service(myservice)()
@@ -76,10 +76,10 @@ class Test(tests.IrisTest):
     def test_call(self):
         @lenient_service()
         def myservice():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call")
-        state = LENIENT.__dict__
+        state = _LENIENT.__dict__
         self.assertIn(qualname_service, state)
         self.assertTrue(state[qualname_service])
         result = myservice()
@@ -88,7 +88,7 @@ class Test(tests.IrisTest):
 
     def test_call_alternative(self):
         def myservice():
-            return LENIENT.__dict__.copy()
+            return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call_alternative")
         result = (lenient_service())(myservice)()

@@ -17,7 +17,7 @@ from collections import Iterable
 from iris.common.lenient import (
     LENIENT_ENABLE_DEFAULT,
     LENIENT_PROTECTED,
-    Lenient,
+    _Lenient,
     qualname,
 )
 
@@ -27,18 +27,18 @@ class Test___init__(tests.IrisTest):
         self.expected = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
 
     def test_default(self):
-        lenient = Lenient()
+        lenient = _Lenient()
         self.assertEqual(self.expected, lenient.__dict__)
 
     def test_args_service_str(self):
         service = "service1"
-        lenient = Lenient(service)
+        lenient = _Lenient(service)
         self.expected.update(dict(service1=True))
         self.assertEqual(self.expected, lenient.__dict__)
 
     def test_args_services_str(self):
         services = ("service1", "service2")
-        lenient = Lenient(*services)
+        lenient = _Lenient(*services)
         self.expected.update(dict(service1=True, service2=True))
         self.assertEqual(self.expected, lenient.__dict__)
 
@@ -50,7 +50,7 @@ class Test___init__(tests.IrisTest):
             pass
 
         services = (service1, service2)
-        lenient = Lenient(*services)
+        lenient = _Lenient(*services)
         self.expected.update(
             {qualname(service1): True, qualname(service2): True,}
         )
@@ -58,13 +58,13 @@ class Test___init__(tests.IrisTest):
 
     def test_kwargs_client_str(self):
         client = dict(client1="service1")
-        lenient = Lenient(**client)
+        lenient = _Lenient(**client)
         self.expected.update(dict(client1=("service1",)))
         self.assertEqual(self.expected, lenient.__dict__)
 
     def test_kwargs_clients_str(self):
         clients = dict(client1="service1", client2="service2")
-        lenient = Lenient(**clients)
+        lenient = _Lenient(**clients)
         self.expected.update(
             dict(client1=("service1",), client2=("service2",))
         )
@@ -89,7 +89,7 @@ class Test___init__(tests.IrisTest):
             qualname_client1: service1,
             qualname_client2: (service1, service2),
         }
-        lenient = Lenient(**clients)
+        lenient = _Lenient(**clients)
         self.expected.update(
             {
                 qualname(client1): (qualname(service1),),
@@ -102,7 +102,7 @@ class Test___init__(tests.IrisTest):
 class Test___call__(tests.IrisTest):
     def setUp(self):
         self.client = "myclient"
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_missing_service_str(self):
         self.assertFalse(self.lenient("myservice"))
@@ -271,7 +271,7 @@ class Test___call__(tests.IrisTest):
 
 class Test___contains__(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_in(self):
         self.assertIn("active", self.lenient)
@@ -282,7 +282,7 @@ class Test___contains__(tests.IrisTest):
 
 class Test___getattr__(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_in(self):
         self.assertIsNone(self.lenient.active)
@@ -295,7 +295,7 @@ class Test___getattr__(tests.IrisTest):
 
 class Test__getitem__(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_in(self):
         self.assertIsNone(self.lenient["active"])
@@ -325,7 +325,7 @@ class Test__getitem__(tests.IrisTest):
 
 class Test___setitem__(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_not_in(self):
         emsg = "Invalid .* option, got 'wibble'."
@@ -481,7 +481,7 @@ class Test___setitem__(tests.IrisTest):
 
 class Test_context(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
         self.default = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
 
     def copy(self):
@@ -588,7 +588,7 @@ class Test_context(tests.IrisTest):
 
 class Test_enable(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_getter(self):
         self.assertEqual(self.lenient.enable, LENIENT_ENABLE_DEFAULT)
@@ -606,7 +606,7 @@ class Test_enable(tests.IrisTest):
 
 class Test_register_client(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_not_protected(self):
         emsg = "Cannot register .* protected non-client"
@@ -690,7 +690,7 @@ class Test_register_client(tests.IrisTest):
 
 class Test_register_service(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_str(self):
         service = "service"
@@ -723,7 +723,7 @@ class Test_register_service(tests.IrisTest):
 
 class Test_unregister_client(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_not_protected(self):
         emsg = "Cannot unregister .* protected non-client"
@@ -772,7 +772,7 @@ class Test_unregister_client(tests.IrisTest):
 
 class Test_unregister_service(tests.IrisTest):
     def setUp(self):
-        self.lenient = Lenient()
+        self.lenient = _Lenient()
 
     def test_not_protected(self):
         emsg = "Cannot unregister .* protected non-service"
