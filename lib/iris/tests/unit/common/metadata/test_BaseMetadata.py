@@ -16,7 +16,7 @@ from collections import OrderedDict
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-from iris.common.lenient import _LENIENT, qualname
+from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
 
 
@@ -74,7 +74,7 @@ class Test___eq__(tests.IrisTest):
         self.metadata = self.cls(**self.kwargs)
 
     def test_lenient_service(self):
-        qualname___eq__ = qualname(self.cls.__eq__)
+        qualname___eq__ = _qualname(self.cls.__eq__)
         self.assertIn(qualname___eq__, _LENIENT)
         self.assertTrue(_LENIENT[qualname___eq__])
         self.assertTrue(_LENIENT[self.cls.__eq__])
@@ -106,7 +106,7 @@ class Test___eq__(tests.IrisTest):
 
         self.assertEqual(1, mlenient.call_count)
         (arg,), kwargs = mlenient.call_args
-        self.assertEqual(qualname(self.cls.__eq__), qualname(arg))
+        self.assertEqual(_qualname(self.cls.__eq__), _qualname(arg))
         self.assertEqual(dict(), kwargs)
 
     def test_strict_same(self):
@@ -1096,7 +1096,7 @@ class Test_combine(tests.IrisTest):
         )
 
     def test_lenient_service(self):
-        qualname_combine = qualname(self.cls.combine)
+        qualname_combine = _qualname(self.cls.combine)
         self.assertIn(qualname_combine, _LENIENT)
         self.assertTrue(_LENIENT[qualname_combine])
         self.assertTrue(_LENIENT[self.cls.combine])
@@ -1135,7 +1135,7 @@ class Test_combine(tests.IrisTest):
 
         self.assertEqual(1, mcontext.call_count)
         (arg,), kwargs = mcontext.call_args
-        self.assertEqual(qualname(self.cls.combine), arg)
+        self.assertEqual(_qualname(self.cls.combine), arg)
         self.assertEqual(dict(), kwargs)
 
         self.assertEqual(result._asdict(), self.mock_kwargs)
@@ -1155,7 +1155,7 @@ class Test_combine(tests.IrisTest):
         self.assertEqual(1, mcontext.call_count)
         args, kwargs = mcontext.call_args
         self.assertEqual((), args)
-        self.assertEqual({qualname(self.cls.combine): False}, kwargs)
+        self.assertEqual({_qualname(self.cls.combine): False}, kwargs)
 
         self.assertEqual(self.mock_kwargs, result._asdict())
         self.assertEqual(1, mcombine.call_count)
@@ -1184,7 +1184,7 @@ class Test_difference(tests.IrisTest):
         )
 
     def test_lenient_service(self):
-        qualname_difference = qualname(self.cls.difference)
+        qualname_difference = _qualname(self.cls.difference)
         self.assertIn(qualname_difference, _LENIENT)
         self.assertTrue(_LENIENT[qualname_difference])
         self.assertTrue(_LENIENT[self.cls.difference])
@@ -1223,7 +1223,7 @@ class Test_difference(tests.IrisTest):
 
         self.assertEqual(1, mcontext.call_count)
         (arg,), kwargs = mcontext.call_args
-        self.assertEqual(qualname(self.cls.difference), arg)
+        self.assertEqual(_qualname(self.cls.difference), arg)
         self.assertEqual(dict(), kwargs)
 
         self.assertEqual(self.mock_kwargs, result._asdict())
@@ -1243,7 +1243,7 @@ class Test_difference(tests.IrisTest):
         self.assertEqual(mcontext.call_count, 1)
         args, kwargs = mcontext.call_args
         self.assertEqual((), args)
-        self.assertEqual({qualname(self.cls.difference): False}, kwargs)
+        self.assertEqual({_qualname(self.cls.difference): False}, kwargs)
 
         self.assertEqual(self.mock_kwargs, result._asdict())
         self.assertEqual(1, mdifference.call_count)
@@ -1265,7 +1265,7 @@ class Test_equal(tests.IrisTest):
         self.metadata = self.cls(**kwargs)
 
     def test_lenient_service(self):
-        qualname_equal = qualname(self.cls.equal)
+        qualname_equal = _qualname(self.cls.equal)
         self.assertIn(qualname_equal, _LENIENT)
         self.assertTrue(_LENIENT[qualname_equal])
         self.assertTrue((_LENIENT[self.cls.equal]))
@@ -1305,7 +1305,7 @@ class Test_equal(tests.IrisTest):
         self.assertEqual(return_value, result)
         self.assertEqual(1, mcontext.call_count)
         (arg,), kwargs = mcontext.call_args
-        self.assertEqual(qualname(self.cls.equal), arg)
+        self.assertEqual(_qualname(self.cls.equal), arg)
         self.assertEqual(dict(), kwargs)
 
         self.assertEqual(1, m__eq__.call_count)
@@ -1324,7 +1324,7 @@ class Test_equal(tests.IrisTest):
         self.assertEqual(1, mcontext.call_count)
         args, kwargs = mcontext.call_args
         self.assertEqual((), args)
-        self.assertEqual({qualname(self.cls.equal): False}, kwargs)
+        self.assertEqual({_qualname(self.cls.equal): False}, kwargs)
 
         self.assertEqual(return_value, result)
         self.assertEqual(1, m__eq__.call_count)

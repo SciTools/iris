@@ -13,20 +13,19 @@ import threading
 
 
 __all__ = [
-    "lenient_client",
-    "lenient_service",
-    "qualname",
+    "LENIENT",
+    "Lenient",
 ]
 
 
 #: Default Lenient services global activation state.
-LENIENT_ENABLE_DEFAULT = True
+_LENIENT_ENABLE_DEFAULT = True
 
 #: Protected Lenient internal non-client, non-service keys.
-LENIENT_PROTECTED = ("active", "enable")
+_LENIENT_PROTECTED = ("active", "enable")
 
 
-def lenient_client(*dargs, services=None):
+def _lenient_client(*dargs, services=None):
     """
     Decorator that allows a client function/method to declare at runtime that
     it is executing and requires lenient behaviour from a prior registered
@@ -34,20 +33,20 @@ def lenient_client(*dargs, services=None):
 
     This decorator supports being called with no arguments e.g.,
 
-        @lenient_client()
+        @_lenient_client()
         def func():
             pass
 
     This is equivalent to using it as a simple naked decorator e.g.,
 
-        @lenient_client
+        @_lenient_client
         def func()
             pass
 
     Alternatively, this decorator supports the lenient client explicitly
     declaring the lenient services that it wishes to use e.g.,
 
-        @lenient_client(services=(service1, service2, ...)
+        @_lenient_client(services=(service1, service2, ...)
         def func():
             pass
 
@@ -94,7 +93,7 @@ def lenient_client(*dargs, services=None):
             as active at runtime before executing it.
 
             """
-            with _LENIENT.context(active=qualname(func)):
+            with _LENIENT.context(active=_qualname(func)):
                 result = func(*args, **kwargs)
             return result
 
@@ -115,7 +114,7 @@ def lenient_client(*dargs, services=None):
                 as active at runtime before executing it.
 
                 """
-                with _LENIENT.context(*services, active=qualname(func)):
+                with _LENIENT.context(*services, active=_qualname(func)):
                     result = func(*args, **kwargs)
                 return result
 
@@ -126,7 +125,7 @@ def lenient_client(*dargs, services=None):
     return result
 
 
-def lenient_service(*dargs):
+def _lenient_service(*dargs):
     """
     Decorator that allows a function/method to declare that it supports lenient
     behaviour as a service.
@@ -135,13 +134,13 @@ def lenient_service(*dargs):
 
     The decorator supports being called with no arguments e.g.,
 
-        @lenient_service()
+        @_lenient_service()
         def func():
             pass
 
     This is equivalent to using it as a simple naked decorator e.g.,
 
-        @lenient_service
+        @_lenient_service
         def func():
             pass
 
@@ -193,7 +192,7 @@ def lenient_service(*dargs):
     return result
 
 
-def qualname(func):
+def _qualname(func):
     """
     Return the fully qualified function/method string name.
 
@@ -214,6 +213,99 @@ def qualname(func):
         result = f"{module.__name__}.{func.__qualname__}"
 
     return result
+
+
+class Lenient(threading.local):
+    def __init__(self, **kwargs):
+        """
+        A container for managing the run-time lenient features and options.
+
+        Kwargs:
+
+        * kwargs (dict)
+            Mapping of lenient key/value options to enable/disable. Note that,
+            only the lenient "maths" options is available, which controls
+            lenient/strict cube arithmetic.
+
+        For example::
+
+            Lenient(maths=False)
+
+        Note that, the values of these options are thread-specific.
+
+        """
+        # This is the only public supported lenient feature i.e., cube arithmetic
+        self.__dict__["maths"] = None
+
+        if not kwargs:
+            # If not specified, set the default behaviour of the maths lenient feature.
+            kwargs = dict(maths=True)
+
+        # Configure the provided (or default) lenient features.
+        for feature, state in kwargs.items():
+            self[feature] = state
+
+    def __contains__(self, key):
+        return key in self.__dict__
+
+    def __getitem__(self, key):
+        if key not in self.__dict__:
+            cls = self.__class__.__name__
+            emsg = f"Invalid {cls!r} option, got {key!r}."
+            raise KeyError(emsg)
+        return self.__dict__[key]
+
+    def __repr__(self):
+        cls = self.__class__.__name__
+        msg = f"{cls}(maths={self.__dict__['maths']!r})"
+        return msg
+
+    def __setitem__(self, key, value):
+        cls = self.__class__.__name__
+
+        if key not in self.__dict__:
+            emsg = f"Invalid {cls!r} option, got {key!r}."
+            raise KeyError(emsg)
+
+        if not isinstance(value, bool):
+            emsg = f"Invalid {cls!r} option {key!r} value, got {value!r}."
+            raise ValueError(emsg)
+
+        self.__dict__[key] = value
+        # Toggle the (private) lenient behaviour.
+        _LENIENT.enable = value
+
+    @contextmanager
+    def context(self, **kwargs):
+        """
+        Return a context manager which allows temporary modification of the
+        lenient option state within the scope of the context manager.
+
+        On entry to the context manager, all provided keyword arguments are
+        applied. On exit from the context manager, the previous lenient
+        option state is restored.
+
+        For example::
+            with iris.common.Lenient.context(maths=False):
+                pass
+
+        """
+        # Save the original state.
+        original_state = deepcopy(self.__dict__)
+
+        # Configure the provided lenient features.
+        for feature, value in kwargs.items():
+            self[feature] = value
+
+        try:
+            yield
+        finally:
+            # Restore the original state.
+            self.__dict__.clear()
+            self.__dict__.update(original_state)
+
+
+###############################################################################
 
 
 class _Lenient(threading.local):
@@ -245,7 +337,7 @@ class _Lenient(threading.local):
         # The executing lenient client at runtime.
         self.__dict__["active"] = None
         # The global lenient services state activation switch.
-        self.__dict__["enable"] = LENIENT_ENABLE_DEFAULT
+        self.__dict__["enable"] = _LENIENT_ENABLE_DEFAULT
 
         for service in args:
             self.register_service(service)
@@ -269,7 +361,7 @@ class _Lenient(threading.local):
         """
         result = False
         if self.__dict__["enable"]:
-            service = qualname(func)
+            service = _qualname(func)
             if service in self and self.__dict__[service]:
                 active = self.__dict__["active"]
                 if active is not None and active in self:
@@ -282,6 +374,7 @@ class _Lenient(threading.local):
         return result
 
     def __contains__(self, name):
+        name = _qualname(name)
         return name in self.__dict__
 
     def __getattr__(self, name):
@@ -292,7 +385,7 @@ class _Lenient(threading.local):
         return self.__dict__[name]
 
     def __getitem__(self, name):
-        name = qualname(name)
+        name = _qualname(name)
         if name not in self.__dict__:
             cls = self.__class__.__name__
             emsg = f"Invalid {cls!r} option, got {name!r}."
@@ -310,7 +403,7 @@ class _Lenient(threading.local):
         return "{}({})".format(cls, joiner.join(kwargs))
 
     def __setitem__(self, name, value):
-        name = qualname(name)
+        name = _qualname(name)
         cls = self.__class__.__name__
 
         if name not in self.__dict__:
@@ -318,7 +411,7 @@ class _Lenient(threading.local):
             raise KeyError(emsg)
 
         if name == "active":
-            value = qualname(value)
+            value = _qualname(value)
             if not isinstance(value, str) and value is not None:
                 emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
                 raise ValueError(emsg)
@@ -329,7 +422,7 @@ class _Lenient(threading.local):
             if isinstance(value, str) or callable(value):
                 value = (value,)
             if isinstance(value, Iterable):
-                value = tuple([qualname(item) for item in value])
+                value = tuple([_qualname(item) for item in value])
             self.__dict__[name] = value
 
     @contextmanager
@@ -372,7 +465,7 @@ class _Lenient(threading.local):
 
         if args:
             # Update the client with the provided services.
-            new_services = tuple([qualname(arg) for arg in args])
+            new_services = tuple([_qualname(arg) for arg in args])
 
             if active is None:
                 # Ensure not to use "context" as the ephemeral name
@@ -449,10 +542,10 @@ class _Lenient(threading.local):
             services for the provided lenient client. Default is False.
 
         """
-        func = qualname(func)
+        func = _qualname(func)
         cls = self.__class__.__name__
 
-        if func in LENIENT_PROTECTED:
+        if func in _LENIENT_PROTECTED:
             emsg = (
                 f"Cannot register {cls!r} protected non-client, got {func!r}."
             )
@@ -462,7 +555,7 @@ class _Lenient(threading.local):
         if not len(services):
             emsg = f"Require at least one {cls!r} lenient client service."
             raise ValueError(emsg)
-        services = tuple([qualname(service) for service in services])
+        services = tuple([_qualname(service) for service in services])
         if append:
             # Service order is not significant, therefore there is no
             # requirement to preserve it.
@@ -482,8 +575,8 @@ class _Lenient(threading.local):
             service function/method.
 
         """
-        func = qualname(func)
-        if func in LENIENT_PROTECTED:
+        func = _qualname(func)
+        if func in _LENIENT_PROTECTED:
             cls = self.__class__.__name__
             emsg = (
                 f"Cannot register {cls!r} protected non-service, got {func!r}."
@@ -501,10 +594,10 @@ class _Lenient(threading.local):
             A function/method of fully qualified string name of the function/method.
 
         """
-        func = qualname(func)
+        func = _qualname(func)
         cls = self.__class__.__name__
 
-        if func in LENIENT_PROTECTED:
+        if func in _LENIENT_PROTECTED:
             emsg = f"Cannot unregister {cls!r} protected non-client, got {func!r}."
             raise ValueError(emsg)
 
@@ -528,10 +621,10 @@ class _Lenient(threading.local):
             A function/method or fully qualified string name of the function/method.
 
         """
-        func = qualname(func)
+        func = _qualname(func)
         cls = self.__class__.__name__
 
-        if func in LENIENT_PROTECTED:
+        if func in _LENIENT_PROTECTED:
             emsg = f"Cannot unregister {cls!r} protected non-service, got {func!r}."
             raise ValueError(emsg)
 
@@ -546,5 +639,8 @@ class _Lenient(threading.local):
             raise ValueError(emsg)
 
 
-#: Instance that manages all Iris run-time lenient client and service options.
+#: (Private) Instance that manages all Iris run-time lenient client and service options.
 _LENIENT = _Lenient()
+
+#: (Public) Instance that manages all Iris run-time lenient features.
+LENIENT = Lenient()

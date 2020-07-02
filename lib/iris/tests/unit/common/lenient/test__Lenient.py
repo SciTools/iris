@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.common.lenient.Lenient`.
+Unit tests for the :class:`iris.common.lenient._Lenient`.
 
 """
 
@@ -15,16 +15,16 @@ import iris.tests as tests
 from collections import Iterable
 
 from iris.common.lenient import (
-    LENIENT_ENABLE_DEFAULT,
-    LENIENT_PROTECTED,
+    _LENIENT_ENABLE_DEFAULT,
+    _LENIENT_PROTECTED,
     _Lenient,
-    qualname,
+    _qualname,
 )
 
 
 class Test___init__(tests.IrisTest):
     def setUp(self):
-        self.expected = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
+        self.expected = dict(active=None, enable=_LENIENT_ENABLE_DEFAULT)
 
     def test_default(self):
         lenient = _Lenient()
@@ -52,7 +52,7 @@ class Test___init__(tests.IrisTest):
         services = (service1, service2)
         lenient = _Lenient(*services)
         self.expected.update(
-            {qualname(service1): True, qualname(service2): True,}
+            {_qualname(service1): True, _qualname(service2): True,}
         )
         self.assertEqual(self.expected, lenient.__dict__)
 
@@ -83,8 +83,8 @@ class Test___init__(tests.IrisTest):
         def service2():
             pass
 
-        qualname_client1 = qualname(client1)
-        qualname_client2 = qualname(client2)
+        qualname_client1 = _qualname(client1)
+        qualname_client2 = _qualname(client2)
         clients = {
             qualname_client1: service1,
             qualname_client2: (service1, service2),
@@ -92,8 +92,8 @@ class Test___init__(tests.IrisTest):
         lenient = _Lenient(**clients)
         self.expected.update(
             {
-                qualname(client1): (qualname(service1),),
-                qualname(client2): (qualname(service1), qualname(service2)),
+                _qualname(client1): (_qualname(service1),),
+                _qualname(client2): (_qualname(service1), _qualname(service2)),
             }
         )
         self.assertEqual(self.expected, lenient.__dict__)
@@ -122,7 +122,7 @@ class Test___call__(tests.IrisTest):
         def myservice():
             pass
 
-        qualname_service = qualname(myservice)
+        qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = False
         self.assertFalse(self.lenient(myservice))
 
@@ -135,7 +135,7 @@ class Test___call__(tests.IrisTest):
         def myservice():
             pass
 
-        qualname_service = qualname(myservice)
+        qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = True
         self.assertFalse(self.lenient(myservice))
 
@@ -154,9 +154,9 @@ class Test___call__(tests.IrisTest):
         def myclient():
             pass
 
-        qualname_service = qualname(myservice)
+        qualname_service = _qualname(myservice)
         self.lenient.__dict__[qualname_service] = True
-        self.lenient.__dict__["active"] = qualname(myclient)
+        self.lenient.__dict__["active"] = _qualname(myclient)
         self.assertFalse(self.lenient(myservice))
 
     def test_service_str_with_active_client_with_unmatched_registered_services(
@@ -177,8 +177,8 @@ class Test___call__(tests.IrisTest):
         def myclient():
             pass
 
-        qualname_service = qualname(myservice)
-        qualname_client = qualname(myclient)
+        qualname_service = _qualname(myservice)
+        qualname_client = _qualname(myclient)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = ("service1", "service2")
@@ -200,8 +200,8 @@ class Test___call__(tests.IrisTest):
         def myclient():
             pass
 
-        qualname_service = qualname(myservice)
-        qualname_client = qualname(myclient)
+        qualname_service = _qualname(myservice)
+        qualname_client = _qualname(myclient)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = (
@@ -229,8 +229,8 @@ class Test___call__(tests.IrisTest):
         def myclient():
             pass
 
-        qualname_service = qualname(myservice)
-        qualname_client = qualname(myclient)
+        qualname_service = _qualname(myservice)
+        qualname_client = _qualname(myclient)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = f"{qualname_service}XXX"
@@ -252,8 +252,8 @@ class Test___call__(tests.IrisTest):
         def myclient():
             pass
 
-        qualname_service = qualname(myservice)
-        qualname_client = qualname(myclient)
+        qualname_service = _qualname(myservice)
+        qualname_client = _qualname(myclient)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.__dict__["active"] = qualname_client
         self.lenient.__dict__[qualname_client] = qualname_service
@@ -278,6 +278,16 @@ class Test___contains__(tests.IrisTest):
 
     def test_not_in(self):
         self.assertNotIn("ACTIVATE", self.lenient)
+
+    def test_in_qualname(self):
+        def func():
+            pass
+
+        qualname_func = _qualname(func)
+        lenient = _Lenient()
+        lenient.__dict__[qualname_func] = None
+        self.assertIn(func, lenient)
+        self.assertIn(qualname_func, lenient)
 
 
 class Test___getattr__(tests.IrisTest):
@@ -304,7 +314,7 @@ class Test__getitem__(tests.IrisTest):
         def service():
             pass
 
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         self.lenient.__dict__[qualname_service] = True
         self.assertTrue(self.lenient[service])
 
@@ -317,7 +327,7 @@ class Test__getitem__(tests.IrisTest):
         def service():
             pass
 
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         emsg = f"Invalid .* option, got '{qualname_service}'."
         with self.assertRaisesRegex(KeyError, emsg):
             _ = self.lenient[service]
@@ -344,7 +354,7 @@ class Test___setitem__(tests.IrisTest):
             pass
 
         service = "service"
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = None
         self.lenient[client] = service
         self.assertEqual(self.lenient.__dict__[qualname_client], (service,))
@@ -354,7 +364,7 @@ class Test___setitem__(tests.IrisTest):
             pass
 
         client = "client"
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         self.lenient.__dict__[client] = None
         self.lenient[client] = service
         self.assertEqual(self.lenient.__dict__[client], (qualname_service,))
@@ -366,8 +376,8 @@ class Test___setitem__(tests.IrisTest):
         def service():
             pass
 
-        qualname_client = qualname(client)
-        qualname_service = qualname(service)
+        qualname_client = _qualname(client)
+        qualname_service = _qualname(service)
         self.lenient.__dict__[qualname_client] = None
         self.lenient[client] = service
         self.assertEqual(
@@ -385,7 +395,7 @@ class Test___setitem__(tests.IrisTest):
         def client():
             pass
 
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = None
         self.lenient[client] = True
         self.assertTrue(self.lenient.__dict__[qualname_client])
@@ -404,7 +414,7 @@ class Test___setitem__(tests.IrisTest):
         def client():
             pass
 
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         services = ("service1", "service2")
         self.lenient.__dict__[qualname_client] = None
         self.lenient[client] = services
@@ -419,7 +429,7 @@ class Test___setitem__(tests.IrisTest):
 
         client = "client"
         self.lenient.__dict__[client] = None
-        qualname_services = (qualname(service1), qualname(service2))
+        qualname_services = (_qualname(service1), _qualname(service2))
         self.lenient[client] = (service1, service2)
         self.assertEqual(self.lenient.__dict__[client], qualname_services)
 
@@ -433,9 +443,9 @@ class Test___setitem__(tests.IrisTest):
         def service2():
             pass
 
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = None
-        qualname_services = (qualname(service1), qualname(service2))
+        qualname_services = (_qualname(service1), _qualname(service2))
         self.lenient[client] = (service1, service2)
         self.assertEqual(
             self.lenient.__dict__[qualname_client], qualname_services
@@ -460,14 +470,16 @@ class Test___setitem__(tests.IrisTest):
             pass
 
         active = "active"
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.assertIsNone(self.lenient.__dict__[active])
         self.lenient[active] = client
         self.assertEqual(self.lenient.__dict__[active], qualname_client)
 
     def test_enable(self):
         enable = "enable"
-        self.assertEqual(self.lenient.__dict__[enable], LENIENT_ENABLE_DEFAULT)
+        self.assertEqual(
+            self.lenient.__dict__[enable], _LENIENT_ENABLE_DEFAULT
+        )
         self.lenient[enable] = True
         self.assertTrue(self.lenient.__dict__[enable])
         self.lenient[enable] = False
@@ -482,7 +494,7 @@ class Test___setitem__(tests.IrisTest):
 class Test_context(tests.IrisTest):
     def setUp(self):
         self.lenient = _Lenient()
-        self.default = dict(active=None, enable=LENIENT_ENABLE_DEFAULT)
+        self.default = dict(active=None, enable=_LENIENT_ENABLE_DEFAULT)
 
     def copy(self):
         return self.lenient.__dict__.copy()
@@ -516,7 +528,7 @@ class Test_context(tests.IrisTest):
         with self.lenient.context(active=client):
             context = self.copy()
         post = self.copy()
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.assertEqual(pre, self.default)
         expected = self.default.copy()
         expected.update(dict(active=qualname_client))
@@ -565,7 +577,7 @@ class Test_context(tests.IrisTest):
         with self.lenient.context(*services, active=client):
             context = self.copy()
         post = self.copy()
-        qualname_services = tuple([qualname(service) for service in services])
+        qualname_services = tuple([_qualname(service) for service in services])
         self.assertEqual(pre, self.default)
         expected = self.default.copy()
         expected.update(dict(active=client, client=qualname_services))
@@ -591,7 +603,7 @@ class Test_enable(tests.IrisTest):
         self.lenient = _Lenient()
 
     def test_getter(self):
-        self.assertEqual(self.lenient.enable, LENIENT_ENABLE_DEFAULT)
+        self.assertEqual(self.lenient.enable, _LENIENT_ENABLE_DEFAULT)
 
     def test_setter_invalid(self):
         emsg = "Invalid .* option 'enable'"
@@ -599,7 +611,7 @@ class Test_enable(tests.IrisTest):
             self.lenient.enable = 0
 
     def test_setter(self):
-        self.assertEqual(self.lenient.enable, LENIENT_ENABLE_DEFAULT)
+        self.assertEqual(self.lenient.enable, _LENIENT_ENABLE_DEFAULT)
         self.lenient.enable = False
         self.assertFalse(self.lenient.enable)
 
@@ -610,7 +622,7 @@ class Test_register_client(tests.IrisTest):
 
     def test_not_protected(self):
         emsg = "Cannot register .* protected non-client"
-        for protected in LENIENT_PROTECTED:
+        for protected in _LENIENT_PROTECTED:
             with self.assertRaisesRegex(ValueError, emsg):
                 self.lenient.register_client(protected, "service")
 
@@ -635,8 +647,8 @@ class Test_register_client(tests.IrisTest):
         def service():
             pass
 
-        qualname_client = qualname(client)
-        qualname_service = qualname(service)
+        qualname_client = _qualname(client)
+        qualname_service = _qualname(service)
         self.lenient.register_client(client, service)
         self.assertIn(qualname_client, self.lenient.__dict__)
         self.assertEqual(
@@ -653,8 +665,8 @@ class Test_register_client(tests.IrisTest):
         def service2():
             pass
 
-        qualname_client = qualname(client)
-        qualname_services = (qualname(service1), qualname(service2))
+        qualname_client = _qualname(client)
+        qualname_services = (_qualname(service1), _qualname(service2))
         self.lenient.register_client(client, (service1, service2))
         self.assertIn(qualname_client, self.lenient.__dict__)
         self.assertEqual(
@@ -704,7 +716,7 @@ class Test_register_service(tests.IrisTest):
         def service():
             pass
 
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         self.assertNotIn(qualname_service, self.lenient.__dict__)
         self.lenient.register_service(service)
         self.assertIn(qualname_service, self.lenient.__dict__)
@@ -715,7 +727,7 @@ class Test_register_service(tests.IrisTest):
 
     def test_not_protected(self):
         emsg = "Cannot register .* protected non-service"
-        for protected in LENIENT_PROTECTED:
+        for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
                 self.lenient.register_service("active")
@@ -727,7 +739,7 @@ class Test_unregister_client(tests.IrisTest):
 
     def test_not_protected(self):
         emsg = "Cannot unregister .* protected non-client"
-        for protected in LENIENT_PROTECTED:
+        for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
                 self.lenient.unregister_client(protected)
@@ -748,7 +760,7 @@ class Test_unregister_client(tests.IrisTest):
         def client():
             pass
 
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = True
         emsg = "Cannot unregister .* non-client"
         with self.assertRaisesRegex(ValueError, emsg):
@@ -764,7 +776,7 @@ class Test_unregister_client(tests.IrisTest):
         def client():
             pass
 
-        qualname_client = qualname(client)
+        qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = (None,)
         self.lenient.unregister_client(client)
         self.assertNotIn(qualname_client, self.lenient.__dict__)
@@ -776,7 +788,7 @@ class Test_unregister_service(tests.IrisTest):
 
     def test_not_protected(self):
         emsg = "Cannot unregister .* protected non-service"
-        for protected in LENIENT_PROTECTED:
+        for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
                 self.lenient.unregister_service(protected)
@@ -797,7 +809,7 @@ class Test_unregister_service(tests.IrisTest):
         def service():
             pass
 
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         self.lenient.__dict__[qualname_service] = (None,)
         emsg = "Cannot unregister .* non-service"
         with self.assertRaisesRegex(ValueError, emsg):
@@ -813,7 +825,7 @@ class Test_unregister_service(tests.IrisTest):
         def service():
             pass
 
-        qualname_service = qualname(service)
+        qualname_service = _qualname(service)
         self.lenient.__dict__[qualname_service] = True
         self.lenient.unregister_service(service)
         self.assertNotIn(qualname_service, self.lenient.__dict__)

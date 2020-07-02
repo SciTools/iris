@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.lenient.qualname`.
+Unit tests for the :func:`iris.common.lenient._qualname`.
 
 """
 
@@ -15,7 +15,7 @@ import iris.tests as tests
 from inspect import getmodule
 from unittest.mock import sentinel
 
-from iris.common.lenient import qualname
+from iris.common.lenient import _qualname
 
 
 class Test(tests.IrisTest):
@@ -25,7 +25,7 @@ class Test(tests.IrisTest):
 
     def test_pass_thru_non_callable(self):
         func = sentinel.func
-        result = qualname(func)
+        result = _qualname(func)
         self.assertEqual(result, func)
 
     def test_callable_function_local(self):
@@ -35,13 +35,13 @@ class Test(tests.IrisTest):
         qualname_func = self.locals.format(
             "test_callable_function_local", "myfunc"
         )
-        result = qualname(myfunc)
+        result = _qualname(myfunc)
         self.assertEqual(result, qualname_func)
 
     def test_callable_function(self):
         import iris
 
-        result = qualname(iris.load)
+        result = _qualname(iris.load)
         self.assertEqual(result, "iris.load")
 
     def test_callable_method_local(self):
@@ -52,13 +52,13 @@ class Test(tests.IrisTest):
         qualname_method = self.locals.format(
             "test_callable_method_local", "MyClass.mymethod"
         )
-        result = qualname(MyClass.mymethod)
+        result = _qualname(MyClass.mymethod)
         self.assertEqual(result, qualname_method)
 
     def test_callable_method(self):
         import iris
 
-        result = qualname(iris.cube.Cube.add_ancillary_variable)
+        result = _qualname(iris.cube.Cube.add_ancillary_variable)
         self.assertEqual(result, "iris.cube.Cube.add_ancillary_variable")
 
 

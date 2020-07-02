@@ -16,7 +16,7 @@ from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-from iris.common.lenient import _LENIENT, qualname
+from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
 
 
@@ -111,7 +111,7 @@ class Test___eq__(tests.IrisTest):
         )
 
     def test_lenient_service(self):
-        qualname___eq__ = qualname(self.cls.__eq__)
+        qualname___eq__ = _qualname(self.cls.__eq__)
         self.assertIn(qualname___eq__, _LENIENT)
         self.assertTrue(_LENIENT[qualname___eq__])
         self.assertTrue(_LENIENT[self.cls.__eq__])
@@ -248,7 +248,7 @@ class Test_combine(tests.IrisTest):
         )
 
     def test_lenient_service(self):
-        qualname_combine = qualname(self.cls.combine)
+        qualname_combine = _qualname(self.cls.combine)
         self.assertIn(qualname_combine, _LENIENT)
         self.assertTrue(_LENIENT[qualname_combine])
         self.assertTrue(_LENIENT[self.cls.combine])
@@ -415,7 +415,7 @@ class Test_difference(tests.IrisTest):
         )
 
     def test_lenient_service(self):
-        qualname_difference = qualname(self.cls.difference)
+        qualname_difference = _qualname(self.cls.difference)
         self.assertIn(qualname_difference, _LENIENT)
         self.assertTrue(_LENIENT[qualname_difference])
         self.assertTrue(_LENIENT[self.cls.difference])
@@ -626,7 +626,7 @@ class Test_equal(tests.IrisTest):
         self.assertEqual(BaseMetadata.equal.__doc__, self.cls.equal.__doc__)
 
     def test_lenient_service(self):
-        qualname_equal = qualname(self.cls.equal)
+        qualname_equal = _qualname(self.cls.equal)
         self.assertIn(qualname_equal, _LENIENT)
         self.assertTrue(_LENIENT[qualname_equal])
         self.assertTrue(_LENIENT[self.cls.equal])

@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.lenient.lenient_service`.
+Unit tests for the :func:`iris.common.lenient._lenient_service`.
 
 """
 
@@ -15,7 +15,7 @@ import iris.tests as tests
 from inspect import getmodule
 from unittest.mock import sentinel
 
-from iris.common.lenient import _LENIENT, lenient_service
+from iris.common.lenient import _LENIENT, _lenient_service
 
 
 class Test(tests.IrisTest):
@@ -28,15 +28,15 @@ class Test(tests.IrisTest):
     def test_args_too_many(self):
         emsg = "Invalid lenient service arguments, expecting 1"
         with self.assertRaisesRegex(AssertionError, emsg):
-            lenient_service(None, None)
+            _lenient_service(None, None)
 
     def test_args_not_callable(self):
         emsg = "Invalid lenient service argument, expecting a callable"
         with self.assertRaisesRegex(AssertionError, emsg):
-            lenient_service(None)
+            _lenient_service(None)
 
     def test_call_naked(self):
-        @lenient_service
+        @_lenient_service
         def myservice():
             return _LENIENT.__dict__.copy()
 
@@ -53,12 +53,12 @@ class Test(tests.IrisTest):
             return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call_naked_alternative")
-        result = lenient_service(myservice)()
+        result = _lenient_service(myservice)()
         self.assertIn(qualname_service, result)
         self.assertTrue(result[qualname_service])
 
     def test_call_naked_service_args_kwargs(self):
-        @lenient_service
+        @_lenient_service
         def myservice(*args, **kwargs):
             return args, kwargs
 
@@ -67,14 +67,14 @@ class Test(tests.IrisTest):
         self.assertEqual(kwargs_out, self.kwargs_in)
 
     def test_call_naked_doc(self):
-        @lenient_service
+        @_lenient_service
         def myservice():
             """myservice doc-string"""
 
         self.assertEqual(myservice.__doc__, "myservice doc-string")
 
     def test_call(self):
-        @lenient_service()
+        @_lenient_service()
         def myservice():
             return _LENIENT.__dict__.copy()
 
@@ -91,12 +91,12 @@ class Test(tests.IrisTest):
             return _LENIENT.__dict__.copy()
 
         qualname_service = self.service.format("test_call_alternative")
-        result = (lenient_service())(myservice)()
+        result = (_lenient_service())(myservice)()
         self.assertIn(qualname_service, result)
         self.assertTrue(result[qualname_service])
 
     def test_call_service_args_kwargs(self):
-        @lenient_service()
+        @_lenient_service()
         def myservice(*args, **kwargs):
             return args, kwargs
 
@@ -105,7 +105,7 @@ class Test(tests.IrisTest):
         self.assertEqual(kwargs_out, self.kwargs_in)
 
     def test_call_doc(self):
-        @lenient_service()
+        @_lenient_service()
         def myservice():
             """myservice doc-string"""
 

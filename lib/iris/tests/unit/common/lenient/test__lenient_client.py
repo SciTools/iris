@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.lenient.lenient_client`.
+Unit tests for the :func:`iris.common.lenient._lenient_client`.
 
 """
 
@@ -15,7 +15,7 @@ import iris.tests as tests
 from inspect import getmodule
 from unittest.mock import sentinel
 
-from iris.common.lenient import _LENIENT, lenient_client
+from iris.common.lenient import _LENIENT, _lenient_client
 
 
 class Test(tests.IrisTest):
@@ -30,12 +30,12 @@ class Test(tests.IrisTest):
     def test_args_too_many(self):
         emsg = "Invalid lenient client arguments, expecting 1"
         with self.assertRaisesRegex(AssertionError, emsg):
-            lenient_client(None, None)
+            _lenient_client(None, None)
 
     def test_args_not_callable(self):
         emsg = "Invalid lenient client argument, expecting a callable"
         with self.assertRaisesRegex(AssertionError, emsg):
-            lenient_client(None)
+            _lenient_client(None)
 
     def test_args_and_kwargs(self):
         def func():
@@ -45,10 +45,10 @@ class Test(tests.IrisTest):
             "Invalid lenient client, got both arguments and keyword arguments"
         )
         with self.assertRaisesRegex(AssertionError, emsg):
-            lenient_client(func, services=func)
+            _lenient_client(func, services=func)
 
     def test_call_naked(self):
-        @lenient_client
+        @_lenient_client
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -62,14 +62,14 @@ class Test(tests.IrisTest):
         def myclient():
             return _LENIENT.__dict__.copy()
 
-        result = lenient_client(myclient)()
+        result = _lenient_client(myclient)()
         self.assertIn(self.active, result)
         qualname_client = self.client.format("test_call_naked_alternative")
         self.assertEqual(result[self.active], qualname_client)
         self.assertNotIn(qualname_client, result)
 
     def test_call_naked_client_args_kwargs(self):
-        @lenient_client
+        @_lenient_client
         def myclient(*args, **kwargs):
             return args, kwargs
 
@@ -78,14 +78,14 @@ class Test(tests.IrisTest):
         self.assertEqual(kwargs_out, self.kwargs_in)
 
     def test_call_naked_doc(self):
-        @lenient_client
+        @_lenient_client
         def myclient():
             """myclient doc-string"""
 
         self.assertEqual(myclient.__doc__, "myclient doc-string")
 
     def test_call_no_kwargs(self):
-        @lenient_client()
+        @_lenient_client()
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -99,14 +99,14 @@ class Test(tests.IrisTest):
         def myclient():
             return _LENIENT.__dict__.copy()
 
-        result = (lenient_client())(myclient)()
+        result = (_lenient_client())(myclient)()
         self.assertIn(self.active, result)
         qualname_client = self.client.format("test_call_no_kwargs_alternative")
         self.assertEqual(result[self.active], qualname_client)
         self.assertNotIn(qualname_client, result)
 
     def test_call_kwargs_none(self):
-        @lenient_client(services=None)
+        @_lenient_client(services=None)
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -119,7 +119,7 @@ class Test(tests.IrisTest):
     def test_call_kwargs_single(self):
         service = sentinel.service
 
-        @lenient_client(services=service)
+        @_lenient_client(services=service)
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -134,7 +134,7 @@ class Test(tests.IrisTest):
         def myservice():
             pass
 
-        @lenient_client(services=myservice)
+        @_lenient_client(services=myservice)
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -150,7 +150,7 @@ class Test(tests.IrisTest):
     def test_call_kwargs_iterable(self):
         services = (sentinel.service1, sentinel.service2)
 
-        @lenient_client(services=services)
+        @_lenient_client(services=services)
         def myclient():
             return _LENIENT.__dict__.copy()
 
@@ -162,7 +162,7 @@ class Test(tests.IrisTest):
         self.assertEqual(set(result[qualname_client]), set(services))
 
     def test_call_client_args_kwargs(self):
-        @lenient_client()
+        @_lenient_client()
         def myclient(*args, **kwargs):
             return args, kwargs
 
@@ -171,7 +171,7 @@ class Test(tests.IrisTest):
         self.assertEqual(kwargs_out, self.kwargs_in)
 
     def test_call_doc(self):
-        @lenient_client()
+        @_lenient_client()
         def myclient():
             """myclient doc-string"""
 

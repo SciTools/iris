@@ -11,7 +11,9 @@ from functools import wraps
 import logging
 import re
 
-from .lenient import _LENIENT, lenient_service, qualname
+from .lenient import _LENIENT
+from .lenient import _lenient_service as lenient_service
+from .lenient import _qualname as qualname
 
 
 __all__ = [
