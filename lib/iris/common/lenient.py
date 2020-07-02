@@ -18,10 +18,13 @@ __all__ = [
 ]
 
 
-#: Default Lenient services global activation state.
+#: Default _Lenient services global activation state.
 _LENIENT_ENABLE_DEFAULT = True
 
-#: Protected Lenient internal non-client, non-service keys.
+#: Default Lenient maths feature state.
+_LENIENT_MATHS_DEFAULT = True
+
+#: Protected _Lenient internal non-client, non-service keys.
 _LENIENT_PROTECTED = ("active", "enable")
 
 
@@ -239,7 +242,7 @@ class Lenient(threading.local):
 
         if not kwargs:
             # If not specified, set the default behaviour of the maths lenient feature.
-            kwargs = dict(maths=True)
+            kwargs = dict(maths=_LENIENT_MATHS_DEFAULT)
 
         # Configure the provided (or default) lenient features.
         for feature, state in kwargs.items():
