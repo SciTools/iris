@@ -779,10 +779,11 @@ class CoordMetadata(BaseMetadata):
             Boolean.
 
         """
-        # Perform "strict" comparison for "coord_system" and "climatological".
-        result = (
-            self.coord_system == other.coord_system
-            and self.climatological == other.climatological
+        result = all(
+            [
+                getattr(self, field) == getattr(other, field)
+                for field in self._members
+            ]
         )
         if result:
             # Perform lenient comparison of the other parent members.

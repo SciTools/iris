@@ -674,7 +674,7 @@ class Test_register_client(tests.IrisTest):
         )
 
     def test_services_empty(self):
-        emsg = "Require at least one .* lenient client service."
+        emsg = "Require at least one .* client service."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.register_client("client", ())
 

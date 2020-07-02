@@ -326,7 +326,7 @@ class _Lenient(threading.local):
         Kwargs:
 
         * kwargs (dict of callable/str or iterable of callable/str)
-            Mapping of lenient client function/method, or fully qualified sting name
+            Mapping of lenient client function/method, or fully qualified string name
             of the function/method, to one or more lenient service
             function/methods or fully qualified string name of function/methods.
 
@@ -556,12 +556,12 @@ class _Lenient(threading.local):
         if isinstance(services, str) or not isinstance(services, Iterable):
             services = (services,)
         if not len(services):
-            emsg = f"Require at least one {cls!r} lenient client service."
+            emsg = f"Require at least one {cls!r} client service."
             raise ValueError(emsg)
         services = tuple([_qualname(service) for service in services])
         if append:
-            # Service order is not significant, therefore there is no
-            # requirement to preserve it.
+            # The original provided service order is not significant. There is
+            # no requirement to preserve it, so it's safe to sort.
             existing = self.__dict__[func] if func in self else ()
             services = tuple(sorted(set(existing) | set(services)))
         self.__dict__[func] = services
