@@ -237,8 +237,8 @@ class Lenient(threading.local):
         Note that, the values of these options are thread-specific.
 
         """
-        # This is the only public supported lenient feature i.e., cube arithmetic
-        self.__dict__["maths"] = None
+        # Configure the initial default lenient state.
+        self._init()
 
         if not kwargs:
             # If not specified, set the default behaviour of the maths lenient feature.
@@ -278,6 +278,11 @@ class Lenient(threading.local):
         # Toggle the (private) lenient behaviour.
         _LENIENT.enable = value
 
+    def _init(self):
+        """Configure the initial default lenient state."""
+        # This is the only public supported lenient feature i.e., cube arithmetic
+        self.__dict__["maths"] = None
+
     @contextmanager
     def context(self, **kwargs):
         """
@@ -293,19 +298,24 @@ class Lenient(threading.local):
                 pass
 
         """
+
+        def configure_state(state):
+            for feature, value in state.items():
+                self[feature] = value
+
         # Save the original state.
         original_state = deepcopy(self.__dict__)
 
         # Configure the provided lenient features.
-        for feature, value in kwargs.items():
-            self[feature] = value
+        configure_state(kwargs)
 
         try:
             yield
         finally:
             # Restore the original state.
             self.__dict__.clear()
-            self.__dict__.update(original_state)
+            self._init()
+            configure_state(original_state)
 
 
 ###############################################################################

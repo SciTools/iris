@@ -82,14 +82,28 @@ class Test___setitem__(tests.IrisTest):
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient["maths"] = value
 
-    def test_maths_disable(self):
+    def test_maths_disable__lenient_enable_true(self):
         self.assertTrue(_LENIENT.enable)
         self.lenient["maths"] = False
         self.assertFalse(self.lenient.__dict__["maths"])
         self.assertFalse(_LENIENT.enable)
 
-    def test_maths_enable(self):
+    def test_maths_disable__lenient_enable_false(self):
+        _LENIENT.__dict__["enable"] = False
+        self.assertFalse(_LENIENT.enable)
+        self.lenient["maths"] = False
+        self.assertFalse(self.lenient.__dict__["maths"])
+        self.assertFalse(_LENIENT.enable)
+
+    def test_maths_enable__lenient_enable_true(self):
         self.assertTrue(_LENIENT.enable)
+        self.lenient["maths"] = True
+        self.assertTrue(self.lenient.__dict__["maths"])
+        self.assertTrue(_LENIENT.enable)
+
+    def test_maths_enable__lenient_enable_false(self):
+        _LENIENT.__dict__["enable"] = False
+        self.assertFalse(_LENIENT.enable)
         self.lenient["maths"] = True
         self.assertTrue(self.lenient.__dict__["maths"])
         self.assertTrue(_LENIENT.enable)
@@ -107,10 +121,62 @@ class Test_context(tests.IrisTest):
 
         self.assertTrue(self.lenient["maths"])
 
-    def test_maths_disable(self):
+    def test_maths_disable__lenient_true(self):
+        # synchronised
+        self.assertTrue(_LENIENT.enable)
         self.assertTrue(self.lenient["maths"])
 
         with self.lenient.context(maths=False):
+            # still synchronised
+            self.assertFalse(_LENIENT.enable)
             self.assertFalse(self.lenient["maths"])
 
+        # still synchronised
+        self.assertTrue(_LENIENT.enable)
         self.assertTrue(self.lenient["maths"])
+
+    def test_maths_disable__lenient_false(self):
+        # not synchronised
+        _LENIENT.__dict__["enable"] = False
+        self.assertFalse(_LENIENT.enable)
+        self.assertTrue(self.lenient["maths"])
+
+        with self.lenient.context(maths=False):
+            # now synchronised
+            self.assertFalse(_LENIENT.enable)
+            self.assertFalse(self.lenient["maths"])
+
+        # still synchronised
+        self.assertTrue(_LENIENT.enable)
+        self.assertTrue(self.lenient["maths"])
+
+    def test_maths_enable__lenient_true(self):
+        # not synchronised
+        self.assertTrue(_LENIENT.enable)
+        self.lenient.__dict__["maths"] = False
+        self.assertFalse(self.lenient["maths"])
+
+        with self.lenient.context(maths=True):
+            # now synchronised
+            self.assertTrue(_LENIENT.enable)
+            self.assertTrue(self.lenient["maths"])
+
+        # still synchronised
+        self.assertFalse(_LENIENT.enable)
+        self.assertFalse(self.lenient["maths"])
+
+    def test_maths_enable__lenient_false(self):
+        # synchronised
+        _LENIENT.__dict__["enable"] = False
+        self.assertFalse(_LENIENT.enable)
+        self.lenient.__dict__["maths"] = False
+        self.assertFalse(self.lenient["maths"])
+
+        with self.lenient.context(maths=True):
+            # still synchronised
+            self.assertTrue(_LENIENT.enable)
+            self.assertTrue(self.lenient["maths"])
+
+        # still synchronised
+        self.assertFalse(_LENIENT.enable)
+        self.assertFalse(self.lenient["maths"])
