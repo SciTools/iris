@@ -621,7 +621,7 @@ class Test_register_client(tests.IrisTest):
         self.lenient = _Lenient()
 
     def test_not_protected(self):
-        emsg = "Cannot register .* protected non-client"
+        emsg = "Cannot register .* client"
         for protected in _LENIENT_PROTECTED:
             with self.assertRaisesRegex(ValueError, emsg):
                 self.lenient.register_client(protected, "service")
@@ -726,7 +726,7 @@ class Test_register_service(tests.IrisTest):
         self.assertTrue(self.lenient.__dict__[qualname_service])
 
     def test_not_protected(self):
-        emsg = "Cannot register .* protected non-service"
+        emsg = "Cannot register .* service"
         for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
@@ -738,7 +738,7 @@ class Test_unregister_client(tests.IrisTest):
         self.lenient = _Lenient()
 
     def test_not_protected(self):
-        emsg = "Cannot unregister .* protected non-client"
+        emsg = "Cannot unregister .* client, as .* is a protected .* option."
         for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
@@ -752,7 +752,7 @@ class Test_unregister_client(tests.IrisTest):
     def test_not_client(self):
         client = "client"
         self.lenient.__dict__[client] = True
-        emsg = "Cannot unregister .* non-client"
+        emsg = "Cannot unregister .* client, as .* is not a valid .* client."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.unregister_client(client)
 
@@ -762,7 +762,7 @@ class Test_unregister_client(tests.IrisTest):
 
         qualname_client = _qualname(client)
         self.lenient.__dict__[qualname_client] = True
-        emsg = "Cannot unregister .* non-client"
+        emsg = "Cannot unregister .* client, as .* is not a valid .* client."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.unregister_client(client)
 
@@ -787,7 +787,7 @@ class Test_unregister_service(tests.IrisTest):
         self.lenient = _Lenient()
 
     def test_not_protected(self):
-        emsg = "Cannot unregister .* protected non-service"
+        emsg = "Cannot unregister .* service, as .* is a protected .* option."
         for protected in _LENIENT_PROTECTED:
             self.lenient.__dict__[protected] = None
             with self.assertRaisesRegex(ValueError, emsg):
@@ -801,7 +801,7 @@ class Test_unregister_service(tests.IrisTest):
     def test_not_service(self):
         service = "service"
         self.lenient.__dict__[service] = (None,)
-        emsg = "Cannot unregister .* non-service"
+        emsg = "Cannot unregister .* service, as .* is not a valid .* service."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.unregister_service(service)
 
@@ -811,7 +811,7 @@ class Test_unregister_service(tests.IrisTest):
 
         qualname_service = _qualname(service)
         self.lenient.__dict__[qualname_service] = (None,)
-        emsg = "Cannot unregister .* non-service"
+        emsg = "Cannot unregister .* service, as .* is not a valid .* service."
         with self.assertRaisesRegex(ValueError, emsg):
             self.lenient.unregister_service(service)
 

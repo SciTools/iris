@@ -416,7 +416,7 @@ class _Lenient(threading.local):
         if name == "active":
             value = _qualname(value)
             if not isinstance(value, str) and value is not None:
-                emsg = f"Invalid {cls!r} option {name!r}, got {value!r}."
+                emsg = f"Invalid {cls!r} option {name!r}, expected a registered {cls!r} client, got {value!r}."
                 raise ValueError(emsg)
             self.__dict__[name] = value
         elif name == "enable":
@@ -519,7 +519,7 @@ class _Lenient(threading.local):
         """
         if not isinstance(state, bool):
             cls = self.__class__.__name__
-            emsg = f"Invalid {cls!r} option 'enable', got {state!r}."
+            emsg = f"Invalid {cls!r} option 'enable', expected a {type(True)!r}, got {state!r}."
             raise ValueError(emsg)
         self.__dict__["enable"] = state
 
@@ -550,7 +550,8 @@ class _Lenient(threading.local):
 
         if func in _LENIENT_PROTECTED:
             emsg = (
-                f"Cannot register {cls!r} protected non-client, got {func!r}."
+                f"Cannot register {cls!r} client. "
+                f"Please rename your client to be something other than {func!r}."
             )
             raise ValueError(emsg)
         if isinstance(services, str) or not isinstance(services, Iterable):
@@ -582,7 +583,8 @@ class _Lenient(threading.local):
         if func in _LENIENT_PROTECTED:
             cls = self.__class__.__name__
             emsg = (
-                f"Cannot register {cls!r} protected non-service, got {func!r}."
+                f"Cannot register {cls!r} service. "
+                f"Please rename your service to be something other than {func!r}."
             )
             raise ValueError(emsg)
         self.__dict__[func] = True
@@ -601,17 +603,17 @@ class _Lenient(threading.local):
         cls = self.__class__.__name__
 
         if func in _LENIENT_PROTECTED:
-            emsg = f"Cannot unregister {cls!r} protected non-client, got {func!r}."
+            emsg = f"Cannot unregister {cls!r} client, as {func!r} is a protected {cls!r} option."
             raise ValueError(emsg)
 
         if func in self.__dict__:
             value = self.__dict__[func]
             if isinstance(value, bool):
-                emsg = f"Cannot unregister {cls!r} non-client, got {func!r}."
+                emsg = f"Cannot unregister {cls!r} client, as {func!r} is not a valid {cls!r} client."
                 raise ValueError(emsg)
             del self.__dict__[func]
         else:
-            emsg = f"Cannot unregister unknown {cls!r} client, got {func!r}."
+            emsg = f"Cannot unregister unknown {cls!r} client {func!r}."
             raise ValueError(emsg)
 
     def unregister_service(self, func):
@@ -628,17 +630,17 @@ class _Lenient(threading.local):
         cls = self.__class__.__name__
 
         if func in _LENIENT_PROTECTED:
-            emsg = f"Cannot unregister {cls!r} protected non-service, got {func!r}."
+            emsg = f"Cannot unregister {cls!r} service, as {func!r} is a protected {cls!r} option."
             raise ValueError(emsg)
 
         if func in self.__dict__:
             value = self.__dict__[func]
             if not isinstance(value, bool):
-                emsg = f"Cannot unregister {cls!r} non-service, got {func!r}."
+                emsg = f"Cannot unregister {cls!r} service, as {func!r} is not a valid {cls!r} service."
                 raise ValueError(emsg)
             del self.__dict__[func]
         else:
-            emsg = f"Cannot unregister unknown {cls!r} service, got {func!r}."
+            emsg = f"Cannot unregister unknown {cls!r} service {func!r}."
             raise ValueError(emsg)
 
 

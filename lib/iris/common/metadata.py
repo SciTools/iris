@@ -157,7 +157,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         self, other, func_service, func_operation, action, lenient=None
     ):
         """
-        Common entry-point for API facing lenient service methods.
+        Common entry-point for lenient metadata API methods.
 
         Args:
 

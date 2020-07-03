@@ -215,7 +215,6 @@ class CFVariableMixin:
                     metadata = metadata._asdict()
 
                 if isinstance(metadata, Mapping):
-                    missing = False
                     fields = [field for field in fields if field in metadata]
                 else:
                     # Generic iterable/container with no associated keys.
@@ -225,12 +224,12 @@ class CFVariableMixin:
                         if not hasattr(metadata, field)
                     ]
 
-                if missing:
-                    missing = ", ".join(
-                        map(lambda i: "{!r}".format(i), missing)
-                    )
-                    emsg = "Invalid {!r} metadata, require {} to be specified."
-                    raise TypeError(emsg.format(type(arg), missing))
+                    if missing:
+                        missing = ", ".join(
+                            map(lambda i: "{!r}".format(i), missing)
+                        )
+                        emsg = "Invalid {!r} metadata, require {} to be specified."
+                        raise TypeError(emsg.format(type(arg), missing))
 
         for field in fields:
             if hasattr(metadata, field):
