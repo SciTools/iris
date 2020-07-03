@@ -17,7 +17,13 @@ from unittest import mock
 
 from cf_units import Unit
 
-from iris.common.metadata import BaseMetadata
+from iris.common.metadata import (
+    AncillaryVariableMetadata,
+    BaseMetadata,
+    CellMeasureMetadata,
+    CoordMetadata,
+    CubeMetadata,
+)
 from iris.common.mixin import CFVariableMixin, LimitedAttributeDict
 
 
@@ -174,12 +180,15 @@ class Test__metadata_setter(tests.IrisTest):
             self.item._metadata_manager.attributes, self.attributes
         )
 
-    def test_dict__missing(self):
+    def test_dict__partial(self):
         metadata = dict(**self.args)
         del metadata["standard_name"]
-        emsg = "Invalid .* metadata, require 'standard_name' to be specified."
-        with self.assertRaisesRegex(TypeError, emsg):
-            self.item.metadata = metadata
+        self.item.metadata = metadata
+        metadata["standard_name"] = mock.sentinel.standard_name
+        self.assertEqual(self.item._metadata_manager.values, metadata)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, self.attributes
+        )
 
     def test_ordereddict(self):
         metadata = self.args
@@ -189,13 +198,14 @@ class Test__metadata_setter(tests.IrisTest):
             self.item._metadata_manager.attributes, self.attributes
         )
 
-    def test_ordereddict__missing(self):
+    def test_ordereddict__partial(self):
         metadata = self.args
         del metadata["long_name"]
         del metadata["units"]
-        emsg = "Invalid .* metadata, require 'long_name', 'units' to be specified."
-        with self.assertRaisesRegex(TypeError, emsg):
-            self.item.metadata = metadata
+        self.item.metadata = metadata
+        metadata["long_name"] = mock.sentinel.long_name
+        metadata["units"] = mock.sentinel.units
+        self.assertEqual(self.item._metadata_manager.values, metadata)
 
     def test_tuple(self):
         metadata = tuple(self.args.values())
@@ -232,21 +242,67 @@ class Test__metadata_setter(tests.IrisTest):
             self.item._metadata_manager.attributes, metadata.attributes
         )
 
-    def test_namedtuple__missing(self):
+    def test_namedtuple__partial(self):
         Metadata = namedtuple(
             "Metadata", ("standard_name", "long_name", "var_name", "units")
         )
-        metadata = Metadata(standard_name=1, long_name=2, var_name=3, units=4)
-        emsg = "Invalid .* metadata, require 'attributes' to be specified."
-        with self.assertRaisesRegex(TypeError, emsg):
-            self.item.metadata = metadata
+        del self.args["attributes"]
+        metadata = Metadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        expected.update(dict(attributes=mock.sentinel.attributes))
+        self.assertEqual(self.item._metadata_manager.values, expected)
 
-    def test_class(self):
+    def test_class_ancillaryvariablemetadata(self):
+        metadata = AncillaryVariableMetadata(**self.args)
+        self.item.metadata = metadata
+        self.assertEqual(
+            self.item._metadata_manager.values, metadata._asdict()
+        )
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_basemetadata(self):
         metadata = BaseMetadata(**self.args)
         self.item.metadata = metadata
         self.assertEqual(
             self.item._metadata_manager.values, metadata._asdict()
         )
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_cellmeasuremetadata(self):
+        self.args["measure"] = None
+        metadata = CellMeasureMetadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        del expected["measure"]
+        self.assertEqual(self.item._metadata_manager.values, expected)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_coordmetadata(self):
+        self.args.update(dict(coord_system=None, climatological=False))
+        metadata = CoordMetadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        del expected["coord_system"]
+        del expected["climatological"]
+        self.assertEqual(self.item._metadata_manager.values, expected)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_cubemetadata(self):
+        self.args["cell_methods"] = None
+        metadata = CubeMetadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        del expected["cell_methods"]
+        self.assertEqual(self.item._metadata_manager.values, expected)
         self.assertIsNot(
             self.item._metadata_manager.attributes, metadata.attributes
         )

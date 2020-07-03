@@ -8,21 +8,33 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from functools import wraps
+import logging
 import re
+
+from .lenient import _LENIENT
+from .lenient import _lenient_service as lenient_service
+from .lenient import _qualname as qualname
 
 
 __all__ = [
+    "SERVICES_COMBINE",
+    "SERVICES_DIFFERENCE",
+    "SERVICES_EQUAL",
+    "SERVICES",
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
-    "MetadataManagerFactory",
+    "metadata_manager_factory",
 ]
 
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
+
+# Configure the logger.
+logger = logging.getLogger(__name__)
 
 
 class _NamedTupleMeta(ABCMeta):
@@ -33,12 +45,11 @@ class _NamedTupleMeta(ABCMeta):
     """
 
     def __new__(mcs, name, bases, namespace):
-        token = "_members"
         names = []
 
         for base in bases:
-            if hasattr(base, token):
-                base_names = getattr(base, token)
+            if hasattr(base, "_members"):
+                base_names = getattr(base, "_members")
                 is_abstract = getattr(
                     base_names, "__isabstractmethod__", False
                 )
@@ -49,10 +60,10 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
-        if token in namespace and not getattr(
-            namespace[token], "__isabstractmethod__", False
+        if "_members" in namespace and not getattr(
+            namespace["_members"], "__isabstractmethod__", False
         ):
-            namespace_names = namespace[token]
+            namespace_names = namespace["_members"]
 
             if (not isinstance(namespace_names, Iterable)) or isinstance(
                 namespace_names, str
@@ -89,25 +100,433 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     __slots__ = ()
 
-    @classmethod
-    def token(cls, name):
+    @lenient_service
+    def __eq__(self, other):
         """
-        Determine whether the provided name is a valid NetCDF name and thus
-        safe to represent a single parsable token.
+        Determine whether the associated metadata members are equivalent.
 
         Args:
 
-        * name:
-            The string name to verify
+        * other (metadata):
+            A metadata instance of the same type.
 
         Returns:
-            The provided name if valid, otherwise None.
+            Boolean.
 
         """
-        if name is not None:
-            result = _TOKEN_PARSE.match(name)
-            name = result if result is None else name
-        return name
+        result = NotImplemented
+        if hasattr(other, "__class__") and other.__class__ is self.__class__:
+            if _LENIENT(self.__eq__) or _LENIENT(self.equal):
+                # Perform "lenient" equality.
+                logger.debug(
+                    "lenient", extra=dict(cls=self.__class__.__name__)
+                )
+                result = self._compare_lenient(other)
+            else:
+                # Perform "strict" equality.
+                logger.debug("strict", extra=dict(cls=self.__class__.__name__))
+                result = super().__eq__(other)
+
+        return result
+
+    def __lt__(self, other):
+        #
+        # Support Python2 behaviour for a "<" operation involving a
+        # "NoneType" operand.
+        #
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        def _sort_key(item):
+            keys = []
+            for field in item._fields:
+                value = getattr(item, field)
+                keys.extend((value is not None, value))
+            return tuple(keys)
+
+        return _sort_key(self) < _sort_key(other)
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+
+        return result
+
+    def _api_common(
+        self, other, func_service, func_operation, action, lenient=None
+    ):
+        """
+        Common entry-point for lenient metadata API methods.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        * func_service (callable):
+            The parent service method offering the API entry-point to the service.
+
+        * func_operation (callable):
+            The parent service method that provides the actual service.
+
+        * action (str):
+            The verb describing the service operation.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable the lenient service operation. The default is to automatically
+            detect whether this lenient service operation is enabled.
+
+        Returns:
+            The result of the service operation to the parent service caller.
+
+        """
+        if (
+            not hasattr(other, "__class__")
+            or other.__class__ is not self.__class__
+        ):
+            emsg = "Cannot {} {!r} with {!r}."
+            raise TypeError(
+                emsg.format(action, self.__class__.__name__, type(other))
+            )
+
+        if lenient is None:
+            result = func_operation(other)
+        else:
+            if lenient:
+                # Use qualname to disassociate from the instance bounded method.
+                args, kwargs = (qualname(func_service),), dict()
+            else:
+                # Use qualname to guarantee that the instance bounded method
+                # is a hashable key.
+                args, kwargs = (), {qualname(func_service): False}
+
+            with _LENIENT.context(*args, **kwargs):
+                result = func_operation(other)
+
+        return result
+
+    def _combine(self, other):
+        """Perform associated metadata member combination."""
+        if _LENIENT(self.combine):
+            # Perform "lenient" combine.
+            logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
+            values = self._combine_lenient(other)
+        else:
+            # Perform "strict" combine.
+            logger.debug("strict", extra=dict(cls=self.__class__.__name__))
+
+            def func(field):
+                value = getattr(self, field)
+                return value if value == getattr(other, field) else None
+
+            # Note that, for strict we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return values
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members.
+
+        Args:
+
+        * other (BaseMetadata):
+            The other metadata participating in the lenient combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            result = None
+            if field == "units":
+                # Perform "strict" combination for "units".
+                result = left if left == right else None
+            elif self._is_attributes(field, left, right):
+                result = self._combine_lenient_attributes(left, right)
+            else:
+                if left == right:
+                    result = left
+                elif left is None:
+                    result = right
+                elif right is None:
+                    result = left
+            return result
+
+        # Note that, we use "_members" not "_fields".
+        return [func(field) for field in BaseMetadata._members]
+
+    @staticmethod
+    def _combine_lenient_attributes(left, right):
+        """Leniently combine the dictionary members together."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Intersection of common items.
+        common = sleft & sright
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Intersection of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+        # Remove (in-place) common item keys with different values.
+        [dsleft.pop(key) for key in keys]
+        [dsright.pop(key) for key in keys]
+        # Now bring the result together.
+        result = dict(common)
+        result.update(dsleft)
+        result.update(dsright)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members.
+
+        Args:
+
+        * other (BaseMetadata):
+            The other metadata participating in the lenient comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        result = False
+
+        # Use the "name" method to leniently compare "standard_name",
+        # "long_name", and "var_name" in a well defined way.
+        if self.name() == other.name():
+
+            def func(field):
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if field == "units":
+                    # Perform "strict" compare for "units".
+                    result = left == right
+                elif self._is_attributes(field, left, right):
+                    result = self._compare_lenient_attributes(left, right)
+                else:
+                    # Perform "lenient" compare for members.
+                    result = (left == right) or left is None or right is None
+                return result
+
+            # Note that, we use "_members" not "_fields".
+            result = all([func(field) for field in BaseMetadata._members])
+
+        return result
+
+    @staticmethod
+    def _compare_lenient_attributes(left, right):
+        """Perform lenient compare between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Intersection of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+
+        return not bool(keys)
+
+    def _difference(self, other):
+        """Perform associated metadata member difference."""
+        if _LENIENT(self.difference):
+            # Perform "lenient" difference.
+            logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
+            values = self._difference_lenient(other)
+        else:
+            # Perform "strict" difference.
+            logger.debug("strict", extra=dict(cls=self.__class__.__name__))
+
+            def func(field):
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if self._is_attributes(field, left, right):
+                    result = self._difference_strict_attributes(left, right)
+                else:
+                    result = None if left == right else (left, right)
+                return result
+
+            # Note that, for strict we use "_fields" not "_members".
+            values = [func(field) for field in self._fields]
+
+        return values
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members.
+
+        Args:
+
+        * other (BaseMetadata):
+            The other metadata participating in the lenient difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            if field == "units":
+                # Perform "strict" difference for "units".
+                result = None if left == right else (left, right)
+            elif self._is_attributes(field, left, right):
+                result = self._difference_lenient_attributes(left, right)
+            else:
+                # Perform "lenient" difference for members.
+                result = (
+                    (left, right)
+                    if left is not None and right is not None and left != right
+                    else None
+                )
+            return result
+
+        # Note that, we use "_members" not "_fields".
+        return [func(field) for field in BaseMetadata._members]
+
+    @staticmethod
+    def _difference_lenient_attributes(left, right):
+        """Perform lenient difference between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+        # Intersection of common item keys with different values.
+        keys = set(dsleft.keys()) & set(dsright.keys())
+        # Keep (in-place) common item keys with different values.
+        [dsleft.pop(key) for key in list(dsleft.keys()) if key not in keys]
+        [dsright.pop(key) for key in list(dsright.keys()) if key not in keys]
+
+        if not bool(dsleft) and not bool(dsright):
+            result = None
+        else:
+            result = (dsleft, dsright)
+
+        return result
+
+    @staticmethod
+    def _difference_strict_attributes(left, right):
+        """Perform strict difference between the dictionary members."""
+        sleft = set(left.items())
+        sright = set(right.items())
+        # Items in sleft different from sright.
+        dsleft = dict(sleft - sright)
+        # Items in sright different from sleft.
+        dsright = dict(sright - sleft)
+
+        if not bool(dsleft) and not bool(dsright):
+            result = None
+        else:
+            result = (dsleft, dsright)
+
+        return result
+
+    @staticmethod
+    def _is_attributes(field, left, right):
+        """Determine whether we have two 'attributes' dictionaries."""
+        return (
+            field == "attributes"
+            and isinstance(left, Mapping)
+            and isinstance(right, Mapping)
+        )
+
+    @lenient_service
+    def combine(self, other, lenient=None):
+        """
+        Return a new metadata instance created by combining each of the
+        associated metadata members.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient combination. The default is to automatically
+            detect whether this lenient operation is enabled.
+
+        Returns:
+            Metadata instance.
+
+        """
+        result = self._api_common(
+            other, self.combine, self._combine, "combine", lenient=lenient
+        )
+        return self.__class__(*result)
+
+    @lenient_service
+    def difference(self, other, lenient=None):
+        """
+        Return a new metadata instance created by performing a difference
+        comparison between each of the associated metadata members.
+
+        A metadata member returned with a value of "None" indicates that there
+        is no difference between the members being compared. Otherwise, a tuple
+        of the different values is returned.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient difference. The default is to automatically
+            detect whether this lenient operation is enabled.
+
+        Returns:
+            Metadata instance of member differences or None.
+
+        """
+        result = self._api_common(
+            other, self.difference, self._difference, "differ", lenient=lenient
+        )
+        result = (
+            None
+            if all([item is None for item in result])
+            else self.__class__(*result)
+        )
+        return result
+
+    @lenient_service
+    def equal(self, other, lenient=None):
+        """
+        Determine whether the associated metadata members are equivalent.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of the same type.
+
+        Kwargs:
+
+        * lenient (boolean):
+            Enable/disable lenient equivalence. The default is to automatically
+            detect whether this lenient operation is enabled.
+
+        Returns:
+            Boolean.
+
+        """
+        result = self._api_common(
+            other, self.equal, self.__eq__, "compare", lenient=lenient
+        )
+        return result
 
     def name(self, default=None, token=False):
         """
@@ -151,23 +570,26 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
-    def __lt__(self, other):
-        #
-        # Support Python2 behaviour for a "<" operation involving a
-        # "NoneType" operand. Require to at least implement this comparison
-        # operator to support sorting of instances.
-        #
-        if not isinstance(other, self.__class__):
-            return NotImplemented
+    @classmethod
+    def token(cls, name):
+        """
+        Determine whether the provided name is a valid NetCDF name and thus
+        safe to represent a single parsable token.
 
-        def _sort_key(item):
-            keys = []
-            for field in item._fields:
-                value = getattr(item, field)
-                keys.extend((value is not None, value))
-            return tuple(keys)
+        Args:
 
-        return _sort_key(self) < _sort_key(other)
+        * name:
+            The string name to verify
+
+        Returns:
+            The provided name if valid, otherwise None.
+
+        """
+        if name is not None:
+            result = _TOKEN_PARSE.match(name)
+            name = result if result is None else name
+
+        return name
 
 
 class AncillaryVariableMetadata(BaseMetadata):
@@ -177,6 +599,26 @@ class AncillaryVariableMetadata(BaseMetadata):
     """
 
     __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
 
 class CellMeasureMetadata(BaseMetadata):
@@ -189,6 +631,96 @@ class CellMeasureMetadata(BaseMetadata):
 
     __slots__ = ()
 
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "measure".
+        value = self.measure if self.measure == other.measure else None
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "measure".
+        result = self.measure == other.measure
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for cell measures.
+
+        Args:
+
+        * other (CellMeasureMetadata):
+            The other cell measure metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "measure".
+        value = (
+            None
+            if self.measure == other.measure
+            else (self.measure, other.measure)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
 
 class CoordMetadata(BaseMetadata):
     """
@@ -200,6 +732,108 @@ class CoordMetadata(BaseMetadata):
 
     __slots__ = ()
 
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "coord_system" and "climatological".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        result = all(
+            [
+                getattr(self, field) == getattr(other, field)
+                for field in self._members
+            ]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for coordinates.
+
+        Args:
+
+        * other (CoordMetadata):
+            The other coordinate metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "coord_system" and "climatological".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
 
 class CubeMetadata(BaseMetadata):
     """
@@ -210,6 +844,123 @@ class CubeMetadata(BaseMetadata):
     _members = "cell_methods"
 
     __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for cubes.
+
+        Args:
+
+        * other (CubeMetadata):
+            The other cube metadata participating in the lenient combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "cell_methods".
+        value = (
+            self.cell_methods
+            if self.cell_methods == other.cell_methods
+            else None
+        )
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for cubes.
+
+        Args:
+
+        * other (CubeMetadata):
+            The other cube metadata participating in the lenient comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "cell_methods".
+        result = self.cell_methods == other.cell_methods
+        if result:
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for cubes.
+
+        Args:
+
+        * other (CubeMetadata):
+            The other cube metadata participating in the lenient difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "cell_methods".
+        value = (
+            None
+            if self.cell_methods == other.cell_methods
+            else (self.cell_methods, other.cell_methods)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
+
+        return result
+
+    @property
+    def _names(self):
+        """
+        A tuple containing the value of each name participating in the identity
+        of a :class:`iris.cube.Cube`. This includes the standard name,
+        long name, NetCDF variable name, and the STASH from the attributes
+        dictionary.
+
+        """
+        standard_name = self.standard_name
+        long_name = self.long_name
+        var_name = self.var_name
+
+        # Defensive enforcement of attributes being a dictionary.
+        if not isinstance(self.attributes, Mapping):
+            try:
+                self.attributes = dict()
+            except AttributeError:
+                emsg = "Invalid '{}.attributes' member, must be a mapping."
+                raise AttributeError(emsg.format(self.__class__.__name__))
+
+        stash_name = self.attributes.get("STASH")
+        if stash_name is not None:
+            stash_name = str(stash_name)
+
+        return standard_name, long_name, var_name, stash_name
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
     @wraps(BaseMetadata.name)
     def name(self, default=None, token=False):
@@ -240,35 +991,8 @@ class CubeMetadata(BaseMetadata):
 
         return result
 
-    @property
-    def _names(self):
-        """
-        A tuple containing the value of each name participating in the identity
-        of a :class:`iris.cube.Cube`. This includes the standard name,
-        long name, NetCDF variable name, and the STASH from the attributes
-        dictionary.
 
-        """
-        standard_name = self.standard_name
-        long_name = self.long_name
-        var_name = self.var_name
-
-        # Defensive enforcement of attributes being a dictionary.
-        if not isinstance(self.attributes, Mapping):
-            try:
-                self.attributes = dict()
-            except AttributeError:
-                emsg = "Invalid '{}.attributes' member, must be a mapping."
-                raise AttributeError(emsg.format(self.__class__.__name__))
-
-        stash_name = self.attributes.get("STASH")
-        if stash_name is not None:
-            stash_name = str(stash_name)
-
-        return (standard_name, long_name, var_name, stash_name)
-
-
-def MetadataManagerFactory(cls, **kwargs):
+def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.
@@ -314,6 +1038,7 @@ def MetadataManagerFactory(cls, **kwargs):
         match = self.cls is other.cls
         if match:
             match = self.values == other.values
+
         return match
 
     def __getstate__(self):
@@ -324,6 +1049,7 @@ def MetadataManagerFactory(cls, **kwargs):
         match = self.__eq__(other)
         if match is not NotImplemented:
             match = not match
+
         return match
 
     def __reduce__(self):
@@ -334,7 +1060,7 @@ def MetadataManagerFactory(cls, **kwargs):
         instance, and dump and load instance state successfully.
 
         """
-        return (MetadataManagerFactory, (self.cls,), self.__getstate__())
+        return metadata_manager_factory, (self.cls,), self.__getstate__()
 
     def __repr__(self):
         args = ", ".join(
@@ -353,6 +1079,7 @@ def MetadataManagerFactory(cls, **kwargs):
     @property
     def fields(self):
         """Return the name of the metadata members."""
+        # Proxy for built-in namedtuple._fields property.
         return self.cls._fields
 
     @property
@@ -401,3 +1128,42 @@ def MetadataManagerFactory(cls, **kwargs):
     metadata = Metadata(cls, **kwargs)
 
     return metadata
+
+
+#: Convenience collection of lenient metadata combine services.
+SERVICES_COMBINE = (
+    AncillaryVariableMetadata.combine,
+    BaseMetadata.combine,
+    CellMeasureMetadata.combine,
+    CoordMetadata.combine,
+    CubeMetadata.combine,
+)
+
+
+#: Convenience collection of lenient metadata difference services.
+SERVICES_DIFFERENCE = (
+    AncillaryVariableMetadata.difference,
+    BaseMetadata.difference,
+    CellMeasureMetadata.difference,
+    CoordMetadata.difference,
+    CubeMetadata.difference,
+)
+
+
+#: Convenience collection of lenient metadata equality services.
+SERVICES_EQUAL = (
+    AncillaryVariableMetadata.__eq__,
+    AncillaryVariableMetadata.equal,
+    BaseMetadata.__eq__,
+    BaseMetadata.equal,
+    CellMeasureMetadata.__eq__,
+    CellMeasureMetadata.equal,
+    CoordMetadata.__eq__,
+    CoordMetadata.equal,
+    CubeMetadata.__eq__,
+    CubeMetadata.equal,
+)
+
+
+#: Convenience collection of lenient metadata services.
+SERVICES = SERVICES_COMBINE + SERVICES_DIFFERENCE + SERVICES_EQUAL

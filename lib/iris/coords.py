@@ -31,7 +31,7 @@ from iris.common import (
     CFVariableMixin,
     CellMeasureMetadata,
     CoordMetadata,
-    MetadataManagerFactory,
+    metadata_manager_factory,
 )
 import iris.exceptions
 import iris.time
@@ -99,7 +99,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(BaseMetadata)
+            self._metadata_manager = metadata_manager_factory(BaseMetadata)
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -710,7 +710,7 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = MetadataManagerFactory(
+            self._metadata_manager = metadata_manager_factory(
                 AncillaryVariableMetadata
             )
 
@@ -822,7 +822,7 @@ class CellMeasure(AncillaryVariable):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CellMeasureMetadata)
+        self._metadata_manager = metadata_manager_factory(CellMeasureMetadata)
 
         super().__init__(
             data=data,
@@ -1321,7 +1321,7 @@ class Coord(_DimensionalMetadata):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = MetadataManagerFactory(CoordMetadata)
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
 
         super().__init__(
             values=points,
