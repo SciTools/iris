@@ -83,7 +83,7 @@ class Test___eq__(tests.IrisTest):
         result = self.metadata.__eq__(None)
         self.assertIs(NotImplemented, result)
 
-    def test_cannot_compare(self):
+    def test_cannot_compare_different_class(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         result = self.metadata.__eq__(other)
         self.assertIs(NotImplemented, result)
@@ -258,9 +258,9 @@ class Test__combine_lenient(tests.IrisTest):
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
-        result = lmetadata._combine_lenient(rmetadata)
         expected = list(left.values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._combine_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._combine_lenient(lmetadata))
 
     def test_strict_units_different(self):
         left = self.none.copy()
@@ -326,9 +326,9 @@ class Test__combine_lenient(tests.IrisTest):
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
-        result = lmetadata._combine_lenient(rmetadata)
         expected = list(self.none.copy().values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._combine_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._combine_lenient(lmetadata))
 
     def test_attributes_non_mapping_different_none(self):
         left = self.none.copy()
@@ -354,9 +354,9 @@ class Test__combine_lenient(tests.IrisTest):
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
-        result = lmetadata._combine_lenient(rmetadata)
         expected = list(left.values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._combine_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._combine_lenient(lmetadata))
 
     def test_names_different(self):
         dummy = sentinel.dummy
@@ -369,9 +369,9 @@ class Test__combine_lenient(tests.IrisTest):
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
-        result = lmetadata._combine_lenient(rmetadata)
         expected = list(self.none.copy().values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._combine_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._combine_lenient(lmetadata))
 
     def test_names_different_none(self):
         left = self.none.copy()
@@ -409,6 +409,9 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = dict(**left)
         self.assertEqual(expected, result)
 
+        result = self.metadata._combine_lenient_attributes(right, left)
+        self.assertEqual(expected, result)
+
     def test_different(self):
         left = self.values.copy()
         right = self.values.copy()
@@ -418,6 +421,9 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = self.values.copy()
         for key in ["two", "four"]:
             del expected[key]
+        self.assertEqual(dict(expected), result)
+
+        result = self.metadata._combine_lenient_attributes(right, left)
         self.assertEqual(dict(expected), result)
 
     def test_different_none(self):
@@ -431,6 +437,9 @@ class Test__combine_lenient_attributes(tests.IrisTest):
             del expected[key]
         self.assertEqual(dict(expected), result)
 
+        result = self.metadata._combine_lenient_attributes(right, left)
+        self.assertEqual(dict(expected), result)
+
     def test_extra(self):
         left = self.values.copy()
         right = self.values.copy()
@@ -441,6 +450,9 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = self.values.copy()
         expected["extra_left"] = left["extra_left"]
         expected["extra_right"] = right["extra_right"]
+        self.assertEqual(dict(expected), result)
+
+        result = self.metadata._combine_lenient_attributes(right, left)
         self.assertEqual(dict(expected), result)
 
 
@@ -580,7 +592,7 @@ class Test__compare_lenient(tests.IrisTest):
         rmetadata = self.cls(**right)
 
         self.assertTrue(lmetadata._compare_lenient(rmetadata))
-        self.assertTrue(rmetadata._combine_lenient(lmetadata))
+        self.assertTrue(rmetadata._compare_lenient(lmetadata))
 
     def test_names(self):
         left = self.none.copy()
@@ -740,9 +752,9 @@ class Test__difference_lenient(tests.IrisTest):
         right = left.copy()
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
-        result = lmetadata._difference_lenient(rmetadata)
         expected = list(self.none.values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._difference_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._difference_lenient(lmetadata))
 
     def test_strict_units_different(self):
         left = self.none.copy()
@@ -857,9 +869,9 @@ class Test__difference_lenient(tests.IrisTest):
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
-        result = lmetadata._difference_lenient(rmetadata)
         expected = list(self.none.values())
-        self.assertEqual(expected, result)
+        self.assertEqual(expected, lmetadata._difference_lenient(rmetadata))
+        self.assertEqual(expected, rmetadata._difference_lenient(lmetadata))
 
     def test_names_different(self):
         dummy = sentinel.dummy
@@ -925,7 +937,11 @@ class Test__difference_lenient_attributes(tests.IrisTest):
     def test_same(self):
         left = self.values.copy()
         right = self.values.copy()
+
         result = self.metadata._difference_lenient_attributes(left, right)
+        self.assertIsNone(result)
+
+        result = self.metadata._difference_lenient_attributes(right, left)
         self.assertIsNone(result)
 
     def test_different(self):
@@ -971,6 +987,9 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         expected["extra_right"] = right["extra_right"]
         self.assertIsNone(result)
 
+        result = self.metadata._difference_lenient_attributes(right, left)
+        self.assertIsNone(result)
+
 
 class Test__difference_strict_attributes(tests.IrisTest):
     def setUp(self):
@@ -990,6 +1009,8 @@ class Test__difference_strict_attributes(tests.IrisTest):
         right = self.values.copy()
 
         result = self.metadata._difference_strict_attributes(left, right)
+        self.assertIsNone(result)
+        result = self.metadata._difference_strict_attributes(right, left)
         self.assertIsNone(result)
 
     def test_different(self):
@@ -1106,7 +1127,7 @@ class Test_combine(tests.IrisTest):
         with self.assertRaisesRegex(TypeError, emsg):
             self.metadata.combine(None)
 
-    def test_cannot_combine(self):
+    def test_cannot_combine_different_class(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         emsg = "Cannot combine"
         with self.assertRaisesRegex(TypeError, emsg):
@@ -1194,7 +1215,7 @@ class Test_difference(tests.IrisTest):
         with self.assertRaisesRegex(TypeError, emsg):
             self.metadata.difference(None)
 
-    def test_cannot_differ(self):
+    def test_cannot_differ_different_class(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         emsg = "Cannot differ"
         with self.assertRaisesRegex(TypeError, emsg):
@@ -1275,7 +1296,7 @@ class Test_equal(tests.IrisTest):
         with self.assertRaisesRegex(TypeError, emsg):
             self.metadata.equal(None)
 
-    def test_cannot_compare(self):
+    def test_cannot_compare_different_class(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         emsg = "Cannot compare"
         with self.assertRaisesRegex(TypeError, emsg):
