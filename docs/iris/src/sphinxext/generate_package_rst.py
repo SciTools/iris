@@ -8,6 +8,17 @@ import os
 import sys
 import re
 import inspect
+import ntpath
+
+# list of tuples for modules to exclude.  Useful if the documentation throws
+# warnings, especially for experimental modules.
+exclude_modules = [
+    ('experimental/raster', 'iris.experimental.raster')   # gdal conflicts
+    ]
+
+# print to stdout, including the name of the python file 
+def autolog(message):
+    print("[{}] {}".format(ntpath.basename(__file__), message))
 
 
 document_dict = {
@@ -77,12 +88,10 @@ In this module:
 
 {module_elements}
 
-
 '''
+
     if package_toc:
         sidebar = '''
-.. sidebar:: Modules in this package
-
 {package_toc_tree}
 
     '''.format(package_toc_tree=package_toc)
@@ -155,10 +164,12 @@ In this module:
 def auto_doc_package(file_path, import_name, root_package, sub_packages):
     max_depth = 1 if import_name == 'iris' else 2
     package_toc = '\n      '.join(sub_packages)
+
     package_toc = '''
    .. toctree::
       :maxdepth: {:d}
       :titlesonly:
+      :hidden:
 
       {}
 
@@ -168,7 +179,7 @@ def auto_doc_package(file_path, import_name, root_package, sub_packages):
     if '.' in import_name:
         title = None
     else:
-        title = import_name.capitalize() + ' reference documentation'
+        title = import_name.capitalize() + ' API'
 
     return auto_doc_module(file_path, import_name, root_package,
                            package_toc=package_toc, title=title)
@@ -189,7 +200,7 @@ def auto_package_build(app):
 
 
 def do_package(package_name):
-    out_dir = package_name + os.path.sep
+    out_dir = 'generated/api' + os.path.sep
 
     # Import the root package. If this fails then an import error will be
     # raised.
@@ -199,6 +210,7 @@ def do_package(package_name):
 
     package_folder = []
     module_folders = {}
+
     for root, subFolders, files in os.walk(rootdir):
         for fname in files:
             name, ext = os.path.splitext(fname)
@@ -258,6 +270,13 @@ def do_package(package_name):
                      for imp_name, path in module_folders.get(package, []))
 
         paths.sort()
+
+        # check for any modules to exclude 
+        for exclude_module in exclude_modules:
+            if exclude_module[0] in paths:
+                autolog("Excluding module in package: {}".format(exclude_module[0]))
+                paths.remove(exclude_module[0])
+        
         doc = auto_doc_package(package_path, package, root_package, paths)
 
         package_dir = out_dir + package.replace('.', os.path.sep)
@@ -266,34 +285,36 @@ def do_package(package_name):
 
         out_path = package_dir + '.rst'
         if not os.path.exists(out_path):
-            print('Creating non-existent document {} ...'.format(out_path))
+            autolog('Creating {} ...'.format(out_path))
             with open(out_path, 'w') as fh:
                 fh.write(doc)
         else:
             with open(out_path, 'r') as fh:
                 existing_content = ''.join(fh.readlines())
             if doc != existing_content:
-                print('Creating out of date document {} ...'.format(
-                    out_path))
+                autolog('Creating {} ...'.format(out_path))
                 with open(out_path, 'w') as fh:
                     fh.write(doc)
 
         for import_name, module_path in module_folders.get(package, []):
-            doc = auto_doc_module(module_path, import_name, root_package)
-            out_path = out_dir + import_name.replace('.', os.path.sep) + '.rst'
-            if not os.path.exists(out_path):
-                print('Creating non-existent document {} ...'.format(
-                    out_path))
-                with open(out_path, 'w') as fh:
-                    fh.write(doc)
-            else:
-                with open(out_path, 'r') as fh:
-                    existing_content = ''.join(fh.readlines())
-                if doc != existing_content:
-                    print('Creating out of date document {} ...'.format(
-                        out_path))
-                    with open(out_path, 'w') as fh:
-                        fh.write(doc)
+            # check for any modules to exclude 
+            for exclude_module in exclude_modules:
+                if import_name == exclude_module[1]:
+                    autolog("Excluding module file: {}".format(exclude_module[1]))
+                else:
+                    doc = auto_doc_module(module_path, import_name, root_package)
+                    out_path = out_dir + import_name.replace('.', os.path.sep) + '.rst'
+                    if not os.path.exists(out_path):
+                        autolog('Creating {} ...'.format(out_path))
+                        with open(out_path, 'w') as fh:
+                            fh.write(doc)
+                    else:
+                        with open(out_path, 'r') as fh:
+                            existing_content = ''.join(fh.readlines())
+                        if doc != existing_content:
+                            autolog('Creating {} ...'.format(out_path))
+                            with open(out_path, 'w') as fh:
+                                fh.write(doc)
 
 
 def setup(app):

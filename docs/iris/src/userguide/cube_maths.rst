@@ -208,7 +208,7 @@ The result could now be plotted using the guidance provided in the
 .. only:: html
 
     A very similar example to this can be found in 
-    :doc:`/examples/Meteorology/deriving_phenomena`.
+    :ref:`sphx_glr_generated_gallery_meteorology_plot_deriving_phenomena.py`.
 
 .. only:: latex
 

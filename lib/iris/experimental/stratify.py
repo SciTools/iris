@@ -68,8 +68,8 @@ def relevel(cube, src_levels, tgt_levels, axis=None, interpolator=None):
     that are generally monotonic in the direction of interpolation, such as
     height/pressure or salinity/depth.
 
-    Parameters
-    ----------
+    Args:
+
     cube : :class:`~iris.cube.Cube`
         The phenomenon data to be re-levelled.
 

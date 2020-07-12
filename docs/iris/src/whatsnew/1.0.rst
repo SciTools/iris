@@ -69,7 +69,7 @@ CF-netCDF coordinate systems
 ============================
 
 The coordinate systems in Iris are now defined by the CF-netCDF
-`grid mappings <http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/apf.html>`_.
+`grid mappings <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#grid-mappings-and-projections>`_.
 As of Iris 1.0 a subset of the CF-netCDF coordinate systems are
 supported, but this will be expanded in subsequent versions. Adding
 this code is a relatively simple, incremental process - it would make a
@@ -79,13 +79,13 @@ contributing to the project.
 The coordinate systems available in Iris 1.0 and their corresponding
 Iris classes are:
 
-================================================================================================== =========================================
-CF name                                                                                            Iris class
-================================================================================================== =========================================
-`Latitude-longitude <http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/apf.html#idp7779520>`_  :class:`~iris.coord_systems.GeogCS`
-`Rotated pole <http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/apf.html#idp7844592>`_        :class:`~iris.coord_systems.RotatedGeogCS`
-`Transverse Mercator <http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/apf.html#idp7872672>`_ :class:`~iris.coord_systems.TransverseMercator`
-================================================================================================== =========================================
+================================================================================================================= =========================================
+CF name                                                                                                           Iris class
+================================================================================================================= =========================================
+`Latitude-longitude <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_latitude_longitude>`_   :class:`~iris.coord_systems.GeogCS`
+`Rotated pole <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_rotated_pole>`_               :class:`~iris.coord_systems.RotatedGeogCS`
+`Transverse Mercator <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_transverse_mercator>`_ :class:`~iris.coord_systems.TransverseMercator`
+================================================================================================================= =========================================
 
 For convenience, Iris also includes the :class:`~iris.coord_systems.OSGB`
 class which provides a simple way to create the transverse Mercator
@@ -147,8 +147,7 @@ Hybrid-pressure
 
 With the introduction of the :class:`~iris.aux_factory.HybridPressureFactory`
 class, it is now possible to represent data expressed on a
-hybrid-pressure vertical coordinate, as defined by the second variant in
-`Appendix D <http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/apd.html#idp7406304>`_.
+`hybrid-pressure vertical coordinate <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_atmosphere_hybrid_sigma_pressure_coordinate>`_.
 A hybrid-pressure factory is created with references to the coordinates
 which provide the components of the hybrid coordinate ("ap" and "b") and
 the surface pressure. In return, it provides a virtual "pressure"
@@ -160,7 +159,7 @@ the derived "pressure" coordinate for certain data [#f1]_ from the
 
 .. [#f1] Where the level type is either 105 or 119, and where the
          surface pressure has an ECMWF paramId of
-         `152 <http://www.ecmwf.int/publications/manuals/d/gribapi/param/detail/format=grib2/pid=152/>`_.
+         `152 <https://apps.ecmwf.int/codes/grib/param-db/?id=152>`_.
 
 
 NetCDF

@@ -1,4 +1,4 @@
-What's New in Iris 1.13
+What's new in Iris 1.13
 ***********************
 
 :Release: 1.13
@@ -8,7 +8,7 @@ What's New in Iris 1.13
 This document explains the new/changed features of Iris in version 1.13
 (:doc:`View all changes <index>`.)
 
-Iris 1.13 Features
+Iris 1.13 features
 ==================
 
 * Allow the reading of NAME trajectories stored by time instead of by particle number.
@@ -16,7 +16,7 @@ Iris 1.13 Features
 * Data arrays may be shared between cubes, and subsets of cubes, by using the :meth:`iris.cube.share_data` flag.
 
 
-Bug Fixes
+Bug fixes
 =========
 
 * The bounds are now set correctly on the longitude coordinate if a zonal mean diagnostic has been loaded from a PP file as per the CF Standard.

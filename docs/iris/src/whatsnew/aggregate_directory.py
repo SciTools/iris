@@ -42,7 +42,7 @@ RELEASE_REGEX = re.compile(_RELEASEDIR_REGEX_STRING)
 SOFTWARE_NAME = "Iris"
 EXTENSION = ".rst"
 VALID_CATEGORIES = [
-    {"Prefix": "newfeature", "Title": "Features"},
+    {"Prefix": "newfeature", "Title": "features"},
     {"Prefix": "bugfix", "Title": "Bugs Fixed"},
     {"Prefix": "incompatiblechange", "Title": "Incompatible Changes"},
     {"Prefix": "deprecate", "Title": "Deprecations"},
@@ -165,7 +165,7 @@ def generate_header(release, unreleased=False):
     else:
         isodatestamp = datetime.date.today().strftime("%Y-%m-%d")
     header_text = []
-    title_template = "What's New in {} {!s}\n"
+    title_template = "What's new in {} {!s}\n"
     title_line = title_template.format(SOFTWARE_NAME, release)
     title_underline = ("*" * (len(title_line) - 1)) + "\n"
     header_text.append(title_line)

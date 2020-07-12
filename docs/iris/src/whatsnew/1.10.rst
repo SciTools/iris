@@ -1,4 +1,4 @@
-What's New in Iris 1.10
+What's new in Iris 1.10
 ***********************
 
 :Release: 1.10
@@ -7,7 +7,7 @@ What's New in Iris 1.10
 This document explains the new/changed features of Iris in version 1.10
 (:doc:`View all changes <index>`.)
 
-Iris 1.10 Features
+Iris 1.10 features
 ==================
 .. _iris_grib_added:
 
@@ -76,7 +76,7 @@ Iris 1.10 Features
 * Cubes with anonymous dimensions can now be concatenated. This can only occur along a dimension that is not anonymous.
 * NetCDF saving of ``valid_range``, ``valid_min`` and ``valid_max`` cube attributes is now allowed.
 
-Bugs Fixed
+Bugs fixed
 ==========
 * Altered Cell Methods to display coordinate's standard_name rather than var_name where appropriate to avoid human confusion.
 * Saving multiple cubes with netCDF4 protected attributes should now work as expected.
@@ -101,7 +101,7 @@ Bugs Fixed
 * Concatenation no longer occurs when the auxiliary coordinates of the cubes do not match. This check is not applied to AuxCoords that span the dimension the concatenation is occuring along. This behaviour can be switched off by setting the ``check_aux_coords`` kwarg in :meth:`iris.cube.CubeList.concatenate` to False.
 * Fixed a bug in :meth:`iris.cube.Cube.subset` where an exception would be thrown while trying to subset over a non-dimensional scalar coordinate.
 
-Incompatible Changes
+Incompatible changes
 ====================
 * The source and target for :meth:`iris.experimental.regrid.PointInCell.regridder` must now have defined coordinate systems (i.e. not ``None``). Additionally, the source data X and Y coordinates must have the same cube dimensions.
 
@@ -170,7 +170,7 @@ Documentation Changes
 * It is now clear that repeated values will form a group under :meth:`iris.cube.Cube.aggregated_by` even if they aren't consecutive. Hence, the documentation for :mod:`iris.cube` has been changed to reflect this.
 * The documentation for :meth:`iris.analysis.calculus.curl` has been updated for clarity.
 * False claims about :meth:`iris.fileformats.pp.save`, :meth:`iris.fileformats.pp.as_pairs`, and :meth:`iris.fileformats.pp.as_fields` being able to take instances of :class:`iris.cube.CubeList` as inputs have been removed.
-* A :doc:`new code example <../examples/Meteorology/wind_speed>`, demonstrating the use of a quiver plot to display wind speeds over Lake Victoria, has been added.
+* A new code example :ref:`sphx_glr_generated_gallery_meteorology_plot_wind_speed.py`, demonstrating the use of a quiver plot to display wind speeds over Lake Victoria, has been added.
 * The docstring for :data:`iris.analysis.SUM` has been updated to explicitly state that weights passed to it aren't normalised internally.
 * A note regarding the impossibility of partially collapsing multi-dimensional coordinates has been added to the user guide.
 

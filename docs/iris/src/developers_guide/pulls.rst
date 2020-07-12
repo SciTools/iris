@@ -1,6 +1,6 @@
 .. _pr_check:
 
-Pull Request Check List
+Pull request check List
 ***********************
 
 A pull request to a SciTools project master should be ready to merge into the
@@ -15,7 +15,7 @@ The check list summarises criteria which will be checked before a pull request
 is merged.  Before submitting a pull request please consider this list.
 
 
-The Iris Check List
+The Iris check list
 ====================
 
 * Have you provided a helpful description of the Pull Request?
@@ -75,7 +75,7 @@ The Iris Check List
 
 * Do the documentation and code-example tests pass?
 
- * Run with ``make doctest`` and ``make extest``, from within the subdirectory
+ * Run with ``make doctest`` and ``make gallerytest``, from within the subdirectory
    ``./docs/iris``.
  * note that code examples must *not* raise deprecations.  This is now checked
    and will result in an error.
@@ -85,8 +85,8 @@ The Iris Check List
 
  * ``./.travis.yml`` is used to manage the continuous integration testing.
  * the files ``./conda-requirements.yml`` and
-    ``./minimal-conda-requirements.yml`` are used to define the software
-    environments used, using the conda_ package manager.
+   ``./minimal-conda-requirements.yml`` are used to define the software
+   environments used, using the conda_ package manager.
 
 * Have you provided updates to supporting projects for test or example data?
 
@@ -108,7 +108,7 @@ The Iris Check List
 
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _python-pep8: https://pypi.python.org/pypi/pep8
-.. _conda: http://conda.readthedocs.io/en/latest/
+.. _conda: https://docs.conda.io/en/latest/
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
 .. _test-images-scitools: https://github.com/SciTools/test-images-scitools

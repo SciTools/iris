@@ -105,8 +105,8 @@ Iris-Pandas interoperablilty
 Conversion to and from Pandas Series_ and DataFrames_ is now available.
 See :mod:`iris.pandas` for more details.
 
-.. _Series: http://pandas.pydata.org/pandas-docs/stable/api.html#series
-.. _DataFrames: http://pandas.pydata.org/pandas-docs/stable/api.html#dataframe
+.. _Series: https://pandas.pydata.org/pandas-docs/stable/reference/series.html
+.. _DataFrames: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
 
 
 .. _load-opendap:

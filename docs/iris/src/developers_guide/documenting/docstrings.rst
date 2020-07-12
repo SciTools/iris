@@ -1,11 +1,12 @@
-================
+===========
  Docstrings
-================
+===========
 
 
 Guiding principle: Every public object in the Iris package should have an appropriate docstring.
 
 This document has been influenced by the following PEP's,
+
    * Attribute Docstrings `PEP-224 <http://www.python.org/dev/peps/pep-0224/>`_ 
    * Docstring Conventions `PEP-257 <http://www.python.org/dev/peps/pep-0257/>`_
 
@@ -60,7 +61,7 @@ The class constructor should be documented in the docstring for its ``__init__``
 If a class subclasses another class and its behavior is mostly inherited from that class, its docstring should mention this and summarise the differences. Use the verb "override" to indicate that a subclass method replaces a superclass method and does not call the superclass method; use the verb "extend" to indicate that a subclass method calls the superclass method (in addition to its own behavior).
 
 
-Attribute and Property docstrings
+Attribute and property docstrings
 ---------------------------------
 Here is a simple example of a class containing an attribute docstring and a property docstring:
 

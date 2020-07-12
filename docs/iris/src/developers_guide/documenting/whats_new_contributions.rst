@@ -18,7 +18,7 @@ When a new release is prepared, the what's new contributions are combined into
 a draft what's new document for the release.
 
 
-Writing a Contribution
+Writing a contribution
 ======================
 
 As introduced above, a contribution is the description of a change to Iris
@@ -36,7 +36,7 @@ It is not in itself the final documentation content,
 so it does not have to be perfect or complete in every respect.
 
 
-Adding Contribution Files
+Adding contribution files
 =========================
 
 Each release must have a directory called ``contributions_<release number>``,
@@ -91,7 +91,7 @@ For example:
  * GRIB2_pdt11
 
 
-Complete Examples
+Complete examples
 -----------------
 
 Some sample what's new contribution filenames:
@@ -106,7 +106,7 @@ Some sample what's new contribution filenames:
     latest contributions directory conform to this naming scheme.
 
 
-Compiling a Draft
+Compiling a draft
 =================
 
 Compiling a draft from the supplied contributions should be done when preparing

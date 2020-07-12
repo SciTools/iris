@@ -10,7 +10,7 @@ according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 References:
 
 [CF]  NetCDF Climate and Forecast (CF) Metadata conventions, Version 1.5, October, 2010.
-[NUG] NetCDF User's Guide, http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html
+[NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
 
 """
 

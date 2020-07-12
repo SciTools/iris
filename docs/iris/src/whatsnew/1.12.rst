@@ -1,4 +1,4 @@
-What's New in Iris 1.12
+What's new in Iris 1.12
 ***********************
 
 :Release: 1.12
@@ -7,7 +7,7 @@ What's New in Iris 1.12
 This document explains the new/changed features of Iris in version 1.12
 (:doc:`View all changes <index>`.)
 
-Iris 1.12 Features
+Iris 1.12 features
 ==================
 .. _showcase:
 
@@ -125,7 +125,7 @@ Deprecations
   of the new fast-loading mechanism provided by
   :meth:`iris.fileformats.um.structured_um_loading`.
 
-Documentation Changes
+Documentation changes
 =====================
 * Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make
   the usage scope clearer.

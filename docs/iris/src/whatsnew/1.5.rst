@@ -101,7 +101,7 @@ Iris 1.5 features
   the direction of vertical axes will be reversed if the corresponding
   coordinate has a "positive" attribute set to "down".
 
-  see: :ref:`Oceanography-atlantic_profiles`
+  see: :ref:`sphx_glr_generated_gallery_oceanography_plot_atlantic_profiles.py`
 
 * New PP stashcode translations added including 'dewpoint' and
   'relative_humidity'.

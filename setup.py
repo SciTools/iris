@@ -181,7 +181,6 @@ def build_std_names(cmd, directory):
     xml_path = os.path.join("etc", "cf-standard-name-table.xml")
     module_path = os.path.join(directory, "iris", "std_names.py")
     args = (sys.executable, script_path, xml_path, module_path)
-
     cmd.spawn(args)
 
 

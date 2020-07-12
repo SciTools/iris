@@ -44,5 +44,5 @@ def handler(app, what, name, obj, options, signature, return_annotation):
 
 
 def setup(app):
-    app.add_autodocumenter(IrisDataDocumenter)
+    app.add_autodocumenter(IrisDataDocumenter, override=True)
     app.connect('autodoc-process-signature', handler)

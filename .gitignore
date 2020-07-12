@@ -55,11 +55,8 @@ lib/iris/tests/results/imagerepo.lock
 *.cover
 
 # Auto generated documentation files
-docs/iris/src/_static/random_image.js
-docs/iris/src/_templates/gallery.html
-docs/iris/src/examples/
-docs/iris/src/iris/
-docs/iris/src/matplotlibrc
+docs/iris/src/_build/*
+docs/iris/src/generated
 
 # Example test results
 docs/iris/iris_image_test_output/

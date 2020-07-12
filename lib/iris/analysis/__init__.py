@@ -27,11 +27,11 @@ in that dimension.
 The gallery contains several interesting worked examples of how an
 :class:`~iris.analysis.Aggregator` may be used, including:
 
- * :ref:`Meteorology-COP_1d_plot`
- * :ref:`General-SOI_filtering`
- * :ref:`Meteorology-hovmoller`
- * :ref:`Meteorology-lagged_ensemble`
- * :ref:`General-custom_aggregation`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_COP_1d.py`
+ * :ref:`sphx_glr_generated_gallery_general_plot_SOI_filtering.py`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_hovmoller.py`
+ * :ref:`sphx_glr_generated_gallery_meteorology_plot_lagged_ensemble.py`
+ * :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`
 
 """
 
@@ -487,7 +487,8 @@ class _Aggregator:
         A variety of ready-made aggregators are provided in this module, such
         as :data:`~iris.analysis.MEAN` and :data:`~iris.analysis.MAX`.  Custom
         aggregators can also be created for special purposes, see
-        :ref:`General-custom_aggregation` for a worked example.
+        :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`
+        for a worked example.
 
         """
         #: Cube cell method string.

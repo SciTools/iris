@@ -1,4 +1,4 @@
-What's New in Iris 2.4.0
+What's new in Iris 2.4.0
 ************************
 
 :Release: 2.4.0
@@ -8,7 +8,7 @@ This document explains the new/changed features of Iris in version 2.4.0
 (:doc:`View all changes <index>`.)
 
 
-Iris 2.4.0 Features
+Iris 2.4.0 features
 ===================
 
 .. admonition:: Last python 2 version of Iris
@@ -44,12 +44,12 @@ Iris 2.4.0 Features
   from the attributes dictionary of a :class:`~iris.cube.Cube`.
 
 
-Iris 2.4.0 Dependency Updates
+Iris 2.4.0 dependency updates
 =============================
 * Iris is now able to use the latest version of matplotlib.
 
 
-Bugs Fixed
+Bugs fixed
 ==========
 * Fixed a problem which was causing file loads to fetch *all* field data
   whenever UM files (PP or Fieldsfiles) were loaded.

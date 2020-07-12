@@ -93,7 +93,8 @@ can be used instead of ``MEAN``, see :mod:`iris.analysis` for a full list
 of currently supported operators.
 
 For an example of using this functionality, the
-:ref:`Hovmoller diagram <Meteorology-hovmoller>` example found
+:ref:`sphx_glr_generated_gallery_meteorology_plot_hovmoller.py`
+example found
 in the gallery takes a zonal mean of an ``XYT`` cube by using the
 ``collapsed`` method with ``latitude`` and ``iris.analysis.MEAN`` as arguments.
 
@@ -147,7 +148,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
 
 Several examples of area averaging exist in the gallery which may be of interest,
 including an example on taking a :ref:`global area-weighted mean
-<Meteorology-COP_1d_plot>`.
+<sphx_glr_generated_gallery_meteorology_plot_COP_1d.py>`.
 
 .. _cube-statistics-aggregated-by:
 

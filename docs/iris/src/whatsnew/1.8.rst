@@ -169,7 +169,7 @@ Deprecations
   "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid" has been removed, as
   :class:`iris.analysis.Linear` now includes this functionality.
 
-Documentation Changes
+Documentation changes
 =====================
 * A chapter on :doc:`merge and concatenate </userguide/merge_and_concat>` has been
   added to the :doc:`user guide </userguide/index>`.

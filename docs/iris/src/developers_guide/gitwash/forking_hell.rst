@@ -1,7 +1,7 @@
 .. _forking:
 
 ======================================================
-Making your own copy (fork) of iris
+Making your own copy (fork) of Iris
 ======================================================
 
 You need to do this only once.  The instructions here are very similar
@@ -17,7 +17,7 @@ If you don't have a github account, go to the github page, and make one.
 You then need to configure your account to allow write access |emdash| see
 the ``Generating SSH keys`` help on `github help`_.
 
-Create your own forked copy of `iris`_
+Create your own forked copy of `Iris`_
 ======================================================
 
 #. Log into your github account.

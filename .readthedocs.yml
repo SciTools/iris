@@ -1,0 +1,19 @@
+version: 2
+
+build:
+    image: latest
+
+conda:
+    environment: ci/requirements/readthedocs-conda.yml
+
+sphinx:
+    configuration: docs/iris/src/conf.py
+    fail_on_warning: false
+
+python:
+    install: 
+        - method: setuptools
+          path: .
+
+formats:
+    - htmlzip

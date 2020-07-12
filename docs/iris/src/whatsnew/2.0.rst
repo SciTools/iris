@@ -1,4 +1,4 @@
-What's New in Iris 2.0.0
+What's new in Iris 2.0.0
 ************************
 
 :Release: 2.0.0rc1
@@ -9,7 +9,7 @@ This document explains the new/changed features of Iris in version 2.0.0
 (:doc:`View all changes <index>`).
 
 
-Iris 2.0.0 Features
+Iris 2.0.0 features
 ===================
 .. _showcase:
 
@@ -114,7 +114,7 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
      off is now deprecated.
 
 
-Bugs Fixed
+Bugs fixed
 ==========
 
 * Indexing or slicing an :class:`~iris.coords.AuxCoord` coordinate will return a coordinate with
@@ -289,7 +289,7 @@ been removed. In particular:
   removed from the :class:`iris.fileformats.rules.Loader` constructor.
 
 
-Documentation Changes
+Documentation changes
 =====================
 
 * A new UserGuide chapter on :doc:`Real and Lazy Data

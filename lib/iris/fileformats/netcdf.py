@@ -959,7 +959,7 @@ class Saver:
             than global attributes.
 
         * unlimited_dimensions (iterable of strings and/or
-          :class:`iris.coords.Coord` objects):
+           :class:`iris.coords.Coord` objects):
             List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
             NetCDF dimension variable length 'UNLIMITED'. By default, no
@@ -992,10 +992,10 @@ class Saver:
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available here:
-            http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html. Basically,
-            you want the chunk size for each dimension to match as closely as
-            possible the size of the data block that users will read from the
-            file. `chunksizes` cannot be set if `contiguous=True`.
+            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html. 
+            Basically, you want the chunk size for each dimension to match 
+            as closely as possible the size of the data block that users will 
+            read from the file. `chunksizes` cannot be set if `contiguous=True`.
 
         * endian (string):
             Used to control whether the data is stored in little or big endian
@@ -2506,7 +2506,7 @@ def save(
         than global attributes.
 
     * unlimited_dimensions (iterable of strings and/or
-      :class:`iris.coords.Coord` objects):
+       :class:`iris.coords.Coord` objects):
         List of coordinate names (or coordinate objects) corresponding
         to coordinate dimensions of `cube` to save with the NetCDF dimension
         variable length 'UNLIMITED'. By default, no unlimited dimensions are
@@ -2538,7 +2538,7 @@ def save(
     * chunksizes (tuple of int):
         Used to manually specify the HDF5 chunksizes for each dimension of the
         variable. A detailed discussion of HDF chunking and I/O performance is
-        available here: http://www.hdfgroup.org/HDF5/doc/H5.user/Chunking.html.
+        available here: https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html.
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
