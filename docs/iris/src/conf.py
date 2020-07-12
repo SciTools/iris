@@ -20,6 +20,9 @@
 # ----------------------------------------------------------------------------
 
 import ntpath
+import os
+import sys
+
 
 # function to write  useful output to stdout, prefixing the source.
 def autolog(message):
@@ -27,9 +30,6 @@ def autolog(message):
 
 
 # -- Are we running on the readthedocs server, if so do some setup -----------
-
-import os
-import sys
 
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 
@@ -44,7 +44,6 @@ if on_rtd:
 
 import datetime
 import warnings
-import pathlib
 
 # custom sphinx extensions
 sys.path.append(os.path.abspath("sphinxext"))
@@ -230,7 +229,7 @@ sphinx_gallery_conf = {
     # path to where to save gallery generated output
     "gallery_dirs": ["generated/gallery"],
     # filename pattern for the files in the gallery
-    "filename_pattern": "\/plot_",
+    "filename_pattern": "/plot_",
     # filename patternt to ignore in the gallery
     "ignore_pattern": r"__init__\.py",
 }
