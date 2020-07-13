@@ -992,9 +992,9 @@ class Saver:
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available here:
-            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html. 
-            Basically, you want the chunk size for each dimension to match 
-            as closely as possible the size of the data block that users will 
+            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html.
+            Basically, you want the chunk size for each dimension to match
+            as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
 
         * endian (string):
