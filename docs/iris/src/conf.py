@@ -63,7 +63,7 @@ project = "Iris"
 # the copyright exists directly inside "_templates/layout.html"
 upper_copy_year = datetime.datetime.now().year
 copyright = "Iris contributors"
-_authors = "Iris developeprs"
+_authors = "Iris developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
