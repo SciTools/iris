@@ -7,7 +7,7 @@ These "What's new" pages describe the important changes between major
 Iris versions.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    latest.rst
    3.0.rst
