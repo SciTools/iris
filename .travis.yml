@@ -178,7 +178,7 @@ script:
   - if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
       pip install doctr;
-      doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/build/html
+      doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/src/_build/html
         --key-path .github/deploy_key.scitools-docs.enc
         --no-require-master
         ${TRAVIS_BRANCH:-${TRAVIS_TAG}};
