@@ -426,8 +426,7 @@ class CurvilinearRegridder:
         if len(coords) != 1:
             raise ValueError(
                 "Cube {!r} must contain a single 1D {} "
-                "coordinate.".format(cube.name()),
-                axis,
+                "coordinate.".format(cube.name(), axis)
             )
         return coords[0]
 

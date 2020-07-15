@@ -26,8 +26,8 @@ exclude =
     .eggs,
     build,
     compiled_krb,
-    sphinxext,
-    tools,
+    docs/iris/src/sphinxext/*,
+    tools/*,
     #
     # ignore auto-generated files
     #

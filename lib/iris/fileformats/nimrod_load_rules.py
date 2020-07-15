@@ -413,8 +413,8 @@ def coord_system(field, handle_metadata_errors):
         )
         if any([is_missing(field, v) for v in crs_args]):
             warnings.warn(
-                f"Coordinate Reference System is not completely defined. "
-                f"Plotting and reprojection may be impaired."
+                "Coordinate Reference System is not completely defined. "
+                "Plotting and reprojection may be impaired."
             )
         coord_sys = iris.coord_systems.TransverseMercator(
             *crs_args, iris.coord_systems.GeogCS(**ellipsoid),

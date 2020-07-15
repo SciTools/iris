@@ -15,8 +15,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import numpy as np
-
 import iris
 from iris.coord_systems import Mercator
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \

@@ -882,7 +882,7 @@ def load_NAMEIII_timeseries(filename):
             for i, data_list in enumerate(data_lists):
                 data_list.append(float(vals[i + 1]))
 
-        data_arrays = [np.array(l) for l in data_lists]
+        data_arrays = [np.array(dl) for dl in data_lists]
         time_array = np.array(time_list)
         tdim = NAMECoord(name="time", dimension=0, values=time_array)
 
@@ -955,7 +955,7 @@ def load_NAMEII_timeseries(filename):
             for i, data_list in enumerate(data_lists):
                 data_list.append(float(vals[i + 2]))
 
-        data_arrays = [np.array(l) for l in data_lists]
+        data_arrays = [np.array(dl) for dl in data_lists]
         time_array = np.array(time_list)
         tdim = NAMECoord(name="time", dimension=0, values=time_array)
 
@@ -1111,7 +1111,7 @@ def load_NAMEIII_version2(filename):
             for i, data_list in enumerate(data_lists):
                 data_list.append(float(vals[i + datacol1]))
 
-        data_arrays = [np.array(l) for l in data_lists]
+        data_arrays = [np.array(dl) for dl in data_lists]
 
         # Convert Z and T arrays into arrays of indices
         zind = []

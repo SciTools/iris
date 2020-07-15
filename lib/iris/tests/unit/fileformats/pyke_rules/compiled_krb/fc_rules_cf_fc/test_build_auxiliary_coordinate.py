@@ -68,7 +68,6 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Patch the deferred loading that prevents attempted file access.
         # This assumes that self.cf_bounds_var is defined in the test case.
         def patched__getitem__(proxy_self, keys):
-            variable = None
             for var in (self.cf_coord_var, self.cf_bounds_var):
                 if proxy_self.variable_name == var.cf_name:
                     return var[keys]

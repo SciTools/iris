@@ -17,9 +17,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import numpy as np
-
-from iris.coord_systems import Stereographic
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     has_supported_stereographic_parameters
 

@@ -4,10 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import numpy as np
-
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
-import iris
 import iris.experimental.regrid as eregrid
 
 
