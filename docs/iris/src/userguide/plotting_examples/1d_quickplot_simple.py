@@ -11,4 +11,5 @@ temperature = iris.load_cube(fname)
 temperature_1d = temperature[5, :]
 
 qplt.plot(temperature_1d)
+
 plt.show()

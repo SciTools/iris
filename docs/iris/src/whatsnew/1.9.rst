@@ -1,4 +1,4 @@
-What's New in Iris 1.9
+What's new in Iris 1.9
 **********************
 
 :Release: 1.9.2
@@ -7,7 +7,7 @@ What's New in Iris 1.9
 This document explains the new/changed features of Iris in version 1.9
 (:doc:`View all changes <index>`.)
 
-Iris 1.9 Features
+Iris 1.9 features
 =================
 * Support for running on Python 3.4 has been added to the whole code base. Some features which
   depend on external libraries will not be available until they also support Python 3, namely:
@@ -66,7 +66,7 @@ Iris 1.9 Features
 * The :meth:`iris.experimental.um.Field.get_data` method can now be used to read Fieldsfile data
   after the original :class:`iris.experimental.um.FieldsFileVariant` has been closed.
 
-Bugs Fixed
+Bugs fixed
 ==========
 * Fixed a bug in :meth:`iris.unit.Unit.convert`
   (and the equivalent in `cf_units <https://github.com/SciTools/cf_units>`_)
@@ -109,7 +109,7 @@ Version 1.9.2
 * Fixed a bug avoiding sorting classes directly when :meth:`iris.cube.Cube.coord_system` is used in Python3.
 * Fixed a bug regarding unsuccessful dot import.
 
-Incompatible Changes
+Incompatible changes
 ====================
 * GRIB message/file reading and writing may not be available for Python 3 due to GRIB API limitations. 
 
@@ -121,7 +121,7 @@ Deprecations
   but it is *not* set.
 * Deprecated :class:`iris.aux_factory.LazyArray`
 
-Documentation Changes
+Documentation changes
 =====================
 * A chapter on :doc:`saving iris cubes </userguide/saving_iris_cubes>` has been
   added to the :doc:`user guide </userguide/index>`.

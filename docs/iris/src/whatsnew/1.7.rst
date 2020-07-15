@@ -229,20 +229,19 @@ Deprecations
   :func:`iris.fileformats.grib.reset_load_rules` functions.
 * Matplotlib is no longer a core Iris dependency.
 
-Documentation Changes
+Documentation changes
 =====================
 * New sections on :ref:`cube broadcasting <cube-maths_anomaly>` and
   :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
   have been added to the :doc:`user guide </userguide/index>`.
 * An example demonstrating custom log-scale colouring has been added.
-  See :ref:`General-anomaly_log_colouring`.
+  See :ref:`sphx_glr_generated_gallery_general_plot_anomaly_log_colouring.py`.
 * An example demonstrating the creation of a custom
   :class:`iris.analysis.Aggregator` has been added.
-  See :ref:`General-custom_aggregation`.
+  See :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`.
 * An example of reprojecting data from 2D auxiliary spatial coordinates
-  (such as that from the ORCA grid) has been added. See :ref:`General-orca_projection`.
+  (such as that from the ORCA grid) has been added. See :ref:`sphx_glr_generated_gallery_general_plot_orca_projection.py`.
 * A clarification of the behaviour of :func:`iris.analysis.calculus.differentiate`.
-* A new :doc:`"whitepapers" </whitepapers/index>` section has been added to the documentation along
+* A new :doc:`"Technical Papers" </techpapers/index>` section has been added to the documentation along
   with the addition of a paper providing an :doc:`overview of the load process for UM-like
-  fileformats (e.g. PP and Fieldsfile) </whitepapers/um_files_loading>`.
-
+  fileformats (e.g. PP and Fieldsfile) </techpapers/um_files_loading>`.

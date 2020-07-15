@@ -8,8 +8,11 @@ from sphinx.ext import autodoc
 from sphinx.ext.autodoc import *
 from sphinx.util import force_decode
 from sphinx.util.docstrings import prepare_docstring
-
 import inspect
+
+# stop warnings cluttering the make output
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
@@ -80,4 +83,4 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
 
 
 def setup(app):
-    app.add_autodocumenter(ClassWithConstructorDocumenter)
+    app.add_autodocumenter(ClassWithConstructorDocumenter, override=True)

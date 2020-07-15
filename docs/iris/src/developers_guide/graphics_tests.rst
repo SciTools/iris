@@ -1,26 +1,29 @@
+:orphan:
+
 .. _developer_graphics_tests:
 
 Graphics tests
 **************
 
 The only practical way of testing plotting functionality is to check actual
-output plots.
-For this, a basic 'graphics test' assertion operation is provided in the method
-:meth:`iris.tests.IrisTest.check_graphic` :  This tests plotted output for a
-match against a stored reference.
-A "graphics test" is any test which employs this.
+output plots.  For this, a basic 'graphics test' assertion operation is 
+provided in the method :meth:`iris.tests.IrisTest.check_graphic` :  This 
+tests plotted output for a match against a stored reference.  A 
+"graphics test" is any test which employs this.
 
-At present, such tests include the testing for modules `iris.tests.test_plot`
-and `iris.tests.test_quickplot`, all output plots from the gallery examples
-(contained in `docs/iris/example_tests`), and a few  other 'legacy' style tests
-(as described in :ref:`developer_tests`).
+At present, such tests include the testing for modules ``iris.tests.test_plot``
+and ``iris.tests.test_quickplot``, all output plots from the gallery 
+contained in ``docs/iris/gallery_tests``, and a few  other 'legacy' style tests
+as described in :ref:`developer_tests`
+.
 It is conceivable that new 'graphics tests' of this sort can still be added.
 However, as graphics tests are inherently "integration" style rather than true
 unit tests, results can differ with the installed versions of dependent
 libraries (see below), so this is not recommended except where no alternative
 is practical.
 
-Testing actual plot results introduces some significant difficulties :
+Testing actual plot results introduces some significant difficulties:
+
  * Graphics tests are inherently 'integration' style tests, so results will
    often vary with the versions of key dependencies, i.e. the exact versions of
    third-party modules which are installed :  Obviously, results will depend on
@@ -36,7 +39,7 @@ Testing actual plot results introduces some significant difficulties :
    given multiple independent sources of variation.
 
 
-Graphics Testing Strategy
+Graphics testing strategy
 =========================
 
 In the Iris Travis matrix, and over time, graphics tests must run with
@@ -63,8 +66,8 @@ This consists of :
    existing accepted reference images, for each failing test.
 
 
-How to Add New 'Acceptable' Result Images to Existing Tests
-========================================
+How to add new 'Acceptable' result images to existing tests
+===========================================================
 
 When you find that a graphics test in the Iris testing suite has failed,
 following changes in Iris or the run dependencies, this is the process

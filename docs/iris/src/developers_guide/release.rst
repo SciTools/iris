@@ -5,7 +5,7 @@ Releases
 
 A release of Iris is a tag on the SciTools/Iris Github repository.
 
-Release Branch
+Release branch
 ==============
 
 Once the features intended for the release are on master, a release branch should be created, in the SciTools/Iris repository.  This will have the name:
@@ -18,7 +18,7 @@ for example:
 
 This branch shall be used to finalise the release details in preparation for the release candidate.
 
-Release Candidate
+Release candidate
 =================
 
 Prior to a release, a release candidate tag may be created, marked as a pre-release in github, with a tag ending with :literal:`rc` followed by a number, e.g.:
@@ -38,24 +38,24 @@ The documentation should include all of the what's new snippets, which must be c
 
 Upon release, the documentation shall be added to the SciTools scitools.org.uk github project's gh-pages branch as the latest documentation.
 
-Testing the Conda Recipe
+Testing the conda recipe
 ========================
 
 Before a release is cut, the SciTools conda-recipes-scitools recipe for Iris shall be tested to build the release branch of Iris; this test recipe shall not be merged onto conda-recipes-scitools.
 
-The Release
+The release
 ===========
 
 The final steps are to change the version string in the source of :literal:`Iris.__init__.py` and include the release date in the relevant what's new page within the documentation.
 
 Once all checks are complete, the release is cut by the creation of a new tag in the SciTools Iris repository.
 
-Conda Recipe
+Conda recipe
 ============
 
 Once a release is cut, the SciTools conda-recipes-scitools recipe for Iris shall be updated to build the latest release of Iris and push this artefact to anaconda.org.  The build and push is all automated as part of the merge process.
 
-Merge Back
+Merge back
 ==========
 
 After the release is cut, the changes shall be merged back onto the scitools master.
@@ -63,7 +63,7 @@ After the release is cut, the changes shall be merged back onto the scitools mas
 To achieve this, first cut a local branch from the release branch, :literal:`{release}.x`.  Next add a commit changing the release string to match the release string on scitools/master.  
 This branch can now be proposed as a pull request to master.  This work flow ensures that the commit identifiers are consistent between the :literal:`.x` branch and :literal:`master`.
 
-Point Releases
+Point releases
 ==============
 
 Bug fixes may be implemented and targeted as the :literal:`.x` branch.  These should lead to a new point release, another tag.

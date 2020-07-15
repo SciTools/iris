@@ -1,4 +1,4 @@
-What's New in Iris 2.1
+What's new in Iris 2.1
 **********************
 
 :Release: 2.1
@@ -8,7 +8,7 @@ This document explains the new/changed features of Iris in version 2.1
 (:doc:`older "What's New" release notes can be found here<index>`.)
 
 
-Iris 2.1 Dependency updates
+Iris 2.1 dependency updates
 ===========================
 
 * The `cf_units <https://github.com/SciTools/cf_units>`_ dependency
@@ -30,7 +30,7 @@ Iris 2.1 Dependency updates
   Full requirements can be seen in the `requirements <https://github.com/SciTools/iris/>`_
   directory of the Iris' the source.
 
-Iris 2.1 Features
+Iris 2.1 features
 =================
 
 * Added ``repr_html`` functionality to the :class:`~iris.cube.Cube` to provide
@@ -60,7 +60,7 @@ Iris 2.1 Features
 * The :class:`~iris.coord_systems.Mercator` projection has been updated to accept
   the ``standard_parallel`` keyword argument (:pull:`3041`).
 
-Bugs Fixed
+Bugs fixed
 ==========
 
 * All var names being written to NetCDF are now CF compliant.
@@ -73,7 +73,7 @@ Bugs Fixed
 * :mod:`iris.quickplot` labels now honour the axes being drawn to when using the
   ``axes`` keyword (:pull:`3010`).
 
-Incompatible Changes
+Incompatible changes
 ====================
 * The deprecated :mod:`iris.experimental.um` was removed.
   Please use consider using `mule <https://github.com/SciTools/mule>`_

@@ -1,7 +1,7 @@
 .. _merge_and_concat:
 
 =====================
-Merge and Concatenate
+Merge and concatenate
 =====================
 
 We saw in the :doc:`loading_iris_cubes` chapter that Iris tries to load as few cubes as

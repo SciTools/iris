@@ -1,8 +1,8 @@
 <h1 align="center">
-  <a href="https://scitools.org.uk/iris/docs/latest/" style="display: block; margin: 0 auto;">
-   <img src="docs/iris/src/_static/logo_banner.png"
-        style="max-width: 40%;" alt="Iris"></a><br>
+  <a href="https://scitools.org.uk/iris/docs/latest/">
+   <img src="docs/iris/src/_static/iris-logo-title.png" alt="Iris" width="300"></a><br>
 </h1>
+
 
 <h4 align="center">
     Iris is a powerful, format-agnostic, community-driven Python library for

@@ -23,7 +23,7 @@ For example::
 
 
 *******************
-Downloaded Software
+Downloaded software
 *******************
 
 Suggested format::
@@ -36,7 +36,7 @@ For example::
 
 
 ********************
-Checked out Software
+Checked out software
 ********************
 
 Suggested format::

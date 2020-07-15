@@ -1,0 +1,28 @@
+/* import the standard theme css */
+@import url("css/theme.css"); 
+
+/* now we can add custom any css */
+
+/* set the width of the logo */
+.wy-side-nav-search>a img.logo,
+.wy-side-nav-search .wy-dropdown>a img.logo {
+  width: 12rem
+}
+
+/* color of the logo background in the top left corner */
+.wy-side-nav-search {
+  background-color: lightgray;
+}
+
+/* color of the font for the version in the top left corner */
+.wy-side-nav-search>div.version {
+  color: black;
+  font-weight: bold;
+}
+
+/* Ensures tables do now have width scroll bars */
+table.docutils td {
+    white-space: unset;
+    word-wrap: break-word;
+}
+

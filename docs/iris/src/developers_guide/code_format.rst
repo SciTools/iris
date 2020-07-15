@@ -1,6 +1,6 @@
 .. _iris_code_format:
 
-Code Formatting
+Code formatting
 ***************
 
 To enforce a consistent code format throughout Iris, we recommend using `pre-commit <https://pre-commit.com/>`_ to run

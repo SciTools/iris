@@ -1,7 +1,7 @@
 .. _git-resources:
 
 =============
-git resources
+Git resources
 =============
 
 Tutorials and summaries
@@ -9,8 +9,6 @@ Tutorials and summaries
 
 * `github help`_ has an excellent series of how-to guides.
 * `learn.github`_ has an excellent series of tutorials
-* The `pro git book`_ is a good in-depth book on git.
-* A `git cheat sheet`_ is a page giving summaries of common commands.
 * The `git user manual`_
 * The `git tutorial`_
 * The `git community book`_
@@ -22,7 +20,6 @@ Tutorials and summaries
 * Fernando Perez' git page |emdash| `Fernando's git page`_ |emdash| many
   links and tips
 * A good but technical page on `git concepts`_
-* `git svn crash course`_: git for those of us used to subversion_
 
 Advanced git workflow
 =====================
@@ -30,7 +27,6 @@ Advanced git workflow
 There are many ways of working with git; here are some posts on the
 rules of thumb that other projects have come up with:
 
-* Linus Torvalds on `git management`_
 * Linus Torvalds on `linux git workflow`_ .  Summary; use the git tools
   to make the history of your edits as clean as possible; merge from
   upstream edits as little as possible in branches where you are doing

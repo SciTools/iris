@@ -1,4 +1,4 @@
-What's New in Iris 2.2
+What's new in Iris 2.2
 ************************
 
 :Release: 2.2.0
@@ -10,7 +10,7 @@ of version 2.2
 (:doc:`View all changes <index>`).
 
 
-Iris 2.2 Features
+Iris 2.2 features
 ===================
 .. _showcase:
 
@@ -70,7 +70,7 @@ Iris 2.2 Features
   a NaN-tolerant array comparison.
 
 
-Iris 2.2 Dependency updates
+Iris 2.2 dependency updates
 =============================
 
 * Iris is now using the latest version release of dask (currently 0.19.3)
@@ -82,7 +82,7 @@ Iris 2.2 Dependency updates
   its changes in all SciTools libraries.
 
 
-Bugs Fixed
+Bugs fixed
 ==========
 
 * The bug has been fixed that prevented printing time coordinates with bounds
@@ -109,7 +109,7 @@ Bugs fixed in v2.2.1
 
 
 
-Documentation Changes
+Documentation changes
 =====================
 
 * Iris' `INSTALL` document has been updated to include guidance for running

@@ -38,10 +38,12 @@ This shows that there were 2 cubes as a result of loading the file, they were:
 ``air_potential_temperature`` and ``surface_altitude``.
 
 The ``surface_altitude`` cube was 2 dimensional with:
+
    * the two dimensions have extents of 204 and 187 respectively and are 
      represented by the ``grid_latitude`` and ``grid_longitude`` coordinates.
 
 The ``air_potential_temperature`` cubes were 4 dimensional with:
+
    * the same length ``grid_latitude`` and ``grid_longitude`` dimensions as 
      ``surface_altitide``
    * a ``time`` dimension of length 3

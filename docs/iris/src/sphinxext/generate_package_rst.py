@@ -8,11 +8,23 @@ import os
 import sys
 import re
 import inspect
+import ntpath
+
+# list of tuples for modules to exclude.  Useful if the documentation throws
+# warnings, especially for experimental modules.
+exclude_modules = [
+    ("experimental/raster", "iris.experimental.raster")  # gdal conflicts
+]
+
+
+# print to stdout, including the name of the python file
+def autolog(message):
+    print("[{}] {}".format(ntpath.basename(__file__), message))
 
 
 document_dict = {
     # Use autoclass for classes.
-    'class': '''
+    "class": """
 {object_docstring}
 
 ..
@@ -22,20 +34,21 @@ document_dict = {
         :undoc-members:
         :inherited-members:
 
-''',
-    'function': '''
+""",
+    "function": """
 .. autofunction:: {object_name}
 
-''',
+""",
     # For everything else, let automodule do some magic...
-    None: '''
+    None: """
 
 .. autodata:: {object_name}
 
-'''}
+""",
+}
 
 
-horizontal_sep = '''
+horizontal_sep = """
 .. raw:: html
 
     <p class="hr_p"><a href="#">&uarr;&#32&#32 top &#32&#32&uarr;</a></p>
@@ -47,21 +60,22 @@ horizontal_sep = '''
 
     -->
 
-'''
+"""
 
 
 def lookup_object_type(obj):
     if inspect.isclass(obj):
-        return 'class'
+        return "class"
     elif inspect.isfunction(obj):
-        return 'function'
+        return "function"
     else:
         return None
 
 
-def auto_doc_module(file_path, import_name, root_package,
-                    package_toc=None, title=None):
-    doc = r'''.. _{import_name}:
+def auto_doc_module(
+    file_path, import_name, root_package, package_toc=None, title=None
+):
+    doc = r""".. _{import_name}:
 
 {title_underline}
 {title}
@@ -77,54 +91,66 @@ In this module:
 
 {module_elements}
 
+"""
 
-'''
     if package_toc:
-        sidebar = '''
-.. sidebar:: Modules in this package
-
+        sidebar = """
 {package_toc_tree}
 
-    '''.format(package_toc_tree=package_toc)
+    """.format(
+            package_toc_tree=package_toc
+        )
     else:
-        sidebar = ''
+        sidebar = ""
 
     try:
         mod = __import__(import_name)
     except ImportError as e:
-        message = r'''.. error::
+        message = r""".. error::
 
     This module could not be imported. Some dependencies are missing::
 
-        ''' + str(e)
-        return doc.format(title=title or import_name,
-                          title_underline='=' * len(title or import_name),
-                          import_name=import_name, root_package=root_package,
-                          sidebar=sidebar, module_elements=message)
+        """ + str(
+            e
+        )
+        return doc.format(
+            title=title or import_name,
+            title_underline="=" * len(title or import_name),
+            import_name=import_name,
+            root_package=root_package,
+            sidebar=sidebar,
+            module_elements=message,
+        )
 
     mod = sys.modules[import_name]
     elems = dir(mod)
 
-    if '__all__' in elems:
-        document_these = [(attr_name, getattr(mod, attr_name))
-                          for attr_name in mod.__all__]
+    if "__all__" in elems:
+        document_these = [
+            (attr_name, getattr(mod, attr_name)) for attr_name in mod.__all__
+        ]
     else:
-        document_these = [(attr_name, getattr(mod, attr_name))
-                          for attr_name in elems
-                          if (not attr_name.startswith('_') and
-                              not inspect.ismodule(getattr(mod, attr_name)))]
+        document_these = [
+            (attr_name, getattr(mod, attr_name))
+            for attr_name in elems
+            if (
+                not attr_name.startswith("_")
+                and not inspect.ismodule(getattr(mod, attr_name))
+            )
+        ]
 
         def is_from_this_module(arg):
-            name = arg[0]
+            # name = arg[0]
             obj = arg[1]
-            return (hasattr(obj, '__module__') and
-                    obj.__module__ == mod.__name__)
+            return (
+                hasattr(obj, "__module__") and obj.__module__ == mod.__name__
+            )
 
-        sort_order = {'class': 2, 'function': 1}
+        sort_order = {"class": 2, "function": 1}
 
         # Sort them according to sort_order dict.
         def sort_key(arg):
-            name = arg[0]
+            # name = arg[0]
             obj = arg[1]
             return sort_order.get(lookup_object_type(obj), 0)
 
@@ -133,63 +159,81 @@ In this module:
 
     lines = []
     for element, obj in document_these:
-        object_name = import_name + '.' + element
+        object_name = import_name + "." + element
         obj_content = document_dict[lookup_object_type(obj)].format(
             object_name=object_name,
-            object_name_header_line='+' * len(object_name),
-            object_docstring=inspect.getdoc(obj))
+            object_name_header_line="+" * len(object_name),
+            object_docstring=inspect.getdoc(obj),
+        )
         lines.append(obj_content)
 
     lines = horizontal_sep.join(lines)
 
-    module_elements = '\n'.join(' * :py:obj:`{}`'.format(element)
-                                for element, obj in document_these)
+    module_elements = "\n".join(
+        " * :py:obj:`{}`".format(element) for element, obj in document_these
+    )
 
     lines = doc + lines
-    return lines.format(title=title or import_name,
-                        title_underline='=' * len(title or import_name),
-                        import_name=import_name, root_package=root_package,
-                        sidebar=sidebar, module_elements=module_elements)
+    return lines.format(
+        title=title or import_name,
+        title_underline="=" * len(title or import_name),
+        import_name=import_name,
+        root_package=root_package,
+        sidebar=sidebar,
+        module_elements=module_elements,
+    )
 
 
 def auto_doc_package(file_path, import_name, root_package, sub_packages):
-    max_depth = 1 if import_name == 'iris' else 2
-    package_toc = '\n      '.join(sub_packages)
-    package_toc = '''
+    max_depth = 1 if import_name == "iris" else 2
+    package_toc = "\n      ".join(sub_packages)
+
+    package_toc = """
    .. toctree::
       :maxdepth: {:d}
       :titlesonly:
+      :hidden:
 
       {}
 
 
-'''.format(max_depth, package_toc)
+""".format(
+        max_depth, package_toc
+    )
 
-    if '.' in import_name:
+    if "." in import_name:
         title = None
     else:
-        title = import_name.capitalize() + ' reference documentation'
+        title = import_name.capitalize() + " API"
 
-    return auto_doc_module(file_path, import_name, root_package,
-                           package_toc=package_toc, title=title)
+    return auto_doc_module(
+        file_path,
+        import_name,
+        root_package,
+        package_toc=package_toc,
+        title=title,
+    )
 
 
 def auto_package_build(app):
     root_package = app.config.autopackage_name
     if root_package is None:
-        raise ValueError('set the autopackage_name variable in the '
-                         'conf.py file')
+        raise ValueError(
+            "set the autopackage_name variable in the " "conf.py file"
+        )
 
     if not isinstance(root_package, list):
-        raise ValueError('autopackage was expecting a list of packages to '
-                         'document e.g. ["itertools"]')
+        raise ValueError(
+            "autopackage was expecting a list of packages to "
+            'document e.g. ["itertools"]'
+        )
 
     for package in root_package:
         do_package(package)
 
 
 def do_package(package_name):
-    out_dir = package_name + os.path.sep
+    out_dir = "generated/api" + os.path.sep
 
     # Import the root package. If this fails then an import error will be
     # raised.
@@ -199,38 +243,45 @@ def do_package(package_name):
 
     package_folder = []
     module_folders = {}
+
     for root, subFolders, files in os.walk(rootdir):
         for fname in files:
             name, ext = os.path.splitext(fname)
 
             # Skip some non-relevant files.
-            if (fname.startswith('.') or fname.startswith('#') or
-                    re.search('^_[^_]', fname) or fname.find('.svn') >= 0 or
-                    not (ext in ['.py', '.so'])):
+            if (
+                fname.startswith(".")
+                or fname.startswith("#")
+                or re.search("^_[^_]", fname)
+                or fname.find(".svn") >= 0
+                or not (ext in [".py", ".so"])
+            ):
                 continue
 
             # Handle new shared library naming conventions
-            if ext == '.so':
-                name = name.split('.', 1)[0]
+            if ext == ".so":
+                name = name.split(".", 1)[0]
 
-            rel_path = root_package + \
-                os.path.join(root, fname).split(rootdir)[-1]
-            mod_folder = root_package + \
-                os.path.join(root).split(rootdir)[-1].replace('/', '.')
+            rel_path = (
+                root_package + os.path.join(root, fname).split(rootdir)[-1]
+            )
+            mod_folder = root_package + os.path.join(root).split(rootdir)[
+                -1
+            ].replace("/", ".")
 
             # Only add this package to folder list if it contains an __init__
             # script.
-            if name == '__init__':
+            if name == "__init__":
                 package_folder.append([mod_folder, rel_path])
             else:
-                import_name = mod_folder + '.' + name
+                import_name = mod_folder + "." + name
                 mf_list = module_folders.setdefault(mod_folder, [])
                 mf_list.append((import_name, rel_path))
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     for package, package_path in package_folder:
-        if '._' in package or 'test' in package:
+        if "._" in package or "test" in package:
             continue
 
         paths = []
@@ -242,60 +293,83 @@ def do_package(package_name):
                 continue
             if not spackage.startswith(package):
                 continue
-            if spackage.count('.') > package.count('.') + 1:
+            if spackage.count(".") > package.count(".") + 1:
                 continue
-            if 'test' in spackage:
-                continue
-
-            split_path = spackage.rsplit('.', 2)[-2:]
-            if any(part[0] == '_' for part in split_path):
+            if "test" in spackage:
                 continue
 
-            paths.append(os.path.join(*split_path) + '.rst')
+            split_path = spackage.rsplit(".", 2)[-2:]
+            if any(part[0] == "_" for part in split_path):
+                continue
 
-        paths.extend(os.path.join(os.path.basename(os.path.dirname(path)),
-                                  os.path.basename(path).split('.', 1)[0])
-                     for imp_name, path in module_folders.get(package, []))
+            paths.append(os.path.join(*split_path) + ".rst")
+
+        paths.extend(
+            os.path.join(
+                os.path.basename(os.path.dirname(path)),
+                os.path.basename(path).split(".", 1)[0],
+            )
+            for imp_name, path in module_folders.get(package, [])
+        )
 
         paths.sort()
+
+        # check for any modules to exclude
+        for exclude_module in exclude_modules:
+            if exclude_module[0] in paths:
+                autolog(
+                    "Excluding module in package: {}".format(exclude_module[0])
+                )
+                paths.remove(exclude_module[0])
+
         doc = auto_doc_package(package_path, package, root_package, paths)
 
-        package_dir = out_dir + package.replace('.', os.path.sep)
+        package_dir = out_dir + package.replace(".", os.path.sep)
         if not os.path.exists(package_dir):
-            os.makedirs(out_dir + package.replace('.', os.path.sep))
+            os.makedirs(out_dir + package.replace(".", os.path.sep))
 
-        out_path = package_dir + '.rst'
+        out_path = package_dir + ".rst"
         if not os.path.exists(out_path):
-            print('Creating non-existent document {} ...'.format(out_path))
-            with open(out_path, 'w') as fh:
+            autolog("Creating {} ...".format(out_path))
+            with open(out_path, "w") as fh:
                 fh.write(doc)
         else:
-            with open(out_path, 'r') as fh:
-                existing_content = ''.join(fh.readlines())
+            with open(out_path, "r") as fh:
+                existing_content = "".join(fh.readlines())
             if doc != existing_content:
-                print('Creating out of date document {} ...'.format(
-                    out_path))
-                with open(out_path, 'w') as fh:
+                autolog("Creating {} ...".format(out_path))
+                with open(out_path, "w") as fh:
                     fh.write(doc)
 
         for import_name, module_path in module_folders.get(package, []):
-            doc = auto_doc_module(module_path, import_name, root_package)
-            out_path = out_dir + import_name.replace('.', os.path.sep) + '.rst'
-            if not os.path.exists(out_path):
-                print('Creating non-existent document {} ...'.format(
-                    out_path))
-                with open(out_path, 'w') as fh:
-                    fh.write(doc)
-            else:
-                with open(out_path, 'r') as fh:
-                    existing_content = ''.join(fh.readlines())
-                if doc != existing_content:
-                    print('Creating out of date document {} ...'.format(
-                        out_path))
-                    with open(out_path, 'w') as fh:
-                        fh.write(doc)
+            # check for any modules to exclude
+            for exclude_module in exclude_modules:
+                if import_name == exclude_module[1]:
+                    autolog(
+                        "Excluding module file: {}".format(exclude_module[1])
+                    )
+                else:
+                    doc = auto_doc_module(
+                        module_path, import_name, root_package
+                    )
+                    out_path = (
+                        out_dir
+                        + import_name.replace(".", os.path.sep)
+                        + ".rst"
+                    )
+                    if not os.path.exists(out_path):
+                        autolog("Creating {} ...".format(out_path))
+                        with open(out_path, "w") as fh:
+                            fh.write(doc)
+                    else:
+                        with open(out_path, "r") as fh:
+                            existing_content = "".join(fh.readlines())
+                        if doc != existing_content:
+                            autolog("Creating {} ...".format(out_path))
+                            with open(out_path, "w") as fh:
+                                fh.write(doc)
 
 
 def setup(app):
-    app.connect('builder-inited', auto_package_build)
-    app.add_config_value('autopackage_name', None, 'env')
+    app.connect("builder-inited", auto_package_build)
+    app.add_config_value("autopackage_name", None, "env")

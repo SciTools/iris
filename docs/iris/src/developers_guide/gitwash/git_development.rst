@@ -4,8 +4,6 @@
  Git for development
 =====================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 

@@ -18,7 +18,7 @@ In what follows we'll refer to the upstream iris ``master`` branch, as
 * When you are starting a new set of changes, fetch any changes from trunk,
   and start a new *feature branch* from that.
 * Make a new branch for each separable set of changes |emdash| "one task, one
-  branch" (`ipython git workflow`_).
+  branch".
 * Name your branch for the purpose of the changes - e.g.
   ``bugfix-for-issue-14`` or ``refactor-database-code``.
 * If you can possibly avoid it, avoid merging trunk or any other branches into
@@ -31,7 +31,7 @@ This way of working helps to keep work well organized, with readable history.
 This in turn makes it easier for project maintainers (that might be you) to see
 what you've done, and why you did it.
 
-See `linux git workflow`_ and `ipython git workflow`_ for some explanation.
+See `linux git workflow`_ for some explanation.
 
 Consider deleting your master branch
 ====================================

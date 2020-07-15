@@ -3,8 +3,6 @@
 Working with *iris* source code
 ================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 

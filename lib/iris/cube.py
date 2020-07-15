@@ -1200,6 +1200,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             the cube
 
         Kwargs:
+
         * data_dims
             Integer or iterable of integers giving the data dimensions spanned
             by the ancillary variable.
@@ -1207,6 +1208,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Raises a ValueError if an ancillary variable with identical metadata
         already exists on the cube.
         """
+
         if self.ancillary_variables(ancillary_variable):
             raise ValueError("Duplicate ancillary variables not permitted")
 

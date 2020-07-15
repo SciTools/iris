@@ -1,13 +1,9 @@
-.. _user_guide_introduction:
-
-===================
-Introduction
-===================
-
 .. _iris_data_structures:
 
+====================
 Iris data structures
---------------------
+====================
+
 The top level object in Iris is called a cube. A cube contains data and metadata about a phenomenon.
 
 In Iris, a cube is an interpretation of the *Climate and Forecast (CF) Metadata Conventions* whose purpose is to:
@@ -33,6 +29,7 @@ by definition, its phenomenon.
 
  * Each coordinate has a name and a unit.
  * When a coordinate is added to a cube, the data dimensions that it represents are also provided.
+ 
     * The shape of a coordinate is always the same as the shape of the associated data dimension(s) on the cube.
     * A dimension not explicitly listed signifies that the coordinate is independent of that dimension.
     * Each dimension of a coordinate must be mapped to a data dimension. The only coordinates with no mapping are

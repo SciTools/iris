@@ -190,7 +190,7 @@ and providing the label keyword to identify it.
 Once all of the lines have been added the :func:`matplotlib.pyplot.legend` 
 function can be called to indicate that a legend is desired: 
 
-.. plot:: ../example_code/General/lineplot_with_legend.py
+.. plot:: ../gallery_code/general/plot_lineplot_with_legend.py
    :include-source:
 
 This example of consecutive ``qplt.plot`` calls coupled with the 
@@ -272,7 +272,7 @@ Brewer colour palettes
 ***********************
 
 Iris includes colour specifications and designs developed by 
-`Cynthia Brewer <http://colorbrewer.org/>`_.
+`Cynthia Brewer  <https://colorbrewer2.org>`_
 These colour schemes are freely available under the following licence::
 
       Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
@@ -298,7 +298,7 @@ For adding citations to Iris plots, see :ref:`brewer-cite` (below).
 Available Brewer Schemes
 ======================== 
 The following subset of Brewer palettes found at 
-`colorbrewer.org <http://colorbrewer.org/>`_ are available within Iris.
+`colorbrewer2.org <https://colorbrewer2.org>`_ are available within Iris.
 
 .. plot:: userguide/plotting_examples/brewer.py
 

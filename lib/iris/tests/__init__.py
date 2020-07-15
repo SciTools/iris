@@ -792,7 +792,7 @@ class IrisTest_nometa(unittest.TestCase):
             bits[0] = os.path.splitext(file_name)[0]
             folder, location = os.path.split(path)
             bits = [location] + bits
-            while location not in ["iris", "example_tests"]:
+            while location not in ["iris", "gallery_tests"]:
                 folder, location = os.path.split(folder)
                 bits = [location] + bits
         test_id = ".".join(bits)

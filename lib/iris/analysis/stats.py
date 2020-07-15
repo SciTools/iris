@@ -64,7 +64,7 @@ def pearsonr(
         correlation at each time/altitude point.
 
     Reference:
-        http://www.statsoft.com/textbook/glosp.html#Pearson%20Correlation
+        https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 
     This operation is non-lazy.
 

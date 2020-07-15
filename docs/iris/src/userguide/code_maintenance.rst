@@ -1,11 +1,11 @@
-Code Maintenance
+Code maintenance
 ================
 
 From a user point of view "code maintenance" means ensuring that your existing
 working code stays working, in the face of changes to Iris.
 
 
-Stability and Change
+Stability and change
 ---------------------
 
 In practice, as Iris develops, most users will want to periodically upgrade
@@ -25,7 +25,7 @@ maintenance effort is probably still necessary :
      for some completely unconnected reason.
 
 
-Principles of Change Management
+Principles of change management
 -------------------------------
 
 When you upgrade software to a new version, you often find that you need to

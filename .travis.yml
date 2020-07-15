@@ -15,12 +15,12 @@ env:
   matrix:
     - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
     - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_BLACK=true
-    - PYTHON_VERSION=3.6 TEST_TARGET=example
-
+    - PYTHON_VERSION=3.6 TEST_TARGET=gallery
     - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_MINIMAL=true
     - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_BLACK=true
-    - PYTHON_VERSION=3.7 TEST_TARGET=example
+    - PYTHON_VERSION=3.7 TEST_TARGET=gallery
     - PYTHON_VERSION=3.7 TEST_TARGET=doctest PUSH_BUILT_DOCS=true
+    - PYTHON_VERSION=3.7 TEST_TARGET=linkcheck
 
 git:
   # We need a deep clone so that we can compute the age of the files using their git history.
@@ -61,8 +61,8 @@ install:
     if [[ "${TEST_MINIMAL}" != true ]]; then
         CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
     fi;
-    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
-        CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
+    if [[ "${TEST_TARGET}" == 'doctest' || "${TEST_TARGET}" == 'linkcheck' ]]; then
+            CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
     fi;
     CONDA_REQS_FILE="conda-requirements.txt";
     python requirements/gen_conda_requirements.py --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
@@ -118,8 +118,8 @@ script:
       python -m iris.tests.runner --default-tests --system-tests;
     fi
 
-  - if [[ "${TEST_TARGET}" == 'example' ]]; then
-      python -m iris.tests.runner --example-tests;
+  - if [[ "${TEST_TARGET}" == 'gallery' ]]; then
+      python -m iris.tests.runner --gallery-tests;
     fi
 
   # A call to check "whatsnew" contributions are valid, because the Iris test
@@ -150,6 +150,17 @@ script:
       echo 'image.cmap : viridis' >> ${MPL_RC_DIR}/matplotlibrc;
       cd ${INSTALL_DIR}/docs/iris;
       make clean html && make doctest;
+    fi
+
+  # check the links in the docs
+  - >
+    if [[ "${TEST_TARGET}" == 'linkcheck' ]]; then
+      MPL_RC_DIR="${HOME}/.config/matplotlib";
+      mkdir -p ${MPL_RC_DIR};
+      echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
+      echo 'image.cmap : viridis' >> ${MPL_RC_DIR}/matplotlibrc;
+      cd ${INSTALL_DIR}/docs/iris;
+      make clean && make linkcheck;
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.

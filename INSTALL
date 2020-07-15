@@ -1,9 +1,11 @@
 You can either install Iris using the conda package manager or from source.
 
+
 Installing using conda
 ----------------------
 
 Iris is available using conda for the following platforms:
+
  * Linux 64-bit,
  * Mac OSX 64-bit, and
  * Windows 32-bit and 64-bit.
@@ -16,8 +18,7 @@ the following command::
 
   conda install -c conda-forge iris
 
-If you wish to run any of the code examples
-(see http://scitools.org.uk/iris/docs/latest/examples/index.html) you will also
+If you wish to run any of the code in the gallery you will also
 need the Iris sample data. This can also be installed using conda::
 
   conda install -c conda-forge iris-sample-data
@@ -77,7 +78,7 @@ Hence the commands change to::
     conda activate my_iris_env  # or whatever other name you gave it
     pip install -e .
 
-The tests can then be run with
+The tests can then be run with::
 
     python setup.py test
 
