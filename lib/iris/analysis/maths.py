@@ -15,17 +15,18 @@ import operator
 import warnings
 
 import cf_units
+import dask.array as da
+from dask.array.core import broadcast_shapes
 import numpy as np
 from numpy import ma
 
 import iris.analysis
+from iris.common import SERVICES, Resolve
+from iris.common.lenient import _lenient_client as lenient_client
 import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util
-
-import dask.array as da
-from dask.array.core import broadcast_shapes
 
 
 @lru_cache(maxsize=128, typed=True)
@@ -204,18 +205,7 @@ def _assert_compatible(cube, other):
         )
 
 
-def _assert_matching_units(cube, other, operation_name):
-    """
-    Check that the units of the cube and the other item are the same, or if
-    the other does not have a unit, skip this test
-    """
-    if cube.units != getattr(other, "units", cube.units):
-        msg = "Cannot use {!r} with differing units ({} & {})".format(
-            operation_name, cube.units, other.units
-        )
-        raise iris.exceptions.NotYetImplementedError(msg)
-
-
+@lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
     """
     Calculate the sum of two cubes, or the sum of a cube and a
@@ -261,6 +251,7 @@ def add(cube, other, dim=None, in_place=False):
     )
 
 
+@lenient_client(services=SERVICES)
 def subtract(cube, other, dim=None, in_place=False):
     """
     Calculate the difference between two cubes, or the difference between
@@ -335,30 +326,15 @@ def _add_subtract_common(
 
     """
     _assert_is_cube(cube)
-    _assert_matching_units(cube, other, operation_name)
 
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis._dimensional_metadata_comparison(
-            cube, other
+    if cube.units != getattr(other, "units", cube.units):
+        emsg = (
+            f"Cannot use {operation_name!r} with differing units "
+            f"({cube.units} & {other.units})"
         )
+        raise iris.exceptions.NotYetImplementedError(emsg)
 
-        bad_coord_grps = (
-            coord_comp["ungroupable_and_dimensioned"]
-            + coord_comp["resamplable"]
-        )
-        if bad_coord_grps:
-            raise ValueError(
-                "This operation cannot be performed as there are "
-                "differing coordinates (%s) remaining "
-                "which cannot be ignored."
-                % ", ".join({coord_grp.name() for coord_grp in bad_coord_grps})
-            )
-    else:
-        coord_comp = None
-
-    new_cube = _binary_op_common(
+    result = _binary_op_common(
         operation_function,
         operation_name,
         cube,
@@ -369,17 +345,10 @@ def _add_subtract_common(
         in_place=in_place,
     )
 
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(
-            None, [coord_grp[0] for coord_grp in coord_comp["ignorable"]]
-        )
-        for coord in ignore:
-            new_cube.remove_coord(coord)
-
-    return new_cube
+    return result
 
 
+@lenient_client(services=SERVICES)
 def multiply(cube, other, dim=None, in_place=False):
     """
     Calculate the product of a cube and another cube or coordinate.
@@ -403,38 +372,20 @@ def multiply(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
+
     new_dtype = _output_dtype(
         operator.mul, cube.dtype, _get_dtype(other), in_place=in_place
     )
     other_unit = getattr(other, "units", "1")
     new_unit = cube.units * other_unit
+
     if in_place:
         _inplace_common_checks(cube, other, "multiplication")
         op = operator.imul
     else:
         op = operator.mul
 
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis._dimensional_metadata_comparison(
-            cube, other
-        )
-        bad_coord_grps = (
-            coord_comp["ungroupable_and_dimensioned"]
-            + coord_comp["resamplable"]
-        )
-        if bad_coord_grps:
-            raise ValueError(
-                "This operation cannot be performed as there are "
-                "differing coordinates (%s) remaining "
-                "which cannot be ignored."
-                % ", ".join({coord_grp.name() for coord_grp in bad_coord_grps})
-            )
-    else:
-        coord_comp = None
-
-    new_cube = _binary_op_common(
+    result = _binary_op_common(
         op,
         "multiply",
         cube,
@@ -445,15 +396,7 @@ def multiply(cube, other, dim=None, in_place=False):
         in_place=in_place,
     )
 
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(
-            None, [coord_grp[0] for coord_grp in coord_comp["ignorable"]]
-        )
-        for coord in ignore:
-            new_cube.remove_coord(coord)
-
-    return new_cube
+    return result
 
 
 def _inplace_common_checks(cube, other, math_op):
@@ -475,6 +418,7 @@ def _inplace_common_checks(cube, other, math_op):
         )
 
 
+@lenient_client(services=SERVICES)
 def divide(cube, other, dim=None, in_place=False):
     """
     Calculate the division of a cube by a cube or coordinate.
@@ -498,44 +442,26 @@ def divide(cube, other, dim=None, in_place=False):
 
     """
     _assert_is_cube(cube)
+
     new_dtype = _output_dtype(
         operator.truediv, cube.dtype, _get_dtype(other), in_place=in_place
     )
     other_unit = getattr(other, "units", "1")
     new_unit = cube.units / other_unit
+
     if in_place:
         if cube.dtype.kind in "iu":
             # Cannot coerce float result from inplace division back to int.
-            aemsg = (
-                "Cannot perform inplace division of cube {!r} "
+            emsg = (
+                f"Cannot perform inplace division of cube {cube.name()!r} "
                 "with integer data."
             )
-            raise ArithmeticError(aemsg)
+            raise ArithmeticError(emsg)
         op = operator.itruediv
     else:
         op = operator.truediv
 
-    if isinstance(other, iris.cube.Cube):
-        # get a coordinate comparison of this cube and the cube to do the
-        # operation with
-        coord_comp = iris.analysis._dimensional_metadata_comparison(
-            cube, other
-        )
-        bad_coord_grps = (
-            coord_comp["ungroupable_and_dimensioned"]
-            + coord_comp["resamplable"]
-        )
-        if bad_coord_grps:
-            raise ValueError(
-                "This operation cannot be performed as there are "
-                "differing coordinates (%s) remaining "
-                "which cannot be ignored."
-                % ", ".join({coord_grp.name() for coord_grp in bad_coord_grps})
-            )
-    else:
-        coord_comp = None
-
-    new_cube = _binary_op_common(
+    result = _binary_op_common(
         op,
         "divide",
         cube,
@@ -546,15 +472,7 @@ def divide(cube, other, dim=None, in_place=False):
         in_place=in_place,
     )
 
-    if coord_comp:
-        # If a coordinate is to be ignored - remove it
-        ignore = filter(
-            None, [coord_grp[0] for coord_grp in coord_comp["ignorable"]]
-        )
-        for coord in ignore:
-            new_cube.remove_coord(coord)
-
-    return new_cube
+    return result
 
 
 def exponentiate(cube, exponent, in_place=False):
@@ -838,39 +756,58 @@ def _binary_op_common(
                            `cube` and `cube.data`
     """
     _assert_is_cube(cube)
+
     if isinstance(other, iris.coords.Coord):
-        other = _broadcast_cube_coord_data(cube, other, operation_name, dim)
+        rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
+        # prepare to resolve the cube and coordinate metadata into the resultant cube.
+        resolve = Resolve(cube, other)
+
+        # ensure that "cube" has greater (or equal) dimensionality to "other",
+        # in order to support broadcasting.
+        if not resolve.map_rhs_to_lhs:
+            temp = cube
+            cube = other
+            other = temp
+
+        # make a skeleton of the cube with no metadata, to save needless copying of
+        # cube and coordinate metadata within _math_op_common for non in-place ops.
+        cube = iris.cube.Cube(cube.core_data())
+
         try:
             broadcast_shapes(cube.shape, other.shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
-        other = other.core_data()
+
+        rhs = other.core_data()
     else:
-        other = np.asanyarray(other)
+        rhs = np.asanyarray(other)
 
     # don't worry about checking for other data types (such as scalars or
     # np.ndarrays) because _assert_compatible validates that they are broadcast
     # compatible with cube.data
-    _assert_compatible(cube, other)
+    _assert_compatible(cube, rhs)
 
-    def unary_func(x):
-        ret = operation_function(x, other)
-        if ret is NotImplemented:
+    def unary_func(lhs):
+        result = operation_function(lhs, rhs)
+        if result is NotImplemented:
             # explicitly raise the TypeError, so it gets raised even if, for
             # example, `iris.analysis.maths.multiply(cube, other)` is called
             # directly instead of `cube * other`
-            raise TypeError(
-                "cannot %s %r and %r objects"
-                % (
-                    operation_function.__name__,
-                    type(x).__name__,
-                    type(other).__name__,
-                )
+            emsg = (
+                f"cannot {operation_function.__name__} {type(lhs).__name__!r} "
+                f"and {type(rhs).__name__} objects"
             )
-        return ret
+            raise TypeError(emsg)
+        return result
 
-    return _math_op_common(cube, unary_func, new_unit, new_dtype, in_place)
+    result = _math_op_common(cube, unary_func, new_unit, new_dtype, in_place)
+
+    if isinstance(other, iris.cube.Cube):
+        result = resolve.cube(result.core_data())
+        _sanitise_metadata(result, new_unit)
+
+    return result
 
 
 def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
@@ -915,21 +852,44 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
     return points
 
 
+def _sanitise_metadata(cube, unit):
+    # clear the cube names.
+    cube.rename(None)
+
+    # clear the cube cell methods.
+    cube.cell_methods = None
+
+    # clear the cell measures.
+    for cm in cube.cell_measures():
+        cube.remove_cell_measure(cm)
+
+    # clear the ancillary variables.
+    for av in cube.ancillary_variables():
+        cube.remove_ancillary_variable(av)
+
+    # clear the STASH attribute, if present.
+    if "STASH" in cube.attributes:
+        del cube.attributes["STASH"]
+
+    # set the cube units.
+    cube.units = unit
+
+
 def _math_op_common(
     cube, operation_function, new_unit, new_dtype=None, in_place=False
 ):
     _assert_is_cube(cube)
 
     if in_place:
-        new_cube = cube
         if cube.has_lazy_data():
-            new_cube.data = operation_function(cube.lazy_data())
+            cube.data = operation_function(cube.lazy_data())
         else:
             try:
                 operation_function(cube.data, out=cube.data)
             except TypeError:
                 # Non ufunc function
                 operation_function(cube.data)
+        new_cube = cube
     else:
         new_cube = cube.copy(data=operation_function(cube.core_data()))
 
@@ -943,8 +903,8 @@ def _math_op_common(
     ):
         new_cube.data = ma.masked_array(0, 1, dtype=new_dtype)
 
-    iris.analysis.clear_phenomenon_identity(new_cube)
-    new_cube.units = new_unit
+    _sanitise_metadata(new_cube, new_unit)
+
     return new_cube
 
 
