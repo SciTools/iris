@@ -770,14 +770,20 @@ def _binary_op_common(
             cube = other
             other = temp
 
-        # make a skeleton of the cube with no metadata, to save needless copying of
-        # cube and coordinate metadata within _math_op_common for non in-place ops.
-        cube = iris.cube.Cube(cube.core_data())
-
         try:
             broadcast_shapes(cube.shape, other.shape)
         except ValueError:
             other = iris.util.as_compatible_shape(other, cube)
+
+        # swap back...
+        if not resolve.map_rhs_to_lhs:
+            temp = cube
+            cube = other
+            other = temp
+
+        # make a skeleton of the cube with no metadata, to save needless copying of
+        # cube and coordinate metadata within _math_op_common for non in-place ops.
+        cube = iris.cube.Cube(cube.core_data())
 
         rhs = other.core_data()
     else:
@@ -804,7 +810,7 @@ def _binary_op_common(
     result = _math_op_common(cube, unary_func, new_unit, new_dtype, in_place)
 
     if isinstance(other, iris.cube.Cube):
-        result = resolve.cube(result.core_data())
+        result = resolve.cube(result.core_data(), in_place=in_place)
         _sanitise_metadata(result, new_unit)
 
     return result

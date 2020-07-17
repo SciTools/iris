@@ -836,6 +836,30 @@ class Resolve:
             result.items_aux.sort(key=key_func)
             result.items_scalar.sort(key=key_func)
 
+    def _tgt_cube_clear(self):
+        if self.map_rhs_to_lhs:
+            cube = self.lhs_cube
+        else:
+            cube = self.rhs_cube
+
+        # clear the aux factories.
+        for factory in cube.aux_factories:
+            cube.remove_aux_factory(factory)
+
+        # clear the cube coordinates.
+        for coord in cube.coords():
+            cube.remove_coord(coord)
+
+        # clear the cube cell measures.
+        for cm in cube.cell_measures():
+            cube.remove_cell_measure(cm)
+
+        # clear the ancillary variables.
+        for av in cube.ancillary_variables():
+            cube.remove_ancillary_variable(av)
+
+        return cube
+
     def _verify_mapping(self):
         from iris.exceptions import NotYetImplementedError
 
@@ -902,7 +926,7 @@ class Resolve:
                 )
             )
 
-    def cube(self, data):
+    def cube(self, data, in_place=False):
         result = None
         shape = self.shape
 
@@ -912,14 +936,18 @@ class Resolve:
         else:
             from iris.cube import Cube
 
-            # Ensure that data of the expected resolved
-            # resultant cube shape is provided.
+            # Ensure that the shape of the provided data is the expected
+            # shape of the resultant resolved cube.
             if data.shape != shape:
                 emsg = f"Cannot resolve resultant cube, expect data with shape {shape}, got {data.shape}."
                 raise ValueError(emsg)
 
-            # Create the resolved resultant cube.
-            result = Cube(data)
+            if in_place:
+                # Prepare in-place target cube for population with prepared content.
+                result = self._tgt_cube_clear()
+            else:
+                # Create the resultant resolved cube.
+                result = Cube(data)
 
             # Add the combined cube metadata from both the candidate cubes.
             result.metadata = self.lhs_cube.metadata.combine(
