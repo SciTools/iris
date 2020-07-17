@@ -1151,19 +1151,3 @@ class Resolve:
 
         resolve = cls(lhs, rhs)
         return resolve
-
-    @classmethod
-    def scenario12(cls):
-        import iris
-
-        data = np.arange(4).reshape(2, 2)
-
-        lhs = iris.cube.Cube(data)
-        rhs = iris.cube.Cube(data)
-        coord = iris.coords.DimCoord([0, 1], long_name="coord")
-
-        lhs.add_dim_coord(coord, 0)
-        rhs.add_dim_coord(coord, 1)
-
-        resolve = cls(lhs, rhs)
-        return resolve
