@@ -180,31 +180,6 @@ def _assert_is_cube(cube):
         )
 
 
-def _assert_compatible(cube, other):
-    """
-    Checks to see if cube.data and another array can be broadcast to
-    the same shape.
-
-    """
-    try:
-        new_shape = broadcast_shapes(cube.shape, other.shape)
-    except ValueError as err:
-        # re-raise
-        raise ValueError(
-            "The array was not broadcastable to the cube's data "
-            "shape. The error message when "
-            "broadcasting:\n{}\nThe cube's shape was {} and the "
-            "array's shape was {}".format(err, cube.shape, other.shape)
-        )
-
-    if cube.shape != new_shape:
-        raise ValueError(
-            "The array operation would increase the size or "
-            "dimensionality of the cube. The new cube's data "
-            "would have had to become: {}".format(new_shape)
-        )
-
-
 @lenient_client(services=SERVICES)
 def add(cube, other, dim=None, in_place=False):
     """
@@ -757,57 +732,57 @@ def _binary_op_common(
     """
     _assert_is_cube(cube)
 
+    skeleton = False
+
     if isinstance(other, iris.coords.Coord):
+        # the rhs must be an array.
         rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
-        # prepare to resolve the cube and coordinate metadata into the resultant cube.
+        # prepare to resolve the cube and coordinate metadata
+        # into the resultant cube.
         resolve = Resolve(cube, other)
-
-        # ensure that "cube" has greater (or equal) dimensionality to "other",
-        # in order to support broadcasting.
-        if not resolve.map_rhs_to_lhs:
-            temp = cube
-            cube = other
-            other = temp
 
         try:
             broadcast_shapes(cube.shape, other.shape)
         except ValueError:
-            other = iris.util.as_compatible_shape(other, cube)
+            emsg = (
+                f"Cannot broadcast lhs cube {cube.name()!r} with shape "
+                f"{cube.shape} and rhs cube {other.name()!r} with shape "
+                f"{other.shape} for {operation_name} operation."
+            )
+            raise ValueError(emsg)
 
-        # swap back...
-        if not resolve.map_rhs_to_lhs:
-            temp = cube
-            cube = other
-            other = temp
+        # we want the resultant array of the math operation wrapped
+        # in a skeleton cube.
+        skeleton = True
 
-        # make a skeleton of the cube with no metadata, to save needless copying of
-        # cube and coordinate metadata within _math_op_common for non in-place ops.
-        cube = iris.cube.Cube(cube.core_data())
-
+        # the rhs must be an array.
         rhs = other.core_data()
     else:
+        # the rhs must be an array.
         rhs = np.asanyarray(other)
 
-    # don't worry about checking for other data types (such as scalars or
-    # np.ndarrays) because _assert_compatible validates that they are broadcast
-    # compatible with cube.data
-    _assert_compatible(cube, rhs)
-
     def unary_func(lhs):
-        result = operation_function(lhs, rhs)
-        if result is NotImplemented:
+        data = operation_function(lhs, rhs)
+        if data is NotImplemented:
             # explicitly raise the TypeError, so it gets raised even if, for
             # example, `iris.analysis.maths.multiply(cube, other)` is called
             # directly instead of `cube * other`
             emsg = (
-                f"cannot {operation_function.__name__} {type(lhs).__name__!r} "
-                f"and {type(rhs).__name__} objects"
+                f"Cannot {operation_function.__name__} {type(lhs).__name__!r} "
+                f"and {type(rhs).__name__} objects."
             )
             raise TypeError(emsg)
-        return result
+        return data
 
-    result = _math_op_common(cube, unary_func, new_unit, new_dtype, in_place)
+    result = _math_op_common(
+        cube,
+        unary_func,
+        new_unit,
+        new_dtype=new_dtype,
+        in_place=in_place,
+        skeleton=skeleton,
+    )
 
     if isinstance(other, iris.cube.Cube):
         result = resolve.cube(result.core_data(), in_place=in_place)
@@ -882,7 +857,12 @@ def _sanitise_metadata(cube, unit):
 
 
 def _math_op_common(
-    cube, operation_function, new_unit, new_dtype=None, in_place=False
+    cube,
+    operation_function,
+    new_unit,
+    new_dtype=None,
+    in_place=False,
+    skeleton=False,
 ):
     _assert_is_cube(cube)
 
@@ -897,10 +877,13 @@ def _math_op_common(
                 operation_function(cube.data)
         new_cube = cube
     else:
-        new_cube = cube.copy(data=operation_function(cube.core_data()))
+        data = operation_function(cube.core_data())
+        if skeleton:
+            new_cube = iris.cube.Cube(data)
+        else:
+            new_cube = cube.copy(data)
 
-    # If the result of the operation is scalar and masked, we need to fix up
-    # the dtype
+    # If the result of the operation is scalar and masked, we need to fix up the dtype
     if (
         new_dtype is not None
         and not new_cube.has_lazy_data()
