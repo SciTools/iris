@@ -12,3 +12,4 @@ matplotlib
 netcdf4
 numpy>=1.14
 scipy
+xxhash  #conda: python-xxhash

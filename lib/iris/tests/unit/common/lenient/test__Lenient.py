@@ -12,7 +12,7 @@ Unit tests for the :class:`iris.common.lenient._Lenient`.
 # importing anything else.
 import iris.tests as tests
 
-from collections import Iterable
+from collections.abc import Iterable
 
 from iris.common.lenient import (
     _LENIENT_ENABLE_DEFAULT,

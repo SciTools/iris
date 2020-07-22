@@ -7,9 +7,14 @@
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from functools import wraps
 import logging
 import re
+
+import numpy as np
+import numpy.ma as ma
+from xxhash import xxh64_hexdigest
 
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
@@ -35,6 +40,39 @@ _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
 logger = logging.getLogger(__name__)
+
+
+def _hexdigest(value):
+    """
+    Return a hexidecimal string hash representation of the provided value.
+
+    Calculates a 64-bit non-cryptographic hash of the provided value,
+    and returns the hexdigest string representation of the calculated hash.
+
+    """
+    # Special case: deal with numpy arrays.
+    if ma.isMaskedArray(value):
+        parts = (
+            value.shape,
+            xxh64_hexdigest(value.data),
+            xxh64_hexdigest(value.mask),
+        )
+        value = str(parts)
+    elif isinstance(value, np.ndarray):
+        parts = (value.shape, xxh64_hexdigest(value))
+        value = str(parts)
+
+    try:
+        # Calculate single-shot hash to avoid allocating state on the heap
+        result = xxh64_hexdigest(value)
+    except TypeError:
+        # xxhash expects a bytes-like object, so try hashing the
+        # string representation of the provided value instead, but
+        # also fold in the object type...
+        parts = (type(value), value)
+        result = xxh64_hexdigest(str(parts))
+
+    return result
 
 
 class _NamedTupleMeta(ABCMeta):
@@ -125,7 +163,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             else:
                 # Perform "strict" equality.
                 logger.debug("strict", extra=dict(cls=self.__class__.__name__))
-                result = super().__eq__(other)
+
+                def func(field):
+                    left = getattr(self, field)
+                    right = getattr(other, field)
+                    if self._is_attributes(field, left, right):
+                        result = self._compare_strict_attributes(left, right)
+                    else:
+                        result = left == right
+                    return result
+
+                # Note that, for strict we use "_fields" not "_members"
+                result = all([func(field) for field in self._fields])
 
         return result
 
@@ -219,8 +268,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             logger.debug("strict", extra=dict(cls=self.__class__.__name__))
 
             def func(field):
-                value = getattr(self, field)
-                return value if value == getattr(other, field) else None
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if self._is_attributes(field, left, right):
+                    result = self._combine_strict_attributes(left, right)
+                else:
+                    result = left if left == right else None
+                return result
 
             # Note that, for strict we use "_fields" not "_members".
             values = [func(field) for field in self._fields]
@@ -265,8 +319,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _combine_lenient_attributes(left, right):
         """Leniently combine the dictionary members together."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Copy the dictionaries.
+        left = deepcopy(left)
+        right = deepcopy(right)
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Intersection of common items.
         common = sleft & sright
         # Items in sleft different from sright.
@@ -279,9 +339,27 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         [dsleft.pop(key) for key in keys]
         [dsright.pop(key) for key in keys]
         # Now bring the result together.
-        result = dict(common)
-        result.update(dsleft)
-        result.update(dsright)
+        result = {k: left[k] for k, _ in common}
+        result.update({k: left[k] for k in dsleft.keys()})
+        result.update({k: right[k] for k in dsright.keys()})
+
+        return result
+
+    @staticmethod
+    def _combine_strict_attributes(left, right):
+        """Perform strict combination of the dictionary members."""
+        # Copy the dictionaries.
+        left = deepcopy(left)
+        right = deepcopy(right)
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        # Intersection of common items.
+        common = sleft & sright
+        # Now bring the result together.
+        result = {k: left[k] for k, _ in common}
 
         return result
 
@@ -325,8 +403,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _compare_lenient_attributes(left, right):
         """Perform lenient compare between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -335,6 +416,17 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         keys = set(dsleft.keys()) & set(dsright.keys())
 
         return not bool(keys)
+
+    @staticmethod
+    def _compare_strict_attributes(left, right):
+        """Perform strict compare between the dictionary members."""
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+
+        return sleft == sright
 
     def _difference(self, other):
         """Perform associated metadata member difference."""
@@ -397,8 +489,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _difference_lenient_attributes(left, right):
         """Perform lenient difference between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -412,6 +507,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if not bool(dsleft) and not bool(dsright):
             result = None
         else:
+            # Replace hash-rvalue with original rvalue.
+            dsleft = {k: left[k] for k in dsleft.keys()}
+            dsright = {k: right[k] for k in dsright.keys()}
             result = (dsleft, dsright)
 
         return result
@@ -419,8 +517,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _difference_strict_attributes(left, right):
         """Perform strict difference between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -429,6 +530,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if not bool(dsleft) and not bool(dsright):
             result = None
         else:
+            # Replace hash-rvalue with original rvalue.
+            dsleft = {k: left[k] for k in dsleft.keys()}
+            dsright = {k: right[k] for k in dsright.keys()}
             result = (dsleft, dsright)
 
         return result

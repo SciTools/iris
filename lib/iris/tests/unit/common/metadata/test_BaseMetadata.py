@@ -16,6 +16,9 @@ from collections import OrderedDict
 import unittest.mock as mock
 from unittest.mock import sentinel
 
+import numpy.ma as ma
+import numpy as np
+
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
 
@@ -393,9 +396,9 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=sentinel.three,
-            four=sentinel.four,
-            five=sentinel.five,
+            three=np.int16(123),
+            four=np.arange(10),
+            five=ma.arange(10),
         )
         self.cls = BaseMetadata
         self.metadata = self.cls(*(None,) * len(self.cls._fields))
@@ -406,11 +409,11 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         right = self.values.copy()
 
         result = self.metadata._combine_lenient_attributes(left, right)
-        expected = dict(**left)
-        self.assertEqual(expected, result)
+        expected = left
+        self.assertDictEqual(expected, result)
 
         result = self.metadata._combine_lenient_attributes(right, left)
-        self.assertEqual(expected, result)
+        self.assertDictEqual(expected, result)
 
     def test_different(self):
         left = self.values.copy()
@@ -421,10 +424,10 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = self.values.copy()
         for key in ["two", "four"]:
             del expected[key]
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
 
         result = self.metadata._combine_lenient_attributes(right, left)
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
 
     def test_different_none(self):
         left = self.values.copy()
@@ -435,10 +438,10 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = self.values.copy()
         for key in ["one", "three", "five"]:
             del expected[key]
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
 
         result = self.metadata._combine_lenient_attributes(right, left)
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
 
     def test_extra(self):
         left = self.values.copy()
@@ -450,10 +453,76 @@ class Test__combine_lenient_attributes(tests.IrisTest):
         expected = self.values.copy()
         expected["extra_left"] = left["extra_left"]
         expected["extra_right"] = right["extra_right"]
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
 
         result = self.metadata._combine_lenient_attributes(right, left)
-        self.assertEqual(dict(expected), result)
+        self.assertDictEqual(expected, result)
+
+
+class Test__combine_strict_attributes(tests.IrisTest):
+    def setUp(self):
+        self.values = OrderedDict(
+            one=sentinel.one,
+            two=sentinel.two,
+            three=np.int32(123),
+            four=np.arange(10),
+            five=ma.arange(10),
+        )
+        self.cls = BaseMetadata
+        self.metadata = self.cls(*(None,) * len(self.cls._fields))
+        self.dummy = sentinel.dummy
+
+    def test_same(self):
+        left = self.values.copy()
+        right = self.values.copy()
+
+        result = self.metadata._combine_strict_attributes(left, right)
+        expected = left
+        self.assertDictEqual(expected, result)
+
+        result = self.metadata._combine_strict_attributes(right, left)
+        self.assertDictEqual(expected, result)
+
+    def test_different(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["one"] = left["three"] = self.dummy
+
+        result = self.metadata._combine_strict_attributes(left, right)
+        expected = self.values.copy()
+        for key in ["one", "three"]:
+            del expected[key]
+        self.assertDictEqual(expected, result)
+
+        result = self.metadata._combine_strict_attributes(right, left)
+        self.assertDictEqual(expected, result)
+
+    def test_different_none(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["one"] = left["three"] = left["five"] = None
+
+        result = self.metadata._combine_strict_attributes(left, right)
+        expected = self.values.copy()
+        for key in ["one", "three", "five"]:
+            del expected[key]
+        self.assertDictEqual(expected, result)
+
+        result = self.metadata._combine_strict_attributes(right, left)
+        self.assertDictEqual(expected, result)
+
+    def test_extra(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["extra_left"] = sentinel.extra_left
+        right["extra_right"] = sentinel.extra_right
+
+        result = self.metadata._combine_strict_attributes(left, right)
+        expected = self.values.copy()
+        self.assertDictEqual(expected, result)
+
+        result = self.metadata._combine_strict_attributes(right, left)
+        self.assertDictEqual(expected, result)
 
 
 class Test__compare_lenient(tests.IrisTest):
@@ -612,9 +681,9 @@ class Test__compare_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=sentinel.three,
-            four=sentinel.four,
-            five=sentinel.five,
+            three=np.int16(123),
+            four=np.arange(10),
+            five=ma.arange(5),
         )
         self.cls = BaseMetadata
         self.metadata = self.cls(*(None,) * len(self.cls._fields))
@@ -659,6 +728,52 @@ class Test__compare_lenient_attributes(tests.IrisTest):
 
         self.assertTrue(self.metadata._compare_lenient_attributes(left, right))
         self.assertTrue(self.metadata._compare_lenient_attributes(right, left))
+
+
+class Test__compare_strict_attributes(tests.IrisTest):
+    def setUp(self):
+        self.values = OrderedDict(
+            one=sentinel.one,
+            two=sentinel.two,
+            three=np.int16(123),
+            four=np.arange(10),
+            five=ma.arange(5),
+        )
+        self.cls = BaseMetadata
+        self.metadata = self.cls(*(None,) * len(self.cls._fields))
+        self.dummy = sentinel.dummy
+
+    def test_same(self):
+        left = self.values.copy()
+        right = self.values.copy()
+
+        self.assertTrue(self.metadata._compare_strict_attributes(left, right))
+        self.assertTrue(self.metadata._compare_strict_attributes(right, left))
+
+    def test_different(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["two"] = left["four"] = self.dummy
+
+        self.assertFalse(self.metadata._compare_strict_attributes(left, right))
+        self.assertFalse(self.metadata._compare_strict_attributes(right, left))
+
+    def test_different_none(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["one"] = left["three"] = left["five"] = None
+
+        self.assertFalse(self.metadata._compare_strict_attributes(left, right))
+        self.assertFalse(self.metadata._compare_strict_attributes(right, left))
+
+    def test_extra(self):
+        left = self.values.copy()
+        right = self.values.copy()
+        left["extra_left"] = sentinel.extra_left
+        right["extra_right"] = sentinel.extra_right
+
+        self.assertFalse(self.metadata._compare_strict_attributes(left, right))
+        self.assertFalse(self.metadata._compare_strict_attributes(right, left))
 
 
 class Test__difference(tests.IrisTest):
@@ -926,9 +1041,9 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=sentinel.three,
-            four=sentinel.four,
-            five=sentinel.five,
+            three=np.float(3.14),
+            four=np.arange(10, dtype=np.float),
+            five=ma.arange(10, dtype=np.int16),
         )
         self.cls = BaseMetadata
         self.metadata = self.cls(*(None,) * len(self.cls._fields))
@@ -953,12 +1068,15 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         for key in ["one", "three", "five"]:
             del left[key]
             del right[key]
-        expected = (dict(left), dict(right))
-        self.assertEqual(expected, result)
+        expected_left, expected_right = (left, right)
+        result_left, result_right = result
+        self.assertDictEqual(expected_left, result_left)
+        self.assertDictEqual(expected_right, result_right)
 
         result = self.metadata._difference_lenient_attributes(right, left)
-        expected = (dict(right), dict(left))
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_right, result_left)
+        self.assertDictEqual(expected_left, result_right)
 
     def test_different_none(self):
         left = self.values.copy()
@@ -969,12 +1087,15 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         for key in ["two", "four"]:
             del left[key]
             del right[key]
-        expected = (dict(left), dict(right))
-        self.assertEqual(expected, result)
+        expected_left, expected_right = (left, right)
+        result_left, result_right = result
+        self.assertDictEqual(expected_left, result_left)
+        self.assertDictEqual(expected_right, result_right)
 
         result = self.metadata._difference_lenient_attributes(right, left)
-        expected = (dict(right), dict(left))
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_right, result_left)
+        self.assertDictEqual(expected_left, result_right)
 
     def test_extra(self):
         left = self.values.copy()
@@ -982,9 +1103,6 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         left["extra_left"] = sentinel.extra_left
         right["extra_right"] = sentinel.extra_right
         result = self.metadata._difference_lenient_attributes(left, right)
-        expected = self.values.copy()
-        expected["extra_left"] = left["extra_left"]
-        expected["extra_right"] = right["extra_right"]
         self.assertIsNone(result)
 
         result = self.metadata._difference_lenient_attributes(right, left)
@@ -996,9 +1114,9 @@ class Test__difference_strict_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=sentinel.three,
-            four=sentinel.four,
-            five=sentinel.five,
+            three=np.int32(123),
+            four=np.arange(10),
+            five=ma.arange(10),
         )
         self.cls = BaseMetadata
         self.metadata = self.cls(*(None,) * len(self.cls._fields))
@@ -1024,17 +1142,14 @@ class Test__difference_strict_attributes(tests.IrisTest):
         for key in ["two", "four"]:
             del expected_left[key]
             del expected_right[key]
-        expected = (expected_left, expected_right)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_left, result_left)
+        self.assertDictEqual(expected_right, result_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
-        expected_left = left.copy()
-        expected_right = right.copy()
-        for key in ["two", "four"]:
-            del expected_left[key]
-            del expected_right[key]
-        expected = (expected_right, expected_left)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_right, result_left)
+        self.assertDictEqual(expected_left, result_right)
 
     def test_different_none(self):
         left = self.values.copy()
@@ -1047,17 +1162,14 @@ class Test__difference_strict_attributes(tests.IrisTest):
         for key in ["two", "four"]:
             del expected_left[key]
             del expected_right[key]
-        expected = (expected_left, expected_right)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_left, result_left)
+        self.assertDictEqual(expected_right, result_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
-        expected_left = left.copy()
-        expected_right = right.copy()
-        for key in ["two", "four"]:
-            del expected_left[key]
-            del expected_right[key]
-        expected = (expected_right, expected_left)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_right, result_left)
+        self.assertDictEqual(expected_left, result_right)
 
     def test_extra(self):
         left = self.values.copy()
@@ -1068,14 +1180,14 @@ class Test__difference_strict_attributes(tests.IrisTest):
         result = self.metadata._difference_strict_attributes(left, right)
         expected_left = dict(extra_left=left["extra_left"])
         expected_right = dict(extra_right=right["extra_right"])
-        expected = (expected_left, expected_right)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_left, result_left)
+        self.assertDictEqual(expected_right, result_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
-        expected_left = dict(extra_left=left["extra_left"])
-        expected_right = dict(extra_right=right["extra_right"])
-        expected = (expected_right, expected_left)
-        self.assertEqual(expected, result)
+        result_left, result_right = result
+        self.assertDictEqual(expected_right, result_left)
+        self.assertDictEqual(expected_left, result_right)
 
 
 class Test__is_attributes(tests.IrisTest):
