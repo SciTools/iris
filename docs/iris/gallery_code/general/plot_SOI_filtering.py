@@ -20,10 +20,11 @@ References
     Monthly Weather Review, Vol 112, pp 326-332
 
 """
-import numpy as np
-import matplotlib.pyplot as plt
+
 import iris
 import iris.plot as iplt
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def low_pass_weights(window, cutoff):

@@ -17,11 +17,11 @@ GloSea4 model, which is then used to produce two types of plot:
    model, from each ensemble member.
 
 """
-import matplotlib.pyplot as plt
-import numpy as np
 
 import iris
 import iris.plot as iplt
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def realization_metadata(cube, field, fname):

@@ -21,13 +21,13 @@ References
     doi:10.1029/2009EO210001.
 
 """
-import os.path
-import matplotlib.pyplot as plt
-import numpy as np
 
 import iris
 import iris.coords as coords
 import iris.plot as iplt
+import numpy as np
+import matplotlib.pyplot as plt
+import os.path
 
 
 def cop_metadata_callback(cube, field, filename):

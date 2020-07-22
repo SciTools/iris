@@ -12,13 +12,12 @@ using different projections for the output image.
 
 """
 
-import matplotlib.pyplot as plt
-
-import cartopy.crs as ccrs
 import iris
 import iris.analysis.cartography
 import iris.plot as iplt
 import iris.quickplot as qplt
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
 
 
 def main():

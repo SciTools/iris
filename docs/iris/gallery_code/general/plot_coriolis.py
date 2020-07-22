@@ -8,12 +8,12 @@ projection.
 
 """
 
-import cartopy.crs as ccrs
 import iris
 from iris.coord_systems import GeogCS
 import iris.plot as iplt
-import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def main():

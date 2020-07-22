@@ -13,9 +13,10 @@ We also add some lines and text annotations drawn in various projections.
 We plot these over a specified region, in two different map projections.
 
 """
-import cartopy.crs as ccrs
+
 import iris
 import iris.plot as iplt
+import cartopy.crs as ccrs
 import numpy as np
 import matplotlib.pyplot as plt
 

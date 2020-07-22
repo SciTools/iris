@@ -9,14 +9,14 @@ specific humidity. Finally, the two new cubes are presented side-by-side in a
 plot.
 
 """
-import matplotlib.pyplot as plt
-import matplotlib.ticker
 
 import iris
 import iris.coords as coords
 import iris.iterate
 import iris.plot as iplt
 import iris.quickplot as qplt
+import matplotlib.pyplot as plt
+import matplotlib.ticker
 
 
 def limit_colorbar_ticks(contour_object):

@@ -7,11 +7,10 @@ cube which features a hybrid height vertical coordinate system.
 
 """
 
-import matplotlib.pyplot as plt
-
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
+import matplotlib.pyplot as plt
 
 
 def main():

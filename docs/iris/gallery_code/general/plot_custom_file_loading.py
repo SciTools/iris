@@ -54,12 +54,7 @@ function which automatically invokes the ``FormatSpecification`` we defined.
 The cube returned from the load function is then used to produce a plot.
 
 """
-import datetime
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-from cf_units import Unit, CALENDAR_GREGORIAN
 
 import iris
 import iris.coords as icoords
@@ -67,7 +62,10 @@ import iris.coord_systems as icoord_systems
 import iris.fileformats
 import iris.io.format_picker as format_picker
 import iris.plot as iplt
-
+import numpy as np
+import matplotlib.pyplot as plt
+from cf_units import Unit, CALENDAR_GREGORIAN
+import datetime
 
 UTC_format = "%H%M%Z %d/%m/%Y"
 

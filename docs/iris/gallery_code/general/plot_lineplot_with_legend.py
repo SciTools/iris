@@ -3,11 +3,11 @@ Multi-line temperature profile plot
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 """
-import matplotlib.pyplot as plt
 
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
+import matplotlib.pyplot as plt
 
 
 def main():
