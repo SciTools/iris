@@ -9,7 +9,6 @@ Automatic concatenation of multiple cubes over one or more existing dimensions.
 """
 
 from collections import defaultdict, namedtuple
-from copy import deepcopy
 
 import dask.array as da
 import numpy as np
