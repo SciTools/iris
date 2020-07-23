@@ -240,7 +240,7 @@ Documentation changes
   :class:`iris.analysis.Aggregator` has been added.
   See :ref:`sphx_glr_generated_gallery_general_plot_custom_aggregation.py`.
 * An example of reprojecting data from 2D auxiliary spatial coordinates
-  (such as that from the ORCA grid) has been added. See :ref:`sphx_glr_generated_gallery_general_plot_orca_projection.py`.
+  (such as that from the ORCA grid) has been added. See :ref:`sphx_glr_generated_gallery_oceanography_plot_orca_projection.py`.
 * A clarification of the behaviour of :func:`iris.analysis.calculus.differentiate`.
 * A new :doc:`"Technical Papers" </techpapers/index>` section has been added to the documentation along
   with the addition of a paper providing an :doc:`overview of the load process for UM-like
