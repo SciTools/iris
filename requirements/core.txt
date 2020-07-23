@@ -6,7 +6,7 @@
 cartopy>=0.12
 #conda: proj4<6
 cf-units>=2
-cftime==1.1.3
+cftime
 dask[array]>=2  #conda: dask>=2
 matplotlib<3.3
 netcdf4
