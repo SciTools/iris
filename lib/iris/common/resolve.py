@@ -569,9 +569,6 @@ class Resolve:
                         container=container,
                     )
                     prepared_items.append(prepared_item)
-                else:
-                    dmsg = f"ignoring src {src_metadata}, unequal points with tgt {src_item.dims}->{tgt_item.dims}"
-                    logger.debug(dmsg)
 
     def _prepare_common_dim_payload(self, src_coverage, tgt_coverage):
         from iris.coords import DimCoord
@@ -602,9 +599,6 @@ class Resolve:
                     container=DimCoord,
                 )
                 self.prepared_category.items_dim.append(prepared_item)
-            else:
-                dmsg = f"ignoring src {src_metadata}, unequal points with tgt ({src_dim},)->({tgt_dim},)"
-                logger.debug(dmsg)
 
     def _prepare_factory_payload(self, cube, category_local, from_src=True):
         def _get_prepared_item(metadata, from_src=True, from_local=False):
@@ -741,8 +735,9 @@ class Resolve:
                 )
                 self.prepared_category.items_scalar.append(prepared_item)
 
-    @staticmethod
-    def _prepare_points_and_bounds(src_coord, tgt_coord, src_dims, tgt_dims):
+    def _prepare_points_and_bounds(
+        self, src_coord, tgt_coord, src_dims, tgt_dims
+    ):
         from iris.util import array_equal
 
         points, bounds = None, None
@@ -761,19 +756,70 @@ class Resolve:
                 if eq_bounds:
                     bounds = src_bounds
                 else:
-                    if not isinstance(src_dims, Iterable):
-                        src_dims = (src_dims,)
-                    if not isinstance(tgt_dims, Iterable):
-                        tgt_dims = (tgt_dims,)
-                    dmsg = (
-                        f"ignoring src {src_coord.metadata} bounds, "
-                        f"unequal bounds with tgt {src_dims}->{tgt_dims}"
-                    )
-                    logger.debug(dmsg)
-            elif src_has_bounds:
-                bounds = src_coord.bounds
+                    if LENIENT["maths"]:
+                        # For lenient, ignore coordinate with mis-matched bounds.
+                        if not isinstance(src_dims, Iterable):
+                            src_dims = (src_dims,)
+                        if not isinstance(tgt_dims, Iterable):
+                            tgt_dims = (tgt_dims,)
+                        dmsg = (
+                            f"ignoring src {src_coord.metadata}, "
+                            f"unequal bounds with tgt {src_dims}->{tgt_dims}"
+                        )
+                        logger.debug(dmsg)
+                    else:
+                        # For strict, the coordinate bounds must match.
+                        emsg = (
+                            f"Coordinate {src_coord.name()!r} has different bounds for the "
+                            f"LHS cube {self.lhs_cube.name()!r} and "
+                            f"RHS cube {self.rhs_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
             else:
-                bounds = tgt_coord.bounds
+                # For lenient, use either of the coordinate bounds, if they exist.
+                if LENIENT["maths"]:
+                    if src_has_bounds:
+                        dmsg = f"using src {src_coord.metadata} bounds, tgt has no bounds"
+                        logger.debug(dmsg)
+                        bounds = src_coord.bounds
+                    else:
+                        dmsg = f"using tgt {tgt_coord.metadata} bounds, src has no bounds"
+                        logger.debug(dmsg)
+                        bounds = tgt_coord.bounds
+                else:
+                    # For strict, both coordinates must have bounds, or both
+                    # coordinates must not have bounds.
+                    if src_has_bounds:
+                        emsg = (
+                            f"Coordinate {src_coord.name()!r} has bounds for the "
+                            f"{self._src_cube_position} cube {self._src_cube.name()!r}, "
+                            f"but not the {self._tgt_cube_position} cube {self._tgt_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
+                    if tgt_has_bounds:
+                        emsg = (
+                            f"Coordinate {tgt_coord.name()!r} has bounds for the "
+                            f"{self._tgt_cube_position} cube {self._tgt_cube.name()!r}, "
+                            f"but not the {self._src_cube_position} cube {self._src_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
+        else:
+            if LENIENT["maths"]:
+                # For lenient, ignore coordinate with mis-matched points.
+                if not isinstance(src_dims, Iterable):
+                    src_dims = (src_dims,)
+                if not isinstance(tgt_dims, Iterable):
+                    tgt_dims = (tgt_dims,)
+                dmsg = f"ignoring src {src_coord.metadata}, unequal points with tgt {src_dims}->{tgt_dims}"
+                logger.debug(dmsg)
+            else:
+                # For strict, the coordinate points must match.
+                emsg = (
+                    f"Coordinate {src_coord.name()!r} has different points for the "
+                    f"LHS cube {self.lhs_cube.name()!r} and "
+                    f"RHS cube {self.rhs_cube.name()!r}."
+                )
+                raise ValueError(emsg)
         return points, bounds
 
     @staticmethod
@@ -848,11 +894,40 @@ class Resolve:
             result.items_aux.sort(key=key_func)
             result.items_scalar.sort(key=key_func)
 
-    def _tgt_cube_clear(self):
+    @property
+    def _src_cube(self):
         if self.map_rhs_to_lhs:
-            cube = self.lhs_cube
+            result = self.rhs_cube
         else:
-            cube = self.rhs_cube
+            result = self.lhs_cube
+        return result
+
+    @property
+    def _src_cube_position(self):
+        if self.map_rhs_to_lhs:
+            result = "RHS"
+        else:
+            result = "LHS"
+        return result
+
+    @property
+    def _tgt_cube(self):
+        if self.map_rhs_to_lhs:
+            result = self.lhs_cube
+        else:
+            result = self.rhs_cube
+        return result
+
+    @property
+    def _tgt_cube_position(self):
+        if self.map_rhs_to_lhs:
+            result = "LHS"
+        else:
+            result = "RHS"
+        return result
+
+    def _tgt_cube_clear(self):
+        cube = self._tgt_cube
 
         # clear the aux factories.
         for factory in cube.aux_factories:
@@ -884,22 +959,14 @@ class Resolve:
                 shape[dim] = cube_shape[dim]
             return tuple(filter(lambda extent: extent is not None, shape))
 
-        # Map RHS cube to LHS cube, or smaller to larger cube rank.
-        if self.map_rhs_to_lhs:
-            src_cube = self.rhs_cube
-            tgt_cube = self.lhs_cube
-        else:
-            src_cube = self.lhs_cube
-            tgt_cube = self.rhs_cube
-
+        src_cube = self._src_cube
+        tgt_cube = self._tgt_cube
         src_dims = sorted(self.mapping.keys())
         tgt_dims = [self.mapping[src_dim] for src_dim in src_dims]
 
         # common exception message.
         emsg = "Cannot resolve the cubes, as the {!r} cube {!r} requires to be transposed/reshaped."
-        emsg = emsg.format(
-            "rhs" if self.map_rhs_to_lhs else "lhs", src_cube.name()
-        )
+        emsg = emsg.format(self._src_cube_position, src_cube.name())
 
         # TODO: future support for generic transpose and/or reshape required.
         if not np.all(np.diff(tgt_dims) > 0):
