@@ -10,6 +10,8 @@ import logging
 
 import numpy as np
 
+from iris.common import LENIENT
+
 
 __all__ = ["Resolve"]
 
@@ -716,13 +718,23 @@ class Resolve:
                 )
                 self.prepared_category.items_aux.append(prepared_item)
 
-        # Special case:
+        # Add local src/tgt scalar coordinates.
+
         # Add local tgt scalar coordinates, iff the src cube is a scalar cube
-        # with no src scalar coordinates.
-        if (
-            src_aux_coverage.cube.ndim == 0
+        # with no src scalar coordinates. Only applicable for strict maths.
+        src_scalar_cube = (
+            not LENIENT["maths"]
+            and src_aux_coverage.cube.ndim == 0
             and len(src_aux_coverage.local_items_scalar) == 0
-        ):
+        )
+
+        if src_scalar_cube or LENIENT["maths"]:
+            for item in src_aux_coverage.local_items_scalar:
+                prepared_item = self._create_prepared_item(
+                    item.coord, item.dims, src=item.metadata
+                )
+                self.prepared_category.items_scalar.append(prepared_item)
+
             for item in tgt_aux_coverage.local_items_scalar:
                 prepared_item = self._create_prepared_item(
                     item.coord, item.dims, tgt=item.metadata
