@@ -65,10 +65,7 @@ class Resolve:
         self._metadata_resolve()
         self._metadata_coverage()
 
-        # TODO:: remove this!
-        debug = logger.getEffectiveLevel() <= logging.DEBUG
-
-        if debug:
+        if self._debug:
             self.show_dim(self.lhs_cube_dim_coverage)
             self.show_dim(self.rhs_cube_dim_coverage)
             self.show_aux(self.lhs_cube_aux_coverage)
@@ -81,8 +78,7 @@ class Resolve:
         self._metadata_mapping()
         self._metadata_prepare()
 
-        # TODO:: remove this!
-        if debug:
+        if self._debug:
             self.show_prepared()
 
     @staticmethod
@@ -212,6 +208,10 @@ class Resolve:
             container=type(coord),
         )
         return result
+
+    @property
+    def _debug(self):
+        return logger.getEffectiveLevel() <= logging.DEBUG
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
@@ -439,7 +439,10 @@ class Resolve:
         )
 
         self._prepare_local_payload(
-            src_aux_coverage, tgt_dim_coverage, tgt_aux_coverage
+            src_dim_coverage,
+            src_aux_coverage,
+            tgt_dim_coverage,
+            tgt_aux_coverage,
         )
 
         self._prepare_factory_payload(
@@ -689,33 +692,122 @@ class Resolve:
                 dmsg = f"ignoring {'src' if from_src else 'tgt'} {container}, cannot find all dependencies"
                 logger.debug(dmsg)
 
-    def _prepare_local_payload(
-        self, src_aux_coverage, tgt_dim_coverage, tgt_aux_coverage
-    ):
-        # Add local tgt dim coordinates.
-        for dim in tgt_dim_coverage.dims_local:
-            metadata = tgt_dim_coverage.metadata[dim]
-            coord = tgt_dim_coverage.coords[dim]
-            prepared_item = self._create_prepared_item(
-                coord, dim, tgt=metadata
-            )
-            self.prepared_category.items_dim.append(prepared_item)
+    def _prepare_local_payload_aux(self, src_aux_coverage, tgt_aux_coverage):
+        # Determine whether there are extra tgt dimensions that may
+        # require local tgt aux coordinates.
+        delta = tgt_aux_coverage.cube.ndim - src_aux_coverage.cube.ndim
+        extra_tgt_dims = set([dim for dim in range(delta)])
+
+        if LENIENT["maths"]:
+            mapped_src_dims = set(self.mapping.keys())
+            mapped_tgt_dims = set(self.mapping.values())
+
+            # Add local src aux coordinates.
+            for item in src_aux_coverage.local_items_aux:
+                if all([dim in mapped_src_dims for dim in item.dims]):
+                    tgt_dims = tuple([self.mapping[dim] for dim in item.dims])
+                    prepared_item = self._create_prepared_item(
+                        item.coord, tgt_dims, src=item.metadata
+                    )
+                    self.prepared_category.items_aux.append(prepared_item)
+                else:
+                    dmsg = (
+                        f"ignoring local src aux coordinate {item.metadata}, "
+                        f"as not all src dimensions {item.dims} are mapped."
+                    )
+                    logger.debug(dmsg)
+        else:
+            # For strict maths, only local tgt aux coordinates covering
+            # the extra dimensions of the tgt cube may be added.
+            mapped_tgt_dims = set()
 
         # Add local tgt aux coordinates.
-        tgt_dims = (
-            set(tgt_dim_coverage.dims_local) | set(tgt_dim_coverage.dims_free)
-        ) & set(tgt_aux_coverage.dims_local)
         for item in tgt_aux_coverage.local_items_aux:
-            if set(item.dims) & tgt_dims:
+            tgt_dims = item.dims
+            if all([dim in mapped_tgt_dims for dim in tgt_dims]) or any(
+                [dim in extra_tgt_dims for dim in tgt_dims]
+            ):
                 prepared_item = self._create_prepared_item(
-                    item.coord, item.dims, tgt=item.metadata
+                    item.coord, tgt_dims, tgt=item.metadata
                 )
                 self.prepared_category.items_aux.append(prepared_item)
+            else:
+                dmsg = (
+                    f"ignoring local tgt aux coordinate {item.metadata} "
+                    f"as not all tgt dimensions {tgt_dims} are mapped."
+                )
+                logger.debug(dmsg)
 
-        # Add local src/tgt scalar coordinates.
+    def _prepare_local_payload_dim(self, src_dim_coverage, tgt_dim_coverage):
+        # Determine whether there are extra tgt dimensions that require
+        # local tgt dim coordinates.
+        delta = tgt_dim_coverage.cube.ndim - src_dim_coverage.cube.ndim
+        extra_tgt_dims = set(range(delta))
 
-        # Add local tgt scalar coordinates, iff the src cube is a scalar cube
-        # with no src scalar coordinates. Only applicable for strict maths.
+        if LENIENT["maths"]:
+            tgt_dims_mapped = set()
+
+            # Add local src dim coordinates.
+            for src_dim in src_dim_coverage.dims_local:
+                tgt_dim = self.mapping.get(src_dim)
+                # Only add the local src dim coordinate iff there is no
+                # associated local tgt dim coordinate.
+                if (
+                    tgt_dim is not None
+                    and tgt_dim not in tgt_dim_coverage.dims_local
+                ):
+                    tgt_dims_mapped.add(tgt_dim)
+                    metadata = src_dim_coverage.metadata[src_dim]
+                    coord = src_dim_coverage.coords[src_dim]
+                    prepared_item = self._create_prepared_item(
+                        coord, tgt_dim, src=metadata
+                    )
+                    self.prepared_category.items_dim.append(prepared_item)
+                else:
+                    if self._debug:
+                        src_metadata = src_dim_coverage.metadata[src_dim]
+                        dmsg = f"ignoring local src dim coordinate {src_metadata}, "
+                        if tgt_dim is None:
+                            dmsg += (
+                                f"as src dimension ({src_dim},) is not mapped."
+                            )
+                        else:
+                            tgt_metadata = tgt_dim_coverage.metadata[tgt_dim]
+                            dmsg += (
+                                f"conflicts with tgt dim coordinate {tgt_metadata}, "
+                                f"mapping ({src_dim},)->({tgt_dim},)."
+                            )
+                        logger.debug(dmsg)
+
+            # Determine whether there are any tgt dims free to be mapped
+            # by an available local tgt dim coordinate.
+            tgt_dims_local_unmapped = (
+                set(tgt_dim_coverage.dims_local) - tgt_dims_mapped
+            )
+        else:
+            # For strict maths, only local tgt dim coordinates covering
+            # the extra dimensions of the tgt cube may be added.
+            tgt_dims_local_unmapped = extra_tgt_dims
+
+        mapped_tgt_dims = self.mapping.values()
+
+        # Add local tgt dim coordinates.
+        for tgt_dim in tgt_dims_local_unmapped:
+            if tgt_dim in mapped_tgt_dims or tgt_dim in extra_tgt_dims:
+                metadata = tgt_dim_coverage.metadata[tgt_dim]
+                if metadata is not None:
+                    coord = tgt_dim_coverage.coords[tgt_dim]
+                    prepared_item = self._create_prepared_item(
+                        coord, tgt_dim, tgt=metadata
+                    )
+                    self.prepared_category.items_dim.append(prepared_item)
+
+    def _prepare_local_payload_scalar(
+        self, src_aux_coverage, tgt_aux_coverage
+    ):
+        # Add all local tgt scalar coordinates iff the src cube is a
+        # scalar cube with no local src scalar coordinates.
+        # Only for strict maths.
         src_scalar_cube = (
             not LENIENT["maths"]
             and src_aux_coverage.cube.ndim == 0
@@ -723,17 +815,35 @@ class Resolve:
         )
 
         if src_scalar_cube or LENIENT["maths"]:
+            # Add any local src scalar coordinates, if available.
             for item in src_aux_coverage.local_items_scalar:
                 prepared_item = self._create_prepared_item(
                     item.coord, item.dims, src=item.metadata
                 )
                 self.prepared_category.items_scalar.append(prepared_item)
 
+            # Add any local tgt scalar coordinates, if available.
             for item in tgt_aux_coverage.local_items_scalar:
                 prepared_item = self._create_prepared_item(
                     item.coord, item.dims, tgt=item.metadata
                 )
                 self.prepared_category.items_scalar.append(prepared_item)
+
+    def _prepare_local_payload(
+        self,
+        src_dim_coverage,
+        src_aux_coverage,
+        tgt_dim_coverage,
+        tgt_aux_coverage,
+    ):
+        # Add local src/tgt dim coordinates.
+        self._prepare_local_payload_dim(src_dim_coverage, tgt_dim_coverage)
+
+        # Add local src/tgt aux coordinates.
+        self._prepare_local_payload_aux(src_aux_coverage, tgt_aux_coverage)
+
+        # Add local src/tgt scalar coordinates.
+        self._prepare_local_payload_scalar(src_aux_coverage, tgt_aux_coverage)
 
     def _prepare_points_and_bounds(
         self, src_coord, tgt_coord, src_dims, tgt_dims
