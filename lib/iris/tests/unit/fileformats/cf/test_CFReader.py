@@ -335,5 +335,52 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(warn.call_count, 2)
 
 
+class Test_exclude_vars(tests.IrisTest):
+    def setUp(self):
+        self.ncvar_name = "ncvar"
+
+        ncvar = netcdf_variable(self.ncvar_name, "height", np.float)
+        ncattrs = mock.Mock(return_value=["dimensions"])
+        getncattr = mock.Mock(return_value="something something_else")
+        self.dataset = mock.Mock(
+            file_format="NetCDF4",
+            variables={self.ncvar_name: ncvar},
+            ncattrs=ncattrs,
+            getncattr=getncattr,
+        )
+
+    def test_return_exclude_names(self):
+        exclude_list = [self.ncvar_name]
+        cf = CFReader(self.dataset, exclude_var_names=exclude_list)
+        self.assertEqual(cf.exclude_var_names, exclude_list)
+
+    def test_return_exclude_names_empty(self):
+        exclude_list = []
+        cf = CFReader(self.dataset)
+        self.assertEqual(cf.exclude_var_names, exclude_list)
+
+    def test_exclude_names_error(self):
+        expected_message = r"can only concatenate str \(not .*\) to str"
+        with self.assertRaisesRegex(TypeError, expected_message):
+            CFReader(self.dataset, exclude_var_names="not a list")
+
+    def test_exclude_vars(self):
+        exclude_list = [self.ncvar_name]
+        cf = CFReader(self.dataset, exclude_var_names=exclude_list)
+        self.assertNotIn(self.ncvar_name, cf.cf_group.data_variables)
+
+    def test_exclude_nothing(self):
+        cf = CFReader(self.dataset)
+        self.assertIn(self.ncvar_name, cf.cf_group.data_variables)
+
+    def test_exclude_empty(self):
+        cf = CFReader(self.dataset, [])
+        self.assertIn(self.ncvar_name, cf.cf_group.data_variables)
+
+    def test_exclude_different(self):
+        cf = CFReader(self.dataset, ["different name"])
+        self.assertIn(self.ncvar_name, cf.cf_group.data_variables)
+
+
 if __name__ == "__main__":
     tests.main()
