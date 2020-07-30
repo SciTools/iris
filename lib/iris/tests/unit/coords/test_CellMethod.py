@@ -84,7 +84,7 @@ class Test(tests.IrisTest):
         token = "air temperature"  # includes space
         coord = AuxCoord(1, long_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "{}: unknown, unknown".format(self.method, token, token)
+        expected = "{}: unknown, unknown".format(self.method)
         self.assertEqual(str(result), expected)
 
 

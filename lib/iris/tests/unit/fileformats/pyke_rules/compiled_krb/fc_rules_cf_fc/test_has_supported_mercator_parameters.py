@@ -17,8 +17,6 @@ import iris.tests as tests
 
 from unittest import mock
 
-import numpy as np
-
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
     has_supported_mercator_parameters
 
@@ -134,6 +132,7 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
         self.assertRegex(str(warns[0]), 'False northing')
+
 
 if __name__ == "__main__":
     tests.main()

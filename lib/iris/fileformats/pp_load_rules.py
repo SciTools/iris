@@ -627,7 +627,7 @@ def _convert_time_coords(
     def date2hours(t):
         epoch_hours = _epoch_date_hours(epoch_hours_unit, t)
         if t.minute == 0 and t.second == 0:
-            epoch_hours = round(epoch_hours)
+            epoch_hours = np.around(epoch_hours)
         return epoch_hours
 
     def date2year(t_in):

@@ -35,7 +35,7 @@ GALLERY_DIRECTORIES = [
 @contextlib.contextmanager
 def add_gallery_to_path():
     """
-    Creates a context manager which can be used to add the iris gallery 
+    Creates a context manager which can be used to add the iris gallery
     to the PYTHONPATH. The gallery entries are only importable throughout the lifetime
     of this context manager.
 
