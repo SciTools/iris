@@ -778,7 +778,9 @@ def load_cubes(filenames, callback=None):
 
     for filename in filenames:
         # Ingest the netCDF file.
-        cf = iris.fileformats.cf.CFReader(filename)
+        filename = os.path.expanduser(filename)
+        dataset = netCDF4.Dataset(filename, mode="r")
+        cf = iris.fileformats.cf.CFReader(dataset)
 
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
