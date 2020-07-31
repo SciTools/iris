@@ -1265,6 +1265,10 @@ class CFReader:
             if nc_var_name not in self.exclude_var_names:
                 self.cf_group[nc_var_name].cf_attrs_reset()
 
+    def __del__(self):
+        # Explicitly close dataset to prevent file remaining open.
+        self._dataset.close()
+
 
 def _getncattr(dataset, attr, default=None):
     """
