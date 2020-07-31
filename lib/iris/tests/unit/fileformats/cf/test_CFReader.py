@@ -360,8 +360,7 @@ class Test_exclude_vars(tests.IrisTest):
         self.assertEqual(cf.exclude_var_names, exclude_list)
 
     def test_exclude_names_error(self):
-        expected_message = r"can only concatenate str \(not .*\) to str"
-        with self.assertRaisesRegex(TypeError, expected_message):
+        with self.assertRaises(TypeError):
             CFReader(self.dataset, exclude_var_names="not a list")
 
     def test_exclude_vars(self):
