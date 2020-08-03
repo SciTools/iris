@@ -27,7 +27,7 @@ in a reStructuredText format with a trailing blank line.  For example::
 
   * Fixed :issue:`9999`.  Lorem ipsum dolor sit amet, consectetur adipiscing 
     elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-    <blank link>
+    <blank line>
 
 Note that this example also cites the related issue, optionally you may also
 include the pull request using the notation ``:pull:`9999```.  Where possible
