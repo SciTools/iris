@@ -17,6 +17,7 @@ GloSea4 model, which is then used to produce two types of plot:
    model, from each ensemble member.
 
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 

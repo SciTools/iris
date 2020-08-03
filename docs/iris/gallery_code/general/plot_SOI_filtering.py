@@ -20,8 +20,10 @@ References
     Monthly Weather Review, Vol 112, pp 326-332
 
 """
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 import iris
 import iris.plot as iplt
 

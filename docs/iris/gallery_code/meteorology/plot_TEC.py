@@ -34,6 +34,7 @@ def main():
     plt.ylabel("latitude / degrees")
     plt.gca().stock_img()
     plt.gca().coastlines()
+
     iplt.show()
 
 

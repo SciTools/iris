@@ -8,8 +8,9 @@ and has been pre-processed to calculate the monthly mean sea surface
 temperature.
 
 """
-import matplotlib.pyplot as plt
+
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 
 import iris
 import iris.plot as iplt

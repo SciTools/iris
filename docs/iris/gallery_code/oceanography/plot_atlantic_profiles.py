@@ -15,10 +15,12 @@ presence of the attribute positive=down on the depth coordinate. This means
 depth values intuitively increase downward on the y-axis.
 
 """
+
+import matplotlib.pyplot as plt
+
 import iris
 import iris.iterate
 import iris.plot as iplt
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -56,6 +58,7 @@ def main():
     ax1.set_ylabel("Depth / m")
     for ticklabel in ax1.get_xticklabels():
         ticklabel.set_color(temperature_color)
+
     # To plot salinity in the same axes we use twiny(). We'll use a different
     # color to identify salinity.
     salinity_color = (0.6, 0.1, 0.15)

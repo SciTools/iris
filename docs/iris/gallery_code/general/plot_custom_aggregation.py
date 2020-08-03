@@ -13,6 +13,7 @@ over North America, and we want to calculate in how many years these exceed a
 certain temperature over a spell of 5 years or more.
 
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 

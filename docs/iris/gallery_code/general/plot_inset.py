@@ -8,10 +8,11 @@ coordinate, with an inset plot of the data region.
 
 """
 
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
+
 import iris
-import cartopy.crs as ccrs
 import iris.quickplot as qplt
 import iris.plot as iplt
 

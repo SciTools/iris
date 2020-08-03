@@ -28,13 +28,14 @@ References
     can be found in :ref:`cube-statistics`.
 
 """
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 import iris
+import iris.analysis.cartography
 import iris.plot as iplt
 import iris.quickplot as qplt
-
-import iris.analysis.cartography
 
 
 def main():
@@ -93,6 +94,7 @@ def main():
         time=lambda cell: 1860 <= cell.point.year <= 1999
     )
     observed = a1b_mean.extract(constraint)
+
     # Assert that this data set is the same as the e1 scenario:
     # they share data up to the 1999 cut off.
     assert np.all(np.isclose(observed.data, e1_mean.extract(constraint).data))
@@ -105,9 +107,7 @@ def main():
     plt.title("North American mean air temperature", fontsize=18)
 
     plt.xlabel("Time / year")
-
     plt.grid()
-
     iplt.show()
 
 

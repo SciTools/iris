@@ -54,12 +54,12 @@ function which automatically invokes the ``FormatSpecification`` we defined.
 The cube returned from the load function is then used to produce a plot.
 
 """
+
 import datetime
 
+from cf_units import Unit, CALENDAR_GREGORIAN
 import matplotlib.pyplot as plt
 import numpy as np
-
-from cf_units import Unit, CALENDAR_GREGORIAN
 
 import iris
 import iris.coords as icoords

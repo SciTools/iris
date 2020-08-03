@@ -11,15 +11,14 @@ arrows with a uniform size on the plot.
 
 """
 
+import cartopy.crs as ccrs
+import cartopy.feature as cfeat
 import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
 import iris.coord_categorisation
 import iris.quickplot as qplt
-
-import cartopy.feature as cfeat
-import cartopy.crs as ccrs
 
 
 def main():

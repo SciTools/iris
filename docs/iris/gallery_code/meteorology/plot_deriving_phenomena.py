@@ -9,6 +9,7 @@ specific humidity. Finally, the two new cubes are presented side-by-side in a
 plot.
 
 """
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 

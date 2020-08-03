@@ -21,7 +21,9 @@ References
     doi:10.1029/2009EO210001.
 
 """
+
 import os.path
+
 import matplotlib.pyplot as plt
 import numpy as np
 
