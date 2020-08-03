@@ -5,6 +5,11 @@ html:
         echo "make html in $$i..."; \
         (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html); done
 
+html-noplot:
+	@for i in $(SUBDIRS); do \
+        echo "make html-noplot in $$i..."; \
+        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noplot); done
+
 all:
 	@for i in $(SUBDIRS); do \
 		echo "make all in $$i..."; \

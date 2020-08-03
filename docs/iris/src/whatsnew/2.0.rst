@@ -1,16 +1,18 @@
-What's new in Iris 2.0.0
-************************
+v2.0 (14 Feb 2018)
+******************
 
-:Release: 2.0.0rc1
-:Date: 2018-01-11
-
-
-This document explains the new/changed features of Iris in version 2.0.0
-(:doc:`View all changes <index>`).
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
 
 
-Iris 2.0.0 features
-===================
+.. contents:: Skip to section:
+   :local:
+   :depth: 3
+
+
+Features
+========
+
 .. _showcase:
 
 .. admonition:: Dask Integration
@@ -209,8 +211,8 @@ Incompatible Changes
   printed as ``m.s-1``.
 
 
-Deprecation removals
---------------------
+Deprecation
+===========
 
 All deprecated functionality that was announced for removal in Iris 2.0 has
 been removed. In particular:
@@ -289,8 +291,8 @@ been removed. In particular:
   removed from the :class:`iris.fileformats.rules.Loader` constructor.
 
 
-Documentation changes
-=====================
+Documentation
+=============
 
 * A new UserGuide chapter on :doc:`Real and Lazy Data
   </userguide/real_and_lazy_data>` has been added, and referenced from key

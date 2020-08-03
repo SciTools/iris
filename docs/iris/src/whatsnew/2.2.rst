@@ -1,17 +1,18 @@
-What's new in Iris 2.2
-************************
+v2.2 (11 Oct 2018)
+******************
 
-:Release: 2.2.0
-:Date:
-
-
-This document explains the new/changed features of Iris in the release
-of version 2.2
-(:doc:`View all changes <index>`).
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
 
 
-Iris 2.2 features
-===================
+.. contents:: Skip to section:
+   :local:
+   :depth: 3
+
+
+Features
+========
+
 .. _showcase:
 
 .. admonition:: 2-Dimensional Coordinate Plotting
@@ -70,18 +71,6 @@ Iris 2.2 features
   a NaN-tolerant array comparison.
 
 
-Iris 2.2 dependency updates
-=============================
-
-* Iris is now using the latest version release of dask (currently 0.19.3)
-
-* Proj4 has been temporarily pinned to version < 5 while problems with the
-  Mollweide projection are addressed.
-
-* Matplotlib has been pinned to version < 3 temporarily while we account for
-  its changes in all SciTools libraries.
-
-
 Bugs fixed
 ==========
 
@@ -93,7 +82,7 @@ Bugs fixed
   bound data is actually masked.
 
 
-Bugs fixed in v2.2.1
+v2.2.1 (28 May 2019)
 --------------------
 
 * Iris can now correctly unpack a column of header objects when saving a
@@ -108,9 +97,20 @@ Bugs fixed in v2.2.1
   floating-point arithmetic.
 
 
+Internal
+========
 
-Documentation changes
-=====================
+* Iris is now using the latest version release of dask (currently 0.19.3)
+
+* Proj4 has been temporarily pinned to version < 5 while problems with the
+  Mollweide projection are addressed.
+
+* Matplotlib has been pinned to version < 3 temporarily while we account for
+  its changes in all SciTools libraries.
+
+
+Documentation
+=============
 
 * Iris' `INSTALL` document has been updated to include guidance for running
   tests.

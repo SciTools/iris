@@ -1,14 +1,18 @@
-What's new in Iris 1.12
-***********************
+v1.12 (31 Jan 2017)
+*********************
 
-:Release: 1.12
-:Date: 2017-01-30
-
-This document explains the new/changed features of Iris in version 1.12
+This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-Iris 1.12 features
-==================
+
+.. contents:: Skip to section:
+   :local:
+   :depth: 3
+
+
+Features
+========
+
 .. _showcase:
 
 .. admonition:: Showcase Feature: New regridding schemes
@@ -121,11 +125,13 @@ Iris 1.12 features
 
 Deprecations
 ============
+
 * The module :mod:`iris.experimental.fieldsfile` has been deprecated, in favour
   of the new fast-loading mechanism provided by
   :meth:`iris.fileformats.um.structured_um_loading`.
 
-Documentation changes
-=====================
+Documentation
+=============
+
 * Corrected documentation of :class:`iris.analysis.AreaWeighted` scheme to make
   the usage scope clearer.
