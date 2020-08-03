@@ -16,7 +16,7 @@ Release branch
 Once the features intended for the release are on master, a release branch 
 should be created, in the SciTools/Iris repository.  This will have the name:
 
-    :literal:`{major release number}.{minor release number}.x`
+    :literal:`v{major release number}.{minor release number}.x`
 
 for example:
 
@@ -35,11 +35,12 @@ number, e.g.:
 
     :literal:`v1.9.0rc1`
 
-If created, the pre-release shall be available for at least one week prior to
-the release being cut.  User groups should be notified of the existence of the
-pre-release and encouraged to test the functionality.
+If created, the pre-release shall be available for a minimum of two weeks 
+prior to the release being cut.  However a 4 week period should be the goal
+to allow user groups  be notified of the existence of the pre-release and
+encouraged to test the functionality.
 
-A pre-release is expected for a minor release, but not normally provided for a
+A pre-release is expected for a minor release, but will not for a
 point release.
 
 If new features are required for a release after a release candidate has been
@@ -51,19 +52,11 @@ Documentation
 
 The documentation should include all of the what's new snippets, which must be
 compiled into a what's new.  This content should be reviewed and adapted as
-required and the snippets removed from the branch to produce a coherent what's
-new page.
+required and the snippets removed from the branch to produce a coherent single
+what's new page.
 
 Upon release, the documentation shall be added to the SciTools scitools.org.uk
 github project's gh-pages branch as the latest documentation.
-
-
-Testing the conda recipe
-------------------------
-
-Before a release is cut, the SciTools conda-recipes-scitools recipe for Iris
-shall be tested to build the release branch of Iris; this test recipe shall not
-be merged onto conda-recipes-scitools.
 
 
 The release
@@ -90,8 +83,8 @@ updated to build the latest release of Iris and push this artefact to
 Merge back
 ----------
 
-After the release is cut, the changes shall be merged back onto the scitools
-master.
+After the release is cut, the changes shall be merged back onto the
+Scitools/iris master branch.
 
 To achieve this, first cut a local branch from the release branch,
 :literal:`{release}.x`.  Next add a commit changing the release string to match
@@ -134,7 +127,8 @@ Release steps
     * Delete the ``docs/iris/src/whatsnew/latest.rst`` file so it will not
       cause an issue in the build
     * In ``v1.9.rst`` update the page title (first line of the file) to show
-      the date and version in the format of ``v1.9 (DD MMM YYYY)``
+      the date and version in the format of ``v1.9 (DD MMM YYYY)``.  For
+      example ``v1.9 (03 Aug 2020)``
     * Review the file for correctness
     * Add ``v1.9.rst`` and updates to ``latest.rst`` to git
 

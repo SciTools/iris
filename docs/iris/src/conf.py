@@ -38,7 +38,7 @@ if on_rtd:
 
     # list all the READTHEDOCS environment variables that may be of use
     # at some point
-    autolog("Listing all environmant variables on the READTHEDOCS server...")
+    autolog("Listing all environment variables on the READTHEDOCS server...")
 
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))

@@ -34,19 +34,19 @@ include the pull request using the notation ``:pull:`9999```.  Where possible
 do not exceed **column 80** and ensure that any subsequent lines
 of the same bullet point is aligned with the first.  
 
+The content of the bullet point should highlight the change that has been made
+to Iris, targeting an Iris user as the audience.
+
 For inspiration that may include adding links to code please examine past
 what's :ref:`iris_whatsnew` entries.  
 
 .. note:: The reStructuredText syntax will be checked as part of building
           the documentation.  Any warnings should be corrected.  
-          `travis-ci`_ will automaticall build the documention when
+          `travis-ci`_ will automatically build the documention when
           creating a pull request, however you can also manually 
           :ref:`build <contributing.documentation.building>` the documentation.
 
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
-
-The content of the bullet point should highlight the change that has been made
-to Iris, targeting an Iris user as the audience.  Ideally, each bullet point
 
 
 Contribution categories
