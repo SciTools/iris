@@ -9,6 +9,7 @@ them without the intervention shown here.
 """
 
 from __future__ import unicode_literals
+
 import matplotlib.pyplot as plt
 
 import iris
