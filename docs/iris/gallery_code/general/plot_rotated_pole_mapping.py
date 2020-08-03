@@ -12,12 +12,13 @@ differing images, including:
 
 """
 
-import iris
-import iris.plot as iplt
-import iris.quickplot as qplt
-import iris.analysis.cartography
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import iris
+import iris.analysis.cartography
+import iris.plot as iplt
+import iris.quickplot as qplt
 
 
 def main():

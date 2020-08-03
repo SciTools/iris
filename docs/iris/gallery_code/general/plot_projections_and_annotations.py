@@ -14,11 +14,12 @@ We plot these over a specified region, in two different map projections.
 
 """
 
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+import numpy as np
+
 import iris
 import iris.plot as iplt
-import cartopy.crs as ccrs
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 # Define a Cartopy 'ordinary' lat-lon coordinate reference system.

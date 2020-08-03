@@ -29,12 +29,13 @@ References
 
 """
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 import iris
+import iris.analysis.cartography
 import iris.plot as iplt
 import iris.quickplot as qplt
-import iris.analysis.cartography
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 def main():

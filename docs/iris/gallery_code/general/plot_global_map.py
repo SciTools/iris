@@ -7,11 +7,12 @@ title and the labels for the axes are automatically derived from the metadata.
 
 """
 
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 
 
 def main():

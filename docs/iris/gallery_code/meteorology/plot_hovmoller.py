@@ -9,11 +9,12 @@ temperature.
 
 """
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+
 import iris
 import iris.plot as iplt
 import iris.quickplot as qplt
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 
 def main():

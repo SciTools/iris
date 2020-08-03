@@ -16,10 +16,11 @@ depth values intuitively increase downward on the y-axis.
 
 """
 
+import matplotlib.pyplot as plt
+
 import iris
 import iris.iterate
 import iris.plot as iplt
-import matplotlib.pyplot as plt
 
 
 def main():
