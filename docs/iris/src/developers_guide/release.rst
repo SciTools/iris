@@ -50,13 +50,10 @@ cut, a new pre-release shall be issued first.
 Documentation
 -------------
 
-The documentation should include all of the what's new snippets, which must be
-compiled into a what's new.  This content should be reviewed and adapted as
-required and the snippets removed from the branch to produce a coherent single
-what's new page.
+The documentation should include all of the what's new entries for the release.
+This content should be reviewed and adapted as required.
 
-Upon release, the documentation shall be added to the SciTools scitools.org.uk
-github project's gh-pages branch as the latest documentation.
+Steps to achieve this can be found in the :ref:`iris_development_releases_steps`.
 
 
 The release
@@ -118,8 +115,9 @@ These steps assume a release for ``v1.9`` is to be created
 Release steps
 ~~~~~~~~~~~~~
 
-#. Create a branch on the main repo, not in a forked repo, for the release
-   candidate or release
+#. Create the branch ``1.9.x`` on the main repo, not in a forked repo, for the
+   release candidate or release.  The only exception is for a point/bugfix
+   release as it should already exist
 #. Update the what's new for the release:  
 
     * Copy ``docs/iris/src/whatsnew/latest.rst`` to a file named
@@ -130,25 +128,26 @@ Release steps
       the date and version in the format of ``v1.9 (DD MMM YYYY)``.  For
       example ``v1.9 (03 Aug 2020)``
     * Review the file for correctness
-    * Add ``v1.9.rst`` and updates to ``latest.rst`` to git
+    * Add ``v1.9.rst`` to git and commit all changes, including removal of
+      ``latest.rst``
 
 #. Update the what's new index ``docs/iris/src/whatsnew/index.rst``
 
-   * Temporary remove reference to ``latest.rst``
+   * Temporarily remove reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
-#. Update ``Iris.__init__.py`` version string
+#. Update the ``Iris.__init__.py`` version string, to ``1.9.0``
 #. Check your changes by building the documentation and viewing the changes
-#. Once all the above steps are complete, the release is cut by the creation
-   of a new tag in the head of the release branch in the SciTools 
-   `Iris repository <https://github.com/tkknight/iris/releases>`_
+#. Once all the above steps are complete, the release is cut, using 
+   the :guilabel:`Draft a new release` button on the
+   `Iris release page <https://github.com/SciTools/iris/releases>`_
 
 
 Post release steps
 ~~~~~~~~~~~~~~~~~~
 
 #. Check the documentation has built on `Read The Docs`_.  The build is 
-   triggered by any commit to master.  Additionallty check that the versions
+   triggered by any commit to master.  Additionally check that the versions
    available in the pop out menu in the bottom left corner include the new
    release version.  If it is not present you will need to configure the
    versions avaiable in the **admin** dashboard in Read The Docs
@@ -158,7 +157,7 @@ Post release steps
    new headings
 #. Add back in the reference to ``latest.rst`` to the what's new index 
    ``docs/iris/src/whatsnew/index.rst``
-#. Update ``Iris.__init__.py`` version string to show as ``dev``
+#. Update ``Iris.__init__.py`` version string to show as ``1.10.dev0``
 #. Merge back to master
 
 
