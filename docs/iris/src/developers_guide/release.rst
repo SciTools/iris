@@ -37,7 +37,7 @@ number, e.g.:
 
 If created, the pre-release shall be available for a minimum of two weeks 
 prior to the release being cut.  However a 4 week period should be the goal
-to allow user groups  be notified of the existence of the pre-release and
+to allow user groups to be notified of the existence of the pre-release and
 encouraged to test the functionality.
 
 A pre-release is expected for a minor release, but will not for a
