@@ -25,6 +25,8 @@ The documentation uses specific packages that need to be present.  Please see
 :ref:`installing_iris` for instructions.
 
 
+.. _contributing.documentation.building:
+
 Building
 --------
 

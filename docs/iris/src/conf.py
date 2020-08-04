@@ -36,6 +36,13 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 if on_rtd:
     autolog("Build running on READTHEDOCS server")
 
+    # list all the READTHEDOCS environment variables that may be of use
+    # at some point
+    autolog("Listing all environment variables on the READTHEDOCS server...")
+
+    for item, value in os.environ.items():
+        autolog("[READTHEDOCS] {} = {}".format(item, value))
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,

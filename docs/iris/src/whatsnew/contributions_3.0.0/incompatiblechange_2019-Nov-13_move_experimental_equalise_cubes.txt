@@ -1,3 +1,0 @@
-* The :func:`iris.experimental.equalise_cubes.equalise_attributes` function has been moved from the
-  :mod:`iris.experimental` module into the :mod:`iris.util` module. Please use the :func:`iris.util.equalise_attributes`
-  function instead.

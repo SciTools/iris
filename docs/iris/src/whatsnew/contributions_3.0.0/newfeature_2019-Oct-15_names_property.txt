@@ -1,1 +1,0 @@
-* Cubes and coordinates now have a new ``names`` property that contains a tuple of the ``standard_name``, ``long_name``, NetCDF ``var_name``, and ``STASH`` attributes metadata.

@@ -122,25 +122,6 @@ script:
       python -m iris.tests.runner --gallery-tests;
     fi
 
-  # A call to check "whatsnew" contributions are valid, because the Iris test
-  # for it needs a *developer* install to be able to find the docs.
-  - >
-    if [[ "${TEST_TARGET}" == 'doctest' ]]; then
-      cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
-      python aggregate_directory.py --checkonly;
-    fi
-
-  # When pushing built docs, attempt to make a preliminary whatsnew by calling
-  # 'aggregate_directory.py', before the build.
-  - >
-    if [[ "${PUSH_BUILT_DOCS}" == 'true' ]]; then
-      cd ${INSTALL_DIR}/docs/iris/src/whatsnew;
-      WHATSNEW=$(ls -d contributions_* 2>/dev/null);
-      if [[ -n "${WHATSNEW}" ]]; then
-        python aggregate_directory.py --unreleased;
-      fi;
-    fi
-
   # Build the docs.
   - >
     if [[ "${TEST_TARGET}" == 'doctest' ]]; then
