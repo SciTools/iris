@@ -287,7 +287,8 @@ class Resolve:
 
     @property
     def _debug(self):
-        return logger.getEffectiveLevel() <= logging.DEBUG
+        level = logger.getEffectiveLevel()
+        return logging.DEBUG >= level and level != logging.NOTSET
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
@@ -1161,21 +1162,12 @@ class Resolve:
                     if eq_bounds:
                         bounds = src_bounds
                     else:
-                        if LENIENT["maths"]:
-                            # For lenient, ignore coordinate with mis-matched bounds.
-                            dmsg = (
-                                f"ignoring src {src_coord.metadata}, "
-                                f"unequal bounds with tgt {src_dims}->{tgt_dims}"
-                            )
-                            logger.debug(dmsg)
-                        else:
-                            # For strict, the coordinate bounds must match.
-                            emsg = (
-                                f"Coordinate {src_coord.name()!r} has different bounds for the "
-                                f"LHS cube {self.lhs_cube.name()!r} and "
-                                f"RHS cube {self.rhs_cube.name()!r}."
-                            )
-                            raise ValueError(emsg)
+                        emsg = (
+                            f"Coordinate {src_coord.name()!r} has different bounds for the "
+                            f"LHS cube {self.lhs_cube.name()!r} and "
+                            f"RHS cube {self.rhs_cube.name()!r}."
+                        )
+                        raise ValueError(emsg)
                 else:
                     # For lenient, use either of the coordinate bounds, if they exist.
                     if LENIENT["maths"]:
@@ -1205,18 +1197,12 @@ class Resolve:
                             )
                             raise ValueError(emsg)
             else:
-                if LENIENT["maths"]:
-                    # For lenient, ignore coordinate with mis-matched points.
-                    dmsg = f"ignoring src {src_coord.metadata}, unequal points with tgt {src_dims}->{tgt_dims}"
-                    logger.debug(dmsg)
-                else:
-                    # For strict, the coordinate points must match.
-                    emsg = (
-                        f"Coordinate {src_coord.name()!r} has different points for the "
-                        f"LHS cube {self.lhs_cube.name()!r} and "
-                        f"RHS cube {self.rhs_cube.name()!r}."
-                    )
-                    raise ValueError(emsg)
+                emsg = (
+                    f"Coordinate {src_coord.name()!r} has different points for the "
+                    f"LHS cube {self.lhs_cube.name()!r} and "
+                    f"RHS cube {self.rhs_cube.name()!r}."
+                )
+                raise ValueError(emsg)
 
         return points, bounds
 
