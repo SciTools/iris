@@ -16,7 +16,6 @@ import warnings
 
 import cf_units
 import dask.array as da
-from dask.array.core import broadcast_shapes
 import numpy as np
 from numpy import ma
 
@@ -738,22 +737,16 @@ def _binary_op_common(
         # the rhs must be an array.
         rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim)
     elif isinstance(other, iris.cube.Cube):
-        # prepare to resolve the cube and coordinate metadata
-        # into the resultant cube.
+        # prepare to resolve the cube operands and associated coordinate
+        # metadata into the resultant cube.
         resolve = Resolve(cube, other)
 
-        try:
-            broadcast_shapes(cube.shape, other.shape)
-        except ValueError:
-            emsg = (
-                f"Cannot broadcast lhs cube {cube.name()!r} with shape "
-                f"{cube.shape} and rhs cube {other.name()!r} with shape "
-                f"{other.shape} for {operation_name} operation."
-            )
-            raise ValueError(emsg)
+        # get the broadcast safe versions of the cube operands.
+        cube = resolve.lhs_cube_resolved
+        other = resolve.rhs_cube_resolved
 
-        # we want the resultant array of the math operation wrapped
-        # in a skeleton cube.
+        # notify that it's safe to wrap the resultant array of the math operation
+        # in a skeleton cube with no metadata.
         skeleton = True
 
         # the rhs must be an array.
@@ -785,6 +778,7 @@ def _binary_op_common(
     )
 
     if isinstance(other, iris.cube.Cube):
+        # get the resolved resultant cube.
         result = resolve.cube(result.core_data(), in_place=in_place)
         _sanitise_metadata(result, new_unit)
 
