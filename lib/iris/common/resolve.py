@@ -64,6 +64,13 @@ class Resolve:
 
         self._metadata_resolve()
         self._metadata_coverage()
+
+        if self._debug:
+            self._debug_items(self.lhs_cube_category_local, title="LHS local")
+            self._debug_items(self.rhs_cube_category_local, title="RHS local")
+            self._debug_items(self.category_common, title="common")
+            logger.debug(f"map_rhs_to_lhs={self.map_rhs_to_lhs}")
+
         self._metadata_mapping()
         self._metadata_prepare()
 
@@ -78,10 +85,15 @@ class Resolve:
         for src_dim, tgt_dim in self.mapping.items():
             new_src_shape[tgt_dim] = src_cube.shape[src_dim]
         new_src_shape = tuple(new_src_shape)
+        dmsg = (
+            f"new src {self._src_cube_position} cube shape {new_src_shape}, "
+            f"actual shape {src_cube.shape}"
+        )
+        logger.debug(dmsg)
 
         try:
-            # Determine whether the tgt cube and proposed new src
-            # cube (shape) will successfully broadcast together.
+            # Determine whether the tgt cube shape and proposed new src
+            # cube shape will successfully broadcast together.
             self._broadcast_shape = broadcast_shapes(
                 tgt_cube.shape, new_src_shape
             )
@@ -108,10 +120,12 @@ class Resolve:
         # Determine whether a transpose of the src cube is necessary.
         if order != sorted(order):
             new_src_data = new_src_data.transpose(order)
+            logger.debug(f"transpose src cube with order {order}")
 
         # Determine whether a reshape is necessary.
         if new_src_shape != new_src_data.shape:
             new_src_data = new_src_data.reshape(new_src_shape)
+            logger.debug(f"reshape src cube to new shape {new_src_shape}")
 
         # Create the new src cube.
         new_src_cube = Cube(new_src_data)
@@ -276,6 +290,19 @@ class Resolve:
         if level != logging.NOTSET:
             result = logging.DEBUG >= level
         return result
+
+    @staticmethod
+    def _debug_items(items, title=None):
+        def _show(items, heading):
+            logger.debug(f"{title}{heading}:")
+            for item in items:
+                dmsg = f"metadata={item.metadata}, dims={item.dims}, bounds={item.coord.has_bounds()}"
+                logger.debug(dmsg)
+
+        title = f"{title} " if title else ""
+        _show(items.items_dim, "dim")
+        _show(items.items_aux, "aux")
+        _show(items.items_scalar, "scalar")
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
@@ -461,6 +488,7 @@ class Resolve:
 
         # Update the mapping.
         self.mapping.update(free_mapping)
+        logger.debug(f"mapping free dimensions gives, mapping={self.mapping}")
 
     def _init(self, lhs, rhs):
         from iris.cube import Cube
@@ -518,9 +546,6 @@ class Resolve:
             self.map_rhs_to_lhs = True
         else:
             self.map_rhs_to_lhs = False
-
-        dmsg = f"map_rhs_to_lhs={self.map_rhs_to_lhs}"
-        logger.debug(dmsg)
 
         # Mapping of the dimensions between common metadata for the cubes,
         # where the direction of the mapping is governed by map_rhs_to_lhs.
@@ -600,16 +625,21 @@ class Resolve:
         # Use the dim coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
         self._dim_mapping(src_dim_coverage, tgt_dim_coverage)
-        logger.debug(f"mapping={self.mapping}")
+        logger.debug(
+            f"mapping common dim coordinates gives, mapping={self.mapping}"
+        )
 
         # If necessary, use the aux coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
         if not self.mapped:
             self._aux_mapping(src_aux_coverage, tgt_aux_coverage)
-            logger.debug(f"mapping={self.mapping}")
+            logger.debug(
+                f"mapping common aux coordinates, mapping={self.mapping}"
+            )
 
         if not self.mapped:
             # Attempt to complete the mapping using src/tgt free dimensions.
+            # Note that, this may not be possible and result in an exception.
             self._free_mapping(
                 src_dim_coverage,
                 tgt_dim_coverage,
@@ -618,6 +648,7 @@ class Resolve:
             )
 
         # Attempt to transpose/reshape the cubes into compatible broadcast shapes.
+        # Note that, this may not be possible and result in an exception.
         self._as_compatible_cubes()
 
         # Given the resultant broadcast shape, determine whether the
