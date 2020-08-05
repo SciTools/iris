@@ -120,12 +120,16 @@ class Resolve:
         # Determine whether a transpose of the src cube is necessary.
         if order != sorted(order):
             new_src_data = new_src_data.transpose(order)
-            logger.debug(f"transpose src cube with order {order}")
+            logger.debug(
+                f"transpose src {self._src_cube_position} cube with order {order}"
+            )
 
         # Determine whether a reshape is necessary.
         if new_src_shape != new_src_data.shape:
             new_src_data = new_src_data.reshape(new_src_shape)
-            logger.debug(f"reshape src cube to new shape {new_src_shape}")
+            logger.debug(
+                f"reshape src {self._src_cube_position} cube to new shape {new_src_shape}"
+            )
 
         # Create the new src cube.
         new_src_cube = Cube(new_src_data)
@@ -802,12 +806,17 @@ class Resolve:
                 )
             )
             if not tgt_items:
-                dmsg = f"ignoring src {src_metadata}, does not match any common tgt metadata"
+                dmsg = (
+                    f"ignoring src {self._src_cube_position} cube aux coordinate "
+                    f"{src_metadata}, does not match any common tgt "
+                    f"{self._tgt_cube_position} cube aux coordinate metadata"
+                )
                 logger.debug(dmsg)
             elif len(tgt_items) > 1:
                 dmsg = (
-                    f"ignoring src {src_metadata}, matches multiple "
-                    f"[{len(tgt_items)}] common tgt metadata"
+                    f"ignoring src {self._src_cube_position} cube aux coordinate "
+                    f"{src_metadata}, matches multiple [{len(tgt_items)}] common "
+                    f"tgt {self._tgt_cube_position} cube aux coordinate metadata"
                 )
                 logger.debug(dmsg)
             else:
@@ -992,8 +1001,9 @@ class Resolve:
                     self.prepared_category.items_aux.append(prepared_item)
                 else:
                     dmsg = (
-                        f"ignoring local src aux coordinate {item.metadata}, "
-                        f"as not all src dimensions {item.dims} are mapped."
+                        f"ignoring local src {self._src_cube_position} cube "
+                        f"aux coordinate {item.metadata}, as not all src "
+                        f"dimensions {item.dims} are mapped"
                     )
                     logger.debug(dmsg)
         else:
@@ -1013,8 +1023,9 @@ class Resolve:
                 self.prepared_category.items_aux.append(prepared_item)
             else:
                 dmsg = (
-                    f"ignoring local tgt aux coordinate {item.metadata}, "
-                    f"as not all tgt dimensions {tgt_dims} are mapped."
+                    f"ignoring local tgt {self._tgt_cube_position} cube "
+                    f"aux coordinate {item.metadata}, as not all tgt "
+                    f"dimensions {tgt_dims} are mapped"
                 )
                 logger.debug(dmsg)
 
@@ -1047,11 +1058,12 @@ class Resolve:
                     tgt_dims_conflict.add(tgt_dim)
                     if self._debug:
                         src_metadata = src_dim_coverage.metadata[src_dim]
-                        dmsg = f"ignoring local src dim coordinate {src_metadata}, "
                         tgt_metadata = tgt_dim_coverage.metadata[tgt_dim]
-                        dmsg += (
-                            f"as conflicts with tgt dim coordinate {tgt_metadata}, "
-                            f"mapping ({src_dim},)->({tgt_dim},)."
+                        dmsg = (
+                            f"ignoring local src {self._src_cube_position} cube "
+                            f"dim coordinate {src_metadata}, as conflicts with "
+                            f"tgt {self._tgt_cube_position} cube dim coordinate "
+                            f"{tgt_metadata}, mapping ({src_dim},)->({tgt_dim},)"
                         )
                         logger.debug(dmsg)
 
@@ -1192,8 +1204,10 @@ class Resolve:
                         if LENIENT["maths"] and ignore_mismatch:
                             # For lenient, ignore coordinate with mis-matched bounds.
                             dmsg = (
-                                f"ignoring src {src_coord.metadata}, "
-                                f"unequal bounds with tgt {src_dims}->{tgt_dims}"
+                                f"ignoring src {self._src_cube_position} cube "
+                                f"{src_coord.metadata}, unequal bounds with "
+                                f"tgt {self._tgt_cube_position} cube, "
+                                f"{src_dims}->{tgt_dims}"
                             )
                             logger.debug(dmsg)
                         else:
@@ -1207,11 +1221,17 @@ class Resolve:
                     # For lenient, use either of the coordinate bounds, if they exist.
                     if LENIENT["maths"]:
                         if src_has_bounds:
-                            dmsg = f"using src {src_coord.metadata} bounds, tgt has no bounds"
+                            dmsg = (
+                                f"using src {self._src_cube_position} cube "
+                                f"{src_coord.metadata} bounds, tgt has no bounds"
+                            )
                             logger.debug(dmsg)
                             bounds = src_coord.bounds
                         else:
-                            dmsg = f"using tgt {tgt_coord.metadata} bounds, src has no bounds"
+                            dmsg = (
+                                f"using tgt {self._tgt_cube_position} cube "
+                                f"{tgt_coord.metadata} bounds, src has no bounds"
+                            )
                             logger.debug(dmsg)
                             bounds = tgt_coord.bounds
                     else:
@@ -1234,7 +1254,11 @@ class Resolve:
             else:
                 if LENIENT["maths"] and ignore_mismatch:
                     # For lenient, ignore coordinate with mis-matched points.
-                    dmsg = f"ignoring src {src_coord.metadata}, unequal points with tgt {src_dims}->{tgt_dims}"
+                    dmsg = (
+                        f"ignoring src {self._src_cube_position} cube "
+                        f"{src_coord.metadata}, unequal points with tgt "
+                        f"{src_dims}->{tgt_dims}"
+                    )
                     logger.debug(dmsg)
                 else:
                     emsg = (
