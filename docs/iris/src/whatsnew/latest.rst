@@ -134,12 +134,17 @@ Documentation
   formatter.  This is now automatically checked on GitHub PRs, replacing the 
   older, unittest-based "iris.tests.test_coding_standards.TestCodeFormat".
   Black provides automatic code format correction for most IDEs.  See the new 
-  developer guide section on :ref:`iris_code_format` 
+  developer guide section on :ref:`iris_code_format`.
 
 * Refreshed the :ref:`whats_new_contributions` for the :ref:`iris_whatsnew`.
   This includes always creating the ``latest`` what's new page so it appears
   on the latest documentation at
   https://scitools-iris.readthedocs.io/en/latest/whatsnew.  This resolves
-  :issue:`2104` and :issue:`3451`
-  
+  :issue:`2104` and :issue:`3451`.  Also updated the 
+  :ref:`iris_development_releases_steps` to follow when making a release.
 
+* Enabled the pdf creation of the documentation on the `Read the Docs`_ service.
+  The pdf may be accessed by clicking on the version at the bottom of the side
+  bar, then selecting **pdf** from the downloads section.
+
+.. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
