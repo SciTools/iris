@@ -693,6 +693,7 @@ class Resolve:
             src_aux_coverage.common_items_scalar,  # input
             tgt_aux_coverage.common_items_scalar,  # input
             self.prepared_category.items_scalar,  # output
+            ignore_mismatch=True,
         )
 
         self._prepare_local_payload(
@@ -783,9 +784,18 @@ class Resolve:
         #     ]
 
     def _prepare_common_aux_payload(
-        self, src_common_items, tgt_common_items, prepared_items
+        self,
+        src_common_items,
+        tgt_common_items,
+        prepared_items,
+        ignore_mismatch=None,
     ):
         from iris.coords import AuxCoord
+
+        if ignore_mismatch is None:
+            # Configure ability to ignore coordinate points/bounds
+            # mismatches between common items.
+            ignore_mismatch = False
 
         for src_item in src_common_items:
             src_metadata = src_item.metadata
@@ -809,7 +819,11 @@ class Resolve:
                 src_coord = src_item.coord
                 tgt_coord = tgt_item.coord
                 points, bounds = self._prepare_points_and_bounds(
-                    src_coord, tgt_coord, src_item.dims, tgt_item.dims
+                    src_coord,
+                    tgt_coord,
+                    src_item.dims,
+                    tgt_item.dims,
+                    ignore_mismatch=ignore_mismatch,
                 )
                 if points is not None:
                     src_type = type(src_coord)
@@ -830,8 +844,15 @@ class Resolve:
                     )
                     prepared_items.append(prepared_item)
 
-    def _prepare_common_dim_payload(self, src_coverage, tgt_coverage):
+    def _prepare_common_dim_payload(
+        self, src_coverage, tgt_coverage, ignore_mismatch=None
+    ):
         from iris.coords import DimCoord
+
+        if ignore_mismatch is None:
+            # Configure ability to ignore coordinate points/bounds
+            # mismatches between common items.
+            ignore_mismatch = False
 
         for src_dim in src_coverage.dims_common:
             src_metadata = src_coverage.metadata[src_dim]
@@ -842,7 +863,11 @@ class Resolve:
             tgt_coord = tgt_coverage.coords[tgt_dim]
 
             points, bounds = self._prepare_points_and_bounds(
-                src_coord, tgt_coord, src_dim, tgt_dim
+                src_coord,
+                tgt_coord,
+                src_dim,
+                tgt_dim,
+                ignore_mismatch=ignore_mismatch,
             )
 
             if points is not None:
@@ -1099,9 +1124,14 @@ class Resolve:
         self._prepare_local_payload_scalar(src_aux_coverage, tgt_aux_coverage)
 
     def _prepare_points_and_bounds(
-        self, src_coord, tgt_coord, src_dims, tgt_dims
+        self, src_coord, tgt_coord, src_dims, tgt_dims, ignore_mismatch=None
     ):
         from iris.util import array_equal
+
+        if ignore_mismatch is None:
+            # Configure ability to ignore coordinate points/bounds
+            # mismatches between common items.
+            ignore_mismatch = False
 
         points, bounds = None, None
 
@@ -1111,6 +1141,7 @@ class Resolve:
         if not isinstance(tgt_dims, Iterable):
             tgt_dims = (tgt_dims,)
 
+        # Deal with coordinates spanning broadcast dimensions.
         if src_coord.points.shape != tgt_coord.points.shape:
             # Check whether the src coordinate is broadcasting.
             dims = tuple([self.mapping[dim] for dim in src_dims])
@@ -1162,12 +1193,20 @@ class Resolve:
                     if eq_bounds:
                         bounds = src_bounds
                     else:
-                        emsg = (
-                            f"Coordinate {src_coord.name()!r} has different bounds for the "
-                            f"LHS cube {self.lhs_cube.name()!r} and "
-                            f"RHS cube {self.rhs_cube.name()!r}."
-                        )
-                        raise ValueError(emsg)
+                        if LENIENT["maths"] and ignore_mismatch:
+                            # For lenient, ignore coordinate with mis-matched bounds.
+                            dmsg = (
+                                f"ignoring src {src_coord.metadata}, "
+                                f"unequal bounds with tgt {src_dims}->{tgt_dims}"
+                            )
+                            logger.debug(dmsg)
+                        else:
+                            emsg = (
+                                f"Coordinate {src_coord.name()!r} has different bounds for the "
+                                f"LHS cube {self.lhs_cube.name()!r} and "
+                                f"RHS cube {self.rhs_cube.name()!r}."
+                            )
+                            raise ValueError(emsg)
                 else:
                     # For lenient, use either of the coordinate bounds, if they exist.
                     if LENIENT["maths"]:
@@ -1197,12 +1236,17 @@ class Resolve:
                             )
                             raise ValueError(emsg)
             else:
-                emsg = (
-                    f"Coordinate {src_coord.name()!r} has different points for the "
-                    f"LHS cube {self.lhs_cube.name()!r} and "
-                    f"RHS cube {self.rhs_cube.name()!r}."
-                )
-                raise ValueError(emsg)
+                if LENIENT["maths"] and ignore_mismatch:
+                    # For lenient, ignore coordinate with mis-matched points.
+                    dmsg = f"ignoring src {src_coord.metadata}, unequal points with tgt {src_dims}->{tgt_dims}"
+                    logger.debug(dmsg)
+                else:
+                    emsg = (
+                        f"Coordinate {src_coord.name()!r} has different points for the "
+                        f"LHS cube {self.lhs_cube.name()!r} and "
+                        f"RHS cube {self.rhs_cube.name()!r}."
+                    )
+                    raise ValueError(emsg)
 
         return points, bounds
 
