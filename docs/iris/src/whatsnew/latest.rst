@@ -17,19 +17,6 @@ Features
   when loading Nimrod-format data into cubes. This covers most known 
   operational use-cases.
 
-* :class:`iris.coord_systems.Geostationary` can now accept creation arguments 
-  of `false_easting=None` or `false_northing=None`, equivalent to values of 0.
-  Previously these kwargs could be omitted, but could not be set to `None`.
-  This also enables loading netcdf data on a Geostationary grid, where either 
-  of these keys is not present as a grid-mapping variable property: 
-  Previously, loading any such data caused an exception.
-
-* The area weights used when performing area weighted regridding with 
-  :class:`iris.analysis.AreaWeighted` are now cached.  This allows a 
-  significant speedup when regridding multiple similar cubes, by repeatedly 
-  using a `'regridder' object <../iris/iris/analysis.html?highlight=regridder#iris.analysis.AreaWeighted.regridder>`_
-  which you created first.
-
 * Statistical operations :meth:`iris.cube.Cube.collapsed`,
   :meth:`iris.cube.Cube.aggregated_by` and :meth:`iris.cube.Cube.rolling_window`
   previously removed every :class:`iris.coord.CellMeasure` attached to the 
@@ -39,21 +26,7 @@ Features
 * Supporting Iris for both Python2 and Python3 resulted in pinning our 
   dependency on matplotlib at v2.x. Now that Python2 support has been dropped, 
   Iris is free to use the latest version of matplotlib.
-
-* The :class:`~iris.NameConstraint` provides richer name constraint matching 
-  when loading or extracting against cubes, by supporting a constraint against 
-  any combination of ``standard_name``, ``long_name``, NetCDF ``var_name`` 
-  and ``STASH`` from the attributes dictionary of a :class:`~iris.cube.Cube`.
-
-* Cubes and coordinates now have a new ``names`` property that contains a 
-  tuple of the ``standard_name``, ``long_name``, NetCDF ``var_name``, and 
-  ``STASH`` attributes metadata.
-
-* Name constraint matching against cubes during loading or extracting has been 
-  relaxed from strictly matching against the :meth:`~iris.cube.Cube.name`, to 
-  matching against either the ``standard_name``, ``long_name``,
-  NetCDF ``var_name``, or ``STASH`` attributes metadata of a cube.
-
+ 
 * CF Ancillary Variables are now supported in cubes.
 
 
