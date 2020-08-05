@@ -394,8 +394,8 @@ class Test__combine_lenient(tests.IrisTest):
 class Test__combine_lenient_attributes(tests.IrisTest):
     def setUp(self):
         self.values = OrderedDict(
-            one=sentinel.one,
-            two=sentinel.two,
+            one="one",
+            two="two",
             three=np.int16(123),
             four=np.arange(10),
             five=ma.arange(10),
@@ -446,8 +446,8 @@ class Test__combine_lenient_attributes(tests.IrisTest):
     def test_extra(self):
         left = self.values.copy()
         right = self.values.copy()
-        left["extra_left"] = sentinel.extra_left
-        right["extra_right"] = sentinel.extra_right
+        left["extra_left"] = "extra_left"
+        right["extra_right"] = "extra_right"
 
         result = self.metadata._combine_lenient_attributes(left, right)
         expected = self.values.copy()
@@ -462,8 +462,8 @@ class Test__combine_lenient_attributes(tests.IrisTest):
 class Test__combine_strict_attributes(tests.IrisTest):
     def setUp(self):
         self.values = OrderedDict(
-            one=sentinel.one,
-            two=sentinel.two,
+            one="one",
+            two="two",
             three=np.int32(123),
             four=np.arange(10),
             five=ma.arange(10),
@@ -514,8 +514,8 @@ class Test__combine_strict_attributes(tests.IrisTest):
     def test_extra(self):
         left = self.values.copy()
         right = self.values.copy()
-        left["extra_left"] = sentinel.extra_left
-        right["extra_right"] = sentinel.extra_right
+        left["extra_left"] = "extra_left"
+        right["extra_right"] = "extra_right"
 
         result = self.metadata._combine_strict_attributes(left, right)
         expected = self.values.copy()
