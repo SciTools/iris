@@ -140,10 +140,11 @@ Documentation
   This includes always creating the ``latest`` what's new page so it appears
   on the latest documentation at
   https://scitools-iris.readthedocs.io/en/latest/whatsnew.  This resolves
-  :issue:`2104` and :issue:`3451`.
+  :issue:`2104` and :issue:`3451`.  Also updated the 
+  :ref:`iris_development_releases_steps` to follow when making a release.
 
 * Enabled the pdf creation of the documentation on the `Read the Docs`_ service.
   The pdf may be accessed by clicking on the version at the bottom of the side
   bar, then selecting **pdf** from the downloads section.
 
-.. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/.
+.. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
