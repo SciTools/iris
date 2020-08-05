@@ -64,24 +64,8 @@ class Resolve:
 
         self._metadata_resolve()
         self._metadata_coverage()
-
-        # TODO: remote this!
-        if self._debug:
-            self.show_dim(self.lhs_cube_dim_coverage)
-            self.show_dim(self.rhs_cube_dim_coverage)
-            self.show_aux(self.lhs_cube_aux_coverage)
-            self.show_aux(self.rhs_cube_aux_coverage)
-            self.show_items(self.lhs_cube_category_local, title="LHS local")
-            self.show_items(self.rhs_cube_category_local, title="RHS local")
-            self.show_items(self.category_common, title="common")
-            print(f"map_rhs_to_lhs: {self.map_rhs_to_lhs}")
-
         self._metadata_mapping()
         self._metadata_prepare()
-
-        # TODO: remove this!
-        if self._debug:
-            self.show_prepared()
 
     def _as_compatible_cubes(self):
         from iris.cube import Cube
@@ -287,8 +271,11 @@ class Resolve:
 
     @property
     def _debug(self):
+        result = False
         level = logger.getEffectiveLevel()
-        return logging.DEBUG >= level and level != logging.NOTSET
+        if level != logging.NOTSET:
+            result = logging.DEBUG >= level
+        return result
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
@@ -760,28 +747,6 @@ class Resolve:
 
         # Resolve local and common category items.
         self._resolve_category_items(*args)
-
-        # TODO: remove this!
-        # # Purge different metadata with common names.
-        # cube1_names = set(
-        #     [item.metadata.name() for item in self.cube1_local_items]
-        # )
-        # cube2_names = set(
-        #     [item.metadata.name() for item in self.cube2_local_items]
-        # )
-        # common_names = cube1_names & cube2_names
-        #
-        # if common_names:
-        #     self.cube1_local_items = [
-        #         item
-        #         for item in self.cube1_local_items
-        #         if item.metadata.name() not in common_names
-        #     ]
-        #     self.cube2_local_items = [
-        #         item
-        #         for item in self.cube2_local_items
-        #         if item.metadata.name() not in common_names
-        #     ]
 
     def _prepare_common_aux_payload(
         self,
@@ -1487,142 +1452,3 @@ class Resolve:
     def shape(self):
         """The shape of the resultant resolved cube."""
         return self._broadcast_shape
-
-    ###########################################################################
-
-    # TODO:: remove this!
-    @staticmethod
-    def show_dim(coverage):
-        from pprint import pprint
-
-        print("dim coverage:")
-        pprint(coverage.metadata)
-        print(
-            f"name: {coverage.cube.name()}\ncommon: {coverage.dims_common}, "
-            f"local: {coverage.dims_local}, free: {coverage.dims_free}\n"
-            f"ndim: {coverage.cube.ndim}\n"
-        )
-
-    # TODO:: remove this!
-    @staticmethod
-    def show_aux(coverage):
-        from pprint import pprint
-
-        print("aux coverage:")
-        items = [
-            (item.metadata, item.dims) for item in coverage.common_items_aux
-        ]
-        pprint(items)
-        items = [
-            (item.metadata, item.dims) for item in coverage.common_items_scalar
-        ]
-        pprint(items)
-        items = [
-            (item.metadata, item.dims) for item in coverage.local_items_aux
-        ]
-        pprint(items)
-        items = [
-            (item.metadata, item.dims) for item in coverage.local_items_scalar
-        ]
-        pprint(items)
-        print(
-            f"name: {coverage.cube.name()}\ncommon: {coverage.dims_common}, "
-            f"local: {coverage.dims_local}, free: {coverage.dims_free}\n"
-            f"ndim: {coverage.cube.ndim}\n"
-        )
-
-    # TODO:: remove this!
-    @staticmethod
-    def show_items(items, title=None):
-        from pprint import pprint
-
-        title = f"{title} " if title else ""
-        print(f"{title}dim:")
-        out = [
-            (item.metadata, item.dims, item.coord.has_bounds())
-            for item in items.items_dim
-        ]
-        pprint(out)
-
-        print(f"{title}aux:")
-        out = [
-            (item.metadata, item.dims, item.coord.has_bounds())
-            for item in items.items_aux
-        ]
-        pprint(out)
-
-        print(f"{title}scalar:")
-        out = [
-            (item.metadata, item.dims, item.coord.has_bounds())
-            for item in items.items_scalar
-        ]
-        pprint(out)
-        print()
-
-    # TODO:: remove this!
-    def show_prepared(self):
-        from pprint import pprint
-
-        title = "prepared "
-        print(f"{title}dim:")
-        out = [
-            (
-                item.metadata.combined,
-                item.dims,
-                item.bounds is not None,
-                item.container,
-            )
-            for item in self.prepared_category.items_dim
-        ]
-        pprint(out)
-
-        print(f"{title}aux:")
-        out = [
-            (
-                item.metadata.combined,
-                item.dims,
-                item.bounds is not None,
-                item.container,
-            )
-            for item in self.prepared_category.items_aux
-        ]
-        pprint(out)
-
-        print(f"{title}scalar:")
-        out = [
-            (
-                item.metadata.combined,
-                item.dims,
-                item.bounds is not None,
-                item.container,
-            )
-            for item in self.prepared_category.items_scalar
-        ]
-        pprint(out)
-
-        print(f"{title}factories:")
-        out = [
-            (item.container, item.dependencies,)
-            for item in self.prepared_factories
-        ]
-        pprint(out)
-        print()
-
-    # TODO:: remove this!
-    @classmethod
-    def test(cls, scenario):
-        from pathlib import Path
-        import pickle
-
-        dname = Path(
-            f"/project/avd/bill/cube-arithmetic/data/ehogan/scenario{scenario}"
-        )
-
-        with open(dname / f"cube{scenario}a.pkl", "rb") as fi:
-            lhs = pickle.load(fi)
-
-        with open(dname / f"cube{scenario}b.pkl", "rb") as fi:
-            rhs = pickle.load(fi)
-
-        resolve = cls(lhs, rhs)
-        return resolve
