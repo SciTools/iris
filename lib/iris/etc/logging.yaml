@@ -29,7 +29,7 @@ loggers:
     level: INFO
     handlers: [console-cls-func]
     propagate: no
-  iris.common.resolver:
+  iris.common.resolve:
     level: INFO
     handlers: [console-func]
     propagate: no
