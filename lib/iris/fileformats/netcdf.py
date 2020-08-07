@@ -752,7 +752,7 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def load_cubes(filenames, callback=None):
+def load_cubes(filenames, callback=None, create_reader=None):
     """
     Loads cubes from a list of NetCDF filenames/URLs.
 
@@ -766,10 +766,23 @@ def load_cubes(filenames, callback=None):
     * callback (callable function):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
+    * create_reader (callable):
+        Function to create the cf-reader object: signature "create_reader(filename) -> CFReader".
+        If None, use a plain :class:`iris.fileformats.cf.CFReader`.
+        This lets us define custom loaders for special types of netcdf-cf file, e.g. ugrid.
+
     Returns:
         Generator of loaded NetCDF :class:`iris.cubes.Cube`.
 
     """
+    if create_reader is None:
+
+        def create_reader(filename):
+            dataset = netCDF4.Dataset(filename, mode="r")
+            # Note: the reader 'owns' the file, keeps it open, and will close it when destroyed.
+            reader = iris.fileformats.cf.CFReader(dataset)
+            return reader
+
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
@@ -777,10 +790,10 @@ def load_cubes(filenames, callback=None):
         filenames = [filenames]
 
     for filename in filenames:
-        # Ingest the netCDF file.
         filename = os.path.expanduser(filename)
-        dataset = netCDF4.Dataset(filename, mode="r")
-        cf = iris.fileformats.cf.CFReader(dataset)
+
+        # Ingest the netCDF file.
+        cf = create_reader(filename)
 
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
@@ -788,6 +801,10 @@ def load_cubes(filenames, callback=None):
         )
         for cf_var in data_variables:
             cube = _load_cube(engine, cf, cf_var, filename)
+
+            # Call a post-processing completion step for each cube, if provided.
+            if hasattr(cf, "cube_completion_adjust"):
+                cf.cube_completion_adjust(cube)
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.

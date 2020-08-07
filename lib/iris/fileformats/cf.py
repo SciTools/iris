@@ -1009,6 +1009,25 @@ class CFReader:
     def __init__(
         self, dataset, warn=False, monotonic=False, exclude_var_names=None
     ):
+        """
+        Create a CFReader to interpret the CF structure of a given netcdf dataset.
+
+        Args:
+
+        * dataset (netCDF4.Dataset):
+            An open dataset to read from.
+            The new CFReader "owns" the dataset, and keeps it open until the reader itself is destroyed.
+
+        * warn (bool):
+            If set, show a warning when passed a NETCDF3 file, saying that NETCDF4 is now preferred.
+
+        * monotonic (bool):
+            Control monotonic behaviour when identifying coordinate variables.
+
+        * exclude_var_names (list of str):
+            Ignore file variables with these names : behave as if they were not present.
+
+        """
         self._dataset = dataset
         self._filename = dataset.filepath()
 
