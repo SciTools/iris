@@ -672,6 +672,10 @@ class Resolve:
             )
             logger.debug(dmsg)
             self.mapping = flip_mapping
+            # Require to transpose/reshape the cubes into compatible broadcast
+            # cubes again, due to possible non-commutative behaviour after
+            # flipping the mapping direction.
+            self._as_compatible_cubes()
 
     def _metadata_prepare(self):
         # Initialise the state.
@@ -1149,8 +1153,23 @@ class Resolve:
         if not isinstance(tgt_dims, Iterable):
             tgt_dims = (tgt_dims,)
 
+        # Deal with coordinates that have been sliced.
+        if src_coord.ndim != tgt_coord.ndim:
+            if tgt_coord.ndim > src_coord.ndim:
+                # Use the tgt coordinate points/bounds.
+                points = tgt_coord.points
+                bounds = tgt_coord.bounds
+            else:
+                # Use the src coordinate points/bounds.
+                points = src_coord.points
+                bounds = src_coord.bounds
+
         # Deal with coordinates spanning broadcast dimensions.
-        if src_coord.points.shape != tgt_coord.points.shape:
+        if (
+            points is None
+            and bounds is None
+            and src_coord.shape != tgt_coord.shape
+        ):
             # Check whether the src coordinate is broadcasting.
             dims = tuple([self.mapping[dim] for dim in src_dims])
             src_shape_broadcast = tuple([self.shape[dim] for dim in dims])

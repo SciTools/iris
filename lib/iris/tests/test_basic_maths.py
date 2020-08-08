@@ -235,7 +235,11 @@ class TestBasicMaths(tests.IrisTest):
         b.attributes["my attribute"] = "foobar"
         c = a + b
         self.assertIsNone(c.standard_name)
-        self.assertEqual(c.attributes, {})
+        expected = {
+            "my attribute": "foobar",
+            "source": "Data from Met Office Unified Model",
+        }
+        self.assertEqual(expected, c.attributes)
 
     def test_apply_ufunc(self):
         a = self.cube
@@ -509,7 +513,11 @@ class TestDivideAndMultiply(tests.IrisTest):
         b.attributes["my attribute"] = "foobar"
         c = a * b
         self.assertIsNone(c.standard_name)
-        self.assertEqual(c.attributes, {})
+        expected = {
+            "source": "Data from Met Office Unified Model",
+            "my attribute": "foobar",
+        }
+        self.assertEqual(expected, c.attributes)
 
     def test_multiplication_in_place(self):
         a = self.cube.copy()
