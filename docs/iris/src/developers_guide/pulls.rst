@@ -1,5 +1,6 @@
 .. _pr_check:
 
+
 Pull request check List
 ***********************
 
@@ -33,17 +34,17 @@ The Iris check list
 
 * Have new tests been provided for all additional functionality?
 
-* Do all modified and new sourcefiles pass PEP8?
+* Do all modified and new source files pass PEP8?
 
  * PEP8_ is the Python source code style guide.
  * There is a python module for checking pep8 compliance: python-pep8_
- * a standard Iris test checks that all sourcefiles meet PEP8 compliance
+ * a standard Iris test checks that all source files meet PEP8 compliance
    (see "iris.tests.test_coding_standards.TestCodeFormat").
 
-* Do all modified and new sourcefiles have a correct, up-to-date copyright
+* Do all modified and new source files have a correct, up-to-date copyright
   header?
 
- * a standard Iris test checks that all sourcefiles include a copyright
+ * a standard Iris test checks that all source files include a copyright
    message, including the correct year of the latest change
    (see "iris.tests.test_coding_standards.TestLicenseHeaders").
 
@@ -64,7 +65,7 @@ The Iris check list
   * The documentation tests may be run with ``make doctest``, from within the
     ``./docs/iris`` subdirectory.
 
-* Have you provided a 'whats new' contribution?
+* Have you provided a "what's new" contribution?
 
  * this should be done for all changes that affect API or behaviour.
    See :ref:`whats_new_contributions`

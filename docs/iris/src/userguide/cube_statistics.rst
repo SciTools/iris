@@ -245,7 +245,7 @@ These two coordinates can now be used to aggregate by season and climate-year:
     
 The primary change in the cube is that the cube's data has been 
 reduced in the 'time' dimension by aggregation (taking means, in this case). 
-This has collected together all datapoints with the same values of season and 
+This has collected together all data points with the same values of season and 
 season-year.
 The results are now indexed by the 19 different possible values of season and
 season-year in a new, reduced 'time' dimension.

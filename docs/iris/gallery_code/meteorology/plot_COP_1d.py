@@ -18,7 +18,7 @@ References
    doi:10.1007/s00382-011-1005-5.
 
    Lowe J.A., C.D. Hewitt, D.P. Van Vuuren, T.C. Johns, E. Stehfest, J-F.
-   Royer, and P. van der Linden, 2009. New Study For Climate Modeling,
+   Royer, and P. van der Linden, 2009. New Study For Climate Modelling,
    Analyses, and Scenarios. Eos Trans. AGU, Vol 90, No. 21,
    doi:10.1029/2009EO210001.
 

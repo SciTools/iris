@@ -85,7 +85,7 @@ Features
   previously could produce a large number of small chunks. This had an adverse
   effect on performance.
 
-  In addition, Iris now takes its default chunksize from the default configured
+  In addition, Iris now takes its default chunk size from the default configured
   in Dask itself, i.e. ``dask.config.get('array.chunk-size')``.
 
 .. admonition:: Lazy Statistics
@@ -251,16 +251,16 @@ Documentation
 * Added an example in the
   `Loading Iris Cubes: Constraining on Time <../userguide/loading_iris_cubes
   .html#constraining-on-time>`_
-  Userguide section, demonstrating how to load data within a specified date
+  User guide section, demonstrating how to load data within a specified date
   range.
 
-* Added notes to the :func:`iris.load` documentation, and the userguide
+* Added notes to the :func:`iris.load` documentation, and the user guide
   `Loading Iris Cubes <../userguide/loading_iris_cubes.html>`_
   chapter, emphasizing that the *order* of the cubes returned by an iris load
   operation is effectively random and unstable, and should not be relied on.
 
 * Fixed references in the documentation of
-  :func:`iris.util.find_discontiguities` to a nonexistent
+  :func:`iris.util.find_discontiguities` to a non existent
   "mask_discontiguities" routine : these now refer to
   :func:`~iris.util.mask_cube`.
 

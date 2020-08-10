@@ -28,7 +28,7 @@ class ConcreteReferenceTarget:
     """Everything you need to make a real Cube for a named reference."""
 
     def __init__(self, name, transform=None):
-        #: The name used to connect references with referencees.
+        #: The name used to connect references with references.
         self.name = name
         #: An optional transformation to apply to the cubes.
         self.transform = transform

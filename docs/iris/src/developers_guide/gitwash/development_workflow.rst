@@ -148,7 +148,7 @@ Testing your changes
 ====================
 
 Once you are happy with your changes, work thorough the :ref:`pr_check` and make sure
-your branch passess all the relevant tests.
+your branch passes all the relevant tests.
 
 Ask for your changes to be reviewed or merged
 =============================================

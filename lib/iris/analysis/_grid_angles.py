@@ -147,11 +147,11 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     connected by wraparound.
 
     Input can be either two arrays, two coordinates, or a single cube
-    containing two suitable coordinates identified with the 'x' and'y' axes.
+    containing two suitable coordinates identified with the 'x' and 'y' axes.
 
     Args:
 
-    The inputs (x [,y]) can be any of the folliwing :
+    The inputs (x [,y]) can be any of the following :
 
     * x (:class:`~iris.cube.Cube`):
         a grid cube with 2D X and Y coordinates, identified by 'axis'.

@@ -33,7 +33,7 @@ Features
 
 * The area weights used when performing area weighted regridding with
   :class:`iris.analysis.AreaWeighted` are now cached.  This allows a
-  significant speedup when regridding multiple similar cubes, by repeatedly
+  significant speed up when regridding multiple similar cubes, by repeatedly
   using a :func:`iris.analysis.AreaWeighted.regridder` objects
   which you created first.
 
@@ -57,7 +57,7 @@ Bugs fixed
 
 * Fixed a problem which was causing file loads to fetch *all* field data
   whenever UM files (PP or Fieldsfiles) were loaded.
-  With large sourcefiles, initial file loads are slow, with large memory usage
+  With large source files, initial file loads are slow, with large memory usage
   before any cube data is even fetched.  Large enough files will cause a crash.
   The problem occurs only with Dask versions >= 2.0.
 

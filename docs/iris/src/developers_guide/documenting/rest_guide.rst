@@ -1,6 +1,6 @@
-===============
-reST quickstart
-===============
+================
+reST quick start
+================
 
 
 reST (http://en.wikipedia.org/wiki/ReStructuredText) is a lightweight markup

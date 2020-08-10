@@ -957,7 +957,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         Args:
 
         * coord_dims_func:
-            A callable which can return the list of dimesions relevant
+            A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
         """

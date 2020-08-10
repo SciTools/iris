@@ -9,18 +9,18 @@ Stability and change
 ---------------------
 
 In practice, as Iris develops, most users will want to periodically upgrade
-their installed version to access new features or at least bugfixes.
+their installed version to access new features or at least bug fixes.
 
 This is obvious if you are still developing other code that uses Iris, or using
 code from other sources.  
 However, even if you have only legacy code that remains untouched, some code
-maintenance effort is probably still necessary :
+maintenance effort is probably still necessary:
 
    * On the one hand, *in principle*, working code will go on working, as long
      as you don't change anything else.
 
-   * However, such "version statis" can easily become a growing burden, if you
-     are simply waiting until an update becomes unavoidable :  Often, that will
+   * However, such "version stasis" can easily become a growing burden, if you
+     are simply waiting until an update becomes unavoidable, often that will
      eventually occur when you need to update some other software component,
      for some completely unconnected reason.
 

@@ -114,6 +114,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    # TODO: Spelling extension disabled until the dependencies can be included
+    # "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -123,10 +125,22 @@ extensions = [
     "generate_package_rst",
 ]
 
-# sphinx_copybutton config
+# -- spellingextension --------------------------------------------------------
+# See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
+spelling_lang = "en_GB"
+# The lines in this file must only use line feeds (no carriage returns).
+spelling_word_list_filename = ["spelling_allow.txt"]
+spelling_show_suggestions = False
+spelling_show_whole_line = False
+spelling_ignore_importable_modules = True
+spelling_ignore_python_builtins = True
+
+# -- copybutton extension -----------------------------------------------------
+# See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = ">>> "
 
 # sphinx.ext.todo configuration
+# See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
 # api generation configuration
@@ -141,6 +155,8 @@ modindex_common_prefix = ["iris"]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+# -- intersphinx extension ----------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("http://scitools.org.uk/cartopy/docs/latest/", None),
     "matplotlib": ("http://matplotlib.org/", None),
@@ -152,12 +168,14 @@ intersphinx_mapping = {
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
-# plot directive options (extension: matplotlib.sphinxext.plot_directive ---
+# -- plot_directive extension -------------------------------------------------
+# See https://matplotlib.org/3.1.3/devel/plot_directive.html#options
 plot_formats = [
     ("png", 100),
 ]
 
 # -- Extlinks extension -------------------------------------------------------
+# See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
     "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
@@ -220,6 +238,7 @@ html_static_path = ["_static"]
 html_style = "theme_override.css"
 
 # url link checker.  Some links work but report as broken, lets ignore them.
+# See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
     "https://github.com/SciTools/iris/commit/69597eb3d8501ff16ee3d56aef1f7b8f1c2bb316#diff-1680206bdc5cfaa83e14428f5ba0f848",
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
@@ -230,6 +249,7 @@ linkcheck_ignore = [
 exclude_patterns = []
 
 # -- sphinx-gallery config ----------------------------------------------------
+# See https://sphinx-gallery.github.io/stable/configuration.html
 
 sphinx_gallery_conf = {
     # path to your example scripts
@@ -242,6 +262,8 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
 }
 
+
+# -----------------------------------------------------------------------------
 # Remove matplotlib agg warnings from generated doc when using plt.show
 warnings.filterwarnings(
     "ignore",
