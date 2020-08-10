@@ -548,14 +548,15 @@ class Test__compare_lenient(tests.IrisTest):
             self.assertTrue(lmetadata._compare_lenient(rmetadata))
             self.assertTrue(rmetadata._compare_lenient(lmetadata))
 
-        expected = (len(self.cls._fields) - 1) * 2
+        # mocker not called for "units" nor "var_name" members.
+        expected = (len(self.cls._fields) - 2) * 2
         self.assertEqual(expected, mocker.call_count)
 
-    def test_name_same_lenient_false(self):
+    def test_name_same_lenient_false__long_name_different(self):
         left = self.none.copy()
         left.update(self.names)
-        right = self.none.copy()
-        right["long_name"] = sentinel.standard_name
+        right = left.copy()
+        right["long_name"] = sentinel.dummy
         lmetadata = self.cls(**left)
         rmetadata = self.cls(**right)
 
@@ -565,7 +566,26 @@ class Test__compare_lenient(tests.IrisTest):
             self.assertFalse(lmetadata._compare_lenient(rmetadata))
             self.assertFalse(rmetadata._compare_lenient(lmetadata))
 
-        expected = (len(self.cls._fields) - 1) * 2
+        # mocker not called for "units" nor "var_name" members.
+        expected = (len(self.cls._fields) - 2) * 2
+        self.assertEqual(expected, mocker.call_count)
+
+    def test_name_same_lenient_true__var_name_different(self):
+        left = self.none.copy()
+        left.update(self.names)
+        right = left.copy()
+        right["var_name"] = sentinel.dummy
+        lmetadata = self.cls(**left)
+        rmetadata = self.cls(**right)
+
+        with mock.patch.object(
+            self.cls, "_is_attributes", return_value=False
+        ) as mocker:
+            self.assertTrue(lmetadata._compare_lenient(rmetadata))
+            self.assertTrue(rmetadata._compare_lenient(lmetadata))
+
+        # mocker not called for "units" nor "var_name" members.
+        expected = (len(self.cls._fields) - 2) * 2
         self.assertEqual(expected, mocker.call_count)
 
     def test_name_different(self):
@@ -596,7 +616,8 @@ class Test__compare_lenient(tests.IrisTest):
             self.assertTrue(lmetadata._compare_lenient(rmetadata))
             self.assertTrue(rmetadata._compare_lenient(lmetadata))
 
-        expected = (len(self.cls._fields) - 1) * 2
+        # mocker not called for "units" nor "var_name" members.
+        expected = (len(self.cls._fields) - 2) * 2
         self.assertEqual(expected, mocker.call_count)
 
     def test_strict_units_different(self):
@@ -614,7 +635,8 @@ class Test__compare_lenient(tests.IrisTest):
             self.assertFalse(lmetadata._compare_lenient(rmetadata))
             self.assertFalse(rmetadata._compare_lenient(lmetadata))
 
-        expected = (len(self.cls._fields) - 1) * 2
+        # mocker not called for "units" nor "var_name" members.
+        expected = (len(self.cls._fields) - 2) * 2
         self.assertEqual(expected, mocker.call_count)
 
     def test_attributes(self):

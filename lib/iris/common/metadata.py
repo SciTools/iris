@@ -396,7 +396,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 return result
 
             # Note that, we use "_members" not "_fields".
-            result = all([func(field) for field in BaseMetadata._members])
+            # Lenient equality explicitly ignores the "var_name" member.
+            result = all(
+                [
+                    func(field)
+                    for field in BaseMetadata._members
+                    if field != "var_name"
+                ]
+            )
 
         return result
 
