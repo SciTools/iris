@@ -31,6 +31,7 @@ __all__ = [
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
+    "DimCoordMetadata",
     "metadata_manager_factory",
 ]
 
@@ -86,8 +87,8 @@ class _NamedTupleMeta(ABCMeta):
         names = []
 
         for base in bases:
-            if hasattr(base, "_members"):
-                base_names = getattr(base, "_members")
+            if hasattr(base, "_fields"):
+                base_names = getattr(base, "_fields")
                 is_abstract = getattr(
                     base_names, "__isabstractmethod__", False
                 )
@@ -869,7 +870,7 @@ class CoordMetadata(BaseMetadata):
             return left if left == right else None
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in self._members]
+        values = [func(field) for field in CoordMetadata._members]
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
         result.extend(values)
@@ -890,10 +891,11 @@ class CoordMetadata(BaseMetadata):
             Boolean.
 
         """
+        # Perform "strict" comparison for "coord_system" and "climatological".
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
-                for field in self._members
+                for field in CoordMetadata._members
             ]
         )
         if result:
@@ -923,7 +925,7 @@ class CoordMetadata(BaseMetadata):
             return None if left == right else (left, right)
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in self._members]
+        values = [func(field) for field in CoordMetadata._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.extend(values)
@@ -1103,6 +1105,72 @@ class CubeMetadata(BaseMetadata):
         return result
 
 
+class DimCoordMetadata(CoordMetadata):
+    """
+    Metadata container for a :class:`~iris.coords.DimCoord"
+
+    """
+
+    _members = ("circular",)
+
+    __slots__ = ()
+
+    @wraps(CoordMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    @wraps(CoordMetadata._combine_lenient, assigned=("__doc__",), updated=())
+    def _combine_lenient(self, other):
+        # Perform "strict" combination for "circular".
+        value = self.circular if self.circular == other.circular else None
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
+
+        return result
+
+    @wraps(CoordMetadata._compare_lenient, assigned=("__doc__",), updated=())
+    def _compare_lenient(self, other):
+        # Perform "strict" equivalence for "circular".
+        result = self.circular == other.circular
+        if result:
+            result = super()._compare_lenient(other)
+
+        return result
+
+    @wraps(
+        CoordMetadata._difference_lenient, assigned=("__doc__",), updated=()
+    )
+    def _difference_lenient(self, other):
+        # Perform "strict" difference for "circular".
+        value = (
+            None
+            if self.circular == other.circular
+            else (self.circular, other.circular)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
+
+        return result
+
+    @wraps(CoordMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(CoordMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(CoordMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
 def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
@@ -1248,6 +1316,7 @@ SERVICES_COMBINE = (
     CellMeasureMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
+    DimCoordMetadata.combine,
 )
 
 
@@ -1258,6 +1327,7 @@ SERVICES_DIFFERENCE = (
     CellMeasureMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
+    DimCoordMetadata.difference,
 )
 
 
@@ -1273,6 +1343,8 @@ SERVICES_EQUAL = (
     CoordMetadata.equal,
     CubeMetadata.__eq__,
     CubeMetadata.equal,
+    DimCoordMetadata.__eq__,
+    DimCoordMetadata.equal,
 )
 
 
