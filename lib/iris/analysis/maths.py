@@ -115,7 +115,9 @@ def abs(cube, in_place=False):
     _assert_is_cube(cube)
     new_dtype = _output_dtype(np.abs, cube.dtype, in_place=in_place)
     op = da.absolute if cube.has_lazy_data() else np.abs
-    return _math_op_common(cube, op, cube.units, new_dtype, in_place=in_place)
+    return _math_op_common(
+        cube, op, cube.units, new_dtype=new_dtype, in_place=in_place
+    )
 
 
 def intersection_of_cubes(cube, other_cube):
@@ -213,7 +215,10 @@ def add(cube, other, dim=None, in_place=False):
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
-        operator.add, cube.dtype, _get_dtype(other), in_place=in_place
+        operator.add,
+        cube.dtype,
+        second_dtype=_get_dtype(other),
+        in_place=in_place,
     )
     if in_place:
         _inplace_common_checks(cube, other, "addition")
@@ -259,7 +264,10 @@ def subtract(cube, other, dim=None, in_place=False):
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
-        operator.sub, cube.dtype, _get_dtype(other), in_place=in_place
+        operator.sub,
+        cube.dtype,
+        second_dtype=_get_dtype(other),
+        in_place=in_place,
     )
     if in_place:
         _inplace_common_checks(cube, other, "subtraction")
@@ -348,7 +356,10 @@ def multiply(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
 
     new_dtype = _output_dtype(
-        operator.mul, cube.dtype, _get_dtype(other), in_place=in_place
+        operator.mul,
+        cube.dtype,
+        second_dtype=_get_dtype(other),
+        in_place=in_place,
     )
     other_unit = getattr(other, "units", "1")
     new_unit = cube.units * other_unit
@@ -418,7 +429,10 @@ def divide(cube, other, dim=None, in_place=False):
     _assert_is_cube(cube)
 
     new_dtype = _output_dtype(
-        operator.truediv, cube.dtype, _get_dtype(other), in_place=in_place
+        operator.truediv,
+        cube.dtype,
+        second_dtype=_get_dtype(other),
+        in_place=in_place,
     )
     other_unit = getattr(other, "units", "1")
     new_unit = cube.units / other_unit
@@ -477,7 +491,10 @@ def exponentiate(cube, exponent, in_place=False):
     """
     _assert_is_cube(cube)
     new_dtype = _output_dtype(
-        operator.pow, cube.dtype, _get_dtype(exponent), in_place=in_place
+        operator.pow,
+        cube.dtype,
+        second_dtype=_get_dtype(exponent),
+        in_place=in_place,
     )
     if cube.has_lazy_data():
 
@@ -490,7 +507,11 @@ def exponentiate(cube, exponent, in_place=False):
             return np.power(data, exponent, out)
 
     return _math_op_common(
-        cube, power, cube.units ** exponent, new_dtype, in_place=in_place
+        cube,
+        power,
+        cube.units ** exponent,
+        new_dtype=new_dtype,
+        in_place=in_place,
     )
 
 
@@ -520,7 +541,7 @@ def exp(cube, in_place=False):
     new_dtype = _output_dtype(np.exp, cube.dtype, in_place=in_place)
     op = da.exp if cube.has_lazy_data() else np.exp
     return _math_op_common(
-        cube, op, cf_units.Unit("1"), new_dtype, in_place=in_place
+        cube, op, cf_units.Unit("1"), new_dtype=new_dtype, in_place=in_place
     )
 
 
@@ -546,7 +567,11 @@ def log(cube, in_place=False):
     new_dtype = _output_dtype(np.log, cube.dtype, in_place=in_place)
     op = da.log if cube.has_lazy_data() else np.log
     return _math_op_common(
-        cube, op, cube.units.log(math.e), new_dtype, in_place=in_place
+        cube,
+        op,
+        cube.units.log(math.e),
+        new_dtype=new_dtype,
+        in_place=in_place,
     )
 
 
@@ -572,7 +597,7 @@ def log2(cube, in_place=False):
     new_dtype = _output_dtype(np.log2, cube.dtype, in_place=in_place)
     op = da.log2 if cube.has_lazy_data() else np.log2
     return _math_op_common(
-        cube, op, cube.units.log(2), new_dtype, in_place=in_place
+        cube, op, cube.units.log(2), new_dtype=new_dtype, in_place=in_place
     )
 
 
@@ -598,12 +623,12 @@ def log10(cube, in_place=False):
     new_dtype = _output_dtype(np.log10, cube.dtype, in_place=in_place)
     op = da.log10 if cube.has_lazy_data() else np.log10
     return _math_op_common(
-        cube, op, cube.units.log(10), new_dtype, in_place=in_place
+        cube, op, cube.units.log(10), new_dtype=new_dtype, in_place=in_place
     )
 
 
 def apply_ufunc(
-    ufunc, cube, other_cube=None, new_unit=None, new_name=None, in_place=False
+    ufunc, cube, other=None, new_unit=None, new_name=None, in_place=False
 ):
     """
     Apply a `numpy universal function
@@ -627,7 +652,7 @@ def apply_ufunc(
 
     Kwargs:
 
-    * other_cube:
+    * other:
         An instance of :class:`iris.cube.Cube` to be given as the second
         argument to :func:`numpy.ufunc`.
 
@@ -650,51 +675,52 @@ def apply_ufunc(
     """
 
     if not isinstance(ufunc, np.ufunc):
-        name = getattr(ufunc, "__name__", "function passed to apply_ufunc")
-
-        raise TypeError(
-            "{} is not recognised (it is not an instance of "
-            "numpy.ufunc)".format(name)
+        ufunc_name = getattr(
+            ufunc, "__name__", "function passed to apply_ufunc"
         )
+        emsg = f"{ufunc_name} is not recognised, it is not an instance of numpy.ufunc"
+        raise TypeError(emsg)
+
+    ufunc_name = ufunc.__name__
 
     if ufunc.nout != 1:
-        raise ValueError(
-            "{} returns {} objects, apply_ufunc currently "
-            "only supports ufunc functions returning a single "
-            "object.".format(ufunc.__name__, ufunc.nout)
+        emsg = (
+            f"{ufunc_name} returns {ufunc.nout} objects, apply_ufunc currently "
+            "only supports numpy.ufunc functions returning a single object."
         )
+        raise ValueError(emsg)
 
-    if ufunc.nin == 2:
-        if other_cube is None:
-            raise ValueError(
-                "{} requires two arguments, so other_cube "
-                "must also be passed to apply_ufunc".format(ufunc.__name__)
+    if ufunc.nin == 1:
+        new_dtype = _output_dtype(ufunc, cube.dtype, in_place=in_place)
+
+        new_cube = _math_op_common(
+            cube, ufunc, new_unit, new_dtype=new_dtype, in_place=in_place
+        )
+    elif ufunc.nin == 2:
+        if other is None:
+            emsg = (
+                f"{ufunc_name} requires two arguments, another cube "
+                "must also be passed to apply_ufunc."
             )
+            raise ValueError(emsg)
 
-        _assert_is_cube(other_cube)
+        _assert_is_cube(other)
         new_dtype = _output_dtype(
-            ufunc, cube.dtype, other_cube.dtype, in_place=in_place
+            ufunc, cube.dtype, second_dtype=other.dtype, in_place=in_place
         )
 
         new_cube = _binary_op_common(
             ufunc,
-            ufunc.__name__,
+            ufunc_name,
             cube,
-            other_cube,
+            other,
             new_unit,
             new_dtype=new_dtype,
             in_place=in_place,
         )
-
-    elif ufunc.nin == 1:
-        new_dtype = _output_dtype(ufunc, cube.dtype, in_place=in_place)
-
-        new_cube = _math_op_common(
-            cube, ufunc, new_unit, new_dtype, in_place=in_place
-        )
-
     else:
-        raise ValueError(ufunc.__name__ + ".nin should be 1 or 2.")
+        emsg = f"{ufunc_name}.nin must be 1 or 2."
+        raise ValueError(emsg)
 
     new_cube.rename(new_name)
 
@@ -731,36 +757,39 @@ def _binary_op_common(
     """
     _assert_is_cube(cube)
 
-    skeleton = False
+    # Flag to notify the _math_op_common function to simply wrap the resultant
+    # data of the maths operation in a cube with no metadata.
+    skeleton_cube = False
 
     if isinstance(other, iris.coords.Coord):
-        # the rhs must be an array.
-        rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim)
+        # The rhs must be an array.
+        rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim=dim)
     elif isinstance(other, iris.cube.Cube):
-        # prepare to resolve the cube operands and associated coordinate
+        # Prepare to resolve the cube operands and associated coordinate
         # metadata into the resultant cube.
-        resolve = Resolve(cube, other)
+        resolver = Resolve(cube, other)
 
-        # get the broadcast safe versions of the cube operands.
-        cube = resolve.lhs_cube_resolved
-        other = resolve.rhs_cube_resolved
+        # Get the broadcast, auto-transposed safe versions of the cube operands.
+        cube = resolver.lhs_cube_resolved
+        other = resolver.rhs_cube_resolved
 
-        # notify that it's safe to wrap the resultant array of the math operation
-        # in a skeleton cube with no metadata.
-        skeleton = True
+        # Flag that it's safe to wrap the resultant data of the math operation
+        # in a cube with no metadata, as all of the metadata of the resultant
+        # cube is being managed by the resolver.
+        skeleton_cube = True
 
-        # the rhs must be an array.
+        # The rhs must be an array.
         rhs = other.core_data()
     else:
-        # the rhs must be an array.
+        # The rhs must be an array.
         rhs = np.asanyarray(other)
 
     def unary_func(lhs):
         data = operation_function(lhs, rhs)
         if data is NotImplemented:
-            # explicitly raise the TypeError, so it gets raised even if, for
+            # Explicitly raise the TypeError, so it gets raised even if, for
             # example, `iris.analysis.maths.multiply(cube, other)` is called
-            # directly instead of `cube * other`
+            # directly instead of `cube * other`.
             emsg = (
                 f"Cannot {operation_function.__name__} {type(lhs).__name__!r} "
                 f"and {type(rhs).__name__} objects."
@@ -774,12 +803,13 @@ def _binary_op_common(
         new_unit,
         new_dtype=new_dtype,
         in_place=in_place,
-        skeleton=skeleton,
+        skeleton_cube=skeleton_cube,
     )
 
     if isinstance(other, iris.cube.Cube):
-        # get the resolved resultant cube.
-        result = resolve.cube(result.core_data(), in_place=in_place)
+        # Insert the resultant data from the maths operation
+        # within the resolved cube.
+        result = resolver.cube(result.core_data(), in_place=in_place)
         _sanitise_metadata(result, new_unit)
 
     return result
@@ -828,25 +858,30 @@ def _broadcast_cube_coord_data(cube, other, operation_name, dim=None):
 
 
 def _sanitise_metadata(cube, unit):
-    # clear the cube names.
+    """
+    As part of the maths metadata contract, clear the necessary or
+    unsupported metadata from the resultant cube of the maths operation.
+
+    """
+    # Clear the cube names.
     cube.rename(None)
 
-    # clear the cube cell methods.
+    # Clear the cube cell methods.
     cube.cell_methods = None
 
-    # clear the cell measures.
+    # Clear the cell measures.
     for cm in cube.cell_measures():
         cube.remove_cell_measure(cm)
 
-    # clear the ancillary variables.
+    # Clear the ancillary variables.
     for av in cube.ancillary_variables():
         cube.remove_ancillary_variable(av)
 
-    # clear the STASH attribute, if present.
+    # Clear the STASH attribute, if present.
     if "STASH" in cube.attributes:
         del cube.attributes["STASH"]
 
-    # set the cube units.
+    # Set the cube units.
     cube.units = unit
 
 
@@ -856,28 +891,30 @@ def _math_op_common(
     new_unit,
     new_dtype=None,
     in_place=False,
-    skeleton=False,
+    skeleton_cube=False,
 ):
     _assert_is_cube(cube)
 
-    if in_place:
+    if in_place and not skeleton_cube:
         if cube.has_lazy_data():
             cube.data = operation_function(cube.lazy_data())
         else:
             try:
                 operation_function(cube.data, out=cube.data)
             except TypeError:
-                # Non ufunc function
+                # Non-ufunc function
                 operation_function(cube.data)
         new_cube = cube
     else:
         data = operation_function(cube.core_data())
-        if skeleton:
+        if skeleton_cube:
+            # Simply wrap the resultant data in a cube, as no
+            # cube metadata is required by the caller.
             new_cube = iris.cube.Cube(data)
         else:
             new_cube = cube.copy(data)
 
-    # If the result of the operation is scalar and masked, we need to fix up the dtype
+    # If the result of the operation is scalar and masked, we need to fix-up the dtype.
     if (
         new_dtype is not None
         and not new_cube.has_lazy_data()
