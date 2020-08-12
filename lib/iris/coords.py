@@ -2382,10 +2382,10 @@ class DimCoord(Coord):
     def __eq__(self, other):
         result = NotImplemented
         if isinstance(other, DimCoord):
-            # The "circular" member participate in DimCoord to DimCoord
+            # The "circular" member participates in DimCoord to DimCoord
             # equivalence. We require to do this explicitly here
-            # as the "circular" member does not participate in
-            # DimCoordMetadata equivalence.
+            # as the "circular" member does NOT participate in
+            # DimCoordMetadata to DimCoordMetadata equivalence.
             result = self.circular == other.circular and super().__eq__(other)
         return result
 
