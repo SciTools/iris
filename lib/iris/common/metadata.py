@@ -189,6 +189,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Support Python2 behaviour for a "<" operation involving a
         # "NoneType" operand.
         #
+        if not isinstance(other, BaseMetadata):
+            return NotImplemented
+
+        if (
+            self.__class__ is CoordMetadata
+            and other.__class__ is DimCoordMetadata
+        ) or (
+            self.__class__ is DimCoordMetadata
+            and other.__class__ is CoordMetadata
+        ):
+            other = self.from_metadata(other)
+
         if not isinstance(other, self.__class__):
             return NotImplemented
 

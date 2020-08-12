@@ -331,11 +331,11 @@ class _CubeSignature:
         axes = dict(T=0, Z=1, Y=2, X=3)
 
         # Coordinate sort function - by guessed coordinate axis, then
-        # by coordinate metadata, then by dimensions, in ascending order.
+        # by coordinate name, then by dimensions, in ascending order.
         def key_func(coord):
             return (
                 axes.get(guess_coord_axis(coord), len(axes) + 1),
-                coord.metadata,
+                coord.name(),
                 cube.coord_dims(coord),
             )
 
