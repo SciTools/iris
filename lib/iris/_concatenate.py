@@ -859,6 +859,9 @@ class _ProtoCube:
                             points, bounds=bnds, **kwargs
                         )
                     except ValueError:
+                        # Ensure to remove the "circular" kwarg that may be
+                        # present in the defn for a DimCoord being demoted.
+                        _ = kwargs.pop("circular", None)
                         coord = iris.coords.AuxCoord(
                             points, bounds=bnds, **kwargs
                         )
