@@ -154,6 +154,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         """
         result = NotImplemented
+        # Only perform equivalence with similar class instances.
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if _LENIENT(self.__eq__) or _LENIENT(self.equal):
                 # Perform "lenient" equality.
@@ -174,8 +175,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                         result = left == right
                     return result
 
-                # Note that, for strict we use "_fields" not "_members"
-                result = all([func(field) for field in self._fields])
+                # Note that, for strict we use "_fields" not "_members".
+                # The "circular" member does not participate in strict equivalence.
+                fields = filter(
+                    lambda field: field != "circular", self._fields
+                )
+                result = all([func(field) for field in fields])
 
         return result
 
@@ -233,6 +238,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             The result of the service operation to the parent service caller.
 
         """
+        # Ensure that we have similar class instances.
         if (
             not hasattr(other, "__class__")
             or other.__class__ is not self.__class__
@@ -640,6 +646,20 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         )
         return result
 
+    @classmethod
+    def from_metadata(cls, other):
+        result = None
+        if isinstance(other, BaseMetadata):
+            if other.__class__ is cls:
+                result = other
+            else:
+                kwargs = {field: None for field in cls._fields}
+                fields = set(cls._fields) & set(other._fields)
+                for field in fields:
+                    kwargs[field] = getattr(other, field)
+                result = cls(**kwargs)
+        return result
+
     def name(self, default=None, token=False):
         """
         Returns a string name representing the identity of the metadata.
@@ -847,6 +867,13 @@ class CoordMetadata(BaseMetadata):
     @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
     @lenient_service
     def __eq__(self, other):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
@@ -935,16 +962,37 @@ class CoordMetadata(BaseMetadata):
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
     def combine(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
     def difference(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().difference(other, lenient=lenient)
 
     @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
     def equal(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().equal(other, lenient=lenient)
 
 
@@ -1111,6 +1159,8 @@ class DimCoordMetadata(CoordMetadata):
 
     """
 
+    # The "circular" member is stateful only, and does not participate
+    # in lenient/strict equivalence.
     _members = ("circular",)
 
     __slots__ = ()
@@ -1118,6 +1168,9 @@ class DimCoordMetadata(CoordMetadata):
     @wraps(CoordMetadata.__eq__, assigned=("__doc__",), updated=())
     @lenient_service
     def __eq__(self, other):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
         return super().__eq__(other)
 
     @wraps(CoordMetadata._combine_lenient, assigned=("__doc__",), updated=())
@@ -1132,12 +1185,8 @@ class DimCoordMetadata(CoordMetadata):
 
     @wraps(CoordMetadata._compare_lenient, assigned=("__doc__",), updated=())
     def _compare_lenient(self, other):
-        # Perform "strict" equivalence for "circular".
-        result = self.circular == other.circular
-        if result:
-            result = super()._compare_lenient(other)
-
-        return result
+        # The "circular" member is not part of lenient equivalence.
+        return super()._compare_lenient(other)
 
     @wraps(
         CoordMetadata._difference_lenient, assigned=("__doc__",), updated=()
@@ -1158,16 +1207,25 @@ class DimCoordMetadata(CoordMetadata):
     @wraps(CoordMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
     def combine(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
         return super().combine(other, lenient=lenient)
 
     @wraps(CoordMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
     def difference(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
         return super().difference(other, lenient=lenient)
 
     @wraps(CoordMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
     def equal(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
         return super().equal(other, lenient=lenient)
 
 

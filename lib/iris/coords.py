@@ -1822,8 +1822,9 @@ class Coord(_DimensionalMetadata):
         Args:
 
         * other:
-            An instance of :class:`iris.coords.Coord` or
-            :class:`iris.common.CoordMetadata`.
+            An instance of :class:`iris.coords.Coord`,
+            :class:`iris.common.CoordMetadata` or
+            :class:`iris.common.DimCoordMetadata`.
         * ignore:
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all
@@ -2381,7 +2382,11 @@ class DimCoord(Coord):
     def __eq__(self, other):
         result = NotImplemented
         if isinstance(other, DimCoord):
-            result = super().__eq__(other)
+            # The "circular" member participate in DimCoord to DimCoord
+            # equivalence. We require to do this explicitly here
+            # as the "circular" member does not participate in
+            # DimCoordMetadata equivalence.
+            result = self.circular == other.circular and super().__eq__(other)
         return result
 
     # The __ne__ operator from Coord implements the not __eq__ method.

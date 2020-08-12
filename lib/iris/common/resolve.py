@@ -755,7 +755,7 @@ class Resolve:
         coordinates common to both cubes.
 
         This is only applicable to coordinates that are members of the
-        'aux_coords' or dim_coords' of the participating cubes.
+        'aux_coords' or 'dim_coords' of the participating cubes.
 
         .. note::
             Coordinate metadata specific to each cube, but with a shared common
@@ -1462,7 +1462,7 @@ class Resolve:
         shape = self.shape
 
         if shape is None:
-            dmsg = f"cannot resolve resultant cube, as no candidate cubes have been provided"
+            dmsg = "cannot resolve resultant cube, as no candidate cubes have been provided"
             logger.debug(dmsg)
         else:
             from iris.cube import Cube

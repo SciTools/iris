@@ -42,6 +42,7 @@ from iris.common import (
     CFVariableMixin,
     CoordMetadata,
     CubeMetadata,
+    DimCoordMetadata,
     metadata_manager_factory,
 )
 import iris.coord_systems
@@ -1448,8 +1449,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (b) a coordinate instance with metadata equal to that of
             the desired coordinates. Accepts either a
             :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-            :class:`iris.aux_factory.AuxCoordFactory`
-            or :class:`iris.common.CoordMetadata`.
+            :class:`iris.aux_factory.AuxCoordFactory`,
+            :class:`iris.common.CoordMetadata` or
+            :class:`iris.common.DimCoordMetadata`.
         * standard_name
             The CF standard name of the desired coordinate. If None, does not
             check for standard name.
@@ -1567,7 +1569,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ]
 
         if coord is not None:
-            if isinstance(coord, CoordMetadata):
+            if hasattr(coord, "__class__") and coord.__class__ in (
+                CoordMetadata,
+                DimCoordMetadata,
+            ):
                 target_metadata = coord
             else:
                 target_metadata = coord.metadata
