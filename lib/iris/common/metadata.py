@@ -7,9 +7,14 @@
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from functools import wraps
 import logging
 import re
+
+import numpy as np
+import numpy.ma as ma
+from xxhash import xxh64_hexdigest
 
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
@@ -26,6 +31,7 @@ __all__ = [
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
+    "DimCoordMetadata",
     "metadata_manager_factory",
 ]
 
@@ -35,6 +41,39 @@ _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
 logger = logging.getLogger(__name__)
+
+
+def _hexdigest(value):
+    """
+    Return a hexidecimal string hash representation of the provided value.
+
+    Calculates a 64-bit non-cryptographic hash of the provided value,
+    and returns the hexdigest string representation of the calculated hash.
+
+    """
+    # Special case: deal with numpy arrays.
+    if ma.isMaskedArray(value):
+        parts = (
+            value.shape,
+            xxh64_hexdigest(value.data),
+            xxh64_hexdigest(value.mask),
+        )
+        value = str(parts)
+    elif isinstance(value, np.ndarray):
+        parts = (value.shape, xxh64_hexdigest(value))
+        value = str(parts)
+
+    try:
+        # Calculate single-shot hash to avoid allocating state on the heap
+        result = xxh64_hexdigest(value)
+    except TypeError:
+        # xxhash expects a bytes-like object, so try hashing the
+        # string representation of the provided value instead, but
+        # also fold in the object type...
+        parts = (type(value), value)
+        result = xxh64_hexdigest(str(parts))
+
+    return result
 
 
 class _NamedTupleMeta(ABCMeta):
@@ -48,8 +87,8 @@ class _NamedTupleMeta(ABCMeta):
         names = []
 
         for base in bases:
-            if hasattr(base, "_members"):
-                base_names = getattr(base, "_members")
+            if hasattr(base, "_fields"):
+                base_names = getattr(base, "_fields")
                 is_abstract = getattr(
                     base_names, "__isabstractmethod__", False
                 )
@@ -115,6 +154,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         """
         result = NotImplemented
+        # Only perform equivalence with similar class instances.
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if _LENIENT(self.__eq__) or _LENIENT(self.equal):
                 # Perform "lenient" equality.
@@ -125,7 +165,22 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             else:
                 # Perform "strict" equality.
                 logger.debug("strict", extra=dict(cls=self.__class__.__name__))
-                result = super().__eq__(other)
+
+                def func(field):
+                    left = getattr(self, field)
+                    right = getattr(other, field)
+                    if self._is_attributes(field, left, right):
+                        result = self._compare_strict_attributes(left, right)
+                    else:
+                        result = left == right
+                    return result
+
+                # Note that, for strict we use "_fields" not "_members".
+                # The "circular" member does not participate in strict equivalence.
+                fields = filter(
+                    lambda field: field != "circular", self._fields
+                )
+                result = all([func(field) for field in fields])
 
         return result
 
@@ -134,6 +189,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Support Python2 behaviour for a "<" operation involving a
         # "NoneType" operand.
         #
+        if not isinstance(other, BaseMetadata):
+            return NotImplemented
+
+        if (
+            self.__class__ is CoordMetadata
+            and other.__class__ is DimCoordMetadata
+        ) or (
+            self.__class__ is DimCoordMetadata
+            and other.__class__ is CoordMetadata
+        ):
+            other = self.from_metadata(other)
+
         if not isinstance(other, self.__class__):
             return NotImplemented
 
@@ -183,6 +250,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             The result of the service operation to the parent service caller.
 
         """
+        # Ensure that we have similar class instances.
         if (
             not hasattr(other, "__class__")
             or other.__class__ is not self.__class__
@@ -219,8 +287,13 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             logger.debug("strict", extra=dict(cls=self.__class__.__name__))
 
             def func(field):
-                value = getattr(self, field)
-                return value if value == getattr(other, field) else None
+                left = getattr(self, field)
+                right = getattr(other, field)
+                if self._is_attributes(field, left, right):
+                    result = self._combine_strict_attributes(left, right)
+                else:
+                    result = left if left == right else None
+                return result
 
             # Note that, for strict we use "_fields" not "_members".
             values = [func(field) for field in self._fields]
@@ -265,8 +338,14 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _combine_lenient_attributes(left, right):
         """Leniently combine the dictionary members together."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Copy the dictionaries.
+        left = deepcopy(left)
+        right = deepcopy(right)
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Intersection of common items.
         common = sleft & sright
         # Items in sleft different from sright.
@@ -279,9 +358,27 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         [dsleft.pop(key) for key in keys]
         [dsright.pop(key) for key in keys]
         # Now bring the result together.
-        result = dict(common)
-        result.update(dsleft)
-        result.update(dsright)
+        result = {k: left[k] for k, _ in common}
+        result.update({k: left[k] for k in dsleft.keys()})
+        result.update({k: right[k] for k in dsright.keys()})
+
+        return result
+
+    @staticmethod
+    def _combine_strict_attributes(left, right):
+        """Perform strict combination of the dictionary members."""
+        # Copy the dictionaries.
+        left = deepcopy(left)
+        right = deepcopy(right)
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        # Intersection of common items.
+        common = sleft & sright
+        # Now bring the result together.
+        result = {k: left[k] for k, _ in common}
 
         return result
 
@@ -318,15 +415,25 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 return result
 
             # Note that, we use "_members" not "_fields".
-            result = all([func(field) for field in BaseMetadata._members])
+            # Lenient equality explicitly ignores the "var_name" member.
+            result = all(
+                [
+                    func(field)
+                    for field in BaseMetadata._members
+                    if field != "var_name"
+                ]
+            )
 
         return result
 
     @staticmethod
     def _compare_lenient_attributes(left, right):
         """Perform lenient compare between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -335,6 +442,17 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         keys = set(dsleft.keys()) & set(dsright.keys())
 
         return not bool(keys)
+
+    @staticmethod
+    def _compare_strict_attributes(left, right):
+        """Perform strict compare between the dictionary members."""
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+
+        return sleft == sright
 
     def _difference(self, other):
         """Perform associated metadata member difference."""
@@ -397,8 +515,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _difference_lenient_attributes(left, right):
         """Perform lenient difference between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -412,6 +533,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if not bool(dsleft) and not bool(dsright):
             result = None
         else:
+            # Replace hash-rvalue with original rvalue.
+            dsleft = {k: left[k] for k in dsleft.keys()}
+            dsright = {k: right[k] for k in dsright.keys()}
             result = (dsleft, dsright)
 
         return result
@@ -419,8 +543,11 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     @staticmethod
     def _difference_strict_attributes(left, right):
         """Perform strict difference between the dictionary members."""
-        sleft = set(left.items())
-        sright = set(right.items())
+        # Use xxhash to perform an extremely fast non-cryptographic hash of
+        # each dictionary key rvalue, thus ensuring that the dictionary is
+        # completely hashable, as required by a set.
+        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
+        sright = {(k, _hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -429,6 +556,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if not bool(dsleft) and not bool(dsright):
             result = None
         else:
+            # Replace hash-rvalue with original rvalue.
+            dsleft = {k: left[k] for k in dsleft.keys()}
+            dsright = {k: right[k] for k in dsright.keys()}
             result = (dsleft, dsright)
 
         return result
@@ -526,6 +656,20 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         result = self._api_common(
             other, self.equal, self.__eq__, "compare", lenient=lenient
         )
+        return result
+
+    @classmethod
+    def from_metadata(cls, other):
+        result = None
+        if isinstance(other, BaseMetadata):
+            if other.__class__ is cls:
+                result = other
+            else:
+                kwargs = {field: None for field in cls._fields}
+                fields = set(cls._fields) & set(other._fields)
+                for field in fields:
+                    kwargs[field] = getattr(other, field)
+                result = cls(**kwargs)
         return result
 
     def name(self, default=None, token=False):
@@ -735,6 +879,13 @@ class CoordMetadata(BaseMetadata):
     @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
     @lenient_service
     def __eq__(self, other):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
@@ -758,7 +909,7 @@ class CoordMetadata(BaseMetadata):
             return left if left == right else None
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in self._members]
+        values = [func(field) for field in CoordMetadata._members]
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
         result.extend(values)
@@ -779,10 +930,11 @@ class CoordMetadata(BaseMetadata):
             Boolean.
 
         """
+        # Perform "strict" comparison for "coord_system" and "climatological".
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
-                for field in self._members
+                for field in CoordMetadata._members
             ]
         )
         if result:
@@ -812,7 +964,7 @@ class CoordMetadata(BaseMetadata):
             return None if left == right else (left, right)
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in self._members]
+        values = [func(field) for field in CoordMetadata._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.extend(values)
@@ -822,16 +974,37 @@ class CoordMetadata(BaseMetadata):
     @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
     @lenient_service
     def combine(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().combine(other, lenient=lenient)
 
     @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
     @lenient_service
     def difference(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().difference(other, lenient=lenient)
 
     @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
     @lenient_service
     def equal(self, other, lenient=None):
+        # Convert a DimCoordMetadata instance to a CoordMetadata instance.
+        if (
+            self.__class__ is CoordMetadata
+            and hasattr(other, "__class__")
+            and other.__class__ is DimCoordMetadata
+        ):
+            other = self.from_metadata(other)
         return super().equal(other, lenient=lenient)
 
 
@@ -992,6 +1165,82 @@ class CubeMetadata(BaseMetadata):
         return result
 
 
+class DimCoordMetadata(CoordMetadata):
+    """
+    Metadata container for a :class:`~iris.coords.DimCoord"
+
+    """
+
+    # The "circular" member is stateful only, and does not participate
+    # in lenient/strict equivalence.
+    _members = ("circular",)
+
+    __slots__ = ()
+
+    @wraps(CoordMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
+        return super().__eq__(other)
+
+    @wraps(CoordMetadata._combine_lenient, assigned=("__doc__",), updated=())
+    def _combine_lenient(self, other):
+        # Perform "strict" combination for "circular".
+        value = self.circular if self.circular == other.circular else None
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.append(value)
+
+        return result
+
+    @wraps(CoordMetadata._compare_lenient, assigned=("__doc__",), updated=())
+    def _compare_lenient(self, other):
+        # The "circular" member is not part of lenient equivalence.
+        return super()._compare_lenient(other)
+
+    @wraps(
+        CoordMetadata._difference_lenient, assigned=("__doc__",), updated=()
+    )
+    def _difference_lenient(self, other):
+        # Perform "strict" difference for "circular".
+        value = (
+            None
+            if self.circular == other.circular
+            else (self.circular, other.circular)
+        )
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.append(value)
+
+        return result
+
+    @wraps(CoordMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
+        return super().combine(other, lenient=lenient)
+
+    @wraps(CoordMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
+        return super().difference(other, lenient=lenient)
+
+    @wraps(CoordMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        # Convert a CoordMetadata instance to a DimCoordMetadata instance.
+        if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
+        return super().equal(other, lenient=lenient)
+
+
 def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
@@ -1137,6 +1386,7 @@ SERVICES_COMBINE = (
     CellMeasureMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
+    DimCoordMetadata.combine,
 )
 
 
@@ -1147,6 +1397,7 @@ SERVICES_DIFFERENCE = (
     CellMeasureMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
+    DimCoordMetadata.difference,
 )
 
 
@@ -1162,6 +1413,8 @@ SERVICES_EQUAL = (
     CoordMetadata.equal,
     CubeMetadata.__eq__,
     CubeMetadata.equal,
+    DimCoordMetadata.__eq__,
+    DimCoordMetadata.equal,
 )
 
 

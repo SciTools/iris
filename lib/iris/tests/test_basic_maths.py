@@ -235,7 +235,11 @@ class TestBasicMaths(tests.IrisTest):
         b.attributes["my attribute"] = "foobar"
         c = a + b
         self.assertIsNone(c.standard_name)
-        self.assertEqual(c.attributes, {})
+        expected = {
+            "my attribute": "foobar",
+            "source": "Data from Met Office Unified Model",
+        }
+        self.assertEqual(expected, c.attributes)
 
     def test_apply_ufunc(self):
         a = self.cube
@@ -344,10 +348,13 @@ class TestBasicMaths(tests.IrisTest):
 
         my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units ** 2)
 
-        # should fail because giving 2 arguments to an ifunc that expects
-        # only one
-        with self.assertRaises(ValueError):
-            my_ifunc(a, a)
+        # should now NOT fail because giving 2 arguments to an ifunc that
+        # expects only one will now ignore the surplus argument and raise
+        # a logging message instead, and go on to perform the operation.
+        emsg = "ValueError not raised"
+        with self.assertRaisesRegex(AssertionError, emsg):
+            with self.assertRaises(ValueError):
+                my_ifunc(a, a)
 
         my_ifunc = iris.analysis.maths.IFunc(
             np.multiply, lambda a: cf_units.Unit("1")
@@ -509,7 +516,11 @@ class TestDivideAndMultiply(tests.IrisTest):
         b.attributes["my attribute"] = "foobar"
         c = a * b
         self.assertIsNone(c.standard_name)
-        self.assertEqual(c.attributes, {})
+        expected = {
+            "source": "Data from Met Office Unified Model",
+            "my attribute": "foobar",
+        }
+        self.assertEqual(expected, c.attributes)
 
     def test_multiplication_in_place(self):
         a = self.cube.copy()

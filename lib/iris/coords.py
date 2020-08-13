@@ -31,6 +31,7 @@ from iris.common import (
     CFVariableMixin,
     CellMeasureMetadata,
     CoordMetadata,
+    DimCoordMetadata,
     metadata_manager_factory,
 )
 import iris.exceptions
@@ -1335,7 +1336,8 @@ class Coord(_DimensionalMetadata):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = metadata_manager_factory(CoordMetadata)
+        if not hasattr(self, "_metadata_manager"):
+            self._metadata_manager = metadata_manager_factory(CoordMetadata)
 
         super().__init__(
             values=points,
@@ -1834,8 +1836,9 @@ class Coord(_DimensionalMetadata):
         Args:
 
         * other:
-            An instance of :class:`iris.coords.Coord` or
-            :class:`iris.common.CoordMetadata`.
+            An instance of :class:`iris.coords.Coord`,
+            :class:`iris.common.CoordMetadata` or
+            :class:`iris.common.DimCoordMetadata`.
         * ignore:
            A single attribute key or iterable of attribute keys to ignore when
            comparing the coordinates. Default is None. To ignore all
@@ -2334,6 +2337,9 @@ class DimCoord(Coord):
         read-only points and bounds.
 
         """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
+
         super().__init__(
             points,
             standard_name=standard_name,
@@ -2347,7 +2353,7 @@ class DimCoord(Coord):
         )
 
         #: Whether the coordinate wraps by ``coord.units.modulus``.
-        self.circular = bool(circular)
+        self.circular = circular
 
     def __deepcopy__(self, memo):
         """
@@ -2363,6 +2369,14 @@ class DimCoord(Coord):
             new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
 
+    @property
+    def circular(self):
+        return self._metadata_manager.circular
+
+    @circular.setter
+    def circular(self, circular):
+        self._metadata_manager.circular = bool(circular)
+
     def copy(self, points=None, bounds=None):
         new_coord = super().copy(points=points, bounds=bounds)
         # Make the arrays read-only.
@@ -2372,13 +2386,13 @@ class DimCoord(Coord):
         return new_coord
 
     def __eq__(self, other):
-        # TODO investigate equality of AuxCoord and DimCoord if circular is
-        # False.
         result = NotImplemented
         if isinstance(other, DimCoord):
-            result = (
-                Coord.__eq__(self, other) and self.circular == other.circular
-            )
+            # The "circular" member participates in DimCoord to DimCoord
+            # equivalence. We require to do this explicitly here
+            # as the "circular" member does NOT participate in
+            # DimCoordMetadata to DimCoordMetadata equivalence.
+            result = self.circular == other.circular and super().__eq__(other)
         return result
 
     # The __ne__ operator from Coord implements the not __eq__ method.

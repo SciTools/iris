@@ -377,7 +377,8 @@ class MixinCallDetails:
         # Make an 'expected' from selected fields, with the expected attribute.
         expected = CubeList([flds[1], flds[3]]).merge()
         if not self.do_fast_loads:
-            expected[0].attributes["LBVC"] = 8
+            # This is actually a NumPy int32, so honour that here.
+            expected[0].attributes["LBVC"] = np.int32(8)
         else:
             expected[0].attributes["A_LBVC"] = [8, 8]
 
