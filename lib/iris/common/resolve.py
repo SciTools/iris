@@ -9,6 +9,7 @@ from collections.abc import Iterable
 import logging
 
 from dask.array.core import broadcast_shapes
+import numpy as np
 
 from iris.common import LENIENT
 
@@ -497,17 +498,19 @@ class Resolve:
     def _init(self, lhs, rhs):
         from iris.cube import Cube
 
-        emsg = "{cls} requires {arg!r} argument to be a 'Cube', got {actual}."
+        emsg = (
+            "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
+        )
         clsname = self.__class__.__name__
 
         if not isinstance(lhs, Cube):
             raise TypeError(
-                emsg.format(cls=clsname, arg="lhs", actual=type(lhs))
+                emsg.format(cls=clsname, arg="LHS", actual=type(lhs))
             )
 
         if not isinstance(rhs, Cube):
             raise TypeError(
-                emsg.format(cls=clsname, arg="rhs", actual=type(rhs))
+                emsg.format(cls=clsname, arg="RHS", actual=type(rhs))
             )
 
         # The LHS cube to be resolved into the resultant cube.
@@ -1436,106 +1439,133 @@ class Resolve:
         else:
             self.rhs_cube_resolved = cube
 
-    def _tgt_cube_clear(self):
+    def _tgt_cube_prepare(self, data):
         cube = self._tgt_cube
 
-        # clear the aux factories.
+        # Replace existing tgt cube data with the provided data.
+        cube.data = data
+
+        # Clear the aux factories.
         for factory in cube.aux_factories:
             cube.remove_aux_factory(factory)
 
-        # clear the cube coordinates.
+        # Clear the cube coordinates.
         for coord in cube.coords():
             cube.remove_coord(coord)
 
-        # clear the cube cell measures.
+        # Clear the cube cell measures.
         for cm in cube.cell_measures():
             cube.remove_cell_measure(cm)
 
-        # clear the ancillary variables.
+        # Clear the ancillary variables.
         for av in cube.ancillary_variables():
             cube.remove_ancillary_variable(av)
 
-        return cube
-
     def cube(self, data, in_place=False):
-        result = None
-        shape = self.shape
+        from iris.cube import Cube
 
-        if shape is None:
-            dmsg = "cannot resolve resultant cube, as no candidate cubes have been provided"
-            logger.debug(dmsg)
-        else:
-            from iris.cube import Cube
+        expected_shape = self.shape
 
-            # Ensure that the shape of the provided data is the expected
-            # shape of the resultant resolved cube.
-            if data.shape != shape:
+        # Ensure that we have been provided with candidate cubes, which are
+        # now resolved and metadata is prepared, ready and awaiting the
+        # resultant resolved cube.
+        if expected_shape is None:
+            emsg = (
+                "Cannot resolve resultant cube, as no candidate cubes have "
+                "been provided."
+            )
+            raise ValueError(emsg)
+
+        if not hasattr(data, "shape"):
+            data = np.asanyarray(data)
+
+        # Ensure that the shape of the provided data is the expected
+        # shape of the resultant resolved cube.
+        if data.shape != expected_shape:
+            emsg = (
+                "Cannot resolve resultant cube, as the provided data must "
+                f"have shape {expected_shape}, got data shape {data.shape}."
+            )
+            raise ValueError(emsg)
+
+        if in_place:
+            result = self._tgt_cube
+
+            if result.shape != expected_shape:
                 emsg = (
-                    "Cannot resolve resultant cube, expected data with shape "
-                    f"{shape}, got {data.shape}."
+                    "Cannot resolve resultant cube in-place, as the "
+                    f"{self._tgt_cube_position} tgt cube {result.name()!r} "
+                    f"requires data with shape {result.shape}, got data "
+                    f"shape {data.shape}. Suggest not performing this "
+                    "operation in-place."
                 )
                 raise ValueError(emsg)
 
-            if in_place:
-                # Prepare in-place target cube for population with prepared content.
-                result = self._tgt_cube_clear()
-            else:
-                # Create the resultant resolved cube.
-                result = Cube(data)
+            # Prepare target cube for in-place population with the prepared
+            # metadata content and the provided data.
+            self._tgt_cube_prepare(data)
+        else:
+            # Create the resultant resolved cube with provided data.
+            result = Cube(data)
 
-            # Add the combined cube metadata from both the candidate cubes.
-            result.metadata = self.lhs_cube.metadata.combine(
-                self.rhs_cube.metadata
-            )
+        # Add the combined cube metadata from both the candidate cubes.
+        result.metadata = self.lhs_cube.metadata.combine(
+            self.rhs_cube.metadata
+        )
 
-            # Add the prepared dim coordinates.
-            for item in self.prepared_category.items_dim:
-                coord = item.container(item.points, bounds=item.bounds)
-                coord.metadata = item.metadata.combined
-                result.add_dim_coord(coord, item.dims)
+        # Add the prepared dim coordinates.
+        for item in self.prepared_category.items_dim:
+            coord = item.container(item.points, bounds=item.bounds)
+            coord.metadata = item.metadata.combined
+            result.add_dim_coord(coord, item.dims)
 
-            # Add the prepared aux and scalar coordinates.
-            prepared_aux_coords = (
-                self.prepared_category.items_aux
-                + self.prepared_category.items_scalar
-            )
-            for item in prepared_aux_coords:
-                coord = item.container(item.points, bounds=item.bounds)
-                coord.metadata = item.metadata.combined
-                try:
-                    result.add_aux_coord(coord, item.dims)
-                except ValueError as err:
-                    scalar = dims = ""
-                    if item.dims:
-                        plural = "s" if len(item.dims) > 1 else ""
-                        dims = f" with tgt dim{plural} {item.dims}"
-                    else:
-                        scalar = "scalar "
-                    dmsg = (
-                        f"ignoring prepared {scalar}coordinate "
-                        f"{coord.metadata}{dims}, got {err!r}"
-                    )
-                    logger.debug(dmsg)
+        # Add the prepared aux and scalar coordinates.
+        prepared_aux_coords = (
+            self.prepared_category.items_aux
+            + self.prepared_category.items_scalar
+        )
+        for item in prepared_aux_coords:
+            coord = item.container(item.points, bounds=item.bounds)
+            coord.metadata = item.metadata.combined
+            try:
+                result.add_aux_coord(coord, item.dims)
+            except ValueError as err:
+                scalar = dims = ""
+                if item.dims:
+                    plural = "s" if len(item.dims) > 1 else ""
+                    dims = f" with tgt dim{plural} {item.dims}"
+                else:
+                    scalar = "scalar "
+                dmsg = (
+                    f"ignoring prepared {scalar}coordinate "
+                    f"{coord.metadata}{dims}, got {err!r}"
+                )
+                logger.debug(dmsg)
 
-            # Add the prepared aux factories.
-            for prepared_factory in self.prepared_factories:
-                dependencies = dict()
-                for (
-                    dependency_name,
-                    prepared_metadata,
-                ) in prepared_factory.dependencies.items():
-                    coord = result.coord(prepared_metadata.combined)
-                    dependencies[dependency_name] = coord
-                factory = prepared_factory.container(**dependencies)
-                result.add_aux_factory(factory)
+        # Add the prepared aux factories.
+        for prepared_factory in self.prepared_factories:
+            dependencies = dict()
+            for (
+                dependency_name,
+                prepared_metadata,
+            ) in prepared_factory.dependencies.items():
+                coord = result.coord(prepared_metadata.combined)
+                dependencies[dependency_name] = coord
+            factory = prepared_factory.container(**dependencies)
+            result.add_aux_factory(factory)
 
         return result
 
     @property
     def mapped(self):
+        """
+        Returns the state of whether all src cube dimensions have been
+        associated with relevant tgt cube dimensions.
+
+        """
         return self._src_cube.ndim == len(self.mapping)
 
     @property
     def shape(self):
-        """The shape of the resultant resolved cube."""
-        return self._broadcast_shape
+        """Returns the shape of the resultant resolved cube."""
+        return getattr(self, "_broadcast_shape", None)
