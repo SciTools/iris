@@ -10,6 +10,7 @@ Basic mathematical and statistical operations.
 
 from functools import lru_cache
 import inspect
+import logging
 import math
 import operator
 import warnings
@@ -26,6 +27,10 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util
+
+
+# Configure the logger.
+logger = logging.getLogger(__name__)
 
 
 @lru_cache(maxsize=128, typed=True)
@@ -691,6 +696,13 @@ def apply_ufunc(
         raise ValueError(emsg)
 
     if ufunc.nin == 1:
+        if other is not None:
+            dmsg = (
+                "ignoring surplus 'other' argument to apply_ufunc, "
+                f"provided ufunc {ufunc_name!r} only requires 1 input"
+            )
+            logger.debug(dmsg)
+
         new_dtype = _output_dtype(ufunc, cube.dtype, in_place=in_place)
 
         new_cube = _math_op_common(
@@ -719,7 +731,7 @@ def apply_ufunc(
             in_place=in_place,
         )
     else:
-        emsg = f"{ufunc_name}.nin must be 1 or 2."
+        emsg = f"Provided ufunc '{ufunc_name}.nin' must be 1 or 2."
         raise ValueError(emsg)
 
     new_cube.rename(new_name)
@@ -945,12 +957,12 @@ class IFunc:
             are given as positional arguments. Should return another
             data array, with the same shape as the first array.
 
-            Can also have keyword arguments.
+            May also have keyword arguments.
 
         * units_func:
 
-            Function to calculate the unit of the resulting cube.
-            Should take the cube(s) as input and return
+            Function to calculate the units of the resulting cube.
+            Should take the cube/s as input and return
             an instance of :class:`cf_units.Unit`.
 
         Returns:
@@ -988,6 +1000,22 @@ class IFunc:
             cs_cube = cs_ifunc(cube, axis=1)
         """
 
+        self._data_func_name = getattr(
+            data_func, "__name__", "data_func argument passed to IFunc"
+        )
+
+        if not callable(data_func):
+            emsg = f"{self._data_func_name} is not callable."
+            raise TypeError(emsg)
+
+        self._unit_func_name = getattr(
+            units_func, "__name__", "units_func argument passed to IFunc"
+        )
+
+        if not callable(units_func):
+            emsg = f"{self._unit_func_name} is not callable."
+            raise TypeError(emsg)
+
         if hasattr(data_func, "nin"):
             self.nin = data_func.nin
         else:
@@ -1003,39 +1031,38 @@ class IFunc:
             self.nin = len(args)
 
         if self.nin not in [1, 2]:
-            msg = (
-                "{} requires {} input data arrays, the IFunc class "
-                "currently only supports functions requiring 1 or two "
-                "data arrays as input."
+            emsg = (
+                f"{self._data_func_name} requires {self.nin} input data "
+                "arrays, the IFunc class currently only supports functions "
+                "requiring 1 or 2 data arrays as input."
             )
-            raise ValueError(msg.format(data_func.__name__, self.nin))
+            raise ValueError(emsg)
 
         if hasattr(data_func, "nout"):
             if data_func.nout != 1:
-                msg = (
-                    "{} returns {} objects, the IFunc class currently "
-                    "only supports functions returning a single object."
+                emsg = (
+                    f"{self._data_func_name} returns {data_func.nout} objects, "
+                    "the IFunc class currently only supports functions "
+                    "returning a single object."
                 )
-                raise ValueError(
-                    msg.format(data_func.__name__, data_func.nout)
-                )
+                raise ValueError(emsg)
 
         self.data_func = data_func
-
         self.units_func = units_func
 
     def __repr__(self):
-        return "iris.analysis.maths.IFunc({}, {})".format(
-            self.data_func.__name__, self.units_func.__name__
+        result = (
+            f"iris.analysis.maths.IFunc({self._data_func_name}, "
+            f"{self._unit_func_name})"
         )
+        return result
 
     def __str__(self):
-        return (
-            "IFunc constructed from the data function {} "
-            "and the units function {}".format(
-                self.data_func.__name__, self.units_func.__name__
-            )
+        result = (
+            f"IFunc constructed from the data function {self._data_func_name} "
+            f"and the units function {self._unit_func_name}"
         )
+        return result
 
     def __call__(
         self,
@@ -1085,11 +1112,27 @@ class IFunc:
 
             return self.data_func(*args, **kwargs_combined)
 
-        if self.nin == 2:
-            if other is None:
-                raise ValueError(
-                    self.data_func.__name__ + " requires two arguments"
+        if self.nin == 1:
+            if other is not None:
+                dmsg = (
+                    "ignoring surplus 'other' argument to IFunc.__call__, "
+                    f"provided data_func {self._data_func_name!r} only requires "
+                    "1 input"
                 )
+                logger.debug(dmsg)
+
+            new_unit = self.units_func(cube)
+
+            new_cube = _math_op_common(
+                cube, wrap_data_func, new_unit, in_place=in_place
+            )
+        else:
+            if other is None:
+                emsg = (
+                    f"{self._data_func_name} requires two arguments, another "
+                    "cube must also be passed to IFunc.__call__."
+                )
+                raise ValueError(emsg)
 
             new_unit = self.units_func(cube, other)
 
@@ -1102,21 +1145,6 @@ class IFunc:
                 dim=dim,
                 in_place=in_place,
             )
-
-        elif self.nin == 1:
-            if other is not None:
-                raise ValueError(
-                    self.data_func.__name__ + " requires one argument"
-                )
-
-            new_unit = self.units_func(cube)
-
-            new_cube = _math_op_common(
-                cube, wrap_data_func, new_unit, in_place=in_place
-            )
-
-        else:
-            raise ValueError("self.nin should be 1 or 2.")
 
         if new_name is not None:
             new_cube.rename(new_name)
