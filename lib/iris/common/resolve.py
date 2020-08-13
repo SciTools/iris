@@ -35,16 +35,16 @@ _AuxCoverage = namedtuple(
     ],
 )
 
+_CategoryItems = namedtuple(
+    "CategoryItems", ["items_dim", "items_aux", "items_scalar"],
+)
+
 _DimCoverage = namedtuple(
     "DimCoverage",
     ["cube", "metadata", "coords", "dims_common", "dims_local", "dims_free"],
 )
 
 _Item = namedtuple("Item", ["metadata", "coord", "dims"])
-
-_CategoryItems = namedtuple(
-    "CategoryItems", ["items_dim", "items_aux", "items_scalar"],
-)
 
 _PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
 
@@ -531,12 +531,18 @@ class Resolve:
         self.rhs_cube_category = None
 
         # Categorised dim, aux and scalar coordinate items local to LHS cube only.
-        self.lhs_cube_category_local = None
+        self.lhs_cube_category_local = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
         # Categorised dim, aux and scalar coordinate items local to RHS cube only.
-        self.rhs_cube_category_local = None
+        self.rhs_cube_category_local = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
         # Categorised dim, aux and scalar coordinate items common to both
         # LHS cube and RHS cube.
-        self.category_common = None
+        self.category_common = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
 
         # Analysis of dim coordinates spanning LHS cube.
         self.lhs_cube_dim_coverage = None
@@ -753,55 +759,92 @@ class Resolve:
     def _metadata_resolve(self):
         """
         Categorise the coordinate metadata of the cubes into three distinct
-        groups; metadata from coordinates only available in 'cube1', metadata
-        from coordinates only available in 'cube2', and metadata from
-        coordinates common to both cubes.
+        groups; metadata from coordinates only available (local) on the LHS
+        cube, metadata from coordinates only available (local) on the RHS
+        cube, and metadata from coordinates common to both the LHS and RHS
+        cubes.
 
         This is only applicable to coordinates that are members of the
         'aux_coords' or 'dim_coords' of the participating cubes.
 
-        .. note::
-            Coordinate metadata specific to each cube, but with a shared common
-            name will be removed, as the difference in metadata is in conflict
-            and cannot be resolved.
-
         """
 
-        # Initialise the local and common category state.
-        self.lhs_cube_category_local = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-        self.rhs_cube_category_local = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-        self.category_common = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-
-        # Determine the cube dim, aux and scalar coordinate items.
+        # Determine the cube dim, aux and scalar coordinate items
+        # for each individual cube.
         self.lhs_cube_category = self._categorise_items(self.lhs_cube)
         self.rhs_cube_category = self._categorise_items(self.rhs_cube)
 
-        # Map RHS cube to LHS cube, or smaller to larger ranked cube.
-        if self.map_rhs_to_lhs:
-            args = (
-                self.lhs_cube_category,  # input
-                self.rhs_cube_category,  # input
-                self.lhs_cube_category_local,  # output
-                self.rhs_cube_category_local,  # output
-                self.category_common,  # output
-            )
-        else:
-            args = (
-                self.rhs_cube_category,  # input
-                self.lhs_cube_category,  # input
-                self.rhs_cube_category_local,  # output
-                self.lhs_cube_category_local,  # output
-                self.category_common,  # output
-            )
+        def _categorise(
+            lhs_items,
+            rhs_items,
+            lhs_local_items,
+            rhs_local_items,
+            common_items,
+        ):
+            rhs_items_metadata = [item.metadata for item in rhs_items]
+            # Track common metadata here as a temporary convenience.
+            common_metadata = []
 
-        # Resolve local and common category items.
-        self._resolve_category_items(*args)
+            # Determine items local to the lhs, and shared items
+            # common to both lhs and rhs.
+            for item in lhs_items:
+                metadata = item.metadata
+                if metadata in rhs_items_metadata:
+                    # The metadata is common between lhs and rhs.
+                    if metadata not in common_metadata:
+                        common_items.append(item)
+                        common_metadata.append(metadata)
+                else:
+                    # The metadata is local to the lhs.
+                    lhs_local_items.append(item)
+
+            # Determine items local to the rhs.
+            for item in rhs_items:
+                if item.metadata not in common_metadata:
+                    rhs_local_items.append(item)
+
+        # Determine local and common dim category items.
+        _categorise(
+            self.lhs_cube_category.items_dim,  # input
+            self.rhs_cube_category.items_dim,  # input
+            self.lhs_cube_category_local.items_dim,  # output
+            self.rhs_cube_category_local.items_dim,  # output
+            self.category_common.items_dim,  # output
+        )
+
+        # Determine local and common aux category items.
+        _categorise(
+            self.lhs_cube_category.items_aux,  # input
+            self.rhs_cube_category.items_aux,  # input
+            self.lhs_cube_category_local.items_aux,  # output
+            self.rhs_cube_category_local.items_aux,  # output
+            self.category_common.items_aux,  # output
+        )
+
+        # Determine local and common scalar category items.
+        _categorise(
+            self.lhs_cube_category.items_scalar,  # input
+            self.rhs_cube_category.items_scalar,  # input
+            self.lhs_cube_category_local.items_scalar,  # output
+            self.rhs_cube_category_local.items_scalar,  # output
+            self.category_common.items_scalar,  # output
+        )
+
+        # Sort the resultant categories by metadata name for consistency,
+        # in-place.
+        categories = (
+            self.lhs_cube_category,
+            self.rhs_cube_category,
+            self.lhs_cube_category_local,
+            self.rhs_cube_category_local,
+            self.category_common,
+        )
+        key_func = lambda item: item.metadata.name()
+
+        for category in categories:
+            category.items_dim.sort(key=key_func)
+            category.items_aux.sort(key=key_func)
+            category.items_scalar.sort(key=key_func)
 
     def _prepare_common_aux_payload(
         self,
@@ -1304,78 +1347,6 @@ class Resolve:
                     raise ValueError(emsg)
 
         return points, bounds
-
-    @staticmethod
-    def _resolve_category_items(
-        src_category,
-        tgt_category,
-        src_category_local,
-        tgt_category_local,
-        category_common,
-    ):
-        def _categorise(
-            src_items,
-            tgt_items,
-            src_local_items,
-            tgt_local_items,
-            common_items,
-        ):
-            tgt_items_metadata = [item.metadata for item in tgt_items]
-            # Track common metadata here as a temporary convenience.
-            common_metadata = []
-
-            # Determine items local to the src, and shared items
-            # common to both src and tgt.
-            for item in src_items:
-                metadata = item.metadata
-                if metadata in tgt_items_metadata:
-                    # The metadata is common between src and tgt.
-                    if metadata not in common_metadata:
-                        common_items.append(item)
-                        common_metadata.append(metadata)
-                else:
-                    # The metadata is local to the src.
-                    src_local_items.append(item)
-
-            # Determine items local to the tgt.
-            for item in tgt_items:
-                if item.metadata not in common_metadata:
-                    tgt_local_items.append(item)
-
-        # Resolve local and common dim category items.
-        _categorise(
-            src_category.items_dim,  # input
-            tgt_category.items_dim,  # input
-            src_category_local.items_dim,  # output
-            tgt_category_local.items_dim,  # output
-            category_common.items_dim,  # output
-        )
-
-        # Resolve local and common aux category items.
-        _categorise(
-            src_category.items_aux,  # input
-            tgt_category.items_aux,  # input
-            src_category_local.items_aux,  # output
-            tgt_category_local.items_aux,  # output
-            category_common.items_aux,  # output
-        )
-
-        # Resolve local and common scalar category items.
-        _categorise(
-            src_category.items_scalar,  # input
-            tgt_category.items_scalar,  # input
-            src_category_local.items_scalar,  # output
-            tgt_category_local.items_scalar,  # output
-            category_common.items_scalar,  # output
-        )
-
-        # Sort the result categories by metadata name for consistency.
-        results = (src_category_local, tgt_category_local, category_common)
-        key_func = lambda item: item.metadata.name()
-        for result in results:
-            result.items_dim.sort(key=key_func)
-            result.items_aux.sort(key=key_func)
-            result.items_scalar.sort(key=key_func)
 
     @property
     def _src_cube(self):
