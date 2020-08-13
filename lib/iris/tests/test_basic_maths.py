@@ -348,10 +348,13 @@ class TestBasicMaths(tests.IrisTest):
 
         my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units ** 2)
 
-        # should fail because giving 2 arguments to an ifunc that expects
-        # only one
-        with self.assertRaises(ValueError):
-            my_ifunc(a, a)
+        # should now NOT fail because giving 2 arguments to an ifunc that
+        # expects only one will now ignore the surplus argument and raise
+        # a logging message instead, and go on to perform the operation.
+        emsg = "ValueError not raised"
+        with self.assertRaisesRegex(AssertionError, emsg):
+            with self.assertRaises(ValueError):
+                my_ifunc(a, a)
 
         my_ifunc = iris.analysis.maths.IFunc(
             np.multiply, lambda a: cf_units.Unit("1")
