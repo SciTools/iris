@@ -235,10 +235,14 @@ clip_string = " ".join(
     ]
 )
 
-# Scale the clip path.
-scale_func = lambda match: "{:6f}".format(float(match.group(0)) * clip_scaling)
-clip_string = re_sub(r"\d*\.\d*", scale_func, clip_string)
 
+# Scale the clip path.
+def scale_func(match):
+    scaled = float(match.group(0)) * clip_scaling
+    return "{:6f}".format(scaled)
+
+
+clip_string = re_sub(r"\d*\.\d*", scale_func, clip_string)
 iris_clip = ET.Element("clipPath")
 iris_clip.append(ET.Element("path", attrib={"d": clip_string}))
 defs_dict["iris_clip"] = iris_clip
