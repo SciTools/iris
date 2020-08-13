@@ -118,7 +118,8 @@ script:
       python -m iris.tests.runner --default-tests --system-tests;
     fi
 
-  - if [[ "${TEST_TARGET}" == 'gallery' ]]; then
+  - >
+   if [[ "${TEST_TARGET}" == 'gallery' ]]; then
       python -m iris.tests.runner --gallery-tests;
     fi
 
