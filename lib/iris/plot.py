@@ -168,7 +168,7 @@ def _get_plot_defn(cube, mode, ndims=2):
                 if isinstance(coord, iris.coords.DimCoord)
             ]
             if aux_coords:
-                aux_coords.sort(key=lambda coord: coord._as_defn())
+                aux_coords.sort(key=lambda coord: coord.metadata)
                 coords[dim] = aux_coords[0]
 
     # If plotting a 2 dimensional plot, check for 2d coordinates
@@ -183,7 +183,7 @@ def _get_plot_defn(cube, mode, ndims=2):
                 coord for coord in two_dim_coords if coord.ndim == 2
             ]
             if len(two_dim_coords) >= 2:
-                two_dim_coords.sort(key=lambda coord: coord._as_defn())
+                two_dim_coords.sort(key=lambda coord: coord.metadata)
                 coords = two_dim_coords[:2]
 
     if mode == iris.coords.POINT_MODE:

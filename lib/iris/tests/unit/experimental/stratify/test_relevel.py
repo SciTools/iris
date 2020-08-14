@@ -79,7 +79,10 @@ class Test(tests.IrisTest):
 
     def test_coord_input(self):
         source = AuxCoord(self.src_levels.data)
-        source.metadata = self.src_levels.metadata
+        metadata = self.src_levels.metadata._asdict()
+        metadata["coord_system"] = None
+        metadata["climatological"] = None
+        source.metadata = metadata
 
         for axis in self.axes:
             result = relevel(self.cube, source, [0, 12, 13], axis=axis)

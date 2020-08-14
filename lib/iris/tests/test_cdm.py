@@ -1022,14 +1022,6 @@ class TestCubeAPI(TestCube2d):
                 (),
             )
         with self.assertRaises(TypeError):
-            self.t.metadata = {
-                "standard_name": "air_pressure",
-                "long_name": "foo",
-                "var_name": "bar",
-                "units": "",
-                "attributes": {"random": "12"},
-            }
-        with self.assertRaises(TypeError):
 
             class Metadata:
                 pass

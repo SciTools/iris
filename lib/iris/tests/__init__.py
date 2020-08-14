@@ -21,6 +21,7 @@ graphical test results.
 
 import codecs
 import collections
+from collections.abc import Mapping
 import contextlib
 import datetime
 import difflib
@@ -1003,6 +1004,78 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertEqual(result.shape, shape)
         self.assertArrayAllClose(result.data.mean(), mean, rtol=rtol)
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
+
+    def assertDictEqual(self, lhs, rhs, msg=None):
+        """
+        This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
+        in order to cope with dictionary comparison where the value of a key may
+        be a numpy array.
+
+        """
+        if not isinstance(lhs, Mapping):
+            emsg = (
+                f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
+            )
+            self.fail(emsg)
+
+        if not isinstance(rhs, Mapping):
+            emsg = (
+                f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
+            )
+            self.fail(emsg)
+
+        if set(lhs.keys()) != set(rhs.keys()):
+            emsg = f"{lhs!r} != {rhs!r}."
+            self.fail(emsg)
+
+        for key in lhs.keys():
+            lvalue, rvalue = lhs[key], rhs[key]
+
+            if ma.isMaskedArray(lvalue) or ma.isMaskedArray(rvalue):
+                if not ma.isMaskedArray(lvalue):
+                    emsg = (
+                        f"Dictionary key {key!r} values are not equal, "
+                        f"the LHS value has type {type(lvalue)} and "
+                        f"the RHS value has type {ma.core.MaskedArray}."
+                    )
+                    raise AssertionError(emsg)
+
+                if not ma.isMaskedArray(rvalue):
+                    emsg = (
+                        f"Dictionary key {key!r} values are not equal, "
+                        f"the LHS value has type {ma.core.MaskedArray} and "
+                        f"the RHS value has type {type(lvalue)}."
+                    )
+                    raise AssertionError(emsg)
+
+                self.assertMaskedArrayEqual(lvalue, rvalue)
+            elif isinstance(lvalue, np.ndarray) or isinstance(
+                rvalue, np.ndarray
+            ):
+                if not isinstance(lvalue, np.ndarray):
+                    emsg = (
+                        f"Dictionary key {key!r} values are not equal, "
+                        f"the LHS value has type {type(lvalue)} and "
+                        f"the RHS value has type {np.ndarray}."
+                    )
+                    raise AssertionError(emsg)
+
+                if not isinstance(rvalue, np.ndarray):
+                    emsg = (
+                        f"Dictionary key {key!r} values are not equal, "
+                        f"the LHS value has type {np.ndarray} and "
+                        f"the RHS value has type {type(rvalue)}."
+                    )
+                    raise AssertionError(emsg)
+
+                self.assertArrayEqual(lvalue, rvalue)
+            else:
+                if lvalue != rvalue:
+                    emsg = (
+                        f"Dictionary key {key!r} values are not equal, "
+                        f"{lvalue!r} != {rvalue!r}."
+                    )
+                    raise AssertionError(emsg)
 
 
 # An environment variable controls whether test timings are output.

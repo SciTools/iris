@@ -32,8 +32,11 @@ defined by :mod:`ConfigParser`.
 
 import configparser
 import contextlib
+import logging.config
 import os.path
+import pathlib
 import warnings
+import yaml
 
 
 # Returns simple string options
@@ -81,6 +84,14 @@ CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
 config = configparser.ConfigParser()
 config.read([os.path.join(CONFIG_PATH, "site.cfg")])
 
+# Configure logging.
+fname_logging = pathlib.Path(CONFIG_PATH) / "logging.yaml"
+if not fname_logging.exists():
+    emsg = f"Logging configuration file '{fname_logging!s}' does not exist."
+    raise FileNotFoundError(emsg)
+with open(fname_logging) as fi:
+    logging.config.dictConfig(yaml.safe_load(fi))
+del fname_logging
 
 ##################
 # Resource options
