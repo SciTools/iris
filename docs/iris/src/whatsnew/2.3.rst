@@ -243,21 +243,19 @@ Documentation
 =============
 
 * Adopted a
-  `new colour logo for Iris <../_static/Iris7_1_trim_full.png>`_
+  `new colour logo for Iris <https://github.com/SciTools/iris/blob/master/docs/iris/src/_static/Iris7_1_trim_100.png>`_
 
 * Added a gallery example showing how to concatenate NEMO ocean model data,
   see :ref:`sphx_glr_generated_gallery_oceanography_plot_load_nemo.py`.
 
-* Added an example in the
-  `Loading Iris Cubes: Constraining on Time <../userguide/loading_iris_cubes
-  .html#constraining-on-time>`_
-  Userguide section, demonstrating how to load data within a specified date
+* Added an example for loading Iris cubes for :ref:`using-time-constraints`
+  in the user guide, demonstrating how to load data within a specified date
   range.
 
 * Added notes to the :func:`iris.load` documentation, and the userguide
-  `Loading Iris Cubes <../userguide/loading_iris_cubes.html>`_
-  chapter, emphasizing that the *order* of the cubes returned by an iris load
-  operation is effectively random and unstable, and should not be relied on.
+  :ref:`loading_iris_cubes` chapter, emphasizing that the *order* of the cubes
+  returned by an iris load operation is effectively random and unstable, and
+  should not be relied on.
 
 * Fixed references in the documentation of
   :func:`iris.util.find_discontiguities` to a nonexistent
