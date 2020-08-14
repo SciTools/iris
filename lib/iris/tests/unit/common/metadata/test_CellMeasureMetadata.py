@@ -204,6 +204,37 @@ class Test___eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
 
+class Test___lt__(tests.IrisTest):
+    def setUp(self):
+        self.cls = CellMeasureMetadata
+        self.one = self.cls(1, 1, 1, 1, 1, 1)
+        self.two = self.cls(1, 1, 1, 2, 1, 1)
+        self.none = self.cls(1, 1, 1, None, 1, 1)
+        self.attributes = self.cls(1, 1, 1, 1, 10, 1)
+
+    def test__ascending_lt(self):
+        result = self.one < self.two
+        self.assertTrue(result)
+
+    def test__descending_lt(self):
+        result = self.two < self.one
+        self.assertFalse(result)
+
+    def test__none_rhs_operand(self):
+        result = self.one < self.none
+        self.assertFalse(result)
+
+    def test__none_lhs_operand(self):
+        result = self.none < self.one
+        self.assertTrue(result)
+
+    def test__ignore_attributes(self):
+        result = self.one < self.attributes
+        self.assertFalse(result)
+        result = self.attributes < self.one
+        self.assertFalse(result)
+
+
 class Test_combine(tests.IrisTest):
     def setUp(self):
         self.values = dict(

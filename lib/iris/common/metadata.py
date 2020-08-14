@@ -189,26 +189,15 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Support Python2 behaviour for a "<" operation involving a
         # "NoneType" operand.
         #
-        if not isinstance(other, BaseMetadata):
-            return NotImplemented
-
-        if (
-            self.__class__ is CoordMetadata
-            and other.__class__ is DimCoordMetadata
-        ) or (
-            self.__class__ is DimCoordMetadata
-            and other.__class__ is CoordMetadata
-        ):
-            other = self.from_metadata(other)
-
         if not isinstance(other, self.__class__):
             return NotImplemented
 
         def _sort_key(item):
             keys = []
             for field in item._fields:
-                value = getattr(item, field)
-                keys.extend((value is not None, value))
+                if field != "attributes":
+                    value = getattr(item, field)
+                    keys.extend((value is not None, value))
             return tuple(keys)
 
         return _sort_key(self) < _sort_key(other)
@@ -888,6 +877,30 @@ class CoordMetadata(BaseMetadata):
             other = self.from_metadata(other)
         return super().__eq__(other)
 
+    def __lt__(self, other):
+        #
+        # Support Python2 behaviour for a "<" operation involving a
+        # "NoneType" operand.
+        #
+        if not isinstance(other, BaseMetadata):
+            return NotImplemented
+
+        if other.__class__ is DimCoordMetadata:
+            other = self.from_metadata(other)
+
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        def _sort_key(item):
+            keys = []
+            for field in item._fields:
+                if field not in ("attributes", "coord_system"):
+                    value = getattr(item, field)
+                    keys.extend((value is not None, value))
+            return tuple(keys)
+
+        return _sort_key(self) < _sort_key(other)
+
     def _combine_lenient(self, other):
         """
         Perform lenient combination of metadata members for coordinates.
@@ -1022,6 +1035,24 @@ class CubeMetadata(BaseMetadata):
     @lenient_service
     def __eq__(self, other):
         return super().__eq__(other)
+
+    def __lt__(self, other):
+        #
+        # Support Python2 behaviour for a "<" operation involving a
+        # "NoneType" operand.
+        #
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        def _sort_key(item):
+            keys = []
+            for field in item._fields:
+                if field not in ("attributes", "cell_methods"):
+                    value = getattr(item, field)
+                    keys.extend((value is not None, value))
+            return tuple(keys)
+
+        return _sort_key(self) < _sort_key(other)
 
     def _combine_lenient(self, other):
         """
@@ -1184,6 +1215,30 @@ class DimCoordMetadata(CoordMetadata):
         if hasattr(other, "__class__") and other.__class__ is CoordMetadata:
             other = self.from_metadata(other)
         return super().__eq__(other)
+
+    def __lt__(self, other):
+        #
+        # Support Python2 behaviour for a "<" operation involving a
+        # "NoneType" operand.
+        #
+        if not isinstance(other, BaseMetadata):
+            return NotImplemented
+
+        if other.__class__ is CoordMetadata:
+            other = self.from_metadata(other)
+
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        def _sort_key(item):
+            keys = []
+            for field in item._fields:
+                if field not in ("attributes", "coord_system"):
+                    value = getattr(item, field)
+                    keys.extend((value is not None, value))
+            return tuple(keys)
+
+        return _sort_key(self) < _sort_key(other)
 
     @wraps(CoordMetadata._combine_lenient, assigned=("__doc__",), updated=())
     def _combine_lenient(self, other):

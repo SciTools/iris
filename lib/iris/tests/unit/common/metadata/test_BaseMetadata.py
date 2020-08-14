@@ -129,8 +129,9 @@ class Test___lt__(tests.IrisTest):
     def setUp(self):
         self.cls = BaseMetadata
         self.one = self.cls(1, 1, 1, 1, 1)
-        self.two = self.cls(1, 1, 1, 1, 2)
-        self.none = self.cls(1, 1, 1, 1, None)
+        self.two = self.cls(1, 1, 1, 2, 1)
+        self.none = self.cls(1, 1, 1, None, 1)
+        self.attributes = self.cls(1, 1, 1, 1, 10)
 
     def test__ascending_lt(self):
         result = self.one < self.two
@@ -147,6 +148,12 @@ class Test___lt__(tests.IrisTest):
     def test__none_lhs_operand(self):
         result = self.none < self.one
         self.assertTrue(result)
+
+    def test__ignore_attributes(self):
+        result = self.one < self.attributes
+        self.assertFalse(result)
+        result = self.attributes < self.one
+        self.assertFalse(result)
 
 
 class Test___ne__(tests.IrisTest):

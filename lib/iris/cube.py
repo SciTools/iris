@@ -1252,7 +1252,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if coord_ is not coord
         ]
         for aux_factory in self.aux_factories:
-            if coord._as_defn() == aux_factory._as_defn():
+            if coord.metadata == aux_factory.metadata:
                 self.remove_aux_factory(aux_factory)
 
     def remove_coord(self, coord):

@@ -194,7 +194,7 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"],)):
             The new class instance.
 
         """
-        defn = ancil._as_defn()
+        defn = ancil.metadata
         metadata = super().__new__(cls, defn, dims)
         return metadata
 
@@ -422,7 +422,7 @@ class _CubeSignature:
                 self.scalar_coords.append(coord)
 
         def meta_key_func(dm):
-            return (dm._as_defn(), dm.cube_dims(cube))
+            return (dm.metadata, dm.cube_dims(cube))
 
         for cm in sorted(cube.cell_measures(), key=meta_key_func):
             dims = cube.cell_measure_dims(cm)
