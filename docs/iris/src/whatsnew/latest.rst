@@ -13,8 +13,8 @@ This document explains the changes made to Iris for this release
 Features
 ========
 
-* The :class:`~iris.fileformats.nimrod` provides richer meta-data translation
-  when loading Nimrod-format data into cubes. This covers most known 
+* The :mod:`~iris.fileformats.nimrod` module provides richer meta-data translation
+  when loading ``Nimrod`` data into cubes. This covers most known
   operational use-cases.
 
 * Statistical operations :meth:`iris.cube.Cube.collapsed`,
@@ -23,11 +23,11 @@ Features
   cube.  Now, a :class:`iris.coord.CellMeasure` will only be removed if it is 
   associated with an axis over which the statistic is being run.
 
-* Supporting Iris for both Python2 and Python3 resulted in pinning our 
-  dependency on matplotlib at v2.x. Now that Python2 support has been dropped, 
-  Iris is free to use the latest version of matplotlib.
+* Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
+  dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
+  been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
  
-* CF Ancillary Variables are now supported in cubes.
+* `CF Ancillary Data`_ variables are now supported.
 
 
 Bugs Fixed
@@ -36,49 +36,50 @@ Bugs Fixed
 * The method :meth:`~iris.Cube.cube.remove_coord` would fail to remove derived
   coordinates, will now remove derived coordinates by removing aux_factories.
 
-* The `__iter__()` method in class:`iris.cube.Cube` was set to `None`.
-  `TypeError` is still raised if a `Cube` is iterated over but
-  `isinstance(cube, collections.Iterable)` now behaves as expected.
+* The ``__iter__()`` method in :class:`~iris.cube.Cube` was set to ``None``.
+  ``TypeError`` is still raised if a :class:`~iris.cube.Cube` is iterated over
+  but ``isinstance(cube, collections.Iterable)`` now behaves as expected.
 
 * Concatenating cubes along an axis shared by cell measures would cause 
   concatenation to inappropriately fail.  These cell measures are now 
   concatenated together in the resulting cube.
 
 * Copying a cube would previously ignore any attached 
-  class:`iris.coords.CellMeasure`.  These are now copied over.
+  :class:`~iris.coords.CellMeasure`.  These are now copied over.
 
-* A :class:`iris.coords.CellMeasure` requires a string ``measure`` attribute 
+* A :class:`~iris.coords.CellMeasure` requires a string ``measure`` attribute
   to be defined, which can only have a value of ``area`` or ``volume``. 
   Previously, the ``measure`` was provided as a keyword argument to
   :class:`~iris.coords.CellMeasure` with an default value of ``None``, which 
-  caused a ``TypeError`` when no ``measure`` was provided. The default value 
+  caused a ``TypeError`` when no ``measure`` was provided.  The default value
   of ``area`` is now used.
 
 
 Incompatible Changes
 ====================
 
-* The method :meth:`~iris.cube.CubeList.extract_strict`, and the 'strict'
+* The method :meth:`~iris.cube.CubeList.extract_strict`, and the ``strict``
   keyword to :meth:`~iris.cube.CubeList.extract` method have been removed, and
   are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube` and
   :meth:`~iris.cube.CubeList.extract_cubes`.
   The new routines perform the same operation, but in a style more like other
-  Iris functions such as :meth:`iris.load_cube` and :meth:`iris.load_cubes`.
-  Unlike 'strict extraction', the type of return value is now completely
-  consistent : :meth:`~iris.cube.CubeList.extract_cube` always returns a cube,
-  and :meth:`~iris.cube.CubeList.extract_cubes` always returns a CubeList of a
-  length equal to the number of constraints.
+  ``Iris`` functions such as :meth:`~iris.load_cube` and :meth:`~iris.load_cubes`.
+  Unlike ``strict`` extraction, the type of return value is now completely
+  consistent : :meth:`~iris.cube.CubeList.extract_cube` always returns a
+  :class:`~iris.cube.Cube`, and :meth:`~iris.cube.CubeList.extract_cubes`
+  always returns an :class:`iris.cube.CubeList` of a length equal to the
+  number of constraints.
 
-* The former function "iris.analysis.coord_comparison" has been removed.
+* The former function ``iris.analysis.coord_comparison`` has been removed.
 
-* The :func:`iris.experimental.equalise_cubes.equalise_attributes` function 
-  has been moved from the :mod:`iris.experimental` module into the 
-  :mod:`iris.util` module. Please use the :func:`iris.util.equalise_attributes`
+* The :func:`iris.experimental.equalise_cubes.equalise_attributes` function
+  has been moved from the :mod:`iris.experimental` module into the
+  :mod:`iris.util` module.  Please use the :func:`iris.util.equalise_attributes`
   function instead.
 
 * The :mod:`iris.experimental.concatenate` module has now been removed. In 
-  ``v1.6.0`` the experimental `concatenate` functionality was moved to the 
-  :meth:`iris.cube.CubeList.concatenate` method. Since then, calling the
+  ``v1.6.0`` the experimental ``concatenate`` functionality was moved to the
+  :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
   :func:`iris.experimental.concatenate.concatenate` function raised an 
   exception.
 
@@ -86,12 +87,12 @@ Incompatible Changes
 Deprecations
 ============
 
-* The deprecated :class:`iris.Future` flags `cell_date_time_objects`,
-  `netcdf_promote`, `netcdf_no_unlimited` and `clip_latitudes` have
+* The deprecated :class:`iris.Future` flags ``cell_date_time_objects``,
+  ``netcdf_promote``, ``netcdf_no_unlimited`` and ``clip_latitudes`` have
   been removed.
 
-* :attr:`iris.fileformats.pp.PPField.lbproc` is now an `int`. The
-  deprecated attributes `flag1`, `flag2` etc. have been removed from it.
+* :attr:`iris.fileformats.pp.PPField.lbproc` is now an ``int``. The
+  deprecated attributes ``flag1``, ``flag2`` etc. have been removed from it.
 
 
 Documentation
@@ -116,8 +117,10 @@ Documentation
   :issue:`2104` and :issue:`3451`.  Also updated the 
   :ref:`iris_development_releases_steps` to follow when making a release.
 
-* Enabled the pdf creation of the documentation on the `Read the Docs`_ service.
-  The pdf may be accessed by clicking on the version at the bottom of the side
-  bar, then selecting **pdf** from the downloads section.
+* Enabled the PDF creation of the documentation on the `Read the Docs`_ service.
+  The PDF may be accessed by clicking on the version at the bottom of the side
+  bar, then selecting ``PDF`` from the ``Downloads`` section.
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
+.. _matplotlib: https://matplotlib.org/
+.. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
