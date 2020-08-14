@@ -23,6 +23,7 @@ dependencies:
   - netcdf4
   - numpy>=1.14
   - scipy
+  - python-xxhash
 
 # Dependencies needed to run the iris tests
 #------------------------------------------
