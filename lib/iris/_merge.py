@@ -22,8 +22,9 @@ from iris._lazy_data import (
     is_lazy_data,
     multidim_lazy_stack,
 )
-import iris.cube
 import iris.coords
+from iris.common import CoordMetadata, CubeMetadata
+import iris.cube
 import iris.exceptions
 import iris.util
 
@@ -115,7 +116,7 @@ class _ScalarCoordPayload(
     Args:
 
     * defns:
-        A list of scalar coordinate definitions :class:`iris.coords.CoordDefn`
+        A list of scalar coordinate metadata :class:`iris.common.CoordMetadata`
         belonging to a :class:`iris.cube.Cube`.
 
     * values:
@@ -1478,9 +1479,7 @@ class ProtoCube:
                         )
                     else:
                         bounds = None
-                    kwargs = dict(
-                        zip(iris.coords.CoordDefn._fields, defns[name])
-                    )
+                    kwargs = dict(zip(CoordMetadata._fields, defns[name]))
                     kwargs.update(metadata[name].kwargs)
 
                     def name_in_independents():
@@ -1560,7 +1559,7 @@ class ProtoCube:
                     if bounds is not None:
                         bounds[index] = name_value.bound
 
-                kwargs = dict(zip(iris.coords.CoordDefn._fields, defns[name]))
+                kwargs = dict(zip(CoordMetadata._fields, defns[name]))
                 self._aux_templates.append(
                     _Template(dims, points, bounds, kwargs)
                 )
@@ -1594,7 +1593,7 @@ class ProtoCube:
             (deepcopy(coord), dims)
             for coord, dims in self._aux_coords_and_dims
         ]
-        kwargs = dict(zip(iris.cube.CubeMetadata._fields, signature.defn))
+        kwargs = dict(zip(CubeMetadata._fields, signature.defn))
 
         cms_and_dims = [
             (deepcopy(cm), dims) for cm, dims in self._cell_measures_and_dims
@@ -1794,7 +1793,7 @@ class ProtoCube:
 
         # Coordinate sort function.
         # NB. This makes use of two properties which don't end up in
-        # the CoordDefn used by scalar_defns: `coord.points.dtype` and
+        # the metadata used by scalar_defns: `coord.points.dtype` and
         # `type(coord)`.
         def key_func(coord):
             points_dtype = coord.dtype
@@ -1805,14 +1804,14 @@ class ProtoCube:
                 axis_dict.get(
                     iris.util.guess_coord_axis(coord), len(axis_dict) + 1
                 ),
-                coord._as_defn(),
+                coord.metadata,
             )
 
         # Order the coordinates by hints, axis, and definition.
         for coord in sorted(coords, key=key_func):
             if not cube.coord_dims(coord) and coord.shape == (1,):
                 # Extract the scalar coordinate data and metadata.
-                scalar_defns.append(coord._as_defn())
+                scalar_defns.append(coord.metadata)
                 # Because we know there's a single Cell in the
                 # coordinate, it's quicker to roll our own than use
                 # Coord.cell().
@@ -1844,14 +1843,14 @@ class ProtoCube:
 
         factory_defns = []
         for factory in sorted(
-            cube.aux_factories, key=lambda factory: factory._as_defn()
+            cube.aux_factories, key=lambda factory: factory.metadata
         ):
             dependency_defns = []
             dependencies = factory.dependencies
             for key in sorted(dependencies):
                 coord = dependencies[key]
                 if coord is not None:
-                    dependency_defns.append((key, coord._as_defn()))
+                    dependency_defns.append((key, coord.metadata))
             factory_defn = _FactoryDefn(type(factory), dependency_defns)
             factory_defns.append(factory_defn)
 

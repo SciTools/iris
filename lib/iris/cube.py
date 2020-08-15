@@ -9,7 +9,7 @@ Classes for representing multi-dimensional data with metadata.
 
 """
 
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 from collections.abc import (
     Iterable,
     Container,
@@ -29,56 +29,29 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._cube_coord_common import CFVariableMixin
 import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-
 import iris._merge
 import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
+from iris.common import (
+    CFVariableMixin,
+    CoordMetadata,
+    CubeMetadata,
+    DimCoordMetadata,
+    metadata_manager_factory,
+)
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
 
 
-__all__ = ["Cube", "CubeList", "CubeMetadata"]
-
-
-class CubeMetadata(
-    namedtuple(
-        "CubeMetadata",
-        [
-            "standard_name",
-            "long_name",
-            "var_name",
-            "units",
-            "attributes",
-            "cell_methods",
-        ],
-    )
-):
-    """
-    Represents the phenomenon metadata for a single :class:`Cube`.
-
-    """
-
-    __slots__ = ()
-
-    def name(self, default="unknown"):
-        """
-        Returns a human-readable name.
-
-        First it tries self.standard_name, then it tries the 'long_name'
-        attribute, then the 'var_name' attribute, before falling back to
-        the value of `default` (which itself defaults to 'unknown').
-
-        """
-        return self.standard_name or self.long_name or self.var_name or default
+__all__ = ["Cube", "CubeList"]
 
 
 # The XML namespace to use for CubeML documents
@@ -864,6 +837,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if isinstance(data, str):
             raise TypeError("Invalid data type: {!r}.".format(data))
 
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(CubeMetadata)
+
         # Initialise the cube data manager.
         self._data_manager = DataManager(data)
 
@@ -930,43 +906,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 self.add_ancillary_variable(ancillary_variable, dims)
 
     @property
-    def metadata(self):
+    def _names(self):
         """
-        An instance of :class:`CubeMetadata` describing the phenomenon.
-
-        This property can be updated with any of:
-         - another :class:`CubeMetadata` instance,
-         - a tuple/dict which can be used to make a :class:`CubeMetadata`,
-         - or any object providing the attributes exposed by
-           :class:`CubeMetadata`.
+        A tuple containing the value of each name participating in the identity
+        of a :class:`iris.cube.Cube`. This includes the standard name,
+        long name, NetCDF variable name, and the STASH from the attributes
+        dictionary.
 
         """
-        return CubeMetadata(
-            self.standard_name,
-            self.long_name,
-            self.var_name,
-            self.units,
-            self.attributes,
-            self.cell_methods,
-        )
-
-    @metadata.setter
-    def metadata(self, value):
-        try:
-            value = CubeMetadata(**value)
-        except TypeError:
-            try:
-                value = CubeMetadata(*value)
-            except TypeError:
-                missing_attrs = [
-                    field
-                    for field in CubeMetadata._fields
-                    if not hasattr(value, field)
-                ]
-                if missing_attrs:
-                    raise TypeError("Invalid/incomplete metadata")
-        for name in CubeMetadata._fields:
-            setattr(self, name, getattr(value, name))
+        return self._metadata_manager._names
 
     def is_compatible(self, other, ignore=None):
         """
@@ -1186,7 +1134,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         data_dims = self._check_multi_dim_metadata(cell_measure, data_dims)
         self._cell_measures_and_dims.append((cell_measure, data_dims))
         self._cell_measures_and_dims.sort(
-            key=lambda cm_dims: (cm_dims[0]._as_defn(), cm_dims[1])
+            key=lambda cm_dims: (cm_dims[0].metadata, cm_dims[1])
         )
 
     def add_ancillary_variable(self, ancillary_variable, data_dims=None):
@@ -1219,7 +1167,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (ancillary_variable, data_dims)
         )
         self._ancillary_variables_and_dims.sort(
-            key=lambda av_dims: (av_dims[0]._as_defn(), av_dims[1])
+            key=lambda av_dims: (av_dims[0].metadata, av_dims[1])
         )
 
     def add_dim_coord(self, dim_coord, data_dim):
@@ -1304,7 +1252,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if coord_ is not coord
         ]
         for aux_factory in self.aux_factories:
-            if coord._as_defn() == aux_factory._as_defn():
+            if coord.metadata == aux_factory.metadata:
                 self.remove_aux_factory(aux_factory)
 
     def remove_coord(self, coord):
@@ -1338,7 +1286,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a cell_measure instance with metadata equal to that of
             the desired cell_measures.
@@ -1431,11 +1379,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ]
 
         # Search derived aux coords
-        target_defn = coord._as_defn()
         if not matches:
+            target_metadata = coord.metadata
 
             def match(factory):
-                return factory._as_defn() == target_defn
+                return factory.metadata == target_metadata
 
             factories = filter(match, self._aux_factories)
             matches = [
@@ -1591,13 +1539,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a coordinate instance with metadata equal to that of
             the desired coordinates. Accepts either a
             :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-            :class:`iris.aux_factory.AuxCoordFactory`
-            or :class:`iris.coords.CoordDefn`.
+            :class:`iris.aux_factory.AuxCoordFactory`,
+            :class:`iris.common.CoordMetadata` or
+            :class:`iris.common.DimCoordMetadata`.
         * standard_name
             The CF standard name of the desired coordinate. If None, does not
             check for standard name.
@@ -1715,14 +1664,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             ]
 
         if coord is not None:
-            if isinstance(coord, iris.coords.CoordDefn):
-                defn = coord
+            if hasattr(coord, "__class__") and coord.__class__ in (
+                CoordMetadata,
+                DimCoordMetadata,
+            ):
+                target_metadata = coord
             else:
-                defn = coord._as_defn()
+                target_metadata = coord.metadata
             coords_and_factories = [
                 coord_
                 for coord_ in coords_and_factories
-                if coord_._as_defn() == defn
+                if coord_.metadata == target_metadata
             ]
 
         if contains_dimension is not None:
@@ -1888,7 +1840,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a cell_measure instance with metadata equal to that of
             the desired cell_measures.
@@ -1971,7 +1923,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (a) a :attr:`standard_name`, :attr:`long_name`, or
             :attr:`var_name`. Defaults to value of `default`
             (which itself defaults to `unknown`) as defined in
-            :class:`iris._cube_coord_common.CFVariableMixin`.
+            :class:`iris.common.CFVariableMixin`.
 
             (b) a ancillary_variable instance with metadata equal to that of
             the desired ancillary_variables.
@@ -2052,11 +2004,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         done on the phenomenon.
 
         """
-        return self._cell_methods
+        return self._metadata_manager.cell_methods
 
     @cell_methods.setter
     def cell_methods(self, cell_methods):
-        self._cell_methods = tuple(cell_methods) if cell_methods else tuple()
+        self._metadata_manager.cell_methods = (
+            tuple(cell_methods) if cell_methods else tuple()
+        )
 
     def core_data(self):
         """
@@ -4084,7 +4038,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             )
 
         coords = self._as_list_of_coords(coords)
-        for coord in sorted(coords, key=lambda coord: coord._as_defn()):
+        for coord in sorted(coords, key=lambda coord: coord.metadata):
             if coord.ndim > 1:
                 msg = (
                     "Cannot aggregate_by coord %s as it is "
@@ -4200,7 +4154,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         for coord in groupby.coords:
             if (
                 dim_coord is not None
-                and dim_coord._as_defn() == coord._as_defn()
+                and dim_coord.metadata == coord.metadata
                 and isinstance(coord, iris.coords.DimCoord)
             ):
                 aggregateby_cube.add_dim_coord(
