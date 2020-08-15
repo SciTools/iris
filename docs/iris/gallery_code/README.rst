@@ -7,7 +7,7 @@ to download the code directly as source or as part of a
 `jupyter notebook <https://jupyterlab.readthedocs.io/en/stable/>`_, 
 these links are at the bottom of the page.
 
-In order to successfuly view the jupyter notebook locally so you may
+In order to successfully view the jupyter notebook locally so you may
 experiment with the code you will need an environment setup with the 
 appropriate dependencies, see :ref:`installing_iris` for instructions.  
 Ensure that ``iris-sample-data`` is installed as it is used in the gallery.  

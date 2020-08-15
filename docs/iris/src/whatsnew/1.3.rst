@@ -66,7 +66,7 @@ netCDF file.
 The following keys within the ``iris.site_configuration`` dictionary have
 been **reserved** as hooks to *external* user-defined CF profile functions:
 
- * ``cf_profile`` injests a :class:`iris.cube.Cube` for analysis and returns a
+ * ``cf_profile`` ingests a :class:`iris.cube.Cube` for analysis and returns a
    profile result
  * ``cf_patch`` modifies the CF-netCDF file associated with export of the
    :class:`iris.cube.Cube`

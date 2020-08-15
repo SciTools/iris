@@ -605,7 +605,7 @@ class _Aggregator:
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate()
+        * This function is intended to be used in conjunction with aggregate()
           and should be passed the same keywords (for example, the "ddof"
           keyword for a standard deviation aggregator).
 
@@ -981,7 +981,7 @@ class Aggregator(_Aggregator):
 
         Kwargs:
 
-        * This function is intended to be used in conjuction with aggregate()
+        * This function is intended to be used in conjunction with aggregate()
           and should be passed the same keywords (for example, the "ddof"
           keyword for a standard deviation aggregator).
 

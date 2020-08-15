@@ -1,6 +1,5 @@
 .. _interpolation_and_regridding:
 
-
 .. testsetup:: *
 
   import numpy as np
@@ -16,7 +15,7 @@ Iris provides powerful cube-aware interpolation and regridding functionality,
 exposed through Iris cube methods. This functionality is provided by building
 upon existing interpolation schemes implemented by SciPy.
 
-In Iris we refer to the avaliable types of interpolation and regridding as
+In Iris we refer to the available types of interpolation and regridding as
 `schemes`. The following are the interpolation schemes that are currently
 available in Iris:
 

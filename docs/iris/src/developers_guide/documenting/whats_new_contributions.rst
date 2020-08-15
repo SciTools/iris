@@ -42,7 +42,7 @@ what's :ref:`iris_whatsnew` entries.
 
 .. note:: The reStructuredText syntax will be checked as part of building
           the documentation.  Any warnings should be corrected.  
-          `travis-ci`_ will automatically build the documention when
+          `travis-ci`_ will automatically build the documentation when
           creating a pull request, however you can also manually 
           :ref:`build <contributing.documentation.building>` the documentation.
 

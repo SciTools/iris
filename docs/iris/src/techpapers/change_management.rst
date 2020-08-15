@@ -51,7 +51,7 @@ Checklist :
 
 * when a new **minor version is released**
 
-  * review the 'Whats New' documentation to see if it introduces any
+  * review the 'What's New' documentation to see if it introduces any
     deprecations that may affect you.
   * run your working legacy code and check for any deprecation warnings,
     indicating that modifications may be necessary at some point
@@ -227,7 +227,7 @@ are :
 
     * A non-zero "<micro>" denotes a bugfix version, thus a release "X.Y.0" may
       be followed by "X.Y.1", "X.Y.2" etc, which *only* differ by containing
-      bugfixes.  Any bugfix release supercedes its predecessors, and does not
+      bugfixes.  Any bugfix release supersedes its predecessors, and does not
       change any (valid) APIs or behaviour :  hence, it is always advised to
       replace a given version with its latest bugfix successor, and there
       should be no reason not to.
@@ -261,7 +261,7 @@ behaviour of existing code can only be made at a **major** release, i.e. when
 "X.0" is released following the last previous "(X-1).Y.Z".
 
 *Minor* releases, by contrast, consist of bugfixes, new features, and
-deprecations :  Any valid exisiting code should be unaffected by these, so it
+deprecations :  Any valid existing code should be unaffected by these, so it
 will still run with the same results.
 
 At a major release, only **deprecated** behaviours and APIs can be changed or
@@ -361,7 +361,7 @@ with the new release, which we obviously need to avoid.
         * the user code usage is simply by calls to "iris.load"
         * the change is not a bugfix, as the old way isn't actually "wrong"
         * we don't want to add an extra keyword into all the relevant calls
-        * we don't see a longterm future for the existing behaviour :  we
+        * we don't see a long term future for the existing behaviour :  we
           expect everyone to adopt the new interpretation, eventually
 
 For changes of this sort, the release will define a new boolean property of the
@@ -427,7 +427,7 @@ At (major) release "<X+1>.0...":
 
         * If your code is explicitly turning the option off, it will continue
           to work in the same way at this point, but obviously time is
-          runnning out.
+          running out.
 
         * If your code is still using the old behaviour and *not* setting the
           control option at all, its behaviour might now have changed

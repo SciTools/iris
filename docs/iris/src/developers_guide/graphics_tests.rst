@@ -112,7 +112,7 @@ you should follow:
 
 #. Now re-run the tests.  The 'new' result should now be recognised and the
    relevant test should pass.  However, some tests can perform *multiple* graphics
-   checks within a single testcase function : In those cases, any failing
+   checks within a single test case function : In those cases, any failing
    check will prevent the following ones from being run, so a test re-run may
    encounter further (new) graphical test failures.  If that happens, simply
    repeat the check-and-accept process until all tests pass.

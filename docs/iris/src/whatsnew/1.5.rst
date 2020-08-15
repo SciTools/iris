@@ -175,7 +175,7 @@ Bugs fixed
 
 * Coding of maximum and minimum time-stats in GRIB2 saving has been fixed.
 
-* Example code in section 4.1 of the userguide updated so it uses a sample
+* Example code in section 4.1 of the user guide updated so it uses a sample
   data file that exists.
 
 * Zorder of contour lines drawn by :func:`~iris.plot.contourf` has been changed

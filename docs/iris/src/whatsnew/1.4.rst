@@ -118,7 +118,7 @@ For example::
 
 .. _iris-pandas:
 
-Iris-Pandas interoperablilty
+Iris-Pandas interoperability
 ----------------------------
 
 Conversion to and from Pandas Series_ and DataFrames_ is now available.

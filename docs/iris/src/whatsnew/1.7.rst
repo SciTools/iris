@@ -218,13 +218,13 @@ Bugs fixed
   vertical coordinates.
 
 * Auxiliary coordinate factory loading now correctly interprets formula term
-  varibles for "atmosphere hybrid sigma pressure" coordinate data.
+  variables for "atmosphere hybrid sigma pressure" coordinate data.
 
 * Corrected comparison of NumPy NaN values in cube merge process.
 
 * Fixes for :meth:`iris.cube.Cube.intersection` to correct calculating the
   intersection of a cube with split bounds, handling of circular coordinates,
-  handling of monotonically descending bounded coordinats and for finding a
+  handling of monotonically descending bounded coordinates and for finding a
   wrapped two-point result and longitude tolerances.
 
 * A bug affecting :meth:`iris.cube.Cube.extract` and

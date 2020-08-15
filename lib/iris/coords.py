@@ -170,7 +170,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         * values
             An array of values for the new dimensional metadata object.
-            This may be a different shape to the orginal values array being
+            This may be a different shape to the original values array being
             copied.
 
         """

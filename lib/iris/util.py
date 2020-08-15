@@ -1061,7 +1061,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
 
     Returns:
         The string clipped to the required length with a rider appended.
-        If the clip length was greater than the orignal string, the
+        If the clip length was greater than the original string, the
         original string is returned unaltered.
 
     """

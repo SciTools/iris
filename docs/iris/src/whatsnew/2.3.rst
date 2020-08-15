@@ -85,7 +85,7 @@ Features
   previously could produce a large number of small chunks. This had an adverse
   effect on performance.
 
-  In addition, Iris now takes its default chunksize from the default configured
+  In addition, Iris now takes its default chunk size from the default configured
   in Dask itself, i.e. ``dask.config.get('array.chunk-size')``.
 
 .. admonition:: Lazy Statistics
@@ -258,7 +258,7 @@ Documentation
   should not be relied on.
 
 * Fixed references in the documentation of
-  :func:`iris.util.find_discontiguities` to a nonexistent
+  :func:`iris.util.find_discontiguities` to a non existent
   "mask_discontiguities" routine : these now refer to
   :func:`~iris.util.mask_cube`.
 

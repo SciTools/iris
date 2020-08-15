@@ -150,7 +150,7 @@ Post release steps
    triggered by any commit to master.  Additionally check that the versions
    available in the pop out menu in the bottom left corner include the new
    release version.  If it is not present you will need to configure the
-   versions avaiable in the **admin** dashboard in Read The Docs
+   versions available in the **admin** dashboard in Read The Docs
 #. Copy ``docs/iris/src/whatsnew/latest.rst.template`` to 
    ``docs/iris/src/whatsnew/latest.rst``.  This will reset
    the file with the ``unreleased`` heading and placeholders for the what's

@@ -55,7 +55,7 @@ In detail
 user.name and user.email
 ------------------------
 
-It is good practice to tell git_ who you are, for labeling any changes
+It is good practice to tell git_ who you are, for labelling any changes
 you make to the code.  The simplest way to do this is from the command
 line::
 

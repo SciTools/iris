@@ -2835,7 +2835,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             For ranges defined over "circular" coordinates (i.e. those
             where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where neccesary.
+            will be "rolled" to fit where necessary.
 
         .. warning::
 

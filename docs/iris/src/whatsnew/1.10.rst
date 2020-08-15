@@ -207,12 +207,12 @@ Bugs fixed
 * A bug that prevented cube printing in some cases has been fixed.
 
 * Fixed a bug where a deepcopy of a :class:`~iris.coords.DimCoord` would have
-  writable ``points`` and ``bounds`` arrays. These arrays can now no longer be
+  writeable ``points`` and ``bounds`` arrays. These arrays can now no longer be
   modified in-place.
 
 * Concatenation no longer occurs when the auxiliary coordinates of the cubes do
   not match. This check is not applied to AuxCoords that span the dimension the
-  concatenation is occuring along. This behaviour can be switched off by
+  concatenation is occurring along. This behaviour can be switched off by
   setting the ``check_aux_coords`` kwarg in 
   :meth:`iris.cube.CubeList.concatenate` to False.
 
@@ -240,7 +240,7 @@ Deprecations
 
 * Deprecated the module :mod:`iris.fileformats.grib`.  The new package
   `iris_grib <https://github.com/SciTools/iris-grib>`_ replaces this
-  fuctionality, which will shortly be removed.
+  functionality, which will shortly be removed.
   Please see :ref:`iris_grib package <iris_grib_added>`, above.
 
 * The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and

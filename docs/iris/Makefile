@@ -10,6 +10,11 @@ html-noplot:
         echo "make html-noplot in $$i..."; \
         (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-noplot); done
 
+spelling:
+	@for i in $(SUBDIRS); do \
+        echo "make spelling in $$i..."; \
+        (cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) spelling); done
+
 all:
 	@for i in $(SUBDIRS); do \
 		echo "make all in $$i..."; \

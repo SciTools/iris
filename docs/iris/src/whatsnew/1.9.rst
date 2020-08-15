@@ -26,7 +26,7 @@ Features
   whitespace before the colon.  This is not strictly in the CF spec, but is a
   common occurrence.
 
-* Basic cube arithemetic (plus, minus, times, divide) now supports lazy
+* Basic cube arithmetic (plus, minus, times, divide) now supports lazy
   evaluation.
 
 * :meth:`iris.analysis.cartography.rotate_winds` can now operate much faster

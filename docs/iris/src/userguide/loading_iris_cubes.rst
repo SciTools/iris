@@ -269,7 +269,7 @@ boundary of a circular coordinate (this is often the meridian or the dateline /
 antimeridian). An example use-case of this is to extract the entire Pacific Ocean
 from a cube whose longitudes are bounded by the dateline.
 
-This functionality cannot be provided reliably using contraints. Instead you should use the
+This functionality cannot be provided reliably using constraints. Instead you should use the
 functionality provided by :meth:`cube.intersection <iris.cube.Cube.intersection>`
 to extract this region.
 

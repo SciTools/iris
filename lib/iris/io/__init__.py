@@ -334,7 +334,7 @@ def find_saver(filespec):
 
 def save(source, target, saver=None, **kwargs):
     """
-    Save one or more Cubes to file (or other writable).
+    Save one or more Cubes to file (or other writeable).
 
     Iris currently supports three file formats for saving, which it can
     recognise by filename extension:
@@ -353,7 +353,7 @@ def save(source, target, saver=None, **kwargs):
 
         * source    - A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or
                       sequence of cubes.
-        * target    - A filename (or writable, depending on file format).
+        * target    - A filename (or writeable, depending on file format).
                       When given a filename or file, Iris can determine the
                       file format.
 

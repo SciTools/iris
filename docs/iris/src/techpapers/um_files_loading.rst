@@ -30,7 +30,7 @@ Notes:
 
 #.  Iris treats Fieldsfile data almost exactly as if it were PP  -- i.e. it
     treats each field's lookup table entry like a PP header.
-#.  The Iris datamodel is based on
+#.  The Iris data model is based on
     `NetCDF CF conventions <http://cfconventions.org/>`_, so most of this can
     also be seen as a metadata translation between PP and CF terms, but it is
     easier to discuss in terms of Iris elements.
@@ -132,7 +132,7 @@ For an ordinary latitude-longitude grid, the cubes have coordinates called
     ``ZDX/Y + BDX/Y * (1 .. LBNPT/LBROW)`` (*except*, if BDX/BDY is zero, the
     values are taken from the extra data vector X/Y, if present).
  *  If X/Y_LOWER_BOUNDS extra data is available, this appears as bounds values
-    of the horizontal cooordinates.
+    of the horizontal coordinates.
 
 For **rotated** latitude-longitude coordinates (as for LBCODE=101), the
 horizontal coordinates differ only slightly --

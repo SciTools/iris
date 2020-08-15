@@ -126,12 +126,13 @@ class GeogCS(CoordSystem):
         radius.
 
         If just two of semi_major_axis, semi_minor_axis, and
-        inverse_flattening are given the missing element is calulated from the
+        inverse_flattening are given the missing element is calculated from the
         formula:
         :math:`flattening = (major - minor) / major`
 
         Currently, Iris will not allow over-specification (all three ellipsoid
-        paramaters).
+        parameters).
+
         Examples::
 
             cs = GeogCS(6371229)

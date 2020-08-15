@@ -1,9 +1,9 @@
-===========
- Docstrings
-===========
+==========
+Docstrings
+==========
 
-
-Guiding principle: Every public object in the Iris package should have an appropriate docstring.
+Guiding principle: Every public object in the Iris package should have an
+appropriate docstring.
 
 This document has been influenced by the following PEP's,
 
@@ -35,7 +35,7 @@ The multi-line docstring  *description section* should expand on what was stated
 
 Sample multi-line docstring
 ---------------------------
-Here is a simple example of a standard dosctring:
+Here is a simple example of a standard docstring:
 
 .. literalinclude:: docstrings_sample_routine.py
 
@@ -58,7 +58,7 @@ Documenting classes
 ===================
 The class constructor should be documented in the docstring for its ``__init__`` or ``__new__`` method. Methods should be documented by their own docstring, not in the class header itself.
 
-If a class subclasses another class and its behavior is mostly inherited from that class, its docstring should mention this and summarise the differences. Use the verb "override" to indicate that a subclass method replaces a superclass method and does not call the superclass method; use the verb "extend" to indicate that a subclass method calls the superclass method (in addition to its own behavior).
+If a class subclasses another class and its behaviour is mostly inherited from that class, its docstring should mention this and summarise the differences. Use the verb "override" to indicate that a subclass method replaces a superclass method and does not call the superclass method; use the verb "extend" to indicate that a subclass method calls the superclass method (in addition to its own behaviour).
 
 
 Attribute and property docstrings
