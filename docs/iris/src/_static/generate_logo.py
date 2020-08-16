@@ -98,17 +98,17 @@ artwork_dict["background"] = ET.Element(
     attrib={
         "height": "100%",
         "width": "100%",
-        "style": "fill:url(#background_gradient)",
+        "fill": "url(#background_gradient)",
     },
 )
 background_gradient = ET.Element(
     "linearGradient", attrib={"y1": "0%", "y2": "100%",},
 )
 background_gradient.append(
-    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#13385d",},)
+    ET.Element("stop", attrib={"offset": "0", "stop-color": "#13385d",},)
 )
 background_gradient.append(
-    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#272b2c",},)
+    ET.Element("stop", attrib={"offset": "1", "stop-color": "#272b2c",},)
 )
 defs_dict["background_gradient"] = background_gradient
 
@@ -127,16 +127,16 @@ artwork_dict["land"] = ET.Element(
         "cx": "50%",
         "cy": "50%",
         "r": "50%",
-        "style": "fill:url(#land_gradient)",
+        "fill": "url(#land_gradient)",
         "clip-path": "url(#land_clip)",
     },
 )
 land_gradient = ET.Element("radialGradient")
 land_gradient.append(
-    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#d5e488"},)
+    ET.Element("stop", attrib={"offset": "0", "stop-color": "#d5e488"},)
 )
 land_gradient.append(
-    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#aec928",},)
+    ET.Element("stop", attrib={"offset": "1", "stop-color": "#aec928",},)
 )
 defs_dict["land_gradient"] = land_gradient
 
@@ -148,15 +148,15 @@ artwork_dict["sea"] = ET.Element(
         "cx": "50%",
         "cy": "50%",
         "r": f"{50.5 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:url(#sea_gradient)",
+        "fill": "url(#sea_gradient)",
     },
 )
 sea_gradient = ET.Element("radialGradient")
 sea_gradient.append(
-    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#20b0ea"},)
+    ET.Element("stop", attrib={"offset": "0", "stop-color": "#20b0ea"},)
 )
 sea_gradient.append(
-    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#156475",},)
+    ET.Element("stop", attrib={"offset": "1", "stop-color": "#156475",},)
 )
 defs_dict["sea_gradient"] = sea_gradient
 
@@ -167,8 +167,11 @@ artwork_dict["glow"] = ET.Element(
         "cx": "50%",
         "cy": "50%",
         "r": f"{52 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:url(#glow_gradient); filter:url(#glow_blur); "
-        "stroke:#ffffff; stroke-width:2; stroke-opacity:0.797414",
+        "fill": "url(#glow_gradient)",
+        "filter": "url(#glow_blur)",
+        "stroke": "#ffffff",
+        "stroke-width": "2",
+        "stroke-opacity": "0.797414",
     },
 )
 glow_gradient = ET.Element(
@@ -180,7 +183,8 @@ glow_gradient.append(
         "stop",
         attrib={
             "offset": "0",
-            "style": "stop-color:#0aaea7; stop-opacity:0.85882354",
+            "stop-color": "#0aaea7",
+            "stop-opacity": "0.85882354",
         },
     )
 )
@@ -189,12 +193,13 @@ glow_gradient.append(
         "stop",
         attrib={
             "offset": "0.67322218",
-            "style": "stop-color:#18685d; stop-opacity:0.74117649",
+            "stop-color": "#18685d",
+            "stop-opacity": "0.74117649",
         },
     )
 )
 glow_gradient.append(
-    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#b6df34",},)
+    ET.Element("stop", attrib={"offset": "1", "stop-color": "#b6df34",},)
 )
 defs_dict["glow_gradient"] = glow_gradient
 
@@ -327,7 +332,8 @@ text = ET.Element(
     attrib={
         "x": str(text_x),
         "y": str(text_y),
-        "style": f"font-size:{text_size}pt; font-family:{text_font}",
+        "font-size": f"{text_size}pt",
+        "font-family": text_font,
     },
 )
 text.text = BANNER_TEXT
