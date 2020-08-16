@@ -121,7 +121,7 @@ for path in land_paths:
     path.attrib.pop("clip-path")
     path.attrib.pop("style")
 land_paths.tag = "clipPath"
-defs_dict["land_mask"] = land_paths
+defs_dict["land_clip"] = land_paths
 
 artwork_dict["land"] = ET.Element(
     "circle",
@@ -130,7 +130,7 @@ artwork_dict["land"] = ET.Element(
         "cy": "50%",
         "r": "50%",
         "style": "fill:url(#land_gradient)",
-        "clip-path": "url(#land_mask)",
+        "clip-path": "url(#land_clip)",
     },
 )
 land_gradient = ET.Element("radialGradient")
