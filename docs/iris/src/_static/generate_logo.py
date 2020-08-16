@@ -103,8 +103,7 @@ artwork_dict["background"] = ET.Element(
     },
 )
 background_gradient = ET.Element(
-    "linearGradient",
-    attrib={"x1": "50%", "y1": "0%", "x2": "50%", "y2": "100%",},
+    "linearGradient", attrib={"y1": "0%", "y2": "100%",},
 )
 background_gradient.append(
     ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#13385d",},)
@@ -134,10 +133,7 @@ artwork_dict["land"] = ET.Element(
         "clip-path": "url(#land_mask)",
     },
 )
-land_gradient = ET.Element(
-    "radialGradient",
-    attrib={"cx": "50%", "cy": "50%", "fx": "50%", "fy": "50%", "r": "50%"},
-)
+land_gradient = ET.Element("radialGradient")
 land_gradient.append(
     ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#d5e488"},)
 )
@@ -157,10 +153,7 @@ artwork_dict["sea"] = ET.Element(
         "style": "fill:url(#sea_gradient)",
     },
 )
-sea_gradient = ET.Element(
-    "radialGradient",
-    attrib={"cx": "50%", "cy": "50%", "fx": "50%", "fy": "50%", "r": "50%"},
-)
+sea_gradient = ET.Element("radialGradient")
 sea_gradient.append(
     ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#20b0ea"},)
 )
