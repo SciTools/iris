@@ -72,17 +72,16 @@ ax.add_feature(LAND)
 ################################################################################
 # Matplotlib SVG content.
 
+namespaces = {"svg": "http://www.w3.org/2000/svg"}
+ET.register_namespace("", namespaces["svg"])
+
 with TemporaryFile() as temp_svg:
     plt.savefig(temp_svg, format="svg", transparent=True)
     temp_svg.seek(0)
-
     # Read saved SVG file.
-    namespaces = {"svg": "http://www.w3.org/2000/svg"}
-    ET.register_namespace("", namespaces["svg"])
     tree = ET.parse(temp_svg)
 
 root_original = tree.getroot()
-root_logo = deepcopy(root_original)
 
 ################################################################################
 # Create new SVG elements for logo.
@@ -99,7 +98,7 @@ artwork_dict["background"] = ET.Element(
     attrib={
         "height": "100%",
         "width": "100%",
-        "style": "fill:url(#background_gradient);",
+        "style": "fill:url(#background_gradient)",
     },
 )
 background_gradient = ET.Element(
@@ -114,8 +113,7 @@ background_gradient.append(
 defs_dict["background_gradient"] = background_gradient
 
 # LAND
-mpl_land = root_logo.find(".//svg:g[@id='figure_1']", namespaces)
-root_logo.remove(mpl_land)
+mpl_land = root_original.find(".//svg:g[@id='figure_1']", namespaces)
 land_paths = mpl_land.find(".//svg:g[@id='PathCollection_1']", namespaces)
 for path in land_paths:
     path.attrib.pop("clip-path")
@@ -169,7 +167,8 @@ artwork_dict["glow"] = ET.Element(
         "cx": "50%",
         "cy": "50%",
         "r": f"{52 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:url(#glow_gradient);stroke:#ffffff;stroke-width:2;stroke-opacity:0.797414;filter:url(#glow_blur)",
+        "style": "fill:url(#glow_gradient); filter:url(#glow_blur); "
+        "stroke:#ffffff; stroke-width:2; stroke-opacity:0.797414",
     },
 )
 glow_gradient = ET.Element(
@@ -195,9 +194,7 @@ glow_gradient.append(
     )
 )
 glow_gradient.append(
-    ET.Element(
-        "stop", attrib={"offset": "1", "style": "stop-color:#b6df34;",},
-    )
+    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#b6df34",},)
 )
 defs_dict["glow_gradient"] = glow_gradient
 
@@ -278,16 +275,15 @@ defs_dict["iris_clip"] = iris_clip
 ################################################################################
 # Create logo SVG
 
+root_logo = ET.Element("svg")
 for dim in ("width", "height"):
     root_logo.attrib[dim] = str(LOGO_PIXELS)
-
-# Move root contents into a logo subgroup (text will be stored separately).
+# Group contents into a logo subgroup (text will be stored separately).
 logo_group = ET.Element("svg", attrib={"id": "logo_group"})
-logo_group.extend(list(root_logo))
-[root_logo.remove(child) for child in list(root_logo)]
 root_logo.append(logo_group)
-# Also transfer viewBox attribute.
-logo_group.attrib["viewBox"] = root_logo.attrib.pop("viewBox")
+logo_group.attrib["viewBox"] = " ".join(
+    ["0"] * 2 + [str(background_points)] * 2
+)
 
 
 def populate_element_group(group, children_dict):
