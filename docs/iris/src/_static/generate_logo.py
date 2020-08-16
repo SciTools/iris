@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt, rcParams
 ################################################################################
 # Configuration
 CLIP_GLOBE_RATIO = (
-    1.25  # How much bigger than the globe the iris clip should be.
+    1.28  # How much bigger than the globe the iris clip should be.
 )
 LOGO_PIXELS = 1024  # Pixel size of the square logo.
 BANNER_PIXELS = 256  # Pixel height of text banner.
@@ -35,7 +35,7 @@ FILENAME_PREFIX = "iris"  # Start of all filenames to be written.
 # figure_inches doesn't influence the final size, but does influence the coastline definition.
 figure_inches = 10
 fig = plt.figure(0, figsize=(figure_inches,) * 2)
-orthographic = ccrs.Orthographic(central_longitude=-30, central_latitude=20)
+orthographic = ccrs.Orthographic(central_longitude=-30, central_latitude=22.9)
 ax = plt.axes(projection=orthographic)
 # TODO: remove version check Iris is pinned appropriately.
 if cartopy_version < "0.18":
@@ -67,7 +67,7 @@ simple_geometries = [
     geometry.simplify(1.0, True) for geometry in LAND.geometries()
 ]
 LAND.geometries = lambda: iter(simple_geometries)
-ax.add_feature(LAND, facecolor="#bad92e")
+ax.add_feature(LAND)
 
 ################################################################################
 # Matplotlib SVG content.
@@ -89,16 +89,62 @@ root_logo = deepcopy(root_original)
 
 # The elements that are displayed (not just referenced).
 # Order is important for layering.
-artwork_dict = OrderedDict.fromkeys(
-    ["background", "glow", "haze", "sea", "land", "sun",]
-)
+artwork_dict = OrderedDict.fromkeys(["background", "glow", "sea", "land",])
 # The elements that will just be referenced by artwork elements.
 defs_dict = {}
 
+# BACKGROUND
+artwork_dict["background"] = ET.Element(
+    "rect",
+    attrib={
+        "height": "100%",
+        "width": "100%",
+        "style": "fill:url(#background_gradient);",
+    },
+)
+background_gradient = ET.Element(
+    "linearGradient",
+    attrib={"x1": "50%", "y1": "0%", "x2": "50%", "y2": "100%",},
+)
+background_gradient.append(
+    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#13385d",},)
+)
+background_gradient.append(
+    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#272b2c",},)
+)
+defs_dict["background_gradient"] = background_gradient
+
 # LAND
-land = root_logo.find("svg:g", namespaces)
-root_logo.remove(land)
-artwork_dict["land"] = land
+mpl_land = root_logo.find(".//svg:g[@id='figure_1']", namespaces)
+root_logo.remove(mpl_land)
+land_paths = mpl_land.find(".//svg:g[@id='PathCollection_1']", namespaces)
+for path in land_paths:
+    path.attrib.pop("clip-path")
+    path.attrib.pop("style")
+land_paths.tag = "clipPath"
+defs_dict["land_mask"] = land_paths
+
+artwork_dict["land"] = ET.Element(
+    "circle",
+    attrib={
+        "cx": "50%",
+        "cy": "50%",
+        "r": "50%",
+        "style": "fill:url(#land_gradient)",
+        "clip-path": "url(#land_mask)",
+    },
+)
+land_gradient = ET.Element(
+    "radialGradient",
+    attrib={"cx": "50%", "cy": "50%", "fx": "50%", "fy": "50%", "r": "50%"},
+)
+land_gradient.append(
+    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#d5e488"},)
+)
+land_gradient.append(
+    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#aec928",},)
+)
+defs_dict["land_gradient"] = land_gradient
 
 # SEA
 # Not using Cartopy for sea since it doesn't actually render curves/circles.
@@ -108,15 +154,20 @@ artwork_dict["sea"] = ET.Element(
         "cx": "50%",
         "cy": "50%",
         "r": f"{50.5 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:#0078b0;",
+        "style": "fill:url(#sea_gradient)",
     },
 )
-
-# BACKGROUND
-artwork_dict["background"] = ET.Element(
-    "rect",
-    attrib={"height": "100%", "width": "100%", "style": "fill:#333333;"},
+sea_gradient = ET.Element(
+    "radialGradient",
+    attrib={"cx": "50%", "cy": "50%", "fx": "50%", "fy": "50%", "r": "50%"},
 )
+sea_gradient.append(
+    ET.Element("stop", attrib={"offset": "0", "style": "stop-color:#20b0ea"},)
+)
+sea_gradient.append(
+    ET.Element("stop", attrib={"offset": "1", "style": "stop-color:#156475",},)
+)
+defs_dict["sea_gradient"] = sea_gradient
 
 # GLOW
 artwork_dict["glow"] = ET.Element(
@@ -124,113 +175,97 @@ artwork_dict["glow"] = ET.Element(
     attrib={
         "cx": "50%",
         "cy": "50%",
-        "r": f"{52.5 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:#cadc6c; fill-opacity:1; filter:url(#glow_blur)",
+        "r": f"{52 / CLIP_GLOBE_RATIO}%",
+        "style": "fill:url(#glow_gradient);stroke:#ffffff;stroke-width:2;stroke-opacity:0.797414;filter:url(#glow_blur)",
     },
 )
-glow_blur = ET.Element("filter")
-glow_blur.append(ET.Element("feGaussianBlur", attrib={"stdDeviation": "12"}))
-defs_dict["glow_blur"] = glow_blur
-
-# HAZE
-artwork_dict["haze"] = ET.Element(
-    "rect",
-    attrib={
-        "height": "100%",
-        "width": "100%",
-        "style": "fill:url(#haze_gradient);",
-    },
+glow_gradient = ET.Element(
+    "radialGradient",
+    attrib={"gradientTransform": "scale(1.15, 1.35), translate(-0.1, -0.3)"},
 )
-haze_gradient = ET.Element(
-    "linearGradient",
-    attrib={"x1": "50%", "y1": "0%", "x2": "50%", "y2": "100%",},
-)
-haze_gradient.append(
+glow_gradient.append(
     ET.Element(
         "stop",
         attrib={
             "offset": "0",
-            "style": "stop-color:#003f7d; stop-opacity:0.7",
+            "style": "stop-color:#0aaea7; stop-opacity:0.85882354",
         },
     )
 )
-haze_gradient.append(
-    ET.Element(
-        "stop",
-        attrib={"offset": "1", "style": "stop-color:#003f7d; stop-opacity:0",},
-    )
-)
-defs_dict["haze_gradient"] = haze_gradient
-
-# SUN
-artwork_dict["sun"] = ET.Element(
-    "circle",
-    attrib={
-        "cx": "50%",
-        "cy": "50%",
-        "r": f"{50.5 / CLIP_GLOBE_RATIO}%",
-        "style": "fill:url(#sun_gradient);",
-    },
-)
-sun_gradient = ET.Element(
-    "radialGradient",
-    attrib={"cx": "50%", "cy": "50%", "fx": "50%", "fy": "50%", "r": "50%"},
-)
-sun_gradient.append(
-    ET.Element(
-        "stop",
-        attrib={"offset": "0", "style": "stop-color:white; stop-opacity:0.5"},
-    )
-)
-sun_gradient.append(
+glow_gradient.append(
     ET.Element(
         "stop",
         attrib={
-            "offset": "0.75",
-            "style": "stop-color:white; stop-opacity:0.0",
+            "offset": "0.67322218",
+            "style": "stop-color:#18685d; stop-opacity:0.74117649",
         },
     )
 )
-defs_dict["sun_gradient"] = sun_gradient
+glow_gradient.append(
+    ET.Element(
+        "stop", attrib={"offset": "1", "style": "stop-color:#b6df34;",},
+    )
+)
+defs_dict["glow_gradient"] = glow_gradient
+
+glow_blur = ET.Element("filter")
+glow_blur.append(ET.Element("feGaussianBlur", attrib={"stdDeviation": "10"}))
+defs_dict["glow_blur"] = glow_blur
 
 # CLIP
-# SVG string representing bezier curves, originally drawn on a 100x100pt canvas.
+# SVG string representing bezier curves, originally drawn on a 100x100 canvas.
 clip_scaling = background_points / 100
 clip_string = " ".join(
     [
-        "m 49.156375, 0.849600",
-        "c -2.004127,0.022656 -4.052215,0.199656 -6.131272,0.699334 "
-        "-12.265137,2.767430 -9.849795,37.691796 2.644530,47.261832 "
-        "2.051082,1.568532 4.659645,-9.571056 17.075940,-17.948225 "
-        "9.784855,-6.603828 18.734193,-5.864506 19.893308,-8.681892 "
-        "1.132942,-2.747408 -14.109514,-21.569843 -33.483008,-21.352034",
+        "m 48.715792,0.06648723",
+        "c -3.695266,-0.02152 -6.340628,0.83101 -7.803951,1.85111997 "
+        "-7.780711,5.424073 -6.020732,25.7134678 -3.574593,32.4721008 "
+        "2.886671,7.975828 7.326212,15.759187 9.421487,14.669421 "
+        "2.708508,-1.024559 5.323978,-11.805637 17.531882,-19.077586 "
+        "9.504775,-5.661737 16.925959,-5.68594 17.734968,-7.414812 "
+        "0.402381,-1.120006 0.212418,-1.845229 -0.645975,-3.096052",
+        "C 80.521209,18.219863 75.12671,9.4573304 65.13349,4.5345992 "
+        "58.440375,1.2375202 52.903757,0.09084923 48.715792,0.06648723",
+        "Z",
+        "M 31.075381,11.520477",
+        "c -0.433583,-0.0085 -0.926497,0.09327 -1.552935,0.288374",
+        "C 28.090574,12.254804 18.250845,14.778908 10.571472,22.949149 "
+        "0.88982409,33.249658 -0.41940991,41.930793 0.64560611,45.630785 "
+        "3.3001452,54.852655 22.76784,59.415505 29.827347,59.131763 "
+        "38.158213,58.796931 46.788636,56.896487 46.419722,54.52773 "
+        "46.301117,51.584413 37.054716,45.716497 34.044816,31.630083 "
+        "31.701409,20.66275 33.97219,13.457909 32.609708,12.139069 "
+        "32.092072,11.724892 31.632837,11.531455 31.075381,11.520477",
+        "Z",
+        "m 55.776453,13.86169",
+        "c -8.577967,-0.02376 -19.956997,5.29967 -24.117771,8.645276 "
+        "-6.546803,5.264163 -12.433634,11.974719 -10.769772,13.669965 "
+        "1.792557,2.310114 12.655507,1.515124 23.210303,11.10723 "
+        "8.217686,7.468185 10.533621,14.657837 12.396084,14.90817 "
+        "1.16895,0.04416 1.786961,-0.363913 2.688309,-1.582904 "
+        "0.90134,-1.21901 7.406651,-9.158433 8.90987,-20.371091 "
+        "1.895163,-14.136193 -2.04942,-21.944169 -5.04381,-24.299175 "
+        "-1.865818,-1.467402 -4.41389,-2.069555 -7.273213,-2.077471",
         "z",
-        "m -18.576640,10.694000",
-        "c -6.077321,0.299711 -28.650425,11.042676 -30.550749,31.556523 "
-        "-1.159916,12.520272 32.803942,21.016357 45.766328,12.090686 "
-        "2.128010,-1.468619 -7.662840,-7.393078 -11.793578,-21.786633 "
-        "-3.254959,-11.346408 0.209795,-19.629668 -2.108030,-21.602808 "
-        "-0.229788,-0.199939 -0.689354,-0.299739 -1.314770,-0.299739",
+        "M 56.128531,51.700411",
+        "c -0.639249,0.02574 -1.086221,0.223499 -1.286275,0.624277 "
+        "-1.600644,2.452282 2.497685,12.741825 -3.187004,25.942017 "
+        "-4.425963,10.277335 -10.415712,14.745486 -10.073661,16.629076 "
+        "0.320069,1.14727 0.891984,1.619829 2.307444,2.117259 "
+        "1.415458,0.49743 10.830701,4.35328 21.752971,2.34619 "
+        "13.770075,-2.530379 19.832746,-8.768519 21.103889,-12.400221 "
+        "3.168142,-9.051698 -9.950654,-24.412078 -15.825463,-28.413798 "
+        "-5.63292,-3.836942 -12.021817,-6.956398 -14.791901,-6.8448",
         "z",
-        "m 56.247734,14.108826",
-        "c -12.087004,-0.199939 -31.334318,9.960682 -35.264645,21.092283 "
-        "-0.859198,2.437729 10.541548,1.478616 22.346117,10.694991 "
-        "9.303307,7.263230 11.366977,16.005048 14.403240,16.237838 "
-        "3.272940,0.199939 18.990947,-24.507108 7.382101,-44.052836 "
-        "-1.605500,-2.697480 -4.837481,-3.916344 -8.866714,-3.976270",
-        "z",
-        "m -31.306644,26.163545",
-        "c -2.583585,-0.064853 1.855269,10.483186 -3.264948,24.559047 "
-        "-4.035229,11.092632 -11.709756,15.756257 -10.992527,18.715499 "
-        "0.769282,3.187020 29.176034,10.489190 44.177614,-6.593831 "
-        "8.297245,-9.441180 -14.186743,-36.284094 -29.919938,-36.682726",
-        "z",
-        "m -4.555742,4.725588",
-        "c -2.676498,0.199656 -10.815691,5.424923 -23.446187,4.985340 "
-        "-11.796975,-0.399624 -18.603514,-6.264157 -21.196391,-4.665663 "
-        "-2.795388,1.718401 -0.959104,30.989047 19.920383,39.978664 "
-        "11.548507,4.975343 30.124147,-24.704924 25.640539,-39.790818 "
-        "-0.119879,-0.399624 -0.419609,-0.499536 -0.919143,-0.499536",
+        "m -5.299096,4.785932",
+        "C 47.570588,56.612385 39.424575,62.816068 26.2357,61.471757 "
+        "15.282622,60.3553 9.2649892,55.927072 7.6139222,56.840861",
+        "c -0.9711391,0.664932 -1.235964,1.365498 -1.2625019,2.891917 "
+        "-0.02655,1.526442 -0.7128592,11.84897 4.5342547,21.821195 "
+        "6.61521,12.572318 14.306917,16.524769 18.086914,16.635267 "
+        "9.421278,0.275342 19.693467,-17.19462 21.610339,-24.128637 "
+        "2.262092,-8.182753 3.156328,-17.140105 0.833056,-17.514311 "
+        "-0.173865,-0.04967 -0.369295,-0.06832 -0.586549,-0.05995",
         "z",
     ]
 )
