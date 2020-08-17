@@ -33,6 +33,12 @@ loggers:
     level: INFO
     handlers: [console-func]
     propagate: no
+  matplotlib:
+    level: INFO
+  PIL:
+    level: INFO
+  urllib3:
+    level: INFO
 
 root:
   level: INFO
