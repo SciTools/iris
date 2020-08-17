@@ -11,7 +11,7 @@ Uses XML ElementTree for SVG file editing.
 
 from collections import OrderedDict
 from copy import deepcopy
-from os import system
+from os import environ
 from pathlib import Path
 from PIL.ImageFont import truetype
 from re import sub as re_sub
@@ -35,7 +35,7 @@ TEXT_GLOBE_RATIO = (
     0.6  # How much smaller than the globe the banner text should be.
 )
 WRITE_DIRECTORY = Path("_static")
-FILENAME_PREFIX = "iris"  # Start of all filenames to be written.
+FILENAME_PREFIX = environ["PROJECT_PREFIX"]  # Start of all filenames to be written.
 
 # The logo's SVG elements can be configured at their point of definition below.
 
