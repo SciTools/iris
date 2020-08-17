@@ -34,7 +34,7 @@ BANNER_TEXT = "Iris"  # Text printed in the banner.
 TEXT_GLOBE_RATIO = (
     0.6  # How much smaller than the globe the banner text should be.
 )
-WRITE_DIRECTORY = Path("")
+WRITE_DIRECTORY = Path("_static")
 FILENAME_PREFIX = "iris"  # Start of all filenames to be written.
 
 # The logo's SVG elements can be configured at their point of definition below.
@@ -371,6 +371,3 @@ def write_svg_file(svg_root, filename_suffix):
 
 path_logo = write_svg_file(root_logo, "logo")
 path_banner = write_svg_file(root_banner, "logo-title")
-
-path_logo_ico = path_logo.with_suffix(".ico")
-system(f"convert -resize 16x16 {path_logo} {path_logo_ico}")

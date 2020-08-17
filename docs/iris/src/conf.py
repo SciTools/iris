@@ -104,6 +104,7 @@ rst_epilog = """
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "generate_logo",
     "sphinx.ext.todo",
     "sphinx.ext.duration",
     "sphinx.ext.coverage",
@@ -191,8 +192,8 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.png"
-html_favicon = "_static/favicon.ico"
+html_logo = "_static/iris-logo-title.svg"
+html_favicon = "_static/iris-logo.svg"
 html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
