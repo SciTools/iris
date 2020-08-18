@@ -845,7 +845,7 @@ def _binary_op_common(
         new_dtype=new_dtype,
         in_place=in_place,
         skeleton_cube=skeleton_cube,
-        force_lazy=iris._lazy_data.is_lazy_data(rhs)
+        force_lazy=iris._lazy_data.is_lazy_data(rhs),
     )
 
     if isinstance(other, Cube):

@@ -211,7 +211,7 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
             cube_a = Cube(da.from_array(dat_a))
         else:
             cube_a = Cube(dat_a)
-            
+
         if lazy == "first":
             cube_b = Cube(da.from_array(dat_b))
         else:
