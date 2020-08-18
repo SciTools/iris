@@ -14,6 +14,7 @@ import operator
 
 import numpy as np
 from numpy import ma
+import dask.array as da
 
 from iris.analysis import MEAN
 from iris.analysis.maths import add
@@ -201,13 +202,20 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         # I.E. 'iris.analysis.maths.xx'.
         pass
 
-    def _test_partial_mask(self, in_place):
+    def _test_partial_mask(self, in_place, lazy=None):
         # Helper method for masked data tests.
         dat_a = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 0, 1, 0])
         dat_b = ma.array([2.0, 2.0, 2.0, 2.0], mask=[1, 1, 0, 0])
 
-        cube_a = Cube(dat_a)
-        cube_b = Cube(dat_b)
+        if lazy == "second":
+            cube_a = Cube(da.from_array(dat_a))
+        else:
+            cube_a = Cube(dat_a)
+            
+        if lazy == "first":
+            cube_b = Cube(da.from_array(dat_b))
+        else:
+            cube_b = Cube(dat_b)
 
         com = self.data_op(dat_b, dat_a)
         res = self.cube_func(cube_b, cube_a, in_place=in_place)
@@ -227,6 +235,18 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
 
         self.assertMaskedArrayEqual(com, res.data)
         self.assertIsNot(res, orig_cube)
+
+    def test_partial_mask_first_lazy(self):
+        # Only first cube has lazy data.
+        com, res, orig_cube = self._test_partial_mask(False, lazy="first")
+
+        self.assertMaskedArrayEqual(com, res.data)
+
+    def test_partial_mask_second_lazy(self):
+        # Only second cube has lazy data.
+        com, res, orig_cube = self._test_partial_mask(False, lazy="second")
+
+        self.assertMaskedArrayEqual(com, res.data)
 
 
 class CubeArithmeticCoordsTest(tests.IrisTest):

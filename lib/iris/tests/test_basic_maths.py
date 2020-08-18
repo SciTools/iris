@@ -687,12 +687,12 @@ class TestMathOperations(tests.IrisTest):
         self.data_1u = np.array([[9, 9, 9], [8, 8, 8]], dtype=np.uint64)
         self.data_2u = np.array([[3, 3, 3], [2, 2, 2]], dtype=np.uint64)
 
-        self.cube_1f = Cube(self.data_1f)
-        self.cube_2f = Cube(self.data_2f)
-        self.cube_1i = Cube(self.data_1i)
-        self.cube_2i = Cube(self.data_2i)
-        self.cube_1u = Cube(self.data_1u)
-        self.cube_2u = Cube(self.data_2u)
+        self.cube_1f = Cube(self.data_1f.copy())
+        self.cube_2f = Cube(self.data_2f.copy())
+        self.cube_1i = Cube(self.data_1i.copy())
+        self.cube_2i = Cube(self.data_2i.copy())
+        self.cube_1u = Cube(self.data_1u.copy())
+        self.cube_2u = Cube(self.data_2u.copy())
 
         self.ops = (operator.add, operator.sub, operator.mul, operator.truediv)
         self.iops = (
