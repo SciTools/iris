@@ -13,7 +13,6 @@ from collections import OrderedDict
 from copy import deepcopy
 from os import environ
 from pathlib import Path
-from PIL.ImageFont import truetype
 from re import sub as re_sub
 from tempfile import TemporaryFile
 from xml.etree import ElementTree as ET
@@ -25,17 +24,24 @@ from matplotlib import pyplot as plt, rcParams
 
 ################################################################################
 # Configuration
-CLIP_GLOBE_RATIO = (
-    1.28  # How much bigger than the globe the iris clip should be.
-)
-LOGO_PIXELS = 1024  # Pixel size of the square logo.
-BANNER_PIXELS = 256  # Pixel height of text banner.
-BANNER_TEXT = "Iris"  # Text printed in the banner.
-TEXT_GLOBE_RATIO = (
-    0.6  # How much smaller than the globe the banner text should be.
-)
+
+# How much bigger than the globe the iris clip should be.
+CLIP_GLOBE_RATIO = 1.28
+
+# Pixel size of the square logo.
+LOGO_PIXELS = 1024
+
+# Banner width, text and text size must be manually tuned to work together.
+# Pixel dimensions of text banner.
+BANNER_PIXELS = {"width": 588, "height": 256}
+# Text printed in the banner.
+BANNER_TEXT = "Iris"
+# How much smaller than the globe the banner text should be.
+TEXT_GLOBE_RATIO = 0.6
+
 WRITE_DIRECTORY = Path("_static")
-FILENAME_PREFIX = environ["PROJECT_PREFIX"]  # Start of all filenames to be written.
+# Start of all filenames to be written.
+FILENAME_PREFIX = environ["PROJECT_PREFIX"]
 
 # The logo's SVG elements can be configured at their point of definition below.
 
@@ -319,21 +325,16 @@ populate_element_group(artwork_element, artwork_dict)
 # Create Banner SVG.
 
 root_banner = deepcopy(root_logo)
-root_banner.attrib["height"] = str(BANNER_PIXELS)
+for dimension, pixels in BANNER_PIXELS.items():
+    root_banner.attrib[dimension] = str(pixels)
 
-text_font = "georgia"
-text_size = BANNER_PIXELS * TEXT_GLOBE_RATIO
-text_width = truetype(text_font, int(text_size)).getsize(BANNER_TEXT)[0]
-text_width *= 1.35  # Hack adjustment.
-text_buffer = text_width * 0.05
-
-text_x = BANNER_PIXELS + (text_buffer / 2)
+banner_height = BANNER_PIXELS["height"]
+text_size = banner_height * TEXT_GLOBE_RATIO
+text_x = banner_height + 8
 # Manual y centring since SVG dominant-baseline not widely supported.
-text_y = BANNER_PIXELS - (BANNER_PIXELS - text_size) / 2
+text_y = banner_height - (banner_height - text_size) / 2
 text_y *= 0.975  # Slight offset
 
-# Resize image to accommodate text.
-root_banner.attrib["width"] = str(BANNER_PIXELS + text_buffer + text_width)
 # Left-align the logo.
 banner_logo_group = root_banner.find("svg", namespaces)
 banner_logo_group.attrib["preserveAspectRatio"] = "xMinYMin meet"
@@ -344,7 +345,7 @@ text = ET.Element(
         "x": str(text_x),
         "y": str(text_y),
         "font-size": f"{text_size}pt",
-        "font-family": text_font,
+        "font-family": "georgia",
     },
 )
 text.text = BANNER_TEXT
