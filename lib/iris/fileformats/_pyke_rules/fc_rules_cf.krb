@@ -1195,6 +1195,8 @@ fc_extras
     UD_UNITS_LON = ['degrees_east', 'degree_east', 'degree_e', 'degrees_e',
                     'degreee', 'degreese', 'degrees', 'degrees east',
                     'degree east', 'degree e', 'degrees e']
+    UNKNOWN_UNIT_STRING = "?"
+    NO_UNIT_STRING = "-"
 
     #
     # CF Dimensionless Vertical Coordinates
@@ -1651,9 +1653,9 @@ fc_extras
 
     ################################################################################
     def get_attr_units(cf_var, attributes):
-        attr_units = getattr(cf_var, CF_ATTR_UNITS, cf_units._UNIT_DIMENSIONLESS)
+        attr_units = getattr(cf_var, CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
         if not attr_units:
-            attr_units = '1'
+            attr_units = UNKNOWN_UNIT_STRING
 
         # Sanitise lat/lon units.
         if attr_units in UD_UNITS_LAT or attr_units in UD_UNITS_LON:
@@ -1668,10 +1670,10 @@ fc_extras
                 cf_var.cf_name, attr_units)
             warnings.warn(msg)
             attributes['invalid_units'] = attr_units
-            attr_units = cf_units._UNKNOWN_UNIT_STRING
+            attr_units = UNKNOWN_UNIT_STRING
 
         if np.issubdtype(cf_var.dtype, np.str_):
-            attr_units = cf_units._NO_UNIT_STRING
+            attr_units = NO_UNIT_STRING
 
         # Get any assoicated calendar for a time reference coordinate.
         if cf_units.as_unit(attr_units).is_time_reference():

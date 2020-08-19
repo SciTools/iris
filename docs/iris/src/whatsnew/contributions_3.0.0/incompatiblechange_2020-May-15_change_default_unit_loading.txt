@@ -1,0 +1,1 @@
+* When loading data from netcdf-CF files, where a variable has no "units" property, the corresponding Iris object will have "units='unknown'". Prior to Iris 3.0, these cases defaulted to "units='1'".

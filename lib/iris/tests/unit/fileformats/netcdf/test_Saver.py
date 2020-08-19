@@ -161,7 +161,7 @@ class Test_write(tests.IrisTest):
         points = np.arange(3, dtype=dtype)
         bounds = np.arange(6, dtype=dtype).reshape(3, 2)
         cube = Cube(data, "air_pressure_anomaly")
-        coord = DimCoord(points, bounds=bounds)
+        coord = DimCoord(points, bounds=bounds, units="1")
         cube.add_dim_coord(coord, 0)
         return cube
 

@@ -66,52 +66,58 @@ def _make_cube(
     cube_data = np.empty((y_size, x_size), dtype=np.float32)
     cube_data[:] = data
     cube = iris.cube.Cube(cube_data)
-    coord = DimCoord(y_range, long_name="y")
+    coord = DimCoord(y_range, long_name="y", units="1")
     coord.guess_bounds()
     cube.add_dim_coord(coord, 0)
-    coord = DimCoord(x_range, long_name="x")
+    coord = DimCoord(x_range, long_name="x", units="1")
     coord.guess_bounds()
     cube.add_dim_coord(coord, 1)
 
     if aux is not None:
         aux = aux.split(",")
         if "y" in aux:
-            coord = AuxCoord(y_range * 10, long_name="y-aux")
+            coord = AuxCoord(y_range * 10, long_name="y-aux", units="1")
             cube.add_aux_coord(coord, (0,))
         if "x" in aux:
-            coord = AuxCoord(x_range * 10, long_name="x-aux")
+            coord = AuxCoord(x_range * 10, long_name="x-aux", units="1")
             cube.add_aux_coord(coord, (1,))
         if "xy" in aux:
             payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
                 y_size, x_size
             )
-            coord = AuxCoord(payload * 100 + offset, long_name="xy-aux")
+            coord = AuxCoord(
+                payload * 100 + offset, long_name="xy-aux", units="1"
+            )
             cube.add_aux_coord(coord, (0, 1))
 
     if cell_measure is not None:
         cell_measure = cell_measure.split(",")
         if "y" in cell_measure:
-            cm = CellMeasure(y_range * 10, long_name="y-aux")
+            cm = CellMeasure(y_range * 10, long_name="y-aux", units="1")
             cube.add_cell_measure(cm, (0,))
         if "x" in cell_measure:
-            cm = CellMeasure(x_range * 10, long_name="x-aux")
+            cm = CellMeasure(x_range * 10, long_name="x-aux", units="1")
             cube.add_cell_measure(cm, (1,))
         if "xy" in cell_measure:
             payload = x_range + y_range[:, np.newaxis]
-            cm = CellMeasure(payload * 100 + offset, long_name="xy-aux")
+            cm = CellMeasure(
+                payload * 100 + offset, long_name="xy-aux", units="1"
+            )
             cube.add_cell_measure(cm, (0, 1))
 
     if ancil is not None:
         ancil = ancil.split(",")
         if "y" in ancil:
-            av = AncillaryVariable(y_range * 10, long_name="y-aux")
+            av = AncillaryVariable(y_range * 10, long_name="y-aux", units="1")
             cube.add_ancillary_variable(av, (0,))
         if "x" in ancil:
-            av = AncillaryVariable(x_range * 10, long_name="x-aux")
+            av = AncillaryVariable(x_range * 10, long_name="x-aux", units="1")
             cube.add_ancillary_variable(av, (1,))
         if "xy" in ancil:
             payload = x_range + y_range[:, np.newaxis]
-            av = AncillaryVariable(payload * 100 + offset, long_name="xy-aux")
+            av = AncillaryVariable(
+                payload * 100 + offset, long_name="xy-aux", units="1"
+            )
             cube.add_ancillary_variable(av, (0, 1))
 
     if scalar is not None:
@@ -169,50 +175,56 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
     cube_data = np.empty((x_size, y_size, z_size), dtype=np.float32)
     cube_data[:] = data
     cube = iris.cube.Cube(cube_data)
-    coord = DimCoord(z_range, long_name="z")
+    coord = DimCoord(z_range, long_name="z", units="1")
     coord.guess_bounds()
     cube.add_dim_coord(coord, 0)
-    coord = DimCoord(y_range, long_name="y")
+    coord = DimCoord(y_range, long_name="y", units="1")
     coord.guess_bounds()
     cube.add_dim_coord(coord, 1)
-    coord = DimCoord(x_range, long_name="x")
+    coord = DimCoord(x_range, long_name="x", units="1")
     coord.guess_bounds()
     cube.add_dim_coord(coord, 2)
 
     if aux is not None:
         aux = aux.split(",")
         if "z" in aux:
-            coord = AuxCoord(z_range * 10, long_name="z-aux")
+            coord = AuxCoord(z_range * 10, long_name="z-aux", units="1")
             cube.add_aux_coord(coord, (0,))
         if "y" in aux:
-            coord = AuxCoord(y_range * 10, long_name="y-aux")
+            coord = AuxCoord(y_range * 10, long_name="y-aux", units="1")
             cube.add_aux_coord(coord, (1,))
         if "x" in aux:
-            coord = AuxCoord(x_range * 10, long_name="x-aux")
+            coord = AuxCoord(x_range * 10, long_name="x-aux", units="1")
             cube.add_aux_coord(coord, (2,))
         if "xy" in aux:
             payload = np.arange(x_size * y_size, dtype=np.float32).reshape(
                 y_size, x_size
             )
-            coord = AuxCoord(payload + offset, long_name="xy-aux")
+            coord = AuxCoord(payload + offset, long_name="xy-aux", units="1")
             cube.add_aux_coord(coord, (1, 2))
         if "xz" in aux:
             payload = np.arange(x_size * z_size, dtype=np.float32).reshape(
                 z_size, x_size
             )
-            coord = AuxCoord(payload * 10 + offset, long_name="xz-aux")
+            coord = AuxCoord(
+                payload * 10 + offset, long_name="xz-aux", units="1"
+            )
             cube.add_aux_coord(coord, (0, 2))
         if "yz" in aux:
             payload = np.arange(y_size * z_size, dtype=np.float32).reshape(
                 z_size, y_size
             )
-            coord = AuxCoord(payload * 100 + offset, long_name="yz-aux")
+            coord = AuxCoord(
+                payload * 100 + offset, long_name="yz-aux", units="1"
+            )
             cube.add_aux_coord(coord, (0, 1))
         if "xyz" in aux:
             payload = np.arange(
                 x_size * y_size * z_size, dtype=np.float32
             ).reshape(z_size, y_size, x_size)
-            coord = AuxCoord(payload * 1000 + offset, long_name="xyz-aux")
+            coord = AuxCoord(
+                payload * 1000 + offset, long_name="xyz-aux", units="1"
+            )
             cube.add_aux_coord(coord, (0, 1, 2))
 
     return cube

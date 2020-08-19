@@ -1253,7 +1253,7 @@ class Test___call____circular(tests.IrisTest):
             units="m",
             attributes={"positive": "up"},
         )
-        sigma = AuxCoord(1, long_name="sigma")
+        sigma = AuxCoord(1, long_name="sigma", units="1")
         surface_altitude = AuxCoord(
             (src.data - src.data.min()) * 50, "surface_altitude", units="m"
         )
