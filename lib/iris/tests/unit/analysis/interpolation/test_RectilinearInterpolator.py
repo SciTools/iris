@@ -34,9 +34,15 @@ EXTRAPOLATE = "extrapolate"
 class ThreeDimCube(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d_w_multidim_coords()
-        cube.add_aux_coord(iris.coords.DimCoord(np.arange(2), "height"), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(np.arange(3), "latitude"), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(np.arange(4), "longitude"), 2)
+        cube.add_aux_coord(
+            iris.coords.DimCoord(np.arange(2), "height", units="1"), 0
+        )
+        cube.add_dim_coord(
+            iris.coords.DimCoord(np.arange(3), "latitude", units="1"), 1
+        )
+        cube.add_dim_coord(
+            iris.coords.DimCoord(np.arange(4), "longitude", units="1"), 2
+        )
         self.data = np.arange(24).reshape(2, 3, 4).astype(np.float32)
         cube.data = self.data
         self.cube = cube

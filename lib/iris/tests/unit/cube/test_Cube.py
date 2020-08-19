@@ -276,7 +276,7 @@ class Test_xml(tests.IrisTest):
     def test_cell_measures(self):
         cube = stock.simple_3d_w_multidim_coords()
         cm_a = iris.coords.CellMeasure(
-            np.zeros(cube.shape[-2:]), measure="area"
+            np.zeros(cube.shape[-2:]), measure="area", units="1"
         )
         cube.add_cell_measure(cm_a, (1, 2))
         cm_v = iris.coords.CellMeasure(
@@ -1077,7 +1077,10 @@ def create_cube(lon_min, lon_max, bounds=False):
         0,
     )
     cube.add_aux_coord(
-        iris.coords.AuxCoord([1.0, 0.9, 0.8, 0.6], long_name="sigma"), 0
+        iris.coords.AuxCoord(
+            [1.0, 0.9, 0.8, 0.6], long_name="sigma", units="1"
+        ),
+        0,
     )
     cube.add_dim_coord(
         iris.coords.DimCoord([-45, 0, 45], "latitude", units="degrees"), 1

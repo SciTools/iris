@@ -210,6 +210,7 @@ class TestLBVC002_Depth(TestField):
                         lblev,
                         standard_name="model_level_number",
                         attributes={"positive": "down"},
+                        units="1",
                     ),
                     dim,
                 )
@@ -354,6 +355,7 @@ class TestLBVC006_SoilLevel(TestField):
                 lblev,
                 long_name="soil_model_level_number",
                 attributes={"positive": "down"},
+                units="1",
             )
             expect_result = [(coord, dim)]
         self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
@@ -604,6 +606,7 @@ class TestLBVC009_HybridPressure(TestField):
                     lblev,
                     standard_name="model_level_number",
                     attributes={"positive": "up"},
+                    units="1",
                 ),
                 dim,
             )
@@ -630,6 +633,7 @@ class TestLBVC009_HybridPressure(TestField):
                     blev,
                     long_name="sigma",
                     bounds=np.vstack((brlev, brsvd1)).T,
+                    units="1",
                 ),
                 dim,
             )
@@ -706,6 +710,7 @@ class TestLBVC065_HybridHeight(TestField):
                     lblev,
                     standard_name="model_level_number",
                     attributes={"positive": "up"},
+                    units="1",
                 ),
                 dim,
             )
@@ -732,6 +737,7 @@ class TestLBVC065_HybridHeight(TestField):
                     bhlev,
                     long_name="sigma",
                     bounds=np.vstack((bhrlev, brsvd2)).T,
+                    units="1",
                 ),
                 dim,
             )

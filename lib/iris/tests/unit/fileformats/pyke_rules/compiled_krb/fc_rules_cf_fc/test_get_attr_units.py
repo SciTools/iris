@@ -44,7 +44,7 @@ class TestGetAttrUnits(tests.IrisTest):
         expected_attributes = {'invalid_units': u'\u266b'}
         cf_var = self._make_cf_var()
         attr_units = get_attr_units(cf_var, attributes)
-        self.assertEqual(attr_units, 'unknown')
+        self.assertEqual(attr_units, '?')
         self.assertEqual(attributes, expected_attributes)
 
 

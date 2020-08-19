@@ -151,16 +151,18 @@ class Test_merge__time_triple(tests.IrisTest):
     @staticmethod
     def _make_cube(fp, rt, t, realization=None):
         cube = Cube(np.arange(20).reshape(4, 5))
-        cube.add_dim_coord(DimCoord(np.arange(5), long_name="x"), 1)
-        cube.add_dim_coord(DimCoord(np.arange(4), long_name="y"), 0)
-        cube.add_aux_coord(DimCoord(fp, standard_name="forecast_period"))
+        cube.add_dim_coord(DimCoord(np.arange(5), long_name="x", units="1"), 1)
+        cube.add_dim_coord(DimCoord(np.arange(4), long_name="y", units="1"), 0)
         cube.add_aux_coord(
-            DimCoord(rt, standard_name="forecast_reference_time")
+            DimCoord(fp, standard_name="forecast_period", units="1")
         )
-        cube.add_aux_coord(DimCoord(t, standard_name="time"))
+        cube.add_aux_coord(
+            DimCoord(rt, standard_name="forecast_reference_time", units="1")
+        )
+        cube.add_aux_coord(DimCoord(t, standard_name="time", units="1"))
         if realization is not None:
             cube.add_aux_coord(
-                DimCoord(realization, standard_name="realization")
+                DimCoord(realization, standard_name="realization", units="1")
             )
         return cube
 

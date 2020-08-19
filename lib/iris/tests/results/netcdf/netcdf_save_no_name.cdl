@@ -6,11 +6,9 @@ variables:
 	double unknown(dim0, dim1) ;
 		unknown:coordinates = "unknown_scalar" ;
 	double dim0(dim0) ;
-		dim0:units = "1" ;
 	double dim1(dim1) ;
 		dim1:units = "m" ;
 	char unknown_scalar(string6) ;
-		unknown_scalar:units = "no_unit" ;
 
 // global attributes:
 		:Conventions = "CF-1.7" ;

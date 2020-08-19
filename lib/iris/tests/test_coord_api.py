@@ -247,7 +247,7 @@ class TestAuxCoordCreation(tests.IrisTest):
             "AuxCoord("
             "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
             " standard_name=None,"
-            " units=Unit('1'),"
+            " units=Unit('unknown'),"
             " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))
@@ -337,7 +337,7 @@ class TestDimCoordCreation(tests.IrisTest):
             "DimCoord("
             "array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),"
             " standard_name=None,"
-            " units=Unit('1'),"
+            " units=Unit('unknown'),"
             " attributes={'monty': 'python'})"
         )
         self.assertEqual(result, str(b))

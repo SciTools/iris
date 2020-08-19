@@ -269,7 +269,7 @@ class TestLBTIMx2x_ZeroYears(TestField):
         res = _all_other_rules(field)[AUX_COORDS_INDEX]
 
         expected = [
-            (AuxCoord(3, long_name="month_number"), None),
+            (AuxCoord(3, long_name="month_number", units="1"), None),
             (AuxCoord("Mar", long_name="month", units=Unit("no unit")), None),
             (
                 DimCoord(
