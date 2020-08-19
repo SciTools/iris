@@ -329,7 +329,7 @@ class FFHeader:
         # Read the FF header data
         with open(filename, "rb") as ff_file:
             # typically 64-bit words (aka. int64 or ">i8")
-            header_data = np.fromfile(
+            header_data = _parse_binary_stream(
                 ff_file,
                 dtype=">i{0}".format(word_depth),
                 count=FF_HEADER_DEPTH,
@@ -351,19 +351,19 @@ class FFHeader:
                         ff_file.seek((addr[0] - 1) * word_depth, os.SEEK_SET)
                         if len(addr) == 2:
                             if elem == "integer_constants":
-                                res = np.fromfile(
+                                res = _parse_binary_stream(
                                     ff_file,
                                     dtype=">i{0}".format(word_depth),
                                     count=addr[1],
                                 )
                             else:
-                                res = np.fromfile(
+                                res = _parse_binary_stream(
                                     ff_file,
                                     dtype=">f{0}".format(word_depth),
                                     count=addr[1],
                                 )
                         elif len(addr) == 3:
-                            res = np.fromfile(
+                            res = _parse_binary_stream(
                                 ff_file,
                                 dtype=">f{0}".format(word_depth),
                                 count=addr[1] * addr[2],
@@ -695,7 +695,7 @@ class FF2PP:
                 ff_file_seek(table_offset, os.SEEK_SET)
 
                 # Read the current PP header entry from the FF LOOKUP table.
-                header_longs = np.fromfile(
+                header_longs = _parse_binary_stream(
                     ff_file,
                     dtype=">i{0}".format(self._word_depth),
                     count=pp.NUM_LONG_HEADERS,
@@ -704,7 +704,7 @@ class FF2PP:
                 if header_longs[0] == _FF_LOOKUP_TABLE_TERMINATE:
                     # There are no more FF LOOKUP table entries to read.
                     break
-                header_floats = np.fromfile(
+                header_floats = _parse_binary_stream(
                     ff_file,
                     dtype=">f{0}".format(self._word_depth),
                     count=pp.NUM_FLOAT_HEADERS,
@@ -814,6 +814,40 @@ class FF2PP:
 
     def __iter__(self):
         return pp._interpret_fields(self._extract_field())
+
+
+def _parse_binary_stream(file_like, dtype=np.float, count=-1):
+    """
+    Replacement :func:`numpy.fromfile` due to python3 performance issues.
+
+    Args:
+
+    * file_like - Standard python file_like object.
+
+    Kwargs:
+
+    * dtype  - Data type to be parsed out, used to work out bytes read in.
+
+    * count - The number of values required to be generated from the parsing.
+        The default is -1, which will read the entire contexts of the file_like
+        object and generate as many values as possible.
+
+    """
+
+    # There are a wide range of types supported, we just need to know the byte
+    # size of the object, so we just make sure we've go an instance of a
+    # np.dtype
+    if not isinstance(dtype, np.dtype):
+        dtype = np.dtype(dtype)
+
+    # Allocate bytearray for the file to be read into, allowing the numpy array
+    # to be writable.
+    _buffer = bytearray(count * dtype.itemsize)
+    file_like.readinto(_buffer)
+
+    # Let numpy do the heavy lifting once we've sorted the file reading.
+    array = np.frombuffer(_buffer, dtype=dtype, count=-1)
+    return array
 
 
 def load_cubes(filenames, callback, constraints=None):
