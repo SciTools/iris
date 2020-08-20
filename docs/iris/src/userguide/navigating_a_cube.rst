@@ -229,7 +229,7 @@ by field basis *before* they are automatically merged together:
         # Add our own realization coordinate if it doesn't already exist.
         if not cube.coords('realization'):
             realization = np.int32(filename[-6:-3])
-            ensemble_coord = icoords.AuxCoord(realization, standard_name='realization')
+            ensemble_coord = icoords.AuxCoord(realization, standard_name='realization', units="1")
             cube.add_aux_coord(ensemble_coord)
 
     filename = iris.sample_data_path('GloSea4', '*.pp')

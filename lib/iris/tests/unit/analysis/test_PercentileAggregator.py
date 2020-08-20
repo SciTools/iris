@@ -71,7 +71,7 @@ class Test_post_process(tests.IrisTest):
         self.assertIs(actual.data, data)
         name = "percentile_over_time"
         coord = actual.coord(name)
-        expected = AuxCoord(percent, long_name=name)
+        expected = AuxCoord(percent, long_name=name, units="percent")
         self.assertEqual(coord, expected)
 
     def test_simple_multiple_points(self):
@@ -89,7 +89,7 @@ class Test_post_process(tests.IrisTest):
         self.assertArrayEqual(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
-        expected = AuxCoord(percent, long_name=name)
+        expected = AuxCoord(percent, long_name=name, units="percent")
         self.assertEqual(coord, expected)
 
     def test_multi_single_point(self):
@@ -105,7 +105,7 @@ class Test_post_process(tests.IrisTest):
         self.assertIs(actual.data, data)
         name = "percentile_over_time"
         coord = actual.coord(name)
-        expected = AuxCoord(percent, long_name=name)
+        expected = AuxCoord(percent, long_name=name, units="percent")
         self.assertEqual(coord, expected)
 
     def test_multi_multiple_points(self):
@@ -123,7 +123,7 @@ class Test_post_process(tests.IrisTest):
         self.assertArrayEqual(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
-        expected = AuxCoord(percent, long_name=name)
+        expected = AuxCoord(percent, long_name=name, units="percent")
         self.assertEqual(coord, expected)
 
 

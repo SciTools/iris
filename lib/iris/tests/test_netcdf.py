@@ -16,9 +16,11 @@ import os
 import os.path
 import shutil
 import stat
+from subprocess import check_call
 import tempfile
 from unittest import mock
 
+from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
@@ -27,6 +29,7 @@ import iris
 import iris.analysis.trajectory
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
+from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.util
 import iris.coord_systems as icoord_systems
@@ -291,6 +294,42 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertCML(
             cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml")
         )
+
+    def test_default_units(self):
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(cubes[0].units, as_unit("unknown"))
+        self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
+        self.assertEqual(cubes[0].coord("x").units, as_unit(1))
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
@@ -608,10 +647,10 @@ class TestNetCDFSave(tests.IrisTest):
 
     def test_netcdf_multi_wtih_samedimcoord(self):
         time1 = iris.coords.DimCoord(
-            np.arange(10), standard_name="time", var_name="time"
+            np.arange(10), standard_name="time", var_name="time", units="1"
         )
         time2 = iris.coords.DimCoord(
-            np.arange(20), standard_name="time", var_name="time"
+            np.arange(20), standard_name="time", var_name="time", units="1"
         )
 
         self.cube4.add_dim_coord(time1, 0)
@@ -630,11 +669,13 @@ class TestNetCDFSave(tests.IrisTest):
     def test_netcdf_multi_conflict_name_dup_coord(self):
         # Duplicate coordinates with modified variable names lookup.
         latitude1 = iris.coords.DimCoord(
-            np.arange(10), standard_name="latitude"
+            np.arange(10), standard_name="latitude", units="1"
         )
-        time2 = iris.coords.DimCoord(np.arange(2), standard_name="time")
+        time2 = iris.coords.DimCoord(
+            np.arange(2), standard_name="time", units="1"
+        )
         latitude2 = iris.coords.DimCoord(
-            np.arange(2), standard_name="latitude"
+            np.arange(2), standard_name="latitude", units="1"
         )
 
         self.cube6.add_dim_coord(latitude1, 0)
@@ -711,10 +752,10 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving CF-netCDF with multi-dimensional auxiliary coordinates,
         # with conflicts.
         self.cube4.add_aux_coord(
-            iris.coords.AuxCoord(np.arange(10), "time"), 0
+            iris.coords.AuxCoord(np.arange(10), "time", units="1"), 0
         )
         self.cube6.add_aux_coord(
-            iris.coords.AuxCoord(np.arange(10, 20), "time"), 0
+            iris.coords.AuxCoord(np.arange(10, 20), "time", units="1"), 0
         )
 
         cubes = iris.cube.CubeList([self.cube4, self.cube6])
@@ -811,9 +852,11 @@ class TestNetCDFSave(tests.IrisTest):
         # Test saving CF-netCDF with a dimension name corresponding to
         # an existing variable name (conflict).
         self.cube4.add_dim_coord(
-            iris.coords.DimCoord(np.arange(10), "time"), 0
+            iris.coords.DimCoord(np.arange(10), "time", units="1"), 0
         )
-        self.cube6.add_aux_coord(iris.coords.AuxCoord(1, "time"), None)
+        self.cube6.add_aux_coord(
+            iris.coords.AuxCoord(1, "time", units="1"), None
+        )
 
         cubes = iris.cube.CubeList([self.cube4, self.cube6])
         with self.temp_filename(suffix=".nc") as file_out:

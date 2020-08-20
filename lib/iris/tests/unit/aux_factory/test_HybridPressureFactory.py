@@ -144,7 +144,9 @@ class Test_make_coord(tests.IrisTest):
         self.delta = iris.coords.DimCoord(
             [0.0, 1.0, 2.0], long_name="level_pressure", units="Pa"
         )
-        self.sigma = iris.coords.DimCoord([1.0, 0.9, 0.8], long_name="sigma")
+        self.sigma = iris.coords.DimCoord(
+            [1.0, 0.9, 0.8], long_name="sigma", units="1"
+        )
         self.surface_air_pressure = iris.coords.AuxCoord(
             np.arange(4).reshape(2, 2), "surface_air_pressure", units="Pa"
         )

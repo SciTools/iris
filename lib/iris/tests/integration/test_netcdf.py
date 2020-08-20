@@ -81,7 +81,9 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
                 1200.0, long_name="level_pressure", units="hPa"
             )
         )
-        cube.add_aux_coord(iris.coords.DimCoord(0.5, long_name="other sigma"))
+        cube.add_aux_coord(
+            iris.coords.DimCoord(0.5, long_name="other sigma", units="1")
+        )
         cube.add_aux_coord(
             iris.coords.DimCoord(
                 1000.0, long_name="surface_air_pressure", units="hPa"

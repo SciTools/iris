@@ -24,7 +24,7 @@ class Test(TestField):
         coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=21)
         self.assertEqual(
             coords_and_dims,
-            [(DimCoord([21], standard_name="realization"), None)],
+            [(DimCoord([21], standard_name="realization", units="1"), None)],
         )
 
     def test_missing_indicator(self):
