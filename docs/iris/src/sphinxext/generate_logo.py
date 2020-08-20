@@ -9,18 +9,21 @@ Script to generate the Iris logo in every required format.
 Uses XML ElementTree for SVG file editing.
 """
 
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 from copy import deepcopy
+from io import BytesIO
 from os import environ
 from pathlib import Path
 from re import sub as re_sub
-from tempfile import TemporaryFile
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 
 from cartopy import crs as ccrs, __version__ as cartopy_version
 from cartopy.feature import LAND
 from matplotlib import pyplot as plt, rcParams
+from numpy import linspace
+
+print("LOGO GENERATION START ...")
 
 ################################################################################
 # Configuration
@@ -46,24 +49,11 @@ FILENAME_PREFIX = environ["PROJECT_PREFIX"]
 # The logo's SVG elements can be configured at their point of definition below.
 
 ################################################################################
-# Plot land using Cartopy.
-
-# Set up orthographic plot.
-# figure_inches doesn't influence the final size, but does influence the coastline definition.
-figure_inches = 10
-fig = plt.figure(0, figsize=(figure_inches,) * 2)
-orthographic = ccrs.Orthographic(central_longitude=-30, central_latitude=22.9)
-ax = plt.axes(projection=orthographic)
-# TODO: remove version check Iris is pinned appropriately.
-if cartopy_version < "0.18":
-    ax.outline_patch.set_edgecolor("None")
-    ax.background_patch.set_facecolor("None")
-else:
-    ax.spines["geo"].set_visible(False)
-
 
 # Establish some sizes and ratios.
 # Set plot to include space for the mask to be added.
+# figure_inches doesn't influence the final size, but does influence the coastline definition.
+figure_inches = 10
 mpl_points_per_inch = 72
 
 globe_inches = figure_inches / CLIP_GLOBE_RATIO
@@ -73,32 +63,10 @@ globe_points = globe_inches * mpl_points_per_inch
 
 mpl_font_points = rcParams["font.size"]
 inch_font_ratio = mpl_points_per_inch / mpl_font_points
-# TODO: remove version check Iris is pinned appropriately.
-if cartopy_version < "0.18":
-    fig.canvas.draw()
-plt.tight_layout(pad=pad_inches * inch_font_ratio)
 
-
-# Add land with simplified coastlines.
-simple_geometries = [
-    geometry.simplify(1.0, True) for geometry in LAND.geometries()
-]
-LAND.geometries = lambda: iter(simple_geometries)
-ax.add_feature(LAND)
-
-################################################################################
-# Matplotlib SVG content.
-
+# XML ElementTree setup.
 namespaces = {"svg": "http://www.w3.org/2000/svg"}
 ET.register_namespace("", namespaces["svg"])
-
-with TemporaryFile() as temp_svg:
-    plt.savefig(temp_svg, format="svg", transparent=True)
-    temp_svg.seek(0)
-    # Read saved SVG file.
-    tree = ET.parse(temp_svg)
-
-root_original = tree.getroot()
 
 ################################################################################
 # Create new SVG elements for logo.
@@ -130,13 +98,63 @@ background_gradient.append(
 defs_dict["background_gradient"] = background_gradient
 
 # LAND
-mpl_land = root_original.find(".//svg:g[@id='figure_1']", namespaces)
-land_paths = mpl_land.find(".//svg:g[@id='PathCollection_1']", namespaces)
-for path in land_paths:
-    path.attrib.pop("clip-path")
-    path.attrib.pop("style")
-land_paths.tag = "clipPath"
-defs_dict["land_clip"] = land_paths
+# (Using Matplotlib and Cartopy).
+
+# Create land with simplified coastlines.
+simple_geometries = [
+    geometry.simplify(1.0, True) for geometry in LAND.geometries()
+]
+LAND.geometries = lambda: iter(simple_geometries)
+
+# Variable that will store the sequence of land-shaped SVG clips for each longitude.
+land_clips = OrderedDict()
+
+# Create a sequence of longitude values.
+central_longitude = -30
+central_latitude = 22.9
+rotation_frames = 180
+rotation_longitudes = linspace(start=central_longitude + 360,
+                               stop=central_longitude,
+                               num=rotation_frames,
+                               endpoint=False)
+# Normalise to -180..+180
+rotation_longitudes = (rotation_longitudes + 360.0 + 180.0) % 360.0 - 180.0
+
+for lon in rotation_longitudes:
+    # Use Matplotlib and Cartopy to generate land-shaped SVG clips for each longitude.
+
+    projection_rotated = ccrs.Orthographic(central_longitude=lon,
+                                           central_latitude=central_latitude)
+
+    fig = plt.figure(0, figsize=(figure_inches,) * 2)
+    ax = plt.axes(projection=projection_rotated)
+    # TODO: remove version check Iris is pinned appropriately.
+    if cartopy_version < "0.18":
+        fig.canvas.draw()
+    # Use constants set earlier to achieve desired dimensions.
+    plt.tight_layout(pad=pad_inches * inch_font_ratio)
+    ax.add_feature(LAND)
+
+    # Save as SVG and extract the resultant code.
+    svg_bytes = BytesIO()
+    plt.savefig(svg_bytes, format="svg")
+    svg_mpl = ET.fromstring(svg_bytes.getvalue())
+
+    # Find land paths and convert to clip paths.
+    mpl_land = svg_mpl.find(".//svg:g[@id='figure_1']", namespaces)
+    land_paths = mpl_land.find(".//svg:g[@id='PathCollection_1']", namespaces)
+    for path in land_paths:
+        # Remove all other attribute items.
+        path.attrib = {"d": path.attrib["d"]}
+    land_paths.tag = "clipPath"
+
+    land_clips[f"land_clip_{lon}"] = land_paths
+
+# Extract the final land clip for use as the default, store as a namedtuple.
+dict_item = namedtuple("dict_item", ["key", "value"])
+land_clip_tuples = list(land_clips.items())
+land_clip_central = dict_item(*land_clip_tuples[-1])
+defs_dict[land_clip_central.key] = land_clip_central.value
 
 artwork_dict["land"] = ET.Element(
     "circle",
@@ -145,7 +163,7 @@ artwork_dict["land"] = ET.Element(
         "cy": "50%",
         "r": "50%",
         "fill": "url(#land_gradient)",
-        "clip-path": "url(#land_clip)",
+        "clip-path": f"url(#{land_clip_central.key})",
     },
 )
 land_gradient = ET.Element("radialGradient")
@@ -295,61 +313,103 @@ iris_clip.append(ET.Element("path", attrib={"d": clip_string}))
 defs_dict["iris_clip"] = iris_clip
 
 ################################################################################
-# Create logo SVG
+# Create SVG's
 
-root_logo = ET.Element("svg")
-for dim in ("width", "height"):
-    root_logo.attrib[dim] = str(LOGO_PIXELS)
-# Group contents into a logo subgroup (text will be stored separately).
-logo_group = ET.Element("svg", attrib={"id": "logo_group"})
-root_logo.append(logo_group)
-logo_group.attrib["viewBox"] = " ".join(
-    ["0"] * 2 + [str(background_points)] * 2
+
+def svg_logo(defs_dict, artwork_dict):
+    # Group contents into a logo subgroup (so text can be stored separately).
+    logo_group = ET.Element("svg", attrib={"id": "logo_group"})
+    logo_group.attrib["viewBox"] = " ".join(
+        ["0"] * 2 + [str(background_points)] * 2
+    )
+
+    def populate_element_group(group, children_dict):
+        """Write each element from a dictionary, assigning an appropriate ID."""
+        for name, element in children_dict.items():
+            element.attrib["id"] = name
+            group.append(element)
+        logo_group.append(group)
+
+    defs_element = ET.Element("defs")
+    populate_element_group(defs_element, defs_dict)
+
+    # All artwork is clipped by the Iris shape.
+    artwork_element = ET.Element("g", attrib={"clip-path": "url(#iris_clip)"})
+    populate_element_group(artwork_element, artwork_dict)
+
+    root = ET.Element("svg")
+    for dim in ("width", "height"):
+        root.attrib[dim] = str(LOGO_PIXELS)
+    root.append(logo_group)
+
+    return root
+
+
+def svg_banner(logo_svg):
+    banner_height = BANNER_PIXELS["height"]
+    text_size = banner_height * TEXT_GLOBE_RATIO
+    text_x = banner_height + 8
+    # Manual y centring since SVG dominant-baseline not widely supported.
+    text_y = banner_height - (banner_height - text_size) / 2
+    text_y *= 0.975  # Slight offset
+
+    text = ET.Element(
+        "text",
+        attrib={
+            "x": str(text_x),
+            "y": str(text_y),
+            "font-size": f"{text_size}pt",
+            "font-family": "georgia",
+        },
+    )
+    text.text = BANNER_TEXT
+
+    root = deepcopy(logo_svg)
+    for dimension, pixels in BANNER_PIXELS.items():
+        root.attrib[dimension] = str(pixels)
+
+    # Left-align the logo.
+    banner_logo_group = root.find("svg", namespaces)
+    banner_logo_group.attrib["preserveAspectRatio"] = "xMinYMin meet"
+
+    root.append(text)
+
+    return root
+
+
+logo = svg_logo(defs_dict=defs_dict, artwork_dict=artwork_dict)
+banner = svg_banner(logo)
+
+
+# Create defs and artwork for rotating logo.
+defs_dict_rotate = deepcopy(defs_dict)
+artwork_dict_rotate = deepcopy(artwork_dict)
+
+# Replace single land clip with the full longitude range of land clips.
+defs_dict_rotate.pop(land_clip_central.key)
+defs_dict_rotate.update(land_clips)
+
+# Add animation sub-element to the land element.
+land_rotate = deepcopy(artwork_dict["land"])
+animation_values = ";".join([f"url(#{key})" for key in land_clips.keys()])
+frames = len(land_clips)
+duration = frames / 30
+land_rotate.append(ET.Element(
+        "animate",
+        attrib={
+            "attributeName": "clip-path",
+            "values": animation_values,
+            "begin": "0s",
+            "repeatCount": "indefinite",
+            "dur": f"{duration}s",
+        },
+    )
 )
+artwork_dict_rotate["land"] = land_rotate
 
-
-def populate_element_group(group, children_dict):
-    for name, element in children_dict.items():
-        element.attrib["id"] = name
-        group.append(element)
-    logo_group.append(group)
-
-
-defs_element = ET.Element("defs")
-populate_element_group(defs_element, defs_dict)
-
-artwork_element = ET.Element("g", attrib={"clip-path": "url(#iris_clip)"})
-populate_element_group(artwork_element, artwork_dict)
-
-################################################################################
-# Create Banner SVG.
-
-root_banner = deepcopy(root_logo)
-for dimension, pixels in BANNER_PIXELS.items():
-    root_banner.attrib[dimension] = str(pixels)
-
-banner_height = BANNER_PIXELS["height"]
-text_size = banner_height * TEXT_GLOBE_RATIO
-text_x = banner_height + 8
-# Manual y centring since SVG dominant-baseline not widely supported.
-text_y = banner_height - (banner_height - text_size) / 2
-text_y *= 0.975  # Slight offset
-
-# Left-align the logo.
-banner_logo_group = root_banner.find("svg", namespaces)
-banner_logo_group.attrib["preserveAspectRatio"] = "xMinYMin meet"
-
-text = ET.Element(
-    "text",
-    attrib={
-        "x": str(text_x),
-        "y": str(text_y),
-        "font-size": f"{text_size}pt",
-        "font-family": "georgia",
-    },
-)
-text.text = BANNER_TEXT
-root_banner.append(text)
+logo_rotate = svg_logo(defs_dict=defs_dict_rotate,
+                       artwork_dict=artwork_dict_rotate)
+banner_rotate = svg_banner(logo_rotate)
 
 ################################################################################
 # Write files.
@@ -367,8 +427,15 @@ def write_svg_file(svg_root, filename_suffix):
     write_path = WRITE_DIRECTORY.joinpath(filename)
     with open(write_path, "w") as f:
         f.write(pretty_xml)
-    return write_path
 
 
-path_logo = write_svg_file(root_logo, "logo")
-path_banner = write_svg_file(root_banner, "logo-title")
+write_dict = {
+    "logo": logo,
+    "logo-title": banner,
+    "logo-rotate": logo_rotate,
+    "logo-title-rotate": banner_rotate
+}
+for suffix, svg in write_dict.items():
+    write_svg_file(svg, suffix)
+
+print("LOGO GENERATION COMPLETE")
