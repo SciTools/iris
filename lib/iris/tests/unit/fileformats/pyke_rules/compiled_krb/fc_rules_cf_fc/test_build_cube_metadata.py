@@ -28,7 +28,7 @@ def _make_engine(global_attributes=None, standard_name=None, long_name=None):
 
     cf_group = mock.Mock(global_attributes=global_attributes)
 
-    cf_var = mock.Mock(
+    cf_var = mock.MagicMock(
         cf_name='wibble',
         standard_name=standard_name,
         long_name=long_name,

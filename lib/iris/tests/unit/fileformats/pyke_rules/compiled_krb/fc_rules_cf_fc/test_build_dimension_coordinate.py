@@ -30,7 +30,7 @@ class RulesTestMixin:
             cube=mock.Mock(),
             cf_var=mock.Mock(dimensions=('foo', 'bar')),
             filename='DUMMY',
-            provides=dict(coordinates=[]))
+            cube_parts=dict(coordinates=[]))
 
         # Create patch for deferred loading that prevents attempted
         # file access. This assumes that self.cf_coord_var and
@@ -75,6 +75,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         self.cf_coord_var = mock.Mock(
             dimensions=('foo',),
             cf_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             standard_name=None,
             long_name='wibble',
             units='days since 1970-01-01',
@@ -226,6 +227,7 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units='m',
             shape=points.shape,
             dtype=points.dtype,
@@ -258,9 +260,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.provides container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.provides['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
     def test_fastest_varying_vertex_dim(self):
@@ -286,9 +288,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.provides container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.provides['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
     def test_fastest_with_different_dim_names(self):
@@ -317,9 +319,9 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_dim_coord.assert_called_with(
                 expected_coord, [0])
 
-            # Test that engine.provides container is correctly populated.
+            # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            self.assertEqual(self.engine.provides['coordinates'],
+            self.assertEqual(self.engine.cube_parts['coordinates'],
                              expected_list)
 
 
@@ -332,11 +334,12 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
 
     def _make_vars(self, points, bounds=None, units='degrees'):
         points = np.array(points)
-        self.cf_coord_var = mock.Mock(
+        self.cf_coord_var = mock.MagicMock(
             dimensions=('foo',),
             cf_name='wibble',
             standard_name=None,
             long_name='wibble',
+            cf_data=mock.Mock(spec=[]),
             units=units,
             shape=points.shape,
             dtype=points.dtype,
@@ -435,6 +438,7 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
             standard_name=None,
             long_name='wibble',
             units='degrees',
+            cf_data=mock.Mock(spec=[]),
             shape=(),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key])

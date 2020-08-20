@@ -25,7 +25,7 @@ class TestCoordAttributes(tests.IrisTest):
         for coord in cf_group:
             engine.cube.add_aux_coord(coord)
             coordinates.append((coord, coord.name()))
-        engine.provides["coordinates"] = coordinates
+        engine.cube_parts["coordinates"] = coordinates
 
     def setUp(self):
         this = "iris.fileformats.netcdf._assert_case_specific_facts"
