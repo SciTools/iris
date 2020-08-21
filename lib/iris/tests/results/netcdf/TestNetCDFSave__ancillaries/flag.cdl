@@ -35,10 +35,10 @@ variables:
 	double forecast_period(time) ;
 		forecast_period:units = "hours" ;
 		forecast_period:standard_name = "forecast_period" ;
-	int quality_flag(time, grid_latitude, grid_longitude) ;
+	byte quality_flag(time, grid_latitude, grid_longitude) ;
 		quality_flag:long_name = "quality_flag" ;
 		quality_flag:flag_meanings = "PASS FAIL MISSING" ;
-		quality_flag:flag_values = 1, 2, 9 ;
+		quality_flag:flag_values = 1b, 2b, 9b ;
 
 // global attributes:
 		:source = "Iris test case" ;
