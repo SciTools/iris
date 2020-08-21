@@ -460,14 +460,21 @@ class TestNetCDFLoad(tests.IrisTest):
             variables:
                 int64 qqv(ayv, axv) ;
                     qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
                 int64 ayv(ayv) ;
                     ayv:long_name = "y" ;
                 int64 axv(axv) ;
                     axv:units = "1" ;
                     axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
             data:
                 axv = 11, 12, 13;
                 ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
             }
             """
         self.tmpdir = tempfile.mkdtemp()
@@ -485,6 +492,12 @@ class TestNetCDFLoad(tests.IrisTest):
         self.assertEqual(cubes[0].units, as_unit("unknown"))
         self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
         self.assertEqual(cubes[0].coord("x").units, as_unit(1))
+        self.assertEqual(
+            cubes[0].ancillary_variable("refs").units, as_unit("unknown")
+        )
+        self.assertEqual(
+            cubes[0].cell_measure("areas").units, as_unit("unknown")
+        )
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
@@ -1261,6 +1274,21 @@ class TestNetCDFSave__ancillaries(tests.IrisTest):
         testcube_2.add_ancillary_variable(ancil2, (1, 2))
         with self.temp_filename(suffix=".nc") as filename:
             iris.save([testcube_1, testcube_2], filename)
+            self.assertCDL(filename)
+
+    def test_flag(self):
+        testcube = stock.realistic_3d()
+        flag = iris.coords.AncillaryVariable(
+            np.ones(testcube.shape, dtype=np.int8),
+            long_name="quality_flag",
+            attributes={
+                "flag_meanings": "PASS FAIL MISSING",
+                "flag_values": np.array([1, 2, 9], dtype=np.int8),
+            },
+        )
+        testcube.add_ancillary_variable(flag, (0, 1, 2))
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(testcube, filename)
             self.assertCDL(filename)
 
 
