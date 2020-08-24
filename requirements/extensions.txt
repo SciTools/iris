@@ -6,4 +6,3 @@
 # first.
 
 iris-grib  #conda:
-gdal
