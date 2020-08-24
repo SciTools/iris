@@ -1,2 +1,2 @@
-* CF Ancillary Variables are now loaded from and saved to netcdf-CF files.
+* CF Ancillary Variables are now loaded from and saved to netcdf-CF files. Special support is given to quality flags to ensure they load and save with appropriate units.
 
