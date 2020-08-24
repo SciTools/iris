@@ -121,7 +121,7 @@ class MixinVectorPlotCases:
         self.plot(
             "latlon_2d", u_cube, v_cube, coords=("longitude", "latitude")
         )
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         ax.set_global()
         self.check_graphic()
 
@@ -132,7 +132,7 @@ class MixinVectorPlotCases:
         self.plot(
             "latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude")
         )
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         self.check_graphic()
 
     def test_2d_rotated_latlon(self):
@@ -142,7 +142,7 @@ class MixinVectorPlotCases:
         self.plot(
             "2d_rotated", u_cube, v_cube, coords=("longitude", "latitude")
         )
-        ax.coastlines(color="red")
+        ax.coastlines(resolution="110m", color="red")
         ax.set_global()
         self.check_graphic()
 

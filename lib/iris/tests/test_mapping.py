@@ -116,26 +116,26 @@ class TestMappingSubRegion(tests.GraphicsTest):
         plt.subplot(221)
         plt.title("Default")
         iplt.contourf(self.cube)
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
 
         # Second sub-plot
         plt.subplot(222, projection=ccrs.Mollweide(central_longitude=120))
         plt.title("Molleweide")
         iplt.contourf(self.cube)
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
 
         # Third sub-plot (the projection part is redundant, but a useful
         # test none-the-less)
         ax = plt.subplot(223, projection=iplt.default_projection(self.cube))
         plt.title("Native")
         iplt.contour(self.cube)
-        ax.coastlines()
+        ax.coastlines("110m")
 
         # Fourth sub-plot
         ax = plt.subplot(2, 2, 4, projection=ccrs.PlateCarree())
         plt.title("PlateCarree")
         iplt.contourf(self.cube)
-        ax.coastlines()
+        ax.coastlines("110m")
 
         self.check_graphic()
 
@@ -250,7 +250,7 @@ class TestLimitedAreaCube(tests.GraphicsTest):
 
     def test_scatter(self):
         iplt.points(self.cube)
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
 
