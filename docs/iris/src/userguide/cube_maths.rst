@@ -206,7 +206,7 @@ Finally, the cube we have created needs to be given a suitable name::
 
     temperature.rename('air_temperature')
 
-The result could now be plotted using the guidance provided in the 
+The result could now be plotted using the guidance provided in the
 :doc:`plotting_a_cube` section.
 
 .. only:: html
@@ -218,4 +218,37 @@ The result could now be plotted using the guidance provided in the
 
     A very similar example to this can be found in the examples section, 
     with the title "Deriving Exner Pressure and Air Temperature".
+
+Combining units
+---------------
+
+It should be noted that when combining cubes by multiplication, division or
+power operations, the resulting cube will have a unit which is an appropriate
+combination of the constituent units. In the above example, since ``pressure``
+and ``p0`` have the same unit, then ``pressure / p0`` has a dimensionless
+unit of ``'1'``. Since ``(pressure / p0)`` has a unit of ``'1'``, this does
+not change under power operations and so
+``( (pressure / p0) ** (287.05 / 1005) )`` also has unit ``1``. Multiplying
+by a cube with unit ``'1'`` will preserve units, so the cube ``temperature``
+will be given the same units as are in ``pot_temperature``. It should be
+noted that some combinations of units, particularly those involving power
+operations, will not result in a valid unit and will cause the calculation
+to fail. For example, a cube ``a`` had units ``'m'`` then ``a ** 0.5``
+would result in an error since the square root of a meter has no meaningful
+unit (if ``a`` had units ``'m2'`` then ``a ** 0.5`` would result in a cube
+with units ``'m'``).
+
+Iris inherits units from `cf_units <https://scitools.org.uk/cf-units/docs/latest/>`_
+which in turn inherits from `UDUNITS <https://www.unidata.ucar.edu/software/udunits/udunits-current/doc/udunits/udunits2.html>`_.
+As well as the units UDUNITS provides, cf units also provides the units
+``'no-unit'`` and ``'unknown'``. A unit of ``'no-unit'`` means that the
+associated data is not suitable for describing with a unit, cf units
+considers ``'no-unit'`` unsuitable for combining and therefore any
+arithmetic done on a cube with ``'no-unit'`` will fail. A unit of
+``'unknown'`` means that the unit describing the associated data
+cannot be determined. cf units and Iris will allow arithmetic on cubes
+with a unit of ``'unknown'``, but the resulting cube will always have
+a unit of ``'unknown'``. If a calculation is prevented because it would
+result in inappropriate units, it may be forced by setting the units of
+the original cubes to be ``'unknown'``.
 
