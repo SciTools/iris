@@ -229,6 +229,16 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(com, res.data, strict=True)
         self.assertIs(res, orig_cube)
 
+    def test_partial_mask_first_lazy_in_place(self):
+        # Only first cube has lazy data.
+        com, res, orig_cube = self._test_partial_mask(True, lazy="first")
+        self.assertMaskedArrayEqual(com, res.data)
+
+    def test_partial_mask_second_lazy_in_place(self):
+        # Only second cube has lazy data.
+        com, res, orig_cube = self._test_partial_mask(True, lazy="second")
+        self.assertMaskedArrayEqual(com, res.data)
+
     def test_partial_mask_not_in_place(self):
         # Cube arithmetic not an in_place operation.
         com, res, orig_cube = self._test_partial_mask(False)
@@ -236,16 +246,14 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         self.assertMaskedArrayEqual(com, res.data)
         self.assertIsNot(res, orig_cube)
 
-    def test_partial_mask_first_lazy(self):
+    def test_partial_mask_first_lazy_not_in_place(self):
         # Only first cube has lazy data.
         com, res, orig_cube = self._test_partial_mask(False, lazy="first")
-
         self.assertMaskedArrayEqual(com, res.data)
 
-    def test_partial_mask_second_lazy(self):
+    def test_partial_mask_second_lazy_not_in_place(self):
         # Only second cube has lazy data.
         com, res, orig_cube = self._test_partial_mask(False, lazy="second")
-
         self.assertMaskedArrayEqual(com, res.data)
 
 
