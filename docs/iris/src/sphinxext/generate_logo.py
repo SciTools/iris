@@ -21,7 +21,7 @@ from xml.dom import minidom
 from cartopy import crs as ccrs
 from cartopy.feature import LAND
 from matplotlib import pyplot as plt
-from numpy import linspace
+import numpy as np
 
 print("LOGO GENERATION START ...")
 
@@ -107,14 +107,14 @@ land_clips = {}
 central_longitude = -30
 central_latitude = 22.9
 rotation_frames = 180
-rotation_longitudes = linspace(start=central_longitude + 360,
-                               stop=central_longitude,
-                               num=rotation_frames,
-                               endpoint=False)
+rotation_longitudes = np.linspace(start=central_longitude + 360,
+                                  stop=central_longitude,
+                                  num=rotation_frames,
+                                  endpoint=False)
 # Normalise to -180..+180
 rotation_longitudes = (rotation_longitudes + 360.0 + 180.0) % 360.0 - 180.0
 
-for lon in rotation_longitudes[:2]:
+for lon in rotation_longitudes:
     # Use Matplotlib and Cartopy to generate land-shaped SVG clips for each longitude.
 
     projection_rotated = ccrs.Orthographic(central_longitude=lon,
