@@ -838,6 +838,15 @@ def _binary_op_common(
             raise TypeError(emsg)
         return data
 
+    force_lazy = force_masked = False
+
+    if iris._lazy_data.is_lazy_data(rhs):
+        force_lazy = True
+    elif in_place and ma.is_masked(rhs):
+        # If lhs is a plain numpy array, we need to cannot do a straight
+        # in-place operation without stripping the mask from rhs.
+        force_masked = True
+
     result = _math_op_common(
         cube,
         unary_func,
@@ -845,7 +854,8 @@ def _binary_op_common(
         new_dtype=new_dtype,
         in_place=in_place,
         skeleton_cube=skeleton_cube,
-        force_lazy=iris._lazy_data.is_lazy_data(rhs),
+        force_lazy=force_lazy,
+        force_masked=force_masked,
     )
 
     if isinstance(other, Cube):
@@ -935,6 +945,7 @@ def _math_op_common(
     in_place=False,
     skeleton_cube=False,
     force_lazy=False,
+    force_masked=False,
 ):
     from iris.cube import Cube
 
@@ -943,6 +954,8 @@ def _math_op_common(
     if in_place and not skeleton_cube:
         if force_lazy or cube.has_lazy_data():
             cube.data = operation_function(cube.lazy_data())
+        elif force_masked and not isinstance(cube.data, ma.MaskedArray):
+            cube.data = operation_function(ma.array(cube.data))
         else:
             try:
                 operation_function(cube.data, out=cube.data)
@@ -951,10 +964,12 @@ def _math_op_common(
                 operation_function(cube.data)
         new_cube = cube
     else:
-        if force_lazy:
+        if force_lazy or cube.has_lazy_data():
             data = operation_function(cube.lazy_data())
+        elif force_masked and not isinstance(cube.data, ma.MaskedArray):
+            data = operation_function(ma.array(cube.data))
         else:
-            data = operation_function(cube.core_data())
+            data = operation_function(cube.data)
         if skeleton_cube:
             # Simply wrap the resultant data in a cube, as no
             # cube metadata is required by the caller.
