@@ -985,6 +985,9 @@ class RectilinearRegridder:
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`RectilinearRegridder`.
 
+        If the source cube has lazy data, the returned cube will also
+        have lazy data.
+
         Args:
 
         * src:
@@ -995,6 +998,11 @@ class RectilinearRegridder:
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
             either nearest-neighbour or linear interpolation.
+
+        .. note::
+
+            If the source cube has lazy data, chunks in the horizontal
+            dimensions will be combined before regridding.
 
         """
         # Validity checks.
