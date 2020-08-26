@@ -9,6 +9,7 @@
 # importing anything else.
 import iris.tests as tests
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -469,6 +470,24 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
                     test_dtype: test_dtype for test_dtype in self.test_dtypes
                 }
             self.assertEqual(result_dtypes, expected_types_mapping)
+
+
+class Test___call___lazy(tests.IrisTest):
+    def setUp(self):
+        self.cube = lat_lon_cube()
+        # Regridder method and extrapolation-mode.
+        self.args = ("linear", "mask")
+        self.regridder = Regridder(self.cube, self.cube, *self.args)
+        self.lazy_cube = self.cube.copy(da.asarray(self.cube.data))
+        self.lazy_regridder = Regridder(
+            self.lazy_cube, self.lazy_cube, *self.args
+        )
+
+    def test_lazy_regrid(self):
+        result = self.lazy_regridder(self.lazy_cube)
+        self.assertTrue(result.has_lazy_data())
+        expected = self.regridder(self.cube)
+        self.assertTrue(result == expected)
 
 
 class Test___call____invalid_types(tests.IrisTest):
@@ -1230,6 +1249,9 @@ class Test___call____NOP(tests.IrisTest):
         # The destination grid points are exactly the same as the
         # src grid points.
         self.src = realistic_4d()[:5, :2, ::40, ::30]
+        self.lazy_src = self.src.copy(
+            da.asarray(self.src.data, chunks=(1, 2) + self.src.shape[2:])
+        )
         self.grid = self.src.copy()
 
     def test_nop__linear(self):
@@ -1241,6 +1263,16 @@ class Test___call____NOP(tests.IrisTest):
         regridder = Regridder(self.src, self.grid, "nearest", "mask")
         result = regridder(self.src)
         self.assertEqual(result, self.src)
+
+    def test_nop__linear_lazy(self):
+        regridder = Regridder(self.lazy_src, self.grid, "linear", "mask")
+        result = regridder(self.lazy_src)
+        self.assertEqual(result, self.lazy_src)
+
+    def test_nop__nearest_lazy(self):
+        regridder = Regridder(self.lazy_src, self.grid, "nearest", "mask")
+        result = regridder(self.lazy_src)
+        self.assertEqual(result, self.lazy_src)
 
 
 @tests.skip_data

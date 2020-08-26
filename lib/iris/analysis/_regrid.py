@@ -11,7 +11,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import _map_complete_blocks
+from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     extend_circular_coord_and_data,
@@ -1055,7 +1055,7 @@ class RectilinearRegridder:
             extrapolation_mode=self._extrapolation_mode,
         )
 
-        data = _map_complete_blocks(
+        data = map_complete_blocks(
             src, regrid, (y_dim, x_dim), sample_grid_x.shape
         )
 

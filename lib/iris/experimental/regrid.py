@@ -18,7 +18,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
-from iris._lazy_data import _map_complete_blocks
+from iris._lazy_data import map_complete_blocks
 import iris.analysis.cartography
 from iris.analysis._interpolation import (
     get_xy_dim_coords,
@@ -940,7 +940,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
         mdtol=mdtol,
     )
 
-    new_data = _map_complete_blocks(
+    new_data = map_complete_blocks(
         src_cube, regrid, (src_y_dim, src_x_dim), meshgrid_x.shape
     )
 

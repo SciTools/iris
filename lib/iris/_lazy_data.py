@@ -351,7 +351,7 @@ def lazy_elementwise(lazy_array, elementwise_op):
     return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
 
 
-def _map_complete_blocks(src, func, dims, out_sizes):
+def map_complete_blocks(src, func, dims, out_sizes):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
