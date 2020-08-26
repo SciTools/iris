@@ -46,6 +46,9 @@ def _title(cube_or_coord, with_units):
 
             if _use_symbol(units):
                 units = units.symbol
+            if units.is_time_reference():
+                # iris.plot uses matplotlib.dates.date2num, which is fixed to the below unit.
+                units = "days since 1970-01-01"
             title += " / {}".format(units)
 
     return title
