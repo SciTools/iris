@@ -18,9 +18,9 @@ from re import sub as re_sub
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 
-from cartopy import crs as ccrs, __version__ as cartopy_version
+from cartopy import crs as ccrs
 from cartopy.feature import LAND
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
 from numpy import linspace
 
 print("LOGO GENERATION START ...")
@@ -50,19 +50,13 @@ FILENAME_PREFIX = environ["PROJECT_PREFIX"]
 
 ################################################################################
 
-# Establish some sizes and ratios.
-# Set plot to include space for the mask to be added.
+# Establish some sizes and ratios - allows space for the mask to be added after plotting.
 # figure_inches doesn't influence the final size, but does influence the coastline definition.
 figure_inches = 10
 mpl_points_per_inch = 72
 
-globe_inches = figure_inches / CLIP_GLOBE_RATIO
-pad_inches = (figure_inches - globe_inches) / 2
+globe_pad = (1 - (1 / CLIP_GLOBE_RATIO)) / 2
 background_points = figure_inches * mpl_points_per_inch
-globe_points = globe_inches * mpl_points_per_inch
-
-mpl_font_points = rcParams["font.size"]
-inch_font_ratio = mpl_points_per_inch / mpl_font_points
 
 # XML ElementTree setup.
 namespaces = {"svg": "http://www.w3.org/2000/svg"}
@@ -120,19 +114,16 @@ rotation_longitudes = linspace(start=central_longitude + 360,
 # Normalise to -180..+180
 rotation_longitudes = (rotation_longitudes + 360.0 + 180.0) % 360.0 - 180.0
 
-for lon in rotation_longitudes:
+for lon in rotation_longitudes[:2]:
     # Use Matplotlib and Cartopy to generate land-shaped SVG clips for each longitude.
 
     projection_rotated = ccrs.Orthographic(central_longitude=lon,
                                            central_latitude=central_latitude)
 
-    fig = plt.figure(0, figsize=(figure_inches,) * 2)
-    ax = plt.axes(projection=projection_rotated)
-    # TODO: remove version check Iris is pinned appropriately.
-    if cartopy_version < "0.18":
-        fig.canvas.draw()
     # Use constants set earlier to achieve desired dimensions.
-    plt.tight_layout(pad=pad_inches * inch_font_ratio)
+    fig = plt.figure(0, figsize=(figure_inches,) * 2)
+    ax = plt.subplot(projection=projection_rotated)
+    plt.subplots_adjust(left=globe_pad, bottom=globe_pad, right=1 - globe_pad, top=1 - globe_pad)
     ax.add_feature(LAND)
 
     # Save as SVG and extract the resultant code.
