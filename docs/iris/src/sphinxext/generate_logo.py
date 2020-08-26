@@ -9,7 +9,7 @@ Script to generate the Iris logo in every required format.
 Uses XML ElementTree for SVG file editing.
 """
 
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 from copy import deepcopy
 from io import BytesIO
 from os import environ
@@ -67,7 +67,7 @@ ET.register_namespace("", namespaces["svg"])
 
 # The elements that are displayed (not just referenced).
 # Order is important for layering.
-artwork_dict = OrderedDict.fromkeys(["background", "glow", "sea", "land",])
+artwork_dict = dict.fromkeys(["background", "glow", "sea", "land",])
 # The elements that will just be referenced by artwork elements.
 defs_dict = {}
 
@@ -101,7 +101,7 @@ simple_geometries = [
 LAND.geometries = lambda: iter(simple_geometries)
 
 # Variable that will store the sequence of land-shaped SVG clips for each longitude.
-land_clips = OrderedDict()
+land_clips = {}
 
 # Create a sequence of longitude values.
 central_longitude = -30
