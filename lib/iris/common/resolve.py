@@ -666,6 +666,7 @@ class Resolve:
 
         # Given the resultant broadcast shape, determine whether the
         # mapping requires to be reversed.
+        # Only applies to equal src/tgt dimensionality.
         broadcast_flip = (
             src_cube.ndim == tgt_cube.ndim
             and self._tgt_cube_resolved.shape != self.shape
@@ -674,13 +675,16 @@ class Resolve:
 
         # Given the number of free dimensions, determine whether the
         # mapping requires to be reversed.
+        # Only applies to equal src/tgt dimensionality.
         src_free = set(src_dim_coverage.dims_free) & set(
             src_aux_coverage.dims_free
         )
         tgt_free = set(tgt_dim_coverage.dims_free) & set(
             tgt_aux_coverage.dims_free
         )
-        free_flip = len(tgt_free) > len(src_free)
+        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(
+            src_free
+        )
 
         # Reverse the mapping direction.
         if broadcast_flip or free_flip:
