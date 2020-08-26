@@ -843,8 +843,8 @@ def _binary_op_common(
     if iris._lazy_data.is_lazy_data(rhs):
         force_lazy = True
     elif in_place and ma.is_masked(rhs):
-        # If lhs is a plain numpy array, we need to cannot do a straight
-        # in-place operation without stripping the mask from rhs.
+        # If lhs is a plain numpy array, we cannot do a straight in-place
+        # operation without stripping the mask from rhs.
         force_masked = True
 
     result = _math_op_common(
@@ -951,31 +951,32 @@ def _math_op_common(
 
     _assert_is_cube(cube)
 
-    if in_place and not skeleton_cube:
-        if force_lazy or cube.has_lazy_data():
-            cube.data = operation_function(cube.lazy_data())
-        elif force_masked and not isinstance(cube.data, ma.MaskedArray):
-            cube.data = operation_function(ma.array(cube.data))
-        else:
-            try:
-                operation_function(cube.data, out=cube.data)
-            except TypeError:
-                # Non-ufunc function
-                operation_function(cube.data)
+    data = None
+    if force_lazy or cube.has_lazy_data():
+        data = operation_function(cube.lazy_data())
+    elif force_masked and not isinstance(cube.data, ma.MaskedArray):
+        data = operation_function(ma.array(cube.data))
+    elif not in_place or skeleton_cube:
+        data = operation_function(cube.data)
+
+    if data is None:
+        # in-place, not skeleton_cube, not forcing lazy or masked type.
+        try:
+            operation_function(cube.data, out=cube.data)
+        except TypeError:
+            # Non-ufunc function
+            operation_function(cube.data)
+        new_cube = cube
+
+    elif skeleton_cube:
+        # Simply wrap the resultant data in a cube, as no
+        # cube metadata is required by the caller.
+        new_cube = iris.cube.Cube(data)
+    elif in_place:
+        cube.data = data
         new_cube = cube
     else:
-        if force_lazy or cube.has_lazy_data():
-            data = operation_function(cube.lazy_data())
-        elif force_masked and not isinstance(cube.data, ma.MaskedArray):
-            data = operation_function(ma.array(cube.data))
-        else:
-            data = operation_function(cube.data)
-        if skeleton_cube:
-            # Simply wrap the resultant data in a cube, as no
-            # cube metadata is required by the caller.
-            new_cube = Cube(data)
-        else:
-            new_cube = cube.copy(data)
+        new_cube = cube.copy(data)
 
     # If the result of the operation is scalar and masked, we need to fix-up the dtype.
     if (
