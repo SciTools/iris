@@ -29,6 +29,10 @@ Features
  
 * `CF Ancillary Data`_ variables are now supported.
 
+* Python `logging`_ is now supported within :mod:`iris.analysis.maths`,
+  :mod:`iris.common.lenient`, and :mod:`iris.common.metadata`. Each module
+  now defines a :class:`logging.Logger` instance called ``logger``.
+
 
 Bugs Fixed
 ==========
@@ -83,6 +87,16 @@ Incompatible Changes
   :func:`iris.experimental.concatenate.concatenate` function raised an 
   exception.
 
+* The :func:`iris.analysis.maths.apply_ufunc` keyword argument has changed
+  from ``other_cube`` to ``other``, which aligns it with the rest of the
+  :mod:`iris.analysis.maths` API.
+
+* The :meth:`iris.analysis.maths.IFunc.__call__` now ignores any surplus ``other``
+  keyword argument provided for a ``data_func`` that only requires **one** argument.
+  This aligns the behaviour of :meth:`iris.analysis.maths.IFunc.__call__` with
+  :func:`~iris.analysis.maths.apply_ufunc`. Previously a ``ValueError`` exception
+  was raised.
+
 
 Deprecations
 ============
@@ -124,3 +138,4 @@ Documentation
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _matplotlib: https://matplotlib.org/
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
+.. _logging: https://docs.python.org/3/library/logging.html
