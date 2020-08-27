@@ -893,7 +893,8 @@
     "iris.tests.test_quickplot.TestLabels.test_map.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea5e618434ac36e5c1c9369b95b39c38c3a39a4ecef19a6e9b64cb609925cd25.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/e85a636c86a597a593c9b49b94b79969c396c95bccc69a64db30d9b039a52c26.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/e85a636c86a597a791c9349b94b79969c396c95bccc69a64db38c9b039a58ca6.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e85a636c86a597a791c9349b94b79969c396c95bccc69a64db38c9b039a58ca6.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e85a636c86a597a793c9349b94b69969c396c95bcce69a64d938c9b039a58ca6.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_pcolor.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bb423d4e94a5c6b9c15adaadc1fb6a469c8de43a3e07904e5f016b57984e1ea1.png",
