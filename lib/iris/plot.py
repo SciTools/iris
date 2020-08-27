@@ -441,6 +441,11 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
                     values = np.arange(data.shape[data_dim] + 1) - 0.5
                 else:
                     values = coord.contiguous_bounds()
+                    values = _fixup_dates(coord, values)
+                    if values.dtype == np.dtype(object) and isinstance(
+                        values[0], datetime.datetime
+                    ):
+                        values = mpl_dates.date2num(values)
 
             plot_arrays.append(values)
 
