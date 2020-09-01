@@ -29,8 +29,8 @@ associated metadata as first-class objects includes:
 * subsetting and extraction,
 * merge and concatenate,
 * aggregations and reductions (including min, max, mean and weighted averages),
-* interpolation and regridding (including nearest-neighbor,
-  linear and area-weighted), and
+* interpolation and regridding (including nearest-neighbor, linear and
+  area-weighted), and
 * operator overloads (``+``, ``-``, ``*``, ``/``, etc.).
 
 A number of file formats are recognised by Iris, including CF-compliant NetCDF,
