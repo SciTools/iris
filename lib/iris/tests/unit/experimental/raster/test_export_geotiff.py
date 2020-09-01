@@ -124,9 +124,10 @@ class TestProjection(tests.IrisTest):
             # String has embedded floating point values,
             # Test with values to N decimal places, using a regular expression.
             re_pattern = (
-                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
-                r'SPHEROID\["unnamed",637....,0\]\],PRIMEM\["Greenwich",0\],'
-                r'UNIT\["degree",0.01745[0-9]*\]\]'
+                r'GEOGCS\["unknown",DATUM\["unknown",'
+                r'SPHEROID\["unknown",637....,0\]\],PRIMEM\["Greenwich",0\],'
+                r'UNIT\["degree",0.01745[0-9]*,AUTHORITY\["EPSG","9122"\]\],'
+                r'AXIS\["Latitude",NORTH\],AXIS\["Longitude",EAST\]\]'
             )
             re_exp = re.compile(re_pattern)
             self.assertIsNotNone(
@@ -145,9 +146,11 @@ class TestProjection(tests.IrisTest):
             # String has embedded floating point values,
             # Test with values to N decimal places, using a regular expression.
             re_pattern = (
-                r'GEOGCS\["unnamed ellipse",DATUM\["unknown",'
-                r'SPHEROID\["unnamed",637....,375.117[0-9]*\]\],'
-                r'PRIMEM\["Greenwich",0\],UNIT\["degree",0.01745[0-9]*\]\]'
+                r'GEOGCS\["unknown",DATUM\["unknown",'
+                r'SPHEROID\["unknown",637....,375.117[0-9]*\]\],'
+                r'PRIMEM\["Greenwich",0\],UNIT\["degree",0.01745[0-9]*,'
+                r'AUTHORITY\["EPSG","9122"\]\],AXIS\["Latitude",NORTH\],'
+                r'AXIS\["Longitude",EAST\]\]'
             )
             re_exp = re.compile(re_pattern)
             self.assertIsNotNone(
