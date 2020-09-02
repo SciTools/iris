@@ -554,10 +554,12 @@ def project(cube, target_proj, nx=None, ny=None):
 
     Return a new cube that is the result of projecting a cube with 1 or 2
     dimensional latitude-longitude coordinates from its coordinate system into
-    a specified projection e.g. Robinson or Polar Stereographic.
+    a specified projection e.g. Transverse Mercator.
     This function is intended to be used in cases where the cube's coordinates
     prevent one from directly visualising the data, e.g. when the longitude
     and latitude are two dimensional and do not make up a regular grid.
+    Note that projections with non-rectangular boundaries, e.g. Robinson, may
+    behave unpredictably due to target points which lie out of bounds.
 
     Args:
         * cube

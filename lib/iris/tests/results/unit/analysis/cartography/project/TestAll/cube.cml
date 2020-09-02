@@ -9,24 +9,13 @@
         <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="8f75dad5" points="[[-29.5486688617, -23.2425332653, -27.1960378264,
-		 ..., -26.4183314681, -23.4102833323,
-		 -30.559796957],
-		[-5.31277440862, -7.60877872467, -22.5253246282,
-		 ..., -20.3389131851, -6.6367758118,
-		 -5.96000472228],
-		[11.9373960713, 1.68737720645, -19.7510869281,
-		 ..., -16.5990751865, 3.75281337984,
-		 12.1482298878],
+        <auxCoord id="8f75dad5" points="[[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
 		..., 
-		[84.2615071705, 54.8444503701, 26.7572382165,
-		 ..., 30.1637424823, 58.6051855118,
-		 86.9541974993],
-		[68.1735430572, 62.6851802716, 39.629088106,
-		 ..., 42.3249307728, 64.8680485778,
-		 66.5018026836],
-		[43.3491736712, 51.718946833, 46.2669891845,
-		 ..., 47.2804926757, 51.4709835668, 42.15728091]]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf]]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
@@ -40,24 +29,13 @@
         </dimCoord>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="81715b9b" points="[[165.651441366, 178.244994926, -168.158920348,
-		 ..., 169.237777806, -176.909515161,
-		 -164.826656659],
-		[171.941410114, -164.537714569, -145.687716669,
-		 ..., 147.432977295, 167.102016129,
-		 -169.282741586],
-		[-175.009062798, -147.024891707, -126.259029624,
-		 ..., 128.513092975, 150.23087042, 178.899397359],
+        <auxCoord id="81715b9b" points="[[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
 		..., 
-		[-58.34983089, -70.8813785605, -58.2031036304,
-		 ..., 60.1459645527, 72.0019781785,
-		 20.6956240803],
-		[22.0508692204, -35.1608514733, -42.5369291003,
-		 ..., 43.052784475, 31.4703511243,
-		 -27.6376081203],
-		[17.2456856958, 2.60343111343, -15.3083916055,
-		 ..., 14.2709222711, -4.55554772271,
-		 -17.7002362422]]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf],
+		[inf, inf, inf, ..., inf, inf, inf]]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
@@ -69,16 +47,14 @@
         </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="aa537550" points="[-15305249.9975, -11904083.3314, -8502916.66526,
-		-5101749.99916, -1700583.33305, 1700583.33305,
-		5101749.99916, 8502916.66526, 11904083.3314,
-		15305249.9975]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64"/>
+        <dimCoord id="aa537550" points="[-18000000.0, -14000000.0, -10000000.0,
+		-6000000.0, -2000000.0, 2000000.0, 6000000.0,
+		10000000.0, 14000000.0, 18000000.0]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="3589f6ce" points="[-7762639.19859, -6037608.26557, -4312577.33255,
-		-2587546.39953, -862515.46651, 862515.46651,
-		2587546.39953, 4312577.33255, 6037608.26557,
-		7762639.19859]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64"/>
+        <dimCoord id="3589f6ce" points="[-9000000.0, -7000000.0, -5000000.0, -3000000.0,
+		-1000000.0, 1000000.0, 3000000.0, 5000000.0,
+		7000000.0, 9000000.0]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
         <auxCoord bounds="[[1.0, 0.998464],
