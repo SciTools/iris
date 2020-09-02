@@ -22,7 +22,6 @@ from iris.analysis.cartography import project
 
 
 ROBINSON = ccrs.Robinson()
-TRANSVERSEMERCATOR = ccrs.TransverseMercator()
 
 
 def low_res_4d():
@@ -151,7 +150,7 @@ class TestAll(tests.IrisTest):
     @tests.skip_data
     def test_cube(self):
         cube = low_res_4d()
-        new_cube, _ = project(cube, TRANSVERSEMERCATOR)
+        new_cube, _ = project(cube, ROBINSON)
         self.assertCMLApproxData(new_cube)
 
     @tests.skip_data
