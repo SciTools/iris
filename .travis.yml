@@ -4,7 +4,6 @@
 # http://about.travis-ci.org/docs/user/languages/python/#Travis-CI-Uses-Isolated-virtualenvs
 # we will use conda to give us a much faster setup time.
 
-
 language: minimal
 dist: xenial
 
@@ -13,17 +12,17 @@ env:
     # The decryption key for the encrypted .github/deploy_key.scitools-docs.enc.
     - secure: "N9/qBUT5CqfC7KQBDy5mIWZcGNuUJk3e/qmKJpotWYV+zwOI4GghJsRce6nFnlRiwl65l5oBEcvf3+sBvUfbZqh7U0MdHpw2tHhr2FSCmMB3bkvARZblh9M37f4da9G9VmRkqnyBM5G5TImXtoq4dusvNWKvLW0qETciaipq7ws="
   matrix:
-    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=3.6 TEST_TARGET=default TEST_BLACK=true
-    - PYTHON_VERSION=3.6 TEST_TARGET=gallery
-    - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_MINIMAL=true
-    - PYTHON_VERSION=3.7 TEST_TARGET=default TEST_BLACK=true
-    - PYTHON_VERSION=3.7 TEST_TARGET=gallery
-    - PYTHON_VERSION=3.7 TEST_TARGET=doctest PUSH_BUILT_DOCS=true
-    - PYTHON_VERSION=3.7 TEST_TARGET=linkcheck
+    - PYTHON_VERSION='36' TEST_TARGET='default' TEST_MINIMAL=true
+    - PYTHON_VERSION='36' TEST_TARGET='default' TEST_BLACK=true
+    - PYTHON_VERSION='36' TEST_TARGET='gallery'
+    - PYTHON_VERSION='37' TEST_TARGET='default' TEST_MINIMAL=true
+    - PYTHON_VERSION='37' TEST_TARGET='default' TEST_BLACK=true
+    - PYTHON_VERSION='37' TEST_TARGET='gallery'
+    - PYTHON_VERSION='37' TEST_TARGET='doctest' PUSH_BUILT_DOCS=true
+    - PYTHON_VERSION='37' TEST_TARGET='linkcheck'
     # TODO: Dependencies for sphinxcontrib-spelling to be in place before this
     #       spelling code block is enabled
-    #- PYTHON_VERSION=3.7 TEST_TARGET=spelling
+    #- PYTHON_VERSION='37' TEST_TARGET='spelling'
 
 git:
   # We need a deep clone so that we can compute the age of the files using their git history.
@@ -43,8 +42,8 @@ install:
     bash miniconda.sh -b -p ${HOME}/miniconda;
     export PATH="${HOME}/miniconda/bin:${PATH}";
 
-  # Create the basic testing environment
-  # ------------------------------------
+  # Create the testing environment
+  # ------------------------------
   # Explicitly add defaults channel, see https://github.com/conda/conda/issues/2675
   - >
     echo 'Configure conda and create an environment';
@@ -52,27 +51,12 @@ install:
     conda config --set show_channel_urls True;
     conda config --add channels conda-forge;
     conda update --quiet conda;
-    export ENV_NAME='test-environment';
-    conda create --quiet -n ${ENV_NAME} python=${PYTHON_VERSION} pip;
+    export ENV_NAME='iris-dev';
+    ENV_FILE="ci/requirements/py${PYTHON_VERSION}.yml";
+    cat ${ENV_FILE};
+    conda env create --quiet --file=${ENV_FILE};
     source activate ${ENV_NAME};
-
-  # Customise the testing environment
-  # ---------------------------------
-  - >
-    echo 'Install Iris dependencies';
-    CONDA_REQS_GROUPS="test";
-    if [[ "${TEST_MINIMAL}" != true ]]; then
-        CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} all";
-    fi;
-    if [[ "${TEST_TARGET}" == 'doctest' || "${TEST_TARGET}" == 'linkcheck' ]]; then
-            CONDA_REQS_GROUPS="${CONDA_REQS_GROUPS} docs";
-    fi;
-    CONDA_REQS_FILE="conda-requirements.txt";
-    python requirements/gen_conda_requirements.py --groups ${CONDA_REQS_GROUPS} > ${CONDA_REQS_FILE};
-    cat ${CONDA_REQS_FILE};
-    conda install --quiet -n ${ENV_NAME} --file ${CONDA_REQS_FILE};
-
-  - export PREFIX="${HOME}/miniconda/envs/${ENV_NAME}"
+    export PREFIX="${CONDA_PREFIX}";
 
   # Output debug info
   - >
@@ -176,6 +160,7 @@ script:
   # Results appear at https://scitools-docs.github.io/iris/<<branchname>>/index.html
   - if [[ "${ORG}" == 'SciTools' && "${TRAVIS_EVENT_TYPE}" == 'push' && "${PUSH_BUILT_DOCS}" == 'true' ]]; then
       cd ${INSTALL_DIR};
+      conda install --quiet -n ${ENV_NAME} pip;
       pip install doctr;
       doctr deploy --deploy-repo SciTools-docs/iris --built-docs docs/iris/src/_build/html
         --key-path .github/deploy_key.scitools-docs.enc
