@@ -3,12 +3,11 @@
 
 # Without these, iris won't even import.
 
-cartopy>=0.12
-#conda: proj4<6
+cartopy>=0.18
 cf-units>=2
 cftime
 dask[array]>=2  #conda: dask>=2
-matplotlib<3.3
+matplotlib
 netcdf4
 numpy>=1.14
 scipy
