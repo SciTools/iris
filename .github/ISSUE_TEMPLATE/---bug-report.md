@@ -25,7 +25,7 @@ Steps to reproduce the behaviour:
 
 ## Environment 
  - OS & Version: [e.g. Ubuntu 20.04 LTS]
- - Iris Version.  From the command line run `python -c "import iris; print(iris.__version__)"`
+ - Iris Version.  [e.g. From the command line run `python -c "import iris; print(iris.__version__)"`]
 
 ## Additional context
 <!--  Add any other context about the problem here. -->
