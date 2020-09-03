@@ -30,6 +30,18 @@ Features
 * `CF Ancillary Data`_ variables are now supported.
 
 
+Dependency Updates
+==================
+
+* Iris now supports the latest version of Proj.
+
+* Iris now requires Cartopy >= 0.18 in order to remain compatible with the latest
+  version of Matplotlib.
+
+* GDAL is removed from the extensions dependency group. We no longer consider it to
+  be an extension.
+
+
 Bugs Fixed
 ==========
 
@@ -83,6 +95,14 @@ Incompatible Changes
   :func:`iris.experimental.concatenate.concatenate` function raised an 
   exception.
 
+Internal
+========
+
+* Changed the numerical values in tests involving the Robinson projection due
+  to improvements made in Proj.
+
+* Change tests to account for changes in behaviour in GDAL.
+
 
 Deprecations
 ============
@@ -120,6 +140,9 @@ Documentation
 * Enabled the PDF creation of the documentation on the `Read the Docs`_ service.
   The PDF may be accessed by clicking on the version at the bottom of the side
   bar, then selecting ``PDF`` from the ``Downloads`` section.
+
+* Added a warning to the :func:`iris.analysis.cartography.project` function
+  regarding its behaviour on projections with non-rectangular boundaries.
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _matplotlib: https://matplotlib.org/
