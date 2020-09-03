@@ -2440,6 +2440,10 @@ class Linear:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
+
         Args:
 
         * src_grid:
@@ -2513,6 +2517,10 @@ class AreaWeighted:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
 
         Args:
 
@@ -2630,6 +2638,10 @@ class Nearest:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Supports lazy regridding. Any
+        `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+        in horizontal dimensions will be combined before regridding.
+
         Args:
 
         * src_grid:
@@ -2716,6 +2728,8 @@ class UnstructuredNearest:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Does not support lazy regridding.
+
         Args:
 
         * src_cube:
@@ -2790,6 +2804,8 @@ class PointInCell:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Does not support lazy regridding.
 
         Args:
 

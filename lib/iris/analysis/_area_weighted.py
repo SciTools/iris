@@ -94,8 +94,9 @@ class AreaWeightedRegridder:
 
         .. note::
 
-            If the source cube has lazy data, chunks in the horizontal
-            dimensions will be combined before regridding.
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the horizontal dimensions will be combined before regridding.
 
         """
         src_x, src_y = get_xy_dim_coords(cube)

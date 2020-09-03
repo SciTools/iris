@@ -439,6 +439,9 @@ class CurvilinearRegridder:
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`_CurvilinearRegridder`.
 
+        If the source cube has lazy data, it will be realized before
+        regridding and the returned cube will also have realized data.
+
         Args:
 
         * src:
@@ -1001,8 +1004,9 @@ class RectilinearRegridder:
 
         .. note::
 
-            If the source cube has lazy data, chunks in the horizontal
-            dimensions will be combined before regridding.
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the horizontal dimensions will be combined before regridding.
 
         """
         # Validity checks.

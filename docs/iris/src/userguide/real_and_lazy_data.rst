@@ -37,7 +37,9 @@ In Iris, lazy data is provided as a
 `dask array <https://docs.dask.org/en/latest/array.html>`_.
 A dask array also has a shape and data type
 but the dask array's data points remain on disk and only loaded into memory in
-small chunks when absolutely necessary.  This has key performance benefits for
+small
+`chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+when absolutely necessary.  This has key performance benefits for
 handling large amounts of data, where both calculation time and storage
 requirements can be significantly reduced.
 

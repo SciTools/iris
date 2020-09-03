@@ -1479,6 +1479,8 @@ class ProjectedUnstructuredLinear:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Does not support lazy regridding.
+
         Args:
 
         * src_cube:
@@ -1543,6 +1545,8 @@ class ProjectedUnstructuredNearest:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Does not support lazy regridding.
 
         Args:
 
