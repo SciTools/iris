@@ -423,7 +423,7 @@ regrid a cube. When this happens, make sure the input cube has lazy data
 
     >>> air_temp = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
     >>> air_temp
-    [<iris 'Cube' of air_temperature / (K) (time: 240; latitude: 37; longitude: 49)>]
+    <iris 'Cube' of air_temperature / (K) (time: 240; latitude: 37; longitude: 49)>
     >>> air_temp.has_lazy_data()
     True
 
