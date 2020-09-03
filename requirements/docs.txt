@@ -1,4 +1,6 @@
+# Documentation dependencies.
+
 sphinx
-sphinx_rtd_theme
 sphinx-copybutton
 sphinx-gallery
+sphinx_rtd_theme

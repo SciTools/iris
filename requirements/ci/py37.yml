@@ -4,21 +4,20 @@ channels:
   - conda-forge
 
 dependencies:
-  - python=3.6
+  - python=3.7
 
 # Setup dependencies.
-  - setuptools
+  - setuptools>=40.8.0
   - pyke
 
 # Core dependencies.
-  - cartopy>=0.12
+  - cartopy>=0.18
   - cf-units>=2
   - cftime
   - dask>=2
-  - matplotlib<3.3
+  - matplotlib
   - netcdf4
   - numpy>=1.14
-  - proj4<6
   - python-xxhash
   - scipy
 
