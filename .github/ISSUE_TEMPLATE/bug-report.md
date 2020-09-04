@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ## 🐛 Bug Report
-<!-- a clear description of what the bug is -->
+<!-- Provide a clear description of what the bug is -->
 
 ## How To Reproduce
 Steps to reproduce the behaviour:
@@ -21,11 +21,11 @@ Steps to reproduce the behaviour:
 <!-- A clear and concise description of what you expected to happen -->
 
 ## Screenshots
-<!-- If applicable, add screenshots to help explain your problem. -->
+<!-- If applicable, add screenshots to help explain your problem -->
 
 ## Environment 
- - OS & Version: [e.g. Ubuntu 20.04 LTS]
- - Iris Version.  [e.g. From the command line run `python -c "import iris; print(iris.__version__)"`]
+ - OS & Version: [e.g., Ubuntu 20.04 LTS]
+ - Iris Version.  [e.g., From the command line run `python -c "import iris; print(iris.__version__)"`]
 
 ## Additional context
-<!--  Add any other context about the problem here. -->
+<!-- Provide any further information to help us understand -->
