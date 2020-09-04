@@ -33,10 +33,12 @@ Features
 Dependency Updates
 ==================
 
-* Iris now supports the latest version of Proj.
+* Iris now supports the latest version of
+  `Proj <https://github.com/OSGeo/PROJ>`_.
 
-* Iris now requires Cartopy >= 0.18 in order to remain compatible with the latest
-  version of Matplotlib.
+* Iris now requires `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18 in
+  order to remain compatible with the latest version of
+  `Matplotlib <https://github.com/matplotlib/matplotlib>`_.
 
 * GDAL is removed from the extensions dependency group. We no longer consider it to
   be an extension.
@@ -111,9 +113,10 @@ Internal
 ========
 
 * Changed the numerical values in tests involving the Robinson projection due
-  to improvements made in Proj.
+  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_.
 
-* Change tests to account for changes in behaviour in GDAL.
+* Change tests to account for changes in behaviour in
+  `GDAL <https://github.com/OSGeo/gdal>`_.
 
 * Changed every graphics test that includes `Cartopy's coastlines
   <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
