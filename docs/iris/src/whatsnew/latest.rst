@@ -115,8 +115,11 @@ Internal
 * Changed the numerical values in tests involving the Robinson projection due
   to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_.
 
-* Change tests to account for changes in behaviour in
+* Change tests to account for more detailed descriptions of projections in
   `GDAL <https://github.com/OSGeo/gdal>`_.
+
+* Change tests to account for `GDAL <https://github.com/OSGeo/gdal>`_ now
+  saving fill values for data without masked points.
 
 * Changed every graphics test that includes `Cartopy's coastlines
   <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
