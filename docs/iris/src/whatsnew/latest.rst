@@ -19,14 +19,14 @@ Features
 
 * Statistical operations :meth:`iris.cube.Cube.collapsed`,
   :meth:`iris.cube.Cube.aggregated_by` and :meth:`iris.cube.Cube.rolling_window`
-  previously removed every :class:`iris.coord.CellMeasure` attached to the 
-  cube.  Now, a :class:`iris.coord.CellMeasure` will only be removed if it is 
+  previously removed every :class:`iris.coord.CellMeasure` attached to the
+  cube.  Now, a :class:`iris.coord.CellMeasure` will only be removed if it is
   associated with an axis over which the statistic is being run.
 
 * Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
   dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
   been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
- 
+
 * `CF Ancillary Data`_ variables are now supported.
 
 
@@ -52,19 +52,31 @@ Bugs Fixed
   ``TypeError`` is still raised if a :class:`~iris.cube.Cube` is iterated over
   but ``isinstance(cube, collections.Iterable)`` now behaves as expected.
 
-* Concatenating cubes along an axis shared by cell measures would cause 
-  concatenation to inappropriately fail.  These cell measures are now 
+* Concatenating cubes along an axis shared by cell measures would cause
+  concatenation to inappropriately fail.  These cell measures are now
   concatenated together in the resulting cube.
 
-* Copying a cube would previously ignore any attached 
+* Copying a cube would previously ignore any attached
   :class:`~iris.coords.CellMeasure`.  These are now copied over.
 
 * A :class:`~iris.coords.CellMeasure` requires a string ``measure`` attribute
-  to be defined, which can only have a value of ``area`` or ``volume``. 
+  to be defined, which can only have a value of ``area`` or ``volume``.
   Previously, the ``measure`` was provided as a keyword argument to
-  :class:`~iris.coords.CellMeasure` with an default value of ``None``, which 
+  :class:`~iris.coords.CellMeasure` with an default value of ``None``, which
   caused a ``TypeError`` when no ``measure`` was provided.  The default value
   of ``area`` is now used.
+
+* **All** plot types in `iris.plot` now use `matplotlib.dates.date2num
+  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
+  to format date/time coordinates for use on a plot axis (previously
+  :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh` did not include
+  this behaviour).
+
+* Date/time axis labels in `iris.quickplot` are now **always** based on the
+  ``epoch`` used in `matplotlib.dates.date2num
+  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
+  (previously would take the unit from a time coordinate, if present, even
+  though the coordinate's value had been changed via ``date2num``).
 
 
 Incompatible Changes
@@ -89,10 +101,10 @@ Incompatible Changes
   :mod:`iris.util` module.  Please use the :func:`iris.util.equalise_attributes`
   function instead.
 
-* The :mod:`iris.experimental.concatenate` module has now been removed. In 
+* The :mod:`iris.experimental.concatenate` module has now been removed. In
   ``v1.6.0`` the experimental ``concatenate`` functionality was moved to the
   :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
-  :func:`iris.experimental.concatenate.concatenate` function raised an 
+  :func:`iris.experimental.concatenate.concatenate` function raised an
   exception.
 
 Internal
@@ -102,6 +114,20 @@ Internal
   to improvements made in Proj.
 
 * Change tests to account for changes in behaviour in GDAL.
+
+* Changed every graphics test that includes `Cartopy's coastlines
+  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
+  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
+  to account for new adaptive coastline scaling (`see cartopy#1105
+  <https://github.com/SciTools/cartopy/pull/1105>`_).
+
+* Changed graphics tests to account for some new default grid-line spacing in
+  `Cartopy <https://github.com/SciTools/cartopy>`_ (`part of cartopy#1117
+  <https://github.com/SciTools/cartopy/pull/1117>`_).
+
+* Additional acceptable graphics test targets to account for very minor changes
+  in `Matplotlib <https://github.com/matplotlib/matplotlib>`_ version 3.3
+  (colormaps, fonts and axes borders).
 
 
 Deprecations
@@ -121,20 +147,20 @@ Documentation
 * Moved the :ref:`sphx_glr_generated_gallery_oceanography_plot_orca_projection.py`
   from the general part of the gallery to oceanography.
 
-* Updated documentation to use a modern sphinx theme and be served from  
+* Updated documentation to use a modern sphinx theme and be served from
   https://scitools-iris.readthedocs.io/en/latest/.
 
-* Added support for the `black <https://black.readthedocs.io/en/stable/>`_ code 
-  formatter.  This is now automatically checked on GitHub PRs, replacing the 
+* Added support for the `black <https://black.readthedocs.io/en/stable/>`_ code
+  formatter.  This is now automatically checked on GitHub PRs, replacing the
   older, unittest-based "iris.tests.test_coding_standards.TestCodeFormat".
-  Black provides automatic code format correction for most IDEs.  See the new 
+  Black provides automatic code format correction for most IDEs.  See the new
   developer guide section on :ref:`iris_code_format`.
 
 * Refreshed the :ref:`whats_new_contributions` for the :ref:`iris_whatsnew`.
   This includes always creating the ``latest`` what's new page so it appears
   on the latest documentation at
   https://scitools-iris.readthedocs.io/en/latest/whatsnew.  This resolves
-  :issue:`2104` and :issue:`3451`.  Also updated the 
+  :issue:`2104` and :issue:`3451`.  Also updated the
   :ref:`iris_development_releases_steps` to follow when making a release.
 
 * Enabled the PDF creation of the documentation on the `Read the Docs`_ service.
