@@ -113,10 +113,10 @@ Internal
 ========
 
 * Changed the numerical values in tests involving the Robinson projection due
-  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_.
+  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_ (see `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_).
 
 * Change tests to account for more detailed descriptions of projections in
-  `GDAL <https://github.com/OSGeo/gdal>`_.
+  `GDAL <https://github.com/OSGeo/gdal>`_ (`see GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_).
 
 * Change tests to account for `GDAL <https://github.com/OSGeo/gdal>`_ now
   saving fill values for data without masked points.
