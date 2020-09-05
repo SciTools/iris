@@ -15,8 +15,8 @@ Iris is available using conda for the following platforms:
 
 .. _installing_using_conda:
 
-Installing using conda
-----------------------
+Installing using conda (users)
+------------------------------
 
 To install Iris using conda, you must first download and install conda,
 for example from https://docs.conda.io/en/latest/miniconda.html.
@@ -37,8 +37,8 @@ at https://conda.io/en/latest/index.html.
 
 .. _installing_from_source:
 
-Installing from source
-----------------------
+Installing from source (devs)
+-----------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
@@ -54,9 +54,9 @@ local copy of Iris::
   conda activate iris-dev
 
 The ``requirements/ci/iris.yml`` file used to create the conda environment
-includes all the relevant dependencies that you need to code, test, and build
-the documentation.  If you wish to minimise your install you can remove any
-unwanted packages from file file.
+includes **all** the relevant dependencies that you need to **code**, **test**,
+and **build** the documentation.  If you wish to minimise your install you can
+remove any unwanted packages from the requirements file.
 
 .. note:: The ``requirements/ci/iris.yml`` file will always use the latest
           tested Python version available.  For all Python versions that
