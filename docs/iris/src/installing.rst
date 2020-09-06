@@ -53,16 +53,20 @@ local copy of Iris::
   conda env create --file=requirements/ci/iris.yml
   conda activate iris-dev
 
-The ``requirements/ci/iris.yml`` file used to create the conda environment
-includes **all** the relevant dependencies that you need to **code**, **test**,
-and **build** the documentation.  If you wish to minimise your install you can
-remove any unwanted packages from the requirements file.
+The ``requirements/ci/iris.yml`` file defines the Iris development conda
+environment *name* and all the relevant *top level* `conda-forge` package
+dependencies that you need to **code**, **test**, and **build** the
+documentation.  If you wish to minimise the environment footprint, simply
+remove any unwanted packages from the requirements file e.g., if you don't
+intend to run the Iris tests locally or build the documentation, then remove
+all the packages from the `testing` and `documentation` sections.
 
 .. note:: The ``requirements/ci/iris.yml`` file will always use the latest
-          tested Python version available.  For all Python versions that
-          are supported view the contents of the `requirements/ci`_ directory.
+          Iris tested Python version available.  For all Python versions that
+          are supported and tested against by Iris, view the contents of
+          the `requirements/ci`_ directory.
 
-.. _requirements/ci: https://github.com/tkknight/iris/tree/master/requirements/ci
+.. _requirements/ci: https://github.com/scitools/iris/tree/master/requirements/ci
 
 Finally you need to run the command to configure your shell environment
 to find your local Iris code::
