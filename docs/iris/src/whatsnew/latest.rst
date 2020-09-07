@@ -29,7 +29,7 @@ Features
 
 * `CF Ancillary Data`_ variables are now supported, and can be loaded from and
   saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
-  ensure they load and save with appropriate units.
+  ensure they load and save with appropriate units. See :pull:`3800`.
 
 
 Dependency Updates
@@ -84,7 +84,7 @@ Bugs Fixed
 
 * Attributes of cell measures in NetCDF-CF files were being discarded during
   loading. They are now available on the :class:`~iris.coords.CellMeasure` in
-  the loaded :class:`~iris.cube.Cube`.
+  the loaded :class:`~iris.cube.Cube`. See :pull:`3800`.
 
 
 Incompatible Changes
@@ -118,6 +118,7 @@ Incompatible Changes
 * When loading data from NetCDF-CF files, where a variable has no ``units``
   property, the corresponding Iris object will have ``units='unknown'``.
   Prior to Iris ``3.0.0``, these cases defaulted to ``units='1'``.
+  See :pull:`3795`.
 
 
 Internal
@@ -187,8 +188,8 @@ Documentation
 * Added a warning to the :func:`iris.analysis.cartography.project` function
   regarding its behaviour on projections with non-rectangular boundaries.
 
-* Added an explanation to the user guide of how ``Units`` are handled during
-  cube arithmetic.
+* Added the :ref:`cube_maths_combining_units` section to the user guide to
+  clarify how ``Units`` are handled during cube arithmetic.
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _matplotlib: https://matplotlib.org/
