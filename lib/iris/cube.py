@@ -4466,8 +4466,6 @@ calendar='gregorian')
                 * :class:`iris.analysis.AreaWeighted`\*,
                 * :class:`iris.analysis.UnstructuredNearest`,
                 * :class:`iris.analysis.PointInCell`,
-                * :class:`iris.experimental.regrid.ProjectedUnstructuredLinear`,
-                * :class:`iris.experimental.regrid.ProjectedUnstructuredNearest`.
 
             \* Supports lazy regridding.
 
