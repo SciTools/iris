@@ -4458,8 +4458,7 @@ calendar='gregorian')
             A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
             The type of regridding to use to regrid this cube onto the
-            target grid. The regridding schemes currently available
-            in Iris are:
+            target grid. The regridding schemes in Iris currently include:
 
                 * :class:`iris.analysis.Linear`\*,
                 * :class:`iris.analysis.Nearest`\*,

@@ -28,8 +28,9 @@ The following are the regridding schemes that are currently available in Iris:
  * nearest-neighbour regridding (:class:`iris.analysis.Nearest`), and
  * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
 
-These regridding schemes support lazy regridding, i.e. if the source cube has
-lazy data, the resulting cube will also have lazy data.
+The linear, nearest-neighbor, and area-weighted regridding schemes support
+lazy regridding, i.e. if the source cube has lazy data, the resulting cube
+will also have lazy data.
 See :doc:`real_and_lazy_data` for an introduction to lazy data.
 
 
