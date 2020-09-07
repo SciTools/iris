@@ -1,1 +1,0 @@
-* Added an explanation to the user guide of how units are handled by cube arithmetic.

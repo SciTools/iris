@@ -27,7 +27,9 @@ Features
   dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
   been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
 
-* `CF Ancillary Data`_ variables are now supported.
+* `CF Ancillary Data`_ variables are now supported, and can be loaded from and
+  saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
+  ensure they load and save with appropriate units. See :pull:`3800`.
 
 
 Dependency Updates
@@ -80,6 +82,10 @@ Bugs Fixed
   (previously would take the unit from a time coordinate, if present, even
   though the coordinate's value had been changed via ``date2num``).
 
+* Attributes of cell measures in NetCDF-CF files were being discarded during
+  loading. They are now available on the :class:`~iris.coords.CellMeasure` in
+  the loaded :class:`~iris.cube.Cube`. See :pull:`3800`.
+
 
 Incompatible Changes
 ====================
@@ -108,6 +114,12 @@ Incompatible Changes
   :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
   :func:`iris.experimental.concatenate.concatenate` function raised an
   exception.
+
+* When loading data from NetCDF-CF files, where a variable has no ``units``
+  property, the corresponding Iris object will have ``units='unknown'``.
+  Prior to Iris ``3.0.0``, these cases defaulted to ``units='1'``.
+  See :pull:`3795`.
+
 
 Internal
 ========
@@ -176,6 +188,10 @@ Documentation
 * Added a warning to the :func:`iris.analysis.cartography.project` function
   regarding its behaviour on projections with non-rectangular boundaries.
 
+* Added the :ref:`cube_maths_combining_units` section to the user guide to
+  clarify how ``Units`` are handled during cube arithmetic.
+
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _matplotlib: https://matplotlib.org/
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
+.. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
