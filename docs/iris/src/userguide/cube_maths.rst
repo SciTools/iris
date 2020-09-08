@@ -219,6 +219,8 @@ The result could now be plotted using the guidance provided in the
     A very similar example to this can be found in the examples section, 
     with the title "Deriving Exner Pressure and Air Temperature".
 
+.. _cube_maths_combining_units:
+
 Combining units
 ---------------
 

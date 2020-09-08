@@ -10,6 +10,10 @@ from setuptools.command.develop import develop as develop_cmd
 from setuptools.command.build_py import build_py
 
 
+PACKAGE_DIR = os.path.abspath(os.path.dirname(__file__))
+PYPI_NAME = "scitools-iris"
+
+
 # Returns the package and all its sub-packages
 def find_package_tree(root_path, root_package):
     root_path = root_path.replace("/", os.path.sep)
@@ -69,24 +73,25 @@ def temporary_path(directory):
 with temporary_path("lib/iris/tests/runner"):
     from _runner import TestRunner  # noqa:
 
-SETUP_DIR = os.path.dirname(__file__)
 
-
-def pip_requirements(name):
-    fname = os.path.join(SETUP_DIR, "requirements", "{}.txt".format(name))
-    if not os.path.exists(fname):
-        raise RuntimeError(
-            "Unable to find the {} requirements file at {}"
-            "".format(name, fname)
+def pip_requirements(*args):
+    requirements = []
+    for name in args:
+        fname = os.path.join(
+            PACKAGE_DIR, "requirements", "{}.txt".format(name)
         )
-    reqs = []
-    with open(fname, "r") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            reqs.append(line)
-    return reqs
+        if not os.path.exists(fname):
+            emsg = (
+                f"Unable to find the {name!r} requirements file at {fname!r}."
+            )
+            raise RuntimeError(emsg)
+        with open(fname, "r") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                requirements.append(line)
+    return requirements
 
 
 class SetupTestRunner(TestRunner, Command):
@@ -214,14 +219,21 @@ def custom_cmd(command_to_override, functions, help_doc=""):
 
 def extract_version():
     version = None
-    fnme = os.path.join(SETUP_DIR, "lib", "iris", "__init__.py")
-    with open(fnme) as fd:
-        for line in fd:
+    fname = os.path.join(PACKAGE_DIR, "lib", "iris", "__init__.py")
+    with open(fname) as fi:
+        for line in fi:
             if line.startswith("__version__"):
                 _, version = line.split("=")
-                version = version.strip()[1:-1]  # Remove quotation characters
+                version = version.strip()[1:-1]  # Remove quotations
                 break
     return version
+
+
+def long_description():
+    fname = os.path.join(PACKAGE_DIR, "README.md")
+    with open(fname, "rb") as fi:
+        result = fi.read().decode("utf-8")
+    return result
 
 
 custom_commands = {
@@ -244,20 +256,15 @@ custom_commands = {
 }
 
 
-pypi_name = "scitools-iris"
-
-with open(os.path.join(SETUP_DIR, "README.md"), "r") as fh:
-    description = "".join(fh.readlines())
-
 setup(
-    name=pypi_name,
+    name=PYPI_NAME,
     version=extract_version(),
     url="http://scitools.org.uk/iris/",
     author="UK Met Office",
     author_email="scitools-iris-dev@googlegroups.com",
     description="A powerful, format-agnostic, community-driven Python "
     "library for analysing and visualising Earth science data",
-    long_description=description,
+    long_description=long_description(),
     long_description_content_type="text/markdown",
     packages=find_package_tree("lib/iris", "iris"),
     package_dir={"": "lib"},
@@ -265,11 +272,11 @@ setup(
     cmdclass=custom_commands,
     zip_safe=False,
     setup_requires=pip_requirements("setup"),
-    install_requires=pip_requirements("setup") + pip_requirements("core"),
-    tests_require=["{}[test]".format(pypi_name)],
+    install_requires=pip_requirements("setup", "core"),
+    tests_require=[f"{PYPI_NAME}[test]"],
     extras_require={
-        "test": pip_requirements("test"),
         "all": pip_requirements("all"),
-        "extensions": pip_requirements("extensions"),
+        "docs": pip_requirements("docs"),
+        "test": pip_requirements("test"),
     },
 )

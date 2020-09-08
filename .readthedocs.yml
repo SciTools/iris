@@ -4,7 +4,7 @@ build:
     image: latest
 
 conda:
-    environment: ci/requirements/readthedocs.yml
+    environment: requirements/ci/readthedocs.yml
 
 sphinx:
     configuration: docs/iris/src/conf.py

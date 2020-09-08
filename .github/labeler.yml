@@ -1,0 +1,8 @@
+"New: Pull Request":
+  - "**"
+
+"Type: Documentation":
+  - docs/**/*
+
+"Type: Testing":
+  - lib/iris/tests/**/*

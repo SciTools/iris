@@ -1,12 +1,18 @@
+.. note:: For **Iris 2.4** and earlier documentation please see the
+          `legacy documentation`_
+
+.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
+
+
 Iris Documentation
 ==================
 
-.. todolist:: 
+.. todolist::
 
-**A powerful, format-agnostic, community-driven Python library for analysing and
-visualising Earth science data.**
+**A powerful, format-agnostic, community-driven Python library for analysing
+and visualising Earth science data.**
 
-Iris implements a data model based on the `CF conventions <http://cfconventions.org>`_ 
+Iris implements a data model based on the `CF conventions <http://cfconventions.org>`_
 giving you a powerful, format-agnostic interface for working with your data.
 It excels when working with multi-dimensional Earth Science data, where tabular
 representations become unwieldy and inefficient.
@@ -23,18 +29,19 @@ associated metadata as first-class objects includes:
 * subsetting and extraction,
 * merge and concatenate,
 * aggregations and reductions (including min, max, mean and weighted averages),
-* interpolation and regridding (including nearest-neighbor, linear and area-weighted), and
+* interpolation and regridding (including nearest-neighbor, linear and
+  area-weighted), and
 * operator overloads (``+``, ``-``, ``*``, ``/``, etc.).
 
-A number of file formats are recognised by Iris, including CF-compliant NetCDF, GRIB,
-and PP, and it has a plugin architecture to allow other formats to be added seamlessly.
+A number of file formats are recognised by Iris, including CF-compliant NetCDF,
+GRIB, and PP, and it has a plugin architecture to allow other formats to be
+added seamlessly.
 
 Building upon `NumPy <http://www.numpy.org/>`_ and
-`dask <https://dask.pydata.org/en/latest/>`_,
-Iris scales from efficient single-machine workflows right through to multi-core
-clusters and HPC.
-Interoperability with packages from the wider scientific Python ecosystem comes from Iris'
-use of standard NumPy/dask arrays as its underlying data storage.
+`dask <https://dask.pydata.org/en/latest/>`_, Iris scales from efficient
+single-machine workflows right through to multi-core clusters and HPC.
+Interoperability with packages from the wider scientific Python ecosystem comes
+from Iris' use of standard NumPy/dask arrays as its underlying data storage.
 
 
 .. toctree::
@@ -84,6 +91,6 @@ use of standard NumPy/dask arrays as its underlying data storage.
    :maxdepth: 1
    :caption: Reference
 
-   whatsnew/index   
-   techpapers/index   
+   whatsnew/index
+   techpapers/index
    copyright
