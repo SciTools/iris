@@ -1,14 +1,11 @@
-# Absolute minimal dependencies for iris
-# --------------------------------------
-
-# Without these, iris won't even import.
+# Core dependencies.
 
 cartopy>=0.18
 cf-units>=2
 cftime
-dask[array]>=2  #conda: dask>=2
+dask[array]>=2
 matplotlib
 netcdf4
 numpy>=1.14
 scipy
-xxhash  #conda: python-xxhash
+xxhash

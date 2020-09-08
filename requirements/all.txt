@@ -1,17 +1,7 @@
-# Dependencies for a feature complete installation
-# ------------------------------------------------
+# Optional dependencies.
 
-# esmpy regridding not available through pip.
-#conda: esmpy>=7.0
-#gdal : under review -- not tested at present
 mo_pack
 nc-time-axis
 pandas
-stratify  #conda: python-stratify
 pyugrid
-
-#conda: graphviz
-
-# Iris sample data is not available through pip. It can be installed from
-# https://github.com/SciTools/iris-sample-data/archive/master.zip
-#conda: iris-sample-data
+stratify
