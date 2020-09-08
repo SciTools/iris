@@ -43,6 +43,8 @@ single-machine workflows right through to multi-core clusters and HPC.
 Interoperability with packages from the wider scientific Python ecosystem comes
 from Iris' use of standard NumPy/dask arrays as its underlying data storage.
 
+Iris is part of SciTools, for more information see https://scitools.org.uk/.
+
 
 .. toctree::
    :maxdepth: 1
