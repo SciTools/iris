@@ -1,5 +1,5 @@
 # Top-level files
-include CHANGES COPYING COPYING.LESSER INSTALL
+include CHANGES COPYING COPYING.LESSER
 
 # Files from setup.py package_data that are not automatically added to source distributions
 recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml *.json

@@ -103,7 +103,8 @@ The easiest way to install Iris is with [conda](https://conda.io/miniconda.html)
     conda install -c conda-forge iris
 
 Detailed instructions, including information on installing from source,
-are available in [INSTALL](INSTALL).
+are available in the
+[documentation](https://scitools-iris.readthedocs.io/en/latest/installing.html).
 
 # Get in touch
 
