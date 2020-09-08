@@ -1077,6 +1077,13 @@ class IrisTest_nometa(unittest.TestCase):
                     )
                     raise AssertionError(emsg)
 
+    def assertEqualAndKind(self, value, expected):
+        # Check a value, and also its type 'kind' = float/integer/string.
+        self.assertEqual(value, expected)
+        self.assertEqual(
+            np.array(value).dtype.kind, np.array(expected).dtype.kind
+        )
+
 
 # An environment variable controls whether test timings are output.
 #

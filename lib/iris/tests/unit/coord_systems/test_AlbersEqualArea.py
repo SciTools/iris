@@ -90,5 +90,34 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.assertEqual(res, expected)
 
 
+class Test_init_defaults(tests.IrisTest):
+    def _check_crs_defaults(self, crs):
+        # Check for property defaults when no kwargs options were set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.longitude_of_central_meridian, 0.0)
+        self.assertEqualAndKind(crs.latitude_of_projection_origin, 0.0)
+        self.assertEqualAndKind(crs.false_easting, 0.0)
+        self.assertEqualAndKind(crs.false_northing, 0.0)
+        self.assertEqual(len(crs.standard_parallels), 2)
+        self.assertEqualAndKind(crs.standard_parallels[0], 20.0)
+        self.assertEqualAndKind(crs.standard_parallels[1], 50.0)
+
+    def test_no_optional_args(self):
+        # Check expected defaults with no optional args.
+        crs = AlbersEqualArea()
+        self._check_crs_defaults(crs)
+
+    def test_optional_args_None(self):
+        # Check expected defaults with optional args=None.
+        crs = AlbersEqualArea(
+            longitude_of_central_meridian=None,
+            latitude_of_projection_origin=None,
+            standard_parallels=None,
+            false_easting=None,
+            false_northing=None,
+        )
+        self._check_crs_defaults(crs)
+
+
 if __name__ == "__main__":
     tests.main()
