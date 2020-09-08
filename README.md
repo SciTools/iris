@@ -15,7 +15,7 @@
 <img src="https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master"
      alt="Travis-CI" /></a>
 <a href='https://scitools-iris.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/scitools-iris/badge/?version=latest' 
+    <img src='https://readthedocs.org/projects/scitools-iris/badge/?version=latest'
     alt='Documentation Status' /></a>
 <a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/dn/conda-forge/iris.svg"
@@ -40,9 +40,6 @@
      alt="black" /></a>
 </p>
 
-<p>
-See the <a href="https://scitools-iris.readthedocs.io/en/latest/">documentation</a> for the *latest development version* of Iris.
+<p align="center">
+See the <a href="https://scitools-iris.readthedocs.io/en/latest/">documentation</a> for the <b>latest development version</b> of Iris.
 </P>
-
-
-
