@@ -32,11 +32,75 @@ defined by :mod:`ConfigParser`.
 
 import configparser
 import contextlib
-import logging.config
+import logging
 import os.path
-import pathlib
 import warnings
-import yaml
+
+
+def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
+    """
+    Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`
+    and custom :class:`logging.Formatter`.
+
+    Args:
+
+    * name:
+        The name of the logger. Typically this is the module filename that
+        owns the logger.
+
+    Kwargs:
+
+    * datefmt:
+        The date format of the :class:`logging.Formatter`. Defaults to
+        ``%d-%m-%Y %H:%M:%S``.
+
+    * fmt:
+        The format of the :class:`logging.Formatter`. Defaults to
+        ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
+
+    * level:
+        The threshold level of the logger. Defaults to ``INFO``.
+
+    * propagate:
+        Sets the ``propagate`` attribute of the :class:`logging.Logger`,
+        which determines whether events logged to this logger will be
+        passed to the handlers of higher level loggers. Defaults to
+        ``False``.
+
+    """
+    if datefmt is None:
+        datefmt = "%d-%m-%Y %H:%M:%S"
+
+    _fmt = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+
+    if fmt is None:
+        fmt = _fmt
+    else:
+        fmt = f"{_fmt} {fmt}"
+
+    if level is None:
+        level = "INFO"
+
+    if propagate is None:
+        propagate = False
+
+    # Create the named logger.
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.propagate = propagate
+
+    # Create a formatter.
+    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+    # Create a logging handler.
+    handler = logging.StreamHandler()
+    # handler.setLevel(level)
+    handler.setFormatter(formatter)
+
+    # Add the handler to the logger.
+    logger.addHandler(handler)
+
+    return logger
 
 
 # Returns simple string options
@@ -83,15 +147,6 @@ CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
 # Load the optional "site.cfg" file if it exists.
 config = configparser.ConfigParser()
 config.read([os.path.join(CONFIG_PATH, "site.cfg")])
-
-# Configure logging.
-fname_logging = pathlib.Path(CONFIG_PATH) / "logging.yaml"
-if not fname_logging.exists():
-    emsg = f"Logging configuration file '{fname_logging!s}' does not exist."
-    raise FileNotFoundError(emsg)
-with open(fname_logging) as fi:
-    logging.config.dictConfig(yaml.safe_load(fi))
-del fname_logging
 
 ##################
 # Resource options
