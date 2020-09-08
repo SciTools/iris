@@ -1198,7 +1198,7 @@ class CubeMetadata(BaseMetadata):
 
 class DimCoordMetadata(CoordMetadata):
     """
-    Metadata container for a :class:`~iris.coords.DimCoord"
+    Metadata container for a :class:`~iris.coords.DimCoord`
 
     """
 
