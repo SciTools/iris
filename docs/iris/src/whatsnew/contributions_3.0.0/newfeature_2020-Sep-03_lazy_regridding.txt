@@ -1,0 +1,1 @@
+* Lazy regridding with the :class:`~iris.analysis.Linear`, :class:`~iris.analysis.Nearest`, and :class:`~iris.analysis.AreaWeighted` regridding schemes.

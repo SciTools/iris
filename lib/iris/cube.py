@@ -4448,7 +4448,7 @@ calendar='gregorian')
         return interp(points, collapse_scalar=collapse_scalar)
 
     def regrid(self, grid, scheme):
-        """
+        r"""
         Regrid this :class:`~iris.cube.Cube` on to the given target `grid`
         using the given regridding `scheme`.
 
@@ -4458,18 +4458,24 @@ calendar='gregorian')
             A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
             The type of regridding to use to regrid this cube onto the
-            target grid. The regridding schemes currently available
-            in Iris are:
+            target grid. The regridding schemes in Iris currently include:
 
-                * :class:`iris.analysis.Linear`,
-                * :class:`iris.analysis.Nearest`, and
-                * :class:`iris.analysis.AreaWeighted`.
+                * :class:`iris.analysis.Linear`\*,
+                * :class:`iris.analysis.Nearest`\*,
+                * :class:`iris.analysis.AreaWeighted`\*,
+                * :class:`iris.analysis.UnstructuredNearest`,
+                * :class:`iris.analysis.PointInCell`,
+
+            \* Supports lazy regridding.
 
         Returns:
             A cube defined with the horizontal dimensions of the target grid
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid
             according to the given regridding scheme.
+
+            The returned cube will have lazy data if the original cube has
+            lazy data and the regridding scheme supports lazy regridding.
 
         .. note::
 

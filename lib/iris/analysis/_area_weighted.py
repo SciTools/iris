@@ -78,6 +78,9 @@ class AreaWeightedRegridder:
         The given cube must be defined with the same grid as the source
         grid used to create this :class:`AreaWeightedRegridder`.
 
+        If the source cube has lazy data, the returned cube will also
+        have lazy data.
+
         Args:
 
         * cube:
@@ -88,6 +91,12 @@ class AreaWeightedRegridder:
             and the other dimensions from this cube. The data values of
             this cube will be converted to values on the new grid using
             area-weighted regridding.
+
+        .. note::
+
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the horizontal dimensions will be combined before regridding.
 
         """
         src_x, src_y = get_xy_dim_coords(cube)
