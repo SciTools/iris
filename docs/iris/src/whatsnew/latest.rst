@@ -31,6 +31,11 @@ Features
   saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
   ensure they load and save with appropriate units. See :pull:`3800`.
 
+* Lazy regridding with the :class:`~iris.analysis.Linear`,
+  :class:`~iris.analysis.Nearest`, and
+  :class:`~iris.analysis.AreaWeighted` regridding schemes.
+  See :pull:`3701`.
+
 
 Dependency Updates
 ==================
