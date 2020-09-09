@@ -9,13 +9,13 @@ from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from functools import wraps
-import logging
 import re
 
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
+from ..config import get_logger
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
@@ -40,7 +40,7 @@ __all__ = [
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 
 def _hexdigest(value):
@@ -1198,7 +1198,7 @@ class CubeMetadata(BaseMetadata):
 
 class DimCoordMetadata(CoordMetadata):
     """
-    Metadata container for a :class:`~iris.coords.DimCoord"
+    Metadata container for a :class:`~iris.coords.DimCoord`
 
     """
 

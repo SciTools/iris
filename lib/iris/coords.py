@@ -1402,6 +1402,7 @@ class Coord(_DimensionalMetadata):
             "units": coord.units,
             "attributes": coord.attributes,
             "coord_system": copy.deepcopy(coord.coord_system),
+            "climatological": coord.climatological,
         }
         if issubclass(cls, DimCoord):
             # DimCoord introduces an extra constructor keyword.
@@ -2266,6 +2267,7 @@ class DimCoord(Coord):
         attributes=None,
         coord_system=None,
         circular=False,
+        climatological=False,
         with_bounds=False,
     ):
         """
@@ -2317,6 +2319,7 @@ class DimCoord(Coord):
             attributes=attributes,
             coord_system=coord_system,
             circular=circular,
+            climatological=climatological,
         )
 
     def __init__(

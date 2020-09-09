@@ -65,7 +65,8 @@ and :attr:`Cube.units <iris.cube.Cube.units>` respectively::
     print(cube.units)
     
 Interrogating these with the standard :func:`type` function will tell you that ``standard_name`` and ``long_name`` 
-are either a string or ``None``, and ``units`` is an instance of :class:`iris.unit.Unit`.
+are either a string or ``None``, and ``units`` is an instance of :class:`iris.unit.Unit`. A more in depth discussion on
+the cube units and their functional effects can be found at the end of :doc:`cube_maths`.
 
 You can access a string representing the "name" of a cube with the :meth:`Cube.name() <iris.cube.Cube.name>` method::
 

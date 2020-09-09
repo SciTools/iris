@@ -77,6 +77,10 @@ class TestGeoTiffExport(tests.IrisTest):
             339,
             33550,
             33922,
+            42113,
+            # Don't add a check entry for this, as coding changed between gdal
+            # version 1 and 2.
+            # tif_header_entries[42113] = (u'1e+20',)
         ]
         tif_header_entries = {
             256: (160,),
@@ -129,12 +133,6 @@ class TestGeoTiffExport(tests.IrisTest):
         if masked:
             # Mask some of the data + expect a slightly different header...
             cube.data = np.ma.masked_where(cube.data <= 380, cube.data)
-
-            # There is an additional key..
-            tif_header_keys += [42113]
-            # Don't add a check entry for this, as coding changed between gdal
-            # version 1 and 2, *and* between Python2 and Python3.
-            # tif_header_entries[42113] = (u'1e+20',)
 
         if inverted:
             # Check with the latitude coordinate (and the corresponding

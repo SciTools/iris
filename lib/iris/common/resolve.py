@@ -11,14 +11,15 @@ import logging
 from dask.array.core import broadcast_shapes
 import numpy as np
 
-from iris.common import LENIENT
+from ..config import get_logger
+from . import LENIENT
 
 
 __all__ = ["Resolve"]
 
 
 # Configure the logger.
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 _AuxCoverage = namedtuple(

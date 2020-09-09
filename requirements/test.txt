@@ -1,11 +1,10 @@
-# Dependencies needed to run the iris tests
-#------------------------------------------
+# Test dependencies.
 
-black==19.10b0  #conda: black=19.10b0
+asv
+black==19.10b0
 filelock
-pillow<7
 imagehash>=4.0
 nose
+pillow<7
 pre-commit
 requests
-asv

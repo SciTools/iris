@@ -18,6 +18,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
+from iris._lazy_data import map_complete_blocks
 import iris.analysis.cartography
 from iris.analysis._interpolation import (
     get_xy_dim_coords,
@@ -931,8 +932,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
     ) = regrid_info
 
     # Calculate new data array for regridded cube.
-    new_data = _regrid_area_weighted_array(
-        src_cube.data, src_x_dim, src_y_dim, weights_info, mdtol,
+    regrid = functools.partial(
+        _regrid_area_weighted_array,
+        x_dim=src_x_dim,
+        y_dim=src_y_dim,
+        weights_info=weights_info,
+        mdtol=mdtol,
+    )
+
+    new_data = map_complete_blocks(
+        src_cube, regrid, (src_y_dim, src_x_dim), meshgrid_x.shape
     )
 
     # Wrap up the data as a Cube.
@@ -1470,6 +1479,8 @@ class ProjectedUnstructuredLinear:
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
 
+        Does not support lazy regridding.
+
         Args:
 
         * src_cube:
@@ -1534,6 +1545,8 @@ class ProjectedUnstructuredNearest:
         regridding a cube. There are, however, some situations when
         constructing your own regridder is preferable. These are detailed in
         the :ref:`user guide <caching_a_regridder>`.
+
+        Does not support lazy regridding.
 
         Args:
 

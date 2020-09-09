@@ -83,7 +83,7 @@ class TestMissingCS(tests.GraphicsTest):
         cube.coord("latitude").coord_system = None
         cube.coord("longitude").coord_system = None
         qplt.contourf(cube)
-        qplt.plt.gca().coastlines()
+        qplt.plt.gca().coastlines("110m")
         self.check_graphic()
 
 
@@ -187,7 +187,7 @@ class Test1dPlotMultiArgs(tests.GraphicsTest):
             units="degrees_north",
         )
         self.draw_method(lon, lat)
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
     def test_cube_cube(self):
@@ -262,7 +262,7 @@ class Test1dScatter(tests.GraphicsTest):
         y = self.cube.coord("latitude")
         c = self.cube.data
         self.draw_method(x, y, c=c, edgecolor="none")
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
     def test_coord_cube(self):
@@ -892,7 +892,7 @@ class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
 
     def test_default(self):
         iplt.contourf(self.cube)
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
     def test_coords(self):
@@ -900,23 +900,23 @@ class TestPlotDimAndAuxCoordsKwarg(tests.GraphicsTest):
         rlat = self.cube.coord("grid_latitude")
         rlon = self.cube.coord("grid_longitude")
         iplt.contourf(self.cube, coords=[rlon, rlat])
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
         # Pass in auxiliary coords.
         lat = self.cube.coord("latitude")
         lon = self.cube.coord("longitude")
         iplt.contourf(self.cube, coords=[lon, lat])
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
     def test_coord_names(self):
         # Pass in names of dimension coords.
         iplt.contourf(self.cube, coords=["grid_longitude", "grid_latitude"])
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
         # Pass in names of auxiliary coords.
         iplt.contourf(self.cube, coords=["longitude", "latitude"])
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
     def test_yx_order(self):
@@ -993,7 +993,7 @@ class TestPlotOtherCoordSystems(tests.GraphicsTest):
         )
         self.cube = iris.load_cube(filename)
         iplt.pcolormesh(self.cube[0])
-        plt.gca().coastlines()
+        plt.gca().coastlines("110m")
         self.check_graphic()
 
 

@@ -599,6 +599,12 @@ def project(cube, target_proj, nx=None, ny=None):
         on the statistics of the data e.g. the mean and standard deviation
         will not be preserved.
 
+    .. warning::
+
+        If the target projection is non-rectangular, e.g. Robinson, the target
+        grid may include points outside the boundary of the projection. The
+        latitude/longitude of such points may be unpredictable.
+
     """
     try:
         lon_coord, lat_coord = _get_lon_lat_coords(cube)

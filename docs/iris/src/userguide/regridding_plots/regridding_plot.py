@@ -22,6 +22,4 @@ ax = plt.gca()
 ax.coastlines(resolution="50m")
 ax.gridlines()
 
-plt.tight_layout()
-
 plt.show()

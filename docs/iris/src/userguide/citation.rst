@@ -4,22 +4,23 @@
 Citing Iris
 ===========
 
-If Iris played an important part in your research then please add us to your reference list by using one of the recommendations below.
+If Iris played an important part in your research then please add us to your
+reference list by using one of the recommendations below.
 
 ************
-BibTeX entry 
+BibTeX entry
 ************
 
 For example::
 
  @manual{Iris,
  author = {{Met Office}},
- title = {Iris: A Python library for analysing and visualising meteorological and oceanographic data sets},
+ title = {Iris: A Python package for analysing and visualising meteorological and oceanographic data sets},
  edition = {v1.2},
  year = {2010 - 2013},
  address = {Exeter, Devon },
  url = {http://scitools.org.uk/}
- } 
+ }
 
 
 *******************
@@ -45,7 +46,7 @@ Suggested format::
 
 For example::
 
- Iris. Met Office. git@github.com:SciTools/iris.git 06-03-2013 
+ Iris. Met Office. git@github.com:SciTools/iris.git 06-03-2013
 
 .. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
 

@@ -349,3 +349,39 @@ def lazy_elementwise(lazy_array, elementwise_op):
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
 
     return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
+
+
+def map_complete_blocks(src, func, dims, out_sizes):
+    """Apply a function to complete blocks.
+
+    Complete means that the data is not chunked along the chosen dimensions.
+
+    Args:
+
+    * src (:class:`~iris.cube.Cube`):
+        Source cube that function is applied to.
+    * func:
+        Function to apply.
+    * dims (tuple of int):
+        Dimensions that cannot be chunked.
+    * out_sizes (tuple of int):
+        Output size of dimensions that cannot be chunked.
+
+    """
+    if not src.has_lazy_data():
+        return func(src.data)
+
+    data = src.lazy_data()
+
+    # Ensure dims are not chunked
+    in_chunks = list(data.chunks)
+    for dim in dims:
+        in_chunks[dim] = src.shape[dim]
+    data = data.rechunk(in_chunks)
+
+    # Determine output chunks
+    out_chunks = list(data.chunks)
+    for dim, size in zip(dims, out_sizes):
+        out_chunks[dim] = size
+
+    return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
