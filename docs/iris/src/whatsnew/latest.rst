@@ -26,7 +26,7 @@ Features
 * Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
   dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
   been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
- 
+
 * `CF Ancillary Data`_ variables are now supported.
 
 
@@ -53,6 +53,11 @@ Bugs Fixed
   :class:`~iris.coords.CellMeasure` with an default value of ``None``, which 
   caused a ``TypeError`` when no ``measure`` was provided.  The default value
   of ``area`` is now used.
+
+* the netcdf loader can now handle any grid-mapping variables with missing
+  ``false_easting`` and ``false_northing`` properties, which was previously
+  failing for some coordinate systems.
+  See :issue:`3629`.
 
 
 Incompatible Changes
