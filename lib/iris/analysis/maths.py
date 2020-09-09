@@ -10,7 +10,6 @@ Basic mathematical and statistical operations.
 
 from functools import lru_cache
 import inspect
-import logging
 import math
 import operator
 import warnings
@@ -23,6 +22,7 @@ from numpy import ma
 import iris.analysis
 from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
+from iris.config import get_logger
 import iris.coords
 import iris.cube
 import iris.exceptions
@@ -30,7 +30,7 @@ import iris.util
 
 
 # Configure the logger.
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @lru_cache(maxsize=128, typed=True)

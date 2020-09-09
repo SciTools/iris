@@ -24,8 +24,8 @@ Features
   associated with an axis over which the statistic is being run.
 
 * Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
-  dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
-  been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
+  dependency on `Matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
+  been dropped, ``Iris`` is free to use the latest version of `Matplotlib`_.
 
 * `CF Ancillary Data`_ variables are now supported, and can be loaded from and
   saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
@@ -35,16 +35,17 @@ Features
 Dependency Updates
 ==================
 
-* Iris now supports the latest version of
-  `Proj <https://github.com/OSGeo/PROJ>`_.
+* Iris now supports the latest version of `Proj <https://github.com/OSGeo/PROJ>`_.
 
 * Iris now requires `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18 in
-  order to remain compatible with the latest version of
-  `Matplotlib <https://github.com/matplotlib/matplotlib>`_.
+  order to remain compatible with the latest version of `Matplotlib`_.
 
 * GDAL is removed from the extensions dependency group. We no longer consider it to
   be an extension.
 
+* Configuring Iris and :ref:`installing_from_source` as a developer, with all the
+  required package dependencies is now easier with our curated conda environment
+  YAML files. See :pull:`3812`.
 
 Bugs Fixed
 ==========
@@ -125,10 +126,13 @@ Internal
 ========
 
 * Changed the numerical values in tests involving the Robinson projection due
-  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_ (see `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_).
+  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_ (see
+  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
+  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_).
 
 * Change tests to account for more detailed descriptions of projections in
-  `GDAL <https://github.com/OSGeo/gdal>`_ (`see GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_).
+  `GDAL <https://github.com/OSGeo/gdal>`_ 
+  (`see GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_).
 
 * Change tests to account for `GDAL <https://github.com/OSGeo/gdal>`_ now
   saving fill values for data without masked points.
@@ -144,8 +148,7 @@ Internal
   <https://github.com/SciTools/cartopy/pull/1117>`_).
 
 * Additional acceptable graphics test targets to account for very minor changes
-  in `Matplotlib <https://github.com/matplotlib/matplotlib>`_ version 3.3
-  (colormaps, fonts and axes borders).
+  in `Matplotlib`_ version 3.3 (colormaps, fonts and axes borders).
 
 
 Deprecations
@@ -192,6 +195,6 @@ Documentation
   clarify how ``Units`` are handled during cube arithmetic.
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _matplotlib: https://matplotlib.org/
+.. _Matplotlib: https://matplotlib.org/
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
