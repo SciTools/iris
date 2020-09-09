@@ -51,11 +51,12 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
     Kwargs:
 
     * datefmt:
-        The date format of the :class:`logging.Formatter`. Defaults to
-        ``%d-%m-%Y %H:%M:%S``.
+        The date format string of the :class:`logging.Formatter`.
+        Defaults to ``%d-%m-%Y %H:%M:%S``.
 
     * fmt:
-        The format of the :class:`logging.Formatter`. Defaults to
+        The additional format string of the :class:`logging.Formatter`.
+        This is appended to the default format string
         ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
 
     * level:
@@ -69,19 +70,20 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
 
     """
     if datefmt is None:
+        # Default date format string.
         datefmt = "%d-%m-%Y %H:%M:%S"
 
+    # Default format string.
     _fmt = "%(asctime)s %(name)s %(levelname)s - %(message)s"
-
-    if fmt is None:
-        fmt = _fmt
-    else:
-        fmt = f"{_fmt} {fmt}"
+    # Append additional format string, if appropriate.
+    fmt = _fmt if fmt is None else f"{_fmt} {fmt}"
 
     if level is None:
+        # Default logging level.
         level = "INFO"
 
     if propagate is None:
+        # Default logging propagate behaviour.
         propagate = False
 
     # Create the named logger.
