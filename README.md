@@ -5,7 +5,7 @@
 
 
 <h4 align="center">
-    Iris is a powerful, format-agnostic, community-driven Python library for
+    Iris is a powerful, format-agnostic, community-driven Python package for
     analysing and visualising Earth science data
 </h4>
 
