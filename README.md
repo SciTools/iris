@@ -5,7 +5,7 @@
 
 
 <h4 align="center">
-    Iris is a powerful, format-agnostic, community-driven Python library for
+    Iris is a powerful, format-agnostic, community-driven Python package for
     analysing and visualising Earth science data
 </h4>
 
@@ -15,7 +15,7 @@
 <img src="https://api.travis-ci.org/repositories/SciTools/iris.svg?branch=master"
      alt="Travis-CI" /></a>
 <a href='https://scitools-iris.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/scitools-iris/badge/?version=latest' 
+    <img src='https://readthedocs.org/projects/scitools-iris/badge/?version=latest'
     alt='Documentation Status' /></a>
 <a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/dn/conda-forge/iris.svg"
@@ -39,86 +39,7 @@
 <img src="https://img.shields.io/badge/code%20style-black-000000.svg"
      alt="black" /></a>
 </p>
-<br>
 
-<!-- NOTE: toc auto-generated with https://github.com/frnmst/md-toc:
-   $ md_toc github README.md -i
--->
-
-<h1>Table of contents</h1>
-
-[](TOC)
-
-+ [Overview](#overview)
-+ [Documentation](#documentation)
-+ [Installation](#installation)
-+ [Copyright and licence](#copyright-and-licence)
-+ [Get in touch](#get-in-touch)
-+ [Contributing](#contributing)
-
-[](TOC)
-
-# Overview
-
-Iris implements a data model based on the [CF conventions](http://cfconventions.org/)
-giving you a powerful, format-agnostic interface for working with your data.
-It excels when working with multi-dimensional Earth Science data, where tabular
-representations become unwieldy and inefficient.
-
-[CF Standard names](http://cfconventions.org/standard-names.html),
-[units](https://github.com/SciTools/cf_units), and coordinate metadata
-are built into Iris, giving you a rich and expressive interface for maintaining
-an accurate representation of your data. Its treatment of data and
-  associated metadata as first-class objects includes:
-
-  * a visualisation interface based on [matplotlib](https://matplotlib.org/) and
-    [cartopy](https://scitools.org.uk/cartopy/docs/latest/),
-  * unit conversion,
-  * subsetting and extraction,
-  * merge and concatenate,
-  * aggregations and reductions (including min, max, mean and weighted averages),
-  * interpolation and regridding (including nearest-neighbor, linear and area-weighted), and
-  * operator overloads (``+``, ``-``, ``*``, ``/``, etc.)
-
-A number of file formats are recognised by Iris, including CF-compliant NetCDF, GRIB,
-and PP, and it has a plugin architecture to allow other formats to be added seamlessly.
-
-Building upon [NumPy](http://www.numpy.org/) and [dask](https://dask.pydata.org/en/latest/),
-Iris scales from efficient single-machine workflows right through to multi-core clusters and HPC.
-Interoperability with packages from the wider scientific Python ecosystem comes from Iris'
-use of standard NumPy/dask arrays as its underlying data storage.
-
-
-# Documentation
-
-<a href="https://scitools.org.uk/iris/docs/latest/index.html"> <img src="https://img.shields.io/badge/docs-stable-green.svg" alt="Stable docs" /></a> The documentation for *stable released versions* of Iris, including a user guide, example code, and gallery.
-
-<a href="https://scitools-docs.github.io/iris/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-blue.svg" alt="Latest docs" /></a> The documentation for the *latest development version* of Iris.
-
-
-# Installation
-
-The easiest way to install Iris is with [conda](https://conda.io/miniconda.html):
-
-    conda install -c conda-forge iris
-
-Detailed instructions, including information on installing from source,
-are available in the
-[documentation](https://scitools-iris.readthedocs.io/en/latest/installing.html).
-
-# Get in touch
-
-  * Report bugs, or suggest new features using an Issue or Pull Request on [Github](https://github.com/SciTools/iris). You can also comment on existing Issues and Pull Requests.
-  * For discussions from a user perspective you could join our [SciTools Users Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
-  * For those involved in developing Iris we also have an [Iris Developers Google Group](https://groups.google.com/forum/#!forum/scitools-iris-dev).
-  * [StackOverflow](https://stackoverflow.com/questions/tagged/python-iris) For "How do I?".
-
-# Copyright and licence
-
-Iris may be freely distributed, modified and used commercially under the terms
-of its [GNU LGPLv3 license](COPYING.LESSER).
-
-# Contributing
-Information on how to contribute can be found in the [Iris developer guide](https://scitools.org.uk/iris/docs/latest/developers_guide/index.html).
-
-(C) British Crown Copyright 2010 - 2020, Met Office
+<p align="center">
+See the <a href="https://scitools-iris.readthedocs.io/en/latest/">documentation</a> for the <b>latest development version</b> of Iris.
+</P>

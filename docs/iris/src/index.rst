@@ -9,7 +9,7 @@ Iris Documentation
 
 .. todolist::
 
-**A powerful, format-agnostic, community-driven Python library for analysing
+**A powerful, format-agnostic, community-driven Python package for analysing
 and visualising Earth science data.**
 
 Iris implements a data model based on the `CF conventions <http://cfconventions.org>`_
