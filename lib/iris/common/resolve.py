@@ -132,9 +132,9 @@ class Resolve:
                   source: Data from Met Office Unified Model 6.05
              Cell methods:
                   mean: time (6 hour)
-        >>> resolver = Resolve(cube1, cube2)
         >>> print(data.shape)
         (240, 37, 49)
+        >>> resolver = Resolve(cube1, cube2)
         >>> result = resolver.cube(data)
         >>> print(result)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
@@ -167,8 +167,8 @@ class Resolve:
     Lastly, creating a ``resolver`` instance with *specific* :class:`~iris.cube.Cube`
     operands, and then supply *different* ``data`` *multiple* times, e.g.,
 
-        >>> resolver = Resolve(cube1, cube2)
         >>> payload = (data1, data2, data3)
+        >>> resolver = Resolve(cube1, cube2)
         >>> results = [resolver.cube(data) for data in payload]
 
     """
