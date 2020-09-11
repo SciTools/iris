@@ -183,13 +183,13 @@ Documentation
   code format correction for most IDEs.  See the new developer guide section on
   :ref:`iris_code_format`. (:pull:`3518`)
 
-* `tkknight`_ refreshed the :ref:`whats_new_contributions` for the
-  :ref:`iris_whatsnew`. This includes always creating the ``latest`` what's new
-  page so it appears on the latest documentation at
+* `tkknight`_ and `Martin Yeo`_ refreshed the :ref:`whats_new_contributions`
+  for the :ref:`iris_whatsnew`. This includes always creating the ``latest``
+  what's new page so it appears on the latest documentation at
   https://scitools-iris.readthedocs.io/en/latest/whatsnew. This resolves
-  :issue:`2104` and :issue:`3451`.  Also updated the
+  :issue:`2104`, :issue:`3451`, :issue:`3818`, :issue:`3837`.  Also updated the
   :ref:`iris_development_releases_steps` to follow when making a release.
-  (:pull:`3769`)
+  (:pull:`3769`, :pull:`3838`, :pull:`3843`)
 
 * `tkknight`_ enabled the PDF creation of the documentation on the
   `Read the Docs`_ service. The PDF may be accessed by clicking on the version
