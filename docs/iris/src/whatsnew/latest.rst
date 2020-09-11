@@ -126,6 +126,11 @@ Incompatible Changes
   Prior to Iris ``3.0.0``, these cases defaulted to ``units='1'``.
   See :pull:`3795`.
 
+* `Simon Peatman <https://github.com/SimonPeatman>`_ added attribute
+  ``var_name`` to coordinates created by the
+  :func:`iris.analysis.trajectory.interpolate` function.  This prevents
+  duplicate coordinate errors in certain circumstances.  (:pull:`3718`).
+
 
 Internal
 ========
