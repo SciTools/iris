@@ -35,38 +35,6 @@ Features
   :class:`~iris.analysis.AreaWeighted` regridding schemes. (:pull:`3701`)
 
 
-Dependency Updates
-==================
-
-
-* `stephenworsley`_, `Martin Yeo`_ and `Bill Little`_ removed ``Python2``
-  support, modernising the codebase by switching to exclusive ``Python3``
-  support. (:pull:`3513`)
-
-* `Bill Little`_ improved the developer set up process. Configuring Iris and
-  :ref:`installing_from_source` as a developer, with all the required package
-  dependencies is now easier with our curated conda environment YAML files.
-  (:pull:`3812`)
-
-* `stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
-
-* `stephenworsley`_ and `Martin Yeo`_ pinned Iris to require
-  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
-  order to remain compatible with the latest version of `Matplotlib`_.
-  (:pull:`3762`)
-
-* `Bill Little`_ unpinned Iris to use the latest version of `Matplotlib`_.
-  Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
-  pinning our dependency on `Matplotlib`_ at ``v2.x``.  But this is no longer
-  necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
-
-* `stephenworsley`_ and `Martin Yeo`_ unpinned Iris to use the latest version
-  of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
-
-* `stephenworsley`_ and `Martin Yeo`_ removed GDAL from the extensions
-  dependency group. We no longer consider it to be an extension. (:pull:`3762`)
-
-
 Bugs Fixed
 ==========
 
@@ -164,6 +132,38 @@ Deprecations
 * `stephenworsley`_ changed :attr:`iris.fileformats.pp.PPField.lbproc` is be an
   ``int``. The deprecated attributes ``flag1``, ``flag2`` etc. have been
   removed from it. (:pull:`3461`).
+
+
+Dependency Updates
+==================
+
+
+* `stephenworsley`_, `Martin Yeo`_ and `Bill Little`_ removed ``Python2``
+  support, modernising the codebase by switching to exclusive ``Python3``
+  support. (:pull:`3513`)
+
+* `Bill Little`_ improved the developer set up process. Configuring Iris and
+  :ref:`installing_from_source` as a developer, with all the required package
+  dependencies is now easier with our curated conda environment YAML files.
+  (:pull:`3812`)
+
+* `stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
+
+* `stephenworsley`_ and `Martin Yeo`_ pinned Iris to require
+  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
+  order to remain compatible with the latest version of `Matplotlib`_.
+  (:pull:`3762`)
+
+* `Bill Little`_ unpinned Iris to use the latest version of `Matplotlib`_.
+  Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
+  pinning our dependency on `Matplotlib`_ at ``v2.x``.  But this is no longer
+  necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
+
+* `stephenworsley`_ and `Martin Yeo`_ unpinned Iris to use the latest version
+  of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
+
+* `stephenworsley`_ and `Martin Yeo`_ removed GDAL from the extensions
+  dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
 
 Documentation

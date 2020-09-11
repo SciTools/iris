@@ -85,6 +85,9 @@ users.  To achieve this several categories may be used.
 *Deprecations*
   Deprecations of functionality.
 
+*Dependencies*
+  Additions, removals and version changes in Iris' package dependencies.
+
 *Documentation*
   Changes to documentation.
 
