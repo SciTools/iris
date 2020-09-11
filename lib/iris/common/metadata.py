@@ -3,6 +3,11 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+"""
+Provides the infrastructure to support the common metadata API.
+
+"""
+
 
 from abc import ABCMeta
 from collections import namedtuple

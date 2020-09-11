@@ -3,14 +3,17 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+"""
+Provides common metadata mixin behaviour.
 
+"""
 
 from collections.abc import Mapping
 from functools import wraps
 
 import cf_units
 
-from iris.common import BaseMetadata
+from .metadata import BaseMetadata
 import iris.std_names
 
 
