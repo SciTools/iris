@@ -3,6 +3,13 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+"""
+Provides the infrastructure to support the analysis, identification and
+combination of metadata common between two :class:`~iris.cube.Cube`
+operands into a single resultant :class:`~iris.cube.Cube`, which will be
+auto-transposed, and with the appropriate broadcast shape.
+
+"""
 
 from collections import namedtuple
 from collections.abc import Iterable
@@ -57,12 +64,260 @@ _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 
 
 class Resolve:
+    """
+    At present, :class:`~iris.common.resolve.Resolve` is used by Iris solely
+    during cube arithmetic to combine a left-hand :class:`~iris.cube.Cube`
+    operand and a right-hand :class:`~iris.cube.Cube` operand into a resultant
+    :class:`~iris.cube.Cube` with common metadata, suitably auto-transposed
+    dimensions, and an appropriate broadcast shape.
+
+    However, the capability and benefit provided by :class:`~iris.common.resolve.Resolve`
+    may be exercised as a general means to easily and consistently combine the metadata
+    of two :class:`~iris.cube.Cube` operands together into a single resultant
+    :class:`~iris.cube.Cube`. This is highlighted through the following use case
+    patterns.
+
+    Firstly, creating a ``resolver`` instance with *specific* :class:`~iris.cube.Cube`
+    operands, and then supplying ``data`` with suitable dimensionality and shape to
+    create the resultant resolved :class:`~iris.cube.Cube`, e.g.,
+
+    .. testsetup::
+
+        import iris
+        import numpy as np
+        from iris.common import Resolve
+        cube1 = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+        cube2 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
+        cube2.transpose()
+        cube3, cube4 = cube1, cube2
+        data = np.zeros(cube1.shape)
+        data1 = data * 10
+        data2 = data * 20
+        data3 = data * 30
+
+    .. doctest::
+
+        >>> print(cube1)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+             Dimension coordinates:
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
+             Auxiliary coordinates:
+                  forecast_period                x              -              -
+             Scalar coordinates:
+                  forecast_reference_time: 1859-09-01 06:00:00
+                  height: 1.5 m
+             Attributes:
+                  Conventions: CF-1.5
+                  Model scenario: A1B
+                  STASH: m01s03i236
+                  source: Data from Met Office Unified Model 6.05
+             Cell methods:
+                  mean: time (6 hour)
+        >>> print(cube2)
+        air_temperature / (K)               (longitude: 49; latitude: 37)
+             Dimension coordinates:
+                  longitude                           x             -
+                  latitude                            -             x
+             Scalar coordinates:
+                  forecast_period: 10794 hours
+                  forecast_reference_time: 1859-09-01 06:00:00
+                  height: 1.5 m
+                  time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+             Attributes:
+                  Conventions: CF-1.5
+                  Model scenario: E1
+                  STASH: m01s03i236
+                  source: Data from Met Office Unified Model 6.05
+             Cell methods:
+                  mean: time (6 hour)
+        >>> print(data.shape)
+        (240, 37, 49)
+        >>> resolver = Resolve(cube1, cube2)
+        >>> result = resolver.cube(data)
+        >>> print(result)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+             Dimension coordinates:
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
+             Auxiliary coordinates:
+                  forecast_period                x              -              -
+             Scalar coordinates:
+                  forecast_reference_time: 1859-09-01 06:00:00
+                  height: 1.5 m
+             Attributes:
+                  Conventions: CF-1.5
+                  STASH: m01s03i236
+                  source: Data from Met Office Unified Model 6.05
+             Cell methods:
+                  mean: time (6 hour)
+
+    Secondly, creating an *empty* ``resolver`` instance, that may be called *multiple*
+    times with *different* :class:`~iris.cube.Cube` operands and *different* ``data``,
+    e.g.,
+
+    .. doctest::
+
+        >>> resolver = Resolve()
+        >>> result1 = resolver(cube1, cube2).cube(data1)
+        >>> result2 = resolver(cube3, cube4).cube(data2)
+
+    Lastly, creating a ``resolver`` instance with *specific* :class:`~iris.cube.Cube`
+    operands, and then supply *different* ``data`` *multiple* times, e.g.,
+
+        >>> payload = (data1, data2, data3)
+        >>> resolver = Resolve(cube1, cube2)
+        >>> results = [resolver.cube(data) for data in payload]
+
+    """
+
     def __init__(self, lhs=None, rhs=None):
+        """
+        Resolve the provided ``lhs`` :class:`~iris.cube.Cube` operand and
+        ``rhs`` :class:`~iris.cube.Cube` operand to determine the metadata
+        that is common between them, and the auto-transposed, broadcast shape
+        of the resultant :class:`~iris.cube.Cube`.
+
+        This includes the identification of common :class:`~iris.common.metadata.CubeMetadata`,
+        :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`, and
+        :class:`~iris.aux_factory.AuxCoordFactory` metadata.
+
+        .. note::
+
+            Resolving common :class:`~iris.coords.AncillaryVariable` and
+            :class:`~iris.coords.CellMeasure` metadata is not supported at
+            this time. (:issue:`3839`)
+
+        .. note::
+
+            A :class:`~iris.common.resolve.Resolve` instance is **callable**,
+            allowing two new ``lhs`` and ``rhs`` :class:`~iris.cube.Cube` operands
+            to be resolved. Note that, :class:`~iris.common.resolve.Resolve` only
+            supports resolving **two** operands at a time, and no more.
+
+        .. warning::
+
+            :class:`~iris.common.resolve.Resolve` attempts to preserve commutativity,
+            but this may not be possible when auto-transposition or extended broadcasting
+            is involved during the operation.
+
+        For example,
+
+        .. doctest::
+
+            >>> cube1
+            <iris 'Cube' of air_temperature / (K) (time: 240; latitude: 37; longitude: 49)>
+            >>> cube2
+            <iris 'Cube' of air_temperature / (K) (longitude: 49; latitude: 37)>
+            >>> result1 = Resolve(cube1, cube2).cube(data)
+            >>> result2 = Resolve(cube2, cube1).cube(data)
+            >>> result1 == result2
+            True
+
+        Kwargs:
+
+        * lhs:
+            The left-hand-side :class:`~iris.cube.Cube` operand.
+
+        * rhs:
+            The right-hand-side :class:`~iris.cube.Cube` operand.
+
+        """
+        #: The ``lhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
+        self.lhs_cube = None  # set in _call__
+        #: The ``rhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
+        self.rhs_cube = None  # set in __call__
+
+        #: The transposed/reshaped (if required) ``lhs`` :class:`~iris.cube.Cube`, which
+        #: can be broadcast with the ``rhs`` :class:`~iris.cube.Cube`.
+        self.lhs_cube_resolved = None
+        #: The transposed/reshaped (if required) ``rhs`` :class:`~iris.cube.Cube`, which
+        #: can be broadcast with the ``lhs`` :class:`~iris.cube.Cube`.
+        self.rhs_cube_resolved = None
+
+        #: Categorised dim, aux and scalar coordinate items for ``lhs`` :class:`~iris.cube.Cube`.
+        self.lhs_cube_category = None  # set in _metadata_resolve
+        #: Categorised dim, aux and scalar coordinate items for ``rhs`` :class:`~iris.cube.Cube`.
+        self.rhs_cube_category = None  # set in _metadata_resolve
+
+        #: Categorised dim, aux and scalar coordinate items **local** to the
+        #: ``lhs`` :class:`~iris.cube.Cube` only.
+        self.lhs_cube_category_local = None  # set in _metadata_resolve
+        #: Categorised dim, aux and scalar coordinate items **local** to the
+        #: ``rhs`` :class:`~iris.cube.Cube` only.
+        self.rhs_cube_category_local = None  # set in _metadata_resolve
+        #: Categorised dim, aux and scalar coordinate items **common** to both
+        #: the ``lhs`` :class:`~iris.cube.Cube` and the ``rhs`` :class:`~iris.cube.Cube`.
+        self.category_common = None  # set in _metadata_resolve
+
+        #: Analysis of dim coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`.
+        self.lhs_cube_dim_coverage = None  # set in _metadata_coverage
+        #: Analysis of aux and scalar coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`.
+        self.lhs_cube_aux_coverage = None  # set in _metadata_coverage
+        #: Analysis of dim coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`.
+        self.rhs_cube_dim_coverage = None  # set in _metadata_coverage
+        #: Analysis of aux and scalar coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`.
+        self.rhs_cube_aux_coverage = None  # set in _metadata_coverage
+
+        #: Map **common** metadata from the ``rhs`` :class:`~iris.cube.Cube` to
+        #: the ``lhs`` :class:`~iris.cube.Cube` if ``lhs-rank`` >= ``rhs-rank``,
+        #: otherwise map **common** metadata from the ``lhs`` :class:`~iris.cube.Cube`
+        #: to the ``rhs`` :class:`~iris.cube.Cube`.
+        self.map_rhs_to_lhs = None  # set in __call__
+
+        #: Mapping of the dimensions between **common** metadata for the :class:`~iris.cube.Cube`
+        #: operands, where the direction of the mapping is governed by
+        #: :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`.
+        self.mapping = None  # set in _metadata_mapping
+
+        #: Cache containing a list of dim, aux and scalar coordinates prepared
+        #: and ready for creating and attaching to the resultant resolved
+        #: :class:`~iris.cube.Cube`.
+        self.prepared_category = None  # set in _metadata_prepare
+
+        #: Cache containing a list of aux factories prepared and ready for
+        #: creating and attaching to the resultant resolved
+        #: :class:`~iris.cube.Cube`.
+        self.prepared_factories = None  # set in _metadata_prepare
+
+        # The shape of the resultant resolved cube.
+        self._broadcast_shape = None  # set in _as_compatible_cubes
+
         if lhs is not None or rhs is not None:
+            # Attempt to resolve the cube operands.
             self(lhs, rhs)
 
     def __call__(self, lhs, rhs):
-        self._init(lhs, rhs)
+        from iris.cube import Cube
+
+        emsg = (
+            "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
+        )
+        clsname = self.__class__.__name__
+
+        if not isinstance(lhs, Cube):
+            raise TypeError(
+                emsg.format(cls=clsname, arg="LHS", actual=type(lhs))
+            )
+
+        if not isinstance(rhs, Cube):
+            raise TypeError(
+                emsg.format(cls=clsname, arg="RHS", actual=type(rhs))
+            )
+
+        # Initialise the operand state.
+        self.lhs_cube = lhs
+        self.rhs_cube = rhs
+
+        # Determine the initial direction to map operands.
+        # This may flip for operands with equal rank, particularly after
+        # later analysis informs the decision.
+        if self.lhs_cube.ndim >= self.rhs_cube.ndim:
+            self.map_rhs_to_lhs = True
+        else:
+            self.map_rhs_to_lhs = False
 
         self._metadata_resolve()
         self._metadata_coverage()
@@ -75,6 +330,8 @@ class Resolve:
 
         self._metadata_mapping()
         self._metadata_prepare()
+
+        return self
 
     def _as_compatible_cubes(self):
         from iris.cube import Cube
@@ -496,86 +753,6 @@ class Resolve:
         self.mapping.update(free_mapping)
         logger.debug(f"mapping free dimensions gives, mapping={self.mapping}")
 
-    def _init(self, lhs, rhs):
-        from iris.cube import Cube
-
-        emsg = (
-            "{cls} requires {arg!r} argument to be a 'Cube', got {actual!r}."
-        )
-        clsname = self.__class__.__name__
-
-        if not isinstance(lhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="LHS", actual=type(lhs))
-            )
-
-        if not isinstance(rhs, Cube):
-            raise TypeError(
-                emsg.format(cls=clsname, arg="RHS", actual=type(rhs))
-            )
-
-        # The LHS cube to be resolved into the resultant cube.
-        self.lhs_cube = lhs
-        # The RHS cube to be resolved into the resultant cube.
-        self.rhs_cube = rhs
-
-        # The transposed/reshaped (if required) LHS cube, which
-        # can be broadcast with RHS cube.
-        self.lhs_cube_resolved = None
-        # The transposed/reshaped (if required) RHS cube, which
-        # can be broadcast with LHS cube.
-        self.rhs_cube_resolved = None
-
-        # Categorised dim, aux and scalar coordinate items for LHS cube.
-        self.lhs_cube_category = None
-        # Categorised dim, aux and scalar coordinate items for RHS cube.
-        self.rhs_cube_category = None
-
-        # Categorised dim, aux and scalar coordinate items local to LHS cube only.
-        self.lhs_cube_category_local = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-        # Categorised dim, aux and scalar coordinate items local to RHS cube only.
-        self.rhs_cube_category_local = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-        # Categorised dim, aux and scalar coordinate items common to both
-        # LHS cube and RHS cube.
-        self.category_common = _CategoryItems(
-            items_dim=[], items_aux=[], items_scalar=[]
-        )
-
-        # Analysis of dim coordinates spanning LHS cube.
-        self.lhs_cube_dim_coverage = None
-        # Analysis of aux and scalar coordinates spanning LHS cube.
-        self.lhs_cube_aux_coverage = None
-        # Analysis of dim coordinates spanning RHS cube.
-        self.rhs_cube_dim_coverage = None
-        # Analysis of aux and scalar coordinates spanning RHS cube.
-        self.rhs_cube_aux_coverage = None
-
-        # Map common metadata from RHS cube to LHS cube if LHS-rank >= RHS-rank,
-        # otherwise map common metadata from LHS cube to RHS cube.
-        if self.lhs_cube.ndim >= self.rhs_cube.ndim:
-            self.map_rhs_to_lhs = True
-        else:
-            self.map_rhs_to_lhs = False
-
-        # Mapping of the dimensions between common metadata for the cubes,
-        # where the direction of the mapping is governed by map_rhs_to_lhs.
-        self.mapping = None
-
-        # Cache containing a list of dim, aux and scalar coordinates prepared
-        # and ready for creating and attaching to the resultant cube.
-        self.prepared_category = None
-
-        # Cache containing a list of aux factories prepared and ready for
-        # creating and attaching to the resultant cube.
-        self.prepared_factories = None
-
-        # The shape of the resultant resolved cube.
-        self._broadcast_shape = None
-
     def _metadata_coverage(self):
         # Determine the common dim coordinate metadata coverage.
         common_dim_metadata = [
@@ -667,6 +844,7 @@ class Resolve:
 
         # Given the resultant broadcast shape, determine whether the
         # mapping requires to be reversed.
+        # Only applies to equal src/tgt dimensionality.
         broadcast_flip = (
             src_cube.ndim == tgt_cube.ndim
             and self._tgt_cube_resolved.shape != self.shape
@@ -675,13 +853,16 @@ class Resolve:
 
         # Given the number of free dimensions, determine whether the
         # mapping requires to be reversed.
+        # Only applies to equal src/tgt dimensionality.
         src_free = set(src_dim_coverage.dims_free) & set(
             src_aux_coverage.dims_free
         )
         tgt_free = set(tgt_dim_coverage.dims_free) & set(
             tgt_aux_coverage.dims_free
         )
-        free_flip = len(tgt_free) > len(src_free)
+        free_flip = src_cube.ndim == tgt_cube.ndim and len(tgt_free) > len(
+            src_free
+        )
 
         # Reverse the mapping direction.
         if broadcast_flip or free_flip:
@@ -774,6 +955,20 @@ class Resolve:
         # for each individual cube.
         self.lhs_cube_category = self._categorise_items(self.lhs_cube)
         self.rhs_cube_category = self._categorise_items(self.rhs_cube)
+
+        # Categorised dim, aux and scalar coordinate items local to LHS cube only.
+        self.lhs_cube_category_local = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        # Categorised dim, aux and scalar coordinate items local to RHS cube only.
+        self.rhs_cube_category_local = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        # Categorised dim, aux and scalar coordinate items common to both
+        # LHS cube and RHS cube.
+        self.category_common = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
 
         def _categorise(
             lhs_items,
@@ -1351,6 +1546,7 @@ class Resolve:
 
     @property
     def _src_cube(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = self.rhs_cube
         else:
@@ -1359,6 +1555,7 @@ class Resolve:
 
     @property
     def _src_cube_position(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = "RHS"
         else:
@@ -1367,6 +1564,7 @@ class Resolve:
 
     @property
     def _src_cube_resolved(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = self.rhs_cube_resolved
         else:
@@ -1375,6 +1573,7 @@ class Resolve:
 
     @_src_cube_resolved.setter
     def _src_cube_resolved(self, cube):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             self.rhs_cube_resolved = cube
         else:
@@ -1382,6 +1581,7 @@ class Resolve:
 
     @property
     def _tgt_cube(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = self.lhs_cube
         else:
@@ -1390,6 +1590,7 @@ class Resolve:
 
     @property
     def _tgt_cube_position(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = "LHS"
         else:
@@ -1398,6 +1599,7 @@ class Resolve:
 
     @property
     def _tgt_cube_resolved(self):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             result = self.lhs_cube_resolved
         else:
@@ -1406,6 +1608,7 @@ class Resolve:
 
     @_tgt_cube_resolved.setter
     def _tgt_cube_resolved(self, cube):
+        assert self.map_rhs_to_lhs is not None
         if self.map_rhs_to_lhs:
             self.lhs_cube_resolved = cube
         else:
@@ -1434,6 +1637,80 @@ class Resolve:
             cube.remove_ancillary_variable(av)
 
     def cube(self, data, in_place=False):
+        """
+        Create the resultant :class:`~iris.cube.Cube` from the resolved ``lhs``
+        and ``rhs`` :class:`~iris.cube.Cube` operands, using the provided
+        ``data``.
+
+        Args:
+
+        * data:
+            The data payload for the resultant :class:`~iris.cube.Cube`, which
+            **must match** the expected resolved
+            :attr:`~iris.common.resolve.Resolve.shape`.
+
+        Kwargs:
+
+        * in_place:
+            If ``True``, the ``data`` is inserted into the ``tgt``
+            :class:`~iris.cube.Cube`. The existing metadata of the ``tgt``
+            :class:`~iris.cube.Cube` is replaced with the resolved metadata from
+            the ``lhs`` and ``rhs`` :class:`~iris.cube.Cube` operands. Otherwise,
+            a **new** :class:`~iris.cube.Cube` instance is returned.
+            Default is ``False``.
+
+        Returns:
+            :class:`~iris.cube.Cube`
+
+        .. note::
+
+            :class:`~iris.common.resolve.Resolve` will determine whether the
+            ``lhs`` :class:`~iris.cube.Cube` operand is mapped to the
+            ``rhs`` :class:`~iris.cube.Cube` operand, or vice versa.
+            In general, the **lower rank** operand (``src``) is mapped to the
+            **higher rank** operand (``tgt``). Therefore, the ``src``
+            :class:`~iris.cube.Cube` may be either the ``lhs`` or the ``rhs``
+            :class:`~iris.cube.Cube` operand, given the direction of the
+            mapping. See :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`.
+
+        .. warning::
+
+            It may not be possible to perform an ``in_place`` operation,
+            due to any transposition or extended broadcasting that requires
+            to be performed i.e., the ``tgt`` :class:`~iris.cube.Cube` **must
+            match** the expected resolved
+            :attr:`~iris.common.resolve.Resolve.shape`.
+
+        For example,
+
+        .. testsetup::
+
+            import iris
+            import numpy as np
+            from iris.common import Resolve
+            tgt = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+            src = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
+            src.transpose()
+            zeros = np.zeros(tgt.shape, dtype=tgt.dtype)
+
+        .. doctest::
+
+            >>> resolver = Resolve(tgt, src)
+            >>> resolver.map_rhs_to_lhs
+            True
+            >>> tgt.data.sum()
+            124652160.0
+            >>> zeros.shape
+            (240, 37, 49)
+            >>> zeros.sum()
+            0.0
+            >>> result = resolver.cube(zeros, in_place=True)
+            >>> result is tgt
+            True
+            >>> tgt.data.sum()
+            0.0
+
+        """
         from iris.cube import Cube
 
         expected_shape = self.shape
@@ -1531,13 +1808,137 @@ class Resolve:
     @property
     def mapped(self):
         """
-        Returns the state of whether all src cube dimensions have been
-        associated with relevant tgt cube dimensions.
+        Boolean state representing whether **all** ``src`` :class:`~iris.cube.Cube`
+        dimensions have been associated with relevant ``tgt``
+        :class:`~iris.cube.Cube` dimensions.
+
+        .. note::
+
+            :class:`~iris.common.resolve.Resolve` will determine whether the
+            ``lhs`` :class:`~iris.cube.Cube` operand is mapped to the
+            ``rhs`` :class:`~iris.cube.Cube` operand, or vice versa.
+            In general, the **lower rank** operand (``src``) is mapped to the
+            **higher rank** operand (``tgt``). Therefore, the ``src``
+            :class:`~iris.cube.Cube` may be either the ``lhs`` or the ``rhs``
+            :class:`~iris.cube.Cube` operand, given the direction of the
+            mapping. See :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`.
+
+        If no :class:`~iris.cube.Cube` operands have been provided, then
+        ``mapped`` is ``None``.
+
+        For example,
+
+        .. doctest::
+
+            >>> print(cube1)
+            air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+                 Dimension coordinates:
+                      time                           x              -              -
+                      latitude                       -              x              -
+                      longitude                      -              -              x
+                 Auxiliary coordinates:
+                      forecast_period                x              -              -
+                 Scalar coordinates:
+                      forecast_reference_time: 1859-09-01 06:00:00
+                      height: 1.5 m
+                 Attributes:
+                      Conventions: CF-1.5
+                      Model scenario: A1B
+                      STASH: m01s03i236
+                      source: Data from Met Office Unified Model 6.05
+                 Cell methods:
+                      mean: time (6 hour)
+            >>> print(cube2)
+            air_temperature / (K)               (longitude: 49; latitude: 37)
+                 Dimension coordinates:
+                      longitude                           x             -
+                      latitude                            -             x
+                 Scalar coordinates:
+                      forecast_period: 10794 hours
+                      forecast_reference_time: 1859-09-01 06:00:00
+                      height: 1.5 m
+                      time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+                 Attributes:
+                      Conventions: CF-1.5
+                      Model scenario: E1
+                      STASH: m01s03i236
+                      source: Data from Met Office Unified Model 6.05
+                 Cell methods:
+                      mean: time (6 hour)
+            >>> Resolve().mapped is None
+            True
+            >>> resolver = Resolve(cube1, cube2)
+            >>> resolver.mapped
+            True
+            >>> resolver.map_rhs_to_lhs
+            True
+            >>> resolver = Resolve(cube2, cube1)
+            >>> resolver.mapped
+            True
+            >>> resolver.map_rhs_to_lhs
+            False
 
         """
-        return self._src_cube.ndim == len(self.mapping)
+        result = None
+        if self.mapping is not None:
+            result = self._src_cube.ndim == len(self.mapping)
+        return result
 
     @property
     def shape(self):
-        """Returns the shape of the resultant resolved cube."""
-        return getattr(self, "_broadcast_shape", None)
+        """
+        Proposed shape of the final resolved cube given the ``lhs``
+        :class:`~iris.cube.Cube` operand and the ``rhs`` :class:`~iris.cube.Cube`
+        operand.
+
+        If no :class:`~iris.cube.Cube` operands have been provided, then
+        ``shape`` is ``None``.
+
+        For example,
+
+        .. doctest::
+
+            >>> print(cube1)
+            air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+                 Dimension coordinates:
+                      time                           x              -              -
+                      latitude                       -              x              -
+                      longitude                      -              -              x
+                 Auxiliary coordinates:
+                      forecast_period                x              -              -
+                 Scalar coordinates:
+                      forecast_reference_time: 1859-09-01 06:00:00
+                      height: 1.5 m
+                 Attributes:
+                      Conventions: CF-1.5
+                      Model scenario: A1B
+                      STASH: m01s03i236
+                      source: Data from Met Office Unified Model 6.05
+                 Cell methods:
+                      mean: time (6 hour)
+            >>> print(cube2)
+            air_temperature / (K)               (longitude: 49; latitude: 37)
+                 Dimension coordinates:
+                      longitude                           x             -
+                      latitude                            -             x
+                 Scalar coordinates:
+                      forecast_period: 10794 hours
+                      forecast_reference_time: 1859-09-01 06:00:00
+                      height: 1.5 m
+                      time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+                 Attributes:
+                      Conventions: CF-1.5
+                      Model scenario: E1
+                      STASH: m01s03i236
+                      source: Data from Met Office Unified Model 6.05
+                 Cell methods:
+                      mean: time (6 hour)
+            >>> Resolve().shape is None
+            True
+            >>> Resolve(cube1, cube2).shape
+            (240, 37, 49)
+            >>> Resolve(cube2, cube1).shape
+            (240, 37, 49)
+
+        """
+        return self._broadcast_shape
