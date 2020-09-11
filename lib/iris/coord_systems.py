@@ -15,13 +15,33 @@ import numpy as np
 import cartopy.crs as ccrs
 
 
-def _arg_default(value, default, as_type=float):
+def _arg_default(value, default, cast_as=float):
     """Apply a default value and type for an optional kwarg."""
     if value is None:
         value = default
-    if as_type is not None:
-        value = as_type(value)
+    value = cast_as(value)
     return value
+
+
+def _1or2_parallels(arg):
+    """Accept 1 or 2 inputs as a tuple of 1 or 2 floats."""
+    try:
+        values_tuple = tuple(arg)
+    except TypeError:
+        values_tuple = (arg,)
+    values_tuple = [float(x) for x in values_tuple]
+    nvals = len(values_tuple)
+    if nvals not in (1, 2):
+        emsg = "Allows only 1 or 2 parallels or secant latitudes : got {!r}"
+        raise ValueError(emsg.format(arg))
+    return values_tuple
+
+
+def _float_or_None(arg):
+    """Cast as float, except for allowing None as a distinct valid value."""
+    if arg is not None:
+        arg = float(arg)
+    return arg
 
 
 class CoordSystem(metaclass=ABCMeta):
@@ -430,11 +450,11 @@ class TransverseMercator(CoordSystem):
 
             * false_easting
                     X offset from planar origin in metres.
-                    Defaults to 0.
+                    Defaults to 0.0.
 
             * false_northing
                     Y offset from planar origin in metres.
-                    Defaults to 0.
+                    Defaults to 0.0.
 
             * scale_factor_at_central_meridian
                     Reduces the cylinder to slice through the ellipsoid
@@ -888,7 +908,11 @@ class Stereographic(CoordSystem):
         self.false_northing = _arg_default(false_northing, 0)
 
         #: Latitude of true scale.
-        self.true_scale_lat = float(true_scale_lat) if true_scale_lat else None
+        self.true_scale_lat = _arg_default(
+            true_scale_lat, None, cast_as=_float_or_None
+        )
+        # N.B. the way we use this parameter, we need it to default to a None
+        # value, and *not* to a 0.0.
 
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
@@ -982,19 +1006,10 @@ class LambertConformal(CoordSystem):
         self.false_easting = _arg_default(false_easting, 0)
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
-        secant_latitudes = _arg_default(
-            secant_latitudes, (33, 45), as_type=None
-        )
-        try:
-            secant_latitudes = tuple(secant_latitudes)
-        except TypeError:
-            secant_latitudes = (secant_latitudes,)
         #: The one or two standard parallels of the cone.
-        self.secant_latitudes = tuple(float(x) for x in secant_latitudes)
-        nlats = len(self.secant_latitudes)
-        if nlats == 0 or nlats > 2:
-            emsg = "Either one or two secant latitudes required, got {}"
-            raise ValueError(emsg.format(nlats))
+        self.secant_latitudes = _arg_default(
+            secant_latitudes, (33, 45), cast_as=_1or2_parallels
+        )
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
@@ -1231,16 +1246,10 @@ class AlbersEqualArea(CoordSystem):
         self.false_easting = _arg_default(false_easting, 0)
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
-
-        standard_parallels = _arg_default(
-            standard_parallels, (20, 50), as_type=None
-        )
-        try:
-            standard_parallels = tuple(standard_parallels)
-        except TypeError:
-            standard_parallels = (standard_parallels,)
         #: The one or two latitudes of correct scale.
-        self.standard_parallels = tuple(float(x) for x in standard_parallels)
+        self.standard_parallels = _arg_default(
+            standard_parallels, (20, 50), cast_as=_1or2_parallels
+        )
         #: Ellipsoid definition.
         self.ellipsoid = ellipsoid
 
