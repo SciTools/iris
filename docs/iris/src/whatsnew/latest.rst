@@ -38,6 +38,23 @@ Features
 Dependency Updates
 ==================
 
+
+* `stephenworsley`_, `Martin Yeo`_ and `Bill Little`_ removed ``Python2``
+  support, modernising the codebase by switching to exclusive ``Python3``
+  support. (:pull:`3513`)
+
+* `Bill Little`_ improved the developer set up process. Configuring Iris and
+  :ref:`installing_from_source` as a developer, with all the required package
+  dependencies is now easier with our curated conda environment YAML files.
+  (:pull:`3812`)
+
+* `stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
+
+* `stephenworsley`_ and `Martin Yeo`_ pinned Iris to require
+  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
+  order to remain compatible with the latest version of `Matplotlib`_.
+  (:pull:`3762`)
+
 * `Bill Little`_ unpinned Iris to use the latest version of `Matplotlib`_.
   Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
   pinning our dependency on `Matplotlib`_ at ``v2.x``.  But this is no longer
@@ -46,18 +63,8 @@ Dependency Updates
 * `stephenworsley`_ and `Martin Yeo`_ unpinned Iris to use the latest version
   of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
 
-* `stephenworsley`_ and `Martin Yeo`_ pinned Iris to require
-  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
-  order to remain compatible with the latest version of `Matplotlib`_.
-  (:pull:`3762`)
-
 * `stephenworsley`_ and `Martin Yeo`_ removed GDAL from the extensions
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
-
-* `Bill Little`_ improved the developer set up process. Configuring Iris and
-  :ref:`installing_from_source` as a developer, with all the required package
-  dependencies is now easier with our curated conda environment YAML files.
-  (:pull:`3812`)
 
 
 Bugs Fixed
@@ -201,6 +208,19 @@ Documentation
 Internal
 ========
 
+* `Patrick Peglar`_ and `lbdreyer`_ removed all test dependencies on
+  `SciTools/iris-grib <https://github.com/SciTools/iris-grib>`_ by transferring
+  all relevant content to the iris-grib repository. (:pull:`3662`,
+  :pull:`3663`, :pull:`3664`, :pull:`3665`, :pull:`3666`, :pull:`3669`,
+  :pull:`3670`, :pull:`3671`, :pull:`3672`, :pull:`3742`, :pull:`3746`)
+
+* `lbdreyer`_ and `Patrick Peglar`_ overhauled the handling of dimensional
+  metadata to remove duplication. (:pull:`3422`, :pull:`3551`)
+
+* `Martin Yeo`_ simplified the standard license header for all files, which
+  removes the need to repeatedly update year numbers in the header.
+  (:pull:`3489`)
+
 * `stephenworsley`_ changed the numerical values in tests involving the
   Robinson projection due to improvements made in
   `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
@@ -244,3 +264,4 @@ Internal
 .. _Martin Yeo: https://github.com/trexfeathers
 .. _Jon Seddon: https://github.com/jonseddon
 .. _tkknight: https://github.com/tkknight
+.. _lbdreyer: https://github.com/lbdreyer
