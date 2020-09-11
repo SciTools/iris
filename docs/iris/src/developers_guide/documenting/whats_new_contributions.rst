@@ -82,12 +82,12 @@ users.  To achieve this several categories may be used.
 *Incompatible Changes*
   A change that causes an incompatibility with prior versions of Iris.
 
-*Internal*
-  Changes to any internal or development related topics, such as testing,
-  environment dependencies etc
-
 *Deprecations*
   Deprecations of functionality.
 
 *Documentation*
   Changes to documentation.
+
+*Internal*
+  Changes to any internal or development related topics, such as testing,
+  environment dependencies etc

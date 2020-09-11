@@ -147,39 +147,6 @@ Incompatible Changes
   property. Previously these cases defaulted to ``units='1'``. (:pull:`3795`)
 
 
-Internal
-========
-
-* `stephenworsley`_ changed the numerical values in tests involving the
-  Robinson projection due to improvements made in
-  `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
-  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
-  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_)
-
-* `stephenworsley`_ changed tests to account for more detailed descriptions of
-  projections in `GDAL <https://github.com/OSGeo/gdal>`_. (:pull:`3762`)
-  (`see also GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_)
-
-* `stephenworsley`_ changed tests to account for
-  `GDAL <https://github.com/OSGeo/gdal>`_ now saving fill values for data
-  without masked points. (:pull:`3762`)
-
-* `Martin Yeo`_ changed every graphics test that includes `Cartopy's coastlines
-  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
-  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
-  to account for new adaptive coastline scaling. (:pull:`3762`) (`see also
-  cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
-
-* `Martin Yeo`_ changed graphics tests to account for some new default
-  grid-line spacing in `Cartopy <https://github.com/SciTools/cartopy>`_.
-  (:pull:`3762`)
-  (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
-
-* `Martin Yeo`_ added additional acceptable graphics test targets to account
-  for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
-  axes borders). (:pull:`3762`)
-
-
 Deprecations
 ============
 
@@ -229,6 +196,40 @@ Documentation
 * `stephenworsley`_ added the :ref:`cube_maths_combining_units` section to the
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
+
+
+Internal
+========
+
+* `stephenworsley`_ changed the numerical values in tests involving the
+  Robinson projection due to improvements made in
+  `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
+  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
+  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_)
+
+* `stephenworsley`_ changed tests to account for more detailed descriptions of
+  projections in `GDAL <https://github.com/OSGeo/gdal>`_. (:pull:`3762`)
+  (`see also GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_)
+
+* `stephenworsley`_ changed tests to account for
+  `GDAL <https://github.com/OSGeo/gdal>`_ now saving fill values for data
+  without masked points. (:pull:`3762`)
+
+* `Martin Yeo`_ changed every graphics test that includes `Cartopy's coastlines
+  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
+  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
+  to account for new adaptive coastline scaling. (:pull:`3762`) (`see also
+  cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
+
+* `Martin Yeo`_ changed graphics tests to account for some new default
+  grid-line spacing in `Cartopy <https://github.com/SciTools/cartopy>`_.
+  (:pull:`3762`)
+  (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
+
+* `Martin Yeo`_ added additional acceptable graphics test targets to account
+  for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
+  axes borders). (:pull:`3762`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
