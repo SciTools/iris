@@ -134,8 +134,8 @@ Deprecations
   removed from it. (:pull:`3461`).
 
 
-Dependency Updates
-==================
+Dependencies
+============
 
 
 * `stephenworsley`_, `Martin Yeo`_ and `Bill Little`_ removed ``Python2``
