@@ -34,6 +34,14 @@ class Test_Mercator__basics(tests.IrisTest):
 
 
 class Test_init_defaults(tests.IrisTest):
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = Mercator(
+            longitude_of_projection_origin=27, standard_parallel=157.4
+        )
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 27.0)
+        self.assertEqualAndKind(crs.standard_parallel, 157.4)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

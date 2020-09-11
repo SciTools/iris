@@ -85,6 +85,19 @@ class Test_as_cartopy_projection(tests.IrisTest):
 
 
 class Test_init_defaults(tests.IrisTest):
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = LambertAzimuthalEqualArea(
+            longitude_of_projection_origin=123,
+            latitude_of_projection_origin=-37,
+            false_easting=100,
+            false_northing=-200,
+        )
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 123.0)
+        self.assertEqualAndKind(crs.latitude_of_projection_origin, -37.0)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -200.0)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

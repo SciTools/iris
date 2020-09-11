@@ -17,6 +17,19 @@ class Test_init_defaults(tests.IrisTest):
     # module 'iris.tests.test_coordsystem'.
     # This class *only* tests the defaults for optional constructor args.
 
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = TransverseMercator(
+            0,
+            50,
+            false_easting=100,
+            false_northing=-203.7,
+            scale_factor_at_central_meridian=1.057,
+        )
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -203.7)
+        self.assertEqualAndKind(crs.scale_factor_at_central_meridian, 1.057)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

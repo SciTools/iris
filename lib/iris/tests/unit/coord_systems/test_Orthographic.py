@@ -73,6 +73,12 @@ class Test_init_defaults(tests.IrisTest):
     # NOTE: most of the testing for Orthographic.__init__ is elsewhere.
     # This class *only* tests the defaults for optional constructor args.
 
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = Orthographic(0, 0, false_easting=100, false_northing=-203.7)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -203.7)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

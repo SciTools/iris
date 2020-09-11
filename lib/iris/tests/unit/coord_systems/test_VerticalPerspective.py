@@ -57,6 +57,14 @@ class Test(tests.IrisTest):
         res = self.vp_cs.as_cartopy_projection()
         self.assertEqual(res, self.expected)
 
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = VerticalPerspective(
+            0, 0, 1000, false_easting=100, false_northing=-203.7
+        )
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

@@ -17,6 +17,35 @@ class Test_init_defaults(tests.IrisTest):
     # module 'iris.tests.test_coordsystem'.
     # This class *only* tests the defaults for optional constructor args.
 
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        # (Except secant_latitudes, which are done separately).
+        crs = LambertConformal(
+            central_lat=25.3,
+            central_lon=-172,
+            false_easting=100,
+            false_northing=-200,
+        )
+        self.assertEqualAndKind(crs.central_lat, 25.3)
+        self.assertEqualAndKind(crs.central_lon, -172.0)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -200.0)
+
+    def test_set_one_parallel(self):
+        # Check that setting the optional (non-ellipse) args works.
+        # (Except secant_latitudes, which are done separately).
+        crs = LambertConformal(secant_latitudes=-44)
+        self.assertEqual(len(crs.secant_latitudes), 1)
+        self.assertEqualAndKind(crs.secant_latitudes[0], -44.0)
+
+    def test_set_two_parallels(self):
+        # Check that setting the optional (non-ellipse) args works.
+        # (Except secant_latitudes, which are done separately).
+        crs = LambertConformal(secant_latitudes=[43, -7])
+        self.assertEqual(len(crs.secant_latitudes), 2)
+        self.assertEqualAndKind(crs.secant_latitudes[0], 43.0)
+        self.assertEqualAndKind(crs.secant_latitudes[1], -7.0)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.

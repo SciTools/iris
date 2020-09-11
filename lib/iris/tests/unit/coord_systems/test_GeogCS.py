@@ -17,6 +17,11 @@ class Test_init_defaults(tests.IrisTest):
     # 'iris.tests.test_coordsystem'.
     # This class *only* tests the defaults for optional constructor args.
 
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) argument works.
+        crs = GeogCS(1.0, longitude_of_prime_meridian=-85)
+        self.assertEqualAndKind(crs.longitude_of_prime_meridian, -85.0)
+
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.
