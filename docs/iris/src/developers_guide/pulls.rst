@@ -1,7 +1,7 @@
 .. _pr_check:
 
 
-Pull request check List
+Pull request check list
 ***********************
 
 A pull request to a SciTools project master should be ready to merge into the
@@ -10,7 +10,7 @@ master branch.
 All pull request will be reviewed by a core developer who will manage the
 process of merging. It is the responsibility of a developer submitting a
 pull request to do their best to deliver a pull request which meets the
-requirements of the project it is submitted to. 
+requirements of the project it is submitted to.
 
 The check list summarises criteria which will be checked before a pull request
 is merged.  Before submitting a pull request please consider this list.
@@ -24,33 +24,26 @@ The Iris check list
 
  * the aim of the change ; the problem addressed ; a link to the issue.
  * how the change has been delivered.
- * a "What's New" entry, submitted as a new file added in the pull request.
-   See `Contributing a "What's New" entry`_.
+ * a "What's New" entry - see :ref:`whats_new_contributions`.
 
 * Do all the tests pass locally?
 
- * The Iris tests may be run with ``python setup.py test`` which has a command 
+ * The Iris tests may be run with ``python setup.py test`` which has a command
    line utility included.
 
 * Have new tests been provided for all additional functionality?
 
-* Do all modified and new source files pass PEP8?
+* Do all modified and new source files conform to the required
+  :ref:`iris_code_format`?
 
- * PEP8_ is the Python source code style guide.
- * There is a python module for checking pep8 compliance: python-pep8_
- * a standard Iris test checks that all source files meet PEP8 compliance
-   (see "iris.tests.test_coding_standards.TestCodeFormat").
-
-* Do all modified and new source files have a correct, up-to-date copyright
-  header?
+* Do all modified and new source files have a correct copyright header?
 
  * a standard Iris test checks that all source files include a copyright
-   message, including the correct year of the latest change
-   (see "iris.tests.test_coding_standards.TestLicenseHeaders").
+   message (see "iris.tests.test_coding_standards.TestLicenseHeaders").
 
 * Has the documentation been updated to explain all new or changed features?
 
- * refer to the developer guide on docstrings_
+ * refer to the developer guide on :ref:`docstrings`
 
 * Have code examples been provided inside docstrings, where relevant?
 
@@ -67,8 +60,7 @@ The Iris check list
 
 * Have you provided a "what's new" contribution?
 
- * this should be done for all changes that affect API or behaviour.
-   See :ref:`whats_new_contributions`
+ * this should be done for **all** changes - see :ref:`whats_new_contributions`
 
 * Does the documentation build without errors?
 
@@ -98,7 +90,7 @@ The Iris check list
     tests.
   * iris-sample-data_ is a github project containing all the data to support
     the gallery and examples.
-  * test-images-scitools_ is a github project containing reference plot images
+  * test-iris-imagehash_ is a github project containing reference plot images
     to support iris graphics tests : see :ref:`developer_graphics_tests`.
 
  * If new files are required by tests or code examples, they must be added to
@@ -112,6 +104,4 @@ The Iris check list
 .. _conda: https://docs.conda.io/en/latest/
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
-.. _test-images-scitools: https://github.com/SciTools/test-images-scitools
-.. _docstrings: http://scitools.org.uk/iris/docs/latest/developers_guide/documenting/docstrings.html
-.. _Contributing a "What's New" entry: http://scitools.org.uk/iris/docs/latest/developers_guide/documenting/whats_new_contributions.html
+.. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash

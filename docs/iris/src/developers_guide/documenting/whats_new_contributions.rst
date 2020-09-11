@@ -11,7 +11,33 @@ The contribution should be included as part of the Iris Pull Request that
 introduces the change.
 
 The ``latest.rst`` and the past release notes are kept in
-``docs/iris/src/whatsnew/``.
+``docs/iris/src/whatsnew/``. If you are writing the first contribution after
+an Iris release: newly create ``latest.rst`` by copying the content in
+``latest.rst.template`` in the same directory.
+
+Since the `Contribution categories`_ include Internal changes, **all** Iris
+Pull Requests should be accompanied by a "What's New" contribution.
+
+
+Git Conflicts
+=============
+
+If changes to ``latest.rst`` are being suggested in several simultaneous
+Iris Pull Requests, Git will likely encounter merge conflicts. In you think
+this situation is likely (large PR, high repo activity etc.): wait until your
+code is ready for review, then create a new pull request specifically for the
+"What's New" entry, referencing the main pull request and titled
+(e.g. for PR#9999):
+
+  What's New for #9999
+
+If the entry references something new introduced by the main pull request then
+such links will not be valid yet. The reviewer should merge the main pull
+request first, followed by the "What's New" pull request.
+
+These measures should mean the suggested ``latest.rst`` changes are outstanding
+for the minimum time, minimising conflicts and minimising the need to rebase or
+merge from trunk.
 
 
 Writing a contribution
@@ -21,6 +47,9 @@ As introduced above, a contribution is the description of a change to Iris
 which improved Iris in some way. As such, a single Iris Pull Request may
 contain multiple changes that are worth highlighting as contributions to the
 what's new document.
+
+The appropriate contribution for a pull request might in fact be an addition or
+change to an existing "What's New" entry.
 
 Each contribution will ideally be written as a single concise bullet point
 in a reStructuredText format. Where possible do not exceed **column 80** and

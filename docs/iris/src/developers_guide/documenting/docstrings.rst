@@ -1,3 +1,5 @@
+.. _docstrings:
+
 ==========
 Docstrings
 ==========
@@ -7,7 +9,7 @@ appropriate docstring.
 
 This document has been influenced by the following PEP's,
 
-   * Attribute Docstrings `PEP-224 <http://www.python.org/dev/peps/pep-0224/>`_ 
+   * Attribute Docstrings `PEP-224 <http://www.python.org/dev/peps/pep-0224/>`_
    * Docstring Conventions `PEP-257 <http://www.python.org/dev/peps/pep-0257/>`_
 
 
@@ -42,7 +44,7 @@ Here is a simple example of a standard docstring:
 This would be rendered as:
 
    .. currentmodule:: documenting.docstrings_sample_routine
-   
+
    .. automodule:: documenting.docstrings_sample_routine
       :members:
       :undoc-members:
