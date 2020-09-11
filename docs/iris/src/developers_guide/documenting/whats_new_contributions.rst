@@ -12,7 +12,7 @@ introduces the change.
 
 The ``latest.rst`` and the past release notes are kept in
 ``docs/iris/src/whatsnew/``. If you are writing the first contribution after
-an Iris release: newly create ``latest.rst`` by copying the content in
+an Iris release: **create the new** ``latest.rst`` by copying the content from
 ``latest.rst.template`` in the same directory.
 
 Since the `Contribution categories`_ include Internal changes, **all** Iris
@@ -25,15 +25,15 @@ Git Conflicts
 If changes to ``latest.rst`` are being suggested in several simultaneous
 Iris Pull Requests, Git will likely encounter merge conflicts. In you think
 this situation is likely (large PR, high repo activity etc.): wait until your
-code is ready for review, then create a new pull request specifically for the
-"What's New" entry, referencing the main pull request and titled
+code is ready for review, then create a **new pull request** specifically for
+the "What's New" entry, referencing the main pull request and titled
 (e.g. for PR#9999):
 
   What's New for #9999
 
 If the entry references something new introduced by the main pull request then
-such links will not be valid yet. The reviewer should merge the main pull
-request first, followed by the "What's New" pull request.
+such links will not be valid yet. The reviewer should **merge the main pull
+request first**, followed by the "What's New" pull request.
 
 These measures should mean the suggested ``latest.rst`` changes are outstanding
 for the minimum time, minimising conflicts and minimising the need to rebase or
