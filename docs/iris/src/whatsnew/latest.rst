@@ -24,8 +24,8 @@ Features
   associated with an axis over which the statistic is being run.
 
 * Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
-  dependency on `matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
-  been dropped, ``Iris`` is free to use the latest version of `matplotlib`_.
+  dependency on `Matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
+  been dropped, ``Iris`` is free to use the latest version of `Matplotlib`_.
 
 * `CF Ancillary Data`_ variables are now supported, and can be loaded from and
   saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
