@@ -52,6 +52,16 @@ class Test_as_cartopy_crs(tests.IrisTest):
         )
         self.assertEqual(res, expected)
 
+    def test_fail_too_few_parallels(self):
+        emsg = "parallels"
+        with self.assertRaisesRegex(ValueError, emsg):
+            AlbersEqualArea(standard_parallels=())
+
+    def test_fail_too_many_parallels(self):
+        emsg = "parallels"
+        with self.assertRaisesRegex(ValueError, emsg):
+            AlbersEqualArea(standard_parallels=(1, 2, 3))
+
 
 class Test_as_cartopy_projection(tests.IrisTest):
     def setUp(self):
