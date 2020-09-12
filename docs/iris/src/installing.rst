@@ -82,6 +82,8 @@ the command::
 
     python setup.py test
 
+For more information see :ref:`developer_running_tests`.
+
 
 Custom site configuration
 -------------------------

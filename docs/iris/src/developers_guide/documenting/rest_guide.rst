@@ -1,7 +1,15 @@
+.. include:: ../../common_links.inc
+
+.. _reST_quick_start:
+
 ================
 reST quick start
 ================
 
+reST (http://en.wikipedia.org/wiki/ReStructuredText) is used to create the
+documentation for Iris_.  It is used to author all of the documentation
+content including use in docstrings where appropriate.  For more information
+see :ref:`docstrings`.
 
 reST (http://en.wikipedia.org/wiki/ReStructuredText) is a lightweight markup
 language intended to be highly readable in source format. This guide will

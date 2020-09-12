@@ -180,7 +180,7 @@ Documentation
   formatter.  This is now automatically checked on GitHub PRs, replacing the
   older, unittest-based "iris.tests.test_coding_standards.TestCodeFormat".
   Black provides automatic code format correction for most IDEs.  See the new
-  developer guide section on :ref:`iris_code_format`.
+  developer guide section on :ref:`code_formatting`.
 
 * Refreshed the :ref:`whats_new_contributions` for the :ref:`iris_whatsnew`.
   This includes always creating the ``latest`` what's new page so it appears
