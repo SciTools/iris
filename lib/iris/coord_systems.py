@@ -29,7 +29,7 @@ def _1or2_parallels(arg):
         values_tuple = tuple(arg)
     except TypeError:
         values_tuple = (arg,)
-    values_tuple = [float(x) for x in values_tuple]
+    values_tuple = tuple([float(x) for x in values_tuple])
     nvals = len(values_tuple)
     if nvals not in (1, 2):
         emsg = "Allows only 1 or 2 parallels or secant latitudes : got {!r}"
