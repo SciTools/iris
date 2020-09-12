@@ -297,6 +297,7 @@ def interpolate(cube, sample_points, method=None):
             points = np.array([coord.points.flatten()[0]] * trajectory_size)
             new_coord = iris.coords.AuxCoord(
                 points,
+                var_name=coord.var_name,
                 standard_name=coord.standard_name,
                 long_name=coord.long_name,
                 units=coord.units,
