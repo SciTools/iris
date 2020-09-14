@@ -143,12 +143,17 @@ class GeogCS(CoordSystem):
 
         Kwargs:
 
-            * semi_major_axis              -  of ellipsoid in metres
-            * semi_minor_axis              -  of ellipsoid in metres
-            * inverse_flattening           -  of ellipsoid
-            * longitude_of_prime_meridian  -  Can be used to specify the
-                                              prime meridian on the ellipsoid
-                                              in degrees. Default = 0.
+        * semi_major_axis, semi_minor_axis:
+            Axes of ellipsoid, in metres.  At least one must be given
+            (see note below).
+
+        * inverse_flattening:
+            Can be omitted if both axes given (see note below).
+            Defaults to 0.0 .
+
+        * longitude_of_prime_meridian:
+            Specifies the prime meridian on the ellipsoid, in degrees.
+            Defaults to 0.0 .
 
         If just semi_major_axis is set, with no semi_minor_axis or
         inverse_flattening, then a perfect sphere is created from the given
@@ -233,7 +238,7 @@ class GeogCS(CoordSystem):
         #: Minor radius of the ellipsoid in metres.
         self.semi_minor_axis = float(semi_minor_axis)
 
-        #: :math:`1/f` where :math:`f = (a-b)/a`
+        #: :math:`1/f` where :math:`f = (a-b)/a`.
         self.inverse_flattening = float(inverse_flattening)
 
         #: Describes 'zero' on the ellipsoid in degrees.
@@ -325,17 +330,20 @@ class RotatedGeogCS(CoordSystem):
 
         Args:
 
-            * grid_north_pole_latitude  - The true latitude of the rotated
-                                          pole in degrees.
-            * grid_north_pole_longitude - The true longitude of the rotated
-                                          pole in degrees.
+        * grid_north_pole_latitude:
+            The true latitude of the rotated pole in degrees.
+
+        * grid_north_pole_longitude:
+            The true longitude of the rotated pole in degrees.
 
         Kwargs:
 
-            * north_pole_grid_longitude - Longitude of true north pole in
-                                          rotated grid in degrees. Default = 0.
-            * ellipsoid                 - Optional :class:`GeogCS` defining
-                                          the ellipsoid.
+        * north_pole_grid_longitude:
+            Longitude of true north pole in rotated grid, in degrees.
+            Defaults to 0.0 .
+
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         Examples::
 
@@ -355,7 +363,7 @@ class RotatedGeogCS(CoordSystem):
             north_pole_grid_longitude, 0
         )
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def _pretty_attrs(self):
@@ -440,30 +448,30 @@ class TransverseMercator(CoordSystem):
 
         Args:
 
-            * latitude_of_projection_origin
-                    True latitude of planar origin in degrees.
+        * latitude_of_projection_origin:
+                True latitude of planar origin in degrees.
 
-            * longitude_of_central_meridian
-                    True longitude of planar origin in degrees.
+        * longitude_of_central_meridian:
+                True longitude of planar origin in degrees.
 
         Kwargs:
 
-            * false_easting
-                    X offset from planar origin in metres.
-                    Defaults to 0.0.
+        * false_easting:
+                X offset from planar origin in metres.
+                Defaults to 0.0 .
 
-            * false_northing
-                    Y offset from planar origin in metres.
-                    Defaults to 0.0.
+        * false_northing:
+                Y offset from planar origin in metres.
+                Defaults to 0.0 .
 
-            * scale_factor_at_central_meridian
-                    Reduces the cylinder to slice through the ellipsoid
-                    (secant form). Used to provide TWO longitudes of zero
-                    distortion in the area of interest.
-                    Defaults to 1.0.
+        * scale_factor_at_central_meridian:
+                Reduces the cylinder to slice through the ellipsoid
+                (secant form). Used to provide TWO longitudes of zero
+                distortion in the area of interest.
+                Defaults to 1.0 .
 
-            * ellipsoid
-                    Optional :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         Example::
 
@@ -488,12 +496,12 @@ class TransverseMercator(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
 
-        #: Reduces the cylinder to slice through the ellipsoid (secant form).
+        #: Scale factor at the centre longitude.
         self.scale_factor_at_central_meridian = _arg_default(
             scale_factor_at_central_meridian, 1.0
         )
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -577,14 +585,14 @@ class Orthographic(CoordSystem):
 
         Kwargs:
 
-        * false_easting
-            X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+            X offset from planar origin in metres. Defaults to 0.0 .
 
-        * false_northing
-            Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+            Y offset from planar origin in metres. Defaults to 0.0 .
 
-        * ellipsoid
-            :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
         #: True latitude of planar origin in degrees.
@@ -603,7 +611,7 @@ class Orthographic(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -672,14 +680,14 @@ class VerticalPerspective(CoordSystem):
 
         Kwargs:
 
-        * false_easting
-            X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+            X offset from planar origin in metres. Defaults to 0.0 .
 
-        * false_northing
-            Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+            Y offset from planar origin in metres. Defaults to 0.0 .
 
-        * ellipsoid
-            :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
         #: True latitude of planar origin in degrees.
@@ -693,8 +701,8 @@ class VerticalPerspective(CoordSystem):
         )
 
         #: Altitude of satellite in metres.
-        # test if perspective_point_height may be cast to float for proj.4
         self.perspective_point_height = float(perspective_point_height)
+        # TODO: test if may be cast to float for proj.4
 
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -702,7 +710,7 @@ class VerticalPerspective(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -761,13 +769,13 @@ class Geostationary(CoordSystem):
 
         Args:
 
-        * latitude_of_projection_origin (float):
+        * latitude_of_projection_origin:
             True latitude of planar origin in degrees.
 
-        * longitude_of_projection_origin (float):
+        * longitude_of_projection_origin:
             True longitude of planar origin in degrees.
 
-        * perspective_point_height (float):
+        * perspective_point_height:
             Altitude of satellite in metres above the surface of the ellipsoid.
 
         * sweep_angle_axis (string):
@@ -775,14 +783,14 @@ class Geostationary(CoordSystem):
 
         Kwargs:
 
-        * false_easting (float):
-            X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+            X offset from planar origin in metres. Defaults to 0.0 .
 
-        * false_northing (float):
-            Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+            Y offset from planar origin in metres. Defaults to 0.0 .
 
-        * ellipsoid (iris.coord_systems.GeogCS):
-            :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
         #: True latitude of planar origin in degrees.
@@ -801,8 +809,8 @@ class Geostationary(CoordSystem):
         )
 
         #: Altitude of satellite in metres.
-        # test if perspective_point_height may be cast to float for proj.4
         self.perspective_point_height = float(perspective_point_height)
+        # TODO: test if may be cast to float for proj.4
 
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
@@ -810,12 +818,12 @@ class Geostationary(CoordSystem):
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
 
-        #: The axis along which the satellite instrument sweeps - 'x' or 'y'.
+        #: The sweep angle axis (string 'x' or 'y').
         self.sweep_angle_axis = sweep_angle_axis
         if self.sweep_angle_axis not in ("x", "y"):
             raise ValueError('Invalid sweep_angle_axis - must be "x" or "y"')
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -873,25 +881,25 @@ class Stereographic(CoordSystem):
 
         Args:
 
-            * central_lat
-                    The latitude of the pole.
+        * central_lat:
+            The latitude of the pole.
 
-            * central_lon
-                    The central longitude, which aligns with the y axis.
+        * central_lon:
+            The central longitude, which aligns with the y axis.
 
         Kwargs:
 
-            * false_easting
-                    X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+            X offset from planar origin in metres. Defaults to 0.0 .
 
-            * false_northing
-                    Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+            Y offset from planar origin in metres. Defaults to 0.0 .
 
-            * true_scale_lat
-                    Latitude of true scale.
+        * true_scale_lat:
+            Latitude of true scale.
 
-            * ellipsoid
-                    :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
 
@@ -911,10 +919,10 @@ class Stereographic(CoordSystem):
         self.true_scale_lat = _arg_default(
             true_scale_lat, None, cast_as=_float_or_None
         )
-        # N.B. the way we use this parameter, we need it to default to a None
-        # value, and *not* to a 0.0.
+        # N.B. the way we use this parameter, we need it to default to None,
+        # and *not* to 0.0 .
 
-        #: Ellipsoid definition.
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -970,24 +978,24 @@ class LambertConformal(CoordSystem):
 
         Kwargs:
 
-            * central_lat
-                    The latitude of "unitary scale".  Defaults to 39.0
+        * central_lat:
+                The latitude of "unitary scale".  Defaults to 39.0 .
 
-            * central_lon
-                    The central longitude.  Defaults to -96.0
+        * central_lon:
+                The central longitude.  Defaults to -96.0 .
 
-            * false_easting
-                    X offset from planar origin in metres.  Defaults to 0
+        * false_easting:
+                X offset from planar origin in metres.  Defaults to 0.0 .
 
-            * false_northing
-                    Y offset from planar origin in metres.  Defaults to 0
+        * false_northing:
+                Y offset from planar origin in metres.  Defaults to 0.0 .
 
-            * secant_latitudes
-                    Latitudes of secant intersection.  One or two.
-                    Defaults to (33.0, 45.0)
+        * secant_latitudes (number or iterable of 1 or 2 numbers):
+                Latitudes of secant intersection.  One or two.
+                Defaults to (33.0, 45.0).
 
-            * ellipsoid
-                    :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         .. note:
 
@@ -1000,17 +1008,22 @@ class LambertConformal(CoordSystem):
 
         #: True latitude of planar origin in degrees.
         self.central_lat = _arg_default(central_lat, 39.0)
+
         #: True longitude of planar origin in degrees.
         self.central_lon = _arg_default(central_lon, -96.0)
+
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
-        #: The one or two standard parallels of the cone.
+
+        #: The standard parallels of the cone (tuple of 1 or 2 floats).
         self.secant_latitudes = _arg_default(
             secant_latitudes, (33, 45), cast_as=_1or2_parallels
         )
-        #: Ellipsoid definition.
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -1072,21 +1085,26 @@ class Mercator(CoordSystem):
         Constructs a Mercator coord system.
 
         Kwargs:
-            * longitude_of_projection_origin
-                    True longitude of planar origin in degrees. Defaults to 0
-            * ellipsoid
-                    :class:`GeogCS` defining the ellipsoid.
-            * standard_parallel
-                    the latitude where the scale is 1. Defaults to 0 degrees.
+
+        * longitude_of_projection_origin:
+            True longitude of planar origin in degrees. Defaults to 0.0 .
+
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
+
+        * standard_parallel:
+            The latitude where the scale is 1. Defaults to 0.0 .
 
         """
         #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = _arg_default(
             longitude_of_projection_origin, 0
         )
-        #: Ellipsoid definition.
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
-        #: The latitude where the scale is 1 (defaults to 0 degrees).
+
+        #: The latitude where the scale is 1.
         self.standard_parallel = _arg_default(standard_parallel, 0)
 
     def __repr__(self):
@@ -1132,35 +1150,39 @@ class LambertAzimuthalEqualArea(CoordSystem):
 
         Kwargs:
 
-            * latitude_of_projection_origin
-                    True latitude of planar origin in degrees. Defaults to 0.
+        * latitude_of_projection_origin:
+            True latitude of planar origin in degrees. Defaults to 0.0 .
 
-            * longitude_of_projection_origin
-                    True longitude of planar origin in degrees. Defaults to 0.
+        * longitude_of_projection_origin:
+            True longitude of planar origin in degrees. Defaults to 0.0 .
 
-            * false_easting
-                    X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+                X offset from planar origin in metres. Defaults to 0.0 .
 
-            * false_northing
-                    Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+                Y offset from planar origin in metres. Defaults to 0.0 .
 
-            * ellipsoid
-                    :class:`GeogCS` defining the ellipsoid.
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
             latitude_of_projection_origin, 0
         )
+
         #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = _arg_default(
             longitude_of_projection_origin, 0
         )
+
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
-        #: Ellipsoid definition.
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
@@ -1213,44 +1235,49 @@ class AlbersEqualArea(CoordSystem):
 
         Kwargs:
 
-            * latitude_of_projection_origin
-                    True latitude of planar origin in degrees.
-                    Defaults to 0.
+        * latitude_of_projection_origin:
+            True latitude of planar origin in degrees. Defaults to 0.0 .
 
-            * longitude_of_central_meridian
-                    True longitude of planar central meridian in degrees.
-                    Defaults to 0.
+        * longitude_of_central_meridian:
+            True longitude of planar central meridian in degrees.
+            Defaults to 0.0 .
 
-            * false_easting
-                    X offset from planar origin in metres. Defaults to 0.
+        * false_easting:
+            X offset from planar origin in metres. Defaults to 0.0 .
 
-            * false_northing
-                    Y offset from planar origin in metres. Defaults to 0.
+        * false_northing:
+            Y offset from planar origin in metres. Defaults to 0.0 .
 
-            * standard_parallels
-                    The one or two latitudes of correct scale.
-                    Defaults to (20,50).
-            * ellipsoid
-                    :class:`GeogCS` defining the ellipsoid.
+        * standard_parallels (number or iterable of 1 or 2 numbers):
+            The one or two latitudes of correct scale.
+            Defaults to (20.0, 50.0).
+
+        * ellipsoid (:class:`GeogCS`):
+            If given, defines the ellipsoid.
 
         """
         #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
             latitude_of_projection_origin, 0
         )
+
         #: True longitude of planar central meridian in degrees.
         self.longitude_of_central_meridian = _arg_default(
             longitude_of_central_meridian, 0
         )
+
         #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+
         #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
-        #: The one or two latitudes of correct scale.
+
+        #: The one or two latitudes of correct scale (tuple of 1 or 2 floats).
         self.standard_parallels = _arg_default(
             standard_parallels, (20, 50), cast_as=_1or2_parallels
         )
-        #: Ellipsoid definition.
+
+        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
 
     def __repr__(self):
