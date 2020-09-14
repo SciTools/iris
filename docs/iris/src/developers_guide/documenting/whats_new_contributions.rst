@@ -38,8 +38,8 @@ situation is thought likely (large PR, high repo activity etc.):
 * PR author: create the "What's New" pull request
 
 * PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (If any links in the "What's New" PR referenced new features, these should
-  now be working).
+  (this will fix any `travis-ci`_ linkcheck errors where the links in the
+  "What's New" PR reference new features introduced in the main PR)
 
 * PR reviewer: review the "What's New" PR, merge once acceptable
 
