@@ -271,3 +271,15 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
+
+
+# -- numfig options (built-in) ------------------------------------------------
+# Enable numfig.
+numfig = True
+
+numfig_format = {
+    "code-block": "Example %s",
+    "figure": "Figure %s",
+    "section": "Section %s",
+    "table": "Table %s",
+}

@@ -2354,10 +2354,10 @@ class DimCoord(Coord):
             Descriptive name of the coordinate.
         * var_name:
             The netCDF variable name for the coordinate.
-        * units
+        * units:
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        * bounds
+        * bounds:
             An array of values describing the bounds of each cell. Given n
             bounds and m cells, the shape of the bounds array should be
             (m, n). For each bound, the values must be strictly monotonic along
@@ -2368,15 +2368,15 @@ class DimCoord(Coord):
             in the same direction.  Masked values are not allowed.
             Note if the data is a climatology, `climatological`
             should be set.
-        * attributes
+        * attributes:
             A dictionary containing other cf and user-defined attributes.
-        * coord_system
+        * coord_system:
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
-        * circular (bool)
-            For units with a modulus (e.g. degrees), do the points wrap around
-            the full circle?
+        * circular (bool):
+            Whether the coordinate wraps by the :attr:`~iris.coords.DimCoord.units.modulus`
+            i.e., the longitude coordinate wraps around the full great circle.
         * climatological (bool):
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a

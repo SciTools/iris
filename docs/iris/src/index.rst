@@ -69,6 +69,7 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
    userguide/interpolation_and_regridding
    userguide/merge_and_concat
    userguide/cube_statistics
+   userguide/metadata
    userguide/cube_maths
    userguide/citation
    userguide/code_maintenance
