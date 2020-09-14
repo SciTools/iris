@@ -63,7 +63,7 @@ class Test(tests.IrisTest):
             0, 0, 1000, false_easting=100, false_northing=-203.7
         )
         self.assertEqualAndKind(crs.false_easting, 100.0)
-        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -203.7)
 
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
