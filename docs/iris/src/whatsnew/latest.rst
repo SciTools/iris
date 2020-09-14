@@ -39,7 +39,7 @@ Bugs Fixed
 ==========
 
 * `stephenworsley`_ fixed :meth:`~iris.Cube.cube.remove_coord` to now also
-  remove derived coordinates, by removing aux_factories. (:pull:`3641`)
+  remove derived coordinates by removing aux_factories. (:pull:`3641`)
 
 * `Jon Seddon`_ fixed ``isinstance(cube, collections.Iterable)`` to now behave
   as expected if a :class:`~iris.cube.Cube` is iterated over, while also
@@ -95,7 +95,7 @@ Incompatible Changes
   are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube` and
   :meth:`~iris.cube.CubeList.extract_cubes`.
   The new routines perform the same operation, but in a style more like other
-  ``Iris`` functions such as :meth:`~iris.load_cube` and:meth:`~iris.load_cubes`.
+  ``Iris`` functions such as :meth:`~iris.load_cube` and :meth:`~iris.load_cubes`.
   Unlike ``strict`` extraction, the type of return value is now completely
   consistent : :meth:`~iris.cube.CubeList.extract_cube` always returns a
   :class:`~iris.cube.Cube`, and :meth:`~iris.cube.CubeList.extract_cubes`
@@ -129,7 +129,7 @@ Deprecations
   ``cell_date_time_objects``, ``netcdf_promote``, ``netcdf_no_unlimited`` and
   ``clip_latitudes``. (:pull:`3459`)
 
-* `stephenworsley`_ changed :attr:`iris.fileformats.pp.PPField.lbproc` is be an
+* `stephenworsley`_ changed :attr:`iris.fileformats.pp.PPField.lbproc` to be an
   ``int``. The deprecated attributes ``flag1``, ``flag2`` etc. have been
   removed from it. (:pull:`3461`).
 
@@ -143,7 +143,7 @@ Dependencies
   support. (:pull:`3513`)
 
 * `Bill Little`_ improved the developer set up process. Configuring Iris and
-  :ref:`installing_from_source` as a developer, with all the required package
+  :ref:`installing_from_source` as a developer with all the required package
   dependencies is now easier with our curated conda environment YAML files.
   (:pull:`3812`)
 
