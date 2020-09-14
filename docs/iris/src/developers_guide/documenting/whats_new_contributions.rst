@@ -23,7 +23,7 @@ Git Conflicts
 =============
 
 If changes to ``latest.rst`` are being suggested in several simultaneous
-Iris Pull Requests, Git will likely encounter merge conflicts. In this
+Iris Pull Requests, Git will likely encounter merge conflicts. If this
 situation is thought likely (large PR, high repo activity etc.):
 
 * PR author: Do not include a "What's New" entry. Mention in the PR text that a
@@ -92,7 +92,7 @@ For example::
 
 
 The above example also demonstrates some of the possible syntax for including
-links to code. For more inspiration on possible content and references please
+links to code. For more inspiration on possible content and references, please
 examine past what's :ref:`iris_whatsnew` entries.
 
 .. note:: The reStructuredText syntax will be checked as part of building
@@ -130,4 +130,4 @@ users.  To achieve this several categories may be used.
 
 *Internal*
   Changes to any internal or development related topics, such as testing,
-  environment dependencies etc
+  environment dependencies etc.
