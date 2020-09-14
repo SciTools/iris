@@ -23,17 +23,25 @@ Git Conflicts
 =============
 
 If changes to ``latest.rst`` are being suggested in several simultaneous
-Iris Pull Requests, Git will likely encounter merge conflicts. In you think
-this situation is likely (large PR, high repo activity etc.): wait until your
-code is ready for review, then create a **new pull request** specifically for
-the "What's New" entry, referencing the main pull request and titled
-(e.g. for PR#9999):
+Iris Pull Requests, Git will likely encounter merge conflicts. In this
+situation is thought likely (large PR, high repo activity etc.):
 
-  What's New for #9999
+* PR author: Do not include a "What's New" entry. Mention in the PR text that a
+  "What's New" entry is pending
 
-If the entry references something new introduced by the main pull request then
-such links will not be valid yet. The reviewer should **merge the main pull
-request first**, followed by the "What's New" pull request.
+* PR reviewer: Review the PR as normal. Once the PR is acceptable, ask that
+  a **new pull request** be created specifically for the "What's New" entry,
+  which references the main pull request and titled (e.g. for PR#9999):
+
+    What's New for #9999
+
+* PR author: create the "What's New" pull request
+
+* PR reviewer: once the "What's New" PR is created, **merge the main PR**.
+  (If any links in the "What's New" PR referenced new features, these should
+  now be working).
+
+* PR reviewer: review the "What's New" PR, merge once acceptable
 
 These measures should mean the suggested ``latest.rst`` changes are outstanding
 for the minimum time, minimising conflicts and minimising the need to rebase or
