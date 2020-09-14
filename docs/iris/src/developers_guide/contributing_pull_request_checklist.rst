@@ -3,6 +3,9 @@
 Pull request check List
 =======================
 
+
+.. todo:: check reference to this page (PR template?)
+
 A pull request to a SciTools project master should be ready to merge into the
 master branch.
 
