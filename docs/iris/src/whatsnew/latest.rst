@@ -10,14 +10,14 @@ This document explains the changes made to Iris for this release
    :depth: 3
 
 
-🎉 Announcements
+📢 Announcements
 ================
 
 * N/A
 
 
-⚙ Features
-==========
+✨ Features
+===========
 
 * `@MoseleyS`_ greatly enhanced  the :mod:`~iris.fileformats.nimrod`
   module to provide richer meta-data translation when loading ``Nimrod`` data
@@ -95,7 +95,7 @@ This document explains the changes made to Iris for this release
   (:pull:`3804`)
 
 
-⛔ Incompatible Changes
+💣 Incompatible Changes
 =======================
 
 * `@pp-mo`_ rationalised :class:`~iris.cube.CubeList` extraction
@@ -137,7 +137,7 @@ This document explains the changes made to Iris for this release
   duplicate coordinate errors in certain circumstances. (:pull:`3718`)
 
 
-🚫 Deprecations
+🔥 Deprecations
 ===============
 
 * `@stephenworsley`_ removed the deprecated :class:`iris.Future` flags
