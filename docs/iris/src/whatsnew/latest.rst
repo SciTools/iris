@@ -219,6 +219,11 @@ This document explains the changes made to Iris for this release
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
 
+* `@tkknight <https://github.com/tkknight>`_ overhauled the
+  :ref:`developers_guide` including information on getting involved in
+  becoming a contributor and general structure of the guide.  This resolves
+  :issue:`2170`, :issue:`2331`, :issue:`3453`. (:pull:`3852`)
+
 
 💼 Internal
 ===========
