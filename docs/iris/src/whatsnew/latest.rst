@@ -83,10 +83,10 @@ Bugs Fixed
   the :class:`~iris.coords.CellMeasure` in the loaded :class:`~iris.cube.Cube`.
   (:pull:`3800`)
 
-* the netcdf loader can now handle any grid-mapping variables with missing
-  ``false_easting`` and ``false_northing`` properties, which was previously
-  failing for some coordinate systems.
-  See :issue:`3629`.
+* `Patrick Peglar`_ fixed the netcdf loader to now handle any grid-mapping
+  variables with missing ``false_easting`` and ``false_northing`` properties,
+  which was previously failing for some coordinate systems. See :issue:`3629`.
+  (:pull:`3804`)
 
 
 Incompatible Changes
