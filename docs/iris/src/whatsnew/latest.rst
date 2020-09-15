@@ -146,7 +146,6 @@ Deprecations
 Dependencies
 ============
 
-
 * `@stephenworsley`_, `@trexfeathers`_ and `@bjlittle`_ removed ``Python2``
   support, modernising the codebase by switching to exclusive ``Python3``
   support. (:pull:`3513`)
@@ -156,12 +155,11 @@ Dependencies
   dependencies is now easier with our curated conda environment YAML files.
   (:pull:`3812`)
 
-* `@stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
+* `@stephenworsley`_ pinned Iris to require `Dask`_ ``>=2.0``. (:pull:`3460`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ pinned Iris to require
-  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
-  order to remain compatible with the latest version of `Matplotlib`_.
-  (:pull:`3762`)
+  `Cartopy`_ ``>=0.18``, in order to remain compatible with the latest version
+  of `Matplotlib`_. (:pull:`3762`)
 
 * `@bjlittle`_ unpinned Iris to use the latest version of `Matplotlib`_.
   Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
@@ -217,9 +215,8 @@ Documentation
 Internal
 ========
 
-* `@pp-mo`_ and `@lbdreyer`_ removed all test dependencies on
-  `SciTools/iris-grib <https://github.com/SciTools/iris-grib>`_ by transferring
-  all relevant content to the iris-grib repository. (:pull:`3662`,
+* `@pp-mo`_ and `@lbdreyer`_ removed all Iris test dependencies on `iris-grib`_
+  by transferring all relevant content to the `iris-grib`_ repository. (:pull:`3662`,
   :pull:`3663`, :pull:`3664`, :pull:`3665`, :pull:`3666`, :pull:`3669`,
   :pull:`3670`, :pull:`3671`, :pull:`3672`, :pull:`3742`, :pull:`3746`)
 
@@ -251,8 +248,7 @@ Internal
   cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
 
 * `@trexfeathers`_ changed graphics tests to account for some new default
-  grid-line spacing in `Cartopy <https://github.com/SciTools/cartopy>`_.
-  (:pull:`3762`)
+  grid-line spacing in `Cartopy`_. (:pull:`3762`)
   (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
 
 * `@trexfeathers`_ added additional acceptable graphics test targets to account
@@ -264,6 +260,9 @@ Internal
 .. _Matplotlib: https://matplotlib.org/
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
+.. _iris-grib: https://github.com/SciTools/iris-grib
+.. _Cartopy: https://github.com/SciTools/cartopy
+.. _Dask: https://github.com/dask/dask
 .. _@MoseleyS: https://github.com/MoseleyS
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@pp-mo: https://github.com/pp-mo
