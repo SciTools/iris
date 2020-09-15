@@ -109,27 +109,27 @@ Contribution categories
 The structure of the what's new release note should be easy to read by
 users.  To achieve this several categories may be used.
 
-*📢 Announcements*
-  General announcements to the Iris community.
+**📢 Announcements**
+  General news and announcements to the Iris community.
 
-*✨ Features*
+**✨ Features**
   Features that are new or changed to add functionality.
 
-*🐛 Bug Fixes*
+**🐛 Bug Fixes**
   A bug fix.
 
-*💣 Incompatible Changes*
+**💣 Incompatible Changes**
   A change that causes an incompatibility with prior versions of Iris.
 
-*🔥 Deprecations*
+**🔥 Deprecations**
   Deprecations of functionality.
 
-*🔗 Dependencies*
+**🔗 Dependencies**
   Additions, removals and version changes in Iris' package dependencies.
 
-*📚 Documentation*
+**📚 Documentation**
   Changes to documentation.
 
-*💼 Internal*
+**💼 Internal**
   Changes to any internal or development related topics, such as testing,
   environment dependencies etc.
