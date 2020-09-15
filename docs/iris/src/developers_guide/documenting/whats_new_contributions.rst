@@ -66,10 +66,9 @@ first. The content should target an Iris user as the audience. The required
 content, in order, is as follows:
 
 * Names of those who contributed the change. These should be their GitHub
-  display name, or if that is not available use their GitHub user name. Link
-  the name to their GitHub profile. E.g.
-  ```Bill Little <https://github.com/bjlittle>`_ and
-  `tkknight <https://github.com/tkknight>`_ changed...``
+  user name. Link the name to their GitHub profile. E.g.
+  ```@bjlittle <https://github.com/bjlittle>`_ and
+  `@tkknight <https://github.com/tkknight>`_ changed...``
 
 * The new/changed behaviour
 
@@ -84,8 +83,8 @@ content, in order, is as follows:
 
 For example::
 
-  * `Bill Little <https://github.com/bjlittle>`_ and
-    `tkknight <https://github.com/tkknight>`_ changed changed argument ``x``
+  * `@bjlittle <https://github.com/bjlittle>`_ and
+    `@tkknight <https://github.com/tkknight>`_ changed changed argument ``x``
     to be optional in :class:`~iris.module.class` and
     :meth:`iris.module.method`. This allows greater flexibility as requested in
     :issue:`9999`. (:pull:`1111`, :pull:`9999`)
