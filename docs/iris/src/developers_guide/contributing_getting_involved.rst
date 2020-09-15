@@ -2,11 +2,6 @@
 
 .. include:: ../common_links.inc
 
-.. todo:: TREM: purge git_links.inc, all that are not used.  The build should pick up
-          any that are removed but still used.
-
-.. todo:: TREM: review all warnings to ensure a **clean build yo**.
-
 Getting Involved
 ----------------
 
@@ -20,7 +15,7 @@ raising:
 
 The `Iris GitHub`_ project has been configured to use templates for each of
 the above issue types when creating a `new issue`_ to ensure the appropriate
-information if provided.
+information is provided.
 
 A `pull request`_ may also be created by anyone who has become a
 **contributor** to Iris_.  Permissions to merge pull requests to the
@@ -36,7 +31,7 @@ If you are new to using GitHub we recommend reading the
 .. note:: For more information on becoming a contributor_ including a link to
           the Contributors Licence Agreement (CLA) see the
           `Governance <https://scitools.org.uk/organisation.html#governance>`_
-          section of the `SciTools ogranisation`_ web site.
+          section of the `SciTools`_ ogranisation web site.
 
 
 .. _GitHub getting started: https://docs.github.com/en/github/getting-started-with-github

@@ -6,17 +6,13 @@
 Test categories
 ***************
 
-.. todo:: BILL: legacy tests? can this be removed?
-
-There are three categories of tests within Iris:
+There are two main categories of tests within Iris:
 
  - :ref:`testing.unit_test`
  - :ref:`testing.integration`
- - Legacy tests
 
 Ideally, all code changes should be accompanied by one or more unit
-tests, and by zero or more integration tests. And where possible, new
-tests should not be added to the legacy tests.
+tests, and by zero or more integration tests.
 
 But if in any doubt about what tests to add or how to write them please
 feel free to submit a pull-request in any state and ask for assistance.
@@ -52,8 +48,8 @@ When testing a class all the tests must reside in the module:
 Within this test module each tested method must have one or more
 corresponding test classes, for example:
 
-* ``Test_name_of_public_method``
-* ``Test_name_of_public_method__aspect_of_method``
+* ``Test_<name of public method>``
+* ``Test_<name of public method>__<aspect of method>``
 
 And within those test classes, the test methods must be named according
 to the aspect of the tested method which they address.

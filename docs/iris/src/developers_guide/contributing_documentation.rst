@@ -153,7 +153,3 @@ The reStructuredText (rst) output of the gallery is located in
 For more information on the directory structure and options please see the
 `sphinx-gallery getting started
 <https://sphinx-gallery.github.io/stable/getting_started.html>`_ documentation.
-
-
-
-

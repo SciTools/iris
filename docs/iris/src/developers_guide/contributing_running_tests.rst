@@ -76,7 +76,7 @@ if a certain condition is not met.  In the example output above there are
 due to an experimental dependency not being present.
 
 
-.. note::
+.. tip::
 
    The most common reason for tests to be skipped is when the directory for the
    ``iris-test-data`` has not been set which would shows output such as::

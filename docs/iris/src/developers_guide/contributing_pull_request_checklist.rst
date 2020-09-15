@@ -1,13 +1,9 @@
+.. include:: ../common_links.inc
+
 .. _pr_check:
 
 Pull request check List
 =======================
-
-
-.. todo:: TREM: check references to this page (PR template?).
-
-.. todo:: TREM: need to do a careful merge from master (when Martins PR is
-          merged?)
 
 A pull request to a SciTools project master should be ready to merge into the
 master branch.
@@ -62,10 +58,3 @@ is merged.  Before submitting a pull request please consider this list.
    the appropriate supporting project via a suitable pull-request.  This pull
    request should be referenced in the main Iris pull request and must be
    accepted and merged before the Iris one can be.
-
-.. _conda: https://docs.conda.io/en/latest/
-.. _iris-test-data: https://github.com/SciTools/iris-test-data
-.. _iris-sample-data: https://github.com/SciTools/iris-sample-data
-.. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
-.. _.travis.yml: https://github.com/scitools/iris/blob/master/.travis.yml
-.. _readthedocs.yml: https://github.com/scitools/iris/blob/master/ci/requirements/readthedocs.yml

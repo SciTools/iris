@@ -138,18 +138,18 @@ In more detail
 #. To commit all modified files into the local copy of your repo, do
    ``git commit -am 'A commit message'``.  Note the ``-am`` options to
    ``commit``. The ``m`` flag just signals that you're going to type a
-   message on the command line.  The ``a`` flag |emdash| you can just take on
-   faith |emdash| or see `why the -a flag?`_ |emdash| and the helpful use-case
-   description in the `tangled working copy problem`_. The `git commit`_ manual
-   page might also be useful.
+   message on the command line.  The ``a`` flag will automatically stage
+   all files that have been modified and deleted.
 #. To push the changes up to your forked repo on github, do a ``git
    push`` (see `git push`_).
+
 
 Testing your changes
 ====================
 
-Once you are happy with your changes, work thorough the :ref:`pr_check` and make sure
-your branch passes all the relevant tests.
+Once you are happy with your changes, work thorough the :ref:`pr_check` and
+make sure your branch passes all the relevant tests.
+
 
 Ask for your changes to be reviewed or merged
 =============================================
@@ -189,7 +189,7 @@ Delete a branch on github
    # delete branch on github
    git push origin :my-unwanted-branch
 
-(Note the colon ``:`` before ``test-branch``.  See also:
+Note the colon ``:`` before ``test-branch``.  See also:
 http://github.com/guides/remove-a-remote-branch
 
 
@@ -236,9 +236,6 @@ commits::
 To see a linear list of commits for this branch::
 
    git log
-
-You can also look at the `network graph visualizer`_ for your github
-repo.
 
 Finally the :ref:`fancy-log` ``lg`` alias will give you a reasonable text-based
 graph of the repository.

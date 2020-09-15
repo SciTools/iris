@@ -29,7 +29,8 @@ please see https://scitools.org.uk/organisation.html#governance
 Stickler CI
 ***********
 
-Automatically enforces coding standards.  For more information see
+Automatically enforces coding standards.  The configuration file named
+`.stickler.yml`_ is in the Iris_ root directory.  For more information see
 https://stickler-ci.com/.
 
 
@@ -43,8 +44,7 @@ that the Iris code base is working as expected.  :ref:`developer_running_tests`
 may be run manually but to ensure the checks are performed a
 continuous integration testing tool named `travis-ci`_ is used.
 
-A `travis-ci`_ configuration file named
-`.travis.yml <https://github.com/SciTools/iris/blob/master/.travis.yml>`_
+A `travis-ci`_ configuration file named `.travis.yml`_
 is in the Iris repository which tells travis-ci what commands to run.  The
 commands includes retrieving the Iris code base and associated test files using
 conda and then running the tests.  `travis-ci`_ allows for a matrix of tests to

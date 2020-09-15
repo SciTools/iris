@@ -5,13 +5,9 @@
 Graphics tests
 **************
 
-.. todo:: TREM: link to the gallery and vice versa?
-
-.. todo:: BILL: this page needs a carefull review - is it accurate?
-
 Iris may be used Iris to create various forms of graphical output, to ensure
 the output is consistent Iris has automated tests to check the output with
-know acceptable graphical output.  See :ref:`developer_running_tests` for
+known acceptable graphical output.  See :ref:`developer_running_tests` for
 more information.
 
 At present graphical tests are used in the following areas of Iris:
@@ -38,8 +34,8 @@ perceived as it may be a simple pixel shift.
 Testing strategy
 ================
 
-In the `Iris Travis matrix`_, and over time, graphics tests must run with
-multiple versions of Python, and of key dependencies such as matplotlib_.
+The `Iris Travis matrix`_ defines multiple test runs that use
+different versions of Python to ensure Iris is working as expected.
 
 To make this manageable, the :meth:`iris.tests.IrisTest.check_graphic` test
 routine tests against multiple alternative **acceptable** results.  It does
@@ -104,18 +100,19 @@ you should follow:
        repository at https://github.com/SciTools/test-iris-imagehash
        (See below).
 
-   If a change is **skipped** :
+   If a change is **skipped**:
 
      * no further changes are made in the repo.
 
-     * when you run idiff again, the skipped choice will be presented again.
+     * when you run ``iris/tests/idiff.py`` again, the skipped choice will be
+       presented again.
 
-   If a change is **rejected** :
+   If a change is **rejected**:
 
      * the output image is deleted from ``result_image_comparison``.
 
-     * when you run idiff again, the skipped choice will not appear, unless
-       and until the relevant failing test is re-run.
+     * when you run ``iris/tests/idiff.py`` again, the skipped choice will not
+       appear, unless the relevant failing test is re-run.
 
 #. **Now re-run the tests**. The **new** result should now be recognised and the
    relevant test should pass.  However, some tests can perform *multiple*
@@ -144,7 +141,7 @@ To add your changes to Iris, you need to make two pull requests (PR).
 
     * Create a PR proposing these changes, in the usual way.
 
-#. The second PR is created in the Iris repository, and
+#. The second PR is created in the Iris_ repository, and
    should only include the change to the image results database,
    ``tests/results/imagerepo.json``.
    The description box of this pull request should contain a reference to
@@ -158,29 +155,12 @@ To add your changes to Iris, you need to make two pull requests (PR).
 
 .. important::
 
-  The Iris pull-request will not test out successfully in Travis until the
+  The Iris pull-request will not test successfully in Travis until the
   ``test-iris-imagehash`` pull request has been merged.  This is because there
   is an Iris_ test which ensures the existence of the reference images (uris)
   for all the targets in the image results database.  It will also fail
   if you forgot to run ``recreate_v4_files_listing.py`` to update the
   image-listing file in ``test-iris-imagehash``.
-
-
-Adding a new graphic test
-=========================
-
-.. todo:: BILL: add this?  differ enough from the **reviewing failing tests**
-          section?
-
-
-Example: Adding an image test for the Gallery
-=============================================
-
-.. todo:: BILL: overkill to add this section?
-
-Assuming you have already written the code and a test for the new
-:ref:`contributing.documentation.gallery` entry lets highlight the commands
-to add the image to the test suite.....
 
 
 .. _Iris travis matrix: https://github.com/scitools/iris/blob/master/.travis.yml#L15
