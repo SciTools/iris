@@ -6,4 +6,4 @@
 
 
 ---
-[Consult Iris pull request check list]( https://scitools-iris.readthedocs.io/en/latest/developers_guide/pulls.html#the-iris-check-list)
+[Consult Iris pull request check list]( https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_pull_request_checklist.html)
