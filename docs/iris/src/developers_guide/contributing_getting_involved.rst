@@ -31,7 +31,7 @@ If you are new to using GitHub we recommend reading the
 .. note:: For more information on becoming a contributor_ including a link to
           the Contributors Licence Agreement (CLA) see the
           `Governance <https://scitools.org.uk/organisation.html#governance>`_
-          section of the `SciTools`_ ogranisation web site.
+          section of the `SciTools`_ ogranization web site.
 
 
 .. _GitHub getting started: https://docs.github.com/en/github/getting-started-with-github
