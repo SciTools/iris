@@ -5,7 +5,9 @@
 Graphics tests
 **************
 
-.. todo:: link to the gallery and vice versa?
+.. todo:: TREM: link to the gallery and vice versa?
+
+.. todo:: BILL: this page needs a carefull review - is it accurate?
 
 Iris may be used Iris to create various forms of graphical output, to ensure
 the output is consistent Iris has automated tests to check the output with
@@ -167,14 +169,14 @@ To add your changes to Iris, you need to make two pull requests (PR).
 Adding a new graphic test
 =========================
 
-.. todo:: add this?  differ enough from the **reviewing failing tests**
+.. todo:: BILL: add this?  differ enough from the **reviewing failing tests**
           section?
 
 
 Example: Adding an image test for the Gallery
 =============================================
 
-.. todo:: overkill to add this section?
+.. todo:: BILL: overkill to add this section?
 
 Assuming you have already written the code and a test for the new
 :ref:`contributing.documentation.gallery` entry lets highlight the commands

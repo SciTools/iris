@@ -2,10 +2,10 @@
 
 .. include:: ../common_links.inc
 
-.. todo:: purge git_links.inc, all that are not used.  The build should pick up
+.. todo:: TREM: purge git_links.inc, all that are not used.  The build should pick up
           any that are removed but still used.
 
-.. todo:: review all warnings on a clean build.
+.. todo:: TREM: review all warnings to ensure a **clean build yo**.
 
 Getting Involved
 ----------------
@@ -19,7 +19,8 @@ raising:
 * documentation improvements
 
 The `Iris GitHub`_ project has been configured to use templates for each of
-the above issue types when creating a `new issue`_
+the above issue types when creating a `new issue`_ to ensure the appropriate
+information if provided.
 
 A `pull request`_ may also be created by anyone who has become a
 **contributor** to Iris_.  Permissions to merge pull requests to the

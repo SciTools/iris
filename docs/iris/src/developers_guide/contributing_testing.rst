@@ -6,7 +6,7 @@
 Test categories
 ***************
 
-.. todo:: legacy tests? can this be removed?
+.. todo:: BILL: legacy tests? can this be removed?
 
 There are three categories of tests within Iris:
 

@@ -4,7 +4,10 @@ Pull request check List
 =======================
 
 
-.. todo:: check reference to this page (PR template?)
+.. todo:: TREM: check references to this page (PR template?).
+
+.. todo:: TREM: need to do a careful merge from master (when Martins PR is
+          merged?)
 
 A pull request to a SciTools project master should be ready to merge into the
 master branch.
