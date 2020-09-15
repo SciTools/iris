@@ -13,84 +13,75 @@ This document explains the changes made to Iris for this release
 Features
 ========
 
-* The :mod:`~iris.fileformats.nimrod` module provides richer meta-data translation
-  when loading ``Nimrod`` data into cubes. This covers most known
-  operational use-cases.
+* `Stephen Moseley`_ greatly enhanced  the :mod:`~iris.fileformats.nimrod`
+  module to provide richer meta-data translation when loading ``Nimrod`` data
+  into cubes. This covers most known operational use-cases. (:pull:`3647`)
 
-* Statistical operations :meth:`iris.cube.Cube.collapsed`,
-  :meth:`iris.cube.Cube.aggregated_by` and :meth:`iris.cube.Cube.rolling_window`
-  previously removed every :class:`iris.coord.CellMeasure` attached to the
-  cube.  Now, a :class:`iris.coord.CellMeasure` will only be removed if it is
-  associated with an axis over which the statistic is being run.
+* `stephenworsley`_ improved the handling of :class:`iris.coord.CellMeasure` in
+  the statistical operations :meth:`iris.cube.Cube.collapsed`,
+  :meth:`iris.cube.Cube.aggregated_by` and
+  :meth:`iris.cube.Cube.rolling_window`. These previously removed every
+  :class:`iris.coord.CellMeasure` attached to the cube.  Now, a
+  :class:`iris.coord.CellMeasure` will only be removed if it is associated with
+  an axis over which the statistic is being run. (:pull:`3549`)
 
-* Supporting ``Iris`` for both ``Python2`` and ``Python3`` resulted in pinning our
-  dependency on `Matplotlib`_ at ``v2.x``.  Now that ``Python2`` support has
-  been dropped, ``Iris`` is free to use the latest version of `Matplotlib`_.
+* `stephenworsley`_, `Patrick Peglar`_ and `abooton`_ added support for
+  `CF Ancillary Data`_ variables, which can be loaded from and saved to
+  NetCDF-CF files. Support for `Quality Flags`_ is also provided to ensure they
+  load and save with appropriate units. (:pull:`3800`)
 
-* `CF Ancillary Data`_ variables are now supported, and can be loaded from and
-  saved to NetCDF-CF files. Support for `Quality Flags`_ is also provided to
-  ensure they load and save with appropriate units. See :pull:`3800`.
+* `Bouwe Andela`_ implemented lazy regridding for the
+  :class:`~iris.analysis.Linear`, :class:`~iris.analysis.Nearest`, and
+  :class:`~iris.analysis.AreaWeighted` regridding schemes. (:pull:`3701`)
 
-* Lazy regridding with the :class:`~iris.analysis.Linear`,
-  :class:`~iris.analysis.Nearest`, and
-  :class:`~iris.analysis.AreaWeighted` regridding schemes.
-  See :pull:`3701`.
-
-
-Dependency Updates
-==================
-
-* Iris now supports the latest version of `Proj <https://github.com/OSGeo/PROJ>`_.
-
-* Iris now requires `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18 in
-  order to remain compatible with the latest version of `Matplotlib`_.
-
-* GDAL is removed from the extensions dependency group. We no longer consider it to
-  be an extension.
-
-* Configuring Iris and :ref:`installing_from_source` as a developer, with all the
-  required package dependencies is now easier with our curated conda environment
-  YAML files. See :pull:`3812`.
 
 Bugs Fixed
 ==========
 
-* The method :meth:`~iris.Cube.cube.remove_coord` would fail to remove derived
-  coordinates, will now remove derived coordinates by removing aux_factories.
+* `stephenworsley`_ fixed :meth:`~iris.Cube.cube.remove_coord` to now also
+  remove derived coordinates by removing aux_factories. (:pull:`3641`)
 
-* The ``__iter__()`` method in :class:`~iris.cube.Cube` was set to ``None``.
-  ``TypeError`` is still raised if a :class:`~iris.cube.Cube` is iterated over
-  but ``isinstance(cube, collections.Iterable)`` now behaves as expected.
+* `Jon Seddon`_ fixed ``isinstance(cube, collections.Iterable)`` to now behave
+  as expected if a :class:`~iris.cube.Cube` is iterated over, while also
+  ensuring that ``TypeError`` is still raised. (Fixed by setting the
+  ``__iter__()`` method in :class:`~iris.cube.Cube` to ``None``).
+  (:pull:`3656`)
 
-* Concatenating cubes along an axis shared by cell measures would cause
-  concatenation to inappropriately fail.  These cell measures are now
-  concatenated together in the resulting cube.
+* `stephenworsley`_ enabled cube concatenation along an axis shared by cell
+  measures; these cell measures are now concatenated together in the resulting
+  cube. Such a scenario would previously cause concatenation to inappropriately
+  fail. (:pull:`3566`)
 
-* Copying a cube would previously ignore any attached
-  :class:`~iris.coords.CellMeasure`.  These are now copied over.
+* `stephenworsley`_ newly included :class:`~iris.coords.CellMeasure`s in
+  :class:`~iris.cube.Cube` copy operations. Previously copying a
+  :class:`~iris.cube.Cube` would ignore any attached
+  :class:`~iris.coords.CellMeasure`. (:pull:`3546`)
 
-* A :class:`~iris.coords.CellMeasure` requires a string ``measure`` attribute
-  to be defined, which can only have a value of ``area`` or ``volume``.
+* `Bill Little`_ set a :class:`~iris.coords.CellMeasure`'s
+  ``measure`` attribute to have a default value of ``area``.
   Previously, the ``measure`` was provided as a keyword argument to
-  :class:`~iris.coords.CellMeasure` with an default value of ``None``, which
-  caused a ``TypeError`` when no ``measure`` was provided.  The default value
-  of ``area`` is now used.
+  :class:`~iris.coords.CellMeasure` with a default value of ``None``, which
+  caused a ``TypeError`` when no ``measure`` was provided, since ``area`` or
+  ``volume`` are the only accepted values. (:pull:`3533`)
 
-* **All** plot types in `iris.plot` now use `matplotlib.dates.date2num
+* `Martin Yeo`_ set **all** plot types in `iris.plot` to now use
+  `matplotlib.dates.date2num
   <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
   to format date/time coordinates for use on a plot axis (previously
   :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh` did not include
-  this behaviour).
+  this behaviour). (:pull:`3762`)
 
-* Date/time axis labels in `iris.quickplot` are now **always** based on the
-  ``epoch`` used in `matplotlib.dates.date2num
+* `Martin Yeo`_ changed date/time axis labels in `iris.quickplot` to now
+  **always** be based on the ``epoch`` used in `matplotlib.dates.date2num
   <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
   (previously would take the unit from a time coordinate, if present, even
   though the coordinate's value had been changed via ``date2num``).
+  (:pull:`3762`)
 
-* Attributes of cell measures in NetCDF-CF files were being discarded during
-  loading. They are now available on the :class:`~iris.coords.CellMeasure` in
-  the loaded :class:`~iris.cube.Cube`. See :pull:`3800`.
+* `Patrick Peglar`_ newly included attributes of cell measures in NETCDF-CF
+  file loading; they were previously being discarded. They are now available on
+  the :class:`~iris.coords.CellMeasure` in the loaded :class:`~iris.cube.Cube`.
+  (:pull:`3800`)
 
 * the netcdf loader can now handle any grid-mapping variables with missing
   ``false_easting`` and ``false_northing`` properties, which was previously
@@ -101,7 +92,10 @@ Bugs Fixed
 Incompatible Changes
 ====================
 
-* The method :meth:`~iris.cube.CubeList.extract_strict`, and the ``strict``
+* `Patrick Peglar`_ rationalised :class:`~iris.cube.CubeList` extraction
+  methods:
+
+  The method :meth:`~iris.cube.CubeList.extract_strict`, and the ``strict``
   keyword to :meth:`~iris.cube.CubeList.extract` method have been removed, and
   are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube` and
   :meth:`~iris.cube.CubeList.extract_cubes`.
@@ -111,25 +105,26 @@ Incompatible Changes
   consistent : :meth:`~iris.cube.CubeList.extract_cube` always returns a
   :class:`~iris.cube.Cube`, and :meth:`~iris.cube.CubeList.extract_cubes`
   always returns an :class:`iris.cube.CubeList` of a length equal to the
-  number of constraints.
+  number of constraints. (:pull:`3715`)
 
-* The former function ``iris.analysis.coord_comparison`` has been removed.
+* `Patrick Peglar`_ removed the former function
+  ``iris.analysis.coord_comparison``. (:pull:`3562`)
 
-* The :func:`iris.experimental.equalise_cubes.equalise_attributes` function
-  has been moved from the :mod:`iris.experimental` module into the
-  :mod:`iris.util` module.  Please use the :func:`iris.util.equalise_attributes`
-  function instead.
+* `Bill Little`_ moved the
+  :func:`iris.experimental.equalise_cubes.equalise_attributes` function from
+  the :mod:`iris.experimental` module into the :mod:`iris.util` module.  Please
+  use the :func:`iris.util.equalise_attributes` function instead.
+  (:pull:`3527`)
 
-* The :mod:`iris.experimental.concatenate` module has now been removed. In
+* `Bill Little`_ removed the :mod:`iris.experimental.concatenate` module. In
   ``v1.6.0`` the experimental ``concatenate`` functionality was moved to the
   :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
   :func:`iris.experimental.concatenate.concatenate` function raised an
-  exception.
+  exception. (:pull:`3523`)
 
-* When loading data from NetCDF-CF files, where a variable has no ``units``
-  property, the corresponding Iris object will have ``units='unknown'``.
-  Prior to Iris ``3.0.0``, these cases defaulted to ``units='1'``.
-  See :pull:`3795`.
+* `stephenworsley`_ changed Iris objects loaded from NetCDF-CF files to have
+  ``units='unknown'`` where the corresponding NetCDF variable has no ``units``
+  property. Previously these cases defaulted to ``units='1'``. (:pull:`3795`)
 
 * `Simon Peatman <https://github.com/SimonPeatman>`_ added attribute
   ``var_name`` to coordinates created by the
@@ -137,79 +132,146 @@ Incompatible Changes
   duplicate coordinate errors in certain circumstances.  (:pull:`3718`).
 
 
-Internal
-========
-
-* Changed the numerical values in tests involving the Robinson projection due
-  to improvements made in `Proj <https://github.com/OSGeo/PROJ>`_ (see
-  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
-  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_).
-
-* Change tests to account for more detailed descriptions of projections in
-  `GDAL <https://github.com/OSGeo/gdal>`_ 
-  (`see GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_).
-
-* Change tests to account for `GDAL <https://github.com/OSGeo/gdal>`_ now
-  saving fill values for data without masked points.
-
-* Changed every graphics test that includes `Cartopy's coastlines
-  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
-  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
-  to account for new adaptive coastline scaling (`see cartopy#1105
-  <https://github.com/SciTools/cartopy/pull/1105>`_).
-
-* Changed graphics tests to account for some new default grid-line spacing in
-  `Cartopy <https://github.com/SciTools/cartopy>`_ (`part of cartopy#1117
-  <https://github.com/SciTools/cartopy/pull/1117>`_).
-
-* Additional acceptable graphics test targets to account for very minor changes
-  in `Matplotlib`_ version 3.3 (colormaps, fonts and axes borders).
-
-
 Deprecations
 ============
 
-* The deprecated :class:`iris.Future` flags ``cell_date_time_objects``,
-  ``netcdf_promote``, ``netcdf_no_unlimited`` and ``clip_latitudes`` have
-  been removed.
+* `stephenworsley`_ removed the deprecated :class:`iris.Future` flags
+  ``cell_date_time_objects``, ``netcdf_promote``, ``netcdf_no_unlimited`` and
+  ``clip_latitudes``. (:pull:`3459`)
 
-* :attr:`iris.fileformats.pp.PPField.lbproc` is now an ``int``. The
-  deprecated attributes ``flag1``, ``flag2`` etc. have been removed from it.
+* `stephenworsley`_ changed :attr:`iris.fileformats.pp.PPField.lbproc` to be an
+  ``int``. The deprecated attributes ``flag1``, ``flag2`` etc. have been
+  removed from it. (:pull:`3461`).
+
+
+Dependencies
+============
+
+
+* `stephenworsley`_, `Martin Yeo`_ and `Bill Little`_ removed ``Python2``
+  support, modernising the codebase by switching to exclusive ``Python3``
+  support. (:pull:`3513`)
+
+* `Bill Little`_ improved the developer set up process. Configuring Iris and
+  :ref:`installing_from_source` as a developer with all the required package
+  dependencies is now easier with our curated conda environment YAML files.
+  (:pull:`3812`)
+
+* `stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
+
+* `stephenworsley`_ and `Martin Yeo`_ pinned Iris to require
+  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
+  order to remain compatible with the latest version of `Matplotlib`_.
+  (:pull:`3762`)
+
+* `Bill Little`_ unpinned Iris to use the latest version of `Matplotlib`_.
+  Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
+  pinning our dependency on `Matplotlib`_ at ``v2.x``.  But this is no longer
+  necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
+
+* `stephenworsley`_ and `Martin Yeo`_ unpinned Iris to use the latest version
+  of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
+
+* `stephenworsley`_ and `Martin Yeo`_ removed GDAL from the extensions
+  dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
 
 Documentation
 =============
 
-* Moved the :ref:`sphx_glr_generated_gallery_oceanography_plot_orca_projection.py`
-  from the general part of the gallery to oceanography.
+* `tkknight`_ moved the
+  :ref:`sphx_glr_generated_gallery_oceanography_plot_orca_projection.py`
+  from the general part of the gallery to oceanography. (:pull:`3761`)
 
-* Updated documentation to use a modern sphinx theme and be served from
-  https://scitools-iris.readthedocs.io/en/latest/.
+* `tkknight`_ updated documentation to use a modern sphinx theme and be
+  served from https://scitools-iris.readthedocs.io/en/latest/. (:pull:`3752`)
 
-* Added support for the `black <https://black.readthedocs.io/en/stable/>`_ code
-  formatter.  This is now automatically checked on GitHub PRs, replacing the
-  older, unittest-based "iris.tests.test_coding_standards.TestCodeFormat".
-  Black provides automatic code format correction for most IDEs.  See the new
-  developer guide section on :ref:`iris_code_format`.
+* `Bill Little`_ added support for the
+  `black <https://black.readthedocs.io/en/stable/>`_ code formatter. This is
+  now automatically checked on GitHub PRs, replacing the older, unittest-based
+  "iris.tests.test_coding_standards.TestCodeFormat". Black provides automatic
+  code format correction for most IDEs.  See the new developer guide section on
+  :ref:`iris_code_format`. (:pull:`3518`)
 
-* Refreshed the :ref:`whats_new_contributions` for the :ref:`iris_whatsnew`.
-  This includes always creating the ``latest`` what's new page so it appears
-  on the latest documentation at
-  https://scitools-iris.readthedocs.io/en/latest/whatsnew.  This resolves
-  :issue:`2104` and :issue:`3451`.  Also updated the
+* `tkknight`_ and `Martin Yeo`_ refreshed the :ref:`whats_new_contributions`
+  for the :ref:`iris_whatsnew`. This includes always creating the ``latest``
+  what's new page so it appears on the latest documentation at
+  https://scitools-iris.readthedocs.io/en/latest/whatsnew. This resolves
+  :issue:`2104`, :issue:`3451`, :issue:`3818`, :issue:`3837`.  Also updated the
   :ref:`iris_development_releases_steps` to follow when making a release.
+  (:pull:`3769`, :pull:`3838`, :pull:`3843`)
 
-* Enabled the PDF creation of the documentation on the `Read the Docs`_ service.
-  The PDF may be accessed by clicking on the version at the bottom of the side
-  bar, then selecting ``PDF`` from the ``Downloads`` section.
+* `tkknight`_ enabled the PDF creation of the documentation on the
+  `Read the Docs`_ service. The PDF may be accessed by clicking on the version
+  at the bottom of the side bar, then selecting ``PDF`` from the ``Downloads``
+  section. (:pull:`3765`)
 
-* Added a warning to the :func:`iris.analysis.cartography.project` function
-  regarding its behaviour on projections with non-rectangular boundaries.
+* `stephenworsley`_ added a warning to the
+  :func:`iris.analysis.cartography.project` function regarding its behaviour on
+  projections with non-rectangular boundaries. (:pull:`3762`)
 
-* Added the :ref:`cube_maths_combining_units` section to the user guide to
-  clarify how ``Units`` are handled during cube arithmetic.
+* `stephenworsley`_ added the :ref:`cube_maths_combining_units` section to the
+  user guide to clarify how ``Units`` are handled during cube arithmetic.
+  (:pull:`3803`)
+
+
+Internal
+========
+
+* `Patrick Peglar`_ and `lbdreyer`_ removed all test dependencies on
+  `SciTools/iris-grib <https://github.com/SciTools/iris-grib>`_ by transferring
+  all relevant content to the iris-grib repository. (:pull:`3662`,
+  :pull:`3663`, :pull:`3664`, :pull:`3665`, :pull:`3666`, :pull:`3669`,
+  :pull:`3670`, :pull:`3671`, :pull:`3672`, :pull:`3742`, :pull:`3746`)
+
+* `lbdreyer`_ and `Patrick Peglar`_ overhauled the handling of dimensional
+  metadata to remove duplication. (:pull:`3422`, :pull:`3551`)
+
+* `Martin Yeo`_ simplified the standard license header for all files, which
+  removes the need to repeatedly update year numbers in the header.
+  (:pull:`3489`)
+
+* `stephenworsley`_ changed the numerical values in tests involving the
+  Robinson projection due to improvements made in
+  `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
+  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
+  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_)
+
+* `stephenworsley`_ changed tests to account for more detailed descriptions of
+  projections in `GDAL <https://github.com/OSGeo/gdal>`_. (:pull:`3762`)
+  (`see also GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_)
+
+* `stephenworsley`_ changed tests to account for
+  `GDAL <https://github.com/OSGeo/gdal>`_ now saving fill values for data
+  without masked points. (:pull:`3762`)
+
+* `Martin Yeo`_ changed every graphics test that includes `Cartopy's coastlines
+  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
+  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
+  to account for new adaptive coastline scaling. (:pull:`3762`) (`see also
+  cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
+
+* `Martin Yeo`_ changed graphics tests to account for some new default
+  grid-line spacing in `Cartopy <https://github.com/SciTools/cartopy>`_.
+  (:pull:`3762`)
+  (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
+
+* `Martin Yeo`_ added additional acceptable graphics test targets to account
+  for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
+  axes borders). (:pull:`3762`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
+.. _Stephen Moseley: https://github.com/MoseleyS
+.. _stephenworsley: https://github.com/stephenworsley
+.. _Patrick Peglar: https://github.com/pp-mo
+.. _abooton: https://github.com/abooton
+.. _Bouwe Andela: https://github.com/bouweandela
+.. _Bill Little: https://github.com/bjlittle
+.. _Martin Yeo: https://github.com/trexfeathers
+.. _Jon Seddon: https://github.com/jonseddon
+.. _tkknight: https://github.com/tkknight
+.. _lbdreyer: https://github.com/lbdreyer
