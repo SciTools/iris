@@ -69,5 +69,32 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.assertEqual(res, expected)
 
 
+class Test_init_defaults(tests.IrisTest):
+    # NOTE: most of the testing for Orthographic.__init__ is elsewhere.
+    # This class *only* tests the defaults for optional constructor args.
+
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = Orthographic(0, 0, false_easting=100, false_northing=-203.7)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -203.7)
+
+    def _check_crs_defaults(self, crs):
+        # Check for property defaults when no kwargs options were set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.false_easting, 0.0)
+        self.assertEqualAndKind(crs.false_northing, 0.0)
+
+    def test_no_optional_args(self):
+        # Check expected defaults with no optional args.
+        crs = Orthographic(0, 0)
+        self._check_crs_defaults(crs)
+
+    def test_optional_args_None(self):
+        # Check expected defaults with optional args=None.
+        crs = Orthographic(0, 0, false_easting=None, false_northing=None)
+        self._check_crs_defaults(crs)
+
+
 if __name__ == "__main__":
     tests.main()

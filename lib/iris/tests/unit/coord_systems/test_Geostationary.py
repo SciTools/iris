@@ -15,15 +15,16 @@ from iris.coord_systems import GeogCS, Geostationary
 
 class Test(tests.IrisTest):
     def setUp(self):
-        self.latitude_of_projection_origin = 0.0
-        self.longitude_of_projection_origin = 0.0
-        self.perspective_point_height = 35785831.0
-        self.sweep_angle_axis = "y"
-        self.false_easting = 0.0
-        self.false_northing = 0.0
+        # Set everything to non-default values.
+        self.latitude_of_projection_origin = 0  # For now, Cartopy needs =0.
+        self.longitude_of_projection_origin = 123.0
+        self.perspective_point_height = 9999.0
+        self.sweep_angle_axis = "x"
+        self.false_easting = 100.0
+        self.false_northing = -200.0
 
-        self.semi_major_axis = 6377563.396
-        self.semi_minor_axis = 6356256.909
+        self.semi_major_axis = 4000.0
+        self.semi_minor_axis = 3900.0
         self.ellipsoid = GeogCS(self.semi_major_axis, self.semi_minor_axis)
         self.globe = ccrs.Globe(
             semimajor_axis=self.semi_major_axis,
@@ -82,6 +83,32 @@ class Test(tests.IrisTest):
                 self.false_northing,
                 self.ellipsoid,
             )
+
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = Geostationary(
+            0, 0, 1000, "y", false_easting=100, false_northing=-200
+        )
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -200.0)
+
+    def _check_crs_defaults(self, crs):
+        # Check for property defaults when no kwargs options were set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.false_easting, 0.0)
+        self.assertEqualAndKind(crs.false_northing, 0.0)
+
+    def test_no_optional_args(self):
+        # Check expected defaults with no optional args.
+        crs = Geostationary(0, 0, 1000, "y")
+        self._check_crs_defaults(crs)
+
+    def test_optional_args_None(self):
+        # Check expected defaults with optional args=None.
+        crs = Geostationary(
+            0, 0, 1000, "y", false_easting=None, false_northing=None
+        )
+        self._check_crs_defaults(crs)
 
 
 if __name__ == "__main__":

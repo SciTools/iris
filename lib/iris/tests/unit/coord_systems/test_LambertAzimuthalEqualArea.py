@@ -84,5 +84,43 @@ class Test_as_cartopy_projection(tests.IrisTest):
         self.assertEqual(res, expected)
 
 
+class Test_init_defaults(tests.IrisTest):
+    def test_set_optional_args(self):
+        # Check that setting the optional (non-ellipse) args works.
+        crs = LambertAzimuthalEqualArea(
+            longitude_of_projection_origin=123,
+            latitude_of_projection_origin=-37,
+            false_easting=100,
+            false_northing=-200,
+        )
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 123.0)
+        self.assertEqualAndKind(crs.latitude_of_projection_origin, -37.0)
+        self.assertEqualAndKind(crs.false_easting, 100.0)
+        self.assertEqualAndKind(crs.false_northing, -200.0)
+
+    def _check_crs_defaults(self, crs):
+        # Check for property defaults when no kwargs options were set.
+        # NOTE: except ellipsoid, which is done elsewhere.
+        self.assertEqualAndKind(crs.longitude_of_projection_origin, 0.0)
+        self.assertEqualAndKind(crs.latitude_of_projection_origin, 0.0)
+        self.assertEqualAndKind(crs.false_easting, 0.0)
+        self.assertEqualAndKind(crs.false_northing, 0.0)
+
+    def test_no_optional_args(self):
+        # Check expected defaults with no optional args.
+        crs = LambertAzimuthalEqualArea()
+        self._check_crs_defaults(crs)
+
+    def test_optional_args_None(self):
+        # Check expected defaults with optional args=None.
+        crs = LambertAzimuthalEqualArea(
+            longitude_of_projection_origin=None,
+            latitude_of_projection_origin=None,
+            false_easting=None,
+            false_northing=None,
+        )
+        self._check_crs_defaults(crs)
+
+
 if __name__ == "__main__":
     tests.main()

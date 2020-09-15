@@ -432,12 +432,12 @@ class Test_Stereographic_as_cartopy_projection(tests.IrisTest):
 
 class Test_LambertConformal(tests.GraphicsTest):
     def test_fail_secant_latitudes_none(self):
-        emsg = "one or two secant latitudes required"
+        emsg = "secant latitudes"
         with self.assertRaisesRegex(ValueError, emsg):
             LambertConformal(secant_latitudes=())
 
     def test_fail_secant_latitudes_excessive(self):
-        emsg = "one or two secant latitudes required"
+        emsg = "secant latitudes"
         with self.assertRaisesRegex(ValueError, emsg):
             LambertConformal(secant_latitudes=(1, 2, 3))
 

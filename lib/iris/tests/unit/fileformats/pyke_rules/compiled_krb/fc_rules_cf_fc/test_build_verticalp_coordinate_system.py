@@ -22,18 +22,20 @@ from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
 
 
 class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
-    def _test(self, inverse_flattening=False):
+    def _test(self, inverse_flattening=False, no_offsets=False):
         """
         Generic test that can check vertical perspective validity with or
-        without inverse flattening.
+        without inverse flattening, and false_east/northing-s.
         """
+        test_easting = 100.0
+        test_northing = 200.0
         cf_grid_var_kwargs = {
             'spec': [],
             'latitude_of_projection_origin': 1.0,
             'longitude_of_projection_origin': 2.0,
             'perspective_point_height': 2000000.0,
-            'false_easting': 100.0,
-            'false_northing': 200.0,
+            'false_easting': test_easting,
+            'false_northing': test_northing,
             'semi_major_axis': 6377563.396}
 
         ellipsoid_kwargs = {'semi_major_axis': 6377563.396}
@@ -42,6 +44,12 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
         else:
             ellipsoid_kwargs['semi_minor_axis'] = 6356256.909
         cf_grid_var_kwargs.update(ellipsoid_kwargs)
+
+        if no_offsets:
+            del cf_grid_var_kwargs['false_easting']
+            del cf_grid_var_kwargs['false_northing']
+            test_easting = 0
+            test_northing = 0
 
         cf_grid_var = mock.Mock(**cf_grid_var_kwargs)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
@@ -53,8 +61,8 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
             longitude_of_projection_origin=cf_grid_var.
             longitude_of_projection_origin,
             perspective_point_height=cf_grid_var.perspective_point_height,
-            false_easting=cf_grid_var.false_easting,
-            false_northing=cf_grid_var.false_northing,
+            false_easting=test_easting,
+            false_northing=test_northing,
             ellipsoid=ellipsoid)
 
         self.assertEqual(cs, expected)
@@ -63,4 +71,13 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
         self._test(inverse_flattening=False)
 
     def test_inverse_flattening(self):
+        # Check when inverse_flattening is provided instead of semi_minor_axis.
         self._test(inverse_flattening=True)
+
+    def test_no_offsets(self):
+        # Check when false_easting/northing attributes are absent.
+        self._test(no_offsets=True)
+
+
+if __name__ == "__main__":
+    tests.main()

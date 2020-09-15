@@ -2,7 +2,7 @@
 
 .. _pr_check:
 
-Pull request check List
+Pull request check list
 =======================
 
 A pull request to a SciTools project master should be ready to merge into the
@@ -22,12 +22,14 @@ is merged.  Before submitting a pull request please consider this list.
   * The aim of the change / the problem addressed / a link to the issue.
   * How the change has been delivered.
 
-#. **Include a "What's New" entry**, in the pull request.  See
-   :ref:`whats_new_contributions`.
+#. **Include a "What's New" entry**.  See :ref:`whats_new_contributions`.
 
 #. **Check all tests pass**.  This includes existing tests and any new tests
    added for any new functionality.  For more information see
    :ref:`developer_running_tests`.
+
+#. **Check all modified and new source files conform to the required**
+   :ref:`code_formatting`.
 
 #. **Check the source documentation been updated to explain all new or changed
    features**.  See :ref:`docstrings`.
