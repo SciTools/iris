@@ -128,7 +128,7 @@ Incompatible Changes
 
 * `@SimonPeatman`_ added attribute ``var_name`` to coordinates created by the
   :func:`iris.analysis.trajectory.interpolate` function.  This prevents
-  duplicate coordinate errors in certain circumstances. (:pull:`3718`).
+  duplicate coordinate errors in certain circumstances. (:pull:`3718`)
 
 
 Deprecations
@@ -140,7 +140,7 @@ Deprecations
 
 * `@stephenworsley`_ changed :attr:`iris.fileformats.pp.PPField.lbproc` to be an
   ``int``. The deprecated attributes ``flag1``, ``flag2`` etc. have been
-  removed from it. (:pull:`3461`).
+  removed from it. (:pull:`3461`)
 
 
 Dependencies
