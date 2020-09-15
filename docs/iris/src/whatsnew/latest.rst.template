@@ -10,37 +10,50 @@ This document explains the changes made to Iris for this release
    :depth: 3
 
 
-Features
-========
+🎉 Announcements
+================
 
 * N/A
 
 
-Bugs Fixed
+⚙ Features
 ==========
 
 * N/A
 
 
-Incompatible Changes
-====================
-
-* N/A
-
-
-Dependencies
-============
-
-* N/A
-
-
-Documentation
+🐛 Bugs Fixed
 =============
 
 * N/A
 
 
-Internal
-========
+⛔ Incompatible Changes
+=======================
+
+
+* N/A
+
+
+🚫 Deprecations
+===============
+
+* N/A
+
+
+🔗 Dependencies
+===============
+
+* N/A
+
+
+📚 Documentation
+================
+
+* N/A
+
+
+💼 Internal
+===========
 
 * N/A
