@@ -10,8 +10,14 @@ This document explains the changes made to Iris for this release
    :depth: 3
 
 
-Features
-========
+📢 Announcements
+================
+
+* N/A
+
+
+✨ Features
+===========
 
 * `@MoseleyS`_ greatly enhanced  the :mod:`~iris.fileformats.nimrod`
   module to provide richer meta-data translation when loading ``Nimrod`` data
@@ -35,8 +41,8 @@ Features
   :class:`~iris.analysis.AreaWeighted` regridding schemes. (:pull:`3701`)
 
 
-Bugs Fixed
-==========
+🐛 Bugs Fixed
+=============
 
 * `@stephenworsley`_ fixed :meth:`~iris.Cube.cube.remove_coord` to now also
   remove derived coordinates by removing aux_factories. (:pull:`3641`)
@@ -89,8 +95,8 @@ Bugs Fixed
   (:pull:`3804`)
 
 
-Incompatible Changes
-====================
+💣 Incompatible Changes
+=======================
 
 * `@pp-mo`_ rationalised :class:`~iris.cube.CubeList` extraction
   methods:
@@ -131,8 +137,8 @@ Incompatible Changes
   duplicate coordinate errors in certain circumstances. (:pull:`3718`)
 
 
-Deprecations
-============
+🔥 Deprecations
+===============
 
 * `@stephenworsley`_ removed the deprecated :class:`iris.Future` flags
   ``cell_date_time_objects``, ``netcdf_promote``, ``netcdf_no_unlimited`` and
@@ -143,8 +149,8 @@ Deprecations
   removed from it. (:pull:`3461`)
 
 
-Dependencies
-============
+🔗 Dependencies
+===============
 
 
 * `@stephenworsley`_, `@trexfeathers`_ and `@bjlittle`_ removed ``Python2``
@@ -175,8 +181,8 @@ Dependencies
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
 
-Documentation
-=============
+📚 Documentation
+================
 
 * `@tkknight`_ moved the
   :ref:`sphx_glr_generated_gallery_oceanography_plot_orca_projection.py`
@@ -214,8 +220,8 @@ Documentation
   (:pull:`3803`)
 
 
-Internal
-========
+💼 Internal
+===========
 
 * `@pp-mo`_ and `@lbdreyer`_ removed all test dependencies on
   `SciTools/iris-grib <https://github.com/SciTools/iris-grib>`_ by transferring
