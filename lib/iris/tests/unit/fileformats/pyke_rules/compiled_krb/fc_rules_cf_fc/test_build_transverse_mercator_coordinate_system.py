@@ -5,7 +5,7 @@
 # licensing details.
 """
 Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.build_sterographic_coordinate_system`.
+fc_rules_cf_fc.build_transverse_mercator_coordinate_system`.
 
 """
 
@@ -16,21 +16,22 @@ import iris.tests as tests
 from unittest import mock
 
 import iris
-from iris.coord_systems import Stereographic
+from iris.coord_systems import TransverseMercator
 from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    build_stereographic_coordinate_system
+    build_transverse_mercator_coordinate_system
 
 
-class TestBuildStereographicCoordinateSystem(tests.IrisTest):
-    def _test(self, inverse_flattening=False, no_offsets=False):
+class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
+    def _test(self, inverse_flattening=False, no_options=False):
         test_easting = -100
         test_northing = 200
+        test_scale_factor = 1.234
         gridvar_props = dict(
-            latitude_of_projection_origin=0,
-            longitude_of_projection_origin=0,
+            latitude_of_projection_origin=35.3,
+            longitude_of_central_meridian=-75,
             false_easting=test_easting,
             false_northing=test_northing,
-            scale_factor_at_projection_origin=1,
+            scale_factor_at_central_meridian=test_scale_factor,
             semi_major_axis=6377563.396)
 
         if inverse_flattening:
@@ -43,21 +44,26 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             expected_ellipsoid = iris.coord_systems.GeogCS(
                 6377563.396, 6356256.909)
 
-        if no_offsets:
+        if no_options:
             del gridvar_props['false_easting']
             del gridvar_props['false_northing']
+            del gridvar_props['scale_factor_at_central_meridian']
             test_easting = 0
             test_northing = 0
+            test_scale_factor = 1.0
 
         cf_grid_var = mock.Mock(spec=[], **gridvar_props)
 
-        cs = build_stereographic_coordinate_system(None, cf_grid_var)
+        cs = build_transverse_mercator_coordinate_system(None, cf_grid_var)
 
-        expected = Stereographic(
-            central_lat=cf_grid_var.latitude_of_projection_origin,
-            central_lon=cf_grid_var.longitude_of_projection_origin,
+        expected = TransverseMercator(
+            latitude_of_projection_origin=(
+                cf_grid_var.latitude_of_projection_origin),
+            longitude_of_central_meridian=(
+                cf_grid_var.longitude_of_central_meridian),
             false_easting=test_easting,
             false_northing=test_northing,
+            scale_factor_at_central_meridian=test_scale_factor,
             ellipsoid=expected_ellipsoid)
 
         self.assertEqual(cs, expected)
@@ -66,12 +72,10 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
         self._test()
 
     def test_inverse_flattening(self):
-        # Check when inverse_flattening is provided instead of semi_minor_axis.
         self._test(inverse_flattening=True)
 
-    def test_no_offsets(self):
-        # Check when false_easting/northing attributes are absent.
-        self._test(no_offsets=True)
+    def test_missing_optionals(self):
+        self._test(no_options=True)
 
 
 if __name__ == "__main__":

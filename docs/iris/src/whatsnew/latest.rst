@@ -92,6 +92,11 @@ Bugs Fixed
   loading. They are now available on the :class:`~iris.coords.CellMeasure` in
   the loaded :class:`~iris.cube.Cube`. See :pull:`3800`.
 
+* the netcdf loader can now handle any grid-mapping variables with missing
+  ``false_easting`` and ``false_northing`` properties, which was previously
+  failing for some coordinate systems.
+  See :issue:`3629`.
+
 
 Incompatible Changes
 ====================
