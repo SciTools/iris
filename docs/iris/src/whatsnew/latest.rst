@@ -268,6 +268,10 @@ This document explains the changes made to Iris for this release
   for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
   axes borders). (:pull:`3762`)
 
+* `@rcomer`_ corrected the Matplotlib backend in Iris tests to ignore
+  `matplotlib.rcdefaults <https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults>`_,
+  instead the tests will **always** use ``agg``. (:pull:`3846`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -284,4 +288,5 @@ This document explains the changes made to Iris for this release
 .. _@tkknight: https://github.com/tkknight
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@SimonPeatman: https://github.com/SimonPeatman
+.. _@rcomer: https://github.com/rcomer
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
