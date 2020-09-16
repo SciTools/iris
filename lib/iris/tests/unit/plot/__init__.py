@@ -44,7 +44,7 @@ class TestGraphicStringCoord(tests.GraphicsTest):
     def assertBoundsTickLabels(self, axis, axes=None):
         actual = self.tick_loc_and_label(axis, axes)
         expected = [
-            (-1.0, "a"),
+            (-1.0, ""),
             (0.0, "a"),
             (1.0, "b"),
             (2.0, "c"),
