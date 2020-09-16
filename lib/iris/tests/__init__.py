@@ -59,8 +59,10 @@ import iris.util
 try:
     import matplotlib
 
-    matplotlib.use("agg")
+    # Override any user settings e.g. from matplotlibrc file.
     matplotlib.rcdefaults()
+    # Set backend *after* rcdefaults, as we don't want that overridden (#3846).
+    matplotlib.use("agg")
     # Standardise the figure size across matplotlib versions.
     # This permits matplotlib png image comparison.
     matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
