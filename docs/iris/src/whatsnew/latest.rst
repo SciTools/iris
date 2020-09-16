@@ -22,13 +22,14 @@ This document explains the changes made to Iris for this release
   module to provide richer meta-data translation when loading ``Nimrod`` data
   into cubes. This covers most known operational use-cases. (:pull:`3647`)
 
-* `@stephenworsley`_ improved the handling of :class:`iris.coord.CellMeasure` in
-  the statistical operations :meth:`iris.cube.Cube.collapsed`,
-  :meth:`iris.cube.Cube.aggregated_by` and
-  :meth:`iris.cube.Cube.rolling_window`. These previously removed every
-  :class:`iris.coord.CellMeasure` attached to the cube.  Now, a
-  :class:`iris.coord.CellMeasure` will only be removed if it is associated with
-  an axis over which the statistic is being run. (:pull:`3549`)
+* `@stephenworsley`_ improved the handling of
+  :class:`iris.coords.CellMeasure`\ s in the :class:`~iris.cube.Cube`
+  statistical operations :meth:`~iris.cube.Cube.collapsed`,
+  :meth:`~iris.cube.Cube.aggregated_by` and
+  :meth:`~iris.cube.Cube.rolling_window`. These previously removed every
+  :class:`~iris.coords.CellMeasure` attached to the cube.  Now, a
+  :class:`~iris.coords.CellMeasure` will only be removed if it is associated
+  with an axis over which the statistic is being run. (:pull:`3549`)
 
 * `@stephenworsley`_, `@pp-mo`_ and `@abooton`_ added support for
   `CF Ancillary Data`_ variables, which can be loaded from and saved to
@@ -43,7 +44,7 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-* `@stephenworsley`_ fixed :meth:`~iris.Cube.cube.remove_coord` to now also
+* `@stephenworsley`_ fixed :meth:`~iris.cube.Cube.remove_coord` to now also
   remove derived coordinates by removing aux_factories. (:pull:`3641`)
 
 * `@jonseddon`_ fixed ``isinstance(cube, collections.Iterable)`` to now behave
@@ -57,7 +58,7 @@ This document explains the changes made to Iris for this release
   cube. Such a scenario would previously cause concatenation to inappropriately
   fail. (:pull:`3566`)
 
-* `@stephenworsley`_ newly included :class:`~iris.coords.CellMeasure`s in
+* `@stephenworsley`_ newly included :class:`~iris.coords.CellMeasure`\ s in
   :class:`~iris.cube.Cube` copy operations. Previously copying a
   :class:`~iris.cube.Cube` would ignore any attached
   :class:`~iris.coords.CellMeasure`. (:pull:`3546`)
@@ -69,13 +70,13 @@ This document explains the changes made to Iris for this release
   caused a ``TypeError`` when no ``measure`` was provided, since ``area`` or
   ``volume`` are the only accepted values. (:pull:`3533`)
 
-* `@trexfeathers`_ set **all** plot types in `iris.plot` to now use
+* `@trexfeathers`_ set **all** plot types in :mod:`iris.plot` to now use
   `matplotlib.dates.date2num`_ to format date/time coordinates for use on a plot
   axis (previously :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh`
   did not include this behaviour). (:pull:`3762`)
 
-* `@trexfeathers`_ changed date/time axis labels in `iris.quickplot` to now
-  **always** be based on the ``epoch`` used in `matplotlib.dates.date2num`_
+* `@trexfeathers`_ changed date/time axis labels in :mod:`iris.quickplot` to
+  now **always** be based on the ``epoch`` used in `matplotlib.dates.date2num`_
   (previously would take the unit from a time coordinate, if present, even
   though the coordinate's value had been changed via ``date2num``).
   (:pull:`3762`)
@@ -101,10 +102,10 @@ This document explains the changes made to Iris for this release
 * `@pp-mo`_ rationalised :class:`~iris.cube.CubeList` extraction
   methods:
 
-  The method :meth:`~iris.cube.CubeList.extract_strict`, and the ``strict``
-  keyword to :meth:`~iris.cube.CubeList.extract` method have been removed, and
-  are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube` and
-  :meth:`~iris.cube.CubeList.extract_cubes`.
+  The former method ``iris.cube.CubeList.extract_strict``, and the ``strict``
+  keyword of the :meth:`~iris.cube.CubeList.extract` method have been removed,
+  and are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube`
+  and :meth:`~iris.cube.CubeList.extract_cubes`.
   The new routines perform the same operation, but in a style more like other
   ``Iris`` functions such as :meth:`~iris.load_cube` and :meth:`~iris.load_cubes`.
   Unlike ``strict`` extraction, the type of return value is now completely
@@ -122,7 +123,7 @@ This document explains the changes made to Iris for this release
   use the :func:`iris.util.equalise_attributes` function instead.
   (:pull:`3527`)
 
-* `@bjlittle`_ removed the :mod:`iris.experimental.concatenate` module. In
+* `@bjlittle`_ removed the module ``iris.experimental.concatenate``. In
   ``v1.6.0`` the experimental ``concatenate`` functionality was moved to the
   :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
   :func:`iris.experimental.concatenate.concatenate` function raised an
