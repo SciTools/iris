@@ -222,6 +222,9 @@ This document explains the changes made to Iris for this release
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
 
+* `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord` 
+  docstring. (:pull:`3681`)
+
 
 💼 Internal
 ===========
