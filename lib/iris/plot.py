@@ -260,6 +260,7 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
             label_dict = dict(zip(tick_locations, labels))
             label = label_dict.get(x, "")
             return label
+
         formatter = mpl_ticker.FuncFormatter(ticker_func)
         locator = mpl_ticker.MaxNLocator(integer=True)
         this_axis = getattr(ax, axis)
