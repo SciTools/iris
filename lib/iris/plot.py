@@ -249,7 +249,18 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
     ax = axes if axes else plt.gca()
     for axis, ticks in string_axes.items():
-        formatter = mpl_ticker.IndexFormatter(ticks)
+        # Define a tick formatter, this replaces the now deprecated
+        # mpl_ticker.IndexFormatter. Note that this formatter behaves
+        # differently to IndexFormatter and will only assign labels to
+        # ticks which are located precisely on integers in
+        # range(len(ticks)).
+        def ticker_func(x, _):
+            tick_locations = range(len(ticks))
+            labels = ticks
+            label_dict = dict(zip(tick_locations, labels))
+            label = label_dict.get(x, "")
+            return label
+        formatter = mpl_ticker.FuncFormatter(ticker_func)
         locator = mpl_ticker.MaxNLocator(integer=True)
         this_axis = getattr(ax, axis)
         this_axis.set_major_formatter(formatter)
