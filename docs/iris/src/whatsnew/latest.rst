@@ -65,15 +65,12 @@ Bugs Fixed
   ``volume`` are the only accepted values. (:pull:`3533`)
 
 * `@trexfeathers`_ set **all** plot types in `iris.plot` to now use
-  `matplotlib.dates.date2num
-  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
-  to format date/time coordinates for use on a plot axis (previously
-  :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh` did not include
-  this behaviour). (:pull:`3762`)
+  `matplotlib.dates.date2num`_ to format date/time coordinates for use on a plot
+  axis (previously :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh`
+  did not include this behaviour). (:pull:`3762`)
 
 * `@trexfeathers`_ changed date/time axis labels in `iris.quickplot` to now
-  **always** be based on the ``epoch`` used in `matplotlib.dates.date2num
-  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
+  **always** be based on the ``epoch`` used in `matplotlib.dates.date2num`_
   (previously would take the unit from a time coordinate, if present, even
   though the coordinate's value had been changed via ``date2num``).
   (:pull:`3762`)
@@ -167,7 +164,7 @@ Dependencies
   necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ unpinned Iris to use the latest version
-  of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
+  of `Proj`_. (:pull:`3762`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ removed GDAL from the extensions
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
@@ -183,10 +180,9 @@ Documentation
 * `@tkknight`_ updated documentation to use a modern sphinx theme and be
   served from https://scitools-iris.readthedocs.io/en/latest/. (:pull:`3752`)
 
-* `@bjlittle`_ added support for the
-  `black <https://black.readthedocs.io/en/stable/>`_ code formatter. This is
+* `@bjlittle`_ added support for the `black`_ code formatter. This is
   now automatically checked on GitHub PRs, replacing the older, unittest-based
-  "iris.tests.test_coding_standards.TestCodeFormat". Black provides automatic
+  ``iris.tests.test_coding_standards.TestCodeFormat``. Black provides automatic
   code format correction for most IDEs.  See the new developer guide section on
   :ref:`iris_code_format`. (:pull:`3518`)
 
@@ -229,30 +225,23 @@ Internal
 
 * `@stephenworsley`_ changed the numerical values in tests involving the
   Robinson projection due to improvements made in
-  `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
-  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
-  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_)
+  `Proj`_. (:pull:`3762`) (see also `Proj#1292`_ and `Proj#2151`_)
 
 * `@stephenworsley`_ changed tests to account for more detailed descriptions of
-  projections in `GDAL <https://github.com/OSGeo/gdal>`_. (:pull:`3762`)
-  (`see also GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_)
+  projections in `GDAL`_. (:pull:`3762`) (see also `GDAL#1185`_)
 
-* `@stephenworsley`_ changed tests to account for
-  `GDAL <https://github.com/OSGeo/gdal>`_ now saving fill values for data
-  without masked points. (:pull:`3762`)
+* `@stephenworsley`_ changed tests to account for `GDAL`_ now saving fill values
+  for data without masked points. (:pull:`3762`)
 
-* `@trexfeathers`_ changed every graphics test that includes `Cartopy's coastlines
-  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
-  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
-  to account for new adaptive coastline scaling. (:pull:`3762`) (`see also
-  cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
+* `@trexfeathers`_ changed every graphics test that includes `Cartopy's coastlines`_
+  to account for new adaptive coastline scaling. (:pull:`3762`)
+  (see also `Cartopy#1105`_)
 
 * `@trexfeathers`_ changed graphics tests to account for some new default
-  grid-line spacing in `Cartopy`_. (:pull:`3762`)
-  (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
+  grid-line spacing in `Cartopy`_. (:pull:`3762`) (see also `Cartopy#1117`_)
 
 * `@trexfeathers`_ added additional acceptable graphics test targets to account
-  for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
+  for very minor changes in `Matplotlib`_ version ``3.3`` (colormaps, fonts and
   axes borders). (:pull:`3762`)
 
 
@@ -262,7 +251,17 @@ Internal
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _iris-grib: https://github.com/SciTools/iris-grib
 .. _Cartopy: https://github.com/SciTools/cartopy
+.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
+.. _Cartopy#1105: https://github.com/SciTools/cartopy/pull/1105
+.. _Cartopy#1117: https://github.com/SciTools/cartopy/pull/1117
 .. _Dask: https://github.com/dask/dask
+.. _matplotlib.dates.date2num: https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num
+.. _Proj: https://github.com/OSGeo/PROJ
+.. _black: https://black.readthedocs.io/en/stable/
+.. _Proj#1292: https://github.com/OSGeo/PROJ/pull/1292
+.. _Proj#2151: https://github.com/OSGeo/PROJ/pull/2151
+.. _GDAL: https://github.com/OSGeo/gdal
+.. _GDAL#1185: https://github.com/OSGeo/gdal/pull/1185
 .. _@MoseleyS: https://github.com/MoseleyS
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@pp-mo: https://github.com/pp-mo
