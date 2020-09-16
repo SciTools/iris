@@ -27,6 +27,8 @@ The documentation uses specific packages that need to be present.  Please see
 Building
 ~~~~~~~~
 
+The build can be run from the documentation directory ``iris/docs/iris/src``.
+
 The build output for the html is found in the ``_build/html`` sub directory.
 When updating the documentation ensure the html build has *no errors* or
 *warnings* otherwise it may fail the automated `travis-ci`_  build.

@@ -5,9 +5,6 @@
 Pull request check list
 =======================
 
-A pull request to a SciTools project master should be ready to merge into the
-master branch.
-
 All pull request will be reviewed by a core developer who will manage the
 process of merging. It is the responsibility of a developer submitting a
 pull request to do their best to deliver a pull request which meets the
@@ -22,7 +19,8 @@ is merged.  Before submitting a pull request please consider this list.
   * The aim of the change / the problem addressed / a link to the issue.
   * How the change has been delivered.
 
-#. **Include a "What's New" entry**.  See :ref:`whats_new_contributions`.
+#. **Include a "What's New" entry**, if appropriate.
+   See :ref:`whats_new_contributions`.
 
 #. **Check all tests pass**.  This includes existing tests and any new tests
    added for any new functionality.  For more information see

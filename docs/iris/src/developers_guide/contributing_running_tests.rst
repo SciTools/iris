@@ -5,6 +5,9 @@
 Running the tests
 *****************
 
+A prerequisite of running the tests is to have the Python environment
+setup.  For more information on this see :ref:`installing_from_source`.
+
 Many Iris tests will use data that may be defined in the test itself, however
 this is not always the case as sometimes example files may be used.  Due to
 the size of some of the files used these are not kept in the Iris repository.

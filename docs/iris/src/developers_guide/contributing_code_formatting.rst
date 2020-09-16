@@ -22,6 +22,10 @@ or alternatively using ``conda``::
 
     $ conda install -c conda-forge pre-commit
 
+.. note:: If you have setup your Python environment using the guide
+         :ref:`installing_from_source` then ``pre-commit`` should already
+         be present.
+
 In order to to install the ``pre-commit`` git hooks defined in our
 ``.pre-commit-config.yaml`` file you must run the following command from the
 root directory of Iris::
