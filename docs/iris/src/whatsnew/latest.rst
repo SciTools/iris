@@ -97,6 +97,10 @@ This document explains the changes made to Iris for this release
   which was previously failing for some coordinate systems. See :issue:`3629`.
   (:pull:`3804`)
 
+* `@stephenworsley`_ changed the way tick labels are assigned from string coords.
+  Previously, the first tick label would occasionally be duplicated. This also
+  removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
+
 
 💣 Incompatible Changes
 =======================
