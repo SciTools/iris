@@ -441,7 +441,8 @@ class Test__str__(tests.IrisTest):
             "attributes={'notes': 'Measured from sea level'})"
         )
         self.assertEqual(
-            expected, ancillary_var.__str__(),
+            expected,
+            ancillary_var.__str__(),
         )
 
     def test_time_values(self):
@@ -457,7 +458,8 @@ class Test__str__(tests.IrisTest):
             "long_name='time of previous valid detection')"
         )
         self.assertEqual(
-            expected, ancillary_var.__str__(),
+            expected,
+            ancillary_var.__str__(),
         )
 
 
@@ -478,7 +480,8 @@ class Test__repr__(tests.IrisTest):
             "attributes={'notes': 'Measured from sea level'})"
         )
         self.assertEqual(
-            expected, ancillary_var.__repr__(),
+            expected,
+            ancillary_var.__repr__(),
         )
 
     def test_time_values(self):

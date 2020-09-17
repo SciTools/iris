@@ -36,7 +36,9 @@ class Test(tests.IrisTest):
         self.cube = Cube(np.ones((3, 3), dtype=np.float32))
 
     def _call_units(
-        self, data=None, units_str=None,
+        self,
+        data=None,
+        units_str=None,
     ):
         if data is not None:
             self.cube.data = data
@@ -106,7 +108,8 @@ class Test(tests.IrisTest):
     def test_g_per_kg(self):
         with mock.patch("warnings.warn") as warn:
             self._call_units(
-                data=((np.ones_like(self.cube.data) * 1000)), units_str="g/Kg",
+                data=((np.ones_like(self.cube.data) * 1000)),
+                units_str="g/Kg",
             )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "kg/kg")
@@ -117,7 +120,9 @@ class Test(tests.IrisTest):
 
     def test_unit_expection_dictionary(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_units(units_str="mb",)
+            self._call_units(
+                units_str="mb",
+            )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "hPa")
         self.assertArrayAlmostEqual(
@@ -127,7 +132,9 @@ class Test(tests.IrisTest):
 
     def test_per_second(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_units(units_str="/s",)
+            self._call_units(
+                units_str="/s",
+            )
         self.assertEqual(warn.call_count, 0)
         self.assertEqual(self.cube.units, "s^-1")
         self.assertArrayAlmostEqual(
@@ -137,7 +144,9 @@ class Test(tests.IrisTest):
 
     def test_unhandled_unit(self):
         with mock.patch("warnings.warn") as warn:
-            self._call_units(units_str="kittens",)
+            self._call_units(
+                units_str="kittens",
+            )
         self.assertEqual(warn.call_count, 1)
         self.assertEqual(self.cube.units, "")
         self.assertArrayAlmostEqual(

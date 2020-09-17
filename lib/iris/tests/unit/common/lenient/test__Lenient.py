@@ -52,7 +52,10 @@ class Test___init__(tests.IrisTest):
         services = (service1, service2)
         lenient = _Lenient(*services)
         self.expected.update(
-            {_qualname(service1): True, _qualname(service2): True,}
+            {
+                _qualname(service1): True,
+                _qualname(service2): True,
+            }
         )
         self.assertEqual(self.expected, lenient.__dict__)
 

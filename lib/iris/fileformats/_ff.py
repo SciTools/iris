@@ -42,23 +42,140 @@ UM_FIXED_LENGTH_HEADER = [
     ("model_version", (12,)),
     ("obs_file_type", (14,)),
     ("last_fieldop_type", (15,)),
-    ("first_validity_time", (21, 22, 23, 24, 25, 26, 27,)),
-    ("last_validity_time", (28, 29, 30, 31, 32, 33, 34,)),
-    ("misc_validity_time", (35, 36, 37, 38, 39, 40, 41,)),
-    ("integer_constants", (100, 101,)),
-    ("real_constants", (105, 106,)),
-    ("level_dependent_constants", (110, 111, 112,)),
-    ("row_dependent_constants", (115, 116, 117,)),
-    ("column_dependent_constants", (120, 121, 122,)),
-    ("fields_of_constants", (125, 126, 127,)),
-    ("extra_constants", (130, 131,)),
-    ("temp_historyfile", (135, 136,)),
-    ("compressed_field_index1", (140, 141,)),
-    ("compressed_field_index2", (142, 143,)),
-    ("compressed_field_index3", (144, 145,)),
-    ("lookup_table", (150, 151, 152,)),
+    (
+        "first_validity_time",
+        (
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+        ),
+    ),
+    (
+        "last_validity_time",
+        (
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+        ),
+    ),
+    (
+        "misc_validity_time",
+        (
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+        ),
+    ),
+    (
+        "integer_constants",
+        (
+            100,
+            101,
+        ),
+    ),
+    (
+        "real_constants",
+        (
+            105,
+            106,
+        ),
+    ),
+    (
+        "level_dependent_constants",
+        (
+            110,
+            111,
+            112,
+        ),
+    ),
+    (
+        "row_dependent_constants",
+        (
+            115,
+            116,
+            117,
+        ),
+    ),
+    (
+        "column_dependent_constants",
+        (
+            120,
+            121,
+            122,
+        ),
+    ),
+    (
+        "fields_of_constants",
+        (
+            125,
+            126,
+            127,
+        ),
+    ),
+    (
+        "extra_constants",
+        (
+            130,
+            131,
+        ),
+    ),
+    (
+        "temp_historyfile",
+        (
+            135,
+            136,
+        ),
+    ),
+    (
+        "compressed_field_index1",
+        (
+            140,
+            141,
+        ),
+    ),
+    (
+        "compressed_field_index2",
+        (
+            142,
+            143,
+        ),
+    ),
+    (
+        "compressed_field_index3",
+        (
+            144,
+            145,
+        ),
+    ),
+    (
+        "lookup_table",
+        (
+            150,
+            151,
+            152,
+        ),
+    ),
     ("total_prognostic_fields", (153,)),
-    ("data", (160, 161, 162,)),
+    (
+        "data",
+        (
+            160,
+            161,
+            162,
+        ),
+    ),
 ]
 
 # Offset value to convert from UM_FIXED_LENGTH_HEADER positions to

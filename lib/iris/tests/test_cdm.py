@@ -1135,7 +1135,13 @@ class TestDataManagerIndexing(TestCube2d):
         self.assertFalse(cube.has_lazy_data())
 
     def test_slices(self):
-        lat_cube = next(self.cube.slices(["grid_latitude",]))
+        lat_cube = next(
+            self.cube.slices(
+                [
+                    "grid_latitude",
+                ]
+            )
+        )
         self.assert_is_lazy(lat_cube)
         self.assert_is_lazy(self.cube)
 
@@ -1459,7 +1465,11 @@ class TestConversionToCoordList(tests.IrisTest):
 
         # List of string and unicode
         self.assertEqual(
-            len(cube._as_list_of_coords(["grid_longitude", "grid_latitude"],)),
+            len(
+                cube._as_list_of_coords(
+                    ["grid_longitude", "grid_latitude"],
+                )
+            ),
             2,
         )
 

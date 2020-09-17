@@ -425,11 +425,15 @@ class TestNetCDFLoad(tests.IrisTest):
 
         # Consecutive tuple index on same dimension.
         self.assertCML(
-            cube[(0, 8, 4, 2, 14, 12),],
+            cube[
+                (0, 8, 4, 2, 14, 12),
+            ],
             ("netcdf", "netcdf_deferred_tuple_0.cml"),
         )
         self.assertCML(
-            cube[(0, 8, 4, 2, 14, 12),][(0, 2, 4, 1),],
+            cube[(0, 8, 4, 2, 14, 12),][
+                (0, 2, 4, 1),
+            ],
             ("netcdf", "netcdf_deferred_tuple_1.cml"),
         )
         subcube = cube[(0, 8, 4, 2, 14, 12),][(0, 2, 4, 1),][
@@ -439,11 +443,15 @@ class TestNetCDFLoad(tests.IrisTest):
 
         # Consecutive mixture on same dimension.
         self.assertCML(
-            cube[0:20:2][(9, 5, 8, 0),][3],
+            cube[0:20:2][
+                (9, 5, 8, 0),
+            ][3],
             ("netcdf", "netcdf_deferred_mix_0.cml"),
         )
         self.assertCML(
-            cube[(2, 7, 3, 4, 5, 0, 9, 10),][2:6][3],
+            cube[(2, 7, 3, 4, 5, 0, 9, 10),][
+                2:6
+            ][3],
             ("netcdf", "netcdf_deferred_mix_0.cml"),
         )
         self.assertCML(
