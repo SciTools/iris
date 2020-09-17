@@ -351,7 +351,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
             )
 
             not_masked_at_discontiguity_along_y = np.any(
-                np.logical_and(mask_invert[:-1,], diffs_along_y)
+                np.logical_and(mask_invert[:-1], diffs_along_y)
             )
 
             not_masked_at_discontiguity = (

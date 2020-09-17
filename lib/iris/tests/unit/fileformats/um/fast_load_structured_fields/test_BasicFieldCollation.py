@@ -222,7 +222,7 @@ class Test__time_comparable_int(tests.IrisTest):
             for test_tuple in test_date_tuples
         ]
         # Check all values are distinct.
-        self.assertEqual(len(test_date_ints), len(set(test_date_ints),))
+        self.assertEqual(len(test_date_ints), len(set(test_date_ints)))
         # Check all values are in order.
         self.assertEqual(test_date_ints, sorted(test_date_ints))
 

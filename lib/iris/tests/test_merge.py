@@ -1038,11 +1038,11 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube.add_aux_coord(iris.coords.DimCoord(y, long_name="y"))
         if cm:
             cube.add_cell_measure(
-                iris.coords.CellMeasure([1, 1], long_name="foo"), 0,
+                iris.coords.CellMeasure([1, 1], long_name="foo"), 0
             )
         if av:
             cube.add_ancillary_variable(
-                iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0,
+                iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0
             )
         return cube
 

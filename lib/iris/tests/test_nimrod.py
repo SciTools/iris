@@ -73,7 +73,7 @@ class TestLoad(tests.IrisTest):
             "probability_fields",
         }:
             cube = iris.load(
-                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,))
+                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile))
             )
             self.assertCML(cube, ("nimrod", f"{datafile}.cml"))
 
@@ -87,7 +87,7 @@ class TestLoad(tests.IrisTest):
             "Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
         ):
             with open(
-                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile,)),
+                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile)),
                 "rb",
             ) as infile:
                 iris.fileformats.nimrod_load_rules.run(

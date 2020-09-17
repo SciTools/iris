@@ -489,7 +489,7 @@ def _generate_cubes(
                     circular = False
                 if coord.name == "flight_level":
                     icoord = DimCoord(
-                        points=pts, units=coord_units, long_name=long_name,
+                        points=pts, units=coord_units, long_name=long_name
                     )
                 else:
                     icoord = DimCoord(

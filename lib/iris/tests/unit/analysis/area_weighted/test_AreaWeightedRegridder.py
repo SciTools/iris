@@ -46,8 +46,10 @@ class Test(tests.IrisTest):
     def check_mdtol(self, mdtol=None):
         src_grid, target_grid = self.grids()
         # Get _regrid_info result
-        _regrid_info = eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-            src_grid, target_grid
+        _regrid_info = (
+            eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
+                src_grid, target_grid
+            )
         )
         self.assertEqual(len(_regrid_info), 9)
         with mock.patch(
