@@ -261,6 +261,9 @@ This document explains the changes made to Iris for this release
   `matplotlib.rcdefaults <https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults>`_,
   instead the tests will **always** use ``agg``. (:pull:`3846`)
 
+* `@bjlittle`_ migrated the `black`_ support from ``19.10b0`` to ``20.8b1``.
+  (:pull:`3866`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/

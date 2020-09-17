@@ -480,11 +480,15 @@ class CurvilinearRegridder:
         for slice_cube in src.slices(sx):
             if self._regrid_info is None:
                 # Calculate the basic regrid info just once.
-                self._regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
-                    slice_cube, self.weights, self._target_cube
+                self._regrid_info = (
+                    _regrid_weighted_curvilinear_to_rectilinear__prepare(
+                        slice_cube, self.weights, self._target_cube
+                    )
                 )
-            slice_result = _regrid_weighted_curvilinear_to_rectilinear__perform(
-                slice_cube, self._regrid_info
+            slice_result = (
+                _regrid_weighted_curvilinear_to_rectilinear__perform(
+                    slice_cube, self._regrid_info
+                )
             )
             result_slices.append(slice_result)
         result = result_slices.merge_cube()

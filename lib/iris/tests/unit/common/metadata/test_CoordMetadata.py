@@ -88,9 +88,7 @@ class Test___eq__(tests.IrisTest):
         self.cls = CoordMetadata
 
     def test_wraps_docstring(self):
-        self.assertEqual(
-            BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__,
-        )
+        self.assertEqual(BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__)
 
     def test_lenient_service(self):
         qualname___eq__ = _qualname(self.cls.__eq__)
@@ -270,7 +268,7 @@ class Test_combine(tests.IrisTest):
 
     def test_wraps_docstring(self):
         self.assertEqual(
-            BaseMetadata.combine.__doc__, self.cls.combine.__doc__,
+            BaseMetadata.combine.__doc__, self.cls.combine.__doc__
         )
 
     def test_lenient_service(self):
@@ -466,7 +464,7 @@ class Test_difference(tests.IrisTest):
 
     def test_wraps_docstring(self):
         self.assertEqual(
-            BaseMetadata.difference.__doc__, self.cls.difference.__doc__,
+            BaseMetadata.difference.__doc__, self.cls.difference.__doc__
         )
 
     def test_lenient_service(self):

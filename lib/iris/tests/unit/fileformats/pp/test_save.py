@@ -324,10 +324,10 @@ def _get_single_time_cube(set_time_mean=False):
     cube.remove_coord("time")
     cube.remove_coord("forecast_period")
     tc = DimCoord(
-        points=[15,],
+        points=[15],
         standard_name="time",
         units=cf_units.Unit("days since epoch", calendar="360_day"),
-        bounds=[[0, 30],],
+        bounds=[[0, 30]],
     )
     cube.add_dim_coord(tc, 0)
     if set_time_mean:

@@ -87,9 +87,7 @@ class TestAll(tests.IrisTest, pp.PPTest):
         else:
             fname_name = name
 
-        self.assertCML(
-            cubes, self._ref_dir + ("from_pp", fname_name + ".cml",)
-        )
+        self.assertCML(cubes, self._ref_dir + ("from_pp", fname_name + ".cml"))
 
         # 2) Save the Cube and check the netCDF
         nc_filenames = []

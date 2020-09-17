@@ -37,7 +37,8 @@ _AuxCoverage = namedtuple(
 )
 
 _CategoryItems = namedtuple(
-    "CategoryItems", ["items_dim", "items_aux", "items_scalar"],
+    "CategoryItems",
+    ["items_dim", "items_aux", "items_scalar"],
 )
 
 _DimCoverage = namedtuple(
@@ -50,7 +51,8 @@ _Item = namedtuple("Item", ["metadata", "coord", "dims"])
 _PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
 
 _PreparedItem = namedtuple(
-    "PreparedItem", ["metadata", "points", "bounds", "dims", "container"],
+    "PreparedItem",
+    ["metadata", "points", "bounds", "dims", "container"],
 )
 
 _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])

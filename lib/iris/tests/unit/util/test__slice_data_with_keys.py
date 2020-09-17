@@ -105,7 +105,9 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
     def test_1d_tuple(self):
         # The call makes tuples into 1-D arrays, and a trailing Ellipsis is
         # added (for the 1-D case only).
-        self.check((3,), Index[(2, 0, 1),], [(np.array([2, 0, 1]), Ellipsis)])
+        self.check(
+            (3,), Index[((2, 0, 1),)], [(np.array([2, 0, 1]), Ellipsis)]
+        )
 
     def test_fail_1d_2keys(self):
         msg = "More slices .* than dimensions"
@@ -122,7 +124,7 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
         # trailing Ellipsis is generated.
         self.check(
             (3, 2),
-            Index[(2, 0, 1),],
+            Index[((2, 0, 1),)],
             [(slice(None), slice(None)), (np.array([2, 0, 1]), slice(None))],
         )
 
@@ -207,12 +209,12 @@ class Test_dimensions_mapping(MixinIndexingTest, tests.IrisTest):
 
     def test_1d_tuple_nochange(self):
         # A selection index leaves the dimension intact.
-        self.check((3,), Index[(1, 0, 1, 2),], expect_map={None: None, 0: 0})
+        self.check((3,), Index[((1, 0, 1, 2),)], expect_map={None: None, 0: 0})
 
     def test_1d_1tuple_nochange(self):
         # A selection index with only one value in it *still* leaves the
         # dimension intact.
-        self.check((3,), Index[(2,),], expect_map={None: None, 0: 0})
+        self.check((3,), Index[((2,),)], expect_map={None: None, 0: 0})
 
     def test_1d_slice_nochange(self):
         # A slice leaves the dimension intact.
@@ -267,7 +269,7 @@ class TestResults(tests.IrisTest):
 
     def test_1d_tuple(self):
         self.check(
-            [1, 2, 3], Index[(2, 0, 1, 0),], [3, 1, 2, 1], {None: None, 0: 0}
+            [1, 2, 3], Index[((2, 0, 1, 0),)], [3, 1, 2, 1], {None: None, 0: 0}
         )
 
     def test_fail_1d_2keys(self):
@@ -283,7 +285,7 @@ class TestResults(tests.IrisTest):
     def test_2d_tuple(self):
         self.check(
             [[11, 12], [21, 22], [31, 32]],
-            Index[(2, 0, 1),],
+            Index[((2, 0, 1),)],
             [[31, 32], [11, 12], [21, 22]],
             {None: None, 0: 0, 1: 1},
         )
