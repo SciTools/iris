@@ -8,10 +8,11 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-* Congratulations to `@bouweandela`_ who recently became an Iris core developer.
-  He brings a wealth of expertise to the team, and is using Iris to
-  underpin `ESMValTool`_ - "*A community diagnostic and performance metrics
-  tool for routine evaluation of Earth system models in CMIP*". Welcome aboard! 🎉
+* Congratulations to `@bouweandela`_, `@jvegasbsc`_, and `@zklaus`_ who
+  recently became Iris core developers. They bring a wealth of expertise to the
+  team, and are using Iris to underpin `ESMValTool`_ - "*A community diagnostic
+  and performance metrics tool for routine evaluation of Earth system models
+  in CMIP*". Welcome aboard! 🎉
 
 
 ✨ Features
@@ -289,4 +290,6 @@ This document explains the changes made to Iris for this release
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@SimonPeatman: https://github.com/SimonPeatman
 .. _@rcomer: https://github.com/rcomer
+.. _@jvegasbsc: https://github.com/jvegasbsc
+.. _@zklaus: https://github.com/zklaus
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
