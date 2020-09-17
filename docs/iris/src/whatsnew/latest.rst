@@ -32,9 +32,18 @@ This document explains the changes made to Iris for this release
   with an axis over which the statistic is being run. (:pull:`3549`)
 
 * `@stephenworsley`_, `@pp-mo`_ and `@abooton`_ added support for
-  `CF Ancillary Data`_ variables, which can be loaded from and saved to
-  NetCDF-CF files. Support for `Quality Flags`_ is also provided to ensure they
-  load and save with appropriate units. (:pull:`3800`)
+  `CF Ancillary Data`_ variables.  These are created as
+  :class:`iris.coords.AncillaryVariable`, and appear as components of cubes
+  much like :class:`~iris.coords.AuxCoord`\ s, with the new
+  :class:`~iris.cube.Cube` methods
+  :meth:`~iris.cube.Cube.add_ancillary_variable`,
+  :meth:`~iris.cube.Cube.remove_ancillary_variable`,
+  :meth:`~iris.cube.Cube.ancillary_variable`,
+  :meth:`~iris.cube.Cube.ancillary_variables` and
+  :meth:`~iris.cube.Cube.ancillary_variable_dims`.
+  They are loaded from and saved to NetCDF-CF files.  Special support for
+  `Quality Flags`_ is also provided, to ensure they load and save with
+  appropriate units. (:pull:`3800`)
 
 * `@bouweandela`_ implemented lazy regridding for the
   :class:`~iris.analysis.Linear`, :class:`~iris.analysis.Nearest`, and
