@@ -416,13 +416,20 @@ be ``False``,
     >>> cube.metadata == longitude.metadata
     False
 
-As you can see from :numref:`metadata members`, this is simply because each
-metadata class contains **different** members. However, there is an exception
-to the rule...
+The reason different metadata classes cannot be compared is simply because each
+metadata class contains **different** members, as shown in
+:numref:`metadata members`. However, there is an exception to the rule...
 
-Support is provided for comparing :class:`~iris.common.CoordMetadata`
-and :class:`~iris.common.DimCoordMetadata`. For example, consider the
-following :class:`~iris.common.DimCoordMetadata`,
+
+.. _exception rule:
+
+Exception to the rule
+~~~~~~~~~~~~~~~~~~~~~
+
+In general, **different** metadata classes cannot be compared, however support
+is provided for comparing :class:`~iris.common.CoordMetadata` and
+:class:`~iris.common.DimCoordMetadata` metadata classes. For example,
+consider the following :class:`~iris.common.DimCoordMetadata`,
 
 .. doctest:: richer-metadata
 
@@ -465,9 +472,9 @@ However, note that the ``circular`` member **is used** by the ``__eq__`` operato
 when comparing one :class:`~iris.coords.DimCoord` to another. This also applies
 when comparing :class:`~iris.common.DimCoordMetadata`.
 
-This exception to the rule :ref:`equality <metadata equality>` also applies to
-the :ref:`combine <metadata combine>`, :ref:`difference <metadata difference>`,
-and :ref:`from_metadata <metadata conversion>` methods of metadata classes.
+This exception to the rule for :ref:`equality <metadata equality>` also applies
+to the :ref:`difference <metadata difference>` and :ref:`combine <metadata combine>`
+methods of metadata classes.
 
 
 .. _metadata difference:
@@ -577,7 +584,12 @@ Now, let's compare the two above instances for differences, and see what we get,
 Diffing like with like
 """"""""""""""""""""""
 
-Proin dignissim tellus vel lectus laoreet, sed sodales ipsum congue. Donec feugiat, odio non ullamcorper facilisis, erat magna placerat diam, a posuere velit orci ut neque. Etiam ex tellus, facilisis.
+As discussed in :ref:`compare like`, it only makes sense to determine the
+``difference`` between **similar** metadata class instances. However, note that
+the :ref:`exception rule` still applies here i.e., support is provided between
+:class:`~iris.common.CoordMetadata` and :class:`~iris.common.DimCoordMetadata`
+metadata classes.
+
 
 
 .. _metadata combine:
