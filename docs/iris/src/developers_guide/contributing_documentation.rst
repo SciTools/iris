@@ -119,7 +119,7 @@ In order to auto generate the API documentation based upon the docstrings a
 custom set of python scripts are used, these are located in the directory
 ``iris/docs/iris/src/sphinxext``.  Once the ``make html`` command has been run,
 the output of these scripts can be found in
-``iris/docs/iris/src/_build/generated/api``.
+``iris/docs/iris/src/generated/api``.
 
 If there is a particularly troublesome module that breaks the ``make html`` you
 can exclude the module from the API documentation.  Add the entry to the
@@ -150,7 +150,7 @@ gallery entry does not fit into any existing sub directories then create a new
 directory and place it in there.
 
 The reStructuredText (rst) output of the gallery is located in
-``iris/docs/iris/src/_build/generated/gallery``.
+``iris/docs/iris/src/generated/gallery``.
 
 For more information on the directory structure and options please see the
 `sphinx-gallery getting started
