@@ -9,7 +9,6 @@ Script to generate the Iris logo in every required format.
 Uses XML ElementTree for SVG file editing.
 """
 
-from collections import namedtuple
 from copy import deepcopy
 from io import BytesIO
 from os import environ
@@ -17,6 +16,7 @@ from pathlib import Path
 from re import sub as re_sub
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
+from zipfile import ZipFile
 
 from cartopy import crs as ccrs
 from cartopy.feature import LAND
@@ -101,7 +101,7 @@ simple_geometries = [
 LAND.geometries = lambda: iter(simple_geometries)
 
 # Variable that will store the sequence of land-shaped SVG clips for each longitude.
-land_clips = {}
+land_clips = []
 
 # Create a sequence of longitude values.
 central_longitude = -30
@@ -139,13 +139,10 @@ for lon in rotation_longitudes:
         path.attrib = {"d": path.attrib["d"]}
     land_paths.tag = "clipPath"
 
-    land_clips[f"land_clip_{lon}"] = land_paths
+    land_clips.append(land_paths)
 
-# Extract the final land clip for use as the default, store as a namedtuple.
-dict_item = namedtuple("dict_item", ["key", "value"])
-land_clip_tuples = list(land_clips.items())
-land_clip_central = dict_item(*land_clip_tuples[-1])
-defs_dict[land_clip_central.key] = land_clip_central.value
+# Extract the final land clip for use as the default.
+defs_dict["land_clip"] = land_clips[-1]
 
 artwork_dict["land"] = ET.Element(
     "circle",
@@ -154,7 +151,7 @@ artwork_dict["land"] = ET.Element(
         "cy": "50%",
         "r": "50%",
         "fill": "url(#land_gradient)",
-        "clip-path": f"url(#{land_clip_central.key})",
+        "clip-path": "url(#land_clip)",
     },
 )
 land_gradient = ET.Element("radialGradient")
@@ -371,42 +368,13 @@ def svg_banner(logo_svg):
 logo = svg_logo(defs_dict=defs_dict, artwork_dict=artwork_dict)
 banner = svg_banner(logo)
 
-
-# Create defs and artwork for rotating logo.
-defs_dict_rotate = deepcopy(defs_dict)
-artwork_dict_rotate = deepcopy(artwork_dict)
-
-# Replace single land clip with the full longitude range of land clips.
-defs_dict_rotate.pop(land_clip_central.key)
-defs_dict_rotate.update(land_clips)
-
-# Add animation sub-element to the land element.
-land_rotate = deepcopy(artwork_dict["land"])
-animation_values = ";".join([f"url(#{key})" for key in land_clips.keys()])
-frames = len(land_clips)
-duration = frames / 30
-land_rotate.append(ET.Element(
-        "animate",
-        attrib={
-            "attributeName": "clip-path",
-            "values": animation_values,
-            "begin": "0s",
-            "repeatCount": "indefinite",
-            "dur": f"{duration}s",
-        },
-    )
-)
-artwork_dict_rotate["land"] = land_rotate
-
-logo_rotate = svg_logo(defs_dict=defs_dict_rotate,
-                       artwork_dict=artwork_dict_rotate)
-banner_rotate = svg_banner(logo_rotate)
-
 ################################################################################
 # Write files.
 
 
-def write_svg_file(svg_root, filename_suffix):
+def write_svg_file(svg_root, filename_suffix, zip_archive=None):
+    """Format the svg then write the svg to a file in WRITE_DIRECTORY, or
+    optionally to an open ZipFile."""
     input_string = ET.tostring(svg_root)
     pretty_xml = minidom.parseString(input_string).toprettyxml()
     # Remove extra empty lines from Matplotlib.
@@ -415,18 +383,43 @@ def write_svg_file(svg_root, filename_suffix):
     )
 
     filename = f"{FILENAME_PREFIX}-{filename_suffix}.svg"
-    write_path = WRITE_DIRECTORY.joinpath(filename)
-    with open(write_path, "w") as f:
-        f.write(pretty_xml)
+    if isinstance(zip_archive, ZipFile):
+        zip_archive.writestr(filename, pretty_xml)
+    else:
+        write_path = WRITE_DIRECTORY.joinpath(filename)
+        with open(write_path, "w") as f:
+            f.write(pretty_xml)
+
+
+def replace_land_clip(svg_root, new_clip):
+    new_root = deepcopy(svg_root)
+    new_clip.attrib["id"] = "land_clip"
+
+    defs = new_root.find("svg/defs")
+    land_clip = defs.find(".//clipPath[@id='land_clip']")
+    defs.remove(land_clip)
+    defs.append(new_clip)
+
+    return new_root
 
 
 write_dict = {
     "logo": logo,
     "logo-title": banner,
-    "logo-rotate": logo_rotate,
-    "logo-title-rotate": banner_rotate
 }
 for suffix, svg in write_dict.items():
     write_svg_file(svg, suffix)
+
+    # Zip archive containing components for manual creation of rotating logo.
+    zip_path = WRITE_DIRECTORY.joinpath(f"{suffix}_rotate.zip")
+    with ZipFile(zip_path, "w") as rotate_zip:
+        for ix, clip in enumerate(land_clips):
+            svg_rotated = replace_land_clip(svg, clip)
+            write_svg_file(svg_rotated, f"{suffix}_rotate{ix:03d}", rotate_zip)
+
+        readme_str = "Several tools are available to stitch these images " \
+                     "into a rotating GIF.\n\nE.g. " \
+                     "http://blog.gregzaal.com/2015/08/06/making-an-optimized-gif-in-gimp/"
+        rotate_zip.writestr("_README.txt", readme_str)
 
 print("LOGO GENERATION COMPLETE")
