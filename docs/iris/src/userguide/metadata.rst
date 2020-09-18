@@ -588,8 +588,37 @@ As discussed in :ref:`compare like`, it only makes sense to determine the
 ``difference`` between **similar** metadata class instances. However, note that
 the :ref:`exception rule` still applies here i.e., support is provided between
 :class:`~iris.common.CoordMetadata` and :class:`~iris.common.DimCoordMetadata`
-metadata classes.
+metadata classes,
 
+.. doctest:: richer-metadata
+
+    >>> forecast_period = cube.coord("forecast_period")
+    >>> latitude = cube.coord("latitude")
+
+.. doctest:: richer-metadata
+
+    >>> forecast_period.metadata
+    CoordMetadata(standard_name='forecast_period', long_name=None, var_name='forecast_period', units=Unit('hours'), attributes={}, coord_system=None, climatological=False)
+    >>> latitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+.. doctest:: richer-metadata
+
+    >>> forecast_period.metadata.difference(latitude.metadata)
+    CoordMetadata(standard_name=('forecast_period', 'latitude'), long_name=None, var_name=('forecast_period', 'latitude'), units=(Unit('hours'), Unit('degrees')), attributes=None, coord_system=(None, GeogCS(6371229.0)), climatological=None)
+
+.. doctest:: richer-metadata
+
+    >>> latitude.metadata.difference(forecast_period.metadata)
+    DimCoordMetadata(standard_name=('latitude', 'forecast_period'), long_name=None, var_name=('latitude', 'forecast_period'), units=(Unit('degrees'), Unit('hours')), attributes=None, coord_system=(GeogCS(6371229.0), None), climatological=None, circular=(False, None))
+
+However, in general, when comparing **different** metadata classes, a ``TypeError`` is raised,
+
+.. doctest:: richer-metadata
+
+    >>> cube.metadata.difference(longitude.metadata)
+    Traceback (most recent call last):
+    TypeError: Cannot differ 'CubeMetadata' with <class 'iris.common.metadata.DimCoordMetadata'>.
 
 
 .. _metadata combine:
