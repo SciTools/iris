@@ -226,7 +226,7 @@ This document explains the changes made to Iris for this release
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
 
-* `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord` 
+* `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord`
   docstring. (:pull:`3681`)
 
 
@@ -273,6 +273,9 @@ This document explains the changes made to Iris for this release
 * `@bjlittle`_ migrated the `black`_ support from ``19.10b0`` to ``20.8b1``.
   (:pull:`3866`)
 
+* `@lbdreyer`_ updated the CF standard name table to the latest version: `v75`_.
+  (:pull:`3867`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -306,3 +309,4 @@ This document explains the changes made to Iris for this release
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@zklaus: https://github.com/zklaus
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
+.. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html
