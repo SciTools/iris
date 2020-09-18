@@ -1,6 +1,6 @@
-========
+********
 Metadata
-========
+********
 
 So far we've introduced several classes in Iris that care about your ``data``,
 and also your ``metadata`` i.e., `data about data`_. Primarily, these classes
@@ -26,7 +26,7 @@ those mentioned above. Such as the :class:`~iris.coords.AncillaryVariable`
 
 
 Common Metadata
----------------
+===============
 
 What each of these **different** Iris `CF Conventions`_ classes all have in
 **common** is that ``metadata`` is used to define them and give them meaning.
@@ -36,20 +36,20 @@ What each of these **different** Iris `CF Conventions`_ classes all have in
    :widths: auto
    :align: center
 
-   =================== ===================== ============ =================== =============== ======== ============
-   Metadata members    ``AncillaryVariable`` ``AuxCoord`` ``AuxCoordFactory`` ``CellMeasure`` ``Cube`` ``DimCoord``
-   =================== ===================== ============ =================== =============== ======== ============
-   ``standard name``   ✔                     ✔            ✔                   ✔               ✔        ✔
-   ``long name``       ✔                     ✔            ✔                   ✔               ✔        ✔
-   ``var name``        ✔                     ✔            ✔                   ✔               ✔        ✔
-   ``units``           ✔                     ✔            ✔                   ✔               ✔        ✔
-   ``attributes``      ✔                     ✔            ✔                   ✔               ✔        ✔
-   ``coord_system``                          ✔            ✔                                            ✔
-   ``climatological``                        ✔            ✔                                            ✔
-   ``measure``                                                                ✔
-   ``cell_methods``                                                                           ✔
-   ``circular``                                                                                        ✔
-   =================== ===================== ============ =================== =============== ======== ============
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
+   Metadata members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord`
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
+   ``standard name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``long name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``var name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
+   ``coord_system``                                            ✔                              ✔                                                                                                     ✔
+   ``climatological``                                          ✔                              ✔                                                                                                     ✔
+   ``measure``                                                                                                                           ✔
+   ``cell_methods``                                                                                                                                                        ✔
+   ``circular``                                                                                                                                                                                     ✔
+   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
 
 :numref:`metadata members` shows for each Iris `CF Conventions`_ class the
 collective of individual ``metadata`` members used to define it. Almost all
@@ -70,7 +70,7 @@ that this **specific** metadata can then be used to easily **identify**,
 
 
 Common Metadata API
--------------------
+===================
 
 .. testsetup::
 
@@ -104,13 +104,14 @@ For example, given the following :class:`~iris.cube.Cube`:
          Cell methods:
               mean: time (6 hour)
 
-We can easily get all of the associated ``metadata`` of the :class:`~iris.cube.Cube`:
+We can easily get all of the associated ``metadata`` of the :class:`~iris.cube.Cube`
+using the ``metadata`` property:
 
     >>> cube.metadata
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
 We can also inspect the ``metadata`` of the ``longitude``
-:class:`~iris.coords.DimCoord` attached to the :class:`~iris.cube.Cube`:
+:class:`~iris.coords.DimCoord` attached to the :class:`~iris.cube.Cube` in the same way:
 
     >>> cube.coord("longitude").metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
@@ -121,133 +122,500 @@ Or use the ``metadata`` property again, but this time on the ``forecast_period``
     >>> cube.coord("forecast_period").metadata
     CoordMetadata(standard_name='forecast_period', long_name=None, var_name='forecast_period', units=Unit('hours'), attributes={}, coord_system=None, climatological=False)
 
+Note that, the ``metadata`` property is available on each of the Iris `CF Conventions`_
+class containers referenced in :numref:`metadata members`, and thus provides a **common**
+and **consistent** approach to managing your metadata, which we'll now explore
+a little more fully.
+
+
+Metadata classes
+----------------
+
 The ``metadata`` property will return an appropriate `namedtuple`_ metadata class
-for each Iris `CF Conventions`_ class container. :numref:`metadata classes` namely:
+for each Iris `CF Conventions`_ class container. The metadata class returned by
+each container class is shown in :numref:`metadata classes` below:
 
 .. _metadata classes:
 .. table:: - Iris namedtuple metadata classes
    :widths: auto
    :align: center
 
-   ===================== ========================================================
-   Container class       Namedtuple metadata class
-   ===================== ========================================================
-   ``AncillaryVariable`` :class:`~iris.common.metadata.AncillaryVariableMetadata`
-   ``AuxCoord``          :class:`~iris.common.metadata.CoordMetadata`
-   ``AuxCoordFactory``   :class:`~iris.common.metadata.CoordMetadata`
-   ``CellMeasure``       :class:`~iris.common.metadata.CellMeasureMetadata`
-   ``Cube``              :class:`~iris.common.metadata.CubeMetadata`
-   ``DimCoord``          :class:`~iris.common.metadata.DimCoordMetadata`
-   ===================== ========================================================
+   ========================================== ===============================================
+   Container class                            Metadata class
+   ========================================== ===============================================
+   :class:`~iris.coords.AncillaryVariable`    :class:`~iris.common.AncillaryVariableMetadata`
+   :class:`~iris.coords.AuxCoord`             :class:`~iris.common.CoordMetadata`
+   :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.common.CoordMetadata`
+   :class:`~iris.coords.CellMeasure`          :class:`~iris.common.CellMeasureMetadata`
+   :class:`~iris.cube.Cube`                   :class:`~iris.common.CubeMetadata`
+   :class:`~iris.coords.DimCoord`             :class:`~iris.common.DimCoordMetadata`
+   ========================================== ===============================================
 
-As per the behaviour of a `namedtuple`_, the metadata classes in
-:numref:`metadata classes` create tuple-like instances i.e., they provide a
-**snapshot** of the associated metadata member **values**, which are **not**
-settable, but they **may** be mutable depending on the data-type e.g.,
+Akin to the behaviour of a `namedtuple`_, the metadata classes in
+:numref:`metadata classes` create **tuple-like** instances i.e., they provide a
+**snapshot** of the associated metadata member **values**, which are **not
+settable**, but they **may be mutable** depending on the data-type of the member.
+For example, given the following ``metadata`` of a :class:`~iris.coords.DimCoord`,
 
     >>> longitude = cube.coord("longitude")
     >>> metadata = longitude.metadata
     >>> metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-    >>> # The metadata member value is the instance member value...
+The ``metadata`` member value **is** the same as the container class member value,
+
     >>> metadata.attributes is longitude.attributes
     True
     >>> metadata.circular is longitude.circular
     True
 
-    >>> # Metadata members with dictionaries are mutable...
-    >>> longitude.attributes["grinning face"] = "😀"
-    >>> longitude.attributes
-    {'grinning face': '😀'}
-    >>> metadata.attributes
-    {'grinning face': '😀'}
-    >>> metadata.attributes["grinning face"] = "😱"
-    >>> longitude.attributes
-    {'grinning face': '😱'}
+Like a `namedtuple`_, the ``metadata`` member is **not settable**,
 
-    >>> # Metadata members with simple values are not mutable...
-    >>> longitude.circular
+    >>> metadata.attributes = {"grinning face": "🙂"}
+    Traceback (most recent call last):
+    AttributeError: can't set attribute
+
+However, for a `dict`_ member, it **is mutable**,
+
+    >>> metadata.attributes
+    {}
+    >>> longitude.attributes["grinning face"] = "🙂"
+    >>> metadata.attributes
+    {'grinning face': '🙂'}
+    >>> metadata.attributes["grinning face"] = "🙃"
+    >>> longitude.attributes
+    {'grinning face': '🙃'}
+
+But ``metadata`` members with simple values are **not** mutable,
+
+    >>> metadata.circular
     False
     >>> longitude.circular = True
-    >>> longitude.circular
-    True
     >>> metadata.circular
     False
     >>> metadata.circular is longitude.circular
     False
 
-    >>> # The metadata property re-creates a new "snapshot" instance per invocation...
+And of course, they're also **not** settable,
+
+    >>> metadata.circular = True
+    Traceback (most recent call last):
+    AttributeError: can't set attribute
+
+Note that, the ``metadata`` property re-creates a **new** instance per invocation,
+with a **snapshot** of the container class metadata values at that point in time,
+
     >>> longitude.metadata
-    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😱'}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
+
+And like a `namedtuple`_ we can access individual ``metadata`` members directly,
+as we choose,
+
+    >>> metadata.standard_name
+    'longitude'
+    >>> metadata.units
+    Unit('degrees')
 
 
-Namedtuple metadata behaviour
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Metadata class behaviour
+------------------------
 
-The metadata classes in :numref:`metadata classes` inherit the behaviour of a `namedtuple`_, e.g.,
+As mentioned previously, the metadata classes in :numref:`metadata classes`
+inherit the behaviour of a `namedtuple`_, and so act and feel like a `namedtuple`_,
+just as you might expect. For example, given the following ``metadata``,
 
     >>> metadata
-    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😱'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-    >>> # Create a new instance with the provided values...
+We can use the `namedtuple._make`_ method to create a **new**
+:class:`~iris.common.DimCoordMetadata` instance from an existing sequence
+or iterable:
+
     >>> values = (1, 2, 3, 4, 5, 6, 7, 8)
     >>> metadata._make(values)
     DimCoordMetadata(standard_name=1, long_name=2, var_name=3, units=4, attributes=5, coord_system=6, climatological=7, circular=8)
 
-    >>> # Return a new dictionary which maps member names to their corresponding values...
+Note that, `namedtuple._make`_ is a class method, and so it is possible to
+create a **new** instance directly from the metadata class itself,
+
+    >>> from iris.common import DimCoordMetadata
+    >>> DimCoordMetadata._make(values)
+    DimCoordMetadata(standard_name=1, long_name=2, var_name=3, units=4, attributes=5, coord_system=6, climatological=7, circular=8)
+
+It is also possible to easily convert ``metadata`` to an `OrderedDict`_
+using the `namedtuple._asdict`_ method. This can be particularly handy when a
+standard Python built-in container is required to represent your ``metadata``,
+
     >>> metadata._asdict()
-    OrderedDict([('standard_name', 'longitude'), ('long_name', None), ('var_name', 'longitude'), ('units', Unit('degrees')), ('attributes', {'grinning face': '😱'}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    OrderedDict([('standard_name', 'longitude'), ('long_name', None), ('var_name', 'longitude'), ('units', Unit('degrees')), ('attributes', {'grinning face': '🙃'}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
 
-    >>> # Return a new instance replacing the specified members with new values...
-    >>> metadata._replace(standard_name=1, units=4)
-    DimCoordMetadata(standard_name=1, long_name=None, var_name='longitude', units=4, attributes={'grinning face': '😱'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+Using the `namedtuple._replace`_ method allows you to create a new metadata
+class instance, but replacing specified members with **new** associated values,
 
-    >>> # Returns a tuple of strings listing the member names...
+    >>> metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> metadata._replace(standard_name=None, units=None)
+    DimCoordMetadata(standard_name=None, long_name=None, var_name='longitude', units=None, attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Another very useful method from the `namedtuple`_ toolkit is `namedtuple._fields`_.
+This method returns a tuple of strings listing the ``metadata`` members, in a
+fixed order. This allows you to easily iterate over the metadata class members,
+for what ever purpose you may require, e.g.,
+
     >>> metadata._fields
     ('standard_name', 'long_name', 'var_name', 'units', 'attributes', 'coord_system', 'climatological', 'circular')
 
+    >>> tuple([getattr(metadata, member) for member in metadata._fields])
+    ('longitude', None, 'longitude', Unit('degrees'), {'grinning face': '🙃'}, GeogCS(6371229.0), False, False)
+
+    >>> tuple([getattr(metadata, member) for member in metadata._fields if member.endswith("name")])
+    ('longitude', None, 'longitude')
+
+Note that, `namedtuple._fields`_ is also a class method, so you don't need
+an instance to determine the members of a metadata class, e.g.,
+
+    >>> from iris.common import CubeMetadata
+    >>> CubeMetadata._fields
+    ('standard_name', 'long_name', 'var_name', 'units', 'attributes', 'cell_methods')
+
+Aside from the benefit of metadata classes inheriting behaviour and state
+from `namedtuple`_, further additional rich behaviour is also available,
+which we explore next.
+
 
 Richer metadata behaviour
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
+.. testsetup:: richer-metadata
+
+    import iris
+    import numpy as np
+    from iris.common import CoordMetadata
+    cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+    longitude = cube.coord("longitude")
+
+The metadata classes from :numref:`metadata classes` support additional behaviour
+above and beyond that of the  standard Python `namedtuple`_, which allows you to
+easily **compare**, **combine**, **convert** and understand the **difference**
+between your ``metadata`` instances.
+
+
+.. _metadata equality:
 
 Metadata equality
-+++++++++++++++++
+^^^^^^^^^^^^^^^^^
+
+The metadata classes support both **equality** (``__eq__``) and **inequality**
+(``__ne__``), but no other `rich comparison`_ operators are implemented.
+This is simply because there is no obvious ordering to any collective of metadata
+members, as defined in :numref:`metadata members`.
+
+For example, given the following :class:`~iris.coords.DimCoord`,
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+We can compare ``metadata`` using the ``==`` operator, as you may naturally
+expect,
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata == longitude.metadata
+    True
+
+Or alternatively, using the ``equal`` method instead,
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata.equal(longitude.metadata)
+    True
 
 
-Metadata combination
-++++++++++++++++++++
+Strict equality
+"""""""""""""""
 
+By default, metadata class equality will perform a **strict** comparison between
+each associated ``metadata`` member. If **any** ``metadata`` member has a
+different value, then the result of the operation will be ``False``. For example,
+
+.. doctest:: richer-metadata
+
+    >>> other = longitude.metadata._replace(standard_name=None)
+    >>> other
+    DimCoordMetadata(standard_name=None, long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> longitude.metadata == other
+    False
+
+.. doctest:: richer-metadata
+
+    >>> longitude.attributes = {"grinning face": "🙂"}
+    >>> other = longitude.metadata._replace(attributes={"grinning face":  "🙃"})
+    >>> other
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> longitude.metadata == other
+    False
+
+Note that, although the ``==`` operator and the ``equal`` method are
+functionally equivalent, the ``equal`` method also provides a means
+to support **lenient** equality, as discussed in :ref:`lenient metadata`.
+
+One further point worth highlighting, is that thanks to some real world `NetCDF`_
+data feeds, `NumPy`_ scalars and arrays can legitimately appear in the
+``attributes`` dictionary of some Iris metadata class instances. Normally,
+this would cause issues,
+
+.. doctest:: richer-metadata
+
+    >>> simply = {"one": np.int(1), "two": np.array([1.0, 2.0])}
+    >>> simply
+    {'one': 1, 'two': array([1., 2.])}
+    >>> fruity = {"one": np.int(1), "two": np.array([1.0, 2.0])}
+    >>> fruity
+    {'one': 1, 'two': array([1., 2.])}
+    >>> simply == fruity
+    Traceback (most recent call last):
+    ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+However, metadata class equality is rich enough to handle this eventuality,
+
+.. doctest:: richer-metadata
+
+    >>> metadata1 = cube.metadata._replace(attributes=simply)
+    >>> metadata2 = cube.metadata._replace(attributes=fruity)
+    >>> metadata1
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1., 2.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> metadata2
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1., 2.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+
+.. doctest:: richer-metadata
+
+    >>> metadata1 == metadata2
+    True
+
+.. doctest:: richer-metadata
+
+    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int(1), "two": np.array([0.1, 0.2])})
+    >>> metadata1 == metadata2
+    False
+
+
+Comparing like with like
+""""""""""""""""""""""""
+
+So far in our journey through metadata class equality, we have only considered
+cases where the operands are instances of the **same** type. It is possible to
+compare instances of **different** metadata classes, but the result will always
+be ``False``,
+
+.. doctest:: richer-metadata
+
+    >>> cube.metadata == longitude.metadata
+    False
+
+As you can see from :numref:`metadata members`, this is simply because each
+metadata class contains **different** members. However, there is an exception
+to the rule...
+
+Support is provided for comparing :class:`~iris.common.CoordMetadata`
+and :class:`~iris.common.DimCoordMetadata`. For example, consider the
+following :class:`~iris.common.DimCoordMetadata`,
+
+.. doctest:: richer-metadata
+
+    >>> latitude = cube.coord("latitude")
+    >>> latitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Next we create a new :class:`~iris.common.CoordMetadata` instance from
+the :class:`~iris.common.DimCoordMetadata` instance,
+
+.. doctest:: richer-metadata
+
+    >>> kwargs = latitude.metadata._asdict()
+    >>> del kwargs["circular"]
+    >>> metadata = CoordMetadata(**kwargs)
+    >>> metadata
+    CoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False)
+
+.. hint::
+
+    Alternatively, use the ``from_metadata`` class method instead, see
+    :ref:`metadata conversion`.
+
+Comparing the instances confirms that equality is indeed supported between
+:class:`~iris.common.DimCoordMetadata` and :class:`~iris.common.CoordMetadata`
+classes,
+
+.. doctest:: richer-metadata
+
+    >>> latitude.metadata == metadata
+    True
+
+The reason for this behaviour is primarily historical. The ``circular``
+member has **never** been used by the ``__eq__`` operator when comparing an
+:class:`~iris.coords.AuxCoord` and a :class:`~iris.coords.DimCoord`. Therefore
+for consistency, this behaviour is also extended to ``__eq__`` for the associated
+container metadata classes.
+
+However, note that the ``circular`` member **is used** by the ``__eq__`` operator
+when comparing one :class:`~iris.coords.DimCoord` to another. This also applies
+when comparing :class:`~iris.common.DimCoordMetadata`.
+
+This exception to the rule :ref:`equality <metadata equality>` also applies to
+the :ref:`combine <metadata combine>`, :ref:`difference <metadata difference>`,
+and :ref:`from_metadata <metadata conversion>` methods of metadata classes.
+
+
+.. _metadata difference:
 
 Metadata difference
-+++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^
+
+Being able to compare metadata is valuable. Particularly when we have the
+convenience of being able to do this easily with metadata classes. However,
+when the result of comparing two instances of metadata is ``False``, then
+the next obvious question is, "**What's the difference?**"
+
+Well, this is where we pull the ``difference`` method out of the toolbox.
+First, let's create some ``metadata`` to compare,
+
+.. doctest:: richer-metadata
+
+    >>> longitude = cube.coord("longitude")
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙂'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Now, we replace some members of the :class:`~iris.common.DimCoordMetadata` with
+different values,
+
+.. doctest:: richer-metadata
+
+    >>> from cf_units import Unit
+    >>> metadata = longitude.metadata._replace(long_name="lon", var_name="lon", units=Unit("radians"))
+    >>> metadata
+    DimCoordMetadata(standard_name='longitude', long_name='lon', var_name='lon', units=Unit('radians'), attributes={'grinning face': '🙂'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+First, confirm that the ``metadata`` is different,
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata != metadata
+    True
+
+As expected, the ``metadata`` is different. Now, let's answer the question,
+"**What's the difference?**",
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata.difference(metadata)
+    DimCoordMetadata(standard_name=None, long_name=(None, 'lon'), var_name=('longitude', 'lon'), units=(Unit('degrees'), Unit('radians')), attributes=None, coord_system=None, climatological=None, circular=None)
+
+The ``difference`` method returns a :class:`~iris.common.DimCoordMetadata` instance, when
+there is **at least** one ``metadata`` member with a different value, where,
+
+- ``None`` means that there was **no** difference for the member,
+- a ``tuple`` containing the two different associated values for the member.
+
+Given our example, only the ``long_name``, ``var_name`` and ``units`` members
+have different values, as expected. Note that, the order of the member ``tuple``
+values is the same order of the metadata class instances being compared, e.g.,
+
+.. doctest:: richer-metadata
+
+    >>> metadata.difference(longitude.metadata)
+    DimCoordMetadata(standard_name=None, long_name=('lon', None), var_name=('lon', 'longitude'), units=(Unit('radians'), Unit('degrees')), attributes=None, coord_system=None, climatological=None, circular=None)
+
+Also, when the ``metadata`` being compared is identical, then ``None`` is simply returned,
+
+.. doctest:: richer-metadata
+
+    >>> metadata.difference(metadata) is None
+    True
+
+It's worth highlighting that for the ``attributes`` `dict`_ member, only those keys
+with **different values** or **missing keys** will be returned by the ``difference``
+method. For example, let's customise the ``attributes`` member of the following
+:class:`~iris.common.DimCoordMetadata` to compare against,
+
+.. doctest:: richer-metadata
+
+    >>> attributes = {"grinning face": "😀", "neutral face": "😐"}
+    >>> longitude.attributes = attributes
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😀', 'neutral face': '😐'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Then create another :class:`~iris.common.DimCoordMetadata` with a different
+``attributes`` `dict`_, namely,
+
+- the ``grinning face`` key has the same value,
+- the ``neutral face`` key has a different value, and
+- the ``upside-down face`` key is new
+
+.. doctest:: richer-metadata
+
+    >>> attributes = {"grinning face": "😀", "neutral face": "😜", "upside-down face": "🙃"}
+    >>> metadata = longitude.metadata._replace(attributes=attributes)
+    >>> metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😀', 'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Now, let's compare the two above instances for differences, and see what we get,
+
+.. doctest:: richer-metadata
+
+    >>> longitude.metadata.difference(metadata)  # doctest: +SKIP
+    DimCoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes=({'neutral face': '😐'}, {'neutral face': '😜', 'upside-down face': '🙃'}), coord_system=None, climatological=None, circular=None)
+
+
+.. _metadata combine:
+
+Metadata combination
+^^^^^^^^^^^^^^^^^^^^
+
+*Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut venenatis venenatis massa, a vestibulum lacus porta quis. Vivamus mattis augue id mauris porttitor, in ultricies lorem porttitor. Nulla facilisi. Curabitur.*
+
+
+.. _metadata conversion:
+
+Metadata conversion
+^^^^^^^^^^^^^^^^^^^
+
+*Nulla facilisi. Etiam tortor est, posuere ac risus vitae, ornare viverra est. Ut dapibus feugiat nibh, cursus efficitur ex pulvinar id. Vestibulum ante ipsum primis in faucibus orci luctus et.*
 
 
 Metadata assignment
-+++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^
+
+*Vestibulum maximus eleifend suscipit. Quisque vel tempor turpis. Nulla justo nulla, finibus sed tristique quis, tempor vel leo. Aenean molestie pharetra nisl sed ultrices. Fusce gravida consequat est at vehicula.*
 
 
-Metadata conversion
-+++++++++++++++++++
+.. _lenient metadata:
 
+Lenient metadata
+================
 
-
-
-
-Lenient metadata behaviour
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+*Fusce laoreet orci sem, nec consectetur tortor malesuada sit amet. Ut gravida venenatis enim non porttitor. Morbi varius ipsum consequat tortor feugiat, eu facilisis dui faucibus. Duis pretium lacus ullamcorper.*
 
 
 
 .. _data about data: https://en.wikipedia.org/wiki/Metadata
 .. _data attribute: https://docs.python.org/3/tutorial/classes.html#instance-objects
+.. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _CF Conventions: https://cfconventions.org/
 .. _Cell Measures: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#cell-measures
 .. _Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _GitHub Issue: https://github.com/SciTools/iris/issues/new/choose
 .. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
+.. _namedtuple._make: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._make
+.. _namedtuple._asdict: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._asdict
+.. _namedtuple._replace: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._replace
+.. _namedtuple._fields: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._fields
+.. _NetCDF: https://www.unidata.ucar.edu/software/netcdf/
 .. _NetCDF CF Metadata Conventions: https://cfconventions.org/
+.. _NumPy: https://github.com/numpy/numpy
+.. _OrderedDict: https://docs.python.org/3/library/collections.html#collections.OrderedDict
 .. _Parametric Vertical Coordinate: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#parametric-vertical-coordinate
+.. _rich comparison: https://www.python.org/dev/peps/pep-0207/
 .. _SciTools/iris: https://github.com/SciTools/iris#-----
