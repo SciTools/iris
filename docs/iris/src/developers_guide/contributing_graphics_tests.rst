@@ -5,8 +5,8 @@
 Graphics tests
 **************
 
-Iris may be used Iris to create various forms of graphical output, to ensure
-the output is consistent Iris has automated tests to check the output with
+Iris may be used to create various forms of graphical output; to ensure
+the output is consistent, there are automated tests to check against
 known acceptable graphical output.  See :ref:`developer_running_tests` for
 more information.
 
@@ -37,16 +37,16 @@ Testing strategy
 The `Iris Travis matrix`_ defines multiple test runs that use
 different versions of Python to ensure Iris is working as expected.
 
-To make this manageable, the :meth:`iris.tests.IrisTest.check_graphic` test
+To make this manageable, the ``iris.tests.IrisTest_nometa.check_graphic`` test
 routine tests against multiple alternative **acceptable** results.  It does
 this using an image **hash** comparison technique which avoids storing
 reference images in the Iris repository itself.
 
 This consists of:
 
- * The :meth:`iris.tests.IrisTest.check_graphic` function uses a perceptual **image hash** of the outputs
-   (see https://github.com/JohannesBuchner/imagehash) as the basis for checking
-   test results.
+ * The ``iris.tests.IrisTest_nometa.check_graphic`` function uses a perceptual
+   **image hash** of the outputs (see https://github.com/JohannesBuchner/imagehash)
+   as the basis for checking test results.
 
  * The hashes of known **acceptable** results for each test are stored in a
    lookup dictionary, saved to the repo file

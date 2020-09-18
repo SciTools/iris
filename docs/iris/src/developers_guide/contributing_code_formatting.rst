@@ -26,9 +26,9 @@ or alternatively using ``conda``::
          :ref:`installing_from_source` then ``pre-commit`` should already
          be present.
 
-In order to to install the ``pre-commit`` git hooks defined in our
-``.pre-commit-config.yaml`` file you must run the following command from the
-root directory of Iris::
+In order to install the ``pre-commit`` git hooks defined in our
+``.pre-commit-config.yaml`` file, you must now run the following command from
+the root directory of Iris::
 
     $ pre-commit install
 

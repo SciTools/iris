@@ -46,17 +46,20 @@ continuous integration testing tool named `travis-ci`_ is used.
 
 A `travis-ci`_ configuration file named `.travis.yml`_
 is in the Iris repository which tells travis-ci what commands to run.  The
-commands includes retrieving the Iris code base and associated test files using
+commands include retrieving the Iris code base and associated test files using
 conda and then running the tests.  `travis-ci`_ allows for a matrix of tests to
 be performed to ensure that all expected variations test successfully.
 
 The `travis-ci`_ tests are run automatically against the `Iris`_ master
-repository when a pull requests is submitted, updated or merged.
+repository when a pull request is submitted, updated or merged.
 
-The example snapshot from a GitHub pull request shows all test passing.
+GitHub Checklist
+****************
+
+An example snapshot from a successful GitHub pull request shows all test passing.
 
 .. image:: ci_checks.png
 
-If any checks fail the pull requests is unlikely to be merged to the Iris
-**master**.
+If any CI checks fail, then the pull request is unlikely to be merged to the Iris
+target branch by a core developer.
 

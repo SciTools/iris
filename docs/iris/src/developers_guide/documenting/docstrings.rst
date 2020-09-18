@@ -20,7 +20,7 @@ For consistency always use:
   docstrings.
 * ``u"""Unicode triple-quoted string"""`` for Unicode docstrings
 
-All docstrings should be written in rST (reStructuredText) markup.  See the
+All docstrings should be written in reST (reStructuredText) markup.  See the
 :ref:`reST_quick_start` for more detail.
 
 There are two forms of docstrings: **single-line** and **multi-line**
