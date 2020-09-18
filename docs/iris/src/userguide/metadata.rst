@@ -363,7 +363,7 @@ to support **lenient** equality, as discussed in :ref:`lenient metadata`.
 
 One further point worth highlighting, is that thanks to some real world `NetCDF`_
 data feeds, `NumPy`_ scalars and arrays can legitimately appear in the
-``attributes`` dictionary of some Iris metadata class instances. Normally,
+``attributes`` `dict`_ of some Iris metadata class instances. Normally,
 this would cause issues,
 
 .. doctest:: richer-metadata
@@ -400,6 +400,8 @@ However, metadata class equality is rich enough to handle this eventuality,
     >>> metadata1 == metadata2
     False
 
+
+.. _compare like:
 
 Comparing like with like
 """"""""""""""""""""""""
@@ -475,8 +477,8 @@ Metadata difference
 
 Being able to compare metadata is valuable. Particularly when we have the
 convenience of being able to do this easily with metadata classes. However,
-when the result of comparing two instances of metadata is ``False``, then
-the next obvious question is, "**What's the difference?**"
+when the result of comparing two metadata instances is ``False``, it begs
+the next obvious question, "**what's the difference?**"
 
 Well, this is where we pull the ``difference`` method out of the toolbox.
 First, let's create some ``metadata`` to compare,
@@ -505,7 +507,7 @@ First, confirm that the ``metadata`` is different,
     True
 
 As expected, the ``metadata`` is different. Now, let's answer the question,
-"**What's the difference?**",
+"**what's the difference?**",
 
 .. doctest:: richer-metadata
 
@@ -516,28 +518,30 @@ The ``difference`` method returns a :class:`~iris.common.DimCoordMetadata` insta
 there is **at least** one ``metadata`` member with a different value, where,
 
 - ``None`` means that there was **no** difference for the member,
-- a ``tuple`` containing the two different associated values for the member.
+- a `tuple`_ containing the two different associated values for the member.
 
 Given our example, only the ``long_name``, ``var_name`` and ``units`` members
-have different values, as expected. Note that, the order of the member ``tuple``
+have different values, as expected. Note that, the order of the tuple member
 values is the same order of the metadata class instances being compared, e.g.,
+changing the ``difference`` instance order is reflected in the result,
 
 .. doctest:: richer-metadata
 
     >>> metadata.difference(longitude.metadata)
     DimCoordMetadata(standard_name=None, long_name=('lon', None), var_name=('lon', 'longitude'), units=(Unit('radians'), Unit('degrees')), attributes=None, coord_system=None, climatological=None, circular=None)
 
-Also, when the ``metadata`` being compared is identical, then ``None`` is simply returned,
+Also, when the ``metadata`` being compared **is identical**, then ``None``
+is simply returned,
 
 .. doctest:: richer-metadata
 
     >>> metadata.difference(metadata) is None
     True
 
-It's worth highlighting that for the ``attributes`` `dict`_ member, only those keys
-with **different values** or **missing keys** will be returned by the ``difference``
-method. For example, let's customise the ``attributes`` member of the following
-:class:`~iris.common.DimCoordMetadata` to compare against,
+It's also worth highlighting that for the ``attributes`` `dict`_ member, only
+those keys with **different values** or **missing keys** will be returned by the
+``difference`` method. For example, let's customise the ``attributes`` member of
+the following :class:`~iris.common.DimCoordMetadata`,
 
 .. doctest:: richer-metadata
 
@@ -549,9 +553,9 @@ method. For example, let's customise the ``attributes`` member of the following
 Then create another :class:`~iris.common.DimCoordMetadata` with a different
 ``attributes`` `dict`_, namely,
 
-- the ``grinning face`` key has the same value,
-- the ``neutral face`` key has a different value, and
-- the ``upside-down face`` key is new
+- the ``grinning face`` key has the **same value**,
+- the ``neutral face`` key has a **different value**, and
+- the ``upside-down face`` key is **new**.
 
 .. doctest:: richer-metadata
 
@@ -566,6 +570,14 @@ Now, let's compare the two above instances for differences, and see what we get,
 
     >>> longitude.metadata.difference(metadata)  # doctest: +SKIP
     DimCoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes=({'neutral face': '😐'}, {'neutral face': '😜', 'upside-down face': '🙃'}), coord_system=None, climatological=None, circular=None)
+
+
+.. _diff like:
+
+Diffing like with like
+""""""""""""""""""""""
+
+Proin dignissim tellus vel lectus laoreet, sed sodales ipsum congue. Donec feugiat, odio non ullamcorper facilisis, erat magna placerat diam, a posuere velit orci ut neque. Etiam ex tellus, facilisis.
 
 
 .. _metadata combine:
@@ -618,4 +630,5 @@ Lenient metadata
 .. _OrderedDict: https://docs.python.org/3/library/collections.html#collections.OrderedDict
 .. _Parametric Vertical Coordinate: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#parametric-vertical-coordinate
 .. _rich comparison: https://www.python.org/dev/peps/pep-0207/
-.. _SciTools/iris: https://github.com/SciTools/iris#-----
+.. _SciTools/iris: https://github.com/SciTools/iris
+.. _tuple: https://docs.python.org/3/library/stdtypes.html#tuples
