@@ -140,7 +140,12 @@ This document explains the changes made to Iris for this release
 
 * `@stephenworsley`_ changed Iris objects loaded from NetCDF-CF files to have
   ``units='unknown'`` where the corresponding NetCDF variable has no ``units``
-  property. Previously these cases defaulted to ``units='1'``. (:pull:`3795`)
+  property. Previously these cases defaulted to ``units='1'``.
+  This affects loading of coordinates whose file variable has no "units"
+  attribute (not valid, under `CF units rules`_):  These will now have units
+  of `"unknown"`, rather than `"1"`, which **may prevent the creation of
+  a hybrid vertical coordinate**.  While these cases used to "work", this was
+  never really correct behaviour. (:pull:`3795`)
 
 * `@SimonPeatman`_ added attribute ``var_name`` to coordinates created by the
   :func:`iris.analysis.trajectory.interpolate` function.  This prevents
@@ -279,6 +284,7 @@ This document explains the changes made to Iris for this release
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
+.. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _iris-grib: https://github.com/SciTools/iris-grib
