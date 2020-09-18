@@ -203,7 +203,7 @@ This document explains the changes made to Iris for this release
   now automatically checked on GitHub PRs, replacing the older, unittest-based
   ``iris.tests.test_coding_standards.TestCodeFormat``. Black provides automatic
   code format correction for most IDEs.  See the new developer guide section on
-  :ref:`iris_code_format`. (:pull:`3518`)
+  :ref:`code_formatting`. (:pull:`3518`)
 
 * `@tkknight`_ and `@trexfeathers`_ refreshed the :ref:`whats_new_contributions`
   for the :ref:`iris_whatsnew`. This includes always creating the ``latest``

@@ -6,6 +6,7 @@ Args
 Autoscale
 Biggus
 CF
+CI
 Cartopy
 Checklist
 Color
@@ -103,6 +104,7 @@ centrepoints
 cf
 cftime
 chunksizes
+ci
 clabel
 cmap
 cmpt
@@ -176,6 +178,7 @@ idiff
 ieee
 ifunc
 imagehash
+inc
 init
 inline
 inplace
@@ -187,6 +190,7 @@ io
 isosurfaces
 iterable
 jja
+jupyter
 kwarg
 kwargs
 landsea
@@ -313,6 +317,7 @@ th
 timepoint
 timestamp
 timesteps
+todo
 tol
 tos
 traceback

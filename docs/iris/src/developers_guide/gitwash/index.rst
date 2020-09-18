@@ -7,8 +7,8 @@ Working with *iris* source code
    :maxdepth: 2
 
    git_intro
-   git_install
-   git_development
-   git_resources
-
+   forking
+   set_up_fork
+   configure_git
+   development_workflow
 

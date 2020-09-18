@@ -57,6 +57,7 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
 .. toctree::
    :maxdepth: 1
    :caption: User Guide
+   :name: userguide_index
 
    userguide/index
    userguide/iris_cubes
@@ -74,17 +75,18 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
    userguide/code_maintenance
 
 
+.. _developers_guide:
+
 .. toctree::
    :maxdepth: 1
    :caption: Developers Guide
+   :name: development_index
 
-   developers_guide/contributing_documentation
-   developers_guide/documenting/index
+   developers_guide/contributing_getting_involved
    developers_guide/gitwash/index
-   developers_guide/code_format
-   developers_guide/pulls
-   developers_guide/tests
-   developers_guide/deprecations
+   developers_guide/contributing_documentation
+   developers_guide/contributing_codebase_index
+   developers_guide/contributing_changes
    developers_guide/release
    generated/api/iris
 

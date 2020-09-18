@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 :orphan:
 
 .. _change_management:

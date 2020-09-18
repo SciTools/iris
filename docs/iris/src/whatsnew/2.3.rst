@@ -252,7 +252,7 @@ Documentation
   in the user guide, demonstrating how to load data within a specified date
   range.
 
-* Added notes to the :func:`iris.load` documentation, and the userguide
+* Added notes to the :func:`iris.load` documentation, and the user guide
   :ref:`loading_iris_cubes` chapter, emphasizing that the *order* of the cubes
   returned by an iris load operation is effectively random and unstable, and
   should not be relied on.
