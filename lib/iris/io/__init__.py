@@ -287,8 +287,8 @@ def add_saver(file_extension, new_saver):
 
     Args:
 
-        * file_extension - A string such as "pp" or "my_format".
-        * new_saver      - A function of the form ``my_saver(cube, target)``.
+    * file_extension: A string such as "pp" or "my_format".
+    * new_saver:      A function of the form ``my_saver(cube, target)``.
 
     See also :func:`iris.io.save`
 
