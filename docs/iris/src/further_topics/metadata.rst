@@ -18,6 +18,9 @@ those mentioned above. Such as the :class:`~iris.coords.AncillaryVariable`
 (see `Cell Measures`_), and also the :class:`~iris.aux_factory.AuxCoordFactory`
 (see `Parametric Vertical Coordinate`_).
 
+Collectively, the asforementioned classes will be known here as the Iris
+`CF Conventions` classes.
+
 .. hint::
 
     If there are any `CF Conventions`_ metadata missing from Iris that you
@@ -29,7 +32,7 @@ Common Metadata
 ===============
 
 What each of these **different** Iris `CF Conventions`_ classes all have in
-**common** is that ``metadata`` is used to define them and give them meaning.
+**common** is that **metadata** is used to define them and give them meaning.
 
 .. _metadata members:
 .. table:: - Iris classes that model `CF Conventions`_ metadata
@@ -52,15 +55,15 @@ What each of these **different** Iris `CF Conventions`_ classes all have in
    =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
 
 :numref:`metadata members` shows for each Iris `CF Conventions`_ class the
-collective of individual ``metadata`` members used to define it. Almost all
+collective of individual metadata members used to define it. Almost all
 of these members reference specific `CF Conventions`_ terms. However, some
 of these members, such as :attr:`~iris.coords.DimCoord.var_name` and
 :attr:`~iris.coords.DimCoord.circular` are Iris specific terms.
 
-For example, the collective ``metadata`` used to define an
+For example, the collective metadata used to define an
 :class:`~iris.coords.AncillaryVariable` are the ``standard_name``, ``long_name``,
 ``var_name``, ``units``, and ``attributes`` members. Note that, these are the
-actual `data attribute`_ names of the actual ``metadata`` members on the actual
+actual `data attribute`_ names of the actual metadata members on the actual
 Iris class.
 
 As :numref:`metadata members` highlights, **specific** metadata is used to
@@ -77,12 +80,12 @@ Common Metadata API
     import iris
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
 
-As of Iris ``3.0.0``, a unified treatment of ``metadata`` has been applied
+As of Iris ``3.0.0``, a unified treatment of metadata has been applied
 across each Iris class in :numref:`metadata members` to allow users to easily
-manage and manipulate their ``metadata`` in a consistent way.
+manage and manipulate their metadata in a consistent way.
 
 This is achieved through the ``metadata`` property, which allows you to
-manipulate the associated underlying ``metadata`` members as a collective.
+manipulate the associated underlying metadata members as a collective.
 For example, given the following :class:`~iris.cube.Cube`:
 
     >>> print(cube)
@@ -104,7 +107,7 @@ For example, given the following :class:`~iris.cube.Cube`:
          Cell methods:
               mean: time (6 hour)
 
-We can easily get all of the associated ``metadata`` of the :class:`~iris.cube.Cube`
+We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
 
     >>> cube.metadata
@@ -588,12 +591,17 @@ As discussed in :ref:`compare like`, it only makes sense to determine the
 ``difference`` between **similar** metadata class instances. However, note that
 the :ref:`exception rule` still applies here i.e., support is provided between
 :class:`~iris.common.CoordMetadata` and :class:`~iris.common.DimCoordMetadata`
-metadata classes,
+metadata classes.
+
+For example, given the following :class:`~iris.coords.AuxCoord` and
+:class:`~iris.coords.DimCoord`,
 
 .. doctest:: richer-metadata
 
     >>> forecast_period = cube.coord("forecast_period")
     >>> latitude = cube.coord("latitude")
+
+We can inspect their associated ``metadata``,
 
 .. doctest:: richer-metadata
 
@@ -601,6 +609,8 @@ metadata classes,
     CoordMetadata(standard_name='forecast_period', long_name=None, var_name='forecast_period', units=Unit('hours'), attributes={}, coord_system=None, climatological=False)
     >>> latitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Before comparing them to determine the values of metadata members that are different,
 
 .. doctest:: richer-metadata
 
@@ -612,7 +622,8 @@ metadata classes,
     >>> latitude.metadata.difference(forecast_period.metadata)
     DimCoordMetadata(standard_name=('latitude', 'forecast_period'), long_name=None, var_name=('latitude', 'forecast_period'), units=(Unit('degrees'), Unit('hours')), attributes=None, coord_system=(GeogCS(6371229.0), None), climatological=None, circular=(False, None))
 
-However, in general, when comparing **different** metadata classes, a ``TypeError`` is raised,
+In general, however, comparing **different** metadata classes will result in a
+``TypeError`` being raised,
 
 .. doctest:: richer-metadata
 
