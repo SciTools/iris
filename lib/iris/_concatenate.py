@@ -161,7 +161,7 @@ class _CoordMetaData(
         return self.defn.name()
 
 
-class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"],)):
+class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
     """
     Container for the metadata that defines a cell measure or ancillary
     variable.

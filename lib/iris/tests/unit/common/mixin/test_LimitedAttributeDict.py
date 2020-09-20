@@ -40,12 +40,12 @@ class Test(tests.IrisTest):
         self.assertEqual(left, values)
 
     def test___eq___numpy(self):
-        values = dict(one=np.arange(1), two=np.arange(2), three=np.arange(3),)
+        values = dict(one=np.arange(1), two=np.arange(2), three=np.arange(3))
         left = LimitedAttributeDict(**values)
         right = LimitedAttributeDict(**values)
         self.assertEqual(left, right)
         self.assertEqual(left, values)
-        values = dict(one=np.arange(1), two=np.arange(1), three=np.arange(1),)
+        values = dict(one=np.arange(1), two=np.arange(1), three=np.arange(1))
         left = LimitedAttributeDict(dict(one=0, two=0, three=0))
         right = LimitedAttributeDict(**values)
         self.assertEqual(left, right)

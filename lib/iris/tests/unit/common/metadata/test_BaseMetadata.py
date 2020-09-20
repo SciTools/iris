@@ -310,7 +310,9 @@ class Test__combine_lenient(tests.IrisTest):
         rmetadata = self.cls(**right)
         return_value = sentinel.return_value
         with mock.patch.object(
-            self.cls, "_combine_lenient_attributes", return_value=return_value,
+            self.cls,
+            "_combine_lenient_attributes",
+            return_value=return_value,
         ) as mocker:
             lmetadata = self.cls(**left)
             result = lmetadata._combine_lenient(rmetadata)
@@ -656,7 +658,9 @@ class Test__compare_lenient(tests.IrisTest):
         right["attributes"] = rdict
         rmetadata = self.cls(**right)
         with mock.patch.object(
-            self.cls, "_compare_lenient_attributes", return_value=True,
+            self.cls,
+            "_compare_lenient_attributes",
+            return_value=True,
         ) as mocker:
             lmetadata = self.cls(**left)
             self.assertTrue(lmetadata._compare_lenient(rmetadata))

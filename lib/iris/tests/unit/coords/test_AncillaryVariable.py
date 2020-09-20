@@ -440,9 +440,7 @@ class Test__str__(tests.IrisTest):
             "long_name='height of detector', var_name='height', "
             "attributes={'notes': 'Measured from sea level'})"
         )
-        self.assertEqual(
-            expected, ancillary_var.__str__(),
-        )
+        self.assertEqual(expected, ancillary_var.__str__())
 
     def test_time_values(self):
         ancillary_var = AncillaryVariable(
@@ -456,9 +454,7 @@ class Test__str__(tests.IrisTest):
             "standard_name=None, calendar='gregorian', "
             "long_name='time of previous valid detection')"
         )
-        self.assertEqual(
-            expected, ancillary_var.__str__(),
-        )
+        self.assertEqual(expected, ancillary_var.__str__())
 
 
 class Test__repr__(tests.IrisTest):
@@ -477,9 +473,7 @@ class Test__repr__(tests.IrisTest):
             "long_name='height of detector', var_name='height', "
             "attributes={'notes': 'Measured from sea level'})"
         )
-        self.assertEqual(
-            expected, ancillary_var.__repr__(),
-        )
+        self.assertEqual(expected, ancillary_var.__repr__())
 
     def test_time_values(self):
         ancillary_var = AncillaryVariable(

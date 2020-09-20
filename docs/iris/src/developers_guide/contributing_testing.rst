@@ -1,24 +1,24 @@
-.. _developer_tests:
+.. include:: ../common_links.inc
 
-Testing
-*******
+.. _developer_test_categories:
 
-The Iris tests may be run with ``python setup.py test`` which has a 
-command line utility included.
 
-There are three categories of tests within Iris:
+Test categories
+***************
 
- - Unit tests
- - Integration tests
- - Legacy tests
+There are two main categories of tests within Iris:
+
+ - :ref:`testing.unit_test`
+ - :ref:`testing.integration`
 
 Ideally, all code changes should be accompanied by one or more unit
-tests, and by zero or more integration tests. And where possible, new
-tests should not be added to the legacy tests.
+tests, and by zero or more integration tests.
 
 But if in any doubt about what tests to add or how to write them please
 feel free to submit a pull-request in any state and ask for assistance.
 
+
+.. _testing.unit_test:
 
 Unit tests
 ==========
@@ -35,16 +35,21 @@ For example:
 All unit tests must be placed and named according to the following
 structure:
 
+
+.. _testing.classes:
+
 Classes
 -------
+
 When testing a class all the tests must reside in the module:
 
     :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<ClassName>.py`
 
 Within this test module each tested method must have one or more
-corresponding test classes:
-- Either: `Test_name_of_public_method`
-- Or: `Test_name_of_public_method__aspect_of_method`
+corresponding test classes, for example:
+
+* ``Test_<name of public method>``
+* ``Test_<name of public method>__<aspect of method>``
 
 And within those test classes, the test methods must be named according
 to the aspect of the tested method which they address.
@@ -79,15 +84,19 @@ Within that file the tests might look something like:
             ...
 
 
+.. _testing.functions:
+
 Functions
 ---------
+
 When testing a function all the tests must reside in the module:
 
     :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
 
-Within this test module there must be one or more test classes:
-- Either: `Test`
-- Or: `TestAspectOfFunction`
+Within this test module there must be one or more test classes, for example:
+
+* ``Test``
+* ``TestAspectOfFunction``
 
 And within those test classes, the test methods must be named according
 to the aspect of the tested function which they address.
@@ -117,6 +126,8 @@ Within that file the tests might look something like:
             ...
 
 
+.. _testing.integration:
+
 Integration tests
 =================
 
@@ -124,21 +135,10 @@ Some code changes may require tests which exercise several units in
 order to demonstrate an important consequence of their interaction which
 may not be apparent when considering the units in isolation.
 
-These tests must be placed in the `lib/iris/tests/integration` folder.
+These tests must be placed in the ``lib/iris/tests/integration`` folder.
 Unlike unit tests, there is no fixed naming scheme for integration
 tests. But folders and files must be created as required to help
 developers locate relevant tests. It is recommended they are named
 according to the capabilities under test, e.g.
-`metadata/test_pp_preservation.py`, and not named according to the
+``metadata/test_pp_preservation.py``, and not named according to the
 module(s) under test.
-
-
-Graphics tests
-=================
-Certain Iris tests are based on checking plotted images.
-This the only way of testing the modules :mod:`iris.plot` and
-:mod:`iris.quickplot`, but is also used for some other legacy and integration-
-style testcases.
-
-There are specific mechanisms for handling this.
-See :ref:`developer_graphics_tests`.

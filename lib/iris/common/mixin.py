@@ -7,7 +7,6 @@
 
 from collections.abc import Mapping
 from functools import wraps
-import re
 
 import cf_units
 

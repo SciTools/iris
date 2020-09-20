@@ -5,15 +5,14 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. contents:: Skip to section:
-   :local:
-   :depth: 3
-
-
 📢 Announcements
 ================
 
-* N/A
+* Congratulations to `@bouweandela`_, `@jvegasbsc`_, and `@zklaus`_ who
+  recently became Iris core developers. They bring a wealth of expertise to the
+  team, and are using Iris to underpin `ESMValTool`_ - "*A community diagnostic
+  and performance metrics tool for routine evaluation of Earth system models
+  in CMIP*". Welcome aboard! 🎉
 
 
 ✨ Features
@@ -23,18 +22,28 @@ This document explains the changes made to Iris for this release
   module to provide richer meta-data translation when loading ``Nimrod`` data
   into cubes. This covers most known operational use-cases. (:pull:`3647`)
 
-* `@stephenworsley`_ improved the handling of :class:`iris.coord.CellMeasure` in
-  the statistical operations :meth:`iris.cube.Cube.collapsed`,
-  :meth:`iris.cube.Cube.aggregated_by` and
-  :meth:`iris.cube.Cube.rolling_window`. These previously removed every
-  :class:`iris.coord.CellMeasure` attached to the cube.  Now, a
-  :class:`iris.coord.CellMeasure` will only be removed if it is associated with
-  an axis over which the statistic is being run. (:pull:`3549`)
+* `@stephenworsley`_ improved the handling of
+  :class:`iris.coords.CellMeasure`\ s in the :class:`~iris.cube.Cube`
+  statistical operations :meth:`~iris.cube.Cube.collapsed`,
+  :meth:`~iris.cube.Cube.aggregated_by` and
+  :meth:`~iris.cube.Cube.rolling_window`. These previously removed every
+  :class:`~iris.coords.CellMeasure` attached to the cube.  Now, a
+  :class:`~iris.coords.CellMeasure` will only be removed if it is associated
+  with an axis over which the statistic is being run. (:pull:`3549`)
 
 * `@stephenworsley`_, `@pp-mo`_ and `@abooton`_ added support for
-  `CF Ancillary Data`_ variables, which can be loaded from and saved to
-  NetCDF-CF files. Support for `Quality Flags`_ is also provided to ensure they
-  load and save with appropriate units. (:pull:`3800`)
+  `CF Ancillary Data`_ variables.  These are created as
+  :class:`iris.coords.AncillaryVariable`, and appear as components of cubes
+  much like :class:`~iris.coords.AuxCoord`\ s, with the new
+  :class:`~iris.cube.Cube` methods
+  :meth:`~iris.cube.Cube.add_ancillary_variable`,
+  :meth:`~iris.cube.Cube.remove_ancillary_variable`,
+  :meth:`~iris.cube.Cube.ancillary_variable`,
+  :meth:`~iris.cube.Cube.ancillary_variables` and
+  :meth:`~iris.cube.Cube.ancillary_variable_dims`.
+  They are loaded from and saved to NetCDF-CF files.  Special support for
+  `Quality Flags`_ is also provided, to ensure they load and save with
+  appropriate units. (:pull:`3800`)
 
 * `@bouweandela`_ implemented lazy regridding for the
   :class:`~iris.analysis.Linear`, :class:`~iris.analysis.Nearest`, and
@@ -44,7 +53,7 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-* `@stephenworsley`_ fixed :meth:`~iris.Cube.cube.remove_coord` to now also
+* `@stephenworsley`_ fixed :meth:`~iris.cube.Cube.remove_coord` to now also
   remove derived coordinates by removing aux_factories. (:pull:`3641`)
 
 * `@jonseddon`_ fixed ``isinstance(cube, collections.Iterable)`` to now behave
@@ -58,7 +67,7 @@ This document explains the changes made to Iris for this release
   cube. Such a scenario would previously cause concatenation to inappropriately
   fail. (:pull:`3566`)
 
-* `@stephenworsley`_ newly included :class:`~iris.coords.CellMeasure`s in
+* `@stephenworsley`_ newly included :class:`~iris.coords.CellMeasure`\ s in
   :class:`~iris.cube.Cube` copy operations. Previously copying a
   :class:`~iris.cube.Cube` would ignore any attached
   :class:`~iris.coords.CellMeasure`. (:pull:`3546`)
@@ -70,16 +79,13 @@ This document explains the changes made to Iris for this release
   caused a ``TypeError`` when no ``measure`` was provided, since ``area`` or
   ``volume`` are the only accepted values. (:pull:`3533`)
 
-* `@trexfeathers`_ set **all** plot types in `iris.plot` to now use
-  `matplotlib.dates.date2num
-  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
-  to format date/time coordinates for use on a plot axis (previously
-  :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh` did not include
-  this behaviour). (:pull:`3762`)
+* `@trexfeathers`_ set **all** plot types in :mod:`iris.plot` to now use
+  `matplotlib.dates.date2num`_ to format date/time coordinates for use on a plot
+  axis (previously :meth:`~iris.plot.pcolor` and :meth:`~iris.plot.pcolormesh`
+  did not include this behaviour). (:pull:`3762`)
 
-* `@trexfeathers`_ changed date/time axis labels in `iris.quickplot` to now
-  **always** be based on the ``epoch`` used in `matplotlib.dates.date2num
-  <https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num>`_
+* `@trexfeathers`_ changed date/time axis labels in :mod:`iris.quickplot` to
+  now **always** be based on the ``epoch`` used in `matplotlib.dates.date2num`_
   (previously would take the unit from a time coordinate, if present, even
   though the coordinate's value had been changed via ``date2num``).
   (:pull:`3762`)
@@ -94,6 +100,10 @@ This document explains the changes made to Iris for this release
   which was previously failing for some coordinate systems. See :issue:`3629`.
   (:pull:`3804`)
 
+* `@stephenworsley`_ changed the way tick labels are assigned from string coords.
+  Previously, the first tick label would occasionally be duplicated. This also
+  removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
+
 
 💣 Incompatible Changes
 =======================
@@ -101,10 +111,10 @@ This document explains the changes made to Iris for this release
 * `@pp-mo`_ rationalised :class:`~iris.cube.CubeList` extraction
   methods:
 
-  The method :meth:`~iris.cube.CubeList.extract_strict`, and the ``strict``
-  keyword to :meth:`~iris.cube.CubeList.extract` method have been removed, and
-  are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube` and
-  :meth:`~iris.cube.CubeList.extract_cubes`.
+  The former method ``iris.cube.CubeList.extract_strict``, and the ``strict``
+  keyword of the :meth:`~iris.cube.CubeList.extract` method have been removed,
+  and are replaced by the new routines :meth:`~iris.cube.CubeList.extract_cube`
+  and :meth:`~iris.cube.CubeList.extract_cubes`.
   The new routines perform the same operation, but in a style more like other
   ``Iris`` functions such as :meth:`~iris.load_cube` and :meth:`~iris.load_cubes`.
   Unlike ``strict`` extraction, the type of return value is now completely
@@ -122,7 +132,7 @@ This document explains the changes made to Iris for this release
   use the :func:`iris.util.equalise_attributes` function instead.
   (:pull:`3527`)
 
-* `@bjlittle`_ removed the :mod:`iris.experimental.concatenate` module. In
+* `@bjlittle`_ removed the module ``iris.experimental.concatenate``. In
   ``v1.6.0`` the experimental ``concatenate`` functionality was moved to the
   :meth:`iris.cube.CubeList.concatenate` method.  Since then, calling the
   :func:`iris.experimental.concatenate.concatenate` function raised an
@@ -130,7 +140,12 @@ This document explains the changes made to Iris for this release
 
 * `@stephenworsley`_ changed Iris objects loaded from NetCDF-CF files to have
   ``units='unknown'`` where the corresponding NetCDF variable has no ``units``
-  property. Previously these cases defaulted to ``units='1'``. (:pull:`3795`)
+  property. Previously these cases defaulted to ``units='1'``.
+  This affects loading of coordinates whose file variable has no "units"
+  attribute (not valid, under `CF units rules`_):  These will now have units
+  of `"unknown"`, rather than `"1"`, which **may prevent the creation of
+  a hybrid vertical coordinate**.  While these cases used to "work", this was
+  never really correct behaviour. (:pull:`3795`)
 
 * `@SimonPeatman`_ added attribute ``var_name`` to coordinates created by the
   :func:`iris.analysis.trajectory.interpolate` function.  This prevents
@@ -152,7 +167,6 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-
 * `@stephenworsley`_, `@trexfeathers`_ and `@bjlittle`_ removed ``Python2``
   support, modernising the codebase by switching to exclusive ``Python3``
   support. (:pull:`3513`)
@@ -162,12 +176,11 @@ This document explains the changes made to Iris for this release
   dependencies is now easier with our curated conda environment YAML files.
   (:pull:`3812`)
 
-* `@stephenworsley`_ pinned Iris to require Dask >= 2.0. (:pull:`3460`)
+* `@stephenworsley`_ pinned Iris to require `Dask`_ ``>=2.0``. (:pull:`3460`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ pinned Iris to require
-  `Cartopy <https://github.com/SciTools/cartopy>`_ >= 0.18, in
-  order to remain compatible with the latest version of `Matplotlib`_.
-  (:pull:`3762`)
+  `Cartopy`_ ``>=0.18``, in order to remain compatible with the latest version
+  of `Matplotlib`_. (:pull:`3762`)
 
 * `@bjlittle`_ unpinned Iris to use the latest version of `Matplotlib`_.
   Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
@@ -175,7 +188,7 @@ This document explains the changes made to Iris for this release
   necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ unpinned Iris to use the latest version
-  of `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`)
+  of `Proj`_. (:pull:`3762`)
 
 * `@stephenworsley`_ and `@trexfeathers`_ removed GDAL from the extensions
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
@@ -191,12 +204,11 @@ This document explains the changes made to Iris for this release
 * `@tkknight`_ updated documentation to use a modern sphinx theme and be
   served from https://scitools-iris.readthedocs.io/en/latest/. (:pull:`3752`)
 
-* `@bjlittle`_ added support for the
-  `black <https://black.readthedocs.io/en/stable/>`_ code formatter. This is
+* `@bjlittle`_ added support for the `black`_ code formatter. This is
   now automatically checked on GitHub PRs, replacing the older, unittest-based
-  "iris.tests.test_coding_standards.TestCodeFormat". Black provides automatic
+  ``iris.tests.test_coding_standards.TestCodeFormat``. Black provides automatic
   code format correction for most IDEs.  See the new developer guide section on
-  :ref:`iris_code_format`. (:pull:`3518`)
+  :ref:`code_formatting`. (:pull:`3518`)
 
 * `@tkknight`_ and `@trexfeathers`_ refreshed the :ref:`whats_new_contributions`
   for the :ref:`iris_whatsnew`. This includes always creating the ``latest``
@@ -219,18 +231,20 @@ This document explains the changes made to Iris for this release
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
 
-* `@tkknight`_ overhauled the
-  :ref:`developers_guide` including information on getting involved in
-  becoming a contributor and general structure of the guide.  This resolves
-  :issue:`2170`, :issue:`2331`, :issue:`3453`. (:pull:`3852`)
+* `@tkknight`_ overhauled the :ref:`developers_guide` including information on
+  getting involved in becoming a contributor and general structure of the
+  guide.  This resolves :issue:`2170`, :issue:`2331`, :issue:`3453`,
+  :issue:`314`, :issue:`2902`. (:pull:`3852`)
+
+* `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord`
+  docstring. (:pull:`3681`)
 
 
 💼 Internal
 ===========
 
-* `@pp-mo`_ and `@lbdreyer`_ removed all test dependencies on
-  `SciTools/iris-grib <https://github.com/SciTools/iris-grib>`_ by transferring
-  all relevant content to the iris-grib repository. (:pull:`3662`,
+* `@pp-mo`_ and `@lbdreyer`_ removed all Iris test dependencies on `iris-grib`_
+  by transferring all relevant content to the `iris-grib`_ repository. (:pull:`3662`,
   :pull:`3663`, :pull:`3664`, :pull:`3665`, :pull:`3666`, :pull:`3669`,
   :pull:`3670`, :pull:`3671`, :pull:`3672`, :pull:`3742`, :pull:`3746`)
 
@@ -243,38 +257,54 @@ This document explains the changes made to Iris for this release
 
 * `@stephenworsley`_ changed the numerical values in tests involving the
   Robinson projection due to improvements made in
-  `Proj <https://github.com/OSGeo/PROJ>`_. (:pull:`3762`) (see also
-  `proj#1292 <https://github.com/OSGeo/PROJ/pull/1292>`_ and
-  `proj#2151 <https://github.com/OSGeo/PROJ/pull/2151>`_)
+  `Proj`_. (:pull:`3762`) (see also `Proj#1292`_ and `Proj#2151`_)
 
 * `@stephenworsley`_ changed tests to account for more detailed descriptions of
-  projections in `GDAL <https://github.com/OSGeo/gdal>`_. (:pull:`3762`)
-  (`see also GDAL#1185 <https://github.com/OSGeo/gdal/pull/1185>`_)
+  projections in `GDAL`_. (:pull:`3762`) (see also `GDAL#1185`_)
 
-* `@stephenworsley`_ changed tests to account for
-  `GDAL <https://github.com/OSGeo/gdal>`_ now saving fill values for data
-  without masked points. (:pull:`3762`)
+* `@stephenworsley`_ changed tests to account for `GDAL`_ now saving fill values
+  for data without masked points. (:pull:`3762`)
 
-* `@trexfeathers`_ changed every graphics test that includes `Cartopy's coastlines
-  <https://scitools.org.uk/cartopy/docs/latest/matplotlib/
-  geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines>`_
-  to account for new adaptive coastline scaling. (:pull:`3762`) (`see also
-  cartopy#1105 <https://github.com/SciTools/cartopy/pull/1105>`_)
+* `@trexfeathers`_ changed every graphics test that includes `Cartopy's coastlines`_
+  to account for new adaptive coastline scaling. (:pull:`3762`)
+  (see also `Cartopy#1105`_)
 
 * `@trexfeathers`_ changed graphics tests to account for some new default
-  grid-line spacing in `Cartopy <https://github.com/SciTools/cartopy>`_.
-  (:pull:`3762`)
-  (`see also cartopy#1117 <https://github.com/SciTools/cartopy/pull/1117>`_)
+  grid-line spacing in `Cartopy`_. (:pull:`3762`) (see also `Cartopy#1117`_)
 
 * `@trexfeathers`_ added additional acceptable graphics test targets to account
-  for very minor changes in `Matplotlib`_ version 3.3 (colormaps, fonts and
+  for very minor changes in `Matplotlib`_ version ``3.3`` (colormaps, fonts and
   axes borders). (:pull:`3762`)
+
+* `@rcomer`_ corrected the Matplotlib backend in Iris tests to ignore
+  `matplotlib.rcdefaults <https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults>`_,
+  instead the tests will **always** use ``agg``. (:pull:`3846`)
+
+* `@bjlittle`_ migrated the `black`_ support from ``19.10b0`` to ``20.8b1``.
+  (:pull:`3866`)
+
+* `@lbdreyer`_ updated the CF standard name table to the latest version: `v75`_.
+  (:pull:`3867`)
 
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
+.. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
+.. _iris-grib: https://github.com/SciTools/iris-grib
+.. _Cartopy: https://github.com/SciTools/cartopy
+.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
+.. _Cartopy#1105: https://github.com/SciTools/cartopy/pull/1105
+.. _Cartopy#1117: https://github.com/SciTools/cartopy/pull/1117
+.. _Dask: https://github.com/dask/dask
+.. _matplotlib.dates.date2num: https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num
+.. _Proj: https://github.com/OSGeo/PROJ
+.. _black: https://black.readthedocs.io/en/stable/
+.. _Proj#1292: https://github.com/OSGeo/PROJ/pull/1292
+.. _Proj#2151: https://github.com/OSGeo/PROJ/pull/2151
+.. _GDAL: https://github.com/OSGeo/gdal
+.. _GDAL#1185: https://github.com/OSGeo/gdal/pull/1185
 .. _@MoseleyS: https://github.com/MoseleyS
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@pp-mo: https://github.com/pp-mo
@@ -286,3 +316,8 @@ This document explains the changes made to Iris for this release
 .. _@tkknight: https://github.com/tkknight
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@SimonPeatman: https://github.com/SimonPeatman
+.. _@rcomer: https://github.com/rcomer
+.. _@jvegasbsc: https://github.com/jvegasbsc
+.. _@zklaus: https://github.com/zklaus
+.. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
+.. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html

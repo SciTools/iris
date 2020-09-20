@@ -4,6 +4,8 @@
 #   https://flake8.readthedocs.io/en/latest/user/error-codes.html
 #   https://pycodestyle.readthedocs.io/en/latest/intro.html#error-codes
 
+max-line-length = 80
+select = C,E,F,W,B,B950
 ignore =
     # E203: whitespace before ':'
     E203,

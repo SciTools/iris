@@ -249,7 +249,17 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
     ax = axes if axes else plt.gca()
     for axis, ticks in string_axes.items():
-        formatter = mpl_ticker.IndexFormatter(ticks)
+        # Define a tick formatter. This will assign a label to all ticks
+        # located precisely on  an integer in range(len(ticks)) and assign
+        # an empty string to any other ticks.
+        def ticker_func(tick_location, _):
+            tick_locations = range(len(ticks))
+            labels = ticks
+            label_dict = dict(zip(tick_locations, labels))
+            label = label_dict.get(tick_location, "")
+            return label
+
+        formatter = mpl_ticker.FuncFormatter(ticker_func)
         locator = mpl_ticker.MaxNLocator(integer=True)
         this_axis = getattr(ax, axis)
         this_axis.set_major_formatter(formatter)
@@ -341,7 +351,7 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
             )
 
             not_masked_at_discontiguity_along_y = np.any(
-                np.logical_and(mask_invert[:-1,], diffs_along_y)
+                np.logical_and(mask_invert[:-1], diffs_along_y)
             )
 
             not_masked_at_discontiguity = (

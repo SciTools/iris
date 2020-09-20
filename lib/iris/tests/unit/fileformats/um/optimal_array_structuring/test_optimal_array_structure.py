@@ -95,7 +95,7 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("b", np.array([7, 8, 9, 7, 8, 9])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (2, 3,))
+        self.assertEqual(shape, (2, 3))
         self.assertEqual(primaries, set(["a", "b"]))
         self._check_arrays_and_dims(
             elems_and_dims,
@@ -115,7 +115,7 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(
             elements, elements_values
         )
-        self.assertEqual(shape, (2, 3,))
+        self.assertEqual(shape, (2, 3))
         self.assertEqual(primaries, set(["a", "b"]))
         self._check_arrays_and_dims(
             elems_and_dims,

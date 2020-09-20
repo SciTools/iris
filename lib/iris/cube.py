@@ -3647,8 +3647,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             # having checked the metadata, now check the coordinates
             if result:
-                coord_compares = iris.analysis._dimensional_metadata_comparison(
-                    self, other
+                coord_compares = (
+                    iris.analysis._dimensional_metadata_comparison(self, other)
                 )
                 # if there are any coordinates which are not equal
                 result = not (
@@ -3658,7 +3658,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if result:
                 cm_compares = iris.analysis._dimensional_metadata_comparison(
-                    self, other, object_get=Cube.cell_measures,
+                    self, other, object_get=Cube.cell_measures
                 )
                 # if there are any cell measures which are not equal
                 result = not (
@@ -3668,7 +3668,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             if result:
                 av_compares = iris.analysis._dimensional_metadata_comparison(
-                    self, other, object_get=Cube.ancillary_variables,
+                    self, other, object_get=Cube.ancillary_variables
                 )
                 # if there are any ancillary variables which are not equal
                 result = not (

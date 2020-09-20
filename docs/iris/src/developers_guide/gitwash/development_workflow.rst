@@ -14,7 +14,8 @@ Workflow summary
 In what follows we'll refer to the upstream iris ``master`` branch, as
 "trunk".
 
-* Don't use your ``master`` branch for anything.  Consider deleting it.
+* Don't use your ``master`` (that is on your fork) branch for anything.
+  Consider deleting it.
 * When you are starting a new set of changes, fetch any changes from trunk,
   and start a new *feature branch* from that.
 * Make a new branch for each separable set of changes |emdash| "one task, one
@@ -22,7 +23,7 @@ In what follows we'll refer to the upstream iris ``master`` branch, as
 * Name your branch for the purpose of the changes - e.g.
   ``bugfix-for-issue-14`` or ``refactor-database-code``.
 * If you can possibly avoid it, avoid merging trunk or any other branches into
-  your feature branch while you are working.  
+  your feature branch while you are working.
 * If you do find yourself merging from trunk, consider :ref:`rebase-on-trunk`
 * Ask on the `iris mailing list`_ if you get stuck.
 * Ask for code review!
@@ -134,21 +135,21 @@ In more detail
 #. Check what the actual changes are with ``git diff`` (`git diff`_).
 #. Add any new files to version control ``git add new_file_name`` (see
    `git add`_).
-#. To commit all modified files into the local copy of your repo,, do
+#. To commit all modified files into the local copy of your repo, do
    ``git commit -am 'A commit message'``.  Note the ``-am`` options to
    ``commit``. The ``m`` flag just signals that you're going to type a
-   message on the command line.  The ``a`` flag |emdash| you can just take on
-   faith |emdash| or see `why the -a flag?`_ |emdash| and the helpful use-case
-   description in the `tangled working copy problem`_. The `git commit`_ manual
-   page might also be useful.
+   message on the command line.  The ``a`` flag will automatically stage
+   all files that have been modified and deleted.
 #. To push the changes up to your forked repo on github, do a ``git
    push`` (see `git push`_).
+
 
 Testing your changes
 ====================
 
-Once you are happy with your changes, work thorough the :ref:`pr_check` and make sure
-your branch passes all the relevant tests.
+Once you are happy with your changes, work thorough the :ref:`pr_check` and
+make sure your branch passes all the relevant tests.
+
 
 Ask for your changes to be reviewed or merged
 =============================================
@@ -188,8 +189,9 @@ Delete a branch on github
    # delete branch on github
    git push origin :my-unwanted-branch
 
-(Note the colon ``:`` before ``test-branch``.  See also:
+Note the colon ``:`` before ``test-branch``.  See also:
 http://github.com/guides/remove-a-remote-branch
+
 
 Several people sharing a single repository
 ------------------------------------------
@@ -201,12 +203,14 @@ share it via github.
 First fork iris into your account, as from :ref:`forking`.
 
 Then, go to your forked repository github page, say
-``http://github.com/your-user-name/iris``
+``http://github.com/your-user-name/iris``, select :guilabel:`Settings`,
+:guilabel:`Manage Access` and then :guilabel:`Invite collaborator`.
 
-Click on the 'Admin' button, and add anyone else to the repo as a
-collaborator:
+.. note:: For more information on sharing your repository see the
+          GitHub documentation on `Inviting collaborators`_.
 
-   .. image:: pull_button.png
+
+.. _Inviting collaborators: https://docs.github.com/en/github/setting-up-and-managing-your-github-user-account/inviting-collaborators-to-a-personal-repository
 
 Now all those people can do::
 
@@ -233,189 +237,18 @@ To see a linear list of commits for this branch::
 
    git log
 
-You can also look at the `network graph visualizer`_ for your github
-repo.
-
 Finally the :ref:`fancy-log` ``lg`` alias will give you a reasonable text-based
 graph of the repository.
+
 
 .. _rebase-on-trunk:
 
 Rebasing on trunk
 -----------------
 
-Let's say you thought of some work you'd like to do. You
-:ref:`update-mirror-trunk` and :ref:`make-feature-branch` called
-``cool-feature``. At this stage trunk is at some commit, let's call it E. Now
-you make some new commits on your ``cool-feature`` branch, let's call them A, B,
-C.  Maybe your changes take a while, or you come back to them after a while.  In
-the meantime, trunk has progressed from commit E to commit (say) G::
+For more information please see the
+`official github documentation on git rebase`_.
 
-          A---B---C cool-feature
-         /
-    D---E---F---G trunk
-
-At this stage you consider merging trunk into your feature branch, and you
-remember that this here page sternly advises you not to do that, because the
-history will get messy. Most of the time you can just ask for a review, and not
-worry that trunk has got a little ahead.  But sometimes, the changes in trunk
-might affect your changes, and you need to harmonize them.  In this situation
-you may prefer to do a rebase.
-
-rebase takes your changes (A, B, C) and replays them as if they had been made to
-the current state of ``trunk``.  In other words, in this case, it takes the
-changes represented by A, B, C and replays them on top of G. After the rebase,
-your history will look like this::
-
-                  A'--B'--C' cool-feature
-                 /
-    D---E---F---G trunk
-
-See `rebase without tears`_ for more detail.
-
-To do a rebase on trunk::
-
-    # Update the mirror of trunk
-    git fetch upstream
-    # go to the feature branch
-    git checkout cool-feature
-    # make a backup in case you mess up
-    git branch tmp cool-feature
-    # rebase cool-feature onto trunk
-    git rebase --onto upstream/master upstream/master cool-feature
-
-In this situation, where you are already on branch ``cool-feature``, the last
-command can be written more succinctly as::
-
-    git rebase upstream/master
-
-When all looks good you can delete your backup branch::
-
-   git branch -D tmp
-
-If it doesn't look good you may need to have a look at
-:ref:`recovering-from-mess-up`.
-
-If you have made changes to files that have also changed in trunk, this may
-generate merge conflicts that you need to resolve - see the `git rebase`_ man
-page for some instructions at the end of the "Description" section. There is
-some related help on merging in the git user manual - see `resolving a merge`_.
-
-.. _recovering-from-mess-up:
-
-Recovering from mess-ups
-------------------------
-
-Sometimes, you mess up merges or rebases. Luckily, in git it is
-relatively straightforward to recover from such mistakes.
-
-If you mess up during a rebase::
-
-   git rebase --abort
-
-If you notice you messed up after the rebase::
-
-   # reset branch back to the saved point
-   git reset --hard tmp
-
-If you forgot to make a backup branch::
-
-   # look at the reflog of the branch
-   git reflog show cool-feature
-
-   8630830 cool-feature@{0}: commit: BUG: io: close file handles immediately
-   278dd2a cool-feature@{1}: rebase finished: refs/heads/my-feature-branch onto 11ee694744f2552d
-   26aa21a cool-feature@{2}: commit: BUG: lib: make seek_gzip_factory not leak gzip obj
-   ...
-
-   # reset the branch to where it was before the botched rebase
-   git reset --hard cool-feature@{2}
-
-.. _rewriting-commit-history:
-
-Rewriting commit history
-------------------------
-
-.. note::
-
-   Do this only for your own feature branches.
-
-There's an embarrassing typo in a commit you made? Or perhaps the you
-made several false starts you would like the posterity not to see.
-
-This can be done via *interactive rebasing*.
-
-Suppose that the commit history looks like this::
-
-    git log --oneline
-    eadc391 Fix some remaining bugs
-    a815645 Modify it so that it works
-    2dec1ac Fix a few bugs + disable
-    13d7934 First implementation
-    6ad92e5 * masked is now an instance of a new object, MaskedConstant
-    29001ed Add pre-nep for a copule of structured_array_extensions.
-    ...
-
-and ``6ad92e5`` is the last commit in the ``cool-feature`` branch. Suppose we
-want to make the following changes:
-
-* Rewrite the commit message for ``13d7934`` to something more sensible.
-* Combine the commits ``2dec1ac``, ``a815645``, ``eadc391`` into a single one.
-
-We do as follows::
-
-    # make a backup of the current state
-    git branch tmp HEAD
-    # interactive rebase
-    git rebase -i 6ad92e5
-
-This will open an editor with the following text in it::
-
-    pick 13d7934 First implementation
-    pick 2dec1ac Fix a few bugs + disable
-    pick a815645 Modify it so that it works
-    pick eadc391 Fix some remaining bugs
-
-    # Rebase 6ad92e5..eadc391 onto 6ad92e5
-    #
-    # Commands:
-    #  p, pick = use commit
-    #  r, reword = use commit, but edit the commit message
-    #  e, edit = use commit, but stop for amending
-    #  s, squash = use commit, but meld into previous commit
-    #  f, fixup = like "squash", but discard this commit's log message
-    #
-    # If you remove a line here THAT COMMIT WILL BE LOST.
-    # However, if you remove everything, the rebase will be aborted.
-    #
-
-To achieve what we want, we will make the following changes to it::
-
-    r 13d7934 First implementation
-    pick 2dec1ac Fix a few bugs + disable
-    f a815645 Modify it so that it works
-    f eadc391 Fix some remaining bugs
-
-This means that (i) we want to edit the commit message for
-``13d7934``, and (ii) collapse the last three commits into one. Now we
-save and quit the editor.
-
-Git will then immediately bring up an editor for editing the commit
-message. After revising it, we get the output::
-
-    [detached HEAD 721fc64] FOO: First implementation
-     2 files changed, 199 insertions(+), 66 deletions(-)
-    [detached HEAD 0f22701] Fix a few bugs + disable
-     1 files changed, 79 insertions(+), 61 deletions(-)
-    Successfully rebased and updated refs/heads/my-feature-branch.
-
-and the history looks now like this::
-
-     0f22701 Fix a few bugs + disable
-     721fc64 ENH: Sophisticated feature
-     6ad92e5 * masked is now an instance of a new object, MaskedConstant
-
-If it went wrong, recovery is again possible as explained :ref:`above
-<recovering-from-mess-up>`.
+.. _official github documentation on git rebase: https://docs.github.com/en/github/using-git/about-git-rebase
 
 .. include:: links.inc
