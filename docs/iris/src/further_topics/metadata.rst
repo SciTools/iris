@@ -771,10 +771,9 @@ Metadata conversion
 .. testsetup:: metadata-convert
 
    import iris
-   from iris.common import CubeMetadata, CoordMetadata, DimCoordMetadata
+   from iris.common import DimCoordMetadata
    cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
    longitude = cube.coord("longitude")
-   forecast_period = cube.coord("forecast_period")
 
 In general, the :ref:`equal <metadata equality>`, :ref:`difference <metadata difference>`,
 and :ref:`combine <metadata combine>` methods only support operations on instances
@@ -832,7 +831,114 @@ class instances,
 Metadata assignment
 ^^^^^^^^^^^^^^^^^^^
 
-*Vestibulum maximus eleifend suscipit. Quisque vel tempor turpis. Nulla justo nulla, finibus sed tristique quis, tempor vel leo. Aenean molestie pharetra nisl sed ultrices. Fusce gravida consequat est at vehicula.*
+.. testsetup:: metadata-assign
+
+   import iris
+   cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+   longitude = cube.coord("longitude")
+   original = longitude.copy()
+   latitude = cube.coord("latitude")
+
+The ``metadata`` property available on each Iris `CF Conventions`_ container
+class (see :numref:`metadata classes`) can be use not only **to get**
+the metadata of an instance, but also **to set** the metadata on an instance.
+
+For example, given the following :class:`~iris.common.DimCoordMetadata` of the
+``longitude`` coordinate,
+
+.. doctest:: metadata-assign
+
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+We can assign to it the :class:`~iris.common.DimCoordMetadata` of the ``latitude``
+coordinate,
+
+.. doctest:: metadata-assign
+
+    >>> longitude.metadata = latitude.metadata
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+
+Assign by iterable
+""""""""""""""""""
+
+It is also possible to assign to the ``metadata`` property of an Iris
+`CF Conventions`_ container with an iterable containing the correct
+number of associated member values, e.g.,
+
+.. doctest:: metadata-assign
+
+    >>> values = [getattr(latitude, member) for member in latitude.metadata._fields]
+    >>> longitude.metadata = values
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+
+Assign by namedtuple
+""""""""""""""""""""
+
+A `namedtuple`_ may also be used to assign to the ``metadata`` property of an
+Iris `CF Conventions`_ container. For example, let's first create a custom
+namedtuple,
+
+.. doctest:: metadata-assign
+
+    >>> from collections import namedtuple
+    >>> Metadata = namedtuple("Metadata", ["standard_name", "long_name", "var_name", "units", "attributes", "coord_system", "climatological", "circular"])
+    >>> metadata = Metadata(*values)
+    >>> metadata
+    Metadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> longitude.metadata = metadata
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+
+Assign by mapping
+"""""""""""""""""
+
+It is also possible to assign to the ``metadata`` property using a `mapping`_,
+such as a `dict`_,
+
+.. doctest:: metadata-assign
+
+    >>> mapping = latitude.metadata._asdict()
+    >>> mapping
+    OrderedDict([('standard_name', 'latitude'), ('long_name', None), ('var_name', 'latitude'), ('units', Unit('degrees')), ('attributes', {}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    >>> longitude.metadata = mapping
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Support is also provided for assigning a **partial** mapping, for example,
+
+.. testcode:: metadata-assign
+   :hide:
+
+   longitude = original
+
+.. doctest:: metadata-assign
+
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> longitude.metadata = dict(var_name="lat", units="radians", circular=True)
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='lat', units=Unit('radians'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
+
+Indeed, it's also possible to assign a **different** metadata class instance,
+
+.. testcode:: metadata-assign
+   :hide:
+
+   longitude.metadata = dict(var_name="longitude", units="degrees", circular=False)
+
+.. doctest:: metadata-assign
+
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    >>> longitude.metadata = cube.metadata
+    >>> longitude.metadata  # doctest: +SKIP
+    DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 
 .. _lenient metadata:
@@ -852,6 +958,7 @@ Lenient metadata
 .. _Cell Measures: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#cell-measures
 .. _Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _GitHub Issue: https://github.com/SciTools/iris/issues/new/choose
+.. _mapping: https://docs.python.org/3/glossary.html#term-mapping
 .. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
 .. _namedtuple._make: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._make
 .. _namedtuple._asdict: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._asdict
