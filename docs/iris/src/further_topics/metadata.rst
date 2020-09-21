@@ -1,3 +1,5 @@
+.. _metadata:
+
 ********
 Metadata
 ********
@@ -939,15 +941,6 @@ Indeed, it's also possible to assign a **different** metadata class instance,
     >>> longitude.metadata = cube.metadata
     >>> longitude.metadata  # doctest: +SKIP
     DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
-
-
-.. _lenient metadata:
-
-Lenient metadata
-================
-
-*Fusce laoreet orci sem, nec consectetur tortor malesuada sit amet. Ut gravida venenatis enim non porttitor. Morbi varius ipsum consequat tortor feugiat, eu facilisis dui faucibus. Duis pretium lacus ullamcorper.*
-
 
 
 .. _data about data: https://en.wikipedia.org/wiki/Metadata

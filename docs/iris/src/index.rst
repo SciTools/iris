@@ -80,6 +80,7 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
 
    further_topics/index
    further_topics/metadata
+   further_topics/lenient_metadata
    further_topics/lenient_maths
 
 

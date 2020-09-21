@@ -16,6 +16,7 @@ that may be of interest to the more advanced or curious user.
 
 
 * :doc:`metadata`
+* :doc:`lenient_metadata`
 * :doc:`lenient_maths`
 
 
