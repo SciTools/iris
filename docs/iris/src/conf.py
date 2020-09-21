@@ -244,6 +244,8 @@ linkcheck_ignore = [
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "http://code.google.com/p/msysgit/downloads/list",
     "http://schacon.github.com/git",
+    "https://github.com/SciTools/iris/pull",
+    "https://github.com/SciTools/iris/issue",
 ]
 
 # list of sources to exclude from the build.
