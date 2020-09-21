@@ -531,9 +531,10 @@ there is **at least** one ``metadata`` member with a different value, where,
 - a `tuple`_ containing the two different associated values for the member.
 
 Given our example, only the ``long_name``, ``var_name`` and ``units`` members
-have different values, as expected. Note that, the order of the tuple member
-values is the same order of the metadata class instances being compared, e.g.,
-changing the ``difference`` instance order is reflected in the result,
+have different values, as expected. Note that, the ``difference`` method **is
+not** commutative. The the order of the tuple member values is the same order
+of the metadata class instances being compared, e.g., changing the
+``difference`` instance order is reflected in the result,
 
 .. doctest:: richer-metadata
 
@@ -637,7 +638,129 @@ In general, however, comparing **different** metadata classes will result in a
 Metadata combination
 ^^^^^^^^^^^^^^^^^^^^
 
-*Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut venenatis venenatis massa, a vestibulum lacus porta quis. Vivamus mattis augue id mauris porttitor, in ultricies lorem porttitor. Nulla facilisi. Curabitur.*
+.. testsetup:: metadata-combine
+
+   import iris
+   cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+   longitude = cube.coord("longitude")
+
+So far we've seen how to :ref:`compare metadata <metadata equality>`, and also how
+to determine the :ref:`difference between metadata <metadata difference>`. Now we
+take the next step, and explore how to combine metadata together using the ``combine``
+metadata class method.
+
+For example, consider the following :class:`~iris.common.CubeMetadata`,
+
+.. doctest:: metadata-combine
+
+    >>> cube.metadata  # doctest: +SKIP
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+
+We can perform the **identity function** by comparing the metadata with itself,
+
+.. doctest:: metadata-combine
+
+    >>> metadata = cube.metadata.combine(cube.metadata)
+    >>> metadata == cube.metadata
+    True
+
+As you might suspect, combining identical metadata returns metadata that is
+also the same.
+
+The ``combine`` method will always return a new metadata class instance,
+where each metadata member is either ``None`` or populated with a common value.
+Let's clarify this, by combining our :class:`~iris.common.CubeMetadata` above
+with another instance that's identical apart from its ``standard_name`` member,
+which is replaced with different value,
+
+.. doctest:: metadata-combine
+
+    >>> metadata = cube.metadata._replace(standard_name="air_pressure_at_sea_level")
+    >>> metadata != cube.metadata
+    True
+    >>> metadata.combine(cube.metadata)  # doctest: +SKIP
+    CubeMetadata(standard_name=None, long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'STASH': STASH(model=1, section=3, item=236), 'source': 'Data from Met Office Unified Model 6.05', 'Model scenario': 'A1B', 'Conventions': 'CF-1.5'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+
+The ``combine`` method combines metadata by performing a **strict** comparison
+between each of the associated metadata member values,
+
+- if the values are **different**, then the combined result is ``None``
+- otherwise, the combined result is the **common value**
+
+Let's reinforce this behaviour, but this time by combining metadata where the
+``attributes`` `dict`_ member is different, where,
+
+- the ``STASH`` and ``source`` keys are **missing**,
+- the ``Model scenario`` key has the same **same value**,
+- the ``Conventions`` key has a **different value**, and
+- the ``grinning face`` key is **new**
+
+.. doctest:: metadata-combine
+
+    >>> attributes = {"Model scenario": "A1B", "Conventions": "CF-1.8", "grinning face": "🙂" }
+    >>> metadata = cube.metadata._replace(attributes=attributes)
+    >>> metadata != cube.metadata
+    True
+    >>> metadata.combine(cube.metadata).attributes
+    {'Model scenario': 'A1B'}
+
+Note that, the ``combine`` method is **commutative**,
+
+.. doctest:: metadata-combine
+
+    >>> cube.metadata.combine(metadata).attributes
+    {'Model scenario': 'A1B'}
+
+when combining instances of the **same** metadata class, however there is
+an exception, as explained next.
+
+
+.. _combine like:
+
+Combine like with like
+""""""""""""""""""""""
+
+Akin to the :ref:`equal <metadata equality>` and
+:ref:`difference <metadata difference>` methods, only instances of **similar**
+metadata classes can be combined, otherwise a ``TypeError`` is raised,
+
+.. doctest:: metadata-combine
+
+    >>> cube.metadata.combine(longitude.metadata)
+    Traceback (most recent call last):
+    TypeError: Cannot combine 'CubeMetadata' with <class 'iris.common.metadata.DimCoordMetadata'>.
+
+However, again, the :ref:`exception rule` also applies here i.e., support is
+provided between :class:`~iris.common.CoordMetadata` and
+:class:`~iris.common.DimCoordMetadata` metadata classes.
+
+For example, we can ``combine`` the metadata of the following
+:class:`~iris.coords.AuxCoord` and :class:`~iris.coords.DimCoord`,
+
+.. doctest:: metadata-combine
+
+    >>> forecast_period = cube.coord("forecast_period")
+    >>> longitude = cube.coord("longitude")
+
+First, let's see their associated metadata,
+
+.. doctest:: metadata-combine
+
+    >>> forecast_period.metadata
+    CoordMetadata(standard_name='forecast_period', long_name=None, var_name='forecast_period', units=Unit('hours'), attributes={}, coord_system=None, climatological=False)
+    >>> longitude.metadata
+    DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Before combining their metadata together,
+
+.. doctest:: metadata-combine
+
+    >>> forecast_period.metadata.combine(longitude.metadata)
+    CoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes={}, coord_system=None, climatological=False)
+    >>> longitude.metadata.combine(forecast_period.metadata)
+    DimCoordMetadata(standard_name=None, long_name=None, var_name=None, units=None, attributes={}, coord_system=None, climatological=False, circular=None)
+
+However, note that commutativity in this case cannot be honoured, for obvious reasons.
 
 
 .. _metadata conversion:
