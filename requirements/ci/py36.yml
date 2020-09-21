@@ -46,3 +46,6 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery
   - sphinx_rtd_theme
+  - pip
+  - pip:
+    - sphinxcontrib-napoleon
