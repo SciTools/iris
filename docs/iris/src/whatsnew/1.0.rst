@@ -4,12 +4,6 @@ v1.0 (17 Oct 2012)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. contents:: Skip to section:
-   :local:
-   :depth: 3
-
-
 With the release of Iris 1.0, we have broadly completed the transition
 to the CF data model, and established a stable foundation for future
 work. Following this release we plan to deliver significant performance

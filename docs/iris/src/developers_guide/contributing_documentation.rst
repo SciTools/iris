@@ -11,9 +11,6 @@ improve the documentation for all users.
 Any change to the Iris project whether it is a bugfix, new feature or
 documentation update must use the :ref:`development-workflow`.
 
-.. contents:: Contents:
-      :local:
-
 
 Requirements
 ~~~~~~~~~~~~
