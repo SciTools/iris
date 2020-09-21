@@ -663,17 +663,17 @@ We can perform the **identity function** by comparing the metadata with itself,
 .. doctest:: metadata-combine
 
     >>> metadata = cube.metadata.combine(cube.metadata)
-    >>> metadata == cube.metadata
+    >>> cube.metadata == metadata
     True
 
 As you might suspect, combining identical metadata returns metadata that is
-also the same.
+also identical.
 
-The ``combine`` method will always return a new metadata class instance,
-where each metadata member is either ``None`` or populated with a common value.
-Let's clarify this, by combining our :class:`~iris.common.CubeMetadata` above
+The ``combine`` method will always return **a new** metadata class instance,
+where each metadata member is either ``None`` or populated with a **common value**.
+Let's clarify this, by combining our above :class:`~iris.common.CubeMetadata`
 with another instance that's identical apart from its ``standard_name`` member,
-which is replaced with different value,
+which is replaced with **different value**,
 
 .. doctest:: metadata-combine
 
@@ -706,15 +706,18 @@ Let's reinforce this behaviour, but this time by combining metadata where the
     >>> metadata.combine(cube.metadata).attributes
     {'Model scenario': 'A1B'}
 
+The combined result for the ``attributes`` member only contains those
+**common keys** with **common values**.
+
 Note that, the ``combine`` method is **commutative**,
 
 .. doctest:: metadata-combine
 
-    >>> cube.metadata.combine(metadata).attributes
-    {'Model scenario': 'A1B'}
+    >>> cube.metadata.combine(metadata) == metadata.combine(cube.metadata)
+    True
 
-when combining instances of the **same** metadata class, however there is
-an exception, as explained next.
+Although, this is only the case when combining instances of the **same**
+metadata class. This is explored in a little further detail next.
 
 
 .. _combine like:
@@ -821,8 +824,8 @@ As such, all of these metadata members of the
 Thus these particular metadata members are set to ``None`` in the resultant
 :class:`~iris.common.DimCoordMetadata` instance.
 
-Note that, the ``from_metadata`` method is also available on metadata
-class instances,
+Note that, the ``from_metadata`` method is also available on a metadata
+class instance,
 
 .. doctest:: metadata-convert
 
@@ -853,7 +856,7 @@ For example, given the following :class:`~iris.common.DimCoordMetadata` of the
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-We can assign to it the :class:`~iris.common.DimCoordMetadata` of the ``latitude``
+We can assign to it directly using the :class:`~iris.common.DimCoordMetadata` of the ``latitude``
 coordinate,
 
 .. doctest:: metadata-assign
@@ -867,8 +870,8 @@ Assign by iterable
 """"""""""""""""""
 
 It is also possible to assign to the ``metadata`` property of an Iris
-`CF Conventions`_ container with an iterable containing the correct
-number of associated member values, e.g.,
+`CF Conventions`_ container with an iterable containing the **correct
+number** of associated member values, e.g.,
 
 .. doctest:: metadata-assign
 
@@ -883,15 +886,26 @@ Assign by namedtuple
 
 A `namedtuple`_ may also be used to assign to the ``metadata`` property of an
 Iris `CF Conventions`_ container. For example, let's first create a custom
-namedtuple,
+namedtuple class,
 
 .. doctest:: metadata-assign
 
     >>> from collections import namedtuple
     >>> Metadata = namedtuple("Metadata", ["standard_name", "long_name", "var_name", "units", "attributes", "coord_system", "climatological", "circular"])
+
+Now create an instance of this custom namedtuple class, and populate it,
+
+.. doctest:: metadata-assign
+
     >>> metadata = Metadata(*values)
     >>> metadata
     Metadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Now we can use the custom namedtuple instance to assign directly to the metadata
+of the ``longitude`` coordinate,
+
+.. doctest:: metadata-assign
+
     >>> longitude.metadata = metadata
     >>> longitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
@@ -927,7 +941,8 @@ Support is also provided for assigning a **partial** mapping, for example,
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='lat', units=Unit('radians'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
 
-Indeed, it's also possible to assign a **different** metadata class instance,
+Indeed, it's also possible to assign to the ``metadata`` property with a
+**different** metadata class instance,
 
 .. testcode:: metadata-assign
    :hide:
@@ -941,6 +956,8 @@ Indeed, it's also possible to assign a **different** metadata class instance,
     >>> longitude.metadata = cube.metadata
     >>> longitude.metadata  # doctest: +SKIP
     DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Note that, only **common** metadata members will be assigned new associated values.
 
 
 .. _data about data: https://en.wikipedia.org/wiki/Metadata
