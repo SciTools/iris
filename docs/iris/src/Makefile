@@ -2,11 +2,14 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    = 
+SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 SRCDIR        = .
+
+# See https://www.sphinx-doc.org/en/master/man/sphinx-build.html?highlight=--keep-going#cmdoption-sphinx-build-W
+WARNING_TO_ERROR = -W --keep-going
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -39,7 +42,7 @@ clean:
 	-rm -rf $(SRCDIR)/generated
 
 html:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) $(WARNING_TO_ERROR) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html"
 
