@@ -39,20 +39,20 @@ What each of these **different** Iris `CF Conventions`_ classes all have in
    :widths: auto
    :align: center
 
-   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
-   Metadata members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord`
-   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
-   ``standard name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
-   ``long name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
-   ``var name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
-   ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
-   ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔
-   ``coord_system``                                            ✔                              ✔                                                                                                     ✔
-   ``climatological``                                          ✔                              ✔                                                                                                     ✔
-   ``measure``                                                                                                                           ✔
-   ``cell_methods``                                                                                                                                                        ✔
-   ``circular``                                                                                                                                                                                     ✔
-   =================== ======================================= ============================== ========================================== ================================= ======================== ==============================
+   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
+   Metadata members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord` Metadata members
+   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
+   ``standard name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``standard name``
+   ``long name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``long name``
+   ``var name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``var name``
+   ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``units``
+   ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``attributes``
+   ``coord_system``                                            ✔                              ✔                                                                                                     ✔                              ``coord_system``
+   ``climatological``                                          ✔                              ✔                                                                                                     ✔                              ``climatological``
+   ``measure``                                                                                                                           ✔                                                                                         ``measure``
+   ``cell_methods``                                                                                                                                                        ✔                                                       ``cell_methods``
+   ``circular``                                                                                                                                                                                     ✔                              ``circular``
+   =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
 
 :numref:`metadata members` shows for each Iris `CF Conventions`_ class the
 collective of individual metadata members used to define it. Almost all
@@ -590,9 +590,9 @@ Diffing like with like
 
 As discussed in :ref:`compare like`, it only makes sense to determine the
 ``difference`` between **similar** metadata class instances. However, note that
-the :ref:`exception rule` still applies here i.e., support is provided between
-:class:`~iris.common.CoordMetadata` and :class:`~iris.common.DimCoordMetadata`
-metadata classes.
+the :ref:`exception to the rule <exception rule>` still applies here i.e.,
+support is provided between :class:`~iris.common.CoordMetadata` and
+:class:`~iris.common.DimCoordMetadata` metadata classes.
 
 For example, given the following :class:`~iris.coords.AuxCoord` and
 :class:`~iris.coords.DimCoord`,
@@ -730,8 +730,8 @@ metadata classes can be combined, otherwise a ``TypeError`` is raised,
     Traceback (most recent call last):
     TypeError: Cannot combine 'CubeMetadata' with <class 'iris.common.metadata.DimCoordMetadata'>.
 
-However, again, the :ref:`exception rule` also applies here i.e., support is
-provided between :class:`~iris.common.CoordMetadata` and
+Again, however, the :ref:`exception to the rule <exception rule>` also applies
+here i.e., support is provided between :class:`~iris.common.CoordMetadata` and
 :class:`~iris.common.DimCoordMetadata` metadata classes.
 
 For example, we can ``combine`` the metadata of the following
@@ -768,7 +768,65 @@ However, note that commutativity in this case cannot be honoured, for obvious re
 Metadata conversion
 ^^^^^^^^^^^^^^^^^^^
 
-*Nulla facilisi. Etiam tortor est, posuere ac risus vitae, ornare viverra est. Ut dapibus feugiat nibh, cursus efficitur ex pulvinar id. Vestibulum ante ipsum primis in faucibus orci luctus et.*
+.. testsetup:: metadata-convert
+
+   import iris
+   from iris.common import CubeMetadata, CoordMetadata, DimCoordMetadata
+   cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+   longitude = cube.coord("longitude")
+   forecast_period = cube.coord("forecast_period")
+
+In general, the :ref:`equal <metadata equality>`, :ref:`difference <metadata difference>`,
+and :ref:`combine <metadata combine>` methods only support operations on instances
+of the same metadata class (see :ref:`exception to the rule <exception rule>`).
+
+However, metadata may be converted from one metadata class to another by using
+the ``from_metadata`` class method. For example, given the following
+:class:`~iris.common.CubeMetadata`,
+
+.. doctest:: metadata-convert
+
+    >>> cube.metadata  # doctest: +SKIP
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+
+We can easily convert it to a :class:`~iris.common.DimCoordMetadata` instance
+using ``from_metadata``,
+
+.. doctest:: metadata-convert
+
+    >>> DimCoordMetadata.from_metadata(cube.metadata)  # doctest: +SKIP
+    DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=None, climatological=None, circular=None)
+
+By examining :numref:`metadata members`, we can see that the :class:`~iris.cube.Cube`
+and :class:`~iris.coords.DimCoord` container classes share the following common
+metadata members,
+
+- ``standard_name``,
+- ``long_name``,
+- ``var_name``,
+- ``units``, and
+- ``attributes``
+
+As such, all of these metadata members of the
+:class:`~iris.common.DimCoordMetadata` instance are populated from the associated
+:class:`~iris.common.CubeMetadata` instance members. However, a
+:class:`~iris.common.CubeMetadata` class does not contain the following
+:class:`~iris.common.DimCoordMetadata` members,
+
+- ``coords_system``
+- ``climatological``, and
+- ``circular``
+
+Thus these particular metadata members are set to ``None`` in the resultant
+:class:`~iris.common.DimCoordMetadata` instance.
+
+Note that, the ``from_metadata`` method is also available on metadata
+class instances,
+
+.. doctest:: metadata-convert
+
+    >>> longitude.metadata.from_metadata(cube.metadata)
+    DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=None, climatological=None, circular=None)
 
 
 Metadata assignment
