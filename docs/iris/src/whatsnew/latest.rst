@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 <unreleased>
 ************
 
@@ -231,8 +233,19 @@ This document explains the changes made to Iris for this release
   user guide to clarify how ``Units`` are handled during cube arithmetic.
   (:pull:`3803`)
 
+* `@tkknight`_ overhauled the :ref:`developers_guide` including information on
+  getting involved in becoming a contributor and general structure of the
+  guide.  This resolves :issue:`2170`, :issue:`2331`, :issue:`3453`,
+  :issue:`314`, :issue:`2902`. (:pull:`3852`)
+
 * `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord`
   docstring. (:pull:`3681`)
+
+* `@tkknight`_ added two url's to be ignored for the ``make linkcheck``.  This
+  will ensure the Iris github project is not repeatedly hit during the
+  linkcheck for issues and pull requests as it can result in connection
+  refused and thus travis-ci_ job failures.  For more information on linkcheck,
+  see :ref:`contributing.documentation.testing`.  (:pull:`3873`)
 
 
 💼 Internal

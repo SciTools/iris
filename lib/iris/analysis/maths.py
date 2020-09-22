@@ -1098,7 +1098,7 @@ class IFunc:
             Dimension along which to apply `other` if it's a coordinate that is
             not found in `cube`
 
-        * **kwargs_data_func:
+        * kwargs_data_func:
             Keyword arguments that get passed on to the data_func.
 
         Returns:
