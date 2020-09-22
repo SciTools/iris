@@ -46,11 +46,9 @@ If you wish to run a clean build you can run::
 
 This is useful for a final test before committing your changes.
 
-.. note:: In addition to the automated `travis-ci`_  build of the documentation,
-          the https://readthedocs.org/ service is also used.  The configuration
-          of this held in a file in the root of the
-          `github Iris project <https://github.com/SciTools/iris>`_  named
-          ``.readthedocs.yml``.
+.. note:: In order to preserve a clean build for the html, all **warnings**
+          have been promoted to be **errors** to ensure they are addressed.
+          This **only** applies when ``make html`` is run.
 
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 
@@ -101,8 +99,13 @@ or ignore the url.
     ``spelling_word_list_filename``.
 
 
-.. note:: All of the above tests are automatically run as part of the
-          `travis-ci`_  automated build.
+.. note:: In addition to the automated `travis-ci`_ build of all the
+          documentation build options above, the
+          https://readthedocs.org/ service is also used.  The configuration
+          of this held in a file in the root of the
+          `github Iris project <https://github.com/SciTools/iris>`_  named
+          ``.readthedocs.yml``.
+
 
 .. _conf.py: https://github.com/SciTools/iris/blob/master/docs/iris/src/conf.py
 
