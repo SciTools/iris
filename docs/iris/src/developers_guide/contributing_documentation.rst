@@ -46,9 +46,6 @@ If you wish to run a clean build you can run::
 
 This is useful for a final test before committing your changes.
 
-.. todo:: warning to errors just for ``make html``?? what about ``doctest``,
-          ``gallerytest``, ``linkcheck``, ``html-noplot``?
-
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
           This check is only applied when ``make html`` is run.
