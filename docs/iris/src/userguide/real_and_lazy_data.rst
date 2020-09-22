@@ -220,6 +220,7 @@ coordinates' lazy points and bounds:
     True
     >>> print(derived_coord.has_lazy_bounds())
     True
+    foo
 
 .. note::
     Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
