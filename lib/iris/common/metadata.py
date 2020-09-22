@@ -658,7 +658,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         Convert the provided metadata instance from a different type
         to this metadata type, using only the relevant metadata members.
 
-        Non-common metadata members as set to ``None``.
+        Non-common metadata members are set to ``None``.
 
         Args:
 

@@ -65,13 +65,12 @@ of these members, such as :attr:`~iris.coords.DimCoord.var_name` and
 For example, the collective metadata used to define an
 :class:`~iris.coords.AncillaryVariable` are the ``standard_name``, ``long_name``,
 ``var_name``, ``units``, and ``attributes`` members. Note that, these are the
-actual `data attribute`_ names of the actual metadata members on the actual
-Iris class.
+actual `data attribute`_ names of the metadata members on the Iris class.
 
 As :numref:`metadata members table` highlights, **specific** metadata is used to
-define and represent each **specific** Iris `CF Conventions`_ class. This means
-that this **specific** metadata can then be used to easily **identify**,
-**compare** and **differentiate** between individual class instances.
+define and represent each Iris `CF Conventions`_ class. This means that the
+metadata can be used to easily **identify**, **compare** and **differentiate**
+between individual class instances.
 
 
 Common Metadata API
@@ -83,7 +82,7 @@ Common Metadata API
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
 
 As of Iris ``3.0.0``, a unified treatment of metadata has been applied
-across each Iris class in :numref:`metadata members table` to allow users
+across each Iris class (:numref:`metadata members table`) to allow users
 to easily manage and manipulate their metadata in a consistent way.
 
 This is achieved through the ``metadata`` property, which allows you to
@@ -198,8 +197,6 @@ But ``metadata`` members with simple values are **not** mutable,
     >>> longitude.circular = True
     >>> metadata.circular
     False
-    >>> metadata.circular is longitude.circular
-    False
 
 And of course, they're also **not** settable,
 
@@ -212,14 +209,6 @@ with a **snapshot** of the container class metadata values at that point in time
 
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
-
-And like a `namedtuple`_ we can access individual ``metadata`` members directly,
-as we choose,
-
-    >>> metadata.standard_name
-    'longitude'
-    >>> metadata.units
-    Unit('degrees')
 
 
 Metadata class behaviour
@@ -337,6 +326,10 @@ Or alternatively, using the ``equal`` method instead,
     >>> longitude.metadata.equal(longitude.metadata)
     True
 
+Note that, although the ``==`` operator and the ``equal`` method are
+both functionally equivalent, the ``equal`` method also provides a means
+to support **lenient** equality, as discussed in :ref:`lenient metadata`.
+
 
 Strict equality
 """""""""""""""
@@ -362,14 +355,9 @@ different value, then the result of the operation will be ``False``. For example
     >>> longitude.metadata == other
     False
 
-Note that, although the ``==`` operator and the ``equal`` method are
-functionally equivalent, the ``equal`` method also provides a means
-to support **lenient** equality, as discussed in :ref:`lenient metadata`.
-
-One further point worth highlighting, is that thanks to some real world `NetCDF`_
-data feeds, `NumPy`_ scalars and arrays can legitimately appear in the
-``attributes`` `dict`_ of some Iris metadata class instances. Normally,
-this would cause issues,
+One further point worth highlighting is it is possible for `NumPy`_ scalars
+and arrays to appear in the ``attributes`` `dict`_ of some Iris metadata class
+instances. Normally, this would cause issues,
 
 .. doctest:: richer-metadata
 
@@ -534,7 +522,7 @@ there is **at least** one ``metadata`` member with a different value, where,
 
 Given our example, only the ``long_name``, ``var_name`` and ``units`` members
 have different values, as expected. Note that, the ``difference`` method **is
-not** commutative. The the order of the tuple member values is the same order
+not** commutative. The order of the tuple member values is the same order
 of the metadata class instances being compared, e.g., changing the
 ``difference`` instance order is reflected in the result,
 
@@ -551,7 +539,7 @@ is simply returned,
     >>> metadata.difference(metadata) is None
     True
 
-It's also worth highlighting that for the ``attributes`` `dict`_ member, only
+It's worth highlighting that for the ``attributes`` `dict`_ member, only
 those keys with **different values** or **missing keys** will be returned by the
 ``difference`` method. For example, let's customise the ``attributes`` member of
 the following :class:`~iris.common.DimCoordMetadata`,
@@ -693,7 +681,7 @@ Let's reinforce this behaviour, but this time by combining metadata where the
 ``attributes`` `dict`_ member is different, where,
 
 - the ``STASH`` and ``source`` keys are **missing**,
-- the ``Model scenario`` key has the same **same value**,
+- the ``Model scenario`` key has the **same value**,
 - the ``Conventions`` key has a **different value**, and
 - the ``grinning face`` key is **new**
 

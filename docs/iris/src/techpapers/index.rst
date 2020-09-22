@@ -4,7 +4,7 @@
 Iris Technical Papers
 =====================
 
-Extra information on specific technical issues, primarily aimed at Iris core developers.
+Extra information on specific technical issues.
 
 .. toctree::
    :maxdepth: 1
