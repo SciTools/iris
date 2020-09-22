@@ -239,6 +239,10 @@ This document explains the changes made to Iris for this release
 * `@rcomer`_ added argument descriptions to the :class:`~iris.coords.DimCoord`
   docstring. (:pull:`3681`)
 
+* `@tkknight`_ enabled the napolean_ package that is used by sphinx_ to cater
+  for the existing google style docstrings and to also allow for numpy
+  docstrings.  This resolves :issue:`3841`. (:pull:`3871`)
+
 
 💼 Internal
 ===========

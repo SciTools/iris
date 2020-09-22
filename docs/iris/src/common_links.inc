@@ -22,3 +22,5 @@
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _matplotlib: https://matplotlib.org/
 .. _conda: https://docs.conda.io/en/latest/
+.. _sphinx: https://www.sphinx-doc.org/en/master/
+.. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
