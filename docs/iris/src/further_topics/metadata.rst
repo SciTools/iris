@@ -5,15 +5,13 @@ Metadata
 ********
 
 This section provides a detailed overview of how your metadata is managed
-within Iris. In particular, it discusses what it is, and more importantly
-how you can create, access, manipulate, and analyse your metadata.
+within Iris. In particular, it discusses what metadata is, where it fits
+into Iris, and more importantly how you can create, access, manipulate,
+and analyse your metadata.
 
-You may not be particularly interested in all the detail, but it's here
-if you ever need it. In fact, you may want to skip straight ahead
-to :ref:`richer metadata`, and take it from there.
-
-Otherwise, Iris will manage your metadata for you automatically, so there
-may be no real need to read any further.
+All the finer details covered here may not be entirely relevant to your use
+case, but it's here if you ever need it. In fact, you may want to skip
+straight ahead to :ref:`richer metadata`, and take it from there.
 
 
 Introduction
@@ -342,9 +340,9 @@ Or alternatively, using the ``equal`` method instead,
     >>> longitude.metadata.equal(longitude.metadata)
     True
 
-Note that, although the ``==`` operator and the ``equal`` method are
-both functionally equivalent, the ``equal`` method also provides a means
-to support **lenient** equality, as discussed in :ref:`lenient metadata`.
+Note that, the ``==`` operator (``__eq__``) and the ``equal`` method are
+both functionally equivalent. However, the ``equal`` method also provides
+a means to enable **lenient** equality, as discussed in :ref:`lenient metadata`.
 
 
 Strict equality
