@@ -112,7 +112,7 @@ Clearly, these metadata are different,
     >>> metadata != latitude.metadata
     True
     >>> metadata.difference(latitude.metadata)
-    DimCoordMetadata(standard_name='latitude', long_name=None, var_name=('lat', 'latitude'), units=None, attributes=None, coord_system=None, climatological=None, circular=None)
+    DimCoordMetadata(standard_name=None, long_name=None, var_name=('lat', 'latitude'), units=None, attributes=None, coord_system=None, climatological=None, circular=None)
 
 And yet, they both have the same ``name``, which is slightly confusing
 (see :meth:`~iris.common.metadata.BaseMetadata.name` for clarification)
