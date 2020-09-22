@@ -251,6 +251,10 @@ This document explains the changes made to Iris for this release
   for the existing google style docstrings and to also allow for numpy
   docstrings.  This resolves :issue:`3841`. (:pull:`3871`)
 
+* `@tkknight`_ configured ``sphinx-build`` to promote warnings to errors when
+  building the documentation via ``make html``.  This will minimise technical
+  debt accruing for the documentation.  (:pull:`3877`)
+
 
 💼 Internal
 ===========
