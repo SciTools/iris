@@ -4,6 +4,21 @@
 Metadata
 ********
 
+This section provides a detailed overview of how your metadata is managed
+within Iris. In particular, it discusses what it is, and more importantly
+how you can create, access, manipulate, and analyse your metadata.
+
+You may not be particularly interested in all the detail, but it's here
+if you ever need it. In fact, you may want to skip straight ahead
+to :ref:`richer metadata`, and take it from there.
+
+Otherwise, Iris will manage your metadata for you automatically, so there
+may be no real need to read any further.
+
+
+Introduction
+============
+
 So far we've introduced several classes in Iris that care about your ``data``,
 and also your ``metadata`` i.e., `data about data`_. Primarily, these classes
 are the :class:`~iris.cube.Cube`, the :class:`~iris.coords.AuxCoord`, and the
@@ -276,6 +291,7 @@ Aside from the benefit of metadata classes inheriting behaviour and state
 from `namedtuple`_, further additional rich behaviour is also available,
 which we explore next.
 
+.. _richer metadata:
 
 Richer metadata behaviour
 -------------------------

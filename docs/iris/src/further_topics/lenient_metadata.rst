@@ -4,6 +4,12 @@
 Lenient metadata
 ****************
 
+.. todo:: Add summary of section contents here
+
+
+Introduction
+============
+
 As discussed in :ref:`metadata`, a rich, common metadata API is available within
 Iris that supports metadata :ref:`equality <metadata equality>`,
 :ref:`difference <metadata difference>`, :ref:`combination <metadata combine>`,
