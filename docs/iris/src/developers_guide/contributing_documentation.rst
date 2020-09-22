@@ -48,7 +48,7 @@ This is useful for a final test before committing your changes.
 
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
-          This is **only** applied when ``make html`` is run.
+          This **only** applies when ``make html`` is run.
 
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 
