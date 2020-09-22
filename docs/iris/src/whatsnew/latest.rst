@@ -247,6 +247,10 @@ This document explains the changes made to Iris for this release
   refused and thus travis-ci_ job failures.  For more information on linkcheck,
   see :ref:`contributing.documentation.testing`.  (:pull:`3873`)
 
+* `@tkknight`_ enabled the napolean_ package that is used by sphinx_ to cater
+  for the existing google style docstrings and to also allow for numpy
+  docstrings.  This resolves :issue:`3841`. (:pull:`3871`)
+
 
 💼 Internal
 ===========
