@@ -137,6 +137,8 @@ strictness is not necessary, and as of Iris ``3.0.0`` an alternative more
 practical behaviour is available.
 
 
+.. _lenient behaviour:
+
 Lenient behaviour
 =================
 
@@ -364,7 +366,7 @@ keys and values, namely,
     >>> attributes = {"neutral face": "😐", "upside-down face": "🙃"}
     >>> metadata = latitude.metadata._replace(attributes=attributes)
     >>> metadata  # doctest: +SKIP
-    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😐', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 Comparing the strict and lenient behaviour of ``combine`` side-by-side
 highlights the difference in behaviour, and the advantages of lenient combination
@@ -383,8 +385,45 @@ for more inclusive, richer metadata,
 Lenient members
 ---------------
 
+:ref:`lenient behaviour` is not applied regardlessly across all metadata members
+participating in a lenient ``equal``, ``difference`` or ``combine`` operation.
+Rather, a more pragmatic application is employed based on the `CF Conventions`_
+meaning of the member, and whether being lenient would result in erroneous
+behaviour or interpretation.
 
+.. _lenient members table:
+.. table:: - Lenient member participation
+   :widths: auto
+   :align: center
+
+   =========================================================================== ================== ============
+   Metadata Class                                                              Member             Behaviour
+   =========================================================================== ================== ============
+   †                                                                           ``standard_name``  ``lenient``‡
+   †                                                                           ``long_name``      ``lenient``‡
+   †                                                                           ``var_name``       ``lenient``‡
+   †                                                                           ``units``          ``strict``
+   †                                                                           ``attributes``     ``lenient``
+   :class:`~iris.common.CellMeasureMetadata`                                   ``measure``        ``strict``
+   :class:`~iris.common.CoordMetadata`, :class:`~iris.common.DimCoordMetadata` ``coord_system``   ``strict``
+   :class:`~iris.common.CoordMetadata`, :class:`~iris.common.DimCoordMetadata` ``climatological`` ``strict``
+   :class:`~iris.common.CubeMetadata`                                          ``cell_methods``   ``strict``
+   :class:`~iris.common.DimCoordMetadata`                                      ``circular``       ``strict`` §
+   =========================================================================== ================== ============
+
+| **Key**
+| † - Applies to all metadata classes including :class:`~iris.common.AncillaryVariableMetadata`, which has
+|     no other specialised members
+| ‡ - See :ref:`special lenient name` for ``standard_name``, ``long_name``, and ``var_name``
+| § - The ``circular`` member is ignored during operations between :class:`~iris.common.CoordMetata`
+
+
+.. _special lenient name:
+
+Special lenient name behaviour
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _CF Conventions: https://cfconventions.org/
+
