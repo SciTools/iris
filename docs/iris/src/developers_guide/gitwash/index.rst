@@ -1,7 +1,7 @@
 .. _using-git:
 
-Working with *iris* source code
-================================================
+Working with Iris source code
+=============================
 
 .. toctree::
    :maxdepth: 2

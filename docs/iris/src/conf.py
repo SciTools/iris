@@ -221,11 +221,11 @@ html_context = {
             "https://groups.google.com/forum/#!forum/scitools-iris-dev",
         ),
         (
-            '<i class="fa fa-question fa-fw"></i> StackOverflow For "How do I?"',
+            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How do I?"',
             "https://stackoverflow.com/questions/tagged/python-iris",
         ),
         (
-            '<i class="fa fa-book fa-fw"></i> Legacy documentation',
+            '<i class="fa fa-book fa-fw"></i> Legacy Documentation',
             "https://scitools.org.uk/iris/docs/v2.4.0/index.html",
         ),
     ],

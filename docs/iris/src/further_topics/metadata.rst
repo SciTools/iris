@@ -342,7 +342,7 @@ Or alternatively, using the ``equal`` method instead,
 
 Note that, the ``==`` operator (``__eq__``) and the ``equal`` method are
 both functionally equivalent. However, the ``equal`` method also provides
-a means to enable **lenient** equality, as discussed in :ref:`lenient metadata`.
+a means to enable **lenient** equality, as discussed in :ref:`lenient equality`.
 
 
 Strict equality
@@ -532,7 +532,7 @@ The ``difference`` method returns a :class:`~iris.common.DimCoordMetadata` insta
 there is **at least** one ``metadata`` member with a different value, where,
 
 - ``None`` means that there was **no** difference for the member,
-- a `tuple`_ containing the two different associated values for the member.
+- a `tuple`_ containing the two different associated values for the member
 
 Given our example, only the ``long_name``, ``var_name`` and ``units`` members
 have different values, as expected. Note that, the ``difference`` method **is
@@ -570,7 +570,7 @@ Then create another :class:`~iris.common.DimCoordMetadata` with a different
 
 - the ``grinning face`` key has the **same value**,
 - the ``neutral face`` key has a **different value**, and
-- the ``upside-down face`` key is **new**.
+- the ``upside-down face`` key is **new**
 
 .. doctest:: richer-metadata
 

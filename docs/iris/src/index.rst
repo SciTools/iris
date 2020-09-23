@@ -7,8 +7,6 @@
 Iris Documentation
 ==================
 
-.. todolist::
-
 **A powerful, format-agnostic, community-driven Python package for analysing
 and visualising Earth science data.**
 

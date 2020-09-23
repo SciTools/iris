@@ -1,7 +1,7 @@
 .. _techpapers_index:
 
 
-Iris Technical Papers
+Iris technical papers
 =====================
 
 Extra information on specific technical issues.

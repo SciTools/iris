@@ -1,7 +1,7 @@
 .. _pr_check:
 
 
-Pull request check List
+Pull request check list
 ***********************
 
 A pull request to a SciTools project master should be ready to merge into the
