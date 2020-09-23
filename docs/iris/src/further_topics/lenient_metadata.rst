@@ -417,8 +417,17 @@ behaviour or interpretation.
 | ‡ - See :ref:`special lenient name` for ``standard_name``, ``long_name``, and ``var_name``
 | § - The ``circular`` is ignored for operations between :class:`~iris.common.metadata.CoordMetadata` and :class:`~iris.common.metadata.DimCoordMetadata`
 
-Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed ullamcorper tempor dignissim. Mauris viverra dolor et mauris molestie, sit amet finibus massa suscipit. Praesent vel varius ex. Praesent lectus lectus, scelerisque quis sodales eu, hendrerit non est. Mauris sit amet tristique sapien. Etiam mollis ligula mi, ac fermentum nunc gravida id. Duis lobortis dapibus lorem, eget dictum nisi lobortis non. Phasellus blandit sapien nunc, eget fringilla nisi tempus ac. Maecenas quis justo sit amet leo vulputate lobortis non quis nisi. Quisque pharetra faucibus turpis at consequat. Ut tincidunt malesuada felis nec tincidunt. Donec non elementum sapien. Curabitur elit erat, mollis sed nisi id, semper feugiat felis. Duis eu dui sed ipsum auctor fringilla a nec nisl. Integer non laoreet est.
+In summary, only ``standard_name``, ``long_name``, ``var_name`` and the ``attributes``
+members are treated leniently. All other members are considered to represent
+fundamental metadata that cannot, by their nature, be consider equivalent to
+metadata that is missing or ``None``. For example, a :class:`~iris.cube.Cube`
+with ``units`` of ``ms-1`` cannot be considered equivalent to another
+:class:`~iris.cube.Cube` with ``units`` of ``unknown``; this would be a false
+and dangerous scientific assumption to make.
 
+Similar arguments can be made for the ``measure``, ``coord_system``, ``climatological``,
+``cell_methods``, and ``circular`` members, all of which are treated with
+strict behaviour, regardlessly.
 
 
 .. _special lenient name:
