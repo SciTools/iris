@@ -276,7 +276,56 @@ forgiving and practical alternative to the strict alternative.
 Lenient difference
 ------------------
 
-*In semper in ex ac consectetur. Mauris vulputate malesuada bibendum. Aliquam ac nisl ultricies, porta felis nec, ultrices ante. Fusce placerat fermentum rhoncus. Fusce porta ut ligula quis tristique. Sed cursus blandit felis eu mollis. Aliquam scelerisque purus et pellentesque tempor. Vestibulum ac aliquam sapien. Proin vel mi quis turpis vulputate sodales non vel orci. Etiam nec hendrerit lectus. Vestibulum aliquet eleifend metus, et efficitur ante sagittis non. Sed tincidunt consectetur nibh, ac sodales elit ultrices eu. Duis blandit elementum libero quis maximus. Proin odio ipsum, congue et bibendum non, vehicula eget dui. Sed nec cursus leo. Nunc in massa eget nisi luctus eleifend id bibendum ante.*
+Similar to :ref:`lenient equality`, the lenient ``difference`` method
+(:numref:`lenient difference table`) considers there to be no difference between
+comparing **something** with **nothing** (``None``). This working assumption is
+not naively applied to all metadata members, but rather a more pragmatic approach
+is adopted, as discussed later in :ref:`lenient members`.
+
+Again, lenient behaviour for the ``difference`` metadata class method is enabled
+by the ``lenient`` keyword argument. For example, consider again the
+:ref:`previous strict example <strict example>` involving our ``latitude``
+coordinate,
+
+.. doctest:: strict-behaviour
+
+    >>> metadata.difference(latitude.metadata)
+    DimCoordMetadata(standard_name=None, long_name=None, var_name=(None, 'latitude'), units=None, attributes=None, coord_system=None, climatological=None, circular=None)
+    >>> metadata.difference(latitude.metadata, lenient=True) is None
+    True
+
+And revisiting our slightly altered ``attributes`` member comparison example,
+brings home the benefits of the lenient difference behaviour. So, given our
+``latitude`` coordinate with its populated ``attributes`` dictionary,
+
+.. doctest:: lenient-behaviour
+
+    >>> latitude.attributes  # doctest: +SKIP
+    {'grinning face': '😀', 'neutral face': '😐'}
+
+We create another :class:`~iris.common.DimCoordMetadata` with a dissimilar
+``attributes`` member, namely,
+
+- the ``grinning face`` key is **missing**,
+- the ``neutral face`` key has a **different value**, and
+- the ``upside-down face`` key is **new**
+
+.. doctest:: lenient-behaviour
+
+    >>> attributes = {"neutral face": "😜", "upside-down face": "🙃"}
+    >>> metadata = latitude.metadata._replace(attributes=attributes)
+    >>> metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Now comparing the strict and lenient behaviour for the ``difference`` method,
+highlights the change in how metadata is treated gracefully,
+
+.. doctest:: lenient-behaviour
+
+    >>> metadata.difference(latitude.metadata).attributes  # doctest: +SKIP
+    {'upside-down face': '🙃', 'neutral face': '😜'}, {'neutral face': '😐', 'grinning face': '😀'}
+    >>> metadata.difference(latitude.metadata, lenient=True).attributes  # doctest: +SKIP
+    {'neutral face': '😜'}, {'neutral face': '😐'}
 
 
 .. _lenient combination:
