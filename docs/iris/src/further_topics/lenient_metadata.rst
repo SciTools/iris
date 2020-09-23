@@ -246,7 +246,7 @@ Firstly, populate the metadata of our ``latitude`` coordinate appropriately,
     >>> latitude.metadata  # doctest: +SKIP
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'grinning face': '😀', 'neutral face': '😐'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-Then create another :class:`~iris.common.DimCoordMetadata` with a different
+Then create another :class:`~iris.common.metadata.DimCoordMetadata` with a different
 ``attributes`` `dict`_, namely,
 
 - the ``grinning face`` key is **missing**,
@@ -305,7 +305,7 @@ brings home the benefits of the lenient difference behaviour. So, given our
     >>> latitude.attributes  # doctest: +SKIP
     {'grinning face': '😀', 'neutral face': '😐'}
 
-We create another :class:`~iris.common.DimCoordMetadata` with a dissimilar
+We create another :class:`~iris.common.metadata.DimCoordMetadata` with a dissimilar
 ``attributes`` member, namely,
 
 - the ``grinning face`` key is **missing**,
@@ -354,7 +354,7 @@ following ``attributes`` dictionary of our favoured ``latitude`` coordinate,
     >>> latitude.attributes  # doctest: +SKIP
     {'grinning face': '😀', 'neutral face': '😐'}
 
-We create another :class:`~iris.common.DimCoordMetadata` with overlapping
+We create another :class:`~iris.common.metadata.DimCoordMetadata` with overlapping
 keys and values, namely,
 
 - the ``grinning face`` key is **missing**,
@@ -396,26 +396,26 @@ behaviour or interpretation.
    :widths: auto
    :align: center
 
-   =========================================================================== ================== ============
-   Metadata Class                                                              Member             Behaviour
-   =========================================================================== ================== ============
-   †                                                                           ``standard_name``  ``lenient``‡
-   †                                                                           ``long_name``      ``lenient``‡
-   †                                                                           ``var_name``       ``lenient``‡
-   †                                                                           ``units``          ``strict``
-   †                                                                           ``attributes``     ``lenient``
-   :class:`~iris.common.CellMeasureMetadata`                                   ``measure``        ``strict``
-   :class:`~iris.common.CoordMetadata`, :class:`~iris.common.DimCoordMetadata` ``coord_system``   ``strict``
-   :class:`~iris.common.CoordMetadata`, :class:`~iris.common.DimCoordMetadata` ``climatological`` ``strict``
-   :class:`~iris.common.CubeMetadata`                                          ``cell_methods``   ``strict``
-   :class:`~iris.common.DimCoordMetadata`                                      ``circular``       ``strict`` §
-   =========================================================================== ================== ============
+   ============================================================================================= ================== ============
+   Metadata Class                                                                                Member             Behaviour
+   ============================================================================================= ================== ============
+   †                                                                                             ``standard_name``  ``lenient``‡
+   †                                                                                             ``long_name``      ``lenient``‡
+   †                                                                                             ``var_name``       ``lenient``‡
+   †                                                                                             ``units``          ``strict``
+   †                                                                                             ``attributes``     ``lenient``
+   :class:`~iris.common.metadata.CellMeasureMetadata`                                            ``measure``        ``strict``
+   :class:`~iris.common.metadata.CoordMetadata`, :class:`~iris.common.metadata.DimCoordMetadata` ``coord_system``   ``strict``
+   :class:`~iris.common.metadata.CoordMetadata`, :class:`~iris.common.metadata.DimCoordMetadata` ``climatological`` ``strict``
+   :class:`~iris.common.metadata.CubeMetadata`                                                   ``cell_methods``   ``strict``
+   :class:`~iris.common.metadata.DimCoordMetadata`                                               ``circular``       ``strict`` §
+   ============================================================================================= ================== ============
 
 | **Key**
-| † - Applies to all metadata classes including :class:`~iris.common.AncillaryVariableMetadata`, which has
-|     no other specialised members
+| † - Applies to all metadata classes including :class:`~iris.common.metadata.AncillaryVariableMetadata`, which has no
+|     other specialised members
 | ‡ - See :ref:`special lenient name` for ``standard_name``, ``long_name``, and ``var_name``
-| § - The ``circular`` member is ignored during operations between :class:`~iris.common.CoordMetata`
+| § - The ``circular`` is ignored for operations between :class:`~iris.common.metadata.CoordMetadata` and :class:`~iris.common.metadata.DimCoordMetadata`
 
 Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed ullamcorper tempor dignissim. Mauris viverra dolor et mauris molestie, sit amet finibus massa suscipit. Praesent vel varius ex. Praesent lectus lectus, scelerisque quis sodales eu, hendrerit non est. Mauris sit amet tristique sapien. Etiam mollis ligula mi, ac fermentum nunc gravida id. Duis lobortis dapibus lorem, eget dictum nisi lobortis non. Phasellus blandit sapien nunc, eget fringilla nisi tempus ac. Maecenas quis justo sit amet leo vulputate lobortis non quis nisi. Quisque pharetra faucibus turpis at consequat. Ut tincidunt malesuada felis nec tincidunt. Donec non elementum sapien. Curabitur elit erat, mollis sed nisi id, semper feugiat felis. Duis eu dui sed ipsum auctor fringilla a nec nisl. Integer non laoreet est.
 

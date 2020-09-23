@@ -157,16 +157,16 @@ each container class is shown in :numref:`metadata classes table` below,
    :widths: auto
    :align: center
 
-   ========================================== ===============================================
+   ========================================== ========================================================
    Container class                            Metadata class
-   ========================================== ===============================================
-   :class:`~iris.coords.AncillaryVariable`    :class:`~iris.common.AncillaryVariableMetadata`
-   :class:`~iris.coords.AuxCoord`             :class:`~iris.common.CoordMetadata`
-   :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.common.CoordMetadata`
-   :class:`~iris.coords.CellMeasure`          :class:`~iris.common.CellMeasureMetadata`
-   :class:`~iris.cube.Cube`                   :class:`~iris.common.CubeMetadata`
-   :class:`~iris.coords.DimCoord`             :class:`~iris.common.DimCoordMetadata`
-   ========================================== ===============================================
+   ========================================== ========================================================
+   :class:`~iris.coords.AncillaryVariable`    :class:`~iris.common.metadata.AncillaryVariableMetadata`
+   :class:`~iris.coords.AuxCoord`             :class:`~iris.common.metadata.CoordMetadata`
+   :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.common.metadata.CoordMetadata`
+   :class:`~iris.coords.CellMeasure`          :class:`~iris.common.metadata.CellMeasureMetadata`
+   :class:`~iris.cube.Cube`                   :class:`~iris.common.metadata.CubeMetadata`
+   :class:`~iris.coords.DimCoord`             :class:`~iris.common.metadata.DimCoordMetadata`
+   ========================================== ========================================================
 
 Akin to the behaviour of a `namedtuple`_, the metadata classes in
 :numref:`metadata classes table` create **tuple-like** instances i.e., they provide a
@@ -235,7 +235,7 @@ just as you might expect. For example, given the following ``metadata``,
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 We can use the `namedtuple._make`_ method to create a **new**
-:class:`~iris.common.DimCoordMetadata` instance from an existing sequence
+:class:`~iris.common.metadata.DimCoordMetadata` instance from an existing sequence
 or iterable:
 
     >>> values = (1, 2, 3, 4, 5, 6, 7, 8)
@@ -434,9 +434,9 @@ Exception to the rule
 ~~~~~~~~~~~~~~~~~~~~~
 
 In general, **different** metadata classes cannot be compared, however support
-is provided for comparing :class:`~iris.common.CoordMetadata` and
-:class:`~iris.common.DimCoordMetadata` metadata classes. For example,
-consider the following :class:`~iris.common.DimCoordMetadata`,
+is provided for comparing :class:`~iris.common.metadata.CoordMetadata` and
+:class:`~iris.common.metadata.DimCoordMetadata` metadata classes. For example,
+consider the following :class:`~iris.common.metadata.DimCoordMetadata`,
 
 .. doctest:: richer-metadata
 
@@ -444,8 +444,8 @@ consider the following :class:`~iris.common.DimCoordMetadata`,
     >>> latitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-Next we create a new :class:`~iris.common.CoordMetadata` instance from
-the :class:`~iris.common.DimCoordMetadata` instance,
+Next we create a new :class:`~iris.common.metadata.CoordMetadata` instance from
+the :class:`~iris.common.metadata.DimCoordMetadata` instance,
 
 .. doctest:: richer-metadata
 
@@ -461,7 +461,7 @@ the :class:`~iris.common.DimCoordMetadata` instance,
     :ref:`metadata conversion`.
 
 Comparing the instances confirms that equality is indeed supported between
-:class:`~iris.common.DimCoordMetadata` and :class:`~iris.common.CoordMetadata`
+:class:`~iris.common.metadata.DimCoordMetadata` and :class:`~iris.common.metadata.CoordMetadata`
 classes,
 
 .. doctest:: richer-metadata
@@ -477,7 +477,7 @@ container metadata classes.
 
 However, note that the ``circular`` member **is used** by the ``__eq__`` operator
 when comparing one :class:`~iris.coords.DimCoord` to another. This also applies
-when comparing :class:`~iris.common.DimCoordMetadata`.
+when comparing :class:`~iris.common.metadata.DimCoordMetadata`.
 
 This exception to the rule for :ref:`equality <metadata equality>` also applies
 to the :ref:`difference <metadata difference>` and :ref:`combine <metadata combine>`
@@ -503,7 +503,7 @@ First, let's create some ``metadata`` to compare,
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙂'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-Now, we replace some members of the :class:`~iris.common.DimCoordMetadata` with
+Now, we replace some members of the :class:`~iris.common.metadata.DimCoordMetadata` with
 different values,
 
 .. doctest:: richer-metadata
@@ -528,7 +528,7 @@ As expected, the ``metadata`` is different. Now, let's answer the question,
     >>> longitude.metadata.difference(metadata)
     DimCoordMetadata(standard_name=None, long_name=(None, 'lon'), var_name=('longitude', 'lon'), units=(Unit('degrees'), Unit('radians')), attributes=None, coord_system=None, climatological=None, circular=None)
 
-The ``difference`` method returns a :class:`~iris.common.DimCoordMetadata` instance, when
+The ``difference`` method returns a :class:`~iris.common.metadata.DimCoordMetadata` instance, when
 there is **at least** one ``metadata`` member with a different value, where,
 
 - ``None`` means that there was **no** difference for the member,
@@ -556,7 +556,7 @@ is simply returned,
 It's worth highlighting that for the ``attributes`` `dict`_ member, only
 those keys with **different values** or **missing keys** will be returned by the
 ``difference`` method. For example, let's customise the ``attributes`` member of
-the following :class:`~iris.common.DimCoordMetadata`,
+the following :class:`~iris.common.metadata.DimCoordMetadata`,
 
 .. doctest:: richer-metadata
 
@@ -565,7 +565,7 @@ the following :class:`~iris.common.DimCoordMetadata`,
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😀', 'neutral face': '😐'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-Then create another :class:`~iris.common.DimCoordMetadata` with a different
+Then create another :class:`~iris.common.metadata.DimCoordMetadata` with a different
 ``attributes`` `dict`_, namely,
 
 - the ``grinning face`` key has the **same value**,
@@ -595,8 +595,8 @@ Diffing like with like
 As discussed in :ref:`compare like`, it only makes sense to determine the
 ``difference`` between **similar** metadata class instances. However, note that
 the :ref:`exception to the rule <exception rule>` still applies here i.e.,
-support is provided between :class:`~iris.common.CoordMetadata` and
-:class:`~iris.common.DimCoordMetadata` metadata classes.
+support is provided between :class:`~iris.common.metadata.CoordMetadata` and
+:class:`~iris.common.metadata.DimCoordMetadata` metadata classes.
 
 For example, given the following :class:`~iris.coords.AuxCoord` and
 :class:`~iris.coords.DimCoord`,
@@ -653,7 +653,7 @@ to determine the :ref:`difference between metadata <metadata difference>`. Now w
 take the next step, and explore how to combine metadata together using the ``combine``
 metadata class method.
 
-For example, consider the following :class:`~iris.common.CubeMetadata`,
+For example, consider the following :class:`~iris.common.metadata.CubeMetadata`,
 
 .. doctest:: metadata-combine
 
@@ -673,7 +673,7 @@ also identical.
 
 The ``combine`` method will always return **a new** metadata class instance,
 where each metadata member is either ``None`` or populated with a **common value**.
-Let's clarify this, by combining our above :class:`~iris.common.CubeMetadata`
+Let's clarify this, by combining our above :class:`~iris.common.metadata.CubeMetadata`
 with another instance that's identical apart from its ``standard_name`` member,
 which is replaced with **different value**,
 
@@ -738,8 +738,8 @@ metadata classes can be combined, otherwise a ``TypeError`` is raised,
     TypeError: Cannot combine 'CubeMetadata' with <class 'iris.common.metadata.DimCoordMetadata'>.
 
 Again, however, the :ref:`exception to the rule <exception rule>` also applies
-here i.e., support is provided between :class:`~iris.common.CoordMetadata` and
-:class:`~iris.common.DimCoordMetadata` metadata classes.
+here i.e., support is provided between :class:`~iris.common.metadata.CoordMetadata` and
+:class:`~iris.common.metadata.DimCoordMetadata` metadata classes.
 
 For example, we can ``combine`` the metadata of the following
 :class:`~iris.coords.AuxCoord` and :class:`~iris.coords.DimCoord`,
@@ -788,14 +788,14 @@ of the same metadata class (see :ref:`exception to the rule <exception rule>`).
 
 However, metadata may be converted from one metadata class to another by using
 the ``from_metadata`` class method. For example, given the following
-:class:`~iris.common.CubeMetadata`,
+:class:`~iris.common.metadata.CubeMetadata`,
 
 .. doctest:: metadata-convert
 
     >>> cube.metadata  # doctest: +SKIP
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
 
-We can easily convert it to a :class:`~iris.common.DimCoordMetadata` instance
+We can easily convert it to a :class:`~iris.common.metadata.DimCoordMetadata` instance
 using ``from_metadata``,
 
 .. doctest:: metadata-convert
@@ -814,17 +814,17 @@ classes share the following common metadata members,
 - ``attributes``
 
 As such, all of these metadata members of the
-:class:`~iris.common.DimCoordMetadata` instance are populated from the associated
-:class:`~iris.common.CubeMetadata` instance members. However, a
-:class:`~iris.common.CubeMetadata` class does not contain the following
-:class:`~iris.common.DimCoordMetadata` members,
+:class:`~iris.common.metadata.DimCoordMetadata` instance are populated from the associated
+:class:`~iris.common.metadata.CubeMetadata` instance members. However, a
+:class:`~iris.common.metadata.CubeMetadata` class does not contain the following
+:class:`~iris.common.metadata.DimCoordMetadata` members,
 
 - ``coords_system``
 - ``climatological``, and
 - ``circular``
 
 Thus these particular metadata members are set to ``None`` in the resultant
-:class:`~iris.common.DimCoordMetadata` instance.
+:class:`~iris.common.metadata.DimCoordMetadata` instance.
 
 Note that, the ``from_metadata`` method is also available on a metadata
 class instance,
@@ -850,7 +850,7 @@ The ``metadata`` property available on each Iris `CF Conventions`_ container
 class (see :numref:`metadata classes table`) can be use not only **to get**
 the metadata of an instance, but also **to set** the metadata on an instance.
 
-For example, given the following :class:`~iris.common.DimCoordMetadata` of the
+For example, given the following :class:`~iris.common.metadata.DimCoordMetadata` of the
 ``longitude`` coordinate,
 
 .. doctest:: metadata-assign
@@ -858,7 +858,7 @@ For example, given the following :class:`~iris.common.DimCoordMetadata` of the
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-We can assign to it directly using the :class:`~iris.common.DimCoordMetadata` of the ``latitude``
+We can assign to it directly using the :class:`~iris.common.metadata.DimCoordMetadata` of the ``latitude``
 coordinate,
 
 .. doctest:: metadata-assign
