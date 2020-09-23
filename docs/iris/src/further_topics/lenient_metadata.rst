@@ -435,7 +435,45 @@ strict behaviour, regardlessly.
 Special lenient name behaviour
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed ullamcorper tempor dignissim. Mauris viverra dolor et mauris molestie, sit amet finibus massa suscipit. Praesent vel varius ex. Praesent lectus lectus, scelerisque quis sodales eu, hendrerit non est. Mauris sit amet tristique sapien. Etiam mollis ligula mi, ac fermentum nunc gravida id. Duis lobortis dapibus lorem, eget dictum nisi lobortis non. Phasellus blandit sapien nunc, eget fringilla nisi tempus ac. Maecenas quis justo sit amet leo vulputate lobortis non quis nisi. Quisque pharetra faucibus turpis at consequat. Ut tincidunt malesuada felis nec tincidunt. Donec non elementum sapien. Curabitur elit erat, mollis sed nisi id, semper feugiat felis. Duis eu dui sed ipsum auctor fringilla a nec nisl. Integer non laoreet est.
+The ``standard_name``, ``long_name`` and ``var_name`` have a closer association
+with each other compared to all other metadata members, as they all
+underpin the functionality provided by the :meth:`~iris.common.mixin.CFVariableMixin.name`
+method. It is imperative that the ``name`` derived from metadata remains constant
+for strict and lenient equality.
+
+As such, these metadata members have an additional layer of behaviour enforced
+during :ref:`lenient equality` in order to ensure that the identity or name of
+metadata does not change due to an artefact of lenient comparison.
+
+For example, if simple :ref:`lenient equality <lenient equality table>` behaviour
+was applied to the ``standard_name``, ``long_name`` and ``var_name``, the following
+would be considered **not** equal,
+
+.. table::
+   :widths: auto
+   :align: center
+
+   ================= ============= ==============
+   Member            Left Metadata Right Metadata
+   ================= ============= ==============
+   ``standard_name`` ``None``      ``latitude``
+   ``long_name``     ``latitude``  ``None``
+   ``var_name``      ``lat``       ``latitude``
+   ================= ============= ==============
+
+Both the **Left Metadata** and the **Right Metadata** would have the same ``name``
+by defintion i.e., ``latitude``, however lenient equality would fail due to
+the difference in ``var_name``.
+
+To account for this, lenient equality is performed by two simple consecutive steps:
+
+- ensure that the result returned by the ``name`` method is the same for the metadata
+  being compared, then
+- only perform :ref:`lenient equality <lenient equality table>` between the ``standard_name``
+  and ``long_name`` i.e., the ``var_name`` member is **not** compared
+
+
+
 
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _CF Conventions: https://cfconventions.org/
