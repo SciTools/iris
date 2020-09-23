@@ -209,7 +209,7 @@ html_context = {
     "menu_links_name": "Support",
     "menu_links": [
         (
-            '<i class="fa fa-github fa-fw"></i> Source Code',
+            '<i class="fa fa-github fa-fw"></i> Source code',
             "https://github.com/SciTools/iris",
         ),
         (
@@ -225,7 +225,7 @@ html_context = {
             "https://stackoverflow.com/questions/tagged/python-iris",
         ),
         (
-            '<i class="fa fa-book fa-fw"></i> Legacy Documentation',
+            '<i class="fa fa-book fa-fw"></i> Legacy documentation',
             "https://scitools.org.uk/iris/docs/v2.4.0/index.html",
         ),
     ],

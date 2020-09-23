@@ -337,14 +337,15 @@ The behaviour of the lenient ``combine`` metadata class method is outlined
 in :numref:`lenient combine table`, and as with :ref:`lenient equality` and
 :ref:`lenient difference` is enabled throught the ``lenient`` keyword argument.
 
-Again, the difference in behaviour between lenient and
+The difference in behaviour between **lenient** and
 :ref:`strict combination <strict combine table>` is centered around the lenient
-handling of combining **something** with **nothing** (``None``). Whereas strict
-combination would only return a result from combining identical objects.
+handling of combining **something** with **nothing** (``None``) to return
+**something**. Whereas strict
+combination will only return a result from combining identical objects.
 
-This is best demonstrated through the example of attempting to combine partially
-overlapping ``attributes`` member dictionaries. For example, given the following
-``attributes`` dictionary of our favoured ``latitude`` coordinate,
+Again, this is best demonstrated through a simple example of attempting to combine
+partially overlapping ``attributes`` member dictionaries. For example, given the
+following ``attributes`` dictionary of our favoured ``latitude`` coordinate,
 
 .. doctest:: lenient-behaviour
 
@@ -366,7 +367,8 @@ keys and values, namely,
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 Comparing the strict and lenient behaviour of ``combine`` side-by-side
-highlights the difference in behaviour, and advantages of lenient combination,
+highlights the difference in behaviour, and the advantages of lenient combination
+for more inclusive, richer metadata,
 
 .. doctest:: lenient-behaviour
 
@@ -381,7 +383,7 @@ highlights the difference in behaviour, and advantages of lenient combination,
 Lenient members
 ---------------
 
-*In semper in ex ac consectetur. Mauris vulputate malesuada bibendum. Aliquam ac nisl ultricies, porta felis nec, ultrices ante. Fusce placerat fermentum rhoncus. Fusce porta ut ligula quis tristique. Sed cursus blandit felis eu mollis. Aliquam scelerisque purus et pellentesque tempor. Vestibulum ac aliquam sapien. Proin vel mi quis turpis vulputate sodales non vel orci. Etiam nec hendrerit lectus. Vestibulum aliquet eleifend metus, et efficitur ante sagittis non. Sed tincidunt consectetur nibh, ac sodales elit ultrices eu. Duis blandit elementum libero quis maximus. Proin odio ipsum, congue et bibendum non, vehicula eget dui. Sed nec cursus leo. Nunc in massa eget nisi luctus eleifend id bibendum ante.*
+
 
 
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
