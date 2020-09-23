@@ -314,11 +314,11 @@ We create another :class:`~iris.common.DimCoordMetadata` with a dissimilar
 
     >>> attributes = {"neutral face": "😜", "upside-down face": "🙃"}
     >>> metadata = latitude.metadata._replace(attributes=attributes)
-    >>> metadata
+    >>> metadata  # doctest: +SKIP
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 Now comparing the strict and lenient behaviour for the ``difference`` method,
-highlights the change in how metadata is treated gracefully,
+highlights the change in how such dissimilar metadata is treated gracefully,
 
 .. doctest:: lenient-behaviour
 
@@ -333,7 +333,47 @@ highlights the change in how metadata is treated gracefully,
 Lenient combination
 -------------------
 
-*In semper in ex ac consectetur. Mauris vulputate malesuada bibendum. Aliquam ac nisl ultricies, porta felis nec, ultrices ante. Fusce placerat fermentum rhoncus. Fusce porta ut ligula quis tristique. Sed cursus blandit felis eu mollis. Aliquam scelerisque purus et pellentesque tempor. Vestibulum ac aliquam sapien. Proin vel mi quis turpis vulputate sodales non vel orci. Etiam nec hendrerit lectus. Vestibulum aliquet eleifend metus, et efficitur ante sagittis non. Sed tincidunt consectetur nibh, ac sodales elit ultrices eu. Duis blandit elementum libero quis maximus. Proin odio ipsum, congue et bibendum non, vehicula eget dui. Sed nec cursus leo. Nunc in massa eget nisi luctus eleifend id bibendum ante.*
+The behaviour of the lenient ``combine`` metadata class method is outlined
+in :numref:`lenient combine table`, and as with :ref:`lenient equality` and
+:ref:`lenient difference` is enabled throught the ``lenient`` keyword argument.
+
+Again, the difference in behaviour between lenient and
+:ref:`strict combination <strict combine table>` is centered around the lenient
+handling of combining **something** with **nothing** (``None``). Whereas strict
+combination would only return a result from combining identical objects.
+
+This is best demonstrated through the example of attempting to combine partially
+overlapping ``attributes`` member dictionaries. For example, given the following
+``attributes`` dictionary of our favoured ``latitude`` coordinate,
+
+.. doctest:: lenient-behaviour
+
+    >>> latitude.attributes  # doctest: +SKIP
+    {'grinning face': '😀', 'neutral face': '😐'}
+
+We create another :class:`~iris.common.DimCoordMetadata` with overlapping
+keys and values, namely,
+
+- the ``grinning face`` key is **missing**,
+- the ``neutral face`` key has the **same value**, and
+- the ``upside-down face`` key is **new**
+
+.. doctest:: lenient-behaviour
+
+    >>> attributes = {"neutral face": "😐", "upside-down face": "🙃"}
+    >>> metadata = latitude.metadata._replace(attributes=attributes)
+    >>> metadata  # doctest: +SKIP
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
+
+Comparing the strict and lenient behaviour of ``combine`` side-by-side
+highlights the difference in behaviour, and advantages of lenient combination,
+
+.. doctest:: lenient-behaviour
+
+    >>> metadata.combine(latitude.metadata).attributes
+    {'neutral face': '😐'}
+    >>> metadata.combine(latitude.metadata, lenient=True).attributes  # doctest: +SKIP
+    {'neutral face': '😐', 'upside-down face': '🙃', 'grinning face': '😀'}
 
 
 .. _lenient members:
