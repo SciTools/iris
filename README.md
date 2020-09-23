@@ -38,6 +38,9 @@
 <a href="https://github.com/psf/black">
 <img src="https://img.shields.io/badge/code%20style-black-000000.svg"
      alt="black" /></a>
+<a href="https://twitter.com/scitools_iris">
+<img src="https://img.shields.io/twitter/follow/scitools_iris?style=social"
+     alt="twitter" /></a>
 </p>
 
 <p align="center">
