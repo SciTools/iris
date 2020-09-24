@@ -15,25 +15,22 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import numpy as np
+import dask.array as da
 
-from iris.analysis import PercentileAggregator, _percentile
+from iris.analysis import PercentileAggregator
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris._lazy_data import as_lazy_data
+from iris._lazy_data import as_concrete_data
 
 
 class Test(tests.IrisTest):
     def test_init(self):
         name = "percentile"
-        call_func = _percentile
         units_func = mock.sentinel.units_func
-        lazy_func = mock.sentinel.lazy_func
-        aggregator = PercentileAggregator(
-            units_func=units_func, lazy_func=lazy_func
-        )
+        aggregator = PercentileAggregator(units_func=units_func)
         self.assertEqual(aggregator.name(), name)
-        self.assertIs(aggregator.call_func, call_func)
         self.assertIs(aggregator.units_func, units_func)
-        self.assertIs(aggregator.lazy_func, lazy_func)
         self.assertIsNone(aggregator.cell_method)
 
 
@@ -125,6 +122,80 @@ class Test_post_process(tests.IrisTest):
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name, units="percent")
         self.assertEqual(coord, expected)
+
+
+class Test_lazy_post_process(tests.IrisTest):
+    def setUp(self):
+        shape = (2, 5)
+        data = as_lazy_data(np.arange(np.prod(shape)))
+
+        self.coord_simple = DimCoord(data, "time")
+        self.cube_simple = Cube(data)
+        self.cube_simple.add_dim_coord(self.coord_simple, 0)
+
+        self.coord_multi_0 = DimCoord(np.arange(shape[0]), "time")
+        self.coord_multi_1 = DimCoord(np.arange(shape[1]), "height")
+        self.cube_multi = Cube(data.reshape(shape))
+        self.cube_multi.add_dim_coord(self.coord_multi_0, 0)
+        self.cube_multi.add_dim_coord(self.coord_multi_1, 1)
+
+    def test_simple_single_point(self):
+        aggregator = PercentileAggregator()
+        percent = 50
+        kwargs = dict(percent=percent)
+        shape = self.cube_simple.shape
+        data = da.arange(np.prod(shape)).reshape(shape)
+        coords = [self.coord_simple]
+        actual = aggregator.post_process(
+            self.cube_simple, data, coords, **kwargs
+        )
+        self.assertEqual(actual.shape, self.cube_simple.shape)
+        self.assertTrue(actual.has_lazy_data())
+        self.assertIs(actual.lazy_data(), data)
+
+    def test_simple_multiple_points(self):
+        aggregator = PercentileAggregator()
+        percent = np.array([10, 20, 50, 90])
+        kwargs = dict(percent=percent)
+        shape = self.cube_simple.shape + percent.shape
+        data = da.arange(np.prod(shape)).reshape(shape)
+        coords = [self.coord_simple]
+        actual = aggregator.post_process(
+            self.cube_simple, data, coords, **kwargs
+        )
+        self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
+        self.assertTrue(actual.has_lazy_data())
+        expected = np.rollaxis(as_concrete_data(data), -1)
+        self.assertArrayEqual(actual.data, expected)
+
+    def test_multi_single_point(self):
+        aggregator = PercentileAggregator()
+        percent = 70
+        kwargs = dict(percent=percent)
+        shape = self.cube_multi.shape
+        data = da.arange(np.prod(shape)).reshape(shape)
+        coords = [self.coord_multi_0]
+        actual = aggregator.post_process(
+            self.cube_multi, data, coords, **kwargs
+        )
+        self.assertEqual(actual.shape, self.cube_multi.shape)
+        self.assertTrue(actual.has_lazy_data())
+        self.assertIs(actual.lazy_data(), data)
+
+    def test_multi_multiple_points(self):
+        aggregator = PercentileAggregator()
+        percent = np.array([17, 29, 81])
+        kwargs = dict(percent=percent)
+        shape = self.cube_multi.shape + percent.shape
+        data = da.arange(np.prod(shape)).reshape(shape)
+        coords = [self.coord_multi_0]
+        actual = aggregator.post_process(
+            self.cube_multi, data, coords, **kwargs
+        )
+        self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
+        self.assertTrue(actual.has_lazy_data())
+        expected = np.rollaxis(as_concrete_data(data), -1)
+        self.assertArrayEqual(actual.data, expected)
 
 
 if __name__ == "__main__":

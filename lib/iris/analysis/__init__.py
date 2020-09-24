@@ -37,6 +37,7 @@ The gallery contains several interesting worked examples of how an
 
 from collections import OrderedDict
 from collections.abc import Iterable
+import functools
 from functools import wraps
 
 import dask.array as da
@@ -683,7 +684,7 @@ class PercentileAggregator(_Aggregator):
 
     """
 
-    def __init__(self, units_func=None, lazy_func=None, **kwargs):
+    def __init__(self, units_func=None, **kwargs):
         """
         Create a percentile aggregator.
 
@@ -716,9 +717,9 @@ class PercentileAggregator(_Aggregator):
         _Aggregator.__init__(
             self,
             None,
-            _percentile,
+            functools.partial(_percentile, lazy=False),
             units_func=units_func,
-            lazy_func=lazy_func,
+            lazy_func=functools.partial(_percentile, lazy=True),
             **kwargs,
         )
 
@@ -1156,7 +1157,31 @@ def _build_dask_mdtol_function(dask_stats_function):
     return inner_stat
 
 
-def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
+def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
+    """
+    Calculate percentiles along the 2nd axis of a 2D array.
+
+    """
+    if fast_percentile_method:
+        msg = "Cannot use fast np.percentile method with masked array."
+        if ma.is_masked(data):
+            raise TypeError(msg)
+        result = np.percentile(data, percent, axis=-1)
+        result = result.T
+    else:
+        quantiles = percent / 100.0
+        result = scipy.stats.mstats.mquantiles(
+            data, quantiles, axis=-1, **kwargs
+        )
+    if not ma.isMaskedArray(data) and not ma.is_masked(result):
+        return np.asarray(result)
+    else:
+        return ma.MaskedArray(result)
+
+
+def _percentile(
+    data, axis, percent, fast_percentile_method=False, lazy=False, **kwargs
+):
     """
     The percentile aggregator is an additive operation. This means that
     it *may* introduce a new dimension to the data for the statistic being
@@ -1173,41 +1198,49 @@ def _percentile(data, axis, percent, fast_percentile_method=False, **kwargs):
         masked arrays.
 
     """
-    # Ensure that the target axis is the last dimension.
+    # Ensure that the target axis is the last dimension.  Note that np.rollaxis
+    # returns a dask array if data is dask array.
     data = np.rollaxis(data, axis, start=data.ndim)
+
     shape = data.shape[:-1]
     # Flatten any leading dimensions.
     if shape:
         data = data.reshape([np.prod(shape), data.shape[-1]])
+
+    if not isinstance(percent, Iterable):
+        scalar_percent = True
+        percent = [percent]
+    percent = np.array(percent)
+
     # Perform the percentile calculation.
-    if fast_percentile_method:
-        msg = "Cannot use fast np.percentile method with masked array."
-        if ma.is_masked(data):
-            raise TypeError(msg)
-        result = np.percentile(data, percent, axis=-1)
-        result = result.T
-    else:
-        quantiles = np.array(percent) / 100.0
-        result = scipy.stats.mstats.mquantiles(
-            data, quantiles, axis=-1, **kwargs
+    if lazy:
+        _partial_percentile = functools.partial(
+            _calc_percentile,
+            percent=percent,
+            fast_percentile_method=fast_percentile_method,
+            **kwargs,
         )
-    if not ma.isMaskedArray(data) and not ma.is_masked(result):
-        result = np.asarray(result)
+
+        result = iris._lazy_data.map_complete_blocks(
+            data, _partial_percentile, (-1,), percent.shape
+        )
     else:
-        result = ma.MaskedArray(result)
+        result = _calc_percentile(
+            data,
+            percent,
+            fast_percentile_method=fast_percentile_method,
+            **kwargs,
+        )
 
     # Ensure to unflatten any leading dimensions.
     if shape:
-        if not isinstance(percent, Iterable):
-            percent = [percent]
-        percent = np.array(percent)
         # Account for the additive dimension.
         if percent.shape > (1,):
             shape += percent.shape
         result = result.reshape(shape)
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
-    if result.shape == (1,) and quantiles.ndim == 0:
+    if result.shape == (1,) and scalar_percent:
         result = result[0]
 
     return result
