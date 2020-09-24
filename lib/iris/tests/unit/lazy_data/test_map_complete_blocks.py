@@ -60,6 +60,14 @@ class Test_map_complete_blocks(tests.IrisTest):
         cube.lazy_data.assert_called_once()
         cube_data.assert_not_called()
 
+    def test_dask_array_input(self):
+        lazy_array = da.asarray(self.array, chunks=((1, 1), (4,)))
+        result = map_complete_blocks(
+            lazy_array, self.func, dims=(1,), out_sizes=(4,)
+        )
+        self.assertTrue(is_lazy_data(result))
+        self.assertArrayEqual(result.compute(), self.func_result)
+
     def test_rechunk(self):
         lazy_array = da.asarray(self.array, chunks=((1, 1), (2, 2)))
         cube, _ = create_mock_cube(lazy_array)
