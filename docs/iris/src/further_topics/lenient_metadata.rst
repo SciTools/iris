@@ -270,7 +270,7 @@ Now, compare our metadata,
     True
 
 Again, lenient equality (:numref:`lenient equality table`) offers a more
-forgiving and practical alternative to the strict alternative.
+forgiving and practical alternative to strict behaviour.
 
 
 .. _lenient difference:
@@ -412,8 +412,7 @@ behaviour or interpretation.
    ============================================================================================= ================== ============
 
 | **Key**
-| † - Applies to all metadata classes including :class:`~iris.common.metadata.AncillaryVariableMetadata`, which has no
-|     other specialised members
+| † - Applies to all metadata classes including :class:`~iris.common.metadata.AncillaryVariableMetadata`, which has no other specialised members
 | ‡ - See :ref:`special lenient name` for ``standard_name``, ``long_name``, and ``var_name``
 | § - The ``circular`` is ignored for operations between :class:`~iris.common.metadata.CoordMetadata` and :class:`~iris.common.metadata.DimCoordMetadata`
 
@@ -439,11 +438,11 @@ The ``standard_name``, ``long_name`` and ``var_name`` have a closer association
 with each other compared to all other metadata members, as they all
 underpin the functionality provided by the :meth:`~iris.common.mixin.CFVariableMixin.name`
 method. It is imperative that the ``name`` derived from metadata remains constant
-for strict and lenient equality.
+for strict and lenient equality alike.
 
 As such, these metadata members have an additional layer of behaviour enforced
 during :ref:`lenient equality` in order to ensure that the identity or name of
-metadata does not change due to an artefact of lenient comparison.
+metadata does not change due to a side-effect of lenient comparison.
 
 For example, if simple :ref:`lenient equality <lenient equality table>` behaviour
 was applied to the ``standard_name``, ``long_name`` and ``var_name``, the following
@@ -470,11 +469,9 @@ To account for this, lenient equality is performed by two simple consecutive ste
 - ensure that the result returned by the ``name`` method is the same for the metadata
   being compared, then
 - only perform :ref:`lenient equality <lenient equality table>` between the ``standard_name``
-  and ``long_name`` i.e., the ``var_name`` member is **not** compared
-
-
+  and ``long_name`` i.e., the ``var_name`` member is **not** compared explicitly, as
+  its value may have been accounted for through ``name`` equality
 
 
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
 .. _CF Conventions: https://cfconventions.org/
-
