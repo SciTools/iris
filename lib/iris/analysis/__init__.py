@@ -1241,7 +1241,7 @@ def _percentile(
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
     if result.shape == (1,) and scalar_percent:
-        result = result[0]
+        result = np.squeeze(result)
 
     return result
 
