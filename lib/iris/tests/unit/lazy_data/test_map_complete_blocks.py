@@ -25,6 +25,8 @@ def create_mock_cube(array):
     cube.has_lazy_data = unittest.mock.Mock(return_value=is_lazy_data(array))
     cube.lazy_data = unittest.mock.Mock(return_value=array)
     cube.shape = array.shape
+    # Remove compute so cube is not interpreted as dask array.
+    del cube.compute
     return cube, cube_data
 
 
