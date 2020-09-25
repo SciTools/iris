@@ -719,7 +719,7 @@ class PercentileAggregator(_Aggregator):
             None,
             functools.partial(_percentile, lazy=False),
             units_func=units_func,
-            lazy_func=functools.partial(_percentile, lazy=True),
+            lazy_func=_lazy_percentile,
             **kwargs,
         )
 
@@ -764,6 +764,45 @@ class PercentileAggregator(_Aggregator):
                 raise ValueError(msg.format(self.name(), arg))
 
         return _Aggregator.aggregate(self, data, axis, **kwargs)
+
+    def lazy_aggregate(self, data, axis, **kwargs):
+        """
+        Perform aggregation over the data with a lazy operation, analogous to
+        the 'aggregate' result.
+
+        Keyword arguments are passed through to the data aggregation function
+        (for example, the "percent" keyword for a percentile aggregator).
+        This function is usually used in conjunction with update_metadata(),
+        which should be passed the same keyword arguments.
+
+        Args:
+
+        * data (array):
+            A lazy array (:class:`dask.array.Array`).
+
+        * axis (int or list of int):
+            The dimensions to aggregate over -- note that this is defined
+            differently to the 'aggregate' method 'axis' argument, which only
+            accepts a single dimension index.
+
+        Kwargs:
+
+        * kwargs:
+            All keyword arguments are passed through to the data aggregation
+            function.
+
+        Returns:
+            A lazy array representing the aggregation operation
+            (:class:`dask.array.Array`).
+
+        """
+
+        msg = "{} aggregator requires the mandatory keyword argument {!r}."
+        for arg in self._args:
+            if arg not in kwargs:
+                raise ValueError(msg.format(self.name(), arg))
+
+        return _Aggregator.lazy_aggregate(self, data, axis, **kwargs)
 
     def post_process(self, collapsed_cube, data_result, coords, **kwargs):
         """
@@ -1252,6 +1291,11 @@ def _percentile(
         result = np.squeeze(result)
 
     return result
+
+
+_lazy_percentile = _build_dask_mdtol_function(
+    functools.partial(_percentile, lazy=True)
+)
 
 
 def _weighted_quantile_1D(data, weights, quantiles, **kwargs):
