@@ -1159,7 +1159,7 @@ def _build_dask_mdtol_function(dask_stats_function):
 
 def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
-    Calculate percentiles along the 2nd axis of a 2D array.
+    Calculate percentiles along the trailing axis of a 1D or 2D array.
 
     """
     if fast_percentile_method:
