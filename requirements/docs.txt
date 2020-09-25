@@ -5,3 +5,4 @@ sphinx-copybutton
 sphinx-gallery
 sphinx_rtd_theme
 sphinxcontrib-napoleon
+sphinxcontrib-spelling

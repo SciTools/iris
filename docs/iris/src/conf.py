@@ -115,8 +115,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
-    # TODO: Spelling extension disabled until the dependencies can be included
-    # "sphinxcontrib.spelling",
+    "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",

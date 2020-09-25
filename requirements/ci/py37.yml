@@ -49,3 +49,5 @@ dependencies:
   - pip
   - pip:
     - sphinxcontrib-napoleon
+    - sphinxcontrib-spelling
+

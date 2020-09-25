@@ -48,7 +48,8 @@ This is useful for a final test before committing your changes.
 
 .. note:: In order to preserve a clean build for the html, all **warnings**
           have been promoted to be **errors** to ensure they are addressed.
-          This **only** applies when ``make html`` is run.
+          This **only** applies when ``make html`` and ``make spelling`` is
+          run.
 
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 
@@ -87,16 +88,15 @@ adding it to the ``linkcheck_ignore`` array that is defined in the
 If this fails check the output for the text **broken** and then correct
 or ignore the url.
 
-.. comment
-    Finally, the spelling in the documentation can be checked automatically via the
-    command::
+Finally, the spelling in the documentation can be checked automatically via the
+command::
 
-        make spelling
+    make spelling
 
-    The spelling check may pull up many technical abbreviations and acronyms.  This
-    can be managed by using an **allow** list in the form of a file.  This file,
-    or list of files is set in the `conf.py`_ using the string list
-    ``spelling_word_list_filename``.
+The spelling check may pull up many technical abbreviations and acronyms.  This
+can be managed by using an **allow** list in the form of a file.  This file,
+or list of files is set in the `conf.py`_ using the string list
+``spelling_word_list_filename``.
 
 
 .. note:: In addition to the automated `travis-ci`_ build of all the

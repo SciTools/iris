@@ -19,7 +19,7 @@ env:
     - PYTHON_VERSION='37' TEST_TARGET='default' TEST_BLACK=true
     - PYTHON_VERSION='37' TEST_TARGET='gallery'
     - PYTHON_VERSION='37' TEST_TARGET='doctest' PUSH_BUILT_DOCS=true
-    - PYTHON_VERSION='37' TEST_TARGET='linkcheck'
+    - PYTHON_VERSION='37' TEST_TARGET='checkdocs'
     # TODO: Dependencies for sphinxcontrib-spelling to be in place before this
     #       spelling code block is enabled
     #- PYTHON_VERSION='37' TEST_TARGET='spelling'
@@ -121,30 +121,16 @@ script:
       make clean html && make doctest;
     fi
 
-  # check the links in the docs
+  # check the links and spelling in the docs
   - >
-    if [[ "${TEST_TARGET}" == 'linkcheck' ]]; then
+    if [[ "${TEST_TARGET}" == 'checkdocs' ]]; then
       MPL_RC_DIR="${HOME}/.config/matplotlib";
       mkdir -p ${MPL_RC_DIR};
       echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
       echo 'image.cmap : viridis' >> ${MPL_RC_DIR}/matplotlibrc;
       cd ${INSTALL_DIR}/docs/iris;
-      make clean && make linkcheck;
+      make clean && make linkcheck spelling;
     fi
-
-  # TODO: Dependencies for sphinxcontrib-spelling to be in place before this
-  #       spelling code block is enabled
-  
-  # check the spelling in the docs
-  # - >
-  #   if [[ "${TEST_TARGET}" == 'spelling' ]]; then
-  #     MPL_RC_DIR="${HOME}/.config/matplotlib";
-  #     mkdir -p ${MPL_RC_DIR};
-  #     echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
-  #     echo 'image.cmap : viridis' >> ${MPL_RC_DIR}/matplotlibrc;
-  #     cd ${INSTALL_DIR}/docs/iris;
-  #     make clean && make spelling;
-  #   fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
   # NOTE: a *separate* "export" command appears to be necessary here : A command of the

@@ -52,7 +52,7 @@ html-noplot:
 	@echo "Build finished. The HTML (no gallery) pages are in $(BUILDDIR)/html"
 
 spelling:
-	$(SPHINXBUILD) -b spelling $(SRCDIR) $(BUILDDIR)
+	$(SPHINXBUILD) -b spelling $(WARNING_TO_ERROR) $(SRCDIR) $(BUILDDIR)
 	@echo
 	@echo "Build finished. The HTML (no gallery) pages are in $(BUILDDIR)/html"
 
