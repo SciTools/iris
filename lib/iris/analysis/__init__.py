@@ -1198,14 +1198,22 @@ def _percentile(
         masked arrays.
 
     """
-    # Ensure that the target axis is the last dimension.  Note that np.rollaxis
-    # returns a dask array if data is dask array.
-    data = np.rollaxis(data, axis, start=data.ndim)
+    # Express axis as list of non-negative integers.
+    if not isinstance(axis, Iterable):
+        axis = [axis % data.ndim]
+    else:
+        axis = sorted([dim % data.ndim for dim in axis])
 
-    shape = data.shape[:-1]
+    # Get data as a 1D or 2D view with the target axis as the trailing one.
+    end_size = np.prod([data.shape[dim] for dim in axis])
+    untouched_dims = [dim for dim in range(data.ndim) if dim not in axis]
+    shape = [data.shape[dim] for dim in untouched_dims]
+
+    data = data.transpose(untouched_dims + axis)
+
     # Flatten any leading dimensions.
     if shape:
-        data = data.reshape([np.prod(shape), data.shape[-1]])
+        data = data.reshape([np.prod(shape), end_size])
 
     if not isinstance(percent, Iterable):
         scalar_percent = True
