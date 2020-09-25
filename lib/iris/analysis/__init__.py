@@ -1167,7 +1167,9 @@ def _build_dask_mdtol_function(dask_stats_function):
     call signature : "dask_stats_function(data, axis=axis, **kwargs)".
     It must be masked-data tolerant, i.e. it ignores masked input points and
     performs a calculation on only the unmasked points.
-    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.
+    For example, mean([1, --, 2]) = (1 + 2) / 2 = 1.5.  If an additional
+    dimension is created by 'dask_function', it is assumed to be the trailing
+    one (as for '_percentile').
 
     The returned value is a new function operating on dask arrays.
     It has the call signature `stat(data, axis=-1, mdtol=None, **kwargs)`.
@@ -1187,6 +1189,12 @@ def _build_dask_mdtol_function(dask_stats_function):
             points_per_calc = array.size / dask_result.size
             masked_point_fractions = point_mask_counts / points_per_calc
             boolean_mask = masked_point_fractions > mdtol
+            if dask_result.ndim > boolean_mask.ndim:
+                # dask_stats_function created trailing dimension.
+                boolean_mask = da.broadcast_to(
+                    boolean_mask.reshape(boolean_mask.shape + (1,)),
+                    dask_result.shape,
+                )
             # Return an mdtol-masked version of the basic result.
             result = da.ma.masked_array(
                 da.ma.getdata(dask_result), boolean_mask

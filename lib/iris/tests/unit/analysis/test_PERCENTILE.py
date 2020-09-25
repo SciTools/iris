@@ -239,7 +239,9 @@ class Test_lazy_aggregate(tests.IrisTest):
         data[1] = ma.masked
         data = as_lazy_data(data)
         percent = np.array([10, 50, 70, 80])
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=percent)
+        actual = PERCENTILE.lazy_aggregate(
+            data, axis=0, percent=percent, mdtol=0.1
+        )
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
         self.assertTrue(is_lazy_data(actual))
         expected = np.tile(np.arange(shape[-1]), percent.size)
