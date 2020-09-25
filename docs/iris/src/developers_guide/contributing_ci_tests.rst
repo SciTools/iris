@@ -56,10 +56,11 @@ repository when a pull request is submitted, updated or merged.
 GitHub Checklist
 ****************
 
-An example snapshot from a successful GitHub pull request shows all test passing.
+An example snapshot from a successful GitHub pull request shows all tests
+passing:
 
 .. image:: ci_checks.png
 
-If any CI checks fail, then the pull request is unlikely to be merged to the Iris
-target branch by a core developer.
+If any CI checks fail, then the pull request is unlikely to be merged to the
+Iris target branch by a core developer.
 
