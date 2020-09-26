@@ -1,6 +1,6 @@
-.. _development_where_to_start:
-
 .. include:: ../common_links.inc
+
+.. _development_where_to_start:
 
 Getting Involved
 ----------------

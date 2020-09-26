@@ -51,6 +51,10 @@ Panel Experiment
 
 https://sphinx-panels.readthedocs.io/en/latest/
 
+
+Play #1
+"""""""
+
 .. panels::
 
     .. link-button:: Iris
@@ -67,6 +71,10 @@ https://sphinx-panels.readthedocs.io/en/latest/
         :type: ref
         :text: Iris API 2
         :classes: btn-outline-primary btn-block stretched-link
+
+
+Play #2
+"""""""
 
 and more....
 
@@ -91,6 +99,9 @@ and more....
     :column: col-lg-12 p-2
     panel4
 
+
+Play #3
+"""""""
 
 More links....
 
@@ -129,51 +140,57 @@ More links....
     ---
 
 
-Lets try the toc as buttons instead.......
+
+Play #4
+"""""""
+
+More consistent layout, showing some button variations.
 
 .. panels::
     :container: container-lg pb-3
     :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
 
+    Install to use Iris or for develeopment.
+    +++
     .. link-button:: installing_iris
         :type: ref
-        :text: Getting Started
+        :text: Installing Iris
         :classes: btn-outline-primary
     ---
-
+    View the gallery with python code used to create it.
+    +++
+    .. link-button:: sphx_glr_generated_gallery
+        :type: ref
+        :text: Gallery
+        :classes: btn-primary
+    ---
+    Find out what has recently, or soon to be added to Iris.
+    +++
+    .. link-button:: iris_whatsnew
+        :type: ref
+        :text: What's new
+        :classes: btn-outline-success
+    ---
+    Learn how to use Iris.
+    +++
     .. link-button:: user_guide_index
         :type: ref
         :text: User Guide
-        :classes: btn-outline-primary
+        :classes: btn-outline-info
     ---
-
-    .. link-button::_development_where_to_start
-        :type: ref
-        :text: Developers Guideeeeeeeeeee
-        :classes: btn-outline-primary
-    ---
-
-    .. link-button:: iris_whatsnew
-        :type: ref
-        :text: Reference
-        :classes: btn-outline-primary
-    ---
-
+    Extensive programming API documentation.
+    +++
     .. link-button:: Iris
         :type: ref
         :text: Iris API
-        :classes: btn-outline-primary
+        :classes: btn-info
     ---
-
-What do we want to show using buttons?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* :fa:`question` Iris API
-* :fa:`question-circle` Installing Iris
-* User Guide
-* Dev Guide - Getting Started
-* Whats New
-
+    As a developer you can contribute to Iris.
+    +++
+    .. link-button:: development_where_to_start
+        :type: ref
+        :text: Getting Involved
+        :classes: btn-success
 
 
 .. toctree::
