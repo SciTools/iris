@@ -46,6 +46,134 @@ from Iris' use of standard NumPy/dask arrays as its underlying data storage.
 Iris is part of SciTools, for more information see https://scitools.org.uk/.
 
 
+Panel Experiment
+~~~~~~~~~~~~~~~~
+
+.. panels::
+
+    .. link-button:: Iris
+        :type: ref
+        :text: Iris API 1
+
+    ---
+
+    A package for handling multi-dimensional data and associated metadata.
+
+    +++
+
+    .. link-button:: Iris
+        :type: ref
+        :text: Iris API 2
+        :classes: btn-outline-primary btn-block stretched-link
+
+and more....
+
+.. panels::
+    :container: container-lg pb-3
+    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
+
+    this is some text
+
+    .. link-button:: generated/api/iris.html
+        :text: Iris API 1
+        :classes: btn-outline-primary
+    ---
+    .. link-button:: generated/api/iris.html
+        :text: Iris API 2
+        :classes: btn-outline-primary btn-block btn-sm
+    ---
+    .. link-button:: generated/api/iris.html
+        :text: Iris API 3
+        :classes: btn-outline-info stretched-link font-weight-bold btn-lg
+    ---
+    :column: col-lg-12 p-2
+    panel4
+
+
+More links....
+
+.. panels::
+    :container: container-lg pb-3
+    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
+
+    Find out what's new in Iris
+
+    +++
+
+    .. link-button:: Iris
+        :type: ref
+        :text: Iris API
+        :classes: btn-outline-primary
+    ---
+
+    Find out what has recently been added to Iris, or what is soon about to be.
+
+    +++
+
+    .. link-button:: iris_whatsnew
+        :type: ref
+        :text: What's new
+        :classes: btn-outline-primary
+    ---
+
+    As a developer you can contribute to Iris
+
+    +++
+
+    .. link-button::_development_where_to_start
+        :type: ref
+        :text: Getting Involved
+        :classes: btn-outline-primary
+    ---
+
+
+Lets try the toc as buttons instead.......
+
+.. panels::
+    :container: container-lg pb-3
+    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
+
+    .. link-button:: installing_iris
+        :type: ref
+        :text: Getting Started
+        :classes: btn-outline-primary
+    ---
+
+    .. link-button:: user_guide_index
+        :type: ref
+        :text: User Guide
+        :classes: btn-outline-primary
+    ---
+
+    .. link-button::_development_where_to_start
+        :type: ref
+        :text: Developers Guideeeeeeeeeee
+        :classes: btn-outline-primary
+    ---
+
+    .. link-button:: iris_whatsnew
+        :type: ref
+        :text: Reference
+        :classes: btn-outline-primary
+    ---
+
+    .. link-button:: Iris
+        :type: ref
+        :text: Iris API
+        :classes: btn-outline-primary
+    ---
+
+What do we want to show using buttons?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* :fa:`question` Iris API
+* :fa:`question-circle` Installing Iris
+* User Guide
+* Dev Guide - Getting Started
+* Whats New
+
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Getting started

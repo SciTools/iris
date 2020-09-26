@@ -115,6 +115,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
+    "sphinx_panels",
     # TODO: Spelling extension disabled until the dependencies can be included
     # "sphinxcontrib.spelling",
     "sphinx_gallery.gen_gallery",
@@ -125,6 +126,9 @@ extensions = [
     "custom_data_autodoc",
     "generate_package_rst",
 ]
+
+# -- panels extension ---------------------------------------------------------
+# See https://sphinx-panels.readthedocs.io/en/latest/
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
