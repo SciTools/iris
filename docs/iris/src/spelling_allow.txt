@@ -82,6 +82,7 @@ arraylike
 atol
 auditable
 aux
+backend
 basemap
 behaviour
 betap
@@ -106,12 +107,14 @@ cftime
 chunksizes
 ci
 clabel
+cls
 cmap
 cmpt
 codebase
 color
 colorbar
 colorbars
+colormaps
 complevel
 conda
 config
@@ -122,6 +125,7 @@ coords
 cs
 datafiles
 datatype
+datefmt
 datetime
 datetimes
 ddof
@@ -134,6 +138,7 @@ dicts
 diff
 discontiguities
 discontiguous
+div
 djf
 docstring
 docstrings
@@ -159,10 +164,16 @@ filename
 filenames
 filepath
 filespec
+fmt
 fullname
 func
 geolocations
+getattr
+getitem
+getitem
+getslice
 github
+google
 gregorian
 grib
 gribapi
@@ -207,6 +218,7 @@ lblrec
 lbmon
 lbmond
 lbnrec
+lbpack
 lbrsvd
 lbtim
 lbuser
@@ -216,6 +228,7 @@ lbyrd
 lh
 lhs
 linewidth
+linkcheck
 linted
 linting
 lon
@@ -231,7 +244,9 @@ meaned
 mercator
 metadata
 min
+mixin
 mpl
+mul
 nanmask
 nc
 ndarray
@@ -248,6 +263,7 @@ nx
 ny
 online
 orog
+param
 paramId
 params
 parsable
@@ -257,6 +273,7 @@ placeholders
 plugin
 png
 proj
+proxied
 ps
 pseudocolor
 pseudocolour
@@ -344,6 +361,7 @@ var
 versioning
 vmax
 vmin
+vs
 waypoint
 waypoints
 whitespace

@@ -399,7 +399,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             "10 meters" when multiplied by a scalar i.e. "1000" would result in
             a metadata object of "10000 meters". An alternative approach could
             be taken to multiply the *unit* by 1000 and the resultant metadata
-            object would represent "10 kilometers".
+            object would represent "10 kilometres".
 
         """
         # Note: this method includes bounds handling code, but it only runs

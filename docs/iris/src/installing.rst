@@ -37,8 +37,8 @@ at https://conda.io/en/latest/index.html.
 
 .. _installing_from_source:
 
-Installing from source (devs)
------------------------------
+Installing from source (developers)
+-----------------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
