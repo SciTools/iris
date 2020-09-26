@@ -49,6 +49,8 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
 Panel Experiment
 ~~~~~~~~~~~~~~~~
 
+https://sphinx-panels.readthedocs.io/en/latest/
+
 .. panels::
 
     .. link-button:: Iris
