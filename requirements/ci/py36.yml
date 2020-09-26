@@ -50,4 +50,5 @@ dependencies:
   - pip:
     - sphinxcontrib-napoleon
     - sphinxcontrib-spelling
+    - pyenchant               # lets add this explicitly....
 

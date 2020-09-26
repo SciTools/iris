@@ -123,7 +123,7 @@ script:
 
   # check the links and spelling in the docs
   - >
-    export  PYENCHANT_VERBOSE_FIND=1
+    export PYENCHANT_VERBOSE_FIND=1
     python -c 'import enchant'
 
     if [[ "${TEST_TARGET}" == 'checkdocs' ]]; then
