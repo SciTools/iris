@@ -6,3 +6,5 @@ sphinx-gallery
 sphinx_rtd_theme
 sphinxcontrib-napoleon
 sphinxcontrib-spelling
+sphinxcontrib-spelling
+pyenchant               # lets add this explicitly....
