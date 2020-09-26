@@ -49,3 +49,4 @@ dependencies:
   - pip
   - pip:
     - sphinxcontrib-napoleon
+    - sphinx-panels
