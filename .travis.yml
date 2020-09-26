@@ -123,13 +123,16 @@ script:
 
   # check the links and spelling in the docs
   - >
+    export  PYENCHANT_VERBOSE_FIND=1
+    python -c 'import enchant'
+
     if [[ "${TEST_TARGET}" == 'checkdocs' ]]; then
       MPL_RC_DIR="${HOME}/.config/matplotlib";
       mkdir -p ${MPL_RC_DIR};
       echo 'backend : agg' > ${MPL_RC_DIR}/matplotlibrc;
       echo 'image.cmap : viridis' >> ${MPL_RC_DIR}/matplotlibrc;
       cd ${INSTALL_DIR}/docs/iris;
-      make clean && make linkcheck spelling;
+      make clean && make linkcheck && make spelling;
     fi
 
   # Split the organisation out of the slug. See https://stackoverflow.com/a/5257398/741316 for description.
