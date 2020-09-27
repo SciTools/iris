@@ -176,21 +176,21 @@ More consistent layout, showing some button variations.
     .. link-button:: user_guide_index
         :type: ref
         :text: User Guide
-        :classes: btn-outline-info
+        :classes: btn-outline-info btn-block
     ---
     Extensive programming API documentation.
     +++
     .. link-button:: Iris
         :type: ref
         :text: Iris API
-        :classes: btn-info
+        :classes: btn-info btn-block
     ---
     As a developer you can contribute to Iris.
     +++
     .. link-button:: development_where_to_start
         :type: ref
         :text: Getting Involved
-        :classes: btn-success
+        :classes: btn-success btn-block
 
 
 .. toctree::
