@@ -46,9 +46,8 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery
   - sphinx_rtd_theme
+  - sphinxcontrib-spelling
   - pip
   - pip:
     - sphinxcontrib-napoleon
-    - sphinxcontrib-spelling
     - pyenchant               # lets add this explicitly....
-
