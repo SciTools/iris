@@ -11,7 +11,8 @@ Iris is available using conda for the following platforms:
 
 Windows 10 now has support for Linux distributions via WSL_ (Windows
 Subsystem for Linux).  This is a great option to get started with Iris
-for users and developers using Windows 10.
+for users and developers.  Be aware that we do not currently test against 
+any WSL_ distributions.
 
 .. _WSL: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
