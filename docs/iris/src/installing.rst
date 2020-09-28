@@ -9,7 +9,7 @@ Iris is available using conda for the following platforms:
 * Mac OSX 64-bit, and
 * Windows 64-bit.
 
-Windows 10 now has support for a native linux kernel via WSL_ (Windows
+Windows 10 now has support for Linux distributions via WSL_ (Windows
 Subsystem for Linux).  This is a great option to get started with Iris
 for users and developers using Windows 10.
 
