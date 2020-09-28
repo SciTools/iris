@@ -53,18 +53,18 @@ For **Iris 2.4** and earlier documentation please see the
         :text: Installing Iris
         :classes: btn-outline-primary btn-block
     ---
-    View the gallery that includes python code used to create it.
+    Example code to create a variety of plots.
     +++
     .. link-button:: sphx_glr_generated_gallery
         :type: ref
         :text: Gallery
         :classes: btn-outline-primary btn-block
     ---
-    Find out what has recently been added to Iris, or soon will be.
+    Find out what has recently changed in Iris.
     +++
     .. link-button:: iris_whatsnew
         :type: ref
-        :text: What's new
+        :text: What's New
         :classes: btn-outline-primary btn-block
     ---
     Learn how to use Iris.
@@ -74,7 +74,7 @@ For **Iris 2.4** and earlier documentation please see the
         :text: User Guide
         :classes: btn-outline-primary btn-block
     ---
-    Documentation for the Iris Application Programming Interface.
+    Browse full Iris functionality by module.
     +++
     .. link-button:: Iris
         :type: ref
