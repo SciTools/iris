@@ -1,9 +1,3 @@
-.. note:: For **Iris 2.4** and earlier documentation please see the
-          `legacy documentation`_
-
-.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
-
-
 Iris Documentation
 ==================
 
@@ -44,158 +38,61 @@ Interoperability with packages from the wider scientific Python ecosystem comes
 from Iris' use of standard NumPy/dask arrays as its underlying data storage.
 
 Iris is part of SciTools, for more information see https://scitools.org.uk/.
+For **Iris 2.4** and earlier documentation please see the
+:link-badge:`https://scitools.org.uk/iris/docs/v2.4.0/,"legacy documentation",cls=badge-info text-white`.
 
-
-Panel Experiment
-~~~~~~~~~~~~~~~~
-
-https://sphinx-panels.readthedocs.io/en/latest/
-
-
-Play #1
-"""""""
-
-.. panels::
-
-    .. link-button:: Iris
-        :type: ref
-        :text: Iris API 1
-
-    ---
-
-    A package for handling multi-dimensional data and associated metadata.
-
-    +++
-
-    .. link-button:: Iris
-        :type: ref
-        :text: Iris API 2
-        :classes: btn-outline-primary btn-block stretched-link
-
-
-Play #2
-"""""""
-
-and more....
 
 .. panels::
     :container: container-lg pb-3
     :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
 
-    this is some text
-
-    .. link-button:: generated/api/iris.html
-        :text: Iris API 1
-        :classes: btn-outline-primary
-    ---
-    .. link-button:: generated/api/iris.html
-        :text: Iris API 2
-        :classes: btn-outline-primary btn-block btn-sm
-    ---
-    .. link-button:: generated/api/iris.html
-        :text: Iris API 3
-        :classes: btn-outline-info stretched-link font-weight-bold btn-lg
-    ---
-    :column: col-lg-12 p-2
-    panel4
-
-
-Play #3
-"""""""
-
-More links....
-
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
-
-    Find out what's new in Iris
-
-    +++
-
-    .. link-button:: Iris
-        :type: ref
-        :text: Iris API
-        :classes: btn-outline-primary
-    ---
-
-    Find out what has recently been added to Iris, or what is soon about to be.
-
-    +++
-
-    .. link-button:: iris_whatsnew
-        :type: ref
-        :text: What's new
-        :classes: btn-outline-primary
-    ---
-
-    As a developer you can contribute to Iris
-
-    +++
-
-    .. link-button::_development_where_to_start
-        :type: ref
-        :text: Getting Involved
-        :classes: btn-outline-primary
-    ---
-
-
-
-Play #4
-"""""""
-
-More consistent layout, showing some button variations.
-
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
-
-    Install to use Iris or for develeopment.
+    Install Iris to use ir for development.
     +++
     .. link-button:: installing_iris
         :type: ref
         :text: Installing Iris
-        :classes: btn-outline-primary
+        :classes: btn-outline-primary btn-block
     ---
-    View the gallery with python code used to create it.
+    View the gallery that includes python code used to create it.
     +++
     .. link-button:: sphx_glr_generated_gallery
         :type: ref
         :text: Gallery
-        :classes: btn-primary
+        :classes: btn-outline-primary btn-block
     ---
-    Find out what has recently, or soon to be added to Iris.
+    Find out what has recently been added to Iris, or soon will be.
     +++
     .. link-button:: iris_whatsnew
         :type: ref
         :text: What's new
-        :classes: btn-outline-success
+        :classes: btn-outline-primary btn-block
     ---
     Learn how to use Iris.
     +++
     .. link-button:: user_guide_index
         :type: ref
         :text: User Guide
-        :classes: btn-outline-info btn-block
+        :classes: btn-outline-primary btn-block
     ---
     Extensive programming API documentation.
     +++
     .. link-button:: Iris
         :type: ref
         :text: Iris API
-        :classes: btn-info btn-block
+        :classes: btn-outline-primary btn-block
     ---
     As a developer you can contribute to Iris.
     +++
     .. link-button:: development_where_to_start
         :type: ref
         :text: Getting Involved
-        :classes: btn-success btn-block
+        :classes: btn-outline-primary btn-block
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting started
+   :hidden:
 
    installing
    generated/gallery/index
@@ -205,6 +102,7 @@ More consistent layout, showing some button variations.
    :maxdepth: 1
    :caption: User Guide
    :name: userguide_index
+   :hidden:
 
    userguide/index
    userguide/iris_cubes
@@ -228,6 +126,7 @@ More consistent layout, showing some button variations.
    :maxdepth: 1
    :caption: Developers Guide
    :name: development_index
+   :hidden:
 
    developers_guide/contributing_getting_involved
    developers_guide/gitwash/index
@@ -235,13 +134,14 @@ More consistent layout, showing some button variations.
    developers_guide/contributing_codebase_index
    developers_guide/contributing_changes
    developers_guide/release
-   generated/api/iris
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
+   :hidden:
 
+   generated/api/iris
    whatsnew/index
    techpapers/index
    copyright
