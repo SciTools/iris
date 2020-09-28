@@ -46,7 +46,7 @@ For **Iris 2.4** and earlier documentation please see the
     :container: container-lg pb-3
     :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
 
-    Install Iris to use ir for development.
+    Install Iris to use or for development.
     +++
     .. link-button:: installing_iris
         :type: ref
@@ -74,7 +74,7 @@ For **Iris 2.4** and earlier documentation please see the
         :text: User Guide
         :classes: btn-outline-primary btn-block
     ---
-    Extensive programming API documentation.
+    Documentation for the Iris Application Programming Interface.
     +++
     .. link-button:: Iris
         :type: ref
