@@ -142,7 +142,13 @@ As expected, the resultant ``difference`` contains the
 :class:`~iris.aux_factory.HybridHeightFactory` and all it's associated **auxiliary
 coordinates**. However, the **scalar coordinates** have been leniently combined to
 preserve as much coordinate information as possible, and the ``attributes``
-dictionaries have also been leniently combined.
+dictionaries have also been leniently combined. In addition, see what further
+:ref:`rationalisation <sanitise metadata>` is always performed by cube maths on
+the resultant metadata and coordinates.
+
+Also, note that the ``model_level_number`` **scalar coordinate** from the
+``control`` has be superseded by the similarly named **dimension coordinate**
+from the ``experiment`` in the resultant ``difference``.
 
 Now let's compare and contrast this lenient result with the strict alternative.
 But before we do so, let's first clarify how to control the behaviour of cube maths.
@@ -253,6 +259,18 @@ suits your use case,
 - in general, the **points** and **bounds**, if they exist, of associated matching
   coordinates from :class:`~iris.cube.Cube` operands must be strictly equivalent.
   However, mismatching **bounds** of **scalar coordinates** are ignored
+
+.. _sanitise metadata:
+
+Additionally, cube maths will always perform the following rationalisation of the
+resultant :class:`~iris.cube.Cube`,
+
+- clear the ``standard_name``, ``long_name`` and ``var_name``, defaulting the
+  :meth:`~iris.common.mixin.CFVariableMixin.name` to ``unknown``,
+- clear the :attr:`~iris.cube.Cube.cell_methods`,
+- clear the :meth:`~iris.cube.Cube.cell_measures`,
+- clear the :meth:`~iris.cube.Cube.ancillary_variables`,
+- clear the ``STASH`` key from the :attr:`~iris.cube.Cube.attributes` dictionary,
 
 
 .. _atmosphere hybrid height parametric vertical coordinate: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#atmosphere-hybrid-height-coordinate
