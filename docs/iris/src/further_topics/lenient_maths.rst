@@ -254,11 +254,14 @@ suits your use case,
   resultant :class:`~iris.cube.Cube` that are local to only one :class:`~iris.cube.Cube`
   operand,
 - lenient behaviour will add a coordinate to the resultant :class:`~iris.cube.Cube`
-  with **bounds**, if either of the associated matching coordinates from the
-  :class:`~iris.cube.Cube` operands have **bounds**,
-- in general, the **points** and **bounds**, if they exist, of associated matching
-  coordinates from :class:`~iris.cube.Cube` operands must be strictly equivalent.
-  However, mismatching **bounds** of **scalar coordinates** are ignored
+  with **bounds**, even if only one of the associated matching coordinates from the
+  :class:`~iris.cube.Cube` operands has **bounds**,
+- strict and lenient behaviour both require that the **points** and **bounds** of
+  matching coordinates from :class:`~iris.cube.Cube` operands must be strictly
+  equivalent. However, mismatching **bounds** of **scalar coordinates** are ignored
+  i.e., a scalar coordinate that is common to both :class:`~iris.cube.Cube` operands, with
+  equivalent **points** but different **bounds**, will be added to the resultant
+  :class:`~iris.cube.Cube` with but with **no bounds**
 
 .. _sanitise metadata:
 
@@ -271,6 +274,7 @@ resultant :class:`~iris.cube.Cube`,
 - clear the :meth:`~iris.cube.Cube.cell_measures`,
 - clear the :meth:`~iris.cube.Cube.ancillary_variables`,
 - clear the ``STASH`` key from the :attr:`~iris.cube.Cube.attributes` dictionary,
+- assign the appropriate :attr:`~iris.common.mixin.CFVariableMixin.units`
 
 
 .. _atmosphere hybrid height parametric vertical coordinate: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#atmosphere-hybrid-height-coordinate
