@@ -1,6 +1,5 @@
 .. _lenient metadata:
 
-****************
 Lenient metadata
 ****************
 
@@ -50,7 +49,7 @@ as follows, where ``X`` and ``Y`` are any objects that are non-identical,
    :align: center
 
    ======== ======== =========
-   left     right    **equal**
+   Left     Right    ``equal``
    ======== ======== =========
    ``X``    ``Y``    ``False``
    ``Y``    ``X``    ``False``
@@ -65,7 +64,7 @@ as follows, where ``X`` and ``Y`` are any objects that are non-identical,
    :align: center
 
    ======== ======== =================
-   left     right    **difference**
+   Left     Right    ``difference``
    ======== ======== =================
    ``X``    ``Y``    (``X``, ``Y``)
    ``Y``    ``X``    (``Y``, ``X``)
@@ -80,7 +79,7 @@ as follows, where ``X`` and ``Y`` are any objects that are non-identical,
    :align: center
 
    ======== ======== ===========
-   left     right    **combine**
+   Left     Right    ``combine``
    ======== ======== ===========
    ``X``    ``Y``    ``None``
    ``Y``    ``X``    ``None``
@@ -164,7 +163,7 @@ as follows,
    :align: center
 
    ======== ======== =========
-   left     right    **equal**
+   Left     Right    ``equal``
    ======== ======== =========
    ``X``    ``Y``    ``False``
    ``Y``    ``X``    ``False``
@@ -179,7 +178,7 @@ as follows,
    :align: center
 
    ======== ======== =================
-   left     right    **difference**
+   Left     Right    ``difference``
    ======== ======== =================
    ``X``    ``Y``    (``X``, ``Y``)
    ``Y``    ``X``    (``Y``, ``X``)
@@ -194,7 +193,7 @@ as follows,
    :align: center
 
    ======== ======== ===========
-   left     right    **combine**
+   Left     Right    ``combine``
    ======== ======== ===========
    ``X``    ``Y``    ``None``
    ``Y``    ``X``    ``None``

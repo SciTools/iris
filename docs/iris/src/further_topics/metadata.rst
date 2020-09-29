@@ -1,6 +1,5 @@
 .. _metadata:
 
-********
 Metadata
 ********
 
@@ -33,8 +32,8 @@ those mentioned above. Such as the :class:`~iris.coords.AncillaryVariable`
 (see `Cell Measures`_), and also the :class:`~iris.aux_factory.AuxCoordFactory`
 (see `Parametric Vertical Coordinate`_).
 
-Collectively, the asforementioned classes will be known here as the Iris
-`CF Conventions` classes.
+Collectively, the aforementioned classes will be known here as the Iris
+`CF Conventions`_ classes.
 
 .. hint::
 
@@ -345,6 +344,8 @@ both functionally equivalent. However, the ``equal`` method also provides
 a means to enable **lenient** equality, as discussed in :ref:`lenient equality`.
 
 
+.. _strict equality:
+
 Strict equality
 """""""""""""""
 
@@ -494,8 +495,8 @@ convenience of being able to do this easily with metadata classes. However,
 when the result of comparing two metadata instances is ``False``, it begs
 the next obvious question, "**what's the difference?**"
 
-Well, this is where we pull the ``difference`` method out of the toolbox.
-First, let's create some ``metadata`` to compare,
+Well, this is where we pull the ``difference`` method out of the metadata
+toolbox. First, let's create some ``metadata`` to compare,
 
 .. doctest:: richer-metadata
 
@@ -569,7 +570,7 @@ Then create another :class:`~iris.common.metadata.DimCoordMetadata` with a diffe
 ``attributes`` `dict`_, namely,
 
 - the ``grinning face`` key has the **same value**,
-- the ``neutral face`` key has a **different value**, and
+- the ``neutral face`` key has a **different value**,
 - the ``upside-down face`` key is **new**
 
 .. doctest:: richer-metadata
@@ -696,7 +697,7 @@ Let's reinforce this behaviour, but this time by combining metadata where the
 
 - the ``STASH`` and ``source`` keys are **missing**,
 - the ``Model scenario`` key has the **same value**,
-- the ``Conventions`` key has a **different value**, and
+- the ``Conventions`` key has a **different value**,
 - the ``grinning face`` key is **new**
 
 .. doctest:: metadata-combine
@@ -810,17 +811,17 @@ classes share the following common metadata members,
 - ``standard_name``,
 - ``long_name``,
 - ``var_name``,
-- ``units``, and
+- ``units``,
 - ``attributes``
 
-As such, all of these metadata members of the
+As such, all of these metadata members of the resultant
 :class:`~iris.common.metadata.DimCoordMetadata` instance are populated from the associated
 :class:`~iris.common.metadata.CubeMetadata` instance members. However, a
 :class:`~iris.common.metadata.CubeMetadata` class does not contain the following
 :class:`~iris.common.metadata.DimCoordMetadata` members,
 
-- ``coords_system``
-- ``climatological``, and
+- ``coords_system``,
+- ``climatological``,
 - ``circular``
 
 Thus these particular metadata members are set to ``None`` in the resultant

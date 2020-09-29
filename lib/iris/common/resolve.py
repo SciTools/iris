@@ -66,7 +66,7 @@ _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 class Resolve:
     """
     At present, :class:`~iris.common.resolve.Resolve` is used by Iris solely
-    during cube arithmetic to combine a left-hand :class:`~iris.cube.Cube`
+    during cube maths to combine a left-hand :class:`~iris.cube.Cube`
     operand and a right-hand :class:`~iris.cube.Cube` operand into a resultant
     :class:`~iris.cube.Cube` with common metadata, suitably auto-transposed
     dimensions, and an appropriate broadcast shape.
