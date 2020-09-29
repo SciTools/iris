@@ -258,6 +258,10 @@ This document explains the changes made to Iris for this release
 * `@tkknight`_ updated :ref:`installing_iris` to include a reference to
   Windows Subsystem for Linux. (:pull:`3885`)
 
+* `@tkknight`_ updated the :ref:`iris_docs` homepage to include panels so the
+  links are more visible to users.  This uses the sphinx-panels_ extension.
+  (:pull:`3884`)
+
 
 💼 Internal
 ===========
@@ -340,3 +344,4 @@ This document explains the changes made to Iris for this release
 .. _@zklaus: https://github.com/zklaus
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
 .. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html
+.. _sphinx-panels: https://sphinx-panels.readthedocs.io/en/latest/

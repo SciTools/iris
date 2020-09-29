@@ -1,3 +1,5 @@
+.. _iris_docs:
+
 Iris Documentation
 ==================
 
