@@ -1,7 +1,7 @@
 .. _subsetting_a_cube:
 
 =================
-Subsetting a Cube
+Subsetting a cube
 =================
 
 The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes.

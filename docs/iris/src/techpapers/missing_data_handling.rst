@@ -1,5 +1,5 @@
 =============================
-Missing Data Handling in Iris
+Missing data handling in Iris
 =============================
 
 This document provides a brief overview of how Iris handles missing data values

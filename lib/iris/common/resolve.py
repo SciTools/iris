@@ -68,7 +68,7 @@ _PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
 class Resolve:
     """
     At present, :class:`~iris.common.resolve.Resolve` is used by Iris solely
-    during cube arithmetic to combine a left-hand :class:`~iris.cube.Cube`
+    during cube maths to combine a left-hand :class:`~iris.cube.Cube`
     operand and a right-hand :class:`~iris.cube.Cube` operand into a resultant
     :class:`~iris.cube.Cube` with common metadata, suitably auto-transposed
     dimensions, and an appropriate broadcast shape.
@@ -117,6 +117,7 @@ class Resolve:
                   source: Data from Met Office Unified Model 6.05
              Cell methods:
                   mean: time (6 hour)
+
         >>> print(cube2)
         air_temperature / (K)               (longitude: 49; latitude: 37)
              Dimension coordinates:
@@ -134,6 +135,7 @@ class Resolve:
                   source: Data from Met Office Unified Model 6.05
              Cell methods:
                   mean: time (6 hour)
+
         >>> print(data.shape)
         (240, 37, 49)
         >>> resolver = Resolve(cube1, cube2)
@@ -205,7 +207,7 @@ class Resolve:
             but this may not be possible when auto-transposition or extended broadcasting
             is involved during the operation.
 
-        For example,
+        For example:
 
         .. doctest::
 
@@ -1683,33 +1685,33 @@ class Resolve:
             match** the expected resolved
             :attr:`~iris.common.resolve.Resolve.shape`.
 
-        For example,
+        For example:
 
-        .. testsetup::
+        .. testsetup:: in-place
 
             import iris
             import numpy as np
             from iris.common import Resolve
-            tgt = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
-            src = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
-            src.transpose()
-            zeros = np.zeros(tgt.shape, dtype=tgt.dtype)
+            cube1 = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+            cube2 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
+            cube2.transpose()
+            zeros = np.zeros(cube1.shape, dtype=cube1.dtype)
 
-        .. doctest::
+        .. doctest:: in-place
 
-            >>> resolver = Resolve(tgt, src)
+            >>> resolver = Resolve(cube1, cube2)
             >>> resolver.map_rhs_to_lhs
             True
-            >>> tgt.data.sum()
+            >>> cube1.data.sum()
             124652160.0
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
             0.0
             >>> result = resolver.cube(zeros, in_place=True)
-            >>> result is tgt
+            >>> result is cube1
             True
-            >>> tgt.data.sum()
+            >>> cube1.data.sum()
             0.0
 
         """
@@ -1828,7 +1830,7 @@ class Resolve:
         If no :class:`~iris.cube.Cube` operands have been provided, then
         ``mapped`` is ``None``.
 
-        For example,
+        For example:
 
         .. doctest::
 
@@ -1896,7 +1898,7 @@ class Resolve:
         If no :class:`~iris.cube.Cube` operands have been provided, then
         ``shape`` is ``None``.
 
-        For example,
+        For example:
 
         .. doctest::
 

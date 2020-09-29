@@ -1,6 +1,8 @@
-======================
-Basic cube mathematics
-======================
+.. _cube maths:
+
+==========
+Cube maths
+==========
 
 
 The section :doc:`navigating_a_cube` highlighted that 
