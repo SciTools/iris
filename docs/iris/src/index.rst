@@ -1,9 +1,3 @@
-.. note:: For **Iris 2.4** and earlier documentation please see the
-          `legacy documentation`_
-
-.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
-
-
 Iris Documentation
 ==================
 
@@ -44,11 +38,61 @@ Interoperability with packages from the wider scientific Python ecosystem comes
 from Iris' use of standard NumPy/dask arrays as its underlying data storage.
 
 Iris is part of SciTools, for more information see https://scitools.org.uk/.
+For **Iris 2.4** and earlier documentation please see the
+:link-badge:`https://scitools.org.uk/iris/docs/v2.4.0/,"legacy documentation",cls=badge-info text-white`.
+
+
+.. panels::
+    :container: container-lg pb-3
+    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
+
+    Install Iris to use or for development.
+    +++
+    .. link-button:: installing_iris
+        :type: ref
+        :text: Installing Iris
+        :classes: btn-outline-primary btn-block
+    ---
+    Example code to create a variety of plots.
+    +++
+    .. link-button:: sphx_glr_generated_gallery
+        :type: ref
+        :text: Gallery
+        :classes: btn-outline-primary btn-block
+    ---
+    Find out what has recently changed in Iris.
+    +++
+    .. link-button:: iris_whatsnew
+        :type: ref
+        :text: What's New
+        :classes: btn-outline-primary btn-block
+    ---
+    Learn how to use Iris.
+    +++
+    .. link-button:: user_guide_index
+        :type: ref
+        :text: User Guide
+        :classes: btn-outline-primary btn-block
+    ---
+    Browse full Iris functionality by module.
+    +++
+    .. link-button:: Iris
+        :type: ref
+        :text: Iris API
+        :classes: btn-outline-primary btn-block
+    ---
+    As a developer you can contribute to Iris.
+    +++
+    .. link-button:: development_where_to_start
+        :type: ref
+        :text: Getting Involved
+        :classes: btn-outline-primary btn-block
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting started
+   :hidden:
 
    installing
    generated/gallery/index
@@ -58,6 +102,7 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
    :maxdepth: 1
    :caption: User Guide
    :name: userguide_index
+   :hidden:
 
    userguide/index
    userguide/iris_cubes
@@ -81,6 +126,7 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
    :maxdepth: 1
    :caption: Developers Guide
    :name: development_index
+   :hidden:
 
    developers_guide/contributing_getting_involved
    developers_guide/gitwash/index
@@ -88,13 +134,14 @@ Iris is part of SciTools, for more information see https://scitools.org.uk/.
    developers_guide/contributing_codebase_index
    developers_guide/contributing_changes
    developers_guide/release
-   generated/api/iris
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Reference
+   :hidden:
 
+   generated/api/iris
    whatsnew/index
    techpapers/index
    copyright
