@@ -255,6 +255,9 @@ This document explains the changes made to Iris for this release
   building the documentation via ``make html``.  This will minimise technical
   debt accruing for the documentation.  (:pull:`3877`)
 
+* `@tkknight`_ updated :ref:`installing_iris` to include a reference to
+  Windows Subsystem for Linux. (:pull:`3885`)
+
 
 💼 Internal
 ===========
