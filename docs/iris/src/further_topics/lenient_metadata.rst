@@ -126,9 +126,8 @@ And yet, they both have the same ``name``, which some may find slightly confusin
     >>> latitude.name()
     'latitude'
 
-Regardlessly, at the end of the day we may not actually care that the
-``var_name`` is different. However, Iris relentlessly forces us to deal
-with such a difference; sometimes this can be challenging to overcome.
+Resolving this metadata inequality can only be overcome by ensuring that each
+metadata member precisely matches.
 
 If your workflow demands such metadata rigour, then the default strict behaviour
 of the common metadata API will satisfy your needs. Typically though, such
@@ -387,7 +386,7 @@ Lenient members
 :ref:`lenient behaviour` is not applied regardlessly across all metadata members
 participating in a lenient ``equal``, ``difference`` or ``combine`` operation.
 Rather, a more pragmatic application is employed based on the `CF Conventions`_
-meaning of the member, and whether being lenient would result in erroneous
+definition of the member, and whether being lenient would result in erroneous
 behaviour or interpretation.
 
 .. _lenient members table:
@@ -398,11 +397,11 @@ behaviour or interpretation.
    ============================================================================================= ================== ============
    Metadata Class                                                                                Member             Behaviour
    ============================================================================================= ================== ============
-   †                                                                                             ``standard_name``  ``lenient``‡
-   †                                                                                             ``long_name``      ``lenient``‡
-   †                                                                                             ``var_name``       ``lenient``‡
-   †                                                                                             ``units``          ``strict``
-   †                                                                                             ``attributes``     ``lenient``
+   All metadata classes†                                                                         ``standard_name``  ``lenient``‡
+   All metadata classes†                                                                         ``long_name``      ``lenient``‡
+   All metadata classes†                                                                         ``var_name``       ``lenient``‡
+   All metadata classes†                                                                         ``units``          ``strict``
+   All metadata classes†                                                                         ``attributes``     ``lenient``
    :class:`~iris.common.metadata.CellMeasureMetadata`                                            ``measure``        ``strict``
    :class:`~iris.common.metadata.CoordMetadata`, :class:`~iris.common.metadata.DimCoordMetadata` ``coord_system``   ``strict``
    :class:`~iris.common.metadata.CoordMetadata`, :class:`~iris.common.metadata.DimCoordMetadata` ``climatological`` ``strict``
@@ -436,40 +435,41 @@ Special lenient name behaviour
 The ``standard_name``, ``long_name`` and ``var_name`` have a closer association
 with each other compared to all other metadata members, as they all
 underpin the functionality provided by the :meth:`~iris.common.mixin.CFVariableMixin.name`
-method. It is imperative that the ``name`` derived from metadata remains constant
-for strict and lenient equality alike.
+method. It is imperative that the :meth:`~iris.common.mixin.CFVariableMixin.name`
+derived from metadata remains constant for strict and lenient equality alike.
 
 As such, these metadata members have an additional layer of behaviour enforced
 during :ref:`lenient equality` in order to ensure that the identity or name of
 metadata does not change due to a side-effect of lenient comparison.
 
-For example, if simple :ref:`lenient equality <lenient equality table>` behaviour
-was applied to the ``standard_name``, ``long_name`` and ``var_name``, the following
-would be considered **not** equal,
+For example, if simple :ref:`lenient equality <lenient equality table>`
+behaviour was applied to the ``standard_name``, ``long_name`` and ``var_name``,
+the following would be considered **not** equal,
 
 .. table::
    :widths: auto
    :align: center
 
-   ================= ============= ==============
-   Member            Left Metadata Right Metadata
-   ================= ============= ==============
-   ``standard_name`` ``None``      ``latitude``
-   ``long_name``     ``latitude``  ``None``
-   ``var_name``      ``lat``       ``latitude``
-   ================= ============= ==============
+   ================= ============ ============
+   Member            Left         Right
+   ================= ============ ============
+   ``standard_name`` ``None``     ``latitude``
+   ``long_name``     ``latitude`` ``None``
+   ``var_name``      ``lat``      ``latitude``
+   ================= ============ ============
 
-Both the **Left Metadata** and the **Right Metadata** would have the same ``name``
-by defintion i.e., ``latitude``, however lenient equality would fail due to
-the difference in ``var_name``.
+Both the **Left** and **Right** metadata would have the same
+:meth:`~iris.common.mixin.CFVariableMixin.name` by definition i.e., ``latitude``.
+However, lenient equality would fail due to the difference in ``var_name``.
 
 To account for this, lenient equality is performed by two simple consecutive steps:
 
-- ensure that the result returned by the ``name`` method is the same for the metadata
-  being compared, then
-- only perform :ref:`lenient equality <lenient equality table>` between the ``standard_name``
-  and ``long_name`` i.e., the ``var_name`` member is **not** compared explicitly, as
-  its value may have been accounted for through ``name`` equality
+- ensure that the result returned by the :meth:`~iris.common.mixin.CFVariableMixin.name`
+  method is the same for the metadata being compared, then
+- only perform :ref:`lenient equality <lenient equality table>` between the
+  ``standard_name`` and ``long_name`` i.e., the ``var_name`` member is **not**
+  compared explicitly, as its value may have been accounted for through
+  :meth:`~iris.common.mixin.CFVariableMixin.name` equality
 
 
 .. _dict: https://docs.python.org/3/library/stdtypes.html#mapping-types-dict
