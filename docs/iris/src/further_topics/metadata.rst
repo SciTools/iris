@@ -42,7 +42,7 @@ Collectively, the aforementioned classes will be known here as the Iris
     `SciTools/iris`_
 
 
-Common Metadata
+Common metadata
 ===============
 
 Each of the Iris `CF Conventions`_ classes use **metadata** to define them and
@@ -90,7 +90,7 @@ actual `data attribute`_ names of the metadata members on the Iris class.
    terms.
 
 
-Common Metadata API
+Common metadata API
 ===================
 
 .. testsetup::
