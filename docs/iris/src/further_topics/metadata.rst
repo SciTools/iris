@@ -16,21 +16,21 @@ straight ahead to :ref:`richer metadata`, and take it from there.
 Introduction
 ============
 
-So far we've introduced several classes in Iris that care about your ``data``,
-and also your ``metadata`` i.e., `data about data`_. Primarily, these classes
-are the :class:`~iris.cube.Cube`, the :class:`~iris.coords.AuxCoord`, and the
-:class:`~iris.coords.DimCoord`, all of which should be familiar to you now.
-
 As discussed in :ref:`iris_data_structures`, Iris draws heavily from the
 `NetCDF CF Metadata Conventions`_ as a source for its data model, thus building
 on the widely recognised and understood terminology defined within those
 `CF Conventions`_ by the scientific community.
 
-Iris models several other classes of `CF Conventions`_ metadata apart from
-those mentioned above. Such as the :class:`~iris.coords.AncillaryVariable`
-(see `Ancillary Data`_ and `Flags`_), the :class:`~iris.coords.CellMeasure`
-(see `Cell Measures`_), and also the :class:`~iris.aux_factory.AuxCoordFactory`
-(see `Parametric Vertical Coordinate`_).
+In :ref:`iris_data_structures` we introduced several fundamental classes in Iris
+that care about your ``data``, and also your ``metadata`` i.e., `data about data`_.
+These are the :class:`~iris.cube.Cube`, the :class:`~iris.coords.AuxCoord`, and the
+:class:`~iris.coords.DimCoord`, all of which should be familiar to you now. In
+addition to these, Iris models several other classes of `CF Conventions`_
+metadata. Namely,
+
+- the :class:`~iris.coords.AncillaryVariable`, see `Ancillary Data`_ and `Flags`_,
+- the :class:`~iris.coords.CellMeasure`, see `Cell Measures`_,
+- the :class:`~iris.aux_factory.AuxCoordFactory`, see `Parametric Vertical Coordinate`_
 
 Collectively, the aforementioned classes will be known here as the Iris
 `CF Conventions`_ classes.
@@ -45,8 +45,23 @@ Collectively, the aforementioned classes will be known here as the Iris
 Common Metadata
 ===============
 
-What each of these **different** Iris `CF Conventions`_ classes all have in
-**common** is that **metadata** is used to define them and give them meaning.
+Each of the Iris `CF Conventions`_ classes use **metadata** to define them and
+give them meaning.
+
+The **metadata** used to define an Iris `CF Conventions`_ class is composed of
+individual **metadata members**, almost all of which reference specific
+`CF Conventions`_ terms. The individual metadata members used to define each of
+the Iris `CF Conventions`_ classes are shown in :numref:`metadata members table`.
+
+As :numref:`metadata members table` highlights, **specific** metadata is used to
+define and represent each Iris `CF Conventions`_ class. This means that metadata
+alone, can be used to easily **identify**, **compare** and **differentiate**
+between individual class instances.
+
+For example, the collective metadata used to define an
+:class:`~iris.coords.AncillaryVariable` are the ``standard_name``, ``long_name``,
+``var_name``, ``units``, and ``attributes`` members. Note that, these are the
+actual `data attribute`_ names of the metadata members on the Iris class.
 
 .. _metadata members table:
 .. table:: - Iris classes that model `CF Conventions`_ metadata
@@ -68,21 +83,11 @@ What each of these **different** Iris `CF Conventions`_ classes all have in
    ``circular``                                                                                                                                                                                     ✔                              ``circular``
    =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
 
-:numref:`metadata members table` shows for each Iris `CF Conventions`_ class the
-collective of individual metadata members used to define it. Almost all
-of these members reference specific `CF Conventions`_ terms. However, some
-of these members, such as :attr:`~iris.coords.DimCoord.var_name` and
-:attr:`~iris.coords.DimCoord.circular` are Iris specific terms.
+.. note::
 
-For example, the collective metadata used to define an
-:class:`~iris.coords.AncillaryVariable` are the ``standard_name``, ``long_name``,
-``var_name``, ``units``, and ``attributes`` members. Note that, these are the
-actual `data attribute`_ names of the metadata members on the Iris class.
-
-As :numref:`metadata members table` highlights, **specific** metadata is used to
-define and represent each Iris `CF Conventions`_ class. This means that the
-metadata can be used to easily **identify**, **compare** and **differentiate**
-between individual class instances.
+   The :attr:`~iris.coords.DimCoord.var_name` and :attr:`~iris.coords.DimCoord.circular`
+   metadata members are Iris specific terms, rather than recognised `CF Conventions`_
+   terms.
 
 
 Common Metadata API
@@ -235,7 +240,8 @@ just as you might expect. For example, given the following ``metadata``,
 
 We can use the `namedtuple._make`_ method to create a **new**
 :class:`~iris.common.metadata.DimCoordMetadata` instance from an existing sequence
-or iterable:
+or iterable. The number and order of the values used in the iterable must match that
+of the associated `namedtuple._fields`_, which is discussed later,
 
     >>> values = (1, 2, 3, 4, 5, 6, 7, 8)
     >>> metadata._make(values)
@@ -287,6 +293,7 @@ an instance to determine the members of a metadata class, e.g.,
 Aside from the benefit of metadata classes inheriting behaviour and state
 from `namedtuple`_, further additional rich behaviour is also available,
 which we explore next.
+
 
 .. _richer metadata:
 
@@ -372,7 +379,7 @@ different value, then the result of the operation will be ``False``. For example
 
 One further point worth highlighting is it is possible for `NumPy`_ scalars
 and arrays to appear in the ``attributes`` `dict`_ of some Iris metadata class
-instances. Normally, this would cause issues,
+instances. Normally, this would cause issues. For example,
 
 .. doctest:: richer-metadata
 
@@ -490,10 +497,10 @@ methods of metadata classes.
 Metadata difference
 ^^^^^^^^^^^^^^^^^^^
 
-Being able to compare metadata is valuable. Particularly when we have the
+Being able to compare metadata is valuable, especially when we have the
 convenience of being able to do this easily with metadata classes. However,
 when the result of comparing two metadata instances is ``False``, it begs
-the next obvious question, "**what's the difference?**"
+the question, "**what's the difference?**"
 
 Well, this is where we pull the ``difference`` method out of the metadata
 toolbox. First, let's create some ``metadata`` to compare,
@@ -533,7 +540,7 @@ The ``difference`` method returns a :class:`~iris.common.metadata.DimCoordMetada
 there is **at least** one ``metadata`` member with a different value, where,
 
 - ``None`` means that there was **no** difference for the member,
-- a `tuple`_ containing the two different associated values for the member
+- a `tuple`_ contains the two different associated values for the member
 
 Given our example, only the ``long_name``, ``var_name`` and ``units`` members
 have different values, as expected. Note that, the ``difference`` method **is
@@ -580,7 +587,7 @@ Then create another :class:`~iris.common.metadata.DimCoordMetadata` with a diffe
     >>> metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '😀', 'neutral face': '😜', 'upside-down face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
-Now, let's compare the two above instances for differences, and see what we get,
+Now, let's compare the two above instances and see what ``attributes`` member differences we get,
 
 .. doctest:: richer-metadata
 
@@ -669,7 +676,7 @@ We can perform the **identity function** by comparing the metadata with itself,
     >>> cube.metadata == metadata
     True
 
-As you might suspect, combining identical metadata returns metadata that is
+As you might expect, combining identical metadata returns metadata that is
 also identical.
 
 The ``combine`` method will always return **a new** metadata class instance,
@@ -787,7 +794,7 @@ In general, the :ref:`equal <metadata equality>`, :ref:`difference <metadata dif
 and :ref:`combine <metadata combine>` methods only support operations on instances
 of the same metadata class (see :ref:`exception to the rule <exception rule>`).
 
-However, metadata may be converted from one metadata class to another by using
+However, metadata may be converted from one metadata class to another using
 the ``from_metadata`` class method. For example, given the following
 :class:`~iris.common.metadata.CubeMetadata`,
 
@@ -848,7 +855,7 @@ Metadata assignment
    latitude = cube.coord("latitude")
 
 The ``metadata`` property available on each Iris `CF Conventions`_ container
-class (see :numref:`metadata classes table`) can be use not only **to get**
+class (see :numref:`metadata classes table`) can not only be use **to get**
 the metadata of an instance, but also **to set** the metadata on an instance.
 
 For example, given the following :class:`~iris.common.metadata.DimCoordMetadata` of the
@@ -864,6 +871,8 @@ coordinate,
 
 .. doctest:: metadata-assign
 
+    >>> latitude.metadata
+    DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
     >>> longitude.metadata = latitude.metadata
     >>> longitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
