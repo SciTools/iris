@@ -232,7 +232,7 @@ and common coordinates that are :ref:`strictly equivalent <strict equality>`.
 Finer detail
 ============
 
-In general, if you want preserve as much metadata and coordinate information as
+In general, if you want to preserve as much metadata and coordinate information as
 possible during cube maths, then opt to use the default lenient behaviour. Otherwise,
 favour the strict alternative if you require to enforce precise metadata and
 coordinate commonality.
@@ -248,10 +248,10 @@ suits your use case,
   in the resultant :class:`~iris.cube.Cube`, even though only one :class:`~iris.cube.Cube`
   operand may describe that dimension,
 - lenient behaviour will attempt to include **auxiliary coordinates** in the
-  resultant :class:`~iris.cube.Cube` that are local to only one :class:`~iris.cube.Cube`
+  resultant :class:`~iris.cube.Cube` that exist on only one :class:`~iris.cube.Cube`
   operand,
 - lenient behaviour will attempt to include **scalar coordinates** in the
-  resultant :class:`~iris.cube.Cube` that are local to only one :class:`~iris.cube.Cube`
+  resultant :class:`~iris.cube.Cube` that exist on only one :class:`~iris.cube.Cube`
   operand,
 - lenient behaviour will add a coordinate to the resultant :class:`~iris.cube.Cube`
   with **bounds**, even if only one of the associated matching coordinates from the

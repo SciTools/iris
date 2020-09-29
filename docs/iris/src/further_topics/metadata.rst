@@ -227,6 +227,10 @@ with a **snapshot** of the container class metadata values at that point in time
     >>> longitude.metadata
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=True)
 
+Skip ahead to :ref:`metadata assignment <metadata assignment>` for a fuller
+discussion on options how to **set** and **get** metadata on the instance of
+an Iris `CF Conventions`_ container class (:numref:`metadata classes table`).
+
 
 Metadata class behaviour
 ------------------------
@@ -687,7 +691,7 @@ The ``combine`` method will always return **a new** metadata class instance,
 where each metadata member is either ``None`` or populated with a **common value**.
 Let's clarify this, by combining our above :class:`~iris.common.metadata.CubeMetadata`
 with another instance that's identical apart from its ``standard_name`` member,
-which is replaced with **different value**,
+which is replaced with a **different value**,
 
 .. doctest:: metadata-combine
 
@@ -847,6 +851,8 @@ class instance,
     DimCoordMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'Conventions': 'CF-1.5', 'STASH': STASH(model=1, section=3, item=236), 'Model scenario': 'A1B', 'source': 'Data from Met Office Unified Model 6.05'}, coord_system=None, climatological=None, circular=None)
 
 
+.. _metadata assignment:
+
 Metadata assignment
 ^^^^^^^^^^^^^^^^^^^
 
@@ -859,7 +865,7 @@ Metadata assignment
    latitude = cube.coord("latitude")
 
 The ``metadata`` property available on each Iris `CF Conventions`_ container
-class (see :numref:`metadata classes table`) can not only be use **to get**
+class (:numref:`metadata classes table`) can not only be used **to get**
 the metadata of an instance, but also **to set** the metadata on an instance.
 
 For example, given the following :class:`~iris.common.metadata.DimCoordMetadata` of the
