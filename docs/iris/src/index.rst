@@ -1,3 +1,5 @@
+.. _homepage:
+
 Iris Documentation
 ==================
 

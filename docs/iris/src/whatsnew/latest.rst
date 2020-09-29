@@ -258,7 +258,7 @@ This document explains the changes made to Iris for this release
 * `@tkknight`_ updated :ref:`installing_iris` to include a reference to
   Windows Subsystem for Linux. (:pull:`3885`)
 
-* `@tkknight`_ updated homepage to include panels so the links are more
+* `@tkknight`_ updated :ref:`homepage` to include panels so the links are more
   visible to users.  This uses the sphinx-panels_ extension.  (:pull:`3884`)
 
 
