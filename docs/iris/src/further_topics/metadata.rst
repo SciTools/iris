@@ -71,9 +71,9 @@ actual `data attribute`_ names of the metadata members on the Iris class.
    =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
    Metadata members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord` Metadata members
    =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
-   ``standard name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``standard name``
-   ``long name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``long name``
-   ``var name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``var name``
+   ``standard_name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``standard_name``
+   ``long_name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``long_name``
+   ``var_name``        ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``var_name``
    ``units``           ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``units``
    ``attributes``      ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``attributes``
    ``coord_system``                                            ✔                              ✔                                                                                                     ✔                              ``coord_system``
@@ -411,7 +411,11 @@ However, metadata class equality is rich enough to handle this eventuality,
 
 .. doctest:: richer-metadata
 
-    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int(1), "two": np.array([0.1, 0.2])})
+    >>> metadata1
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1., 2.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
+    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int(1), "two": np.array([1000.0, 2000.0])})
+    >>> metadata2
+    CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': 1, 'two': array([1000., 2000.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
     >>> metadata1 == metadata2
     False
 
