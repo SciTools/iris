@@ -1,4 +1,4 @@
-.. _homepage:
+.. _iris_docs:
 
 Iris Documentation
 ==================
