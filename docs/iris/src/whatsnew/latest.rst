@@ -72,8 +72,10 @@ This document explains the changes made to Iris for this release
   difference and combination. (:pull:`3785`)
 
 * `@bjlittle`_ added :ref:`lenient cube maths <lenient maths>` support and
-  resolved several long standing major issues with cube arithmetic. Resolves
-  :issue:`1887`, :issue:`2765`, and :issue:`3478`. (:pull:`3785`)
+  resolved several long standing major issues with cube arithmetic regarding
+  a more robust treatment of cube broadcasting, cube dimension auto-transposition,
+  and preservation of common metadata and coordinates during cube math operations.
+  Resolves :issue:`1887`, :issue:`2765`, and :issue:`3478`. (:pull:`3785`)
 
 
 🐛 Bugs Fixed
