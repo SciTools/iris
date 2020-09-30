@@ -51,6 +51,32 @@ This document explains the changes made to Iris for this release
   :class:`~iris.analysis.Linear`, :class:`~iris.analysis.Nearest`, and
   :class:`~iris.analysis.AreaWeighted` regridding schemes. (:pull:`3701`)
 
+* `@bjlittle`_ added `logging`_ support within :mod:`iris.analysis.maths`,
+  :mod:`iris.common.metadata`, and :mod:`iris.common.resolve`. Each module
+  defines a :class:`logging.Logger` instance called ``logger`` with a default
+  ``level`` of ``INFO``. To enable ``DEBUG`` logging use
+  ``logger.setLevel("DEBUG")``. (:pull:`3785`)
+
+* `@bjlittle`_ added the :mod:`iris.common.resolve` module, which provides
+  infrastructure to support the analysis, identification and combination
+  of metadata common between two :class:`~iris.cube.Cube` operands into a
+  single resultant :class:`~iris.cube.Cube` that will be auto-transposed,
+  and with the appropriate broadcast shape. (:pull:`3785`)
+
+* `@bjlittle`_ added the :ref:`common metadata API <metadata>`, which provides
+  a unified treatment of metadata across Iris, and allows users to easily
+  manage and manipulate their metadata in a consistent way. (:pull:`3785`)
+
+* `@bjlittle`_ added :ref:`lenient metadata <lenient metadata>` support, to
+  allow users to control **strict** or **lenient** metadata equivalence,
+  difference and combination. (:pull:`3785`)
+
+* `@bjlittle`_ added :ref:`lenient cube maths <lenient maths>` support and
+  resolved several long standing major issues with cube arithmetic regarding
+  a more robust treatment of cube broadcasting, cube dimension auto-transposition,
+  and preservation of common metadata and coordinates during cube math operations.
+  Resolves :issue:`1887`, :issue:`2765`, and :issue:`3478`. (:pull:`3785`)
+
 
 🐛 Bugs Fixed
 =============
@@ -153,6 +179,17 @@ This document explains the changes made to Iris for this release
   :func:`iris.analysis.trajectory.interpolate` function.  This prevents
   duplicate coordinate errors in certain circumstances. (:pull:`3718`)
 
+* `@bjlittle`_ aligned the :func:`iris.analysis.maths.apply_ufunc` with the
+  rest of the :mod:`iris.analysis.maths` API by changing its keyword argument
+  from ``other_cube`` to ``other``. (:pull:`3785`)
+
+* `@bjlittle`_ changed the :meth:`iris.analysis.maths.IFunc.__call__` to ignore
+  any surplus ``other`` keyword argument for a ``data_func`` that requires
+  **only one** argument. This aligns the behaviour of
+  :meth:`iris.analysis.maths.IFunc.__call__` with
+  :func:`~iris.analysis.maths.apply_ufunc`. Previously a ``ValueError``
+  exception was raised. (:pull:`3785`)
+
 
 🔥 Deprecations
 ===============
@@ -248,7 +285,7 @@ This document explains the changes made to Iris for this release
   see :ref:`contributing.documentation.testing`.  (:pull:`3873`)
 
 * `@tkknight`_ enabled the napolean_ package that is used by sphinx_ to cater
-  for the existing google style docstrings and to also allow for numpy
+  for the existing google style docstrings and to also allow for `numpy`_
   docstrings.  This resolves :issue:`3841`. (:pull:`3871`)
 
 * `@tkknight`_ configured ``sphinx-build`` to promote warnings to errors when
@@ -261,6 +298,10 @@ This document explains the changes made to Iris for this release
 * `@tkknight`_ updated the :ref:`iris_docs` homepage to include panels so the
   links are more visible to users.  This uses the sphinx-panels_ extension.
   (:pull:`3884`)
+
+* `@bjlittle`_ created the :ref:`Further topics <further topics>` section and
+  included documentation for :ref:`metadata`, :ref:`lenient metadata`, and
+  :ref:`lenient maths`. (:pull:`3890`)
 
 
 💼 Internal
@@ -300,14 +341,31 @@ This document explains the changes made to Iris for this release
   axes borders). (:pull:`3762`)
 
 * `@rcomer`_ corrected the Matplotlib backend in Iris tests to ignore
-  `matplotlib.rcdefaults <https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults>`_,
-  instead the tests will **always** use ``agg``. (:pull:`3846`)
+  `matplotlib.rcdefaults`_, instead the tests will **always** use ``agg``.
+  (:pull:`3846`)
 
 * `@bjlittle`_ migrated the `black`_ support from ``19.10b0`` to ``20.8b1``.
   (:pull:`3866`)
 
 * `@lbdreyer`_ updated the CF standard name table to the latest version: `v75`_.
   (:pull:`3867`)
+
+* `@bjlittle`_ added :pep:`517` and :pep:`518` support for building and
+  installing Iris, in particular to handle the `PyKE`_ package dependency.
+  (:pull:`3812`)
+
+* `@bjlittle`_ added metadata support for comparing :attr:`~iris.cube.Cube.attributes`
+  dictionaries that contain `numpy`_ arrays using `xxHash`_, an extremely fast
+  non-cryptographic hash algorithm, running at RAM speed limits.
+
+* `@bjlittle`_ added the ``iris.tests.assertDictEqual`` method to override
+  :meth:`unittest.TestCase.assertDictEqual` in order to cope with testing
+  metadata :attr:`~iris.cube.Cube.attributes` dictionary comparison where
+  the value of a key may be a `numpy`_ array. (:pull:`3785`)
+
+* `@bjlittle`_ added the :func:`~iris.config.get_logger` function for creating
+  a generic :class:`logging.Logger` with a :class:`logging.StreamHandler` and
+  custom :class:`logging.Formatter`. (:pull:`3785`)
 
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
@@ -345,3 +403,8 @@ This document explains the changes made to Iris for this release
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
 .. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html
 .. _sphinx-panels: https://sphinx-panels.readthedocs.io/en/latest/
+.. _logging: https://docs.python.org/3/library/logging.html
+.. _numpy: https://github.com/numpy/numpy
+.. _xxHash: https://github.com/Cyan4973/xxHash
+.. _PyKE: https://pypi.org/project/scitools-pyke/
+.. _matplotlib.rcdefaults: https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
