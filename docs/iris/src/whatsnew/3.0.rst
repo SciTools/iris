@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.0 (1 Oct 2020)
-*****************
+v3.0 (01 Oct 2020)
+******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
