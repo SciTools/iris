@@ -10,6 +10,17 @@ The summary below is of the main areas that constitute the release.  The final
 section details the :ref:`iris_development_releases_steps` to take.
 
 
+Before release
+--------------
+
+Deprecations
+~~~~~~~~~~~~
+
+Ensure that any behaviour which has been deprecated for the correct number of
+previous releases is now finally changed. More detail, including the correct
+number of releases, is in :ref:`iris_development_deprecations`.
+
+
 Release branch
 --------------
 
