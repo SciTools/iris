@@ -267,6 +267,7 @@ linkcheck_ignore = [
     "http://schacon.github.com/git",
     "https://github.com/SciTools/iris/pull",
     "https://github.com/SciTools/iris/issue",
+    "http://cfconventions.org",
 ]
 
 # list of sources to exclude from the build.
