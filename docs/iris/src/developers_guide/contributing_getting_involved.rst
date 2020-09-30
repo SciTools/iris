@@ -2,7 +2,7 @@
 
 .. _development_where_to_start:
 
-Getting Involved
+Getting involved
 ----------------
 
 Iris_ is an Open Source project hosted on Github and as such anyone with a

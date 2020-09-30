@@ -3,6 +3,11 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+"""
+Provides the infrastructure to support the common metadata API.
+
+"""
+
 
 from abc import ABCMeta
 from collections import namedtuple
@@ -649,6 +654,21 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def from_metadata(cls, other):
+        """
+        Convert the provided metadata instance from a different type
+        to this metadata type, using only the relevant metadata members.
+
+        Non-common metadata members are set to ``None``.
+
+        Args:
+
+        * other (metadata):
+            A metadata instance of any type.
+
+        Returns:
+            New metadata instance.
+
+        """
         result = None
         if isinstance(other, BaseMetadata):
             if other.__class__ is cls:

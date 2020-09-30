@@ -44,6 +44,8 @@ Controlling the save process
 
 The :py:func:`iris.save` function passes all other keywords through to the saver function defined, or automatically set from the file extension.  This enables saver specific functionality to be called.
 
+.. doctest::
+
     >>> # Save a cube to PP
     >>> iris.save(cubes[0], "myfile.pp")
     >>> # Save a cube list to a PP file, appending to the contents of the file
@@ -53,6 +55,16 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
     >>> iris.save(cubes[0], "myfile.nc")
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
     >>> iris.save(cubes, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
+
+.. testcleanup::
+
+    import pathlib
+    p = pathlib.Path("myfile.pp")
+    if p.exists():
+        p.unlink()
+    p = pathlib.Path("myfile.nc")
+    if p.exists():
+        p.unlink()
 
 See 
 

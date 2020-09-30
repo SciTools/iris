@@ -10,7 +10,7 @@
 
 
 ==================
-Real and Lazy Data
+Real and lazy data
 ==================
 
 We have seen in the :doc:`iris_cubes` section of the user guide that

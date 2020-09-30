@@ -230,7 +230,7 @@ html_context = {
     "menu_links_name": "Support",
     "menu_links": [
         (
-            '<i class="fa fa-github fa-fw"></i> Source Code',
+            '<i class="fa fa-github fa-fw"></i> Source code',
             "https://github.com/SciTools/iris",
         ),
         (
@@ -242,7 +242,7 @@ html_context = {
             "https://groups.google.com/forum/#!forum/scitools-iris-dev",
         ),
         (
-            '<i class="fa fa-question fa-fw"></i> StackOverflow For "How do I?"',
+            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How do I?"',
             "https://stackoverflow.com/questions/tagged/python-iris",
         ),
         (
@@ -295,3 +295,15 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
+
+
+# -- numfig options (built-in) ------------------------------------------------
+# Enable numfig.
+numfig = True
+
+numfig_format = {
+    "code-block": "Example %s",
+    "figure": "Figure %s",
+    "section": "Section %s",
+    "table": "Table %s",
+}
