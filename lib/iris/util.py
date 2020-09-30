@@ -1225,6 +1225,10 @@ def as_compatible_shape(src_cube, target_cube):
 
     .. deprecated:: 3.0.0
 
+       Instead use :class:`~iris.common.resolve.Resolve`. For example, rather
+       than calling ``as_compatible_shape(src_cube, target_cube)`` replace
+       with ``Resolve(src_cube, target_cube)(target_cube.core_data())``.
+
     Args:
 
     * src_cube:
