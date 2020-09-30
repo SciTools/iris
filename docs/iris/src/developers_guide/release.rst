@@ -139,6 +139,8 @@ Release steps
       the date and version in the format of ``v1.9 (DD MMM YYYY)``.  For
       example ``v1.9 (03 Aug 2020)``
     * Review the file for correctness
+    * Work with the development team to create a 'highlights' section at the
+      top of the file, providing extra detail on notable changes
     * Add ``v1.9.rst`` to git and commit all changes, including removal of
       ``latest.rst``
 
