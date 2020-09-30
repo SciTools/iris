@@ -202,6 +202,11 @@ This document explains the changes made to Iris for this release
   ``int``. The deprecated attributes ``flag1``, ``flag2`` etc. have been
   removed from it. (:pull:`3461`)
 
+* `@bjlittle`_ deprecated :func:`~iris.util.as_compatible_shape` in preference
+  for :class:`~iris.common.resolve.Resolve` e.g., ``Resolve(src, tgt)(tgt.core_data())``.
+  The :func:`~iris.util.as_compatible_shape` function will be removed in a future
+  release of Iris. (:pull:`3892`)
+
 
 🔗 Dependencies
 ===============

@@ -24,6 +24,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.coords
 import iris.exceptions
 import iris.cube
@@ -1222,6 +1223,12 @@ def as_compatible_shape(src_cube, target_cube):
 
     .. note:: This function will load and copy the data payload of `src_cube`.
 
+    .. deprecated:: 3.0.0
+
+       Instead use :class:`~iris.common.resolve.Resolve`. For example, rather
+       than calling ``as_compatible_shape(src_cube, target_cube)`` replace
+       with ``Resolve(src_cube, target_cube)(target_cube.core_data())``.
+
     Args:
 
     * src_cube:
@@ -1236,6 +1243,12 @@ def as_compatible_shape(src_cube, target_cube):
         suitably reshaped to fit.
 
     """
+    wmsg = (
+        "iris.util.as_compatible_shape has been deprecated and will be "
+        "removed, please use iris.common.resolve.Resolve instead."
+    )
+    warn_deprecated(wmsg)
+
     dim_mapping = {}
     for coord in target_cube.aux_coords + target_cube.dim_coords:
         dims = target_cube.coord_dims(coord)
