@@ -125,6 +125,7 @@ For **Iris 2.4** and earlier documentation please see the
 .. toctree::
    :maxdepth: 1
    :caption: Further Topics
+   :hidden:
 
    further_topics/index
    further_topics/metadata
