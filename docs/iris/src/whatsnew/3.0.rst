@@ -372,6 +372,9 @@ This document explains the changes made to Iris for this release
   a generic :class:`logging.Logger` with a :class:`logging.StreamHandler` and
   custom :class:`logging.Formatter`. (:pull:`3785`)
 
+* `@owena11`_ identified and optimised a bottleneck in ``FieldsFile`` header
+  loading due to the use of :func:`numpy.fromfile`. (:pull:`3791`)
+
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -413,3 +416,4 @@ This document explains the changes made to Iris for this release
 .. _xxHash: https://github.com/Cyan4973/xxHash
 .. _PyKE: https://pypi.org/project/scitools-pyke/
 .. _matplotlib.rcdefaults: https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
+.. _@owena11: https://github.com/owena11
