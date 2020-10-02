@@ -49,6 +49,9 @@ This document explains the changes made to Iris for this release
   and performance metrics tool for routine evaluation of Earth system models
   in CMIP*". Welcome aboard! 🎉
 
+* Congratulations also goes to `@jonseddon`_ who recently became an Iris core
+  developer. We look forward to seeing more of your awesome contributions! 🎉
+
 
 ✨ Features
 ===========
