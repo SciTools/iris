@@ -1,10 +1,42 @@
 .. include:: ../common_links.inc
 
-v3.0 (01 Oct 2020)
+v3.0 (02 Oct 2020)
 ******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
+
+
+.. dropdown:: :opticon:`report` Release Highlights
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The highlights for this major release of Iris include:
+
+   * We've finally dropped support for ``Python 2``, so welcome to ``Iris 3``
+     and ``Python 3``!
+   * Our :ref:`documentation <whatsnew 3.0 docs>` has been refreshed,
+     restructured, revitalised and rehosted on `readthedocs`_,
+   * It's now easier than ever to :ref:`install Iris <installing_iris>`
+     as a user or a developer, and the newly revamped developers guide walks
+     you though how you can :ref:`get involved <development_where_to_start>`
+     and contribute to Iris,
+   * We've extended our coverage of the `CF Conventions and Metadata`_ by
+     introducting support for `CF Ancillary Data`_ and `Quality Flags`_,
+   * Lazy regridding is now available for several regridding schemes,
+   * We've introduced a common metadata API to simplify and unify the
+     management of metadata across Iris,
+   * Cube arithmetic has been significantly improved with regards to extended
+     broadcasting, auto-transposition and a more lenient behaviour towards
+     handling metadata and coordinates,
+   * Also, this is a major release of Iris, so please be aware of the
+     :ref:`incompatible changes <whatsnew 3.0 changes>` and
+     :ref:`deprecations <whatsnew 3.0 deprecations>`.
+
+   And finally, get in touch with us on `GitHub`_ if you have any issues or
+   feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
@@ -133,6 +165,8 @@ This document explains the changes made to Iris for this release
   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
 
 
+.. _whatsnew 3.0 changes:
+
 💣 Incompatible Changes
 =======================
 
@@ -191,6 +225,8 @@ This document explains the changes made to Iris for this release
   exception was raised. (:pull:`3785`)
 
 
+.. _whatsnew 3.0 deprecations:
+
 🔥 Deprecations
 ===============
 
@@ -237,6 +273,8 @@ This document explains the changes made to Iris for this release
 * `@stephenworsley`_ and `@trexfeathers`_ removed GDAL from the extensions
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
+
+.. _whatsnew 3.0 docs:
 
 📚 Documentation
 ================
@@ -417,3 +455,6 @@ This document explains the changes made to Iris for this release
 .. _PyKE: https://pypi.org/project/scitools-pyke/
 .. _matplotlib.rcdefaults: https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
 .. _@owena11: https://github.com/owena11
+.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _readthedocs: https://readthedocs.org/
+.. _CF Conventions and Metadata: https://cfconventions.org/
