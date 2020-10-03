@@ -201,6 +201,13 @@ class TestLabels(tests.GraphicsTest):
 
         self.check_graphic()
 
+    def test_pcolormesh_str_symbol(self):
+        pcube = self._small().copy()
+        pcube.coords("level_height")[0].units = "centimeters"
+        qplt.pcolormesh(pcube)
+
+        self.check_graphic()
+
     def test_map(self):
         cube = self._slice(["grid_latitude", "grid_longitude"])
         qplt.contour(cube)
