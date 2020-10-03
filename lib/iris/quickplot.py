@@ -49,7 +49,7 @@ def _title(cube_or_coord, with_units):
 
             if _use_symbol(units):
                 units = units.symbol
-            if units.is_time_reference():
+            elif units.is_time_reference():
                 # iris.plot uses matplotlib.dates.date2num, which is fixed to the below unit.
                 if version.parse(_mpl_version) >= version.parse("3.3"):
                     days_since = "1970-01-01"
