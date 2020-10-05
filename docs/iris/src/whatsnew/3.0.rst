@@ -19,7 +19,7 @@ This document explains the changes made to Iris for this release
    * We've finally dropped support for ``Python 2``, so welcome to ``Iris 3``
      and ``Python 3``!
    * We've extended our coverage of the `CF Conventions and Metadata`_ by
-     introducting support for `CF Ancillary Data`_ and `Quality Flags`_,
+     introducing support for `CF Ancillary Data`_ and `Quality Flags`_,
    * Lazy regridding is now available for several regridding schemes,
    * Managing and manipulating metadata within Iris is now easier and more
      consistent thanks to the introduction of a new common metadata API,
