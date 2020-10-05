@@ -909,7 +909,6 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f81c07e3fa12da1c27e3f80.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_pcolormesh_str_symbol.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/bb433d4e94a4c6b9c15adaadc1fb6a469c8de43a3e07904e5f016b57984e1ea1.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f80c07e3fa12da1c27f3f80.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_non_cube_coordinate.0": [
