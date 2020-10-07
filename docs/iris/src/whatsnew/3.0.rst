@@ -168,6 +168,7 @@ This document explains the changes made to Iris for this release
   Previously, the first tick label would occasionally be duplicated. This also
   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
 
+* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
 
 .. _whatsnew 3.0 changes:
 
@@ -417,6 +418,9 @@ This document explains the changes made to Iris for this release
 * `@owena11`_ identified and optimised a bottleneck in ``FieldsFile`` header
   loading due to the use of :func:`numpy.fromfile`. (:pull:`3791`)
 
+* `@znicholls`_ added a test for plotting with the label being taken from the unit's symbol, see :meth:`~iris.tests.test_quickplot.TestLabels.test_pcolormesh_str_symbol` (:pull:`3902`).
+
+* `@znicholls`_ made :func:`~iris.tests.idiff.step_over_diffs` robust to hyphens (``-``) in the input path (i.e. the ``result_dir`` argument) (:pull:`3902`).
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -450,6 +454,7 @@ This document explains the changes made to Iris for this release
 .. _@rcomer: https://github.com/rcomer
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@zklaus: https://github.com/zklaus
+.. _@znicholls: https://github.com/znicholls
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
 .. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html
 .. _sphinx-panels: https://sphinx-panels.readthedocs.io/en/latest/

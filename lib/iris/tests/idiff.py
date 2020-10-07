@@ -220,7 +220,9 @@ def step_over_diffs(result_dir, action, display=True):
         count = len(results)
 
         for count_index, result_fname in enumerate(results):
-            key = os.path.splitext("-".join(result_fname.split("-")[1:]))[0]
+            key = os.path.splitext(
+                "-".join(result_fname.split("result-")[1:])
+            )[0]
             try:
                 # Calculate the test result perceptual image hash.
                 phash = imagehash.phash(
