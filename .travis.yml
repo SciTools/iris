@@ -28,6 +28,9 @@ git:
   # We need a deep clone so that we can compute the age of the files using their git history.
   depth: 10000
 
+before_install:
+  - sudo apt-get -y install libenchant
+
 install:
   - >
     export IRIS_TEST_DATA_REF="fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30";
