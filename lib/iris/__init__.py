@@ -106,7 +106,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = "3.0.0ugrid1"
+__version__ = "3.0.1-dev"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
