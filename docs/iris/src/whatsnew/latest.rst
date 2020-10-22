@@ -52,4 +52,7 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-* N/A
+* `@rcomer`_ removed an old unused test file. (:pull:`3913`)
+
+
+.. _@rcomer: https://github.com/rcomer
