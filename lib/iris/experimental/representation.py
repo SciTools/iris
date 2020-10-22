@@ -117,25 +117,16 @@ class CubeRepresentation:
 
     def _get_dim_names(self):
         """
-        Get dimension-describing coordinate names, or '--' if no coordinate]
-        describes the dimension.
-
-        Note: borrows from `cube.summary`.
+        Get all the dimension-describing coordinate names, as used by
+        cube.summary.
 
         """
-        # Create a set to contain the axis names for each data dimension.
-        dim_names = list(range(len(self.cube.shape)))
-
-        # Add the dim_coord names that participate in the associated data
-        # dimensions.
-        for dim in range(len(self.cube.shape)):
-            dim_coords = self.cube.coords(
-                contains_dimension=dim, dim_coords=True
-            )
-            if dim_coords:
-                dim_names[dim] = dim_coords[0].name()
-            else:
-                dim_names[dim] = "--"
+        # NOTE: use ".strip()" on these, because the name of an anonymous dim
+        # has an unwanted extra space at the end, i.e. "-- ".
+        dim_names = [
+            self.cube._summary_dim_name(dim).strip()
+            for dim in range(len(self.cube.shape))
+        ]
         return dim_names
 
     def _dim_names(self):

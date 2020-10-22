@@ -2263,35 +2263,46 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 new_summary.append(extra)
         return new_summary
 
+    def _summary_dim_name(self, dim):
+        """
+        Get the dim_coord name that labels a data dimension,
+        or "--" if there is none (i.e. dimension is anonymous).
+
+        """
+        dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
+
+        if len(dim_coords) == 1:
+            # Only 1 dimension coordinate can map to a dimension.
+            name = dim_coords[0].name()  # N.B. can only be 1
+        elif len(dim_coords) == 0:
+            # Anonymous dimension : NOTE this has an extra space on the end.
+            name = "-- "
+        else:
+            # >1 matching dim coord : This really can't happen !
+            names_list = [co.name() for co in dim_coords]
+            msg = (
+                "Cube logic error : "
+                "multiple dimension coords map to "
+                "dimension {dim} : {names!r}"
+            )
+            raise ValueError(msg.format(dim=dim, names=names_list))
+
+        return name
+
     def summary(self, shorten=False, name_padding=35):
         """
         Unicode string summary of the Cube with name, a list of dim coord names
         versus length and optionally relevant coordinate information.
 
         """
-        # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in range(len(self.shape))]
-
-        # Add the dim_coord names that participate in the associated data
-        # dimensions.
-        for dim in range(len(self.shape)):
-            dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
-            if dim_coords:
-                dim_names[dim].add(dim_coords[0].name())
-            else:
-                dim_names[dim].add("-- ")
-
-        # Convert axes sets to lists and sort.
-        dim_names = [sorted(names, key=sorted_axes) for names in dim_names]
-
         # Generate textual summary of the cube dimensionality.
         if self.shape == ():
             dimension_header = "scalar cube"
         else:
             dimension_header = "; ".join(
                 [
-                    ", ".join(dim_names[dim]) + ": %d" % dim_shape
-                    for dim, dim_shape in enumerate(self.shape)
+                    self._summary_dim_name(dim) + ": %d" % dim_len
+                    for dim, dim_len in enumerate(self.shape)
                 ]
             )
 
@@ -2301,6 +2312,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cube_header = "{nameunit!s:{length}} ({dimension})".format(
             length=name_padding, nameunit=nameunit, dimension=dimension_header
         )
+
         summary = ""
 
         # Generate full cube textual summary.
