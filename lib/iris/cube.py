@@ -2469,58 +2469,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     ),
                 )
 
-            if vector_dim_coords:
-                dim_coord_summary, cube_header = vector_summary(
-                    vector_dim_coords,
-                    cube_header,
-                    max_line_offset,
-                    add_extra_lines=True,
-                )
-                summary += "\n     Dimension coordinates:\n" + "\n".join(
-                    dim_coord_summary
-                )
-
-            if vector_aux_coords:
-                aux_coord_summary, cube_header = vector_summary(
-                    vector_aux_coords,
-                    cube_header,
-                    max_line_offset,
-                    add_extra_lines=True,
-                )
-                summary += "\n     Auxiliary coordinates:\n" + "\n".join(
-                    aux_coord_summary
-                )
-
-            if vector_derived_coords:
-                derived_coord_summary, cube_header = vector_summary(
-                    vector_derived_coords,
-                    cube_header,
-                    max_line_offset,
-                    add_extra_lines=True,
-                )
-                summary += "\n     Derived coordinates:\n" + "\n".join(
-                    derived_coord_summary
-                )
-
             #
-            # Generate summary of cube cell measures attribute
+            # Generate textual summary for each type of vector component.
             #
-            if vector_cell_measures:
-                cell_measure_summary, cube_header = vector_summary(
-                    vector_cell_measures, cube_header, max_line_offset,
-                )
-                summary += "\n     Cell measures:\n"
-                summary += "\n".join(cell_measure_summary)
-
-            #
-            # Generate summary of cube ancillary variables attribute
-            #
-            if vector_ancillary_variables:
-                ancillary_variable_summary, cube_header = vector_summary(
-                    vector_ancillary_variables, cube_header, max_line_offset,
-                )
-                summary += "\n     Ancillary variables:\n"
-                summary += "\n".join(ancillary_variable_summary)
+            vector_summary_specs = [
+                ("Dimension coordinates", vector_dim_coords, True),
+                ("Auxiliary coordinates", vector_aux_coords, True),
+                ("Derived coordinates", vector_derived_coords, True),
+                ("Cell measures", vector_cell_measures, False),
+                ("Ancillary variables", vector_ancillary_variables, False),
+            ]
+            for title, elements, add_extra_lines in vector_summary_specs:
+                if elements:
+                    summary_lines, cube_header = vector_summary(
+                        vector_items=elements,
+                        cube_header=cube_header,
+                        max_line_offset=max_line_offset,
+                        add_extra_lines=add_extra_lines,
+                    )
+                    summary += f"\n     {title}:\n"
+                    summary += "\n".join(summary_lines)
 
             #
             # Generate textual summary of cube scalar coordinates.
