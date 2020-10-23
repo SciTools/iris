@@ -2380,7 +2380,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             def vector_summary(
                 vector_items,
-                dim_function,
                 cube_header,
                 max_line_offset,
                 add_extra_lines=False,
@@ -2428,8 +2427,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
                 # Generate full textual summary for each vector item
                 # - WITH dimension markers.
-                for index, coord in enumerate(vector_items):
-                    dims = dim_function(coord)
+                for index, dim_meta in enumerate(vector_items):
+                    dims = dim_meta.cube_dims(self)
 
                     for dim in range(len(self.shape)):
                         width = alignment[dim] - len(summary_lines[index])
@@ -2473,7 +2472,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if vector_dim_coords:
                 dim_coord_summary, cube_header = vector_summary(
                     vector_dim_coords,
-                    self.coord_dims,
                     cube_header,
                     max_line_offset,
                     add_extra_lines=True,
@@ -2485,7 +2483,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if vector_aux_coords:
                 aux_coord_summary, cube_header = vector_summary(
                     vector_aux_coords,
-                    self.coord_dims,
                     cube_header,
                     max_line_offset,
                     add_extra_lines=True,
@@ -2497,7 +2494,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if vector_derived_coords:
                 derived_coord_summary, cube_header = vector_summary(
                     vector_derived_coords,
-                    self.coord_dims,
                     cube_header,
                     max_line_offset,
                     add_extra_lines=True,
@@ -2511,10 +2507,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if vector_cell_measures:
                 cell_measure_summary, cube_header = vector_summary(
-                    vector_cell_measures,
-                    self.cell_measure_dims,
-                    cube_header,
-                    max_line_offset,
+                    vector_cell_measures, cube_header, max_line_offset,
                 )
                 summary += "\n     Cell measures:\n"
                 summary += "\n".join(cell_measure_summary)
@@ -2524,10 +2517,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             #
             if vector_ancillary_variables:
                 ancillary_variable_summary, cube_header = vector_summary(
-                    vector_ancillary_variables,
-                    self.ancillary_variable_dims,
-                    cube_header,
-                    max_line_offset,
+                    vector_ancillary_variables, cube_header, max_line_offset,
                 )
                 summary += "\n     Ancillary variables:\n"
                 summary += "\n".join(ancillary_variable_summary)
