@@ -2395,7 +2395,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     returned with the list of strings.
 
                 """
-                vector_summary = []
+                summary_lines = []
 
                 # Identify offsets for each dimension text marker.
                 alignment = np.array(
@@ -2409,7 +2409,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 # Generate basic textual summary for each vector item
                 # - WITHOUT dimension markers.
                 for dim_meta in vector_items:
-                    vector_summary.append(
+                    summary_lines.append(
                         "%*s%s"
                         % (indent, " ", iris.util.clip_string(dim_meta.name()))
                     )
@@ -2432,23 +2432,23 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     dims = dim_function(coord)
 
                     for dim in range(len(self.shape)):
-                        width = alignment[dim] - len(vector_summary[index])
+                        width = alignment[dim] - len(summary_lines[index])
                         char = "x" if dim in dims else "-"
                         line = "{pad:{width}}{char}".format(
                             pad=" ", width=width, char=char
                         )
-                        vector_summary[index] += line
+                        summary_lines[index] += line
 
                 if add_extra_lines:
                     # Interleave any extra lines that are needed to distinguish
                     # the coordinates.
                     # TODO: This should also be done for cell measures and
                     # ancillary variables.
-                    vector_summary = self._summary_extra(
-                        vector_items, vector_summary, extra_indent
+                    summary_lines = self._summary_extra(
+                        vector_items, summary_lines, extra_indent
                     )
 
-                return vector_summary, cube_header
+                return summary_lines, cube_header
 
             # Calculate the maximum line offset.
             max_line_offset = 0
