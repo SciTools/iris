@@ -85,24 +85,18 @@ class CubeRepresentation:
         self.cube_id = id(self.cube)
         self.cube_str = escape(str(self.cube))
 
-        self.str_headings = {
-            "Dimension coordinates:": None,
-            "Auxiliary coordinates:": None,
-            "Derived coordinates:": None,
-            "Cell measures:": None,
-            "Ancillary variables:": None,
-            "Scalar coordinates:": None,
-            "Scalar cell measures:": None,
-            "Attributes:": None,
-            "Cell methods:": None,
-        }
-        self.dim_desc_coords = [
-            "Dimension coordinates:",
-            "Auxiliary coordinates:",
-            "Derived coordinates:",
-            "Cell measures:",
-            "Ancillary variables:",
+        vector_sections = cube._summary_vector_sections_info()
+        vector_headings = [spec.title for spec in vector_sections]
+        # TODO: this list of 'scalar summary sections' should probably also be
+        # defined by the cube itself.
+        all_headings = vector_headings + [
+            "Scalar coordinates",
+            "Scalar cell measures",
+            "Attributes",
+            "Cell methods",
         ]
+        self.str_headings = {title + ":": None for title in all_headings}
+        self.dim_desc_coords = [title + ":" for title in vector_headings]
 
         self.two_cell_headers = ["Scalar coordinates:", "Attributes:"]
 
