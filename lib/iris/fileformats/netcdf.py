@@ -804,7 +804,11 @@ def load_cubes(filenames, callback=None, create_reader=None):
 
             # Call a post-processing completion step for each cube, if provided.
             if hasattr(cf, "cube_completion_adjust"):
-                cf.cube_completion_adjust(cube)
+                # Either "in-place", or "replacing", like a load callback.
+                new_cube = cf.cube_completion_adjust(cube)
+                if new_cube:
+                    # If new cube returned, replace the original.
+                    cube = new_cube
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
