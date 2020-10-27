@@ -2458,7 +2458,8 @@ class Test__summary_dim_name(tests.IrisTest):
         result = cube._summary_dim_name(1)
         self.assertEqual(result, "-- ")
 
-    def test_aux_named_dim(self):
+    def test_aux_mapped_dim(self):
+        # It should *not* treat an aux-coord as the name of a dim.
         cube = Cube(np.zeros((5, 3)))
         cube.add_aux_coord(
             DimCoord(np.arange(5), standard_name="longitude", units="degrees"),
@@ -2505,7 +2506,6 @@ class Test__summary_vector_sections_info(tests.IrisTest):
             AuxCoord(np.zeros((5, 4)), long_name="co2d", units=1), (1, 2),
         )
         result = cube._summary_vector_sections_info()
-        self.assertEqual(len(result), 5)
         self.assertEqual(
             [[co.name() for co in sect[1]] for sect in result],
             [
@@ -2523,7 +2523,6 @@ class Test__summary_vector_sections_info(tests.IrisTest):
             CellMeasure(np.arange(3), long_name="coeffs", units=1), 0
         )
         result = cube._summary_vector_sections_info()
-        self.assertEqual(len(result), 5)
         self.assertEqual(
             [[co.name() for co in sect[1]] for sect in result],
             [
@@ -2542,7 +2541,6 @@ class Test__summary_vector_sections_info(tests.IrisTest):
             (0, 2),
         )
         result = cube._summary_vector_sections_info()
-        self.assertEqual(len(result), 5)
         self.assertEqual(
             [[co.name() for co in sect[1]] for sect in result],
             [

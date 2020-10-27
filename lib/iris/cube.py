@@ -2266,7 +2266,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def _summary_dim_name(self, dim):
         """
         Get the dim_coord name that labels a data dimension,
-        or "--" if there is none (i.e. dimension is anonymous).
+        or "-- " if there is none (i.e. dimension is anonymous).
 
         """
         dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
