@@ -2434,5 +2434,39 @@ class Test__eq__meta(tests.IrisTest):
         self.assertTrue(cube1 == cube2)
 
 
+class Test__summary_dim_name(tests.IrisTest):
+    def test_standard_named_dim(self):
+        cube = Cube(np.zeros((5, 3)))
+        cube.add_dim_coord(
+            DimCoord(np.arange(5), standard_name="longitude", units="degrees"),
+            0,
+        )
+        result = cube._summary_dim_name(0)
+        self.assertEqual(result, "longitude")
+
+    def test_long_named_dim(self):
+        cube = Cube(np.zeros((5, 3)))
+        cube.add_dim_coord(
+            DimCoord(np.arange(5), long_name="alons", units="degrees"), 0
+        )
+        result = cube._summary_dim_name(0)
+        self.assertEqual(result, "alons")
+
+    def test_unmapped_dim(self):
+        cube = Cube(np.zeros((5, 3)))
+        cube.add_dim_coord(DimCoord(np.arange(5), long_name="x", units=1), 0)
+        result = cube._summary_dim_name(1)
+        self.assertEqual(result, "-- ")
+
+    def test_aux_named_dim(self):
+        cube = Cube(np.zeros((5, 3)))
+        cube.add_aux_coord(
+            DimCoord(np.arange(5), standard_name="longitude", units="degrees"),
+            0,
+        )
+        result = cube._summary_dim_name(0)
+        self.assertEqual(result, "-- ")
+
+
 if __name__ == "__main__":
     tests.main()
