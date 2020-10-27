@@ -2468,5 +2468,92 @@ class Test__summary_dim_name(tests.IrisTest):
         self.assertEqual(result, "-- ")
 
 
+class Test__summary_vector_sections_info(tests.IrisTest):
+    def test_section_titles(self):
+        cube = Cube([0, 1])
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(len(result), 5)
+        self.assertEqual(
+            [sect[0] for sect in result],
+            [
+                "Dimension coordinates",
+                "Auxiliary coordinates",
+                "Derived coordinates",
+                "Cell measures",
+                "Ancillary variables",
+            ],
+        )
+
+    def test_extra_lines(self):
+        cube = Cube([0, 1])
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(len(result), 5)
+        self.assertEqual(
+            [sect[2] for sect in result], [True, True, True, False, False]
+        )
+
+    def test_dim_aux_coords(self):
+        cube = Cube(np.zeros((3, 5, 4)))
+        cube.add_dim_coord(
+            DimCoord(np.arange(3), long_name="lats", units="degrees"), 0
+        )
+        cube.add_aux_coord(
+            DimCoord(np.arange(5), standard_name="longitude", units="degrees"),
+            1,
+        )
+        cube.add_aux_coord(
+            AuxCoord(np.zeros((5, 4)), long_name="co2d", units=1), (1, 2),
+        )
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(len(result), 5)
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                ["lats"],
+                ["longitude", "co2d"],
+                [],  # derived
+                [],  # cell measures
+                [],  # ancils
+            ],
+        )
+
+    def test_cell_measures(self):
+        cube = Cube(np.zeros((3, 5, 4)))
+        cube.add_cell_measure(
+            CellMeasure(np.arange(3), long_name="coeffs", units=1), 0
+        )
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(len(result), 5)
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                [],  # dim coords
+                [],  # aux coords
+                [],  # derived
+                ["coeffs"],  # cell measures
+                [],  # ancils
+            ],
+        )
+
+    def test_ancils(self):
+        cube = Cube(np.zeros((3, 5, 4)))
+        cube.add_ancillary_variable(
+            CellMeasure(np.zeros((3, 4)), long_name="category", units=1),
+            (0, 2),
+        )
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(len(result), 5)
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                [],  # dim coords
+                [],  # aux coords
+                [],  # derived
+                [],  # cell measures
+                ["category"],  # ancils
+            ],
+        )
+
+
 if __name__ == "__main__":
     tests.main()
