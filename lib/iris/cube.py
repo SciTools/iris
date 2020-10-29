@@ -2310,47 +2310,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         (as in iris-ugrid) can override / extend the cube summary.
 
         """
-        # Cache the derived coords so we can rely on consistent
-        # object IDs.
-        derived_coords = self.derived_coords
-        # Determine the cube coordinates that are scalar (single-valued)
-        # AND non-dimensioned.
-        dim_coords = self.dim_coords
-        aux_coords = self.aux_coords
-        all_coords = dim_coords + aux_coords + derived_coords
-        scalar_coord_ids = [
-            id(coord)
-            for coord in all_coords
-            if not self.coord_dims(coord) and coord.shape == (1,)
-        ]
-        # Determine the cube coordinates that are not scalar BUT
-        # dimensioned.
-        vector_dim_coords = [
-            coord for coord in dim_coords if id(coord) not in scalar_coord_ids
-        ]
-        vector_aux_coords = [
-            coord for coord in aux_coords if id(coord) not in scalar_coord_ids
-        ]
-        vector_derived_coords = [
-            coord
-            for coord in derived_coords
-            if id(coord) not in scalar_coord_ids
-        ]
+        # Construct our lists of different types of element.
+        vector_dim_coords = self.dim_coords  # Always cube-dim-mapped.
 
-        # cell measures
-        vector_cell_measures = [
-            cm for cm in self.cell_measures() if cm.shape != (1,)
-        ]
+        def cube_dimensioned(elements):
+            # Select only non-scalar coords (and cell-measures, ancils).
+            # These could in fact have shape (1,) : The key question is whether
+            # they map to a cube dimension(s) or not.
+            return [elem for elem in elements if elem.cube_dims(self)]
 
-        # Ancillary Variables
-        vector_ancillary_variables = [
-            av for av in self.ancillary_variables() if av.shape != (1,)
-        ]
+        vector_aux_coords = cube_dimensioned(self.aux_coords)
+        vector_derived_coords = cube_dimensioned(self.derived_coords)
+        vector_cell_measures = cube_dimensioned(self.cell_measures())
+        vector_ancillary_variables = cube_dimensioned(
+            self.ancillary_variables()
+        )
 
-        # Sort vector coordinates by data dimension.
-        vector_dim_coords.sort(key=self.coord_dims)
-        vector_aux_coords.sort(key=self.coord_dims)
-        vector_derived_coords.sort(key=self.coord_dims)
+        # Note: the element lists are in fact all sorted by (cube-dims, name).
+        # But that is implicit, as the cube access methods ensure it.
+
         Spec = self._VectorSectionSpec
         section_specs = [
             Spec("Dimension coordinates", vector_dim_coords, True),
@@ -2501,9 +2479,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # Generate textual summary of cube scalar coordinates.
             #
             scalar_coords = [
-                coord
-                for coord in self.coords()
-                if not self.coord_dims(coord) and coord.shape == (1,)
+                coord for coord in self.coords() if not self.coord_dims(coord)
             ]
             scalar_summary = []
             if scalar_coords:
@@ -2569,16 +2545,33 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
 
             #
-            # Generate summary of cube cell measures
+            # Generate summary of scalar cube cell measures
             #
             scalar_cell_measures = [
-                cm for cm in self.cell_measures() if cm.shape == (1,)
+                cm
+                for cm in self.cell_measures()
+                if not self.cell_measure_dims(cm)
             ]
             if scalar_cell_measures:
                 summary += "\n     Scalar cell measures:\n"
                 scalar_cms = [
                     "          {}".format(cm.name())
                     for cm in scalar_cell_measures
+                ]
+                summary += "\n".join(scalar_cms)
+
+            #
+            # Generate summary of scalar ancillary variables
+            #
+            scalar_ancils = [
+                av
+                for av in self.ancillary_variables()
+                if not self.ancillary_variable_dims(av)
+            ]
+            if scalar_ancils:
+                summary += "\n     Scalar ancillary variables:\n"
+                scalar_cms = [
+                    "          {}".format(av.name()) for av in scalar_ancils
                 ]
                 summary += "\n".join(scalar_cms)
 

@@ -484,6 +484,37 @@ class Test_summary(tests.IrisTest):
         )
         self.assertEqual(cube.summary(), expected_summary)
 
+    def test_other_scalar_elements(self):
+        # Check for scalar cell-measures and ancils, and the distinction
+        # between 1-D vector elements and scalar ones.
+        cube = Cube(np.zeros((1, 4)))
+        cube.add_cell_measure(
+            CellMeasure(1, long_name="len1_cm_DIMED", units=1), (0,)
+        )
+        cube.add_cell_measure(
+            CellMeasure(1, long_name="len1_cm_SCALAR", units=1), ()
+        )
+        cube.add_ancillary_variable(
+            AncillaryVariable(2, long_name="len1_av_DIMED", units=1), (0.0)
+        )
+        cube.add_ancillary_variable(
+            AncillaryVariable(2, long_name="len1_av_SCALAR", units=1), ()
+        )
+
+        result = cube.summary()
+        expected = """\
+unknown / (unknown)                 (-- : 1; -- : 4)
+     Cell measures:
+          len1_cm_DIMED                 x       -
+     Ancillary variables:
+          len1_av_DIMED                 x       -
+     Scalar cell measures:
+          len1_cm_SCALAR
+     Scalar ancillary variables:
+          len1_av_SCALAR\
+"""
+        self.assertEqual(result, expected)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
@@ -2517,23 +2548,30 @@ class Test__summary_vector_sections_info(tests.IrisTest):
             ],
         )
 
-    def test_aux_coords_ordering(self):
+    def test_ordering(self):
+        # Check that sections are sorted by (cube-dims, name).
         cube = Cube(np.zeros((3, 4)))
+        cube.add_dim_coord(DimCoord(np.arange(3), long_name="z", units=1), 0)
+        cube.add_dim_coord(DimCoord(np.arange(4), long_name="x", units=1), 1)
+
         cube.add_aux_coord(
             AuxCoord(np.zeros((3, 4)), long_name="a12", units=1), (0, 1)
         )
         cube.add_aux_coord(
             AuxCoord(np.zeros((3, 4)), long_name="b12", units=1), (0, 1)
         )
+
         cube.add_aux_coord(DimCoord(np.arange(3), long_name="a1", units=1), 0)
         cube.add_aux_coord(DimCoord(np.arange(3), long_name="b1", units=1), 0)
+
         cube.add_aux_coord(DimCoord(np.arange(4), long_name="b2", units=1), 1)
         cube.add_aux_coord(DimCoord(np.arange(4), long_name="a2", units=1), 1)
+
         result = cube._summary_vector_sections_info()
         self.assertEqual(
             [[co.name() for co in sect[1]] for sect in result],
             [
-                [],
+                ["z", "x"],
                 ["a1", "b1", "a12", "b12", "a2", "b2"],
                 [],  # derived
                 [],  # cell measures
@@ -2600,6 +2638,36 @@ class Test__summary_vector_sections_info(tests.IrisTest):
                 [],  # derived
                 [],  # cell measures
                 [],  # ancils
+            ],
+        )
+
+    def test_length1_other_elements(self):
+        # Check for scalar cell-measures and ancils, and the distinction
+        # between 1-D vector elements and scalar ones.
+        cube = Cube(np.zeros((1, 4)))
+        cube.add_cell_measure(
+            CellMeasure(1, long_name="len1_cm_DIMED", units=1), (0,)
+        )
+        cube.add_ancillary_variable(
+            AncillaryVariable(2, long_name="len1_av_DIMED", units=1), (0.0)
+        )
+        # These 2 should *not* appear, as they are "scalar"s (no cube dims).
+        cube.add_cell_measure(
+            CellMeasure(1, long_name="len1_cm_SCALAR", units=1), ()
+        )
+        cube.add_ancillary_variable(
+            AncillaryVariable(2, long_name="len1_av_SCALAR", units=1), ()
+        )
+
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                [],  # dim coords
+                [],  # aux coords
+                [],  # derived
+                ["len1_cm_DIMED"],  # cell measures
+                ["len1_av_DIMED"],  # ancils
             ],
         )
 
