@@ -2318,14 +2318,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dim_coords = self.dim_coords
         aux_coords = self.aux_coords
         all_coords = dim_coords + aux_coords + derived_coords
-        scalar_coords = [
-            coord
+        scalar_coord_ids = [
+            id(coord)
             for coord in all_coords
             if not self.coord_dims(coord) and coord.shape == (1,)
         ]
         # Determine the cube coordinates that are not scalar BUT
         # dimensioned.
-        scalar_coord_ids = set(map(id, scalar_coords))
         vector_dim_coords = [
             coord for coord in dim_coords if id(coord) not in scalar_coord_ids
         ]
@@ -2344,20 +2343,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         ]
 
         # Ancillary Variables
-        vector_ancillary_variables = [av for av in self.ancillary_variables()]
+        vector_ancillary_variables = [
+            av for av in self.ancillary_variables() if av.shape != (1,)
+        ]
 
-        # Sort scalar coordinates by name.
-        scalar_coords.sort(key=lambda coord: coord.name())
-        # Sort vector coordinates by data dimension and name.
-        vector_dim_coords.sort(
-            key=lambda coord: (self.coord_dims(coord), coord.name())
-        )
-        vector_aux_coords.sort(
-            key=lambda coord: (self.coord_dims(coord), coord.name())
-        )
-        vector_derived_coords.sort(
-            key=lambda coord: (self.coord_dims(coord), coord.name())
-        )
+        # Sort vector coordinates by data dimension.
+        vector_dim_coords.sort(key=self.coord_dims)
+        vector_aux_coords.sort(key=self.coord_dims)
+        vector_derived_coords.sort(key=self.coord_dims)
         Spec = self._VectorSectionSpec
         section_specs = [
             Spec("Dimension coordinates", vector_dim_coords, True),

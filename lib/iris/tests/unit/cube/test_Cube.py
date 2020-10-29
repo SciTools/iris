@@ -2517,6 +2517,30 @@ class Test__summary_vector_sections_info(tests.IrisTest):
             ],
         )
 
+    def test_aux_coords_ordering(self):
+        cube = Cube(np.zeros((3, 4)))
+        cube.add_aux_coord(
+            AuxCoord(np.zeros((3, 4)), long_name="a12", units=1), (0, 1)
+        )
+        cube.add_aux_coord(
+            AuxCoord(np.zeros((3, 4)), long_name="b12", units=1), (0, 1)
+        )
+        cube.add_aux_coord(DimCoord(np.arange(3), long_name="a1", units=1), 0)
+        cube.add_aux_coord(DimCoord(np.arange(3), long_name="b1", units=1), 0)
+        cube.add_aux_coord(DimCoord(np.arange(4), long_name="b2", units=1), 1)
+        cube.add_aux_coord(DimCoord(np.arange(4), long_name="a2", units=1), 1)
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                [],
+                ["a1", "b1", "a12", "b12", "a2", "b2"],
+                [],  # derived
+                [],  # cell measures
+                [],  # ancils
+            ],
+        )
+
     def test_cell_measures(self):
         cube = Cube(np.zeros((3, 5, 4)))
         cube.add_cell_measure(
@@ -2549,6 +2573,33 @@ class Test__summary_vector_sections_info(tests.IrisTest):
                 [],  # derived
                 [],  # cell measures
                 ["category"],  # ancils
+            ],
+        )
+
+    def test_derived(self):
+        # Simple check for presentation of a derived coordinate.
+        cube = stock.hybrid_height()
+        result = cube._summary_vector_sections_info()
+        section = result[2]  # just the derived part
+        self.assertEqual([co.name() for co in section.elements], ["altitude"])
+
+    def test_length1_coord_types(self):
+        cube = Cube(np.zeros((1, 2)))
+        cube.add_dim_coord(DimCoord(0.1, long_name="length1_dim"), 0)
+        # Note: you can't have an "unmapped" dim-coord, dims are required.
+        cube.add_aux_coord(DimCoord(0.2, long_name="length1_aux_mapped"), 0)
+        cube.add_aux_coord(DimCoord(0.3, long_name="length1_aux_unmapped"))
+        # Note: "length1_aux_unmapped" is a *scalar* coord,
+        # so it does not appear in the vector section.
+        result = cube._summary_vector_sections_info()
+        self.assertEqual(
+            [[co.name() for co in sect[1]] for sect in result],
+            [
+                ["length1_dim"],  # dim coords
+                ["length1_aux_mapped"],  # aux coords
+                [],  # derived
+                [],  # cell measures
+                [],  # ancils
             ],
         )
 
