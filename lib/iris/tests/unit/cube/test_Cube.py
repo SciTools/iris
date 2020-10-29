@@ -2599,7 +2599,7 @@ class Test__summary_vector_sections_info(tests.IrisTest):
     def test_ancils(self):
         cube = Cube(np.zeros((3, 5, 4)))
         cube.add_ancillary_variable(
-            CellMeasure(np.zeros((3, 4)), long_name="category", units=1),
+            AncillaryVariable(np.zeros((3, 4)), long_name="category", units=1),
             (0, 2),
         )
         result = cube._summary_vector_sections_info()
