@@ -2263,35 +2263,96 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 new_summary.append(extra)
         return new_summary
 
+    def _summary_dim_name(self, dim):
+        """
+        Get the dim_coord name that labels a data dimension,
+        or "-- " if there is none (i.e. dimension is anonymous).
+
+        """
+        dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
+
+        if len(dim_coords) == 1:
+            # Only 1 dimension coordinate can map to a dimension.
+            name = dim_coords[0].name()  # N.B. can only be 1
+        elif len(dim_coords) == 0:
+            # Anonymous dimension : NOTE this has an extra space on the end.
+            name = "-- "
+        else:
+            # >1 matching dim coord : This really can't happen !
+            names_list = [co.name() for co in dim_coords]
+            msg = (
+                "Cube logic error : "
+                "multiple dimension coords map to "
+                "dimension {dim} : {names!r}"
+            )
+            raise ValueError(msg.format(dim=dim, names=names_list))
+
+        return name
+
+    _VectorSectionSpec = namedtuple(
+        "Spec", ("title", "elements", "add_extra_lines")
+    )
+
+    def _summary_vector_sections_info(self):
+        """
+        Return a table describing the order and content of the 'vector'
+        sections of the cube summary.
+
+        Returns:
+
+            * summary_info (list of cube._VectorSectionSpec)
+                A list of summary sections info, in summary order.
+
+        The table entries contain arguments to be passed to the
+        'vector_summary' inner function, inside cube.summary().
+
+        Note: provided as a separate function so that derived cube types
+        (as in iris-ugrid) can override / extend the cube summary.
+
+        """
+        # Construct our lists of different types of element.
+        vector_dim_coords = self.dim_coords  # Always cube-dim-mapped.
+
+        def cube_dimensioned(elements):
+            # Select only non-scalar coords (and cell-measures, ancils).
+            # These could in fact have shape (1,) : The key question is whether
+            # they map to a cube dimension(s) or not.
+            return [elem for elem in elements if elem.cube_dims(self)]
+
+        vector_aux_coords = cube_dimensioned(self.aux_coords)
+        vector_derived_coords = cube_dimensioned(self.derived_coords)
+        vector_cell_measures = cube_dimensioned(self.cell_measures())
+        vector_ancillary_variables = cube_dimensioned(
+            self.ancillary_variables()
+        )
+
+        # Note: the element lists are in fact all sorted by (cube-dims, name).
+        # But that is implicit, as the cube access methods ensure it.
+
+        Spec = self._VectorSectionSpec
+        section_specs = [
+            Spec("Dimension coordinates", vector_dim_coords, True),
+            Spec("Auxiliary coordinates", vector_aux_coords, True),
+            Spec("Derived coordinates", vector_derived_coords, True),
+            Spec("Cell measures", vector_cell_measures, False),
+            Spec("Ancillary variables", vector_ancillary_variables, False),
+        ]
+        return section_specs
+
     def summary(self, shorten=False, name_padding=35):
         """
         Unicode string summary of the Cube with name, a list of dim coord names
         versus length and optionally relevant coordinate information.
 
         """
-        # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in range(len(self.shape))]
-
-        # Add the dim_coord names that participate in the associated data
-        # dimensions.
-        for dim in range(len(self.shape)):
-            dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
-            if dim_coords:
-                dim_names[dim].add(dim_coords[0].name())
-            else:
-                dim_names[dim].add("-- ")
-
-        # Convert axes sets to lists and sort.
-        dim_names = [sorted(names, key=sorted_axes) for names in dim_names]
-
         # Generate textual summary of the cube dimensionality.
         if self.shape == ():
             dimension_header = "scalar cube"
         else:
             dimension_header = "; ".join(
                 [
-                    ", ".join(dim_names[dim]) + ": %d" % dim_shape
-                    for dim, dim_shape in enumerate(self.shape)
+                    self._summary_dim_name(dim) + ": %d" % dim_len
+                    for dim, dim_len in enumerate(self.shape)
                 ]
             )
 
@@ -2301,6 +2362,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         cube_header = "{nameunit!s:{length}} ({dimension})".format(
             length=name_padding, nameunit=nameunit, dimension=dimension_header
         )
+
         summary = ""
 
         # Generate full cube textual summary.
@@ -2308,73 +2370,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             indent = 10
             extra_indent = " " * 13
 
-            # Cache the derived coords so we can rely on consistent
-            # object IDs.
-            derived_coords = self.derived_coords
-            # Determine the cube coordinates that are scalar (single-valued)
-            # AND non-dimensioned.
-            dim_coords = self.dim_coords
-            aux_coords = self.aux_coords
-            all_coords = dim_coords + aux_coords + derived_coords
-            scalar_coords = [
-                coord
-                for coord in all_coords
-                if not self.coord_dims(coord) and coord.shape == (1,)
-            ]
-            # Determine the cube coordinates that are not scalar BUT
-            # dimensioned.
-            scalar_coord_ids = set(map(id, scalar_coords))
-            vector_dim_coords = [
-                coord
-                for coord in dim_coords
-                if id(coord) not in scalar_coord_ids
-            ]
-            vector_aux_coords = [
-                coord
-                for coord in aux_coords
-                if id(coord) not in scalar_coord_ids
-            ]
-            vector_derived_coords = [
-                coord
-                for coord in derived_coords
-                if id(coord) not in scalar_coord_ids
-            ]
+            # Fetch the vector sections information.
+            vector_summary_info = self._summary_vector_sections_info()
 
-            # cell measures
-            vector_cell_measures = [
-                cm for cm in self.cell_measures() if cm.shape != (1,)
-            ]
-
-            # Ancillary Variables
-            vector_ancillary_variables = [
-                av for av in self.ancillary_variables()
-            ]
-
-            # Sort scalar coordinates by name.
-            scalar_coords.sort(key=lambda coord: coord.name())
-            # Sort vector coordinates by data dimension and name.
-            vector_dim_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-            vector_aux_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-            vector_derived_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-
-            #
-            # Generate textual summary of cube vector coordinates.
-            #
+            # Support routine to format vector summary sections.
             def vector_summary(
-                vector_coords,
+                vector_items,
                 cube_header,
                 max_line_offset,
-                cell_measures=None,
-                ancillary_variables=None,
+                add_extra_lines=False,
             ):
                 """
-                Generates a list of suitably aligned strings containing coord
+                Generates a list of suitably aligned strings containing item
                 names and dimensions indicated by one or more 'x' symbols.
 
                 .. note::
@@ -2383,12 +2390,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     returned with the list of strings.
 
                 """
-                if cell_measures is None:
-                    cell_measures = []
-                if ancillary_variables is None:
-                    ancillary_variables = []
-                vector_summary = []
-                vectors = []
+                summary_lines = []
 
                 # Identify offsets for each dimension text marker.
                 alignment = np.array(
@@ -2399,19 +2401,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     ]
                 )
 
-                # Generate basic textual summary for each vector coordinate
+                # Generate basic textual summary for each vector item
                 # - WITHOUT dimension markers.
-                for dim_meta in (
-                    vector_coords + cell_measures + ancillary_variables
-                ):
-                    vector_summary.append(
+                for dim_meta in vector_items:
+                    summary_lines.append(
                         "%*s%s"
                         % (indent, " ", iris.util.clip_string(dim_meta.name()))
                     )
                 min_alignment = min(alignment)
 
                 # Determine whether the cube header requires realignment
-                # due to one or more longer vector coordinate summaries.
+                # due to one or more longer vector item summaries.
                 if max_line_offset >= min_alignment:
                     delta = max_line_offset - min_alignment + 5
                     cube_header = "%-*s (%s)" % (
@@ -2421,127 +2421,71 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     )
                     alignment += delta
 
-                if vector_coords:
-                    # Generate full textual summary for each vector coordinate
-                    # - WITH dimension markers.
-                    for index, coord in enumerate(vector_coords):
-                        dims = self.coord_dims(coord)
+                # Generate full textual summary for each vector item
+                # - WITH dimension markers.
+                for index, dim_meta in enumerate(vector_items):
+                    dims = dim_meta.cube_dims(self)
 
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + vector_coords
-                if cell_measures:
-                    # Generate full textual summary for each vector cell
-                    # measure - WITH dimension markers.
-                    for index, cell_measure in enumerate(cell_measures):
-                        dims = self.cell_measure_dims(cell_measure)
+                    for dim in range(len(self.shape)):
+                        width = alignment[dim] - len(summary_lines[index])
+                        char = "x" if dim in dims else "-"
+                        line = "{pad:{width}}{char}".format(
+                            pad=" ", width=width, char=char
+                        )
+                        summary_lines[index] += line
 
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + cell_measures
-                if ancillary_variables:
-                    # Generate full textual summary for each vector ancillary
-                    # variable - WITH dimension markers.
-                    for index, av in enumerate(ancillary_variables):
-                        dims = self.ancillary_variable_dims(av)
+                if add_extra_lines:
+                    # Interleave any extra lines that are needed to distinguish
+                    # the coordinates.
+                    # TODO: This should also be done for cell measures and
+                    # ancillary variables.
+                    summary_lines = self._summary_extra(
+                        vector_items, summary_lines, extra_indent
+                    )
 
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + ancillary_variables
-                # Interleave any extra lines that are needed to distinguish
-                # the coordinates.
-                vector_summary = self._summary_extra(
-                    vectors, vector_summary, extra_indent
-                )
-
-                return vector_summary, cube_header
+                return summary_lines, cube_header
 
             # Calculate the maximum line offset.
             max_line_offset = 0
-            for coord in all_coords:
-                max_line_offset = max(
-                    max_line_offset,
-                    len(
-                        "%*s%s"
-                        % (
-                            indent,
-                            " ",
-                            iris.util.clip_string(str(coord.name())),
-                        )
-                    ),
-                )
-
-            if vector_dim_coords:
-                dim_coord_summary, cube_header = vector_summary(
-                    vector_dim_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Dimension coordinates:\n" + "\n".join(
-                    dim_coord_summary
-                )
-
-            if vector_aux_coords:
-                aux_coord_summary, cube_header = vector_summary(
-                    vector_aux_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Auxiliary coordinates:\n" + "\n".join(
-                    aux_coord_summary
-                )
-
-            if vector_derived_coords:
-                derived_coord_summary, cube_header = vector_summary(
-                    vector_derived_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Derived coordinates:\n" + "\n".join(
-                    derived_coord_summary
-                )
+            for spec in vector_summary_info:
+                for element in spec.elements:
+                    max_line_offset = max(
+                        max_line_offset,
+                        len(
+                            "%*s%s"
+                            % (
+                                indent,
+                                " ",
+                                iris.util.clip_string(str(element.name())),
+                            )
+                        ),
+                    )
 
             #
-            # Generate summary of cube cell measures attribute
+            # Generate textual summaries of cube vector elements.
             #
-            if vector_cell_measures:
-                cell_measure_summary, cube_header = vector_summary(
-                    [],
-                    cube_header,
-                    max_line_offset,
-                    cell_measures=vector_cell_measures,
-                )
-                summary += "\n     Cell measures:\n"
-                summary += "\n".join(cell_measure_summary)
-
-            #
-            # Generate summary of cube ancillary variables attribute
-            #
-            if vector_ancillary_variables:
-                ancillary_variable_summary, cube_header = vector_summary(
-                    [],
-                    cube_header,
-                    max_line_offset,
-                    ancillary_variables=vector_ancillary_variables,
-                )
-                summary += "\n     Ancillary variables:\n"
-                summary += "\n".join(ancillary_variable_summary)
+            for title, elements, add_extra_lines in vector_summary_info:
+                if elements:
+                    summary_lines, cube_header = vector_summary(
+                        vector_items=elements,
+                        cube_header=cube_header,
+                        max_line_offset=max_line_offset,
+                        add_extra_lines=add_extra_lines,
+                    )
+                    summary += f"\n     {title}:\n"
+                    summary += "\n".join(summary_lines)
 
             #
             # Generate textual summary of cube scalar coordinates.
             #
+            scalar_coords = [
+                coord for coord in self.coords() if not self.coord_dims(coord)
+            ]
             scalar_summary = []
-
             if scalar_coords:
+                scalar_coords = sorted(
+                    scalar_coords, key=lambda coord: coord.name()
+                )
                 for coord in scalar_coords:
                     if (
                         coord.units in ["1", "no_unit", "unknown"]
@@ -2600,15 +2544,34 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     scalar_summary
                 )
 
-            # cell measures
+            #
+            # Generate summary of scalar cube cell measures
+            #
             scalar_cell_measures = [
-                cm for cm in self.cell_measures() if cm.shape == (1,)
+                cm
+                for cm in self.cell_measures()
+                if not self.cell_measure_dims(cm)
             ]
             if scalar_cell_measures:
                 summary += "\n     Scalar cell measures:\n"
                 scalar_cms = [
                     "          {}".format(cm.name())
                     for cm in scalar_cell_measures
+                ]
+                summary += "\n".join(scalar_cms)
+
+            #
+            # Generate summary of scalar ancillary variables
+            #
+            scalar_ancils = [
+                av
+                for av in self.ancillary_variables()
+                if not self.ancillary_variable_dims(av)
+            ]
+            if scalar_ancils:
+                summary += "\n     Scalar ancillary variables:\n"
+                scalar_cms = [
+                    "          {}".format(av.name()) for av in scalar_ancils
                 ]
                 summary += "\n".join(scalar_cms)
 
