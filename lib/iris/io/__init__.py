@@ -13,6 +13,7 @@ import glob
 import os.path
 import re
 import collections
+import pathlib
 
 import iris.fileformats
 import iris.cube
@@ -113,6 +114,8 @@ def decode_uri(uri, default="file"):
         ('file', 'dataZoo/...')
 
     """
+    if isinstance(uri, pathlib.PurePath):
+        uri = str(uri)
     # make sure scheme has at least 2 letters to avoid windows drives
     # put - last in the brackets so it refers to the character, not a range
     # reference on valid schemes: http://tools.ietf.org/html/std66#section-3.1
@@ -310,13 +313,16 @@ def find_saver(filespec):
 
     Args:
 
-        * filespec - A string such as "my_file.pp" or "PP".
+        * filespec
+            A string such as "my_file.pp" or "PP", or :class:`pathlib.Path`.
 
     Returns:
         A save function or None.
         Save functions can be passed to :func:`iris.io.save`.
 
     """
+    if isinstance(filespec, pathlib.PurePath):
+        filespec = str(filespec)
     _check_init_savers()
     matches = [
         ext
@@ -410,11 +416,11 @@ def save(source, target, saver=None, **kwargs):
 
     """
     # Determine format from filename
-    if isinstance(target, str) and saver is None:
+    if isinstance(target, (str, pathlib.PurePath)) and saver is None:
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
-    elif isinstance(saver, str):
+    elif isinstance(saver, (str, pathlib.PurePath)):
         saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")

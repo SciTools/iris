@@ -13,6 +13,7 @@ import collections
 from copy import deepcopy
 import operator
 import os
+import pathlib
 import re
 import struct
 import warnings
@@ -2392,7 +2393,7 @@ def save_fields(fields, target, append=False):
     #   LBTYP - Fields file field type code
     #   LBLEV - Fields file level code / hybrid height model level
 
-    if isinstance(target, str):
+    if isinstance(target, (str, pathlib.PurePath)):
         pp_file = open(target, "ab" if append else "wb")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
@@ -2407,5 +2408,5 @@ def save_fields(fields, target, append=False):
             # Write to file
             pp_field.save(pp_file)
     finally:
-        if isinstance(target, str):
+        if isinstance(target, (str, pathlib.PurePath)):
             pp_file.close()
