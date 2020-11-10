@@ -13,6 +13,8 @@ import iris.tests as tests
 
 from unittest import mock
 
+import netCDF4 as nc
+
 import iris
 import iris.fileformats.cf as cf
 
@@ -54,7 +56,8 @@ class TestCFReader(tests.IrisTest):
         filename = tests.get_data_path(
             ("NetCDF", "rotated", "xyt", "small_rotPole_precipitation.nc")
         )
-        self.cfr = cf.CFReader(filename)
+        ds = nc.Dataset(filename)
+        self.cfr = cf.CFReader(ds)
 
     def test_ancillary_variables_pass_0(self):
         self.assertEqual(self.cfr.cf_group.ancillary_variables, {})
@@ -328,7 +331,8 @@ class TestClimatology(tests.IrisTest):
                 "A1B-99999a-river-sep-2070-2099.nc",
             )
         )
-        self.cfr = cf.CFReader(filename)
+        ds = nc.Dataset(filename)
+        self.cfr = cf.CFReader(ds)
 
     def test_bounds(self):
         time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates[
@@ -353,12 +357,14 @@ class TestLabels(tests.IrisTest):
                 "A1B-99999a-river-sep-2070-2099.nc",
             )
         )
-        self.cfr_start = cf.CFReader(filename)
+        ds = nc.Dataset(filename)
+        self.cfr_start = cf.CFReader(ds)
 
         filename = tests.get_data_path(
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
-        self.cfr_end = cf.CFReader(filename)
+        ds = nc.Dataset(filename)
+        self.cfr_end = cf.CFReader(ds)
 
     def test_label_dim_start(self):
         cf_data_var = self.cfr_start.cf_group["temp_dmax_tmean_abs"]

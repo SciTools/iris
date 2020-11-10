@@ -10,18 +10,16 @@ according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 References:
 
 [CF]  NetCDF Climate and Forecast (CF) Metadata conventions, Version 1.5, October, 2010.
-[NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
+[NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/docs/
 
 """
 
 from abc import ABCMeta, abstractmethod
 
 from collections.abc import Iterable, MutableMapping
-import os
 import re
 import warnings
 
-import netCDF4
 import numpy as np
 import numpy.ma as ma
 
@@ -1008,8 +1006,31 @@ class CFReader:
 
     """
 
-    def __init__(self, filename, warn=False, monotonic=False):
-        self._filename = os.path.expanduser(filename)
+    def __init__(
+        self, dataset, warn=False, monotonic=False, exclude_var_names=None
+    ):
+        """
+        Create a CFReader to interpret the CF structure of a given netcdf dataset.
+
+        Args:
+
+        * dataset (netCDF4.Dataset):
+            An open dataset to read from.
+            The new CFReader "owns" the dataset, and keeps it open until the reader itself is destroyed.
+
+        * warn (bool):
+            If set, show a warning when passed a NETCDF3 file, saying that NETCDF4 is now preferred.
+
+        * monotonic (bool):
+            Control monotonic behaviour when identifying coordinate variables.
+
+        * exclude_var_names (list of str):
+            Ignore file variables with these names : behave as if they were not present.
+
+        """
+        self._dataset = dataset
+        self._filename = dataset.filepath()
+
         # All CF variable types EXCEPT for the "special cases" of
         # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
         self._variable_types = (
@@ -1025,8 +1046,6 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = CFGroup()
 
-        self._dataset = netCDF4.Dataset(self._filename, mode="r")
-
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [
             "NETCDF3_CLASSIC",
@@ -1039,6 +1058,7 @@ class CFReader:
 
         self._check_monotonic = monotonic
 
+        self.exclude_var_names = exclude_var_names or []
         self._translate()
         self._build_cf_groups()
         self._reset()
@@ -1049,14 +1069,20 @@ class CFReader:
     def _translate(self):
         """Classify the netCDF variables into CF-netCDF variables."""
 
-        netcdf_variable_names = list(self._dataset.variables.keys())
+        netcdf_variable_names = [
+            var_name
+            for var_name in self._dataset.variables.keys()
+            if var_name not in self.exclude_var_names
+        ]
 
         # Identify all CF coordinate variables first. This must be done
         # first as, by CF convention, the definition of a CF auxiliary
         # coordinate variable may include a scalar CF coordinate variable,
         # whereas we want these two types of variables to be mutually exclusive.
         coords = CFCoordinateVariable.identify(
-            self._dataset.variables, monotonic=self._check_monotonic
+            self._dataset.variables,
+            ignore=self.exclude_var_names,
+            monotonic=self._check_monotonic,
         )
         self.cf_group.update(coords)
         coordinate_names = list(self.cf_group.coordinates.keys())
@@ -1064,11 +1090,9 @@ class CFReader:
         # Identify all CF variables EXCEPT for the "special cases".
         for variable_type in self._variable_types:
             # Prevent grid mapping variables being mis-identified as CF coordinate variables.
-            ignore = (
-                None
-                if issubclass(variable_type, CFGridMappingVariable)
-                else coordinate_names
-            )
+            ignore = self.exclude_var_names
+            if not issubclass(variable_type, CFGridMappingVariable):
+                ignore += coordinate_names
             self.cf_group.update(
                 variable_type.identify(self._dataset.variables, ignore=ignore)
             )
@@ -1082,7 +1106,7 @@ class CFReader:
 
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(
-            self._dataset.variables
+            self._dataset.variables, ignore=self.exclude_var_names
         )
 
         for cf_var in formula_terms.values():
@@ -1125,10 +1149,9 @@ class CFReader:
             for variable_type in self._variable_types:
                 # Prevent grid mapping variables being mis-identified as
                 # CF coordinate variables.
-                if issubclass(variable_type, CFGridMappingVariable):
-                    ignore = None
-                else:
-                    ignore = coordinate_names
+                ignore = self.exclude_var_names
+                if not issubclass(variable_type, CFGridMappingVariable):
+                    ignore += coordinate_names
                 match = variable_type.identify(
                     self._dataset.variables,
                     ignore=ignore,
@@ -1258,7 +1281,8 @@ class CFReader:
     def _reset(self):
         """Reset the attribute touch history of each variable."""
         for nc_var_name in self._dataset.variables.keys():
-            self.cf_group[nc_var_name].cf_attrs_reset()
+            if nc_var_name not in self.exclude_var_names:
+                self.cf_group[nc_var_name].cf_attrs_reset()
 
     def __del__(self):
         # Explicitly close dataset to prevent file remaining open.
