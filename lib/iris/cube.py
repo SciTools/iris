@@ -2182,25 +2182,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         extra = ""
         similar_coords = self.coords(coord.name())
         if len(similar_coords) > 1:
-            # Find all the attribute keys
-            keys = set()
-            for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.keys())
-            # Look for any attributes that vary
+            # Look for any attributes that vary.
             vary = set()
-            attributes = {}
-            for key in keys:
+            for key, value in coord.attributes.items():
                 for similar_coord in similar_coords:
                     if key not in similar_coord.attributes:
                         vary.add(key)
                         break
-                    value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
+                    if similar_coord.attributes[key] != value:
                         vary.add(key)
                         break
-            keys = sorted(vary & set(coord.attributes.keys()))
             bits = [
-                "{}={!r}".format(key, coord.attributes[key]) for key in keys
+                "{}={!r}".format(key, coord.attributes[key]) for key in vary
             ]
             if bits:
                 extra = indent + ", ".join(bits)
