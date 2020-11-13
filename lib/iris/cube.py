@@ -2189,11 +2189,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     if key not in similar_coord.attributes:
                         vary.add(key)
                         break
-                    if similar_coord.attributes[key] != value:
+                    if not np.array_equal(
+                        similar_coord.attributes[key], value
+                    ):
                         vary.add(key)
                         break
+            keys = sorted(vary)
             bits = [
-                "{}={!r}".format(key, coord.attributes[key]) for key in vary
+                "{}={!r}".format(key, coord.attributes[key]) for key in keys
             ]
             if bits:
                 extra = indent + ", ".join(bits)
