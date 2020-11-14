@@ -2182,6 +2182,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         extra = ""
         similar_coords = self.coords(coord.name())
         if len(similar_coords) > 1:
+            similar_coords.remove(coord)
             # Look for any attributes that vary.
             vary = set()
             for key, value in coord.attributes.items():
