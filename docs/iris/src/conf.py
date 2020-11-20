@@ -261,13 +261,13 @@ html_style = "theme_override.css"
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
-    "https://github.com/SciTools/iris/commit/69597eb3d8501ff16ee3d56aef1f7b8f1c2bb316#diff-1680206bdc5cfaa83e14428f5ba0f848",
-    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
-    "http://code.google.com/p/msysgit/downloads/list",
-    "http://schacon.github.com/git",
-    "https://github.com/SciTools/iris/pull",
-    "https://github.com/SciTools/iris/issue",
     "http://cfconventions.org",
+    "http://code.google.com/p/msysgit/downloads/list",
+    "https://github.com",
+    "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
+    "http://schacon.github.com/git",
+    "http://scitools.github.com/cartopy",
+    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
 ]
 
 # list of sources to exclude from the build.
