@@ -8,8 +8,7 @@ Module to support the loading of a NetCDF file into an Iris cube.
 
 See also: `netCDF4 python <http://code.google.com/p/netcdf4-python/>`_.
 
-Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions',
-Version 1.4, 27 February 2009.
+Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 """
 
