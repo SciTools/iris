@@ -424,6 +424,13 @@ This document explains the changes made to Iris for this release
 
 * `@znicholls`_ made :func:`~iris.tests.idiff.step_over_diffs` robust to hyphens (``-``) in the input path (i.e. the ``result_dir`` argument) (:pull:`3902`).
 
+* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_. (:pull:`3928`)
+
+* `@bjlittle`_ introduced `nox`_ as a common and easy entry-point for test automation.
+  It can be used both from `cirrus-ci`_ in the cloud, and locally by the developer to
+  run the Iris tests, the doc-tests, the gallery doc-tests, and lint Iris
+  with `flake8`_ and `black`_. (:pull:`3928`)
+
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
 .. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
@@ -469,3 +476,5 @@ This document explains the changes made to Iris for this release
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _readthedocs: https://readthedocs.org/
 .. _CF Conventions and Metadata: https://cfconventions.org/
+.. _flake8: https://flake8.pycqa.org/en/stable/
+.. _nox: https://nox.thea.codes/en/stable/
