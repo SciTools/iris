@@ -351,6 +351,8 @@ This document explains the changes made to Iris for this release
   included documentation for :ref:`metadata`, :ref:`lenient metadata`, and
   :ref:`lenient maths`. (:pull:`3890`)
 
+* `@jonseddon`_ updated the CF version of the netCDF saver in the 
+  :ref:`saving_iris_cubes` section and in the equivalent function docstring.
 
 💼 Internal
 ===========
