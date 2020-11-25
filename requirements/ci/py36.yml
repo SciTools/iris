@@ -35,6 +35,7 @@ dependencies:
   - asv
   - black=20.8b1
   - filelock
+  - flake8
   - imagehash>=4.0
   - nose
   - pillow<7

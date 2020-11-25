@@ -1,0 +1,227 @@
+# Reference:
+#   - https://cirrus-ci.org/guide/writing-tasks/
+#   - https://cirrus-ci.org/guide/tips-and-tricks/#sharing-configuration-between-tasks
+#   - https://cirrus-ci.org/guide/linux/
+#   - https://cirrus-ci.org/guide/macOS/
+#   - https://cirrus-ci.org/guide/windows/
+#   - https://hub.docker.com/_/gcc/
+#   - https://hub.docker.com/_/python/
+
+#
+# Global defaults.
+#
+container:
+  image: python:3.8
+  cpu: 2
+  memory: 4G
+
+
+env:
+  # Maximum cache period (in weeks) before forcing a new cache upload.
+  CACHE_PERIOD: "2"
+  # Increment the build number to force new cartopy cache upload.
+  CARTOPY_CACHE_BUILD: "0"
+  # Increment the build number to force new conda cache upload.
+  CONDA_CACHE_BUILD: "0"
+  # Increment the build number to force new nox cache upload.
+  NOX_CACHE_BUILD: "0"
+  # Increment the build number to force new pip cache upload.
+  PIP_CACHE_BUILD: "0"
+  # Pip package to be upgraded/installed.
+  PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
+  # Git commit hash for iris test data.
+  IRIS_TEST_DATA_REF: "fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30"
+  # Base directory for the iris-test-data.
+  IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
+
+
+#
+# Linting
+#
+lint_task:
+  auto_cancellation: true
+  name: "${CIRRUS_OS}: flake8 and black"
+  pip_cache:
+    folder: ~/.cache/pip
+    fingerprint_script:
+      - echo "${CIRRUS_TASK_NAME}"
+      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
+  lint_script:
+    - pip list
+    - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
+    - pip list
+    - nox --session flake8
+    - nox --session black
+
+
+#
+# YAML alias for common linux test infra-structure.
+#
+linux_task_template: &LINUX_TASK_TEMPLATE
+  auto_cancellation: true
+  env:
+    IRIS_REPO_DIR: ${CIRRUS_WORKING_DIR}
+    PATH: ${HOME}/miniconda/bin:${PATH}
+    SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
+  conda_cache:
+    folder: ${HOME}/miniconda
+    fingerprint_script:
+      - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+      - echo "${CIRRUS_OS} $(sha256sum miniconda.sh)"
+      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${CONDA_CACHE_BUILD}"
+    populate_script:
+      - bash miniconda.sh -b -p ${HOME}/miniconda
+      - conda config --set always_yes yes --set changeps1 no
+      - conda config --set show_channel_urls True
+      - conda config --add channels conda-forge
+      - conda update --quiet --name base conda
+      - conda install --quiet --name base nox pip
+  cartopy_cache:
+    folder: ${HOME}/.local/share/cartopy
+    fingerprint_script:
+      - echo "${CIRRUS_OS}"
+      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${CARTOPY_CACHE_BUILD}"
+  nox_cache:
+    folder: ${CIRRUS_WORKING_DIR}/.nox
+    fingerprint_script:
+      - echo "${CIRRUS_TASK_NAME}"
+      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${NOX_CACHE_BUILD}"
+      - sha256sum ${CIRRUS_WORKING_DIR}/requirements/ci/py$(echo ${PY_VER} | tr -d ".").yml
+
+
+#
+# Testing Minimal (Linux)
+#
+linux_minimal_task:
+  matrix:
+    env:
+      PY_VER: 3.6
+    env:
+      PY_VER: 3.7
+  name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
+  container:
+    image: gcc:latest
+    cpu: 2
+    memory: 4G
+  << : *LINUX_TASK_TEMPLATE
+  tests_script:
+    - echo "[Resources]" > ${SITE_CFG}
+    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
+    - nox --session tests
+
+
+#
+# Testing Full (Linux)
+#
+linux_task:
+  matrix:
+    env:
+      PY_VER: 3.6
+    env:
+      PY_VER: 3.7
+  name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
+  container:
+    image: gcc:latest
+    cpu: 6
+    memory: 8G
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR}
+    fingerprint_script:
+      - echo "${IRIS_TEST_DATA_REF}"
+    populate_script:
+      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
+      - unzip -q iris-test-data.zip
+      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *LINUX_TASK_TEMPLATE
+  tests_script:
+    - echo "[Resources]" > ${SITE_CFG}
+    - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
+    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
+    - nox --session tests
+
+
+#
+# Testing Documentation Gallery (Linux)
+#
+gallery_task:
+  matrix:
+    env:
+      PY_VER: 3.6
+    env:
+      PY_VER: 3.7
+  name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
+  container:
+    image: gcc:latest
+    cpu: 2
+    memory: 4G
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR}
+    fingerprint_script:
+      - echo "${IRIS_TEST_DATA_REF}"
+    populate_script:
+      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
+      - unzip -q iris-test-data.zip
+      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *LINUX_TASK_TEMPLATE
+  tests_script:
+    - echo "[Resources]" > ${SITE_CFG}
+    - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
+    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
+    - nox --session gallery
+
+
+#
+# Testing Documentation (Linux)
+#
+doctest_task:
+  matrix:
+    env:
+      PY_VER: 3.7
+  name: "${CIRRUS_OS}: py${PY_VER} doc tests"
+  container:
+    image: gcc:latest
+    cpu: 2
+    memory: 4G
+  env:
+    MPL_RC_DIR: ${HOME}/.config/matplotlib
+    MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR}
+    fingerprint_script:
+      - echo "${IRIS_TEST_DATA_REF}"
+    populate_script:
+      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
+      - unzip -q iris-test-data.zip
+      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *LINUX_TASK_TEMPLATE
+  tests_script:
+    - echo "[Resources]" > ${SITE_CFG}
+    - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
+    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
+    - mkdir -p ${MPL_RC_DIR}
+    - echo "backend : agg" > ${MPL_RC_FILE}
+    - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
+    - nox --session doctest
+
+
+#
+# Testing Documentation Link Check (Linux)
+#
+link_task:
+  matrix:
+    env:
+      PY_VER: 3.7
+  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
+  container:
+    image: gcc:latest
+    cpu: 2
+    memory: 4G
+  env:
+    MPL_RC_DIR: ${HOME}/.config/matplotlib
+    MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
+  << : *LINUX_TASK_TEMPLATE
+  tests_script:
+    - mkdir -p ${MPL_RC_DIR}
+    - echo "backend : agg" > ${MPL_RC_FILE}
+    - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
+    - nox --session linkcheck

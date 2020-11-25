@@ -25,3 +25,4 @@
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
+.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris

@@ -6,7 +6,7 @@ Saving Iris cubes
 
 Iris supports the saving of cubes and cube lists to:
 
-* CF netCDF (version 1.6)
+* CF netCDF (version 1.7)
 * GRIB edition 2  (if `iris-grib  <https://github.com/SciTools/iris-grib>`_ is installed)
 * Met Office PP
 

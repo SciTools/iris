@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" units="K">
+  <cube dtype="float64" units="K">
     <attributes>
       <attribute name="source" value="Data from Met Office Unified Model"/>
     </attributes>
@@ -39,6 +39,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x9ad846a5" dtype="float32" shape="(73, 96)"/>
+    <data checksum="0x09ef96ca" dtype="float64" shape="(73, 96)"/>
   </cube>
 </cubes>

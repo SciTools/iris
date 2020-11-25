@@ -102,6 +102,7 @@ class TestLicenseHeaders(tests.IrisTest):
     def test_license_headers(self):
         exclude_patterns = (
             "setup.py",
+            "noxfile.py",
             "build/*",
             "dist/*",
             "docs/iris/gallery_code/*/*.py",

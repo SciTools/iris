@@ -537,11 +537,12 @@ class TestDivideAndMultiply(tests.IrisTest):
 class TestExponentiate(tests.IrisTest):
     def setUp(self):
         self.cube = iris.tests.stock.global_pp()
-        self.cube.data = self.cube.data - 260
+        # Increase dtype from float32 to float64 in order
+        # to avoid dtype quantization errors during maths.
+        self.cube.data = self.cube.data.astype(np.float64) - 260.0
 
     def test_exponentiate(self):
         a = self.cube
-        a.data = a.data.astype(np.float64)
         e = pow(a, 4)
         self.assertCMLApproxData(e, ("analysis", "exponentiate.cml"))
 
@@ -553,8 +554,8 @@ class TestExponentiate(tests.IrisTest):
 
         e = a ** 0.5
 
-        self.assertCML(e, ("analysis", "sqrt.cml"))
         self.assertArrayEqual(e.data, a.data ** 0.5)
+        self.assertCML(e, ("analysis", "sqrt.cml"))
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
     def test_type_error(self):
