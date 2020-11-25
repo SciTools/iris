@@ -543,17 +543,20 @@ class SaverPermissions(tests.IrisTest):
                 pass
 
     def test_bad_permissions(self):
-        # Non-exhaustive check that wrong permissions results in a suitable
-        # exception being raised.
-        dir_name = tempfile.mkdtemp()
-        fnme = os.path.join(dir_name, "tmp.nc")
-        try:
-            os.chmod(dir_name, stat.S_IREAD)
-            with self.assertRaises(IOError):
-                iris.fileformats.netcdf.Saver(fnme, "NETCDF4")
-            self.assertFalse(os.path.exists(fnme))
-        finally:
-            os.rmdir(dir_name)
+        # Skip this test for the root user. This is applicable to
+        # running within a Docker container and/or CIaaS hosted testing.
+        if os.getuid():
+            # Non-exhaustive check that wrong permissions results in a suitable
+            # exception being raised.
+            dir_name = tempfile.mkdtemp()
+            fname = os.path.join(dir_name, "tmp.nc")
+            try:
+                os.chmod(dir_name, stat.S_IREAD)
+                with self.assertRaises(PermissionError):
+                    iris.fileformats.netcdf.Saver(fname, "NETCDF4")
+                self.assertFalse(os.path.exists(fname))
+            finally:
+                shutil.rmtree(dir_name)
 
 
 @tests.skip_data

@@ -1,10 +1,43 @@
 .. include:: ../common_links.inc
 
-v3.0 (01 Oct 2020)
+v3.0 (02 Oct 2020)
 ******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
+
+
+.. dropdown:: :opticon:`report` Release Highlights
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+   :open:
+
+   The highlights for this major release of Iris include:
+
+   * We've finally dropped support for ``Python 2``, so welcome to ``Iris 3``
+     and ``Python 3``!
+   * We've extended our coverage of the `CF Conventions and Metadata`_ by
+     introducing support for `CF Ancillary Data`_ and `Quality Flags`_,
+   * Lazy regridding is now available for several regridding schemes,
+   * Managing and manipulating metadata within Iris is now easier and more
+     consistent thanks to the introduction of a new common metadata API,
+   * :ref:`Cube arithmetic <cube maths>` has been significantly improved with
+     regards to extended broadcasting, auto-transposition and a more lenient
+     behaviour towards handling metadata and coordinates,
+   * Our :ref:`documentation <whatsnew 3.0 docs>` has been refreshed,
+     restructured, revitalised and rehosted on `readthedocs`_,
+   * It's now easier than ever to :ref:`install Iris <installing_iris>`
+     as a user or a developer, and the newly revamped developers guide walks
+     you though how you can :ref:`get involved <development_where_to_start>`
+     and contribute to Iris,
+   * Also, this is a major release of Iris, so please be aware of the
+     :ref:`incompatible changes <whatsnew 3.0 changes>` and
+     :ref:`deprecations <whatsnew 3.0 deprecations>`.
+
+   And finally, get in touch with us on `GitHub`_ if you have any issues or
+   feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
@@ -15,6 +48,9 @@ This document explains the changes made to Iris for this release
   team, and are using Iris to underpin `ESMValTool`_ - "*A community diagnostic
   and performance metrics tool for routine evaluation of Earth system models
   in CMIP*". Welcome aboard! 🎉
+
+* Congratulations also goes to `@jonseddon`_ who recently became an Iris core
+  developer. We look forward to seeing more of your awesome contributions! 🎉
 
 
 ✨ Features
@@ -132,6 +168,9 @@ This document explains the changes made to Iris for this release
   Previously, the first tick label would occasionally be duplicated. This also
   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
 
+* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
+
+.. _whatsnew 3.0 changes:
 
 💣 Incompatible Changes
 =======================
@@ -166,6 +205,9 @@ This document explains the changes made to Iris for this release
   :func:`iris.experimental.concatenate.concatenate` function raised an
   exception. (:pull:`3523`)
 
+* `@stephenworsley`_ changed the default units of :class:`~iris.coords.DimCoord` 
+  and :class:`~iris.coords.AuxCoord` from `"1"` to `"unknown"`.  (:pull:`3795`)
+
 * `@stephenworsley`_ changed Iris objects loaded from NetCDF-CF files to have
   ``units='unknown'`` where the corresponding NetCDF variable has no ``units``
   property. Previously these cases defaulted to ``units='1'``.
@@ -190,6 +232,8 @@ This document explains the changes made to Iris for this release
   :func:`~iris.analysis.maths.apply_ufunc`. Previously a ``ValueError``
   exception was raised. (:pull:`3785`)
 
+
+.. _whatsnew 3.0 deprecations:
 
 🔥 Deprecations
 ===============
@@ -237,6 +281,8 @@ This document explains the changes made to Iris for this release
 * `@stephenworsley`_ and `@trexfeathers`_ removed GDAL from the extensions
   dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
+
+.. _whatsnew 3.0 docs:
 
 📚 Documentation
 ================
@@ -308,6 +354,8 @@ This document explains the changes made to Iris for this release
   included documentation for :ref:`metadata`, :ref:`lenient metadata`, and
   :ref:`lenient maths`. (:pull:`3890`)
 
+* `@jonseddon`_ updated the CF version of the netCDF saver in the 
+  :ref:`saving_iris_cubes` section and in the equivalent function docstring.
 
 💼 Internal
 ===========
@@ -375,6 +423,16 @@ This document explains the changes made to Iris for this release
 * `@owena11`_ identified and optimised a bottleneck in ``FieldsFile`` header
   loading due to the use of :func:`numpy.fromfile`. (:pull:`3791`)
 
+* `@znicholls`_ added a test for plotting with the label being taken from the unit's symbol, see :meth:`~iris.tests.test_quickplot.TestLabels.test_pcolormesh_str_symbol` (:pull:`3902`).
+
+* `@znicholls`_ made :func:`~iris.tests.idiff.step_over_diffs` robust to hyphens (``-``) in the input path (i.e. the ``result_dir`` argument) (:pull:`3902`).
+
+* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_. (:pull:`3928`)
+
+* `@bjlittle`_ introduced `nox`_ as a common and easy entry-point for test automation.
+  It can be used both from `cirrus-ci`_ in the cloud, and locally by the developer to
+  run the Iris tests, the doc-tests, the gallery doc-tests, and lint Iris
+  with `flake8`_ and `black`_. (:pull:`3928`)
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -408,6 +466,7 @@ This document explains the changes made to Iris for this release
 .. _@rcomer: https://github.com/rcomer
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@zklaus: https://github.com/zklaus
+.. _@znicholls: https://github.com/znicholls
 .. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
 .. _v75: https://cfconventions.org/Data/cf-standard-names/75/build/cf-standard-name-table.html
 .. _sphinx-panels: https://sphinx-panels.readthedocs.io/en/latest/
@@ -417,3 +476,8 @@ This document explains the changes made to Iris for this release
 .. _PyKE: https://pypi.org/project/scitools-pyke/
 .. _matplotlib.rcdefaults: https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
 .. _@owena11: https://github.com/owena11
+.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _readthedocs: https://readthedocs.org/
+.. _CF Conventions and Metadata: https://cfconventions.org/
+.. _flake8: https://flake8.pycqa.org/en/stable/
+.. _nox: https://nox.thea.codes/en/stable/
