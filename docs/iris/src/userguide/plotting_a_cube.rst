@@ -209,7 +209,7 @@ the temperature at some latitude cross-sections.
     `<http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
 
     In order to run this example, you will need to copy the code into a file 
-    and run it using ``python2.7 my_file.py``.
+    and run it using ``python my_file.py``.
 
 
 Plotting 2-dimensional cubes
