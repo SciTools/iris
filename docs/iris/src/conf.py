@@ -263,6 +263,7 @@ html_style = "theme_override.css"
 linkcheck_ignore = [
     "http://cfconventions.org",
     "http://code.google.com/p/msysgit/downloads/list",
+    "http://effbot.org",
     "https://github.com",
     "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
     "http://schacon.github.com/git",
