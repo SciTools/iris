@@ -205,6 +205,9 @@ This document explains the changes made to Iris for this release
   :func:`iris.experimental.concatenate.concatenate` function raised an
   exception. (:pull:`3523`)
 
+* `@stephenworsley`_ changed the default units of :class:`~iris.coords.DimCoord` 
+  and :class:`~iris.coords.AuxCoord` from `"1"` to `"unknown"`.  (:pull:`3795`)
+
 * `@stephenworsley`_ changed Iris objects loaded from NetCDF-CF files to have
   ``units='unknown'`` where the corresponding NetCDF variable has no ``units``
   property. Previously these cases defaulted to ``units='1'``.
