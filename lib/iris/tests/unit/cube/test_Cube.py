@@ -484,6 +484,16 @@ class Test_summary(tests.IrisTest):
         )
         self.assertEqual(cube.summary(), expected_summary)
 
+    def test_similar_coords(self):
+        coord1 = AuxCoord(
+            42, long_name="foo", attributes=dict(bar=np.array([2, 5]))
+        )
+        coord2 = coord1.copy()
+        coord2.attributes = dict(bar="baz")
+        for coord in [coord1, coord2]:
+            self.cube.add_aux_coord(coord)
+        self.assertIn("baz", self.cube.summary())
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):

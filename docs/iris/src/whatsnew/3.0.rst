@@ -168,7 +168,11 @@ This document explains the changes made to Iris for this release
   Previously, the first tick label would occasionally be duplicated. This also
   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
 
-* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
+* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check 
+  ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
+
+* `@rcomer`_ fixed a bug whereby numpy array type attributes on a cube's 
+  coordinates could prevent printing it.  See :issue:`3921`.  (:pull:`3922`)
 
 .. _whatsnew 3.0 changes:
 
