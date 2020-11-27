@@ -2044,6 +2044,13 @@ class Test_remove_metadata(tests.IrisTest):
         )
         self.assertEqual(self.cube._ancillary_variables_and_dims, [])
 
+    def test_remove_ancilliary_variable_by_name(self):
+        self.cube.remove_ancillary_variable("Quality of Detection")
+        self.assertEqual(self.cube._ancillary_variables_and_dims, [])
+
+    def test_fail_remove_ancilliary_variable_by_name(self):
+        with self.assertRaises(AncillaryVariableNotFoundError):
+            self.cube.remove_ancillary_variable("notarea")
 
 class Test__getitem_CellMeasure(tests.IrisTest):
     def setUp(self):
