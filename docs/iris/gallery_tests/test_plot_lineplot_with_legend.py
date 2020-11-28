@@ -8,6 +8,8 @@
 # importing anything else.
 import iris.tests as tests
 
+import runpy
+
 from .gallerytest_util import (
     add_gallery_to_path,
     show_replaced_by_check_graphic,
@@ -21,9 +23,8 @@ class TestLineplotWithLegend(tests.GraphicsTest):
     def test_plot_lineplot_with_legend(self):
         with fail_any_deprecation_warnings():
             with add_gallery_to_path():
-                import plot_lineplot_with_legend
-            with show_replaced_by_check_graphic(self):
-                plot_lineplot_with_legend.main()
+                with show_replaced_by_check_graphic(self):
+                    runpy.run_module("plot_lineplot_with_legend")
 
 
 if __name__ == "__main__":

@@ -195,21 +195,7 @@ function can be called to indicate that a legend is desired:
 
 This example of consecutive ``qplt.plot`` calls coupled with the 
 :func:`Cube.slices() <iris.cube.Cube.slices>` method on a cube shows 
-the temperature at some latitude cross-sections. 
-
-.. note::
-
-    The previous example uses the ``if __name__ == "__main__"`` style to run 
-    the desired code if and only if the script is run from the command line.
-
-    This is a good habit to get into when writing scripts in Python as it means 
-    that any useful functions or variables defined within the script can be 
-    imported into other scripts without running all of the code and thus 
-    creating an unwanted plot. This is discussed in more detail at 
-    `<http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
-
-    In order to run this example, you will need to copy the code into a file 
-    and run it using ``python my_file.py``.
+the temperature at some latitude cross-sections.
 
 
 Plotting 2-dimensional cubes
