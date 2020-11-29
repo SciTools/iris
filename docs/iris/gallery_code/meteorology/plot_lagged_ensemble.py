@@ -63,10 +63,9 @@ def main():
     # for the purposes of this example, take the last time element of the cube
     last_timestep = surface_temp[:, -1, :, :]
 
-    # Make 50 evenly spaced levels which span the dataset
-    contour_levels = np.linspace(
-        np.min(last_timestep.data), np.max(last_timestep.data), 50
-    )
+    # Find the maximum and minimum across the dataset.
+    data_min = np.min(last_timestep.data)
+    data_max = np.max(last_timestep.data)
 
     # Create a wider than normal figure to support our many plots
     plt.figure(figsize=(12, 6), dpi=100)
@@ -88,14 +87,15 @@ def main():
         ens_member = cube.coord("realization").points[0]
 
         # plot the data in a 4x4 grid, with each plot's position in the grid
-        # being determined by ensemble member number the special case for the
-        # 13th ensemble member is to have the plot at the bottom right
+        # being determined by ensemble member number.  The special case for the
+        # 13th ensemble member is to have the plot at the bottom right.
         if ens_member == 13:
             plt.subplot(4, 4, 16)
         else:
             plt.subplot(4, 4, ens_member + 1)
 
-        cf = iplt.contourf(cube, contour_levels)
+        # Plot with 50 evenly spaced contour levels (49 intervals).
+        cf = iplt.contourf(cube, 49, vmin=data_min, vmax=data_max)
 
         # add coastlines
         plt.gca().coastlines()
