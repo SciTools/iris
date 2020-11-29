@@ -38,9 +38,6 @@ def realization_metadata(cube, field, fname):
         # the ensemble member is encoded in the filename as *_???.pp where ???
         # is the ensemble member
         realization_number = fname[-6:-3]
-
-        import iris.coords
-
         realization_coord = iris.coords.AuxCoord(
             np.int32(realization_number), "realization", units="1"
         )
