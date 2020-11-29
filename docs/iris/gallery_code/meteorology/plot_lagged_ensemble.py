@@ -19,6 +19,7 @@ GloSea4 model, which is then used to produce two types of plot:
 """
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 
 import iris
@@ -51,7 +52,7 @@ def main():
     # coordinate, adding appropriate lagged ensemble metadata
     surface_temp = iris.load_cube(
         iris.sample_data_path("GloSea4", "ensemble_???.pp"),
-        iris.Constraint("surface_temperature", realization=lambda value: True),
+        iris.Constraint("surface_temperature"),
         callback=realization_metadata,
     )
 
@@ -102,11 +103,9 @@ def main():
     # make an axes to put the shared colorbar in
     colorbar_axes = plt.gcf().add_axes([0.35, 0.1, 0.3, 0.05])
     colorbar = plt.colorbar(cf, colorbar_axes, orientation="horizontal")
-    colorbar.set_label("%s" % last_timestep.units)
+    colorbar.set_label(last_timestep.units)
 
     # limit the colorbar to 8 tick marks
-    import matplotlib.ticker
-
     colorbar.locator = matplotlib.ticker.MaxNLocator(8)
     colorbar.update_ticks()
 
@@ -116,10 +115,8 @@ def main():
 
     # set a global title for the postage stamps with the date formated by
     # "monthname year"
-    plt.suptitle(
-        "Surface temperature ensemble forecasts for %s"
-        % (time.strftime("%B %Y"),)
-    )
+    title = "Surface temperature ensemble forecasts for {}"
+    plt.suptitle(title.format(time.strftime("%B %Y")))
 
     iplt.show()
 
@@ -127,31 +124,20 @@ def main():
     # Plot #2: ENSO plumes
     # -------------------------------------------------------------------------
 
-    # Nino 3.4 lies between: 170W and 120W, 5N and 5S, so define a constraint
-    # which matches this
-    nino_3_4_constraint = iris.Constraint(
-        longitude=lambda v: -170 + 360 <= v <= -120 + 360,
-        latitude=lambda v: -5 <= v <= 5,
+    # Nino 3.4 lies between: 170W and 120W, 5N and 5S, so use the intersection
+    # method to restrict to this region.
+    nino_cube = surface_temp.intersection(
+        latitude=[-5, 5], longitude=[-170, -120]
     )
 
-    nino_cube = surface_temp.extract(nino_3_4_constraint)
-
-    # Subsetting a circular longitude coordinate always results in a circular
-    # coordinate, so set the coordinate to be non-circular
-    nino_cube.coord("longitude").circular = False
-
-    # Calculate the horizontal mean for the nino region
+    # Calculate the horizontal mean for the nino region.
     mean = nino_cube.collapsed(["latitude", "longitude"], iris.analysis.MEAN)
 
-    # Calculate the ensemble mean of the horizontal mean. To do this, remove
-    # the "forecast_period" and "forecast_reference_time" coordinates which
-    # span both "relalization" and "time".
-    mean.remove_coord("forecast_reference_time")
-    mean.remove_coord("forecast_period")
+    # Calculate the ensemble mean of the horizontal mean.
     ensemble_mean = mean.collapsed("realization", iris.analysis.MEAN)
 
     # take the ensemble mean from each ensemble member
-    mean -= ensemble_mean.data
+    mean -= ensemble_mean
 
     plt.figure()
 
