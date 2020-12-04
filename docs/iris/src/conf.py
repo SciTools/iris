@@ -104,6 +104,7 @@ rst_epilog = """
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "generate_logo",
     "sphinx.ext.todo",
     "sphinx.ext.duration",
     "sphinx.ext.coverage",
@@ -209,11 +210,18 @@ doctest_global_setup = "import iris"
 
 # -- Options for HTML output --------------------------------------------------
 
+from pathlib import Path
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.png"
-html_favicon = "_static/favicon.ico"
+project_prefix = project.lower()
+os.environ["PROJECT_PREFIX"] = project_prefix
+logo_root = Path("_static")
+logo_name = f"{project_prefix}-logo-title.svg"
+favicon_name = f"{project_prefix}-logo.svg"
+html_logo = logo_root / logo_name
+html_favicon = logo_root / favicon_name
 html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
