@@ -63,7 +63,7 @@ def main():
     preindustrial = iris.load_cube(iris.sample_data_path("pre-industrial.pp"))
 
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the
-    # specific colours
+    # specific colours.
     levels = np.arange(20) - 2.5
     red = (
         np.array(
@@ -160,10 +160,10 @@ def main():
         )
         time_coord = exp_cube.coord("time")
 
-        # Calculate the difference from the preindustial.
+        # Calculate the difference from the preindustial control run.
         exp_anom_cube = exp_cube - preindustrial
 
-        # Plot this scenario.
+        # Plot this anomaly.
         plt.sca(ax)
         ax.set_title(f"HadGEM2 {label} Scenario", fontsize=10)
         contour_result = iplt.contourf(
@@ -185,12 +185,12 @@ def main():
     # Add axes to the figure, to place the colour bar.
     colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
 
-    # Add the colour bar
+    # Add the colour bar.
     cbar = plt.colorbar(
         contour_result, colorbar_axes, orientation="horizontal"
     )
 
-    # Label the colour bar and add ticks
+    # Label the colour bar and add ticks.
     cbar.set_label(preindustrial.units)
     cbar.ax.tick_params(length=0)
 
