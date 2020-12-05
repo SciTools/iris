@@ -33,10 +33,10 @@ def realization_metadata(cube, field, fname):
     in the cube.
 
     """
-    # add an ensemble member coordinate if one doesn't already exist
+    # Add an ensemble member coordinate if one doesn't already exist.
     if not cube.coords("realization"):
-        # the ensemble member is encoded in the filename as *_???.pp where ???
-        # is the ensemble member
+        # The ensemble member is encoded in the filename as *_???.pp where ???
+        # is the ensemble member.
         realization_number = fname[-6:-3]
         realization_coord = iris.coords.AuxCoord(
             np.int32(realization_number), "realization", units="1"
@@ -45,11 +45,16 @@ def realization_metadata(cube, field, fname):
 
 
 def main():
-    # extract surface temperature cubes which have an ensemble member
-    # coordinate, adding appropriate lagged ensemble metadata
+    # Create a constraint to extract surface temperature cubes which have a
+    # "realization" coordinate.
+    constraint = iris.Constraint(
+        "surface_temperature", realization=lambda value: True
+    )
+    # Use this to load our ensemble.  The callback ensures all our members
+    # have the "realization" coordinate and therefore they will all be loaded.
     surface_temp = iris.load_cube(
         iris.sample_data_path("GloSea4", "ensemble_???.pp"),
-        iris.Constraint("surface_temperature"),
+        constraint,
         callback=realization_metadata,
     )
 
@@ -57,17 +62,19 @@ def main():
     # Plot #1: Ensemble postage stamps
     # -------------------------------------------------------------------------
 
-    # for the purposes of this example, take the last time element of the cube
-    last_timestep = surface_temp[:, -1, :, :]
+    # For the purposes of this example, take the last time element of the cube.
+    # First get hold of the last time by slicing the coordinate.
+    last_time_coord = surface_temp.coord("time")[-1]
+    last_timestep = surface_temp.subset(last_time_coord)
 
     # Find the maximum and minimum across the dataset.
     data_min = np.min(last_timestep.data)
     data_max = np.max(last_timestep.data)
 
-    # Create a wider than normal figure to support our many plots
+    # Create a wider than normal figure to support our many plots.
     plt.figure(figsize=(12, 6), dpi=100)
 
-    # Also manually adjust the spacings which are used when creating subplots
+    # Also manually adjust the spacings which are used when creating subplots.
     plt.gcf().subplots_adjust(
         hspace=0.05,
         wspace=0.05,
@@ -77,13 +84,13 @@ def main():
         right=0.925,
     )
 
-    # iterate over all possible latitude longitude slices
+    # Iterate over all possible latitude longitude slices.
     for cube in last_timestep.slices(["latitude", "longitude"]):
 
-        # get the ensemble member number from the ensemble coordinate
+        # Get the ensemble member number from the ensemble coordinate.
         ens_member = cube.coord("realization").points[0]
 
-        # plot the data in a 4x4 grid, with each plot's position in the grid
+        # Plot the data in a 4x4 grid, with each plot's position in the grid
         # being determined by ensemble member number.  The special case for the
         # 13th ensemble member is to have the plot at the bottom right.
         if ens_member == 13:
@@ -94,26 +101,25 @@ def main():
         # Plot with 50 evenly spaced contour levels (49 intervals).
         cf = iplt.contourf(cube, 49, vmin=data_min, vmax=data_max)
 
-        # add coastlines
+        # Add coastlines.
         plt.gca().coastlines()
 
-    # make an axes to put the shared colorbar in
+    # Make an axes to put the shared colorbar in.
     colorbar_axes = plt.gcf().add_axes([0.35, 0.1, 0.3, 0.05])
     colorbar = plt.colorbar(cf, colorbar_axes, orientation="horizontal")
     colorbar.set_label(last_timestep.units)
 
-    # limit the colorbar to 8 tick marks
+    # Limit the colorbar to 8 tick marks.
     colorbar.locator = matplotlib.ticker.MaxNLocator(8)
     colorbar.update_ticks()
 
-    # get the time for the entire plot
-    time_coord = last_timestep.coord("time")
-    time = time_coord.units.num2date(time_coord.bounds[0, 0])
+    # Get the time for the entire plot.
+    time = last_time_coord.units.num2date(last_time_coord.bounds[0, 0])
 
-    # set a global title for the postage stamps with the date formated by
-    # "monthname year"
-    title = "Surface temperature ensemble forecasts for {}"
-    plt.suptitle(title.format(time.strftime("%B %Y")))
+    # Set a global title for the postage stamps with the date formated by
+    # "monthname year".
+    time_string = time.strftime("%B %Y")
+    plt.suptitle(f"Surface temperature ensemble forecasts for {time_string}")
 
     iplt.show()
 
@@ -133,13 +139,13 @@ def main():
     # Calculate the ensemble mean of the horizontal mean.
     ensemble_mean = mean.collapsed("realization", iris.analysis.MEAN)
 
-    # take the ensemble mean from each ensemble member
+    # Take the ensemble mean from each ensemble member.
     mean -= ensemble_mean
 
     plt.figure()
 
     for ensemble_member in mean.slices(["time"]):
-        # draw each ensemble member as a dashed line in black
+        # Draw each ensemble member as a dashed line in black.
         iplt.plot(ensemble_member, "--k")
 
     plt.title("Mean temperature anomaly for ENSO 3.4 region")
