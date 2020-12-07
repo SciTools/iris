@@ -38,7 +38,7 @@ def cop_metadata_callback(cube, field, filename):
     filename.
     """
 
-    # Extract the experiment name (such as a1b or e1) from the filename (in
+    # Extract the experiment name (such as A1B or E1) from the filename (in
     # this case it is just the start of the file name, before the first ".").
     fname = os.path.basename(filename)  # filename without path.
     experiment_label = fname.split(".")[0]
