@@ -13,7 +13,6 @@ from copy import deepcopy
 from io import BytesIO
 from os import environ
 from pathlib import Path
-from re import sub as re_sub
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 from zipfile import ZipFile
@@ -31,7 +30,8 @@ print("LOGO GENERATION START ...")
 # How much bigger than the globe the iris clip should be.
 CLIP_GLOBE_RATIO = 1.28
 
-# Pixel size of the square logo.
+# Pixel size of the largest dimension of the main logo.
+# (Proportions dictated by those of the clip).
 LOGO_PIXELS = 1024
 
 # Banner width, text and text size must be manually tuned to work together.
@@ -49,27 +49,77 @@ FILENAME_PREFIX = environ["PROJECT_PREFIX"]
 # The logo's SVG elements can be configured at their point of definition below.
 
 ################################################################################
-
-# Establish some sizes and ratios - allows space for the mask to be added after plotting.
-# figure_inches doesn't influence the final size, but does influence the coastline definition.
-figure_inches = 10
-mpl_points_per_inch = 72
-
-globe_pad = (1 - (1 / CLIP_GLOBE_RATIO)) / 2
-background_points = figure_inches * mpl_points_per_inch
+# Create new SVG elements for logo.
 
 # XML ElementTree setup.
 namespaces = {"svg": "http://www.w3.org/2000/svg"}
 ET.register_namespace("", namespaces["svg"])
-
-################################################################################
-# Create new SVG elements for logo.
 
 # The elements that are displayed (not just referenced).
 # Order is important for layering.
 artwork_dict = dict.fromkeys(["background", "glow", "sea", "land",])
 # The elements that will just be referenced by artwork elements.
 defs_dict = {}
+
+# CLIP ####################
+# SVG string representing bezier curves, drawn in a GUI then size-converted
+# for this file.
+clip_size_xy_original = np.array([133.334, 131.521])
+clip_scaling = LOGO_PIXELS / max(clip_size_xy_original)
+
+# Use clip proportions to dictate logo proportions and dimensions.
+logo_proportions_xy = clip_size_xy_original / max(clip_size_xy_original)
+logo_size_xy = logo_proportions_xy * LOGO_PIXELS
+logo_centre_xy = logo_size_xy / 2
+
+clip_string = "M 66.582031,73.613283 C 62.196206,73.820182 51.16069," \
+              "82.105643 33.433594,80.496096 18.711759,79.15939 10.669958," \
+              "73.392913 8.4375,74.619143 7.1228015,75.508541 6.7582985," \
+              "76.436912 6.703125,78.451174 6.64868,80.465549 5.5985568," \
+              "94.091611 12.535156,107.18359 c 8.745259,16.50554 21.06813," \
+              "20.14551 26.152344,20.24414 12.671346,0.24601 24.681745," \
+              "-21.45054 27.345703,-30.62304 3.143758,-10.82453 4.457007," \
+              "-22.654297 1.335938,-23.119141 -0.233298,-0.06335 -0.494721," \
+              "-0.08606 -0.78711,-0.07227 z m 7.119141,-5.857422 c " \
+              "-0.859687,0.02602 -1.458448,0.280361 -1.722656,0.806641 " \
+              "-2.123362,3.215735 3.515029,16.843803 -3.970704,34.189448 " \
+              "-5.828231,13.50478 -13.830895,19.32496 -13.347656,21.81446 " \
+              "0.444722,1.5177 1.220596,2.14788 3.13086,2.82226 1.910471," \
+              "0.67381 14.623496,5.87722 29.292968,3.36524 18.494166," \
+              "-3.16726 25.783696,-13.69084 27.449216,-18.4668 C 118.68435," \
+              "100.38386 101.63623,82.323612 93.683594,76.970705 86.058314," \
+              "71.837998 77.426483,67.643118 73.701172,67.755861 Z M " \
+              "114.02539,33.224611 C 103.06524,33.255401 88.961605,40.28151 " \
+              "83.277344,44.67969 74.333356,51.599967 66.27534,60.401955 " \
+              "68.525391,62.601564 c 2.420462,3.001097 17.201948,1.879418 " \
+              "31.484379,14.316407 11.11971,9.683149 14.21486,19.049139 " \
+              "16.74609,19.361328 1.58953,0.0486 2.43239,-0.488445 3.66797," \
+              "-2.085938 1.23506,-1.597905 10.14187,-12.009723 12.27148," \
+              "-26.654297 2.68478,-18.462878 -5.13068,-28.607634 -9.18554," \
+              "-31.658203 -2.52647,-1.900653 -5.831,-2.666512 -9.48438," \
+              "-2.65625 z M 39.621094,14.64258 C 39.094212,14.665 38.496575," \
+              "14.789793 37.767578,15.003908 35.823484,15.574873 22.460486," \
+              "18.793044 12.078125,29.396486 -1.0113962,42.764595 " \
+              "-0.68566506,55.540029 0.79101563,60.376955 4.4713185," \
+              "72.432363 28.943765,77.081596 38.542969,76.765627 49.870882," \
+              "76.392777 61.593892,73.978953 61.074219,70.884768 60.890477," \
+              "67.042613 48.270811,59.312854 44.070312,40.906252 40.799857," \
+              "26.575361 43.83381,17.190581 41.970703,15.458986 41.184932," \
+              "14.853981 40.49923,14.605209 39.621094,14.64258 Z M " \
+              "67.228516,0.08984563 C 60.427428,0.11193533 55.565192," \
+              "2.1689455 53.21875,3.7949238 42.82192,10.999553 45.934544," \
+              "35.571547 49.203125,44.54883 c 3.857276,10.594054 9.790034," \
+              "20.931896 12.589844,19.484375 3.619302,-1.360857 7.113072," \
+              "-15.680732 23.425781,-25.339844 12.700702,-7.520306 22.61812," \
+              "-7.553206 23.69922,-9.849609 0.53758,-1.487663 0.28371," \
+              "-2.45185 -0.86328,-4.113281 C 106.90759,23.069051 99.699016," \
+              "11.431303 86.345703,4.89258 78.980393,1.2860119 72.51825," \
+              "0.07266475 67.228516,0.08984563 Z"
+
+iris_clip = ET.Element("clipPath")
+iris_clip.append(ET.Element("path", attrib={"d": clip_string,
+                                            "transform": f"scale({clip_scaling})"}))
+defs_dict["iris_clip"] = iris_clip
 
 # BACKGROUND
 artwork_dict["background"] = ET.Element(
@@ -87,16 +137,24 @@ background_gradient.append(
     ET.Element("stop", attrib={"offset": "0", "stop-color": "#13385d",},)
 )
 background_gradient.append(
+    ET.Element("stop", attrib={"offset": "0.43", "stop-color": "#0b3849",},)
+)
+background_gradient.append(
     ET.Element("stop", attrib={"offset": "1", "stop-color": "#272b2c",},)
 )
 defs_dict["background_gradient"] = background_gradient
 
-# LAND
+# LAND ####################
 # (Using Matplotlib and Cartopy).
+
+# Set plotting size/proportions.
+mpl_points_per_inch = 72
+plot_inches = logo_size_xy / mpl_points_per_inch
+plot_padding = (1 - (1 / CLIP_GLOBE_RATIO)) / 2
 
 # Create land with simplified coastlines.
 simple_geometries = [
-    geometry.simplify(1.0, True) for geometry in LAND.geometries()
+    geometry.simplify(0.8, True) for geometry in LAND.geometries()
 ]
 LAND.geometries = lambda: iter(simple_geometries)
 
@@ -106,6 +164,7 @@ land_clips = []
 # Create a sequence of longitude values.
 central_longitude = -30
 central_latitude = 22.9
+perspective_tilt = -4.99
 rotation_frames = 180
 rotation_longitudes = np.linspace(start=central_longitude + 360,
                                   stop=central_longitude,
@@ -114,6 +173,8 @@ rotation_longitudes = np.linspace(start=central_longitude + 360,
 # Normalise to -180..+180
 rotation_longitudes = (rotation_longitudes + 360.0 + 180.0) % 360.0 - 180.0
 
+transform_string = f"rotate({perspective_tilt} {logo_centre_xy[0]} {logo_centre_xy[1]})"
+
 for lon in rotation_longitudes:
     # Use Matplotlib and Cartopy to generate land-shaped SVG clips for each longitude.
 
@@ -121,9 +182,10 @@ for lon in rotation_longitudes:
                                            central_latitude=central_latitude)
 
     # Use constants set earlier to achieve desired dimensions.
-    fig = plt.figure(0, figsize=(figure_inches,) * 2)
+    fig = plt.figure(0, figsize=plot_inches)
     ax = plt.subplot(projection=projection_rotated)
-    plt.subplots_adjust(left=globe_pad, bottom=globe_pad, right=1 - globe_pad, top=1 - globe_pad)
+    plt.subplots_adjust(left=plot_padding, bottom=plot_padding,
+                        right=1 - plot_padding, top=1 - plot_padding)
     ax.add_feature(LAND)
 
     # Save as SVG and extract the resultant code.
@@ -136,9 +198,9 @@ for lon in rotation_longitudes:
     land_paths = mpl_land.find(".//svg:g[@id='PathCollection_1']", namespaces)
     for path in land_paths:
         # Remove all other attribute items.
-        path.attrib = {"d": path.attrib["d"]}
+        path.attrib = {"d": path.attrib["d"], "stroke-linejoin": "round"}
     land_paths.tag = "clipPath"
-
+    land_paths.attrib["transform"] = transform_string
     land_clips.append(land_paths)
 
 # Extract the final land clip for use as the default.
@@ -149,7 +211,7 @@ artwork_dict["land"] = ET.Element(
     attrib={
         "cx": "50%",
         "cy": "50%",
-        "r": "50%",
+        "r": f"{50 / CLIP_GLOBE_RATIO}%",
         "fill": "url(#land_gradient)",
         "clip-path": "url(#land_clip)",
     },
@@ -163,7 +225,7 @@ land_gradient.append(
 )
 defs_dict["land_gradient"] = land_gradient
 
-# SEA
+# SEA #####################
 # Not using Cartopy for sea since it doesn't actually render curves/circles.
 artwork_dict["sea"] = ET.Element(
     "circle",
@@ -183,7 +245,7 @@ sea_gradient.append(
 )
 defs_dict["sea_gradient"] = sea_gradient
 
-# GLOW
+# GLOW ####################
 artwork_dict["glow"] = ET.Element(
     "circle",
     attrib={
@@ -227,78 +289,8 @@ glow_gradient.append(
 defs_dict["glow_gradient"] = glow_gradient
 
 glow_blur = ET.Element("filter")
-glow_blur.append(ET.Element("feGaussianBlur", attrib={"stdDeviation": "10"}))
+glow_blur.append(ET.Element("feGaussianBlur", attrib={"stdDeviation": "14"}))
 defs_dict["glow_blur"] = glow_blur
-
-# CLIP
-# SVG string representing bezier curves, originally drawn on a 100x100 canvas.
-clip_scaling = background_points / 100
-clip_string = " ".join(
-    [
-        "m 48.715792,0.06648723",
-        "c -3.695266,-0.02152 -6.340628,0.83101 -7.803951,1.85111997 "
-        "-7.780711,5.424073 -6.020732,25.7134678 -3.574593,32.4721008 "
-        "2.886671,7.975828 7.326212,15.759187 9.421487,14.669421 "
-        "2.708508,-1.024559 5.323978,-11.805637 17.531882,-19.077586 "
-        "9.504775,-5.661737 16.925959,-5.68594 17.734968,-7.414812 "
-        "0.402381,-1.120006 0.212418,-1.845229 -0.645975,-3.096052",
-        "C 80.521209,18.219863 75.12671,9.4573304 65.13349,4.5345992 "
-        "58.440375,1.2375202 52.903757,0.09084923 48.715792,0.06648723",
-        "Z",
-        "M 31.075381,11.520477",
-        "c -0.433583,-0.0085 -0.926497,0.09327 -1.552935,0.288374",
-        "C 28.090574,12.254804 18.250845,14.778908 10.571472,22.949149 "
-        "0.88982409,33.249658 -0.41940991,41.930793 0.64560611,45.630785 "
-        "3.3001452,54.852655 22.76784,59.415505 29.827347,59.131763 "
-        "38.158213,58.796931 46.788636,56.896487 46.419722,54.52773 "
-        "46.301117,51.584413 37.054716,45.716497 34.044816,31.630083 "
-        "31.701409,20.66275 33.97219,13.457909 32.609708,12.139069 "
-        "32.092072,11.724892 31.632837,11.531455 31.075381,11.520477",
-        "Z",
-        "m 55.776453,13.86169",
-        "c -8.577967,-0.02376 -19.956997,5.29967 -24.117771,8.645276 "
-        "-6.546803,5.264163 -12.433634,11.974719 -10.769772,13.669965 "
-        "1.792557,2.310114 12.655507,1.515124 23.210303,11.10723 "
-        "8.217686,7.468185 10.533621,14.657837 12.396084,14.90817 "
-        "1.16895,0.04416 1.786961,-0.363913 2.688309,-1.582904 "
-        "0.90134,-1.21901 7.406651,-9.158433 8.90987,-20.371091 "
-        "1.895163,-14.136193 -2.04942,-21.944169 -5.04381,-24.299175 "
-        "-1.865818,-1.467402 -4.41389,-2.069555 -7.273213,-2.077471",
-        "z",
-        "M 56.128531,51.700411",
-        "c -0.639249,0.02574 -1.086221,0.223499 -1.286275,0.624277 "
-        "-1.600644,2.452282 2.497685,12.741825 -3.187004,25.942017 "
-        "-4.425963,10.277335 -10.415712,14.745486 -10.073661,16.629076 "
-        "0.320069,1.14727 0.891984,1.619829 2.307444,2.117259 "
-        "1.415458,0.49743 10.830701,4.35328 21.752971,2.34619 "
-        "13.770075,-2.530379 19.832746,-8.768519 21.103889,-12.400221 "
-        "3.168142,-9.051698 -9.950654,-24.412078 -15.825463,-28.413798 "
-        "-5.63292,-3.836942 -12.021817,-6.956398 -14.791901,-6.8448",
-        "z",
-        "m -5.299096,4.785932",
-        "C 47.570588,56.612385 39.424575,62.816068 26.2357,61.471757 "
-        "15.282622,60.3553 9.2649892,55.927072 7.6139222,56.840861",
-        "c -0.9711391,0.664932 -1.235964,1.365498 -1.2625019,2.891917 "
-        "-0.02655,1.526442 -0.7128592,11.84897 4.5342547,21.821195 "
-        "6.61521,12.572318 14.306917,16.524769 18.086914,16.635267 "
-        "9.421278,0.275342 19.693467,-17.19462 21.610339,-24.128637 "
-        "2.262092,-8.182753 3.156328,-17.140105 0.833056,-17.514311 "
-        "-0.173865,-0.04967 -0.369295,-0.06832 -0.586549,-0.05995",
-        "z",
-    ]
-)
-
-
-# Scale the clip path.
-def scale_func(match):
-    scaled = float(match.group(0)) * clip_scaling
-    return "{:6f}".format(scaled)
-
-
-clip_string = re_sub(r"\d*\.\d*", scale_func, clip_string)
-iris_clip = ET.Element("clipPath")
-iris_clip.append(ET.Element("path", attrib={"d": clip_string}))
-defs_dict["iris_clip"] = iris_clip
 
 ################################################################################
 # Create SVG's
@@ -307,9 +299,7 @@ defs_dict["iris_clip"] = iris_clip
 def svg_logo(defs_dict, artwork_dict):
     # Group contents into a logo subgroup (so text can be stored separately).
     logo_group = ET.Element("svg", attrib={"id": "logo_group"})
-    logo_group.attrib["viewBox"] = " ".join(
-        ["0"] * 2 + [str(background_points)] * 2
-    )
+    logo_group.attrib["viewBox"] = f"0 0 {logo_size_xy[0]} {logo_size_xy[1]}"
 
     def populate_element_group(group, children_dict):
         """Write each element from a dictionary, assigning an appropriate ID."""
@@ -326,8 +316,8 @@ def svg_logo(defs_dict, artwork_dict):
     populate_element_group(artwork_element, artwork_dict)
 
     root = ET.Element("svg")
-    for dim in ("width", "height"):
-        root.attrib[dim] = str(LOGO_PIXELS)
+    for ix, dim in enumerate(("width", "height")):
+        root.attrib[dim] = str(logo_size_xy[ix])
     root.append(logo_group)
 
     return root
