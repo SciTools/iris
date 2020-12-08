@@ -401,7 +401,7 @@ for suffix, svg in write_dict.items():
     write_svg_file(svg, suffix)
 
     # Zip archive containing components for manual creation of rotating logo.
-    zip_path = WRITE_DIRECTORY.joinpath(f"{suffix}_rotate.zip")
+    zip_path = WRITE_DIRECTORY.joinpath(f"{FILENAME_PREFIX}-{suffix}_rotate.zip")
     with ZipFile(zip_path, "w") as rotate_zip:
         for ix, clip in enumerate(land_clips):
             svg_rotated = replace_land_clip(svg, clip)
