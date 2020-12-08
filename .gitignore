@@ -15,6 +15,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
+.nox
 
 # Installer logs
 pip-log.txt

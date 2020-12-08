@@ -335,10 +335,10 @@ Lenient combination
 
 The behaviour of the lenient ``combine`` metadata class method is outlined
 in :numref:`lenient combine table`, and as with :ref:`lenient equality` and
-:ref:`lenient difference` is enabled throught the ``lenient`` keyword argument.
+:ref:`lenient difference` is enabled through the ``lenient`` keyword argument.
 
 The difference in behaviour between **lenient** and
-:ref:`strict combination <strict combine table>` is centered around the lenient
+:ref:`strict combination <strict combine table>` is centred around the lenient
 handling of combining **something** with **nothing** (``None``) to return
 **something**. Whereas strict
 combination will only return a result from combining identical objects.

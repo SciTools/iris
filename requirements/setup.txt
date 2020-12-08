@@ -1,6 +1,4 @@
 # Dependencies necessary to run setup.py of iris
 # ----------------------------------------------
 
-scitools-pyke
 setuptools>=40.8.0
-wheel
