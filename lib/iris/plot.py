@@ -674,8 +674,6 @@ def _get_plot_objects(args):
         if isinstance(v_object, iris.cube.Cube) and iris.util.guess_coord_axis(
             u_object
         ) in ["Y", "Z"]:
-            # If we have a single argument, and it is vertical-like, put it on
-            # the y axis.
             u_object, v_object = v_object, u_object
             u, v = v, u
 
