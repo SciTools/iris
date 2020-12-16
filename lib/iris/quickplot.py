@@ -138,12 +138,8 @@ def _get_titles(u_object, v_object):
 
 
 def _label_1d_plot(*args, **kwargs):
-    if len(args) > 1 and isinstance(
-        args[1], (iris.cube.Cube, iris.coords.Coord)
-    ):
-        xlabel, ylabel, title = _get_titles(*args[:2])
-    else:
-        xlabel, ylabel, title = _get_titles(None, args[0])
+    u_obj, v_obj, _, _, _ = iplt._get_plot_objects(args)
+    xlabel, ylabel, title = _get_titles(u_obj, v_obj)
 
     axes = kwargs.pop("axes", None)
 

@@ -1,4 +1,3 @@
-import iris
 import iris.quickplot as qplt
 import iris.analysis
 import matplotlib.pyplot as plt
@@ -12,8 +11,13 @@ alt_coord = column.coord("altitude")
 
 # Interpolate the "perfect" linear interpolation. Really this is just
 # a high number of interpolation points, in this case 1000 of them.
-altitude_points = [("altitude", np.linspace(400, 1250, 1000))]
-scheme = iris.analysis.Linear(extrapolation_mode="mask")
+altitude_points = [
+    (
+        "altitude",
+        np.linspace(min(alt_coord.points), max(alt_coord.points), 1000),
+    )
+]
+scheme = iris.analysis.Linear()
 linear_column = column.interpolate(altitude_points, scheme)
 
 # Now interpolate the data onto 10 evenly spaced altitude levels,
@@ -27,7 +31,6 @@ plt.figure(figsize=(5, 4), dpi=100)
 # Plot the black markers for the original data.
 qplt.plot(
     column,
-    column.coord("altitude"),
     marker="o",
     color="black",
     linestyle="",
@@ -39,7 +42,6 @@ qplt.plot(
 # Plot the gray line to display the linear interpolation.
 qplt.plot(
     linear_column,
-    linear_column.coord("altitude"),
     color="gray",
     label="Linear interpolation",
     zorder=0,
@@ -48,7 +50,6 @@ qplt.plot(
 # Plot the red markers for the new data.
 qplt.plot(
     new_column,
-    new_column.coord("altitude"),
     marker="D",
     color="red",
     linestyle="",

@@ -665,7 +665,20 @@ def _get_plot_objects(args):
         # single argument
         v_object = args[0]
         u_object = _u_object_from_v_object(v_object)
+
         u, v = _uv_from_u_object_v_object(u_object, args[0])
+
+        # If a single cube argument, and the associated dimension coordinate
+        # is vertical-like, put the coordinate on the y axis, and the data o
+        # the x.
+        if (
+            isinstance(v_object, iris.cube.Cube)
+            and isinstance(u_object, iris.coords.Coord)
+            and iris.util.guess_coord_axis(u_object) in ["Y", "Z"]
+        ):
+            u_object, v_object = v_object, u_object
+            u, v = v, u
+
         args = args[1:]
     return u_object, v_object, u, v, args
 
