@@ -39,9 +39,8 @@ def main():
     theta_1000m = theta.extract(depth_cons & lon_cons & lat_cons)
     salinity_1000m = salinity.extract(depth_cons & lon_cons & lat_cons)
 
-    # Plot these profiles on the same set of axes. In each case we call plot
-    # with two arguments, the cube followed by the depth coordinate. Putting
-    # them in this order places the depth coordinate on the y-axis.
+    # Plot these profiles on the same set of axes. Depth is automatically
+    # recognised as a vertical coordinate and placed on the y-axis.
     # The first plot is in the default axes. We'll use the same color for the
     # curve and its axes/tick labels.
     plt.figure(figsize=(5, 6))
@@ -49,7 +48,6 @@ def main():
     ax1 = plt.gca()
     iplt.plot(
         theta_1000m,
-        theta_1000m.coord("depth"),
         linewidth=2,
         color=temperature_color,
         alpha=0.75,
@@ -65,7 +63,6 @@ def main():
     ax2 = plt.gca().twiny()
     iplt.plot(
         salinity_1000m,
-        salinity_1000m.coord("depth"),
         linewidth=2,
         color=salinity_color,
         alpha=0.75,
