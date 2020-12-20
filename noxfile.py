@@ -19,7 +19,7 @@ nox.options.reuse_existing_virtualenvs = True
 PACKAGE = str("lib" / Path("iris"))
 
 #: Cirrus-CI environment variable hook.
-PY_VER = os.environ.get("PY_VER", "3.7")
+PY_VER = os.environ.get("PY_VER", ["3.6", "3.7"])
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
@@ -41,7 +41,7 @@ def venv_cached(session):
 
     """
     result = False
-    yml = Path(f"requirements/ci/py{PY_VER.replace('.', '')}.yml")
+    yml = Path(f"requirements/ci/py{session.python.replace('.', '')}.yml")
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / yml.name
     if cache.is_file():
@@ -66,7 +66,7 @@ def cache_venv(session):
         A `nox.sessions.Session` object.
 
     """
-    yml = Path(f"requirements/ci/py{PY_VER.replace('.', '')}.yml")
+    yml = Path(f"requirements/ci/py{session.python.replace('.', '')}.yml")
     with open(yml, "rb") as fi:
         hexdigest = hashlib.sha256(fi.read()).hexdigest()
     tmp_dir = Path(session.create_tmp())
@@ -131,7 +131,7 @@ def black(session):
     session.run("black", "--check", __file__)
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def tests(session):
     """
     Perform iris system, integration and unit tests.
@@ -150,7 +150,7 @@ def tests(session):
     """
     if not venv_cached(session):
         # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
         # Back-door approach to force nox to use "conda env update".
         command = (
             "conda",
@@ -174,7 +174,7 @@ def tests(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def gallery(session):
     """
     Perform iris gallery doc-tests.
@@ -193,7 +193,7 @@ def gallery(session):
     """
     if not venv_cached(session):
         # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
         # Back-door approach to force nox to use "conda env update".
         command = (
             "conda",
@@ -216,7 +216,7 @@ def gallery(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def doctest(session):
     """
     Perform iris doc-tests.
@@ -235,7 +235,7 @@ def doctest(session):
     """
     if not venv_cached(session):
         # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
         # Back-door approach to force nox to use "conda env update".
         command = (
             "conda",
@@ -264,7 +264,7 @@ def doctest(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def linkcheck(session):
     """
     Perform iris doc link check.
@@ -283,7 +283,7 @@ def linkcheck(session):
     """
     if not venv_cached(session):
         # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
         # Back-door approach to force nox to use "conda env update".
         command = (
             "conda",
