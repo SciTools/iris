@@ -164,7 +164,7 @@ def tests(session):
         cache_venv(session)
 
     cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    session.install("--no-deps", "--editable", ".")
     session.run(
         "python",
         "-m",
@@ -207,7 +207,7 @@ def gallery(session):
         cache_venv(session)
 
     cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    session.install("--no-deps", "--editable", ".")
     session.run(
         "python",
         "-m",
@@ -249,7 +249,7 @@ def doctest(session):
         cache_venv(session)
 
     cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    session.install("--no-deps", "--editable", ".")
     session.cd("docs/iris")
     session.run(
         "make",
@@ -297,7 +297,7 @@ def linkcheck(session):
         cache_venv(session)
 
     cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    session.install("--no-deps", "--editable", ".")
     session.cd("docs/iris")
     session.run(
         "make",
