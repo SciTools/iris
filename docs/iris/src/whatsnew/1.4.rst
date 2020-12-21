@@ -61,7 +61,7 @@ Features
 .. _OPeNDAP: http://www.opendap.org/about
 .. _exp-regrid:
 
-Experimental regridding enhancements
+Experimental Regridding Enhancements
 ------------------------------------
 
 Bilinear, area-weighted and area-conservative regridding functions are now
@@ -72,7 +72,7 @@ development.
 In the meantime:
 
 
-Bilinear rectilinear regridding
+Bilinear Rectilinear Regridding
 -------------------------------
 
 :func:`~iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid`
@@ -85,7 +85,7 @@ For example::
 	regridded_cube = regrid_bilinear_rectilinear_src_and_grid(source_cube, target_grid_cube)
 
 
-Area-weighted regridding
+Area-Weighted Regridding
 ------------------------
 
 :func:`~iris.experimental.regrid.regrid_area_weighted_rectilinear_src_and_grid`
@@ -98,7 +98,7 @@ For example::
 	regridded_cube = regrid_area_weighted(source_cube, target_grid_cube)
 
 
-Area-conservative regridding
+Area-Conservative Regridding
 ----------------------------
 
 :func:`~iris.experimental.regrid_conservative.regrid_conservative_via_esmpy`
@@ -113,7 +113,7 @@ For example::
 
 .. _iris-pandas:
 
-Iris-Pandas interoperability
+Iris-Pandas Interoperability
 ----------------------------
 
 Conversion to and from Pandas Series_ and DataFrames_ is now available.
@@ -125,7 +125,7 @@ See :mod:`iris.pandas` for more details.
 
 .. _load-opendap:
 
-Load cubes from the internet via OPeNDAP
+Load Cubes From the Internet via OPeNDAP
 ----------------------------------------
 
 Cubes can now be loaded directly from the internet, via OPeNDAP_.  
@@ -137,7 +137,7 @@ For example::
 
 .. _geotiff_export:
 
-GeoTiff export
+GeoTiff Export
 --------------
 
 With this experimental feature, two dimensional cubes can now be exported to
@@ -155,7 +155,7 @@ For example::
 
 .. _cube-merge-update:
 
-Cube merge update
+Cube Merge Update
 -----------------
 
 Cube merging now favours numerical coordinates over string coordinates
@@ -167,7 +167,7 @@ dimensions"*.
 
 .. _season-year-name:
 
-Unambiguous season year naming
+Unambiguous Season Year Naming
 ------------------------------
 
 The default names of categorisation coordinates are now less ambiguous.
@@ -178,7 +178,7 @@ For example, :func:`~iris.coord_categorisation.add_month_number` and
 
 .. _grib-novert:
 
-Cubes with no vertical coord can now be exported to GRIB
+Cubes With no Vertical Coord can now be Exported to GRIB
 --------------------------------------------------------
 
 Iris can now export cubes with no vertical coord to GRIB.
@@ -188,7 +188,7 @@ https://github.com/SciTools/iris/issues/519.
 
 .. _simple_cfg:
 
-Simplified resource configuration
+Simplified Resource Configuration
 ---------------------------------
 
 A new configuration variable called :data:`iris.config.TEST_DATA_DIR` 
@@ -202,7 +202,7 @@ be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
 
 .. _grib_params:
 
-Extended GRIB parameter translation
+Extended GRIB Parameter Translation
 -----------------------------------
 
  - More GRIB2 params are recognised on input.
@@ -213,7 +213,7 @@ Extended GRIB parameter translation
 
 .. _one-d-linear:
 
-One dimensional linear interpolation fix
+One dimensional Linear Interpolation Fix
 ----------------------------------------
 
 :func:`~iris.analysis.interpolate.linear` can now extrapolate from a single
@@ -232,7 +232,7 @@ to cause the loss of coordinate metadata when calculating the curl or the
 derivative of a cube has been fixed.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * As part of simplifying the mechanism for accessing test data,

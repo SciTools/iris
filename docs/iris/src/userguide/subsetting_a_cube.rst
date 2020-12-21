@@ -1,7 +1,7 @@
 .. _subsetting_a_cube:
 
 =================
-Subsetting a cube
+Subsetting a Cube
 =================
 
 The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes.
@@ -11,7 +11,7 @@ Iris provides several ways of reducing both the amount of data and/or the number
 In all cases **the subset of a valid cube is itself a valid cube**.
 
 
-Cube extraction
+Cube Extraction
 ^^^^^^^^^^^^^^^^
 A subset of a cube can be "extracted" from a multi-dimensional cube in order to reduce its dimensionality:
 
@@ -101,7 +101,7 @@ same way as loading with constraints:
               um_version: 7.3
 
 
-Cube iteration
+Cube Iteration
 ^^^^^^^^^^^^^^^
 It is not possible to directly iterate over an Iris cube. That is, you cannot use code such as
 ``for x in cube:``. However, you can iterate over cube slices, as this section details.
@@ -152,7 +152,7 @@ slicing the 3 dimensional cube (15, 100, 100) by longitude (i starts at 0 and 15
     cube using the slices method.
 
 
-Cube indexing
+Cube Indexing
 ^^^^^^^^^^^^^
 In the same way that you would expect a numeric multidimensional array to be **indexed** to take a subset of your
 original array, you can **index** a Cube for the same purpose.

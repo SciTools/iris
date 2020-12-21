@@ -1,7 +1,7 @@
 .. _loading_iris_cubes:
 
 ===================
-Loading Iris cubes
+Loading Iris Cubes
 ===================
 
 To load a single file into a **list** of Iris cubes 
@@ -116,7 +116,7 @@ This was the output discussed at the end of the :doc:`iris_cubes` section.
      appropriate column for each cube data dimension that they describe. 
 
 
-Loading multiple files
+Loading Multiple Files
 -----------------------
 
 To load more than one file into a list of cubes, a list of filenames can be 
@@ -142,7 +142,7 @@ star wildcards can be used::
      The cubes returned will not necessarily be in the same order as the 
      order of the filenames.
 
-Lazy loading
+Lazy Loading
 ------------
 
 In fact when Iris loads data from most file types, it normally only reads the
@@ -155,7 +155,7 @@ For more on the benefits, handling and uses of lazy data, see :doc:`Real and Laz
 
 .. _constrained-loading:
 
-Constrained loading
+Constrained Loading
 -----------------------
 Given a large dataset, it is possible to restrict or constrain the load 
 to match specific Iris cube metadata. 
@@ -261,7 +261,7 @@ then specific STASH codes can be filtered::
     :class:`iris.Constraint` reference documentation. 
 
 
-Constraining a circular coordinate across its boundary
+Constraining a Circular Coordinate Across its Boundary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Occasionally you may need to constrain your cube with a region that crosses the
@@ -403,7 +403,7 @@ Notice how the dates printed are between the range specified in the ``st_swithun
 and that they span multiple years.
 
 
-Strict loading
+Strict Loading
 --------------
 
 The :py:func:`iris.load_cube` and :py:func:`iris.load_cubes` functions are

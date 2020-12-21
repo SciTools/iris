@@ -1,5 +1,5 @@
 """
-Example of a polar stereographic plot
+Example of a Polar Stereographic Plot
 =====================================
 
 Demonstrates plotting data that are defined on a polar stereographic

@@ -43,7 +43,7 @@ Features
   the ``standard_parallel`` keyword argument (:pull:`3041`).
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * All var names being written to NetCDF are now CF compliant.
@@ -59,7 +59,7 @@ Bugs fixed
   ``axes`` keyword (:pull:`3010`).
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * The deprecated :mod:`iris.experimental.um` was removed.

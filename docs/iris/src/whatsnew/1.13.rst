@@ -1,5 +1,5 @@
 v1.13 (17 May 2017)
-*************************
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -17,7 +17,7 @@ Features
   :meth:`iris.cube.share_data` flag.
 
 
-Bug fixes
+Bug Fixes
 =========
 
 * The bounds are now set correctly on the longitude coordinate if a zonal mean

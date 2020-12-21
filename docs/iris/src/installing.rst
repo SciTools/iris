@@ -22,7 +22,7 @@ any WSL_ distributions.
 
 .. _installing_using_conda:
 
-Installing using conda (users)
+Installing Using Conda (Users)
 ------------------------------
 
 To install Iris using conda, you must first download and install conda,
@@ -44,8 +44,8 @@ at https://conda.io/en/latest/index.html.
 
 .. _installing_from_source:
 
-Installing from source (devs)
------------------------------
+Installing From Source (Developers)
+-----------------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
@@ -81,7 +81,7 @@ to find your local Iris code::
   python setup.py develop
 
 
-Running the tests
+Running the Tests
 -----------------
 
 To ensure your setup is configured correctly you can run the test suite using
@@ -92,7 +92,7 @@ the command::
 For more information see :ref:`developer_running_tests`.
 
 
-Custom site configuration
+Custom Site Configuration
 -------------------------
 
 The default site configuration values can be overridden by creating the file

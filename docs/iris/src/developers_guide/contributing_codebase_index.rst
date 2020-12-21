@@ -1,6 +1,6 @@
 .. _contributing.documentation.codebase:
 
-Contributing to the code base
+Contributing to the Code Base
 =============================
 
 .. toctree::

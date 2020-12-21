@@ -2,7 +2,7 @@
 
 .. _testing.graphics:
 
-Graphics tests
+Graphics Tests
 **************
 
 Iris may be used to create various forms of graphical output; to ensure
@@ -31,7 +31,7 @@ known acceptable output may fail.  The failure may also not be visually
 perceived as it may be a simple pixel shift.
 
 
-Testing strategy
+Testing Strategy
 ================
 
 The `Iris Travis matrix`_ defines multiple test runs that use
@@ -64,7 +64,7 @@ This consists of:
    against the existing accepted reference images, for each failing test.
 
 
-Reviewing failing tests
+Reviewing Failing Tests
 =======================
 
 When you find that a graphics test in the Iris testing suite has failed,
@@ -122,7 +122,7 @@ you should follow:
    happens, simply repeat the check-and-accept process until all tests pass.
 
 
-Add your changes to Iris
+Add Your Changes to Iris
 ========================
 
 To add your changes to Iris, you need to make two pull requests (PR).

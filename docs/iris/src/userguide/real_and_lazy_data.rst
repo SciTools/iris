@@ -10,7 +10,7 @@
 
 
 ==================
-Real and lazy data
+Real and Lazy Data
 ==================
 
 We have seen in the :doc:`iris_cubes` section of the user guide that
@@ -21,7 +21,7 @@ In this section of the user guide we will look specifically at the concepts of
 real and lazy data as they apply to the cube and other data structures in Iris.
 
 
-What is real and lazy data?
+What is Real and Lazy Data?
 ---------------------------
 
 In Iris, we use the term **real data** to describe data arrays that are loaded
@@ -97,7 +97,7 @@ In such cases, a required portion can be extracted and realised without calculat
 
 .. _when_real_data:
 
-When does my data become real?
+When Does My Data Become Real?
 ------------------------------
 
 Certain operations, such as cube indexing and statistics, can be
@@ -134,7 +134,7 @@ You can also realise (and so load into memory) your cube's lazy data if you 'tou
 To 'touch' the data means directly accessing the data by calling ``cube.data``,
 as in the previous example.
 
-Core data
+Core Data
 ^^^^^^^^^
 
 Cubes have the concept of "core data". This returns the cube's data in its
@@ -225,7 +225,7 @@ coordinates' lazy points and bounds:
     Printing a lazy :class:`~iris.coords.AuxCoord` will realise its points and bounds arrays!
 
 
-Dask processing options
+Dask Processing Options
 -----------------------
 
 Iris uses dask to provide lazy data arrays for both Iris cubes and coordinates,

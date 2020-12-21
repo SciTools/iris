@@ -1,7 +1,7 @@
 .. _cube maths:
 
 ==========
-Cube maths
+Cube Maths
 ==========
 
 
@@ -29,7 +29,7 @@ In order to reduce the amount of metadata which becomes inconsistent,
 fundamental arithmetic operations such as addition, subtraction, division
 and multiplication can be applied directly to any cube.
 
-Calculating the difference between two cubes
+Calculating the Difference Between Two Cubes
 --------------------------------------------
 
 Let's load some air temperature which runs from 1860 to 2100::
@@ -77,7 +77,7 @@ but with the data representing their difference:
 
 .. _cube-maths_anomaly:
 
-Calculating a cube anomaly
+Calculating a Cube Anomaly
 --------------------------
 
 In section :doc:`cube_statistics` we discussed how the dimensionality of a cube
@@ -165,7 +165,7 @@ broadcasting behaviour::
     >>> print(result.summary(True))
     unknown / (K)                       (time: 240; latitude: 37; longitude: 49)
 
-Combining multiple phenomena to form a new one
+Combining Multiple Phenomena to Form a New One
 ----------------------------------------------
 
 Combining cubes of potential-temperature and pressure we can calculate 
@@ -223,7 +223,7 @@ The result could now be plotted using the guidance provided in the
 
 .. _cube_maths_combining_units:
 
-Combining units
+Combining Units
 ---------------
 
 It should be noted that when combining cubes by multiplication, division or

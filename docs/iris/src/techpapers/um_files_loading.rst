@@ -14,7 +14,7 @@
 
 
 ===================================
-Iris handling of PP and Fieldsfiles
+Iris Handling of PP and Fieldsfiles
 ===================================
 
 This document provides a basic account of how PP and Fieldsfiles data is
@@ -40,7 +40,7 @@ For details of Iris terms (cubes, coordinates, attributes), refer to
 
 For details of CF conventions, see http://cfconventions.org/.
 
-Overview of loading process
+Overview of Loading Process
 ---------------------------
 
 The basics of Iris loading are explained at :ref:`loading_iris_cubes`.
@@ -165,7 +165,7 @@ For example:
     sections are written only if the actual values are unevenly spaced.
 
 
-Phenomenon identification
+Phenomenon Identification
 -------------------------
 
 **UM Field elements**
@@ -218,7 +218,7 @@ For example:
     LBUSER4 and LBUSER7 elements.
 
 
-Vertical coordinates
+Vertical Coordinates
 --------------------
 
 **UM Field elements**
@@ -319,7 +319,7 @@ See an example printout of a hybrid height cube,
 
 .. _um_time_metadata:
 
-Time information
+Time Information
 ----------------
 
 **UM Field elements**
@@ -391,7 +391,7 @@ See an example printout of a forecast data cube,
     'forecast_reference_time' is a constant.
 
 
-Statistical measures
+Statistical Measures
 --------------------
 
 **UM Field elements**
@@ -438,7 +438,7 @@ For example:
     (CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),)
 
 
-Other metadata
+Other Metadata
 --------------
 
 LBRSVD4

@@ -1,6 +1,6 @@
 """
-Plotting wind direction using quiver
-===========================================================
+Plotting Wind Direction Using Quiver
+====================================
 
 This example demonstrates using quiver to plot wind speed contours and wind
 direction arrows from wind vector component input data. The vector components

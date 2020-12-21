@@ -1,7 +1,7 @@
 .. _iris_data_structures:
 
 ====================
-Iris data structures
+Iris Data Structures
 ====================
 
 The top level object in Iris is called a cube. A cube contains data and metadata about a phenomenon.
@@ -71,11 +71,11 @@ A cube consists of:
  * a list of coordinate "factories" used for deriving coordinates from the values of other coordinates in the cube 
 
 
-Cubes in practice
+Cubes in Practice
 -----------------
 
 
-A simple cube example
+A Simple Cube Example
 =====================
 
 Suppose we have some gridded data which has 24 air temperature readings (in Kelvin) which is located at 
@@ -137,7 +137,7 @@ For example, it is possible to attach any of the following:
    a collection of "ensembles" (i.e. multiple model runs).
 
 
-Printing a cube
+Printing a Cube
 ===============
 
 Every Iris cube can be printed to screen as you will see later in the user guide. It is worth familiarising yourself with the
