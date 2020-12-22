@@ -44,7 +44,7 @@ Features
   :class:`~iris.cube.Cube`.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * The GRIB hindcast interpretation of negative forecast times can be enabled
@@ -54,7 +54,7 @@ Bugs fixed
   coordinates.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * The deprecated :attr:`iris.cube.Cube.unit` and :attr:`iris.coords.Coord.unit`

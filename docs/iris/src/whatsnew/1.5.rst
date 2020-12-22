@@ -125,7 +125,7 @@ Features
   systems and mapping 0 to 360 longitudes to the -180 to 180 range.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * NetCDF error handling on save has been extended to capture file path and

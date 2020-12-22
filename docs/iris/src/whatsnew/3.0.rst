@@ -360,6 +360,11 @@ This document explains the changes made to Iris for this release
 
 * `@jonseddon`_ updated the CF version of the netCDF saver in the 
   :ref:`saving_iris_cubes` section and in the equivalent function docstring.
+  (:pull:`3925`)
+
+* `@bjlittle`_ applied `Title Case Capitalization`_ to the documentation.
+  (:pull:`3940`)
+
 
 💼 Internal
 ===========
@@ -485,3 +490,4 @@ This document explains the changes made to Iris for this release
 .. _CF Conventions and Metadata: https://cfconventions.org/
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _nox: https://nox.thea.codes/en/stable/
+.. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case

@@ -1,5 +1,5 @@
 v1.10 (05 Sep 2016)
-*********************
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -137,7 +137,7 @@ Features
   attributes is now allowed.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Altered Cell Methods to display coordinate's standard_name rather than
@@ -215,7 +215,7 @@ Bugs fixed
   thrown while trying to subset over a non-dimensional scalar coordinate.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * The source and target for 

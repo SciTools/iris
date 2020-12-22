@@ -2,7 +2,7 @@
 
 .. _developer_running_tests:
 
-Running the tests
+Running the Tests
 *****************
 
 A prerequisite of running the tests is to have the Python environment

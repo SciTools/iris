@@ -3,7 +3,7 @@
 .. _configure-git:
 
 =============
-Configure git
+Configure Git
 =============
 
 .. _git-config-basic:
@@ -51,7 +51,7 @@ command::
 To set up on another computer, you can copy your ``~/.gitconfig`` file,
 or run the commands above.
 
-In detail
+In Detail
 =========
 
 user.name and user.email
@@ -124,7 +124,7 @@ Or from the command line::
 
 .. _fancy-log:
 
-Fancy log output
+Fancy Log Output
 ----------------
 
 This is a very nice alias to get a fancy log output; it should go in the

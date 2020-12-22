@@ -1,6 +1,6 @@
 .. _lenient maths:
 
-Lenient cube maths
+Lenient Cube Maths
 ******************
 
 This section provides an overview of lenient cube maths. In particular, it explains
@@ -46,7 +46,7 @@ a practical worked example, which we'll explore together next.
 
 .. _lenient example:
 
-Lenient example
+Lenient Example
 ===============
 
 .. testsetup:: lenient-example
@@ -154,7 +154,7 @@ Now let's compare and contrast this lenient result with the strict alternative.
 But before we do so, let's first clarify how to control the behaviour of cube maths.
 
 
-Control the behaviour
+Control the Behaviour
 =====================
 
 As stated earlier, lenient cube maths is the default behaviour from Iris ``3.0.0``.
@@ -191,7 +191,7 @@ scope of the ``LENIENT`` `context manager`_,
     Lenient(maths=True)
 
 
-Strict example
+Strict Example
 ==============
 
 Now that we know how to control the underlying behaviour of cube maths,
@@ -229,7 +229,7 @@ This is because strict cube maths, in general, will only return common metadata
 and common coordinates that are :ref:`strictly equivalent <strict equality>`.
 
 
-Finer detail
+Finer Detail
 ============
 
 In general, if you want to preserve as much metadata and coordinate information as

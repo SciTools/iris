@@ -2,8 +2,8 @@
 
 .. _pr_check:
 
-Pull request check list
-=======================
+Pull Request Checklist
+======================
 
 All pull request will be reviewed by a core developer who will manage the
 process of merging. It is the responsibility of a developer submitting a

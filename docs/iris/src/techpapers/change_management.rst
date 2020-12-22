@@ -4,7 +4,7 @@
 
 .. _change_management:
 
-Change Management in Iris from the User's perspective
+Change Management in Iris From the User's Perspective
 *****************************************************
 
 As Iris changes, user code will need revising from time to time to keep it
@@ -16,7 +16,7 @@ Here, we define ways to make this as easy as possible.
 .. include:: ../userguide/change_management_goals.txt
 
 
-Key principles you can rely on
+Key Principles you can Rely on
 ==============================
 
 Iris code editions are published as defined version releases, with a given
@@ -42,7 +42,7 @@ If your code produces :ref:`deprecation warnings <iris_deprecations>`, then it
 
 
 
-User Actions : How you should respond to changes and releases
+User Actions : How you Should Respond to Changes and Releases
 =============================================================
 
 Checklist :
@@ -96,7 +96,7 @@ Key concepts covered here:
 
 .. _iris_backward_compatibility:
 
-Backwards compatibility
+Backwards Compatibility
 -----------------------
 
 "Backwards-compatible" changes are those that leave any existing valid API
@@ -135,7 +135,7 @@ See :ref:`Usage of iris.FUTURE <iris_future_usage>`, below.
 
 .. _iris_api:
 
-Terminology : API, features, usages and behaviours
+Terminology : API, Features, Usages and Behaviours
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The API is the components of the iris module and its submodules which are
@@ -320,7 +320,7 @@ This is to warn users :
     * eventually to rewrite old code to use the newer or better alternatives
 
 
-Deprecated features support through the Release cycle
+Deprecated Features Support Through the Release Cycle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The whole point of a deprecation is that the feature continues to work, but
@@ -341,7 +341,7 @@ follows:
 
 .. _iris_future_usage:
 
-Future options, `iris.FUTURE`
+Future Options, `iris.FUTURE`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A special approach is needed where the replacement behaviour is not controlled

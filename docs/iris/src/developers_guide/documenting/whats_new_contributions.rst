@@ -1,7 +1,7 @@
 .. _whats_new_contributions:
 
 =================================
-Contributing a "What's New" entry
+Contributing a "What's New" Entry
 =================================
 
 Iris uses a file named ``latest.rst`` to keep a draft of upcoming changes
@@ -48,7 +48,7 @@ for the minimum time, minimising conflicts and minimising the need to rebase or
 merge from trunk.
 
 
-Writing a contribution
+Writing a Contribution
 ======================
 
 As introduced above, a contribution is the description of a change to Iris
@@ -103,7 +103,7 @@ examine past what's :ref:`iris_whatsnew` entries.
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 
 
-Contribution categories
+Contribution Categories
 =======================
 
 The structure of the what's new release note should be easy to read by

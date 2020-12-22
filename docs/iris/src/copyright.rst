@@ -1,8 +1,8 @@
 
-Iris copyright, licensing and contributors
+Iris Copyright, Licensing and Contributors
 ==========================================
 
-Iris code
+Iris Code
 ---------
 
 All Iris source code, unless explicitly stated, is ``Copyright Iris
@@ -20,7 +20,7 @@ You should find all source files with the following header:
     licensing details.
 
 
-Iris documentation and examples
+Iris Documentation and Examples
 -------------------------------
 
 All documentation, examples and sample data found on this website and in source repository 

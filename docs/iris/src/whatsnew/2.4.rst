@@ -47,7 +47,7 @@ Features
   ``STASH`` from the attributes dictionary of a :class:`~iris.cube.Cube`.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Fixed a problem which was causing file loads to fetch *all* field data

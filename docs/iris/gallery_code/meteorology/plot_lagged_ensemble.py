@@ -1,5 +1,5 @@
 """
-Seasonal ensemble model plots
+Seasonal Ensemble Model Plots
 =============================
 
 This example demonstrates the loading of a lagged ensemble dataset from the

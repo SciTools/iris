@@ -3,7 +3,7 @@
 .. _reST_quick_start:
 
 ================
-reST quick start
+reST Quick Start
 ================
 
 `reST`_ is used to create the documentation for Iris_.  It is used to author
@@ -19,7 +19,7 @@ reST markup syntaxes, for the basics of reST the following links may be useful:
 
 Reference documentation for reST can be found at http://docutils.sourceforge.net/rst.html.
 
-Creating links
+Creating Links
 --------------
 Basic links can be created with ```Text of the link <http://example.com>`_``
 which will look like `Text of the link <http://example.com>`_

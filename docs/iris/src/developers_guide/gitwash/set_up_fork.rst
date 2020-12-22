@@ -3,7 +3,7 @@
 .. _set-up-fork:
 
 ================
-Set up your fork
+Set up Your Fork
 ================
 
 First you follow the instructions for :ref:`forking`.
@@ -17,10 +17,10 @@ Overview
    cd iris
    git remote add upstream git://github.com/SciTools/iris.git
 
-In detail
+In Detail
 =========
 
-Clone your fork
+Clone Your Fork
 ---------------
 
 #. Clone your fork to the local computer with ``git clone
@@ -42,7 +42,7 @@ Clone your fork
 
 .. _linking-to-upstream:
 
-Linking your repository to the upstream repo
+Linking Your Repository to the Upstream Repo
 --------------------------------------------
 
 ::

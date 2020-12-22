@@ -1,7 +1,7 @@
 
 .. _contributing.documentation:
 
-Contributing to the documentation
+Contributing to the Documentation
 ---------------------------------
 
 Documentation is important and we encourage any improvements that can be made.
@@ -112,7 +112,7 @@ or ignore the url.
 
 .. _contributing.documentation.api:
 
-Generating API documentation
+Generating API Documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to auto generate the API documentation based upon the docstrings a

@@ -42,7 +42,7 @@ Collectively, the aforementioned classes will be known here as the Iris
     `SciTools/iris`_
 
 
-Common metadata
+Common Metadata
 ===============
 
 Each of the Iris `CF Conventions`_ classes use **metadata** to define them and
@@ -69,7 +69,7 @@ actual `data attribute`_ names of the metadata members on the Iris class.
    :align: center
 
    =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
-   Metadata members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord` Metadata members
+   Metadata Members    :class:`~iris.coords.AncillaryVariable` :class:`~iris.coords.AuxCoord` :class:`~iris.aux_factory.AuxCoordFactory` :class:`~iris.coords.CellMeasure` :class:`~iris.cube.Cube` :class:`~iris.coords.DimCoord` Metadata Members
    =================== ======================================= ============================== ========================================== ================================= ======================== ============================== ===================
    ``standard_name``   ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``standard_name``
    ``long_name``       ✔                                       ✔                              ✔                                          ✔                                 ✔                        ✔                              ``long_name``
@@ -90,7 +90,7 @@ actual `data attribute`_ names of the metadata members on the Iris class.
    terms.
 
 
-Common metadata API
+Common Metadata API
 ===================
 
 .. testsetup::
@@ -149,7 +149,7 @@ a **common** and **consistent** approach to managing your metadata, which we'll
 now explore a little more fully.
 
 
-Metadata classes
+Metadata Classes
 ----------------
 
 The ``metadata`` property will return an appropriate `namedtuple`_ metadata class
@@ -162,7 +162,7 @@ each container class is shown in :numref:`metadata classes table` below,
    :align: center
 
    ========================================== ========================================================
-   Container class                            Metadata class
+   Container Class                            Metadata Class
    ========================================== ========================================================
    :class:`~iris.coords.AncillaryVariable`    :class:`~iris.common.metadata.AncillaryVariableMetadata`
    :class:`~iris.coords.AuxCoord`             :class:`~iris.common.metadata.CoordMetadata`
@@ -232,7 +232,7 @@ discussion on options how to **set** and **get** metadata on the instance of
 an Iris `CF Conventions`_ container class (:numref:`metadata classes table`).
 
 
-Metadata class behaviour
+Metadata Class Behaviour
 ------------------------
 
 As mentioned previously, the metadata classes in :numref:`metadata classes table`
@@ -301,7 +301,7 @@ which we explore next.
 
 .. _richer metadata:
 
-Richer metadata behaviour
+Richer Metadata Behaviour
 -------------------------
 
 .. testsetup:: richer-metadata
@@ -320,7 +320,7 @@ allows you to easily **compare**, **combine**, **convert** and understand the
 
 .. _metadata equality:
 
-Metadata equality
+Metadata Equality
 ^^^^^^^^^^^^^^^^^
 
 The metadata classes support both **equality** (``__eq__``) and **inequality**
@@ -357,7 +357,7 @@ a means to enable **lenient** equality, as discussed in :ref:`lenient equality`.
 
 .. _strict equality:
 
-Strict equality
+Strict Equality
 """""""""""""""
 
 By default, metadata class equality will perform a **strict** comparison between
@@ -426,7 +426,7 @@ However, metadata class equality is rich enough to handle this eventuality,
 
 .. _compare like:
 
-Comparing like with like
+Comparing Like With Like
 """"""""""""""""""""""""
 
 So far in our journey through metadata class equality, we have only considered
@@ -446,7 +446,7 @@ metadata class contains **different** members, as shown in
 
 .. _exception rule:
 
-Exception to the rule
+Exception to the Rule
 ~~~~~~~~~~~~~~~~~~~~~
 
 In general, **different** metadata classes cannot be compared, however support
@@ -502,7 +502,7 @@ methods of metadata classes.
 
 .. _metadata difference:
 
-Metadata difference
+Metadata Difference
 ^^^^^^^^^^^^^^^^^^^
 
 Being able to compare metadata is valuable, especially when we have the
@@ -605,7 +605,7 @@ Now, let's compare the two above instances and see what ``attributes`` member di
 
 .. _diff like:
 
-Diffing like with like
+Diffing Like With Like
 """"""""""""""""""""""
 
 As discussed in :ref:`compare like`, it only makes sense to determine the
@@ -655,7 +655,7 @@ In general, however, comparing **different** metadata classes will result in a
 
 .. _metadata combine:
 
-Metadata combination
+Metadata Combination
 ^^^^^^^^^^^^^^^^^^^^
 
 .. testsetup:: metadata-combine
@@ -740,7 +740,7 @@ metadata class. This is explored in a little further detail next.
 
 .. _combine like:
 
-Combine like with like
+Combine Like With Like
 """"""""""""""""""""""
 
 Akin to the :ref:`equal <metadata equality>` and
@@ -788,7 +788,7 @@ However, note that commutativity in this case cannot be honoured, for obvious re
 
 .. _metadata conversion:
 
-Metadata conversion
+Metadata Conversion
 ^^^^^^^^^^^^^^^^^^^
 
 .. testsetup:: metadata-convert
@@ -853,7 +853,7 @@ class instance,
 
 .. _metadata assignment:
 
-Metadata assignment
+Metadata Assignment
 ^^^^^^^^^^^^^^^^^^^
 
 .. testsetup:: metadata-assign
@@ -888,7 +888,7 @@ coordinate,
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 
-Assign by iterable
+Assign by Iterable
 """"""""""""""""""
 
 It is also possible to assign to the ``metadata`` property of an Iris
@@ -903,7 +903,7 @@ number** of associated member values, e.g.,
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 
-Assign by namedtuple
+Assign by Namedtuple
 """"""""""""""""""""
 
 A `namedtuple`_ may also be used to assign to the ``metadata`` property of an
@@ -933,7 +933,7 @@ of the ``longitude`` coordinate,
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
 
-Assign by mapping
+Assign by Mapping
 """""""""""""""""
 
 It is also possible to assign to the ``metadata`` property using a `mapping`_,

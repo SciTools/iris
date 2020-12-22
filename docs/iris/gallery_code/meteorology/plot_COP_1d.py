@@ -1,5 +1,5 @@
 """
-Global average annual temperature plot
+Global Average Annual Temperature Plot
 ======================================
 
 Produces a time-series plot of North American temperature forecasts for 2

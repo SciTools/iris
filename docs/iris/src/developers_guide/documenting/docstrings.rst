@@ -27,7 +27,7 @@ There are two forms of docstrings: **single-line** and **multi-line**
 docstrings.
 
 
-Single-line docstrings
+Single-Line Docstrings
 ======================
 
 The single line docstring of an object must state the **purpose** of that
@@ -35,7 +35,7 @@ object, known as the **purpose section**. This terse overview must be on one
 line and ideally no longer than 80 characters.
 
 
-Multi-line docstrings
+Multi-Line Docstrings
 =====================
 
 Multi-line docstrings must consist of at least a purpose section akin to the
@@ -53,7 +53,7 @@ not to document *argument* and *keyword argument* details. Such information
 should be documented in the following *arguments and keywords section*.
 
 
-Sample multi-line docstring
+Sample Multi-Line Docstring
 ---------------------------
 
 Here is a simple example of a standard docstring:
@@ -75,7 +75,7 @@ Additionally, a summary can be extracted automatically, which would result in:
       documenting.docstrings_sample_routine.sample_routine
 
 
-Documenting classes
+Documenting Classes
 ===================
 
 The class constructor should be documented in the docstring for its
@@ -90,7 +90,7 @@ superclass method and does not call the superclass method; use the verb
 (in addition to its own behaviour).
 
 
-Attribute and property docstrings
+Attribute and Property Docstrings
 ---------------------------------
 
 Here is a simple example of a class containing an attribute docstring and a

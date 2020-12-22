@@ -1,7 +1,7 @@
 .. _merge_and_concat:
 
 =====================
-Merge and concatenate
+Merge and Concatenate
 =====================
 
 We saw in the :doc:`loading_iris_cubes` chapter that Iris tries to load as few cubes as
@@ -203,7 +203,7 @@ single cube. An example of fixing an issue like this can be found in the
 :ref:`merge_concat_common_issues` section.
 
 
-Merge in Iris load
+Merge in Iris Load
 ==================
 
 The CubeList's :meth:`~iris.cube.CubeList.merge` method is used internally
@@ -365,7 +365,7 @@ single cube. An example of fixing an issue like this can be found in the
 
 .. _merge_concat_common_issues:
 
-Common issues with merge and concatenate
+Common Issues With Merge and Concatenate
 ----------------------------------------
 
 The Iris algorithms that drive :meth:`~iris.cube.CubeList.merge` and
@@ -529,7 +529,7 @@ Trying to merge the input cubes with duplicate cubes not allowed raises an
 error highlighting the presence of the duplicate cube.
 
 
-**Single value coordinates**
+**Single Value Coordinates**
 
 Coordinates containing only a single value can cause confusion when
 combining input cubes. Remember:

@@ -1,5 +1,5 @@
 """
-Hovmoller diagram of monthly surface temperature
+Hovmoller Diagram of Monthly Surface Temperature
 ================================================
 
 This example demonstrates the creation of a Hovmoller diagram with fine control
