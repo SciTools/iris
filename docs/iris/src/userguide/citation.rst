@@ -48,7 +48,7 @@ For example::
 
  Iris. Met Office. git@github.com:SciTools/iris.git 06-03-2013
 
-.. _How to cite and describe software: http://software.ac.uk/how-cite-software
+.. _How to cite and describe software: https://software.ac.uk/how-cite-software
 
 
 Reference: [Jackson]_.
