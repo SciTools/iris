@@ -56,7 +56,3 @@ def main():
 
     plt.title("Wind speed over Lake Victoria\nduring a simulated storm")
     qplt.show()
-
-
-if __name__ == "__main__":
-    main()

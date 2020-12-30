@@ -8,8 +8,8 @@
 # importing anything else.
 import iris.tests as tests
 
-from .extest_util import (
-    add_examples_to_path,
+from .gallerytest_util import (
+    add_gallery_to_path,
     show_replaced_by_check_graphic,
     fail_any_deprecation_warnings,
 )
@@ -20,10 +20,10 @@ class TestWindBarbs(tests.GraphicsTest):
 
     def test_wind_barbs(self):
         with fail_any_deprecation_warnings():
-            with add_examples_to_path():
-                import wind_barbs
+            with add_gallery_to_path():
+                import plot_wind_barbs
             with show_replaced_by_check_graphic(self):
-                wind_barbs.main()
+                plot_wind_barbs.main()
 
 
 if __name__ == "__main__":
