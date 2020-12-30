@@ -243,7 +243,7 @@ unit (if ``a`` had units ``'m2'`` then ``a ** 0.5`` would result in a cube
 with units ``'m'``).
 
 Iris inherits units from `cf_units <https://scitools.org.uk/cf-units/docs/latest/>`_
-which in turn inherits from `UDUNITS <https://www.unidata.ucar.edu/software/udunits/udunits-current/doc/udunits/udunits2.html>`_.
+which in turn inherits from `UDUNITS <https://www.unidata.ucar.edu/software/udunits/udunits-current/udunits2.html>`_.
 As well as the units UDUNITS provides, cf units also provides the units
 ``'no-unit'`` and ``'unknown'``. A unit of ``'no-unit'`` means that the
 associated data is not suitable for describing with a unit, cf units
