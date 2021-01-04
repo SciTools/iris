@@ -336,6 +336,54 @@ class Test_collapsed__lazy(tests.IrisTest):
         self.assertArrayEqual(result.data, np.mean(self.data, axis=1))
 
 
+class Test_collapsed__multidim_weighted(tests.IrisTest):
+    def setUp(self):
+        self.data = np.arange(6.0).reshape((2, 3))
+        self.lazydata = as_lazy_data(self.data)
+        cube_real = Cube(self.data)
+        for i_dim, name in enumerate(("y", "x")):
+            npts = cube_real.shape[i_dim]
+            coord = DimCoord(np.arange(npts), long_name=name)
+            cube_real.add_dim_coord(coord, i_dim)
+        self.cube_real = cube_real
+        self.cube_lazy = cube_real.copy(data=self.lazydata)
+        self.y_weights = np.array([0.3, 0.5])
+        self.full_weights = np.broadcast_to(
+            self.y_weights.reshape((2, 1)), cube_real.shape
+        )
+        self.expected_result = np.array([1.875, 2.875, 3.875])
+
+    def test_weighted_fullweights_real(self):
+        # Supplying full-shape weights for collapsing over a single dimension.
+        cube_collapsed = self.cube_real.collapsed(
+            "y", MEAN, weights=self.full_weights
+        )
+        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+
+    def test_weighted_fullweights_lazy(self):
+        # Full-shape weights, single dimension, lazy cube :  Check lazy result, same values as real calc.
+        cube_collapsed = self.cube_lazy.collapsed(
+            "y", MEAN, weights=self.full_weights
+        )
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+
+    def test_weighted_1dweights_real(self):
+        # 1-D weights, single dimension, real cube :  Check same results as full-shape.
+        cube_collapsed = self.cube_real.collapsed(
+            "y", MEAN, weights=self.y_weights
+        )
+        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+
+    def test_weighted_1dweights_lazy(self):
+        # 1-D weights, single dimension, lazy cube :  Check lazy result, same values as real calc.
+        cube_collapsed = self.cube_lazy.collapsed(
+            "y", MEAN, weights=self.y_weights
+        )
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+
+
 class Test_collapsed__cellmeasure_ancils(tests.IrisTest):
     def setUp(self):
         cube = Cube(np.arange(6.0).reshape((2, 3)))

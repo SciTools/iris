@@ -3916,10 +3916,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = list(dims_to_collapse)
+            collapse_axes = list(dims_to_collapse)
+            if len(collapse_axes) == 1:
+                # Replace a "list of 1 axes" with just a number :  This single-axis form is *required* by functions
+                # like da.average (and np.average), if a 1d weights array is specified.
+                collapse_axes = collapse_axes[0]
+
             try:
                 data_result = aggregator.lazy_aggregate(
-                    self.lazy_data(), axis=collapse_axis, **kwargs
+                    self.lazy_data(), axis=collapse_axes, **kwargs
                 )
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as
@@ -3943,8 +3948,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             unrolled_data = np.transpose(self.data, dims).reshape(new_shape)
 
             # Perform the same operation on the weights if applicable
-            if kwargs.get("weights") is not None:
-                weights = kwargs["weights"].view()
+            weights = kwargs.get("weights")
+            if weights is not None and weights.ndim > 1:
+                # Note: *don't* adjust 1d weights arrays, these have a special meaning for statistics functions.
+                weights = weights.view()
                 kwargs["weights"] = np.transpose(weights, dims).reshape(
                     new_shape
                 )
