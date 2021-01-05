@@ -230,7 +230,7 @@ class Resolve:
 
         """
         #: The ``lhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
-        self.lhs_cube = None  # set in _call__
+        self.lhs_cube = None  # set in __call__
         #: The ``rhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
         self.rhs_cube = None  # set in __call__
 
