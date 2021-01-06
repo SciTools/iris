@@ -340,6 +340,7 @@ class Test_collapsed__multidim_weighted(tests.IrisTest):
     def setUp(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
+        # Test cubes wth (same-valued) real and lazy data
         cube_real = Cube(self.data)
         for i_dim, name in enumerate(("y", "x")):
             npts = cube_real.shape[i_dim]
@@ -347,41 +348,94 @@ class Test_collapsed__multidim_weighted(tests.IrisTest):
             cube_real.add_dim_coord(coord, i_dim)
         self.cube_real = cube_real
         self.cube_lazy = cube_real.copy(data=self.lazydata)
+        # Test weights and expected result for a y-collapse
         self.y_weights = np.array([0.3, 0.5])
-        self.full_weights = np.broadcast_to(
+        self.full_weights_y = np.broadcast_to(
             self.y_weights.reshape((2, 1)), cube_real.shape
         )
-        self.expected_result = np.array([1.875, 2.875, 3.875])
+        self.expected_result_y = np.array([1.875, 2.875, 3.875])
+        # Test weights and expected result for an x-collapse
+        self.x_weights = np.array([0.7, 0.4, 0.6])
+        self.full_weights_x = np.broadcast_to(
+            self.x_weights.reshape((1, 3)), cube_real.shape
+        )
+        self.expected_result_x = np.array([0.941176, 3.941176])
 
-    def test_weighted_fullweights_real(self):
+    def test_weighted_fullweights_real_y(self):
         # Supplying full-shape weights for collapsing over a single dimension.
         cube_collapsed = self.cube_real.collapsed(
-            "y", MEAN, weights=self.full_weights
+            "y", MEAN, weights=self.full_weights_y
         )
-        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_y
+        )
 
-    def test_weighted_fullweights_lazy(self):
-        # Full-shape weights, single dimension, lazy cube :  Check lazy result, same values as real calc.
+    def test_weighted_fullweights_lazy_y(self):
+        # Full-shape weights, lazy data :  Check lazy result, same values as real calc.
         cube_collapsed = self.cube_lazy.collapsed(
-            "y", MEAN, weights=self.full_weights
+            "y", MEAN, weights=self.full_weights_y
         )
         self.assertTrue(cube_collapsed.has_lazy_data())
-        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_y
+        )
 
-    def test_weighted_1dweights_real(self):
-        # 1-D weights, single dimension, real cube :  Check same results as full-shape.
+    def test_weighted_1dweights_real_y(self):
+        # 1-D weights, real data :  Check same results as full-shape.
         cube_collapsed = self.cube_real.collapsed(
             "y", MEAN, weights=self.y_weights
         )
-        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_y
+        )
 
-    def test_weighted_1dweights_lazy(self):
-        # 1-D weights, single dimension, lazy cube :  Check lazy result, same values as real calc.
+    def test_weighted_1dweights_lazy_y(self):
+        # 1-D weights, lazy data :  Check lazy result, same values as real calc.
         cube_collapsed = self.cube_lazy.collapsed(
             "y", MEAN, weights=self.y_weights
         )
         self.assertTrue(cube_collapsed.has_lazy_data())
-        self.assertArrayAlmostEqual(cube_collapsed.data, self.expected_result)
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_y
+        )
+
+    def test_weighted_fullweights_real_x(self):
+        # Full weights, real data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube_real.collapsed(
+            "x", MEAN, weights=self.full_weights_x
+        )
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_x
+        )
+
+    def test_weighted_fullweights_lazy_x(self):
+        # Full weights, lazy data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube_lazy.collapsed(
+            "x", MEAN, weights=self.full_weights_x
+        )
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_x
+        )
+
+    def test_weighted_1dweights_real_x(self):
+        # 1-D weights, real data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube_real.collapsed(
+            "x", MEAN, weights=self.x_weights
+        )
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_x
+        )
+
+    def test_weighted_1dweights_lazy_x(self):
+        # 1-D weights, lazy data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube_lazy.collapsed(
+            "x", MEAN, weights=self.x_weights
+        )
+        self.assertTrue(cube_collapsed.has_lazy_data())
+        self.assertArrayAlmostEqual(
+            cube_collapsed.data, self.expected_result_x
+        )
 
 
 class Test_collapsed__cellmeasure_ancils(tests.IrisTest):
