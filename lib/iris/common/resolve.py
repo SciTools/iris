@@ -294,6 +294,25 @@ class Resolve:
             self(lhs, rhs)
 
     def __call__(self, lhs, rhs):
+        """
+        Resolve the ``lhs`` :class:`~iris.cube.Cube` operand and ``rhs``
+        :class:`~iris.cube.Cube` operand metadata.
+
+        Involves determining all the common coordinate metadata shared between
+        the operands, and the metadata that is local to each operand. Given
+        the common metadata, the broadcast shape of the resultant resolved
+        :class:`~iris.cube.Cube`, which may be auto-transposed, can be
+        determined.
+
+        Args:
+
+        * lhs:
+            The left-hand-side :class:`~iris.cube.Cube` operand.
+
+        * rhs:
+            The right-hand-side :class:`~iris.cube.Cube` operand.
+
+        """
         from iris.cube import Cube
 
         emsg = (
@@ -430,6 +449,40 @@ class Resolve:
         common_aux_metadata,
         common_scalar_metadata,
     ):
+        """
+        Determine the dimensions covered by each of the local and common
+        auxiliary coordinates of the provided :class:`~iris.cube.Cube`.
+
+        The cube dimensions not covered by any of the auxiliary coordinates is
+        also determined; these are known as `free` dimensions.
+
+        The scalar coordinates local to the cube are also determined.
+
+        Args:
+
+        * cube:
+            The :class:`~iris.cube.Cube` to be analysed for coverage.
+
+        * cube_items_aux:
+            The list of associated :class:`~iris.common.resolve._Item` metadata
+            for each auxiliary coordinate owned by the cube.
+
+        * cube_items_scalar:
+            The list of associated :class:`~iris.common.resolve._Item` metadata
+            for each scalar coordinate owned by the cube.
+
+        * common_aux_metadata:
+            The list of common auxiliary coordinate metadata shared by both
+            the LHS and RHS cube operands being resolved.
+
+        * common_scalar_metadata:
+            The list of common scalar coordinate metadata shared by both
+            the LHS and RHS cube operands being resolved.
+
+        Returns:
+            :class:`~iris.common.resolve._AuxCoverage`
+
+        """
         common_items_aux = []
         common_items_scalar = []
         local_items_aux = []
@@ -507,6 +560,22 @@ class Resolve:
 
     @staticmethod
     def _categorise_items(cube):
+        """
+        Inspect the provided :class:`~iris.cube.Cube` and group its
+        coordinates and associated metadata into dimension, auxiliary and
+        scalar categories.
+
+        Args:
+
+        * cube:
+            The :class:`~iris.cube.Cube` that will have its coordinates and
+            metadata grouped into their associated dimension, auxiliary and
+            scalar categories.
+
+        Returns:
+            :class:`~iris.common.resolve._CategoryItems`
+
+        """
         category = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
 
         # Categorise the dim coordinates of the cube.
@@ -573,6 +642,30 @@ class Resolve:
 
     @staticmethod
     def _dim_coverage(cube, cube_items_dim, common_dim_metadata):
+        """
+        Determine the dimensions covered by each of the local and common
+        dimension coordinates of the provided :class:`~iris.cube.Cube`.
+
+        The cube dimensions not covered by any of the dimension coordinates is
+        also determined; these are known as `free` dimensions.
+
+        Args:
+
+        * cube:
+            The :class:`~iris.cube.Cube` to be analysed for coverage.
+
+        * cube_items_dim:
+            The list of associated :class:`~iris.common.resolve._Item` metadata
+            for each dimension coordinate owned by the cube.
+
+        * common_dim_metadata:
+            The list of common dimension coordinate metadata shared by both
+            the LHS and RHS cube operands being resolved.
+
+        Returns:
+            :class:`~iris.common.resolve._DimCoverage`
+
+        """
         ndim = cube.ndim
         metadata = [None] * ndim
         coords = [None] * ndim
@@ -758,6 +851,17 @@ class Resolve:
         logger.debug(f"mapping free dimensions gives, mapping={self.mapping}")
 
     def _metadata_coverage(self):
+        """
+        Using the pre-categorised metadata of the cubes, determine the dimensions
+        covered by their associated dimension and auxiliary coordinates, and which
+        dimensions are free of metadata coverage.
+
+        This coverage analysis clarifies how the dimensions covered by common
+        metadata are related, thus establishing a dimensional mapping between
+        the cubes. It also identifies the dimensions covered by metadata that
+        is local to each cube, and indeed which dimensions are free of metadata.
+
+        """
         # Determine the common dim coordinate metadata coverage.
         common_dim_metadata = [
             item.metadata for item in self.category_common.items_dim
