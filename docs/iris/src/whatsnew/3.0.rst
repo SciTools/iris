@@ -113,6 +113,12 @@ This document explains the changes made to Iris for this release
   and preservation of common metadata and coordinates during cube math operations.
   Resolves :issue:`1887`, :issue:`2765`, and :issue:`3478`. (:pull:`3785`)
 
+* `@pp-mo`_ and `@TomekTrzeciak`_ enhanced :meth:`~iris.cube.Cube.collapse` to allow a 1-D weights array when
+  collapsing over a single dimension.
+  Previously, the weights had to be the same shape as the whole cube, which could cost a lot of memory in some cases.
+  The 1-D form is supported by most weighted array statistics (such as :meth:`np.average`), so this now works
+  with the corresponding Iris schemes (in that case, :const:`~iris.analysis.MEAN`).  (:pull:`3943`)
+
 
 🐛 Bugs Fixed
 =============
@@ -472,6 +478,7 @@ This document explains the changes made to Iris for this release
 .. _@tkknight: https://github.com/tkknight
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@SimonPeatman: https://github.com/SimonPeatman
+.. _@TomekTrzeciak: https://github.com/TomekTrzeciak
 .. _@rcomer: https://github.com/rcomer
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@zklaus: https://github.com/zklaus
