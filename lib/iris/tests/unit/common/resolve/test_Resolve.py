@@ -12,6 +12,9 @@ Unit tests for the :class:`iris.common.resolve.Resolve`.
 # importing anything else.
 import iris.tests as tests
 
+from collections import namedtuple
+from copy import deepcopy
+
 import unittest.mock as mock
 from unittest.mock import sentinel
 
@@ -203,8 +206,6 @@ class Test__metadata_resolve(tests.IrisTest):
         # this wrapper (hack) is necessary in order to support mocking
         # the "name" method (callable) of the metadata, as "name" is already
         # part of the mock API - this is always troublesome in mock-world.
-        from collections import namedtuple
-
         Wrapper = namedtuple("Wrapper", ("name", "value"))
         result = []
         for name, dims in pairs:
@@ -704,6 +705,224 @@ class Test__metadata_coverage(tests.IrisTest):
         self.assertEqual(
             self.m_rhs_cube_aux_coverage, self.resolve.rhs_cube_aux_coverage
         )
+
+
+class Test__dim_mapping(tests.IrisTest):
+    def setUp(self):
+        self.ndim = 3
+        Wrapper = namedtuple("Wrapper", ("name",))
+        cube = Wrapper(name=lambda: sentinel.name)
+        self.src_coverage = _DimCoverage(
+            cube=cube,
+            metadata=[],
+            coords=None,
+            dims_common=None,
+            dims_local=None,
+            dims_free=None,
+        )
+        self.tgt_coverage = _DimCoverage(
+            cube=cube,
+            metadata=[],
+            coords=None,
+            dims_common=[],
+            dims_local=None,
+            dims_free=None,
+        )
+        self.metadata = [
+            sentinel.metadata_0,
+            sentinel.metadata_1,
+            sentinel.metadata_2,
+        ]
+        self.dummy = [sentinel.dummy_0, sentinel.dummy_1, sentinel.dummy_2]
+
+    def test_no_mapping(self):
+        self.src_coverage.metadata.extend(self.metadata)
+        self.tgt_coverage.metadata.extend(self.dummy)
+        result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
+        self.assertEqual(dict(), result)
+
+    def test_full_mapping(self):
+        self.src_coverage.metadata.extend(self.metadata)
+        self.tgt_coverage.metadata.extend(self.metadata)
+        dims_common = list(range(self.ndim))
+        self.tgt_coverage.dims_common.extend(dims_common)
+        result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 0, 1: 1, 2: 2}
+        self.assertEqual(expected, result)
+
+    def test_transpose_mapping(self):
+        self.src_coverage.metadata.extend(self.metadata[::-1])
+        self.tgt_coverage.metadata.extend(self.metadata)
+        dims_common = list(range(self.ndim))
+        self.tgt_coverage.dims_common.extend(dims_common)
+        result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 2, 1: 1, 2: 0}
+        self.assertEqual(expected, result)
+
+    def test_partial_mapping__transposed(self):
+        self.src_coverage.metadata.extend(self.metadata)
+        self.metadata[1] = sentinel.nope
+        self.tgt_coverage.metadata.extend(self.metadata[::-1])
+        dims_common = [0, 2]
+        self.tgt_coverage.dims_common.extend(dims_common)
+        result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 2, 2: 0}
+        self.assertEqual(expected, result)
+
+    def test_bad_metadata_mapping(self):
+        self.src_coverage.metadata.extend(self.metadata)
+        self.metadata[0] = sentinel.bad
+        self.tgt_coverage.metadata.extend(self.metadata)
+        dims_common = [0]
+        self.tgt_coverage.dims_common.extend(dims_common)
+        emsg = "Failed to map common dim coordinate metadata"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
+
+
+class Test__aux_mapping(tests.IrisTest):
+    def setUp(self):
+        self.ndim = 3
+        Wrapper = namedtuple("Wrapper", ("name",))
+        cube = Wrapper(name=lambda: sentinel.name)
+        self.src_coverage = _AuxCoverage(
+            cube=cube,
+            common_items_aux=[],
+            common_items_scalar=None,
+            local_items_aux=None,
+            local_items_scalar=None,
+            dims_common=None,
+            dims_local=None,
+            dims_free=None,
+        )
+        self.tgt_coverage = _AuxCoverage(
+            cube=cube,
+            common_items_aux=[],
+            common_items_scalar=None,
+            local_items_aux=None,
+            local_items_scalar=None,
+            dims_common=None,
+            dims_local=None,
+            dims_free=None,
+        )
+        self.items = [
+            _Item(
+                metadata=sentinel.metadata0, coord=sentinel.coord0, dims=[0]
+            ),
+            _Item(
+                metadata=sentinel.metadata1, coord=sentinel.coord1, dims=[1]
+            ),
+            _Item(
+                metadata=sentinel.metadata2, coord=sentinel.coord2, dims=[2]
+            ),
+        ]
+
+    def test_no_mapping(self):
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        self.assertEqual(dict(), result)
+
+    def test_full_mapping(self):
+        self.src_coverage.common_items_aux.extend(self.items)
+        self.tgt_coverage.common_items_aux.extend(self.items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 0, 1: 1, 2: 2}
+        self.assertEqual(expected, result)
+
+    def test_transpose_mapping(self):
+        self.src_coverage.common_items_aux.extend(self.items)
+        items = deepcopy(self.items)
+        items[0].dims[0] = 2
+        items[2].dims[0] = 0
+        self.tgt_coverage.common_items_aux.extend(items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 2, 1: 1, 2: 0}
+        self.assertEqual(expected, result)
+
+    def test_partial_mapping__transposed(self):
+        _ = self.items.pop(1)
+        self.src_coverage.common_items_aux.extend(self.items)
+        items = deepcopy(self.items)
+        items[0].dims[0] = 2
+        items[1].dims[0] = 0
+        self.tgt_coverage.common_items_aux.extend(items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 2, 2: 0}
+        self.assertEqual(expected, result)
+
+    def test_mapping__match_multiple_src_metadata(self):
+        items = deepcopy(self.items)
+        _ = self.items.pop(1)
+        self.src_coverage.common_items_aux.extend(self.items)
+        items[1] = items[0]
+        self.tgt_coverage.common_items_aux.extend(items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 0, 2: 2}
+        self.assertEqual(expected, result)
+
+    def test_mapping__skip_match_multiple_src_metadata(self):
+        items = deepcopy(self.items)
+        _ = self.items.pop(1)
+        self.tgt_coverage.common_items_aux.extend(self.items)
+        items[1] = items[0]._replace(dims=[1])
+        self.src_coverage.common_items_aux.extend(items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {2: 2}
+        self.assertEqual(expected, result)
+
+    def test_mapping__skip_different_rank(self):
+        items = deepcopy(self.items)
+        self.src_coverage.common_items_aux.extend(self.items)
+        items[2] = items[2]._replace(dims=[1, 2])
+        self.tgt_coverage.common_items_aux.extend(items)
+        result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+        expected = {0: 0, 1: 1}
+        self.assertEqual(expected, result)
+
+    def test_bad_metadata_mapping(self):
+        self.src_coverage.common_items_aux.extend(self.items)
+        items = deepcopy(self.items)
+        items[0] = items[0]._replace(metadata=sentinel.bad)
+        self.tgt_coverage.common_items_aux.extend(items)
+        emsg = "Failed to map common aux coordinate metadata"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
+
+
+class Test_mapped(tests.IrisTest):
+    def test_mapping_none(self):
+        resolve = Resolve()
+        self.assertIsNone(resolve.mapping)
+        self.assertIsNone(resolve.mapped)
+
+    def test_mapped__src_cube_lhs(self):
+        resolve = Resolve()
+        lhs = mock.Mock(ndim=2)
+        rhs = mock.Mock(ndim=3)
+        resolve.lhs_cube = lhs
+        resolve.rhs_cube = rhs
+        resolve.map_rhs_to_lhs = False
+        resolve.mapping = {0: 0, 1: 1}
+        self.assertTrue(resolve.mapped)
+
+    def test_mapped__src_cube_rhs(self):
+        resolve = Resolve()
+        lhs = mock.Mock(ndim=3)
+        rhs = mock.Mock(ndim=2)
+        resolve.lhs_cube = lhs
+        resolve.rhs_cube = rhs
+        resolve.map_rhs_to_lhs = True
+        resolve.mapping = {0: 0, 1: 1}
+        self.assertTrue(resolve.mapped)
+
+    def test_partial_mapping(self):
+        resolve = Resolve()
+        lhs = mock.Mock(ndim=3)
+        rhs = mock.Mock(ndim=2)
+        resolve.lhs_cube = lhs
+        resolve.rhs_cube = rhs
+        resolve.map_rhs_to_lhs = True
+        resolve.mapping = {0: 0}
+        self.assertFalse(resolve.mapped)
 
 
 if __name__ == "__main__":

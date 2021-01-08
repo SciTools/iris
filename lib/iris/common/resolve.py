@@ -518,7 +518,33 @@ class Resolve:
             dims_free=sorted(dims_free),
         )
 
-    def _aux_mapping(self, src_coverage, tgt_coverage):
+    @staticmethod
+    def _aux_mapping(src_coverage, tgt_coverage):
+        """
+        Establish the mapping of dimensions from the ``src`` to ``tgt``
+        :class:`~iris.cube.Cube` using the auxiliary coordinate metadata
+        common between each of the operands.
+
+        The ``src`` to ``tgt`` common auxiliary coordinate mapping is held by
+        the :attr:`~iris.common.resolve.Resolve.mapping`.
+
+        Args:
+
+        * src_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` of the ``src``
+            :class:`~iris.cube.Cube` i.e., map from the common ``src``
+            dimensions.
+
+        * tgt_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` of the ``tgt``
+            :class:`~iris.cube.Cube` i.e., map to the common ``tgt``
+            dimensions.
+
+        Returns:
+            Dictionary of ``src`` to ``tgt`` dimension mapping.
+
+        """
+        mapping = {}
         for tgt_item in tgt_coverage.common_items_aux:
             # Search for a src aux metadata match.
             tgt_metadata = tgt_item.metadata
@@ -537,7 +563,7 @@ class Resolve:
                     tgt_dims = tgt_item.dims
                     if len(src_dims) == len(tgt_dims):
                         for src_dim, tgt_dim in zip(src_dims, tgt_dims):
-                            self.mapping[src_dim] = tgt_dim
+                            mapping[src_dim] = tgt_dim
                             logger.debug(f"{src_dim}->{tgt_dim}")
             else:
                 # This situation can only occur due to a systemic internal
@@ -557,6 +583,7 @@ class Resolve:
                         tgt_item.dims,
                     )
                 )
+        return mapping
 
     @staticmethod
     def _categorise_items(cube):
@@ -692,13 +719,39 @@ class Resolve:
             dims_free=sorted(dims_free),
         )
 
-    def _dim_mapping(self, src_coverage, tgt_coverage):
+    @staticmethod
+    def _dim_mapping(src_coverage, tgt_coverage):
+        """
+        Establish the mapping of dimensions from the ``src`` to ``tgt``
+        :class:`~iris.cube.Cube` using the dimension coordinate metadata
+        common between each of the operands.
+
+        The ``src`` to ``tgt`` common dimension coordinate mapping is held by
+        the :attr:`~iris.common.resolve.Resolve.mapping`.
+
+        Args:
+
+        * src_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` of the ``src``
+            :class:`~iris.cube.Cube` i.e., map from the common ``src``
+            dimensions.
+
+        * tgt_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` of the ``tgt``
+            :class:`~iris.cube.Cube` i.e., map to the common ``tgt``
+            dimensions.
+
+        Returns:
+            Dictionary of ``src`` to ``tgt`` dimension mapping.
+
+        """
+        mapping = {}
         for tgt_dim in tgt_coverage.dims_common:
             # Search for a src dim metadata match.
             tgt_metadata = tgt_coverage.metadata[tgt_dim]
             try:
                 src_dim = src_coverage.metadata.index(tgt_metadata)
-                self.mapping[src_dim] = tgt_dim
+                mapping[src_dim] = tgt_dim
                 logger.debug(f"{src_dim}->{tgt_dim}")
             except ValueError:
                 # This exception can only occur due to a systemic internal
@@ -714,9 +767,10 @@ class Resolve:
                         src_coverage.cube.name(),
                         tgt_coverage.cube.name(),
                         tgt_metadata,
-                        tuple([tgt_dim]),
+                        (tgt_dim,),
                     )
                 )
+        return mapping
 
     def _free_mapping(
         self,
@@ -902,6 +956,10 @@ class Resolve:
         )
 
     def _metadata_mapping(self):
+        """
+        TBD
+
+        """
         # Initialise the state.
         self.mapping = {}
 
@@ -923,7 +981,9 @@ class Resolve:
 
         # Use the dim coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
-        self._dim_mapping(src_dim_coverage, tgt_dim_coverage)
+        self.mapping.update(
+            self._dim_mapping(src_dim_coverage, tgt_dim_coverage)
+        )
         logger.debug(
             f"mapping common dim coordinates gives, mapping={self.mapping}"
         )
@@ -931,7 +991,9 @@ class Resolve:
         # If necessary, use the aux coordinates to fully map the
         # src cube dimensions to the tgt cube dimensions.
         if not self.mapped:
-            self._aux_mapping(src_aux_coverage, tgt_aux_coverage)
+            self.mapping.update(
+                self._aux_mapping(src_aux_coverage, tgt_aux_coverage)
+            )
             logger.debug(
                 f"mapping common aux coordinates, mapping={self.mapping}"
             )
