@@ -939,5 +939,428 @@ class Test_mapped(tests.IrisTest):
         self.assertFalse(resolve.mapped)
 
 
+class Test__free_mapping(tests.IrisTest):
+    def setUp(self):
+        self.Cube = namedtuple("Wrapper", ("name", "ndim", "shape"))
+        self.src_dim_coverage = dict(
+            cube=None,
+            metadata=None,
+            coords=None,
+            dims_common=None,
+            dims_local=None,
+            dims_free=[],
+        )
+        self.tgt_dim_coverage = deepcopy(self.src_dim_coverage)
+        self.src_aux_coverage = dict(
+            cube=None,
+            common_items_aux=None,
+            common_items_scalar=None,
+            local_items_aux=None,
+            local_items_scalar=None,
+            dims_common=None,
+            dims_local=None,
+            dims_free=[],
+        )
+        self.tgt_aux_coverage = deepcopy(self.src_aux_coverage)
+        self.resolve = Resolve()
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.mapping = {}
+
+    def _make_args(self):
+        args = dict(
+            src_dim_coverage=_DimCoverage(**self.src_dim_coverage),
+            tgt_dim_coverage=_DimCoverage(**self.tgt_dim_coverage),
+            src_aux_coverage=_AuxCoverage(**self.src_aux_coverage),
+            tgt_aux_coverage=_AuxCoverage(**self.tgt_aux_coverage),
+        )
+        return args
+
+    def test_mapping_no_dims_free(self):
+        ndim = 4
+        shape = tuple(range(ndim))
+        cube = self.Cube(name=lambda: "name", ndim=ndim, shape=shape)
+        self.src_dim_coverage["cube"] = cube
+        self.tgt_dim_coverage["cube"] = cube
+        args = self._make_args()
+        emsg = "Insufficient matching coordinate metadata"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.resolve._free_mapping(**args)
+
+    def _make_coverage(self, name, shape, dims_free):
+        if name == "src":
+            dim_coverage = self.src_dim_coverage
+            aux_coverage = self.src_aux_coverage
+        else:
+            dim_coverage = self.tgt_dim_coverage
+            aux_coverage = self.tgt_aux_coverage
+        ndim = len(shape)
+        cube = self.Cube(name=lambda: name, ndim=ndim, shape=shape)
+        dim_coverage["cube"] = cube
+        dim_coverage["dims_free"].extend(dims_free)
+        aux_coverage["cube"] = cube
+        aux_coverage["dims_free"].extend(dims_free)
+
+    def test_mapping_src_free_to_tgt_local(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 4
+        #   state f l c l      state f c f
+        #   coord d d d a      coord a d d
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (2, 3, 4)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_local__broadcast_src_first(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 1 3 4
+        #   state f l c l      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (1, 3, 4)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_local__broadcast_src_last(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 1
+        #   state f l c l      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast     ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (2, 3, 1)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_local__broadcast_src_both(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 1 3 1
+        #   state f l c l      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast ^   ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->1 1->2 2->3
+        src_shape = (1, 3, 1)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 1, 1: 2, 2: 3}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_free(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 4
+        #   state f f c f      state f c f
+        #   coord d d d a      coord a d d
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->1
+        src_shape = (2, 3, 4)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0, 1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 0, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_free__broadcast_src_first(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 1 3 4
+        #   state f f c f      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->1
+        src_shape = (1, 3, 4)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0, 1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 0, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_free__broadcast_src_last(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 1
+        #   state f f c f      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast     ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->1
+        src_shape = (2, 3, 1)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0, 1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 0, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt_free__broadcast_src_both(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 1 3 1
+        #   state f f c f      state f c f
+        #   coord d d d a      coord a d d
+        #                      bcast ^   ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->1
+        src_shape = (1, 3, 1)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0, 1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 0, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_src_free_to_tgt__fail(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 5
+        #   state f f c f      state f c f
+        #   coord d d d a      coord a d d
+        #                      fail      ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->?
+        src_shape = (2, 3, 5)
+        src_free = [0, 2]
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [0, 1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        emsg = "Insufficient matching coordinate metadata to resolve cubes"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.resolve._free_mapping(**args)
+
+    def test_mapping_tgt_free_to_src_local(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            -> src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 4
+        #   state l f c f      state l c l
+        #   coord d d d a      coord a d d
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (2, 3, 4)
+        src_free = []
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 2)
+        tgt_free = [1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_tgt_free_to_src_local__broadcast_tgt_first(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            -> src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 1 3 2      shape 2 3 4
+        #   state l f c f      state l c l
+        #   coord d d d a      coord a d d
+        #   bcast   ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (2, 3, 4)
+        src_free = []
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 1, 3, 2)
+        tgt_free = [1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_tgt_free_to_src_local__broadcast_tgt_last(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            -> src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 1      shape 2 3 4
+        #   state l f c f      state l c l
+        #   coord d d d a      coord a d d
+        #   bcast       ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->3 1->2 2->1
+        src_shape = (2, 3, 4)
+        src_free = []
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 1)
+        tgt_free = [1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 3, 1: 2, 2: 1}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_tgt_free_to_src_local__broadcast_tgt_both(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            -> src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 1 3 1      shape 2 3 4
+        #   state l f c f      state l c l
+        #   coord d d d a      coord a d d
+        #   bcast   ^   ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->1 1->2 2->3
+        src_shape = (2, 3, 4)
+        src_free = []
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 1, 3, 1)
+        tgt_free = [1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        self.resolve._free_mapping(**args)
+        expected = {0: 1, 1: 2, 2: 3}
+        self.assertEqual(expected, self.resolve.mapping)
+
+    def test_mapping_tgt_free_to_src_no_free__fail(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            -> src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 5      shape 2 3 4
+        #   state l f c f      state l c l
+        #   coord d d d a      coord a d d
+        #   fail        ^
+        #
+        # src-to-tgt mapping:
+        #   before      1->2
+        #   after  0->0 1->2 2->?
+        src_shape = (2, 3, 4)
+        src_free = []
+        self._make_coverage("src", src_shape, src_free)
+        tgt_shape = (2, 4, 3, 5)
+        tgt_free = [1, 3]
+        self._make_coverage("tgt", tgt_shape, tgt_free)
+        self.resolve.mapping = {1: 2}
+        args = self._make_args()
+        emsg = "Insufficient matching coordinate metadata to resolve cubes"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.resolve._free_mapping(**args)
+
+
 if __name__ == "__main__":
     tests.main()

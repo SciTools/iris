@@ -779,6 +779,56 @@ class Resolve:
         src_aux_coverage,
         tgt_aux_coverage,
     ):
+        """
+        Attempt to update the :attr:`~iris.common.resolve.Resolve.mapping` with
+        ``src`` to ``tgt`` :class:`~iris.cube.Cube` mappings from unmapped ``src``
+        dimensions that are free from coordinate metadata coverage to ``tgt``
+        dimensions that have local metadata coverage (i.e., is not common between
+        the ``src`` and ``tgt``) or dimensions that are free from coordinate
+        metadata coverage.
+
+        If the ``src`` :class:`~iris.cube.Cube` does not have any free dimensions,
+        the attempt to map unmapped ``tgt`` dimensions that have local metadata
+        coverage to ``src`` dimensions that are free from coordinate metadata
+        coverage.
+
+        An exception will be raised if there are any ``src`` :class:`~iris.cube.Cube`
+        dimensions not mapped to an associated ``tgt`` dimension.
+
+        Args:
+
+        * src_dim_coverage:
+            The :class:`~iris.common.resolve.._DimCoverage` of the ``src``
+            :class:`~iris.cube.Cube`.
+
+        * tgt_dim_coverage:
+            The :class:`~iris.common.resolve.._DimCoverage` of the ``tgt``
+            :class:`~iris.cube.Cube`.
+
+        * src_aux_coverage:
+            The :class:`~iris.common.resolve._AuxCoverage` of the ``src``
+            :class:`~iris.cube.Cube`.
+
+        * tgt_aux_coverage:
+            The :class:`~iris.common.resolve._AuxCoverage` of the ``tgt``
+            :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            All unmapped dimensions with an extend >1 are mapped before those
+            with an extent of 1, as such dimensions cannot be broadcast. It
+            is important to map specific non-broadcastable dimensions before
+            generic broadcastable dimensions otherwise we are open to failing to
+            map all the src dimensions as a generic src broadcast dimension has
+            been mapped to the only tgt dimension that a specific non-broadcastable
+            dimension can be mapped to.
+
+        .. note::
+
+            A local dimension cannot be mapped to a local dimension, by definition,
+            otherwise this dimension would be classed as a common dimension.
+
+        """
         src_cube = src_dim_coverage.cube
         tgt_cube = tgt_dim_coverage.cube
         src_ndim = src_cube.ndim
@@ -810,11 +860,16 @@ class Resolve:
             tgt_shape = tgt_cube.shape
             src_max, tgt_max = max(src_shape), max(tgt_shape)
 
-            def assign_mapping(extent, unmapped_local_items, free_items=None):
+            def _assign_mapping(extent, unmapped_local_items, free_items=None):
                 result = None
                 if free_items is None:
                     free_items = []
                 if extent == 1:
+                    # Map to the first available unmapped local dimension or
+                    # the first available free dimension.
+                    # Dimension shape doesn't matter here as the extent is 1,
+                    # therefore broadcasting will take care of any discrepency
+                    # between src and tgt dimension extent.
                     if unmapped_local_items:
                         result, _ = unmapped_local_items.pop(0)
                     elif free_items:
@@ -827,10 +882,10 @@ class Resolve:
                         )
 
                     def _pop(item, items):
-                        result, _ = item
+                        dim, _ = item
                         index = items.index(item)
                         items.pop(index)
-                        return result
+                        return dim
 
                     items = _filter(unmapped_local_items)
                     if items:
@@ -847,11 +902,12 @@ class Resolve:
                     (dim, tgt_shape[dim]) for dim in tgt_unmapped_local
                 ]
                 tgt_free_items = [(dim, tgt_shape[dim]) for dim in tgt_free]
+                # Sort by decreasing src dimension extent and increasing src dimension
+                # as we want broadcast src dimensions to be mapped last.
+                src_key_func = lambda dim: (src_max - src_shape[dim], dim)
 
-                for src_dim in sorted(
-                    src_free, key=lambda dim: (src_max - src_shape[dim], dim)
-                ):
-                    tgt_dim = assign_mapping(
+                for src_dim in sorted(src_free, key=src_key_func):
+                    tgt_dim = _assign_mapping(
                         src_shape[src_dim],
                         tgt_unmapped_local_items,
                         tgt_free_items,
@@ -872,11 +928,12 @@ class Resolve:
                 src_unmapped_local_items = [
                     (dim, src_shape[dim]) for dim in src_unmapped_local
                 ]
+                # Sort by decreasing tgt dimension extent and increasing tgt dimension
+                # as we want broadcast tgt dimensions to be mapped last.
+                tgt_key_func = lambda dim: (tgt_max - tgt_shape[dim], dim)
 
-                for tgt_dim in sorted(
-                    tgt_free, key=lambda dim: (tgt_max - tgt_shape[dim], dim)
-                ):
-                    src_dim = assign_mapping(
+                for tgt_dim in sorted(tgt_free, key=tgt_key_func):
+                    src_dim = _assign_mapping(
                         tgt_shape[tgt_dim], src_unmapped_local_items
                     )
                     if src_dim is not None:
