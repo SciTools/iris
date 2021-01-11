@@ -104,7 +104,6 @@ rst_epilog = """
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "generate_logo",
     "sphinx.ext.todo",
     "sphinx.ext.duration",
     "sphinx.ext.coverage",
@@ -210,18 +209,36 @@ doctest_global_setup = "import iris"
 
 # -- Options for HTML output --------------------------------------------------
 
+# Generate logos.
+from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
+import requests
+from tempfile import TemporaryDirectory
+
+logo_gen_url = "https://raw.githubusercontent.com/trexfeathers/marketing/program_logo/iris/logo/generate_logo.py"
+logo_gen_request = requests.get(logo_gen_url, allow_redirects=True)
+with TemporaryDirectory() as tmp_dir:
+    logo_gen_path = Path(tmp_dir) / "generate_logo.py"
+    logo_gen_path.open("wb").write(logo_gen_request.content)
+    logo_gen_spec = spec_from_file_location("generate_logo", logo_gen_path)
+    generate_logo = module_from_spec(logo_gen_spec)
+    logo_gen_spec.loader.exec_module(generate_logo)
+
+logo_gen_kwargs = {
+    "filename_prefix": project.lower(),
+    "write_dir": Path("_static"),
+    "banner_text": project,
+    "banner_width": 588,
+    "rotate": False,
+}
+logo_paths = generate_logo.generate_logo(**logo_gen_kwargs)
+
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-project_prefix = project.lower()
-os.environ["PROJECT_PREFIX"] = project_prefix
-logo_root = Path("_static")
-logo_name = f"{project_prefix}-logo-title.svg"
-favicon_name = f"{project_prefix}-logo.svg"
-html_logo = logo_root / logo_name
-html_favicon = logo_root / favicon_name
+html_logo = str(logo_paths["logo-title"])
+html_favicon = str(logo_paths["logo"])
 html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
