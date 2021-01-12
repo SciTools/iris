@@ -1465,11 +1465,11 @@ class Test__tgt_cube_position(tests.IrisTest):
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
-        self.assertEqual("LHS", self.resolve._tgt_cube_position)
+        self.assertEqual("RHS", self.resolve._tgt_cube_position)
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
-        self.assertEqual("RHS", self.resolve._tgt_cube_position)
+        self.assertEqual("LHS", self.resolve._tgt_cube_position)
 
     def test_fail__no_map_rhs_to_lhs(self):
         with self.assertRaises(AssertionError):
