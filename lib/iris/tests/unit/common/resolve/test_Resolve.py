@@ -1520,5 +1520,9 @@ class Test__as_compatible_cubes(tests.IrisTest):
     pass
 
 
+class Test__metadata_mapping(tests.IrisTest):
+    pass
+
+
 if __name__ == "__main__":
     tests.main()
