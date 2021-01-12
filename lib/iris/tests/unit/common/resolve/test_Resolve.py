@@ -1362,5 +1362,163 @@ class Test__free_mapping(tests.IrisTest):
             self.resolve._free_mapping(**args)
 
 
+class Test__src_cube(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.rhs_cube = self.expected
+        self.assertEqual(self.expected, self.resolve._src_cube)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve.lhs_cube = self.expected
+        self.assertEqual(self.expected, self.resolve._src_cube)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._src_cube
+
+
+class Test__src_cube_position(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.assertEqual("RHS", self.resolve._src_cube_position)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.assertEqual("LHS", self.resolve._src_cube_position)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._src_cube_position
+
+
+class Test__src_cube_resolved__getter(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.rhs_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve._src_cube_resolved)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve.lhs_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve._src_cube_resolved)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._src_cube_resolved
+
+
+class Test__src_cube_resolved__setter(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve._src_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve.rhs_cube_resolved)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve._src_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve.lhs_cube_resolved)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._src_cube_resolved = self.expected
+
+
+class Test__tgt_cube(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve.rhs_cube = self.expected
+        self.assertEqual(self.expected, self.resolve._tgt_cube)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.lhs_cube = self.expected
+        self.assertEqual(self.expected, self.resolve._tgt_cube)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._tgt_cube
+
+
+class Test__tgt_cube_position(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.assertEqual("LHS", self.resolve._tgt_cube_position)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.assertEqual("RHS", self.resolve._tgt_cube_position)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._tgt_cube_position
+
+
+class Test__tgt_cube_resolved__getter(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve.rhs_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve._tgt_cube_resolved)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.lhs_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve._tgt_cube_resolved)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._tgt_cube_resolved
+
+
+class Test__tgt_cube_resolved__setter(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+        self.expected = sentinel.cube
+
+    def test_rhs_cube(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve._tgt_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve.rhs_cube_resolved)
+
+    def test_lhs_cube(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve._tgt_cube_resolved = self.expected
+        self.assertEqual(self.expected, self.resolve.lhs_cube_resolved)
+
+    def test_fail__no_map_rhs_to_lhs(self):
+        with self.assertRaises(AssertionError):
+            self.resolve._tgt_cube_resolved = self.expected
+
+
+class Test__as_compatible_cubes(tests.IrisTest):
+    pass
+
+
 if __name__ == "__main__":
     tests.main()

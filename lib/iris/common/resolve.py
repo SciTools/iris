@@ -825,8 +825,9 @@ class Resolve:
 
         .. note::
 
-            A local dimension cannot be mapped to a local dimension, by definition,
-            otherwise this dimension would be classed as a common dimension.
+            A local dimension cannot be mapped to another local dimension,
+            by definition, otherwise this dimension would be classed as a
+            common dimension.
 
         """
         src_cube = src_dim_coverage.cube
@@ -1013,10 +1014,6 @@ class Resolve:
         )
 
     def _metadata_mapping(self):
-        """
-        TBD
-
-        """
         # Initialise the state.
         self.mapping = {}
 
