@@ -1516,6 +1516,19 @@ class Test__tgt_cube_resolved__setter(tests.IrisTest):
             self.resolve._tgt_cube_resolved = self.expected
 
 
+class Test_shape(tests.IrisTest):
+    def setUp(self):
+        self.resolve = Resolve()
+
+    def test_no_shape(self):
+        self.assertIsNone(self.resolve.shape)
+
+    def test_shape(self):
+        expected = sentinel.shape
+        self.resolve._broadcast_shape = expected
+        self.assertEqual(expected, self.resolve.shape)
+
+
 class Test__as_compatible_cubes(tests.IrisTest):
     pass
 
