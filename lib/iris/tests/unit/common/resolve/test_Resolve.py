@@ -1530,7 +1530,311 @@ class Test_shape(tests.IrisTest):
 
 
 class Test__as_compatible_cubes(tests.IrisTest):
-    pass
+    def setUp(self):
+        self.Cube = namedtuple(
+            "Wrapper",
+            (
+                "name",
+                "ndim",
+                "shape",
+                "metadata",
+                "core_data",
+                "coord_dims",
+                "dim_coords",
+                "aux_coords",
+                "aux_factories",
+            ),
+        )
+        self.resolve = Resolve()
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.mapping = {}
+        self.mocker = self.patch("iris.cube.Cube")
+        self.args = dict(
+            name=None,
+            ndim=None,
+            shape=None,
+            metadata=None,
+            core_data=None,
+            coord_dims=None,
+            dim_coords=None,
+            aux_coords=None,
+            aux_factories=None,
+        )
+
+    def _make_cube(self, name, shape, transpose_shape=None):
+        self.args["name"] = lambda: name
+        ndim = len(shape)
+        self.args["ndim"] = ndim
+        self.args["shape"] = shape
+        if name == "src":
+            self.args["metadata"] = sentinel.metadata
+            self.reshape = sentinel.reshape
+            m_reshape = mock.Mock(return_value=self.reshape)
+            self.transpose = mock.Mock(
+                shape=transpose_shape, reshape=m_reshape
+            )
+            m_transpose = mock.Mock(return_value=self.transpose)
+            self.data = mock.Mock(
+                shape=shape, transpose=m_transpose, reshape=m_reshape
+            )
+            m_copy = mock.Mock(return_value=self.data)
+            m_core_data = mock.Mock(copy=m_copy)
+            self.args["core_data"] = mock.Mock(return_value=m_core_data)
+            self.args["coord_dims"] = mock.Mock(side_effect=([0], [ndim - 1]))
+            self.dim_coord = sentinel.dim_coord
+            self.aux_coord = sentinel.aux_coord
+            self.aux_factory = sentinel.aux_factory
+            self.args["dim_coords"] = [self.dim_coord]
+            self.args["aux_coords"] = [self.aux_coord]
+            self.args["aux_factories"] = [self.aux_factory]
+            cube = self.Cube(**self.args)
+            self.resolve.rhs_cube = cube
+            self.cube = mock.Mock()
+            self.mocker.return_value = self.cube
+        else:
+            cube = self.Cube(**self.args)
+            self.resolve.lhs_cube = cube
+
+    def test_incomplete_src_to_tgt_mapping__fail(self):
+        src_shape = (1, 2)
+        self._make_cube("src", src_shape)
+        tgt_shape = (3, 4)
+        self._make_cube("tgt", tgt_shape)
+        with self.assertRaises(AssertionError):
+            self.resolve._as_compatible_cubes()
+
+    def test_incompatible_shapes__fail(self):
+        # key: (state) c=common, f=free
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 2 3 4      shape 2 3 5
+        #   state f c c c      state c c c
+        #   fail        ^      fail      ^
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        src_shape = (2, 3, 5)
+        self._make_cube("src", src_shape)
+        tgt_shape = (2, 2, 3, 4)
+        self._make_cube("tgt", tgt_shape)
+        self.resolve.mapping = {0: 1, 1: 2, 2: 3}
+        emsg = "Cannot resolve cubes"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.resolve._as_compatible_cubes()
+
+    def test_incompatible_shapes__fail_broadcast(self):
+        # key: (state) c=common, f=free
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 2 4 3 2      shape 2 3 5
+        #   state f c c c      state c c c
+        #   fail    ^          fail      ^
+        #
+        # src-to-tgt mapping:
+        #   0->3, 1->2, 2->1
+        src_shape = (2, 3, 5)
+        self._make_cube("src", src_shape)
+        tgt_shape = (2, 4, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        self.resolve.mapping = {0: 3, 1: 2, 2: 1}
+        emsg = "Cannot resolve cubes"
+        with self.assertRaisesRegex(ValueError, emsg):
+            self.resolve._as_compatible_cubes()
+
+    def _check_compatible(self, broadcast_shape):
+        self.assertEqual(
+            self.resolve.lhs_cube, self.resolve._tgt_cube_resolved
+        )
+        self.assertEqual(self.cube, self.resolve._src_cube_resolved)
+        self.assertEqual(broadcast_shape, self.resolve._broadcast_shape)
+        self.assertEqual(1, self.mocker.call_count)
+        self.assertEqual(self.args["metadata"], self.cube.metadata)
+        self.assertEqual(2, self.resolve.rhs_cube.coord_dims.call_count)
+        self.assertEqual(
+            [mock.call(self.dim_coord), mock.call(self.aux_coord)],
+            self.resolve.rhs_cube.coord_dims.call_args_list,
+        )
+        self.assertEqual(1, self.cube.add_dim_coord.call_count)
+        self.assertEqual(
+            [mock.call(self.dim_coord, [self.resolve.mapping[0]])],
+            self.cube.add_dim_coord.call_args_list,
+        )
+        self.assertEqual(1, self.cube.add_aux_coord.call_count)
+        self.assertEqual(
+            [mock.call(self.aux_coord, [self.resolve.mapping[2]])],
+            self.cube.add_aux_coord.call_args_list,
+        )
+        self.assertEqual(1, self.cube.add_aux_factory.call_count)
+        self.assertEqual(
+            [mock.call(self.aux_factory)],
+            self.cube.add_aux_factory.call_args_list,
+        )
+
+    def test_compatible(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:          <- src:
+        #   dims  0 1 2      dims  0 1 2
+        #   shape 4 3 2      shape 4 3 2
+        #   state c c c      state c c c
+        #                    coord d   a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1, 2->2
+        src_shape = (4, 3, 2)
+        self._make_cube("src", src_shape)
+        tgt_shape = (4, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 0, 1: 1, 2: 2}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=tgt_shape)
+        self.assertEqual([mock.call(self.data)], self.mocker.call_args_list)
+
+    def test_compatible__transpose(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:          <- src:
+        #   dims  0 1 2      dims  0 1 2
+        #   shape 4 3 2      shape 2 3 4
+        #   state c c c      state c c c
+        #                    coord d   a
+        #
+        # src-to-tgt mapping:
+        #   0->2, 1->1, 2->0
+        src_shape = (2, 3, 4)
+        self._make_cube("src", src_shape, transpose_shape=(4, 3, 2))
+        tgt_shape = (4, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 2, 1: 1, 2: 0}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=tgt_shape)
+        self.assertEqual(1, self.data.transpose.call_count)
+        self.assertEqual(
+            [mock.call([2, 1, 0])], self.data.transpose.call_args_list
+        )
+        self.assertEqual(
+            [mock.call(self.transpose)], self.mocker.call_args_list
+        )
+
+    def test_compatible__reshape(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state f c c c      state c c c
+        #                      coord d   a
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        src_shape = (4, 3, 2)
+        self._make_cube("src", src_shape)
+        tgt_shape = (5, 4, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 1, 1: 2, 2: 3}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=tgt_shape)
+        self.assertEqual(1, self.data.reshape.call_count)
+        self.assertEqual(
+            [mock.call((1,) + src_shape)], self.data.reshape.call_args_list
+        )
+        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
+
+    def test_compatible__transpose_reshape(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 2 3 4
+        #   state f c c c      state c c c
+        #                      coord d   a
+        #
+        # src-to-tgt mapping:
+        #   0->3, 1->2, 2->1
+        src_shape = (2, 3, 4)
+        transpose_shape = (4, 3, 2)
+        self._make_cube("src", src_shape, transpose_shape=transpose_shape)
+        tgt_shape = (5, 4, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 3, 1: 2, 2: 1}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=tgt_shape)
+        self.assertEqual(1, self.data.transpose.call_count)
+        self.assertEqual(
+            [mock.call([2, 1, 0])], self.data.transpose.call_args_list
+        )
+        self.assertEqual(1, self.data.reshape.call_count)
+        self.assertEqual(
+            [mock.call((1,) + transpose_shape)],
+            self.data.reshape.call_args_list,
+        )
+        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
+
+    def test_compatible__broadcast(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:          <- src:
+        #   dims  0 1 2      dims  0 1 2
+        #   shape 1 3 2      shape 4 1 2
+        #   state c c c      state c c c
+        #                    coord d   a
+        #   bcast ^          bcast   ^
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1, 2->2
+        src_shape = (4, 1, 2)
+        self._make_cube("src", src_shape)
+        tgt_shape = (1, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 0, 1: 1, 2: 2}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=(4, 3, 2))
+        self.assertEqual([mock.call(self.data)], self.mocker.call_args_list)
+
+    def test_compatible__broadcast_transpose_reshape(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 1 3 2      shape 2 1 4
+        #   state f c c c      state c c c
+        #                      coord d   a
+        #   bcast   ^          bcast   ^
+        #
+        # src-to-tgt mapping:
+        #   0->3, 1->2, 2->1
+        src_shape = (2, 1, 4)
+        transpose_shape = (4, 1, 2)
+        self._make_cube("src", src_shape)
+        tgt_shape = (5, 1, 3, 2)
+        self._make_cube("tgt", tgt_shape)
+        mapping = {0: 3, 1: 2, 2: 1}
+        self.resolve.mapping = mapping
+        self.resolve._as_compatible_cubes()
+        self._check_compatible(broadcast_shape=(5, 4, 3, 2))
+        self.assertEqual(1, self.data.transpose.call_count)
+        self.assertEqual(
+            [mock.call([2, 1, 0])], self.data.transpose.call_args_list
+        )
+        self.assertEqual(1, self.data.reshape.call_count)
+        self.assertEqual(
+            [mock.call((1,) + transpose_shape)],
+            self.data.reshape.call_args_list,
+        )
+        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
 
 
 class Test__metadata_mapping(tests.IrisTest):

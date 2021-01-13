@@ -357,10 +357,30 @@ class Resolve:
         return self
 
     def _as_compatible_cubes(self):
+        """
+        Determine whether the ``src`` and ``tgt`` :class:`~iris.cube.Cube` can
+        be transposed and/or broadcast successfully together.
+
+        If compatible, the ``_broadcast_shape`` is calculated of the resultant
+        resolved cube, and the ``_src_cube_resolved`` (transposed/broadcast ``src``
+        cube) and ``_tgt_cube_resolved`` (same as the ``tgt`` cube) are
+        calculated.
+
+        An exception will be raised if the ``src`` and ``tgt`` cannot be
+        broadcast, even after a suitable transpose has been performed.
+
+        .. note::
+
+            Requires that **all** ``src`` cube dimensions have been mapped
+            successfully to an appropriate ``tgt`` cube dimension.
+
+        """
         from iris.cube import Cube
 
         src_cube = self._src_cube
         tgt_cube = self._tgt_cube
+
+        assert src_cube.ndim == len(self.mapping)
 
         # Use the mapping to calculate the new src cube shape.
         new_src_shape = [1] * tgt_cube.ndim
