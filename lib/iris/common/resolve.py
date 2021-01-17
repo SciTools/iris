@@ -1034,6 +1034,37 @@ class Resolve:
         )
 
     def _metadata_mapping(self):
+        """
+        Ensure that each ``src`` :class:`~iris.cube.Cube` dimension is mapped to an associated
+        ``tgt`` :class:`~iris.cube.Cube` dimension using the common dim and aux coordinate metadata.
+
+        If the common metadata does not result in a full mapping of ``src`` to ``tgt`` dimensions
+        then free dimensions are analysed to determine whether the mapping can be completed.
+
+        Once the ``src`` has been mapped to the ``tgt``, the cubes are checked to ensure that they
+        will successfully broadcast, and the ``src`` :class:`~iris.cube.Cube` is transposed appropriately,
+        if necessary.
+
+        The :attr:`~iris.common.resolve.Resolve._broadcast_shape` is set, along with the
+        :attr:`~iris.common.resolve.Resolve._src_cube_resolved` and :attr:`~iris.common.resolve.Resolve._tgt_cube_resolved`,
+        which are the broadcast/transposed ``src`` and ``tgt``.
+
+        .. note::
+
+            An exception will be raised if a ``src`` dimension cannot be mapped to a ``tgt`` dimension.
+
+        .. note::
+
+            An exception will be raised if the full mapped ``src`` :class:`~iris.cube.Cube` cannot be
+            broadcast or transposed with the ``tgt`` :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            The ``src`` and ``tgt`` may  be swapped in the case where they both have equal dimensionality and
+            the ``tgt`` does have the same shape as the resolved broadcast shape (and the ``src`` does) or
+            the ``tgt`` has more free dimensions than the ``src``.
+
+        """
         # Initialise the state.
         self.mapping = {}
 

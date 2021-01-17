@@ -1838,7 +1838,231 @@ class Test__as_compatible_cubes(tests.IrisTest):
 
 
 class Test__metadata_mapping(tests.IrisTest):
-    pass
+    def setUp(self):
+        self.ndim = sentinel.ndim
+        self.src_cube = mock.Mock(ndim=self.ndim)
+        self.src_dim_coverage = mock.Mock(dims_free=[])
+        self.src_aux_coverage = mock.Mock(dims_free=[])
+        self.tgt_cube = mock.Mock(ndim=self.ndim)
+        self.tgt_dim_coverage = mock.Mock(dims_free=[])
+        self.tgt_aux_coverage = mock.Mock(dims_free=[])
+        self.resolve = Resolve()
+        self.map_rhs_to_lhs = True
+        self.resolve.map_rhs_to_lhs = self.map_rhs_to_lhs
+        self.resolve.rhs_cube = self.src_cube
+        self.resolve.rhs_cube_dim_coverage = self.src_dim_coverage
+        self.resolve.rhs_cube_aux_coverage = self.src_aux_coverage
+        self.resolve.lhs_cube = self.tgt_cube
+        self.resolve.lhs_cube_dim_coverage = self.tgt_dim_coverage
+        self.resolve.lhs_cube_aux_coverage = self.tgt_aux_coverage
+        self.resolve.mapping = {}
+        self.shape = sentinel.shape
+        self.resolve._broadcast_shape = self.shape
+        self.resolve._src_cube_resolved = mock.Mock(shape=self.shape)
+        self.resolve._tgt_cube_resolved = mock.Mock(shape=self.shape)
+        self.m_dim_mapping = self.patch(
+            "iris.common.resolve.Resolve._dim_mapping", return_value={}
+        )
+        self.m_aux_mapping = self.patch(
+            "iris.common.resolve.Resolve._aux_mapping", return_value={}
+        )
+        self.m_free_mapping = self.patch(
+            "iris.common.resolve.Resolve._free_mapping"
+        )
+        self.m_as_compatible_cubes = self.patch(
+            "iris.common.resolve.Resolve._as_compatible_cubes"
+        )
+        self.mapping = {0: 1, 1: 2, 2: 3}
+
+    def test_mapped__dim_coords(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state f c c c      state c c c
+        #   coord   d d d      coord d d d
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        self.src_cube.ndim = 3
+        self.m_dim_mapping.return_value = self.mapping
+        self.resolve._metadata_mapping()
+        self.assertEqual(self.mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(0, self.m_aux_mapping.call_count)
+        self.assertEqual(0, self.m_free_mapping.call_count)
+        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+
+    def test_mapped__aux_coords(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state f c c c      state c c c
+        #   coord   a a a      coord a a a
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        self.src_cube.ndim = 3
+        self.m_aux_mapping.return_value = self.mapping
+        self.resolve._metadata_mapping()
+        self.assertEqual(self.mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(1, self.m_aux_mapping.call_count)
+        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
+        self.assertEqual(0, self.m_free_mapping.call_count)
+        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+
+    def test_mapped__dim_and_aux_coords(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state f c c c      state c c c
+        #   coord   d a d      coord d a d
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        dim_mapping = {0: 1, 2: 3}
+        aux_mapping = {1: 2}
+        self.src_cube.ndim = 3
+        self.m_dim_mapping.return_value = dim_mapping
+        self.m_aux_mapping.return_value = aux_mapping
+        self.resolve._metadata_mapping()
+        self.assertEqual(self.mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(1, self.m_aux_mapping.call_count)
+        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
+        self.assertEqual(0, self.m_free_mapping.call_count)
+        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+
+    def test_mapped__dim_coords_and_free_dims(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state l f c c      state f c c
+        #   coord d   d d      coord   d d
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        dim_mapping = {1: 2, 2: 3}
+        free_mapping = {0: 1}
+        self.src_cube.ndim = 3
+        self.m_dim_mapping.return_value = dim_mapping
+        side_effect = lambda a, b, c, d: self.resolve.mapping.update(
+            free_mapping
+        )
+        self.m_free_mapping.side_effect = side_effect
+        self.resolve._metadata_mapping()
+        self.assertEqual(self.mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(1, self.m_aux_mapping.call_count)
+        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
+        self.assertEqual(1, self.m_free_mapping.call_count)
+        expected = [
+            mock.call(
+                self.src_dim_coverage,
+                self.tgt_dim_coverage,
+                self.src_aux_coverage,
+                self.tgt_aux_coverage,
+            )
+        ]
+        self.assertEqual(expected, self.m_free_mapping.call_args_list)
+        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+
+    def test_mapped__dim_coords_with_broadcast_flip(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 4      dims  0 1 2 4
+        #   shape 1 4 3 2      shape 5 4 3 2
+        #   state c c c c      state c c c c
+        #   coord d d d d      coord d d d d
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1, 2->2, 3->3
+        mapping = {0: 0, 1: 1, 2: 2, 3: 3}
+        self.src_cube.ndim = 4
+        self.tgt_cube.ndim = 4
+        self.m_dim_mapping.return_value = mapping
+        broadcast_shape = (5, 4, 3, 2)
+        self.resolve._broadcast_shape = broadcast_shape
+        self.resolve._src_cube_resolved.shape = broadcast_shape
+        self.resolve._tgt_cube_resolved.shape = (1, 4, 3, 2)
+        self.resolve._metadata_mapping()
+        self.assertEqual(mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(0, self.m_aux_mapping.call_count)
+        self.assertEqual(0, self.m_free_mapping.call_count)
+        self.assertEqual(2, self.m_as_compatible_cubes.call_count)
+        self.assertEqual(not self.map_rhs_to_lhs, self.resolve.map_rhs_to_lhs)
+
+    def test_mapped__dim_coords_free_flip_with_free_flip(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:          <- src:
+        #   dims  0 1 2    dims  0 1 2
+        #   shape 4 3 2    shape 4 3 2
+        #   state f f c    state l l c
+        #   coord     d    coord d d d
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1, 2->2
+        dim_mapping = {2: 2}
+        free_mapping = {0: 0, 1: 1}
+        mapping = {0: 0, 1: 1, 2: 2}
+        self.src_cube.ndim = 3
+        self.tgt_cube.ndim = 3
+        self.m_dim_mapping.return_value = dim_mapping
+        side_effect = lambda a, b, c, d: self.resolve.mapping.update(
+            free_mapping
+        )
+        self.m_free_mapping.side_effect = side_effect
+        self.tgt_dim_coverage.dims_free = [0, 1]
+        self.tgt_aux_coverage.dims_free = [0, 1]
+        self.resolve._metadata_mapping()
+        self.assertEqual(mapping, self.resolve.mapping)
+        self.assertEqual(1, self.m_dim_mapping.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
+        self.assertEqual(1, self.m_aux_mapping.call_count)
+        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
+        self.assertEqual(1, self.m_free_mapping.call_count)
+        expected = [
+            mock.call(
+                self.src_dim_coverage,
+                self.tgt_dim_coverage,
+                self.src_aux_coverage,
+                self.tgt_aux_coverage,
+            )
+        ]
+        self.assertEqual(expected, self.m_free_mapping.call_args_list)
+        self.assertEqual(2, self.m_as_compatible_cubes.call_count)
 
 
 if __name__ == "__main__":
