@@ -1386,6 +1386,30 @@ class Resolve:
     def _prepare_common_dim_payload(
         self, src_coverage, tgt_coverage, ignore_mismatch=None
     ):
+        """
+        Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for
+        each :class:`~iris.coords.DimCoord` to be constructed and attached to the resulting resolved
+        :class:`~iris.cube.Cube`.
+
+        Args:
+
+        * src_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` metadata for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_coverage:
+            The :class:`~iris.common.resolve._DimCoverage` metadata for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        Kwargs:
+
+        * ignore_mismatch:
+            When ``False``, an exception will be raised if a difference is detected between corresponding
+            ``src`` and ``tgt`` :class:`~iris.coords.DimCoord` ``points`` and/or ``bounds``.
+            When ``True``, the coverage metadata is ignored i.e., a :class:`~iris.coords.DimCoord` will not
+            be constructed and added to the resulting resolved :class:`~iris.cube.Cube`.
+            Defaults to ``False``.
+
+        """
         from iris.coords import DimCoord
 
         if ignore_mismatch is None:

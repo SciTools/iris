@@ -24,7 +24,10 @@ from iris.common.resolve import (
     _CategoryItems,
     _DimCoverage,
     _Item,
+    _PreparedItem,
+    _PreparedMetadata,
 )
+from iris.coords import DimCoord
 from iris.cube import Cube
 
 
@@ -2063,6 +2066,198 @@ class Test__metadata_mapping(tests.IrisTest):
         ]
         self.assertEqual(expected, self.m_free_mapping.call_args_list)
         self.assertEqual(2, self.m_as_compatible_cubes.call_count)
+
+
+class Test__prepare_common_dim_payload(tests.IrisTest):
+    def setUp(self):
+        # key: (state) c=common, f=free
+        #      (coord) a=aux, d=dim
+        #
+        # tgt:            <- src:
+        #   dims  0 1 2 3      dims  0 1 2
+        #   shape 5 4 3 2      shape 4 3 2
+        #   state l c c c      state c c c
+        #   coord   d d d      coord d d d
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2, 2->3
+        self.points = sentinel.points
+        self.bounds = sentinel.bounds
+        self.p_0, self.b_0 = (
+            mock.Mock(copy=mock.Mock(return_value=self.points)),
+            mock.Mock(copy=mock.Mock(return_value=self.bounds)),
+        )
+        self.p_1, self.b_1 = (
+            mock.Mock(copy=mock.Mock(return_value=self.points)),
+            None,
+        )
+        self.p_2, self.b_2 = (
+            mock.Mock(copy=mock.Mock(return_value=self.points)),
+            mock.Mock(copy=mock.Mock(return_value=self.bounds)),
+        )
+        self.pb_0 = (self.p_0, self.b_0)
+        self.pb_1 = (self.p_1, self.b_1)
+        self.pb_2 = (self.p_2, self.b_2)
+        self.side_effect = (self.pb_0, self.pb_1, self.pb_2)
+        self.m_prepare_points_and_bounds = self.patch(
+            "iris.common.resolve.Resolve._prepare_points_and_bounds",
+            side_effect=self.side_effect,
+        )
+        self.resolve = Resolve()
+        self.resolve.prepared_category = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        self.mapping = {0: 1, 1: 2, 2: 3}
+        self.resolve.mapping = self.mapping
+        self.combined = (
+            sentinel.combined_0,
+            sentinel.combined_1,
+            sentinel.combined_2,
+        )
+        self.src_metadata = mock.Mock(
+            combine=mock.Mock(side_effect=self.combined)
+        )
+        metadata = [self.src_metadata, self.src_metadata, self.src_metadata]
+        self.src_coords = [
+            sentinel.src_coord_0,
+            sentinel.src_coord_1,
+            sentinel.src_coord_2,
+        ]
+        self.src_dims_common = [0, 1, 2]
+        self.container = DimCoord
+        self.src_dim_coverage = _DimCoverage(
+            cube=None,
+            metadata=metadata,
+            coords=self.src_coords,
+            dims_common=self.src_dims_common,
+            dims_local=[],
+            dims_free=[],
+        )
+        self.tgt_metadata = [
+            sentinel.tgt_metadata_0,
+            sentinel.tgt_metadata_1,
+            sentinel.tgt_metadata_2,
+            sentinel.tgt_metadata_3,
+        ]
+        self.tgt_coords = [
+            sentinel.tgt_coord_0,
+            sentinel.tgt_coord_1,
+            sentinel.tgt_coord_2,
+            sentinel.tgt_coord_3,
+        ]
+        self.tgt_dims_common = [1, 2, 3]
+        self.tgt_dim_coverage = _DimCoverage(
+            cube=None,
+            metadata=self.tgt_metadata,
+            coords=self.tgt_coords,
+            dims_common=self.tgt_dims_common,
+            dims_local=[],
+            dims_free=[],
+        )
+
+    def _check(self, ignore_mismatch=None, bad_points=None):
+        if bad_points is None:
+            bad_points = False
+        self.resolve._prepare_common_dim_payload(
+            self.src_dim_coverage,
+            self.tgt_dim_coverage,
+            ignore_mismatch=ignore_mismatch,
+        )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        if not bad_points:
+            self.assertEqual(3, len(self.resolve.prepared_category.items_dim))
+            expected = [
+                _PreparedItem(
+                    metadata=_PreparedMetadata(
+                        combined=self.combined[0],
+                        src=self.src_metadata,
+                        tgt=self.tgt_metadata[self.mapping[0]],
+                    ),
+                    points=self.points,
+                    bounds=self.bounds,
+                    dims=(self.mapping[0],),
+                    container=self.container,
+                ),
+                _PreparedItem(
+                    metadata=_PreparedMetadata(
+                        combined=self.combined[1],
+                        src=self.src_metadata,
+                        tgt=self.tgt_metadata[self.mapping[1]],
+                    ),
+                    points=self.points,
+                    bounds=None,
+                    dims=(self.mapping[1],),
+                    container=self.container,
+                ),
+                _PreparedItem(
+                    metadata=_PreparedMetadata(
+                        combined=self.combined[2],
+                        src=self.src_metadata,
+                        tgt=self.tgt_metadata[self.mapping[2]],
+                    ),
+                    points=self.points,
+                    bounds=self.bounds,
+                    dims=(self.mapping[2],),
+                    container=self.container,
+                ),
+            ]
+            self.assertEqual(
+                expected, self.resolve.prepared_category.items_dim
+            )
+        else:
+            self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        self.assertEqual(3, self.m_prepare_points_and_bounds.call_count)
+        if ignore_mismatch is None:
+            ignore_mismatch = False
+        expected = [
+            mock.call(
+                self.src_coords[0],
+                self.tgt_coords[self.mapping[0]],
+                0,
+                1,
+                ignore_mismatch=ignore_mismatch,
+            ),
+            mock.call(
+                self.src_coords[1],
+                self.tgt_coords[self.mapping[1]],
+                1,
+                2,
+                ignore_mismatch=ignore_mismatch,
+            ),
+            mock.call(
+                self.src_coords[2],
+                self.tgt_coords[self.mapping[2]],
+                2,
+                3,
+                ignore_mismatch=ignore_mismatch,
+            ),
+        ]
+        self.assertEqual(
+            expected, self.m_prepare_points_and_bounds.call_args_list
+        )
+        if not bad_points:
+            self.assertEqual(3, self.src_metadata.combine.call_count)
+            expected = [
+                mock.call(metadata) for metadata in self.tgt_metadata[1:]
+            ]
+            self.assertEqual(
+                expected, self.src_metadata.combine.call_args_list
+            )
+
+    def test__default_ignore_mismatch(self):
+        self._check()
+
+    def test__not_ignore_mismatch(self):
+        self._check(ignore_mismatch=False)
+
+    def test__ignore_mismatch(self):
+        self._check(ignore_mismatch=True)
+
+    def test__bad_points(self):
+        side_effect = [(None, None)] * 3
+        self.m_prepare_points_and_bounds.side_effect = side_effect
+        self._check(bad_points=True)
 
 
 if __name__ == "__main__":
