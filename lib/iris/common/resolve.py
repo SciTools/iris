@@ -1324,6 +1324,41 @@ class Resolve:
         prepared_items,
         ignore_mismatch=None,
     ):
+        """
+        Populate the ``prepared_items`` with a :class:`~iris.common.resolve._PreparedItem` containing
+        the necessary metadata for each auxiliary coordinate to be constructed and attached to the
+        resulting resolved :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            For mixed ``src`` and ``tgt`` coordinate types with matching metadata, an
+            :class:`~iris.coords.AuxCoord` will be nominated for construction.
+
+        Args:
+
+        * src_common_items:
+            The list of :attr:`~iris.common.resolve._AuxCoverage.common_items_aux` metadata
+            for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_common_items:
+            The list of :attr:`~iris.common.resolve._AuxCoverage.common_items_aux` metadata
+            for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        * prepared_items:
+            The list of :class:`~iris.common.resolve._PreparedItem` metadata that will be used
+            to construct the auxiliary coordinates that will be attached to the resulting
+            resolved :class:`~iris.cube.Cube`.
+
+        Kwargs:
+
+        * ignore_mismatch:
+            When ``False``, an exception will be raised if a difference is detected between corresponding
+            ``src`` and ``tgt`` coordinate ``points`` and/or ``bounds``.
+            When ``True``, the coverage metadata is ignored i.e., a coordinate will not be constructed and
+            added to the resulting resolved :class:`~iris.cube.Cube`.
+            Defaults to ``False``.
+
+        """
         from iris.coords import AuxCoord
 
         if ignore_mismatch is None:
