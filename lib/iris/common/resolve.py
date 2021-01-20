@@ -1651,6 +1651,28 @@ class Resolve:
                 logger.debug(dmsg)
 
     def _prepare_local_payload_dim(self, src_dim_coverage, tgt_dim_coverage):
+        """
+        Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        with a :class:``~iris.common.resolve._PreparedItem` containing the necessary metadata for each
+        ``src`` or ``tgt`` local :class:`~iris.coords.DimCoord` to be constructed and attached to the
+        resulting resolved :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            In general, a local coordinate will only be added if there is no other metadata competing
+            to describe the same dimension/s on the ``tgt`` :class:`~iris.cube.Cube`. Lenient behaviour
+            is more liberal, whereas strict behaviour will only add a local ``tgt`` coordinate covering
+            an unmapped "extra" ``tgt`` dimension.
+
+        Args:
+
+        * src_dim_coverage:
+            The :class:`~iris.common.resolve.Resolve._DimCoverage` for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_dim_coverage:
+            The :class:`~iris.common.resolve.Resolve._DimCoverage` for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        """
         mapped_tgt_dims = self.mapping.values()
 
         # Determine whether there are tgt dimensions not mapped to by an
