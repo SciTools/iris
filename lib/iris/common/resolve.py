@@ -646,15 +646,40 @@ class Resolve:
         return category
 
     @staticmethod
-    def _create_prepared_item(coord, dims, src=None, tgt=None):
-        if src is not None and tgt is not None:
-            combined = src.combine(tgt)
+    def _create_prepared_item(
+        coord, dims, src_metadata=None, tgt_metadata=None
+    ):
+        """
+        Convenience method that creates a :class:`~iris.common.resolve._PreparedItem`
+        containing the data and metadata required to construct and attach a coordinate
+        to the resultant resolved cube.
+
+        Args:
+
+        * coord:
+            The coordinate with the ``points`` and ``bounds`` to be extracted.
+
+        * dims:
+            The dimensions that the ``coord`` spans on the resulting resolved :class:`~iris.cube.Cube`.
+
+        * src_metadata:
+            The coordinate metadata from the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_metadata:
+            The coordinate metadata from the ``tgt`` :class:`~iris.cube.Cube`.
+
+        Returns:
+            The :class:`~iris.common.resolve._PreparedItem`.
+
+        """
+        if src_metadata is not None and tgt_metadata is not None:
+            combined = src_metadata.combine(tgt_metadata)
         else:
-            combined = src or tgt
+            combined = src_metadata or tgt_metadata
         if not isinstance(dims, Iterable):
             dims = (dims,)
         prepared_metadata = _PreparedMetadata(
-            combined=combined, src=src, tgt=tgt
+            combined=combined, src=src_metadata, tgt=tgt_metadata
         )
         bounds = coord.bounds
         result = _PreparedItem(
@@ -1518,7 +1543,10 @@ class Resolve:
                                 tgt = item.metadata
                                 dims = item.dims
                             result = self._create_prepared_item(
-                                item.coord, dims, src=src, tgt=tgt
+                                item.coord,
+                                dims,
+                                src_metadata=src,
+                                tgt_metadata=tgt,
                             )
                             getattr(self.prepared_category, member).append(
                                 result
@@ -1589,7 +1617,7 @@ class Resolve:
                 if all([dim in mapped_src_dims for dim in item.dims]):
                     tgt_dims = tuple([self.mapping[dim] for dim in item.dims])
                     prepared_item = self._create_prepared_item(
-                        item.coord, tgt_dims, src=item.metadata
+                        item.coord, tgt_dims, src_metadata=item.metadata
                     )
                     self.prepared_category.items_aux.append(prepared_item)
                 else:
@@ -1611,7 +1639,7 @@ class Resolve:
                 [dim in extra_tgt_dims for dim in tgt_dims]
             ):
                 prepared_item = self._create_prepared_item(
-                    item.coord, tgt_dims, tgt=item.metadata
+                    item.coord, tgt_dims, tgt_metadata=item.metadata
                 )
                 self.prepared_category.items_aux.append(prepared_item)
             else:
@@ -1644,7 +1672,7 @@ class Resolve:
                     metadata = src_dim_coverage.metadata[src_dim]
                     coord = src_dim_coverage.coords[src_dim]
                     prepared_item = self._create_prepared_item(
-                        coord, tgt_dim, src=metadata
+                        coord, tgt_dim, src_metadata=metadata
                     )
                     self.prepared_category.items_dim.append(prepared_item)
                 else:
@@ -1677,7 +1705,7 @@ class Resolve:
                 if metadata is not None:
                     coord = tgt_dim_coverage.coords[tgt_dim]
                     prepared_item = self._create_prepared_item(
-                        coord, tgt_dim, tgt=metadata
+                        coord, tgt_dim, tgt_metadata=metadata
                     )
                     self.prepared_category.items_dim.append(prepared_item)
 
@@ -1697,14 +1725,14 @@ class Resolve:
             # Add any local src scalar coordinates, if available.
             for item in src_aux_coverage.local_items_scalar:
                 prepared_item = self._create_prepared_item(
-                    item.coord, item.dims, src=item.metadata
+                    item.coord, item.dims, src_metadata=item.metadata
                 )
                 self.prepared_category.items_scalar.append(prepared_item)
 
             # Add any local tgt scalar coordinates, if available.
             for item in tgt_aux_coverage.local_items_scalar:
                 prepared_item = self._create_prepared_item(
-                    item.coord, item.dims, tgt=item.metadata
+                    item.coord, item.dims, tgt_metadata=item.metadata
                 )
                 self.prepared_category.items_scalar.append(prepared_item)
 

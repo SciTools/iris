@@ -2839,5 +2839,53 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
                 _ = self.resolve._prepare_points_and_bounds(**args)
 
 
+class Test__create_prepared_item(tests.IrisTest):
+    def setUp(self):
+        Coord = namedtuple("Coord", ["points", "bounds"])
+        self.points_value = sentinel.points
+        self.points = mock.Mock(copy=mock.Mock(return_value=self.points_value))
+        self.bounds_value = sentinel.bounds
+        self.bounds = mock.Mock(copy=mock.Mock(return_value=self.bounds_value))
+        self.coord = Coord(points=self.points, bounds=self.bounds)
+        self.container = type(self.coord)
+        self.combined = sentinel.combined
+        self.src = mock.Mock(combine=mock.Mock(return_value=self.combined))
+        self.tgt = sentinel.tgt
+
+    def _check(self, src=None, tgt=None):
+        dims = 0
+        if src is not None and tgt is not None:
+            combined = self.combined
+        else:
+            combined = src or tgt
+        result = Resolve._create_prepared_item(
+            self.coord, dims, src_metadata=src, tgt_metadata=tgt
+        )
+        self.assertIsInstance(result, _PreparedItem)
+        self.assertIsInstance(result.metadata, _PreparedMetadata)
+        expected = _PreparedMetadata(combined=combined, src=src, tgt=tgt)
+        self.assertEqual(expected, result.metadata)
+        self.assertEqual(self.points_value, result.points)
+        self.assertEqual(1, self.points.copy.call_count)
+        self.assertEqual([mock.call()], self.points.copy.call_args_list)
+        self.assertEqual(self.bounds_value, result.bounds)
+        self.assertEqual(1, self.bounds.copy.call_count)
+        self.assertEqual([mock.call()], self.bounds.copy.call_args_list)
+        self.assertEqual((dims,), result.dims)
+        self.assertEqual(self.container, result.container)
+
+    def test__no_metadata(self):
+        self._check()
+
+    def test__src_metadata_only(self):
+        self._check(src=self.src)
+
+    def test__tgt_metadata_only(self):
+        self._check(tgt=self.tgt)
+
+    def test__combine_metadata(self):
+        self._check(src=self.src, tgt=self.tgt)
+
+
 if __name__ == "__main__":
     tests.main()
