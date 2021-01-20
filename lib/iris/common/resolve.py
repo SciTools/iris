@@ -1601,6 +1601,29 @@ class Resolve:
                 logger.debug(dmsg)
 
     def _prepare_local_payload_aux(self, src_aux_coverage, tgt_aux_coverage):
+        """
+        Populate the ``items_aux`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
+        ``src`` or ``tgt`` local auxiliary coordinate to be constructed and attached to the resulting
+        resolved :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            In general, lenient behaviour subscribes to the philosophy that it is easier to remove
+            metadata than it is to find then add metadata. To those ends, lenient behaviour supports
+            metadata richness by adding both local ``src`` and ``tgt`` auxiliary coordinates.
+            Alternatively, strict behaviour will only add a ``tgt`` local auxiliary coordinate that
+            spans dimensions not mapped to by the ``src`` e.g., extra ``tgt`` dimensions.
+
+        Args:
+
+        * src_aux_coverage:
+            The :class:`~iris.common.resolve.Resolve._AuxCoverage` for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_aux_coverage:
+            The :class:~iris.common.resolve.Resolve._AuxCoverage` for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        """
         # Determine whether there are tgt dimensions not mapped to by an
         # associated src dimension, and thus may be covered by any local
         # tgt aux coordinates.
@@ -1653,7 +1676,7 @@ class Resolve:
     def _prepare_local_payload_dim(self, src_dim_coverage, tgt_dim_coverage):
         """
         Populate the ``items_dim`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
-        with a :class:``~iris.common.resolve._PreparedItem` containing the necessary metadata for each
+        with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
         ``src`` or ``tgt`` local :class:`~iris.coords.DimCoord` to be constructed and attached to the
         resulting resolved :class:`~iris.cube.Cube`.
 

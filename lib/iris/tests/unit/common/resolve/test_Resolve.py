@@ -2899,9 +2899,9 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
             cube=None,
             metadata=[],
             coords=[],
-            dims_common=[],
+            dims_common=None,
             dims_local=[],
-            dims_free=[],
+            dims_free=None,
         )
         self.tgt_coverage = deepcopy(self.src_coverage)
         self.prepared_item = sentinel.prepared_item
@@ -3179,6 +3179,321 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         )
         self.assertEqual(1, self.m_create_prepared_item.call_count)
         expected = [mock.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+
+class Test__prepare_local_payload_aux(tests.IrisTest):
+    def setUp(self):
+        self.Cube = namedtuple("Cube", ["ndim"])
+        self.resolve = Resolve()
+        self.resolve.prepared_category = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        self.resolve.map_rhs_to_lhs = True
+        self.src_coverage = dict(
+            cube=None,
+            common_items_aux=None,
+            common_items_scalar=None,
+            local_items_aux=[],
+            local_items_scalar=None,
+            dims_common=None,
+            dims_local=[],
+            dims_free=None,
+        )
+        self.tgt_coverage = deepcopy(self.src_coverage)
+        self.src_prepared_item = sentinel.src_prepared_item
+        self.tgt_prepared_item = sentinel.tgt_prepared_item
+        self.m_create_prepared_item = self.patch(
+            "iris.common.resolve.Resolve._create_prepared_item",
+            side_effect=(self.src_prepared_item, self.tgt_prepared_item),
+        )
+
+    def test_src_no_local_with_tgt_no_local(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c c      state c c
+        #   coord a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+
+    def test_src_no_local_with_tgt_no_local__strict(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c c      state c c
+        #   coord a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+
+    def test_src_local_with_tgt_local(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c l      state c l
+        #   coord a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_dims = (1,)
+        src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
+        self.src_coverage["local_items_aux"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (1,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
+        expected = [self.src_prepared_item, self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        expected = [
+            mock.call(src_coord, tgt_dims, src_metadata=src_metadata),
+            mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata),
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_local__strict(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c l      state c l
+        #   coord a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_dims = (1,)
+        src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
+        self.src_coverage["local_items_aux"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (1,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+
+    def test_src_local_with_tgt_free(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c f      state c l
+        #   coord a        coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_dims = (1,)
+        src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
+        self.src_coverage["local_items_aux"].append(src_item)
+        self.src_coverage["dims_local"].extend(src_dims)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        expected = [self.src_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        expected = [mock.call(src_coord, src_dims, src_metadata=src_metadata)]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_free__strict(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c f      state c l
+        #   coord a        coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_dims = (1,)
+        src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
+        self.src_coverage["local_items_aux"].append(src_item)
+        self.src_coverage["dims_local"].extend(src_dims)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+
+    def test_src_free_with_tgt_local(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c l      state c f
+        #   coord a a      coord a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (1,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        self.tgt_coverage["dims_local"].extend(tgt_dims)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_free_with_tgt_local__strict(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state c l      state c f
+        #   coord a a      coord a
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=2)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (1,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        self.tgt_coverage["dims_local"].extend(tgt_dims)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+
+    def test_src_no_local_with_tgt_local__extra_dims(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:           <- src:
+        #   dims  0 1 2      dims  0 1
+        #   shape 4 2 3      shape 2 3
+        #   state l c c      state c c
+        #   coord a a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        mapping = {0: 1, 1: 2}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=3)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (0,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        self.tgt_coverage["dims_local"].extend(tgt_dims)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_no_local_with_tgt_local__extra_dims_strict(self):
+        # key: (state) c=common, f=free, l=local
+        #      (coord) d=dim
+        #
+        # tgt:           <- src:
+        #   dims  0 1 2      dims  0 1
+        #   shape 4 2 3      shape 2 3
+        #   state l c c      state c c
+        #   coord a a a      coord a a
+        #
+        # src-to-tgt mapping:
+        #   0->1, 1->2
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        mapping = {0: 1, 1: 2}
+        self.resolve.mapping = mapping
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        self.tgt_coverage["cube"] = self.Cube(ndim=3)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_dims = (0,)
+        tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
+        self.tgt_coverage["local_items_aux"].append(tgt_item)
+        self.tgt_coverage["dims_local"].extend(tgt_dims)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=True):
+            self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
         self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
 
 
