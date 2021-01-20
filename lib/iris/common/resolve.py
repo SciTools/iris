@@ -1727,6 +1727,47 @@ class Resolve:
     def _prepare_points_and_bounds(
         self, src_coord, tgt_coord, src_dims, tgt_dims, ignore_mismatch=None
     ):
+        """
+        Compare the points and bounds of the ``src`` and ``tgt`` coordinates to ensure
+        that they are equivalent, taking into account broadcasting when appropriate.
+
+        .. note::
+
+            An exception will be raised if the ``src`` and ``tgt`` coordinates cannot
+            be broadcast.
+
+        .. note::
+
+            An exception will be raised if either the points or bounds are different,
+            however appropriate lenient behaviour concessions are applied.
+
+        Args:
+
+        * src_coord:
+            The ``src`` :class:`~iris.cube.Cube` coordinate with metadata matching
+            the ``tgt_coord``.
+
+        * tgt_coord:
+            The ``tgt`` :class`~iris.cube.Cube` coordinate with metadata matching
+            the ``src_coord``.
+
+        * src_dims:
+            The dimension/s of the ``src_coord`` attached to the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_dims:
+            The dimension/s of the ``tgt_coord`` attached to the ``tgt`` :class:`~iris.cube.Cube`.
+
+        Kwargs:
+
+        * ignore_mismatch:
+            For lenient behaviour only, don't raise an exception if there is a difference between
+            the ``src`` and ``tgt`` coordinate points or bounds.
+            Defaults to ``False``.
+
+        Returns:
+            Tuple of equivalent ``points`` and ``bounds``, otherwise ``None``.
+
+        """
         from iris.util import array_equal
 
         if ignore_mismatch is None:
@@ -1773,6 +1814,7 @@ class Resolve:
             tgt_broadcasting = tgt_shape != tgt_shape_broadcast
 
             if src_broadcasting and tgt_broadcasting:
+                # TDB: Extend capability to support attempting to broadcast two-way multi-dimensional coordinates.
                 emsg = (
                     f"Cannot broadcast the coordinate {src_coord.name()!r} on "
                     f"{self._src_cube_position} cube {self._src_cube.name()!r} and "

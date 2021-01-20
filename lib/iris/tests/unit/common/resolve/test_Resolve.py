@@ -18,6 +18,7 @@ from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
+from iris.common.lenient import LENIENT
 from iris.common.resolve import (
     Resolve,
     _AuxCoverage,
@@ -2454,6 +2455,388 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
             self.src_common_items, tgt_common_items, prepared_items
         )
         self.assertEqual(0, len(prepared_items))
+
+
+class Test__prepare_points_and_bounds(tests.IrisTest):
+    def setUp(self):
+        self.Coord = namedtuple(
+            "Coord",
+            [
+                "name",
+                "points",
+                "bounds",
+                "metadata",
+                "ndim",
+                "shape",
+                "has_bounds",
+            ],
+        )
+        self.Cube = namedtuple("Cube", ["name", "shape"])
+        self.resolve = Resolve()
+        self.resolve.map_rhs_to_lhs = True
+        self.src_name = sentinel.src_name
+        self.src_points = sentinel.src_points
+        self.src_bounds = sentinel.src_bounds
+        self.src_metadata = sentinel.src_metadata
+        self.src_items = dict(
+            name=lambda: self.src_name,
+            points=self.src_points,
+            bounds=self.src_bounds,
+            metadata=self.src_metadata,
+            ndim=None,
+            shape=None,
+            has_bounds=None,
+        )
+        self.tgt_name = sentinel.tgt_name
+        self.tgt_points = sentinel.tgt_points
+        self.tgt_bounds = sentinel.tgt_bounds
+        self.tgt_metadata = sentinel.tgt_metadata
+        self.tgt_items = dict(
+            name=lambda: self.tgt_name,
+            points=self.tgt_points,
+            bounds=self.tgt_bounds,
+            metadata=self.tgt_metadata,
+            ndim=None,
+            shape=None,
+            has_bounds=None,
+        )
+        self.m_array_equal = self.patch(
+            "iris.util.array_equal", side_effect=(True, True)
+        )
+
+    def test_coord_ndim_unequal__tgt_ndim_greater(self):
+        self.src_items["ndim"] = 1
+        src_coord = self.Coord(**self.src_items)
+        self.tgt_items["ndim"] = 10
+        tgt_coord = self.Coord(**self.tgt_items)
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            src_coord, tgt_coord, src_dims=None, tgt_dims=None
+        )
+        self.assertEqual(self.tgt_points, points)
+        self.assertEqual(self.tgt_bounds, bounds)
+
+    def test_coord_ndim_unequal__src_ndim_greater(self):
+        self.src_items["ndim"] = 10
+        src_coord = self.Coord(**self.src_items)
+        self.tgt_items["ndim"] = 1
+        tgt_coord = self.Coord(**self.tgt_items)
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            src_coord, tgt_coord, src_dims=None, tgt_dims=None
+        )
+        self.assertEqual(self.src_points, points)
+        self.assertEqual(self.src_bounds, bounds)
+
+    def test_coord_ndim_equal__shape_unequal_with_src_broadcasting(self):
+        # key: (state) c=common, f=free
+        #      (coord) x=coord
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 9 9      shape 1 9
+        #   state c c      state c c
+        #   coord x-x      coord x-x
+        #                  bcast ^
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        broadcast_shape = (9, 9)
+        ndim = len(broadcast_shape)
+        self.resolve.mapping = mapping
+        self.resolve._broadcast_shape = broadcast_shape
+        src_shape = (1, 9)
+        src_dims = tuple(mapping.keys())
+        self.resolve.rhs_cube = self.Cube(name=None, shape=src_shape)
+        self.src_items["ndim"] = ndim
+        self.src_items["shape"] = src_shape
+        src_coord = self.Coord(**self.src_items)
+        tgt_shape = broadcast_shape
+        tgt_dims = tuple(mapping.values())
+        self.resolve.lhs_cube = self.Cube(name=None, shape=tgt_shape)
+        self.tgt_items["ndim"] = ndim
+        self.tgt_items["shape"] = tgt_shape
+        tgt_coord = self.Coord(**self.tgt_items)
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            src_coord, tgt_coord, src_dims, tgt_dims
+        )
+        self.assertEqual(self.tgt_points, points)
+        self.assertEqual(self.tgt_bounds, bounds)
+
+    def test_coord_ndim_equal__shape_unequal_with_tgt_broadcasting(self):
+        # key: (state) c=common, f=free
+        #      (coord) x=coord
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 1 9      shape 9 9
+        #   state c c      state c c
+        #   coord x-x      coord x-x
+        #   bcast ^
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        broadcast_shape = (9, 9)
+        ndim = len(broadcast_shape)
+        self.resolve.mapping = mapping
+        self.resolve._broadcast_shape = broadcast_shape
+        src_shape = broadcast_shape
+        src_dims = tuple(mapping.keys())
+        self.resolve.rhs_cube = self.Cube(name=None, shape=src_shape)
+        self.src_items["ndim"] = ndim
+        self.src_items["shape"] = src_shape
+        src_coord = self.Coord(**self.src_items)
+        tgt_shape = (1, 9)
+        tgt_dims = tuple(mapping.values())
+        self.resolve.lhs_cube = self.Cube(name=None, shape=tgt_shape)
+        self.tgt_items["ndim"] = ndim
+        self.tgt_items["shape"] = tgt_shape
+        tgt_coord = self.Coord(**self.tgt_items)
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            src_coord, tgt_coord, src_dims, tgt_dims
+        )
+        self.assertEqual(self.src_points, points)
+        self.assertEqual(self.src_bounds, bounds)
+
+    def test_coord_ndim_equal__shape_unequal_with_unsupported_broadcasting(
+        self,
+    ):
+        # key: (state) c=common, f=free
+        #      (coord) x=coord
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 1 9      shape 9 1
+        #   state c c      state c c
+        #   coord x-x      coord x-x
+        #   bcast ^        bcast   ^
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        mapping = {0: 0, 1: 1}
+        broadcast_shape = (9, 9)
+        ndim = len(broadcast_shape)
+        self.resolve.mapping = mapping
+        self.resolve._broadcast_shape = broadcast_shape
+        src_shape = (9, 1)
+        src_dims = tuple(mapping.keys())
+        self.resolve.rhs_cube = self.Cube(
+            name=lambda: sentinel.src_cube, shape=src_shape
+        )
+        self.src_items["ndim"] = ndim
+        self.src_items["shape"] = src_shape
+        src_coord = self.Coord(**self.src_items)
+        tgt_shape = (1, 9)
+        tgt_dims = tuple(mapping.values())
+        self.resolve.lhs_cube = self.Cube(
+            name=lambda: sentinel.tgt_cube, shape=tgt_shape
+        )
+        self.tgt_items["ndim"] = ndim
+        self.tgt_items["shape"] = tgt_shape
+        tgt_coord = self.Coord(**self.tgt_items)
+        emsg = "Cannot broadcast"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve._prepare_points_and_bounds(
+                src_coord, tgt_coord, src_dims, tgt_dims
+            )
+
+    def _populate(
+        self, src_points, tgt_points, src_bounds=None, tgt_bounds=None
+    ):
+        # key: (state) c=common, f=free
+        #      (coord) x=coord
+        #
+        # tgt:         <- src:
+        #   dims  0 1      dims  0 1
+        #   shape 2 3      shape 2 3
+        #   state f c      state f c
+        #   coord   x      coord   x
+        #
+        # src-to-tgt mapping:
+        #   0->0, 1->1
+        shape = (2, 3)
+        mapping = {0: 0, 1: 1}
+        self.resolve.mapping = mapping
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.rhs_cube = self.Cube(
+            name=lambda: sentinel.src_cube, shape=None
+        )
+        self.resolve.lhs_cube = self.Cube(
+            name=lambda: sentinel.tgt_cube, shape=None
+        )
+        ndim = 1
+        src_dims = 1
+        self.src_items["ndim"] = ndim
+        self.src_items["shape"] = (shape[src_dims],)
+        self.src_items["points"] = src_points
+        self.src_items["bounds"] = src_bounds
+        self.src_items["has_bounds"] = lambda: src_bounds is not None
+        src_coord = self.Coord(**self.src_items)
+        tgt_dims = 1
+        self.tgt_items["ndim"] = ndim
+        self.tgt_items["shape"] = (shape[mapping[tgt_dims]],)
+        self.tgt_items["points"] = tgt_points
+        self.tgt_items["bounds"] = tgt_bounds
+        self.tgt_items["has_bounds"] = lambda: tgt_bounds is not None
+        tgt_coord = self.Coord(**self.tgt_items)
+        args = dict(
+            src_coord=src_coord,
+            tgt_coord=tgt_coord,
+            src_dims=src_dims,
+            tgt_dims=tgt_dims,
+        )
+        return args
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_no_bounds(self):
+        args = self._populate(self.src_points, self.src_points)
+        points, bounds = self.resolve._prepare_points_and_bounds(**args)
+        self.assertEqual(self.src_points, points)
+        self.assertIsNone(bounds)
+        self.assertEqual(1, self.m_array_equal.call_count)
+        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
+        self.assertEqual(expected, self.m_array_equal.call_args_list)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_src_bounds_only(
+        self,
+    ):
+        args = self._populate(
+            self.src_points, self.src_points, src_bounds=self.src_bounds
+        )
+        points, bounds = self.resolve._prepare_points_and_bounds(**args)
+        self.assertEqual(self.src_points, points)
+        self.assertEqual(self.src_bounds, bounds)
+        self.assertEqual(1, self.m_array_equal.call_count)
+        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
+        self.assertEqual(expected, self.m_array_equal.call_args_list)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_tgt_bounds_only(
+        self,
+    ):
+        args = self._populate(
+            self.src_points, self.src_points, tgt_bounds=self.tgt_bounds
+        )
+        points, bounds = self.resolve._prepare_points_and_bounds(**args)
+        self.assertEqual(self.src_points, points)
+        self.assertEqual(self.tgt_bounds, bounds)
+        self.assertEqual(1, self.m_array_equal.call_count)
+        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
+        self.assertEqual(expected, self.m_array_equal.call_args_list)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_src_bounds_only_strict(
+        self,
+    ):
+        args = self._populate(
+            self.src_points, self.src_points, src_bounds=self.src_bounds
+        )
+        with LENIENT.context(maths=False):
+            emsg = f"Coordinate {self.src_name} has bounds"
+            with self.assertRaisesRegex(ValueError, emsg):
+                _ = self.resolve._prepare_points_and_bounds(**args)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_tgt_bounds_only_strict(
+        self,
+    ):
+        args = self._populate(
+            self.src_points, self.src_points, tgt_bounds=self.tgt_bounds
+        )
+        with LENIENT.context(maths=False):
+            emsg = f"Coordinate {self.tgt_name} has bounds"
+            with self.assertRaisesRegex(ValueError, emsg):
+                _ = self.resolve._prepare_points_and_bounds(**args)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_equal(self):
+        args = self._populate(
+            self.src_points,
+            self.src_points,
+            src_bounds=self.src_bounds,
+            tgt_bounds=self.src_bounds,
+        )
+        points, bounds = self.resolve._prepare_points_and_bounds(**args)
+        self.assertEqual(self.src_points, points)
+        self.assertEqual(self.src_bounds, bounds)
+        self.assertEqual(2, self.m_array_equal.call_count)
+        expected = [
+            mock.call(self.src_points, self.src_points, withnans=True),
+            mock.call(self.src_bounds, self.src_bounds, withnans=True),
+        ]
+        self.assertEqual(expected, self.m_array_equal.call_args_list)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different(
+        self,
+    ):
+        self.m_array_equal.side_effect = (True, False)
+        args = self._populate(
+            self.src_points,
+            self.src_points,
+            src_bounds=self.src_bounds,
+            tgt_bounds=self.tgt_bounds,
+        )
+        emsg = f"Coordinate {self.src_name} has different bounds"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve._prepare_points_and_bounds(**args)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different_ignore_mismatch(
+        self,
+    ):
+        self.m_array_equal.side_effect = (True, False)
+        args = self._populate(
+            self.src_points,
+            self.src_points,
+            src_bounds=self.src_bounds,
+            tgt_bounds=self.tgt_bounds,
+        )
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            **args, ignore_mismatch=True
+        )
+        self.assertEqual(self.src_points, points)
+        self.assertIsNone(bounds)
+        self.assertEqual(2, self.m_array_equal.call_count)
+        expected = [
+            mock.call(self.src_points, self.src_points, withnans=True),
+            mock.call(self.src_bounds, self.tgt_bounds, withnans=True),
+        ]
+        self.assertEqual(expected, self.m_array_equal.call_args_list)
+
+    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different_strict(
+        self,
+    ):
+        self.m_array_equal.side_effect = (True, False)
+        args = self._populate(
+            self.src_points,
+            self.src_points,
+            src_bounds=self.src_bounds,
+            tgt_bounds=self.tgt_bounds,
+        )
+        with LENIENT.context(maths=False):
+            emsg = f"Coordinate {self.src_name} has different bounds"
+            with self.assertRaisesRegex(ValueError, emsg):
+                _ = self.resolve._prepare_points_and_bounds(**args)
+
+    def test_coord_ndim_and_shape_equal__points_different(self):
+        self.m_array_equal.side_effect = (False,)
+        args = self._populate(self.src_points, self.tgt_points)
+        emsg = f"Coordinate {self.src_name} has different points"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve._prepare_points_and_bounds(**args)
+
+    def test_coord_ndim_and_shape_equal__points_different_ignore_mismatch(
+        self,
+    ):
+        self.m_array_equal.side_effect = (False,)
+        args = self._populate(self.src_points, self.tgt_points)
+        points, bounds = self.resolve._prepare_points_and_bounds(
+            **args, ignore_mismatch=True
+        )
+        self.assertIsNone(points)
+        self.assertIsNone(bounds)
+
+    def test_coord_ndim_and_shape_equal__points_different_strict(self):
+        self.m_array_equal.side_effect = (False,)
+        args = self._populate(self.src_points, self.tgt_points)
+        with LENIENT.context(maths=False):
+            emsg = f"Coordinate {self.src_name} has different points"
+            with self.assertRaisesRegex(ValueError, emsg):
+                _ = self.resolve._prepare_points_and_bounds(**args)
 
 
 if __name__ == "__main__":
