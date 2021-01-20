@@ -981,6 +981,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
+        This operation preserves lazy data.
+
         """
         # If the cube has units convert the data.
         if self.units.is_unknown():
