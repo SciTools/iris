@@ -156,9 +156,9 @@ class Section:
 
 
 class VectorSection(Section):
-    def __init__(self, title, vectors):
+    def __init__(self, title, cube, vectors, iscoord):
         self.title = title
-        self.contents = [VectorSummary(vector) for vector in vectors]
+        self.contents = [VectorSummary(vector, cube, iscoord) for vector in vectors]
 
 
 class ScalarSection(Section):
@@ -254,19 +254,19 @@ class CubeSummary:
         ]
 
         self.dim_coord_section = VectorSection(
-            "Dimension coordinates:", vector_dim_coords
+            "Dimension coordinates:", cube, vector_dim_coords, True
         )
         self.aux_coord_section = VectorSection(
-            "Auxiliary coordinates:", vector_aux_coords
+            "Auxiliary coordinates:", cube, vector_aux_coords, True
         )
         self.derived_coord_section = VectorSection(
-            "Derived coordinates:", vector_derived_coords
+            "Derived coordinates:", cube, vector_derived_coords, True
         )
         self.cell_measure_section = VectorSection(
-            "Cell Measures:", vector_cell_measures
+            "Cell Measures:", cube, vector_cell_measures, False
         )
         self.ancillary_variable_section = VectorSection(
-            "Ancillary variables:", vector_ancillary_variables
+            "Ancillary variables:", cube, vector_ancillary_variables, False
         )
 
         self.scalar_section = ScalarSection(
