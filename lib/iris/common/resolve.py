@@ -1811,6 +1811,27 @@ class Resolve:
         tgt_dim_coverage,
         tgt_aux_coverage,
     ):
+        """
+        Populate the :attr:`~iris.common.resolve.Resolve.prepared_category_items` with a
+        :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata from the ``src``
+        and/or ``tgt`` :class:`~iris.cube.Cube` for each coordinate to be constructed and attached
+        to the resulting resolved :class:`~iris.cube.Cube`.
+
+        Args:
+
+        * src_dim_coverage:
+            The :class:`~iris.common.resolve.Resolve._DimCoverage` for the ``src`` :class:`~iris.cube.Cube`.
+
+        * src_aux_coverage:
+            The :class:`~iris.common.resolve.Resolve._AuxCoverage` for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_dim_coverage:
+            The :class:`~iris.common.resolve.Resolve._DimCoverage` for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        * tgt_aux_coverage:
+            The :class:~iris.common.resolve.Resolve._AuxCoverage` for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        """
         # Add local src/tgt dim coordinates.
         self._prepare_local_payload_dim(src_dim_coverage, tgt_dim_coverage)
 

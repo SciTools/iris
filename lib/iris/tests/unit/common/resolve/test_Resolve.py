@@ -3821,5 +3821,43 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
         self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
 
 
+class Test__prepare_local_payload(tests.IrisTest):
+    def test(self):
+        src_dim_coverage = sentinel.src_dim_coverage
+        src_aux_coverage = sentinel.src_aux_coverage
+        tgt_dim_coverage = sentinel.tgt_dim_coverage
+        tgt_aux_coverage = sentinel.tgt_aux_coverage
+        prepared_dim = sentinel.prepared_dim
+        prepared_aux = sentinel.prepared_aux
+        prepared_scalar = sentinel.prepared_scalar
+        root = "iris.common.resolve.Resolve"
+        m_prepare_dim = self.patch(
+            f"{root}._prepare_local_payload_dim", return_value=prepared_dim
+        )
+        m_prepare_aux = self.patch(
+            f"{root}._prepare_local_payload_aux", return_value=prepared_aux
+        )
+        m_prepare_scalar = self.patch(
+            f"{root}._prepare_local_payload_scalar",
+            return_value=prepared_scalar,
+        )
+        resolve = Resolve()
+        resolve._prepare_local_payload(
+            src_dim_coverage,
+            src_aux_coverage,
+            tgt_dim_coverage,
+            tgt_aux_coverage,
+        )
+        self.assertEqual(1, m_prepare_dim.call_count)
+        expected = [mock.call(src_dim_coverage, tgt_dim_coverage)]
+        self.assertEqual(expected, m_prepare_dim.call_args_list)
+        self.assertEqual(1, m_prepare_aux.call_count)
+        expected = [mock.call(src_aux_coverage, tgt_aux_coverage)]
+        self.assertEqual(expected, m_prepare_aux.call_args_list)
+        self.assertEqual(1, m_prepare_scalar.call_count)
+        expected = [mock.call(src_aux_coverage, tgt_aux_coverage)]
+        self.assertEqual(expected, m_prepare_scalar.call_args_list)
+
+
 if __name__ == "__main__":
     tests.main()
