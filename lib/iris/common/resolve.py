@@ -1182,6 +1182,12 @@ class Resolve:
             self._as_compatible_cubes()
 
     def _metadata_prepare(self):
+        """
+        Populate the :attr:`~iris.common.resolve.Resolve.prepared_category` and
+        :attr:`~iris.common.resolve.Resolve.prepared_factories` with the necessary metadata to be constructed
+        and attached to the resulting resolved :class:`~iris.cube.Cube`.
+
+        """
         # Initialise the state.
         self.prepared_category = _CategoryItems(
             items_dim=[], items_aux=[], items_scalar=[]

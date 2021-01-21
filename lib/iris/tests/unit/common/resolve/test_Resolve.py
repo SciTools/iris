@@ -3827,20 +3827,10 @@ class Test__prepare_local_payload(tests.IrisTest):
         src_aux_coverage = sentinel.src_aux_coverage
         tgt_dim_coverage = sentinel.tgt_dim_coverage
         tgt_aux_coverage = sentinel.tgt_aux_coverage
-        prepared_dim = sentinel.prepared_dim
-        prepared_aux = sentinel.prepared_aux
-        prepared_scalar = sentinel.prepared_scalar
         root = "iris.common.resolve.Resolve"
-        m_prepare_dim = self.patch(
-            f"{root}._prepare_local_payload_dim", return_value=prepared_dim
-        )
-        m_prepare_aux = self.patch(
-            f"{root}._prepare_local_payload_aux", return_value=prepared_aux
-        )
-        m_prepare_scalar = self.patch(
-            f"{root}._prepare_local_payload_scalar",
-            return_value=prepared_scalar,
-        )
+        m_prepare_dim = self.patch(f"{root}._prepare_local_payload_dim")
+        m_prepare_aux = self.patch(f"{root}._prepare_local_payload_aux")
+        m_prepare_scalar = self.patch(f"{root}._prepare_local_payload_scalar")
         resolve = Resolve()
         resolve._prepare_local_payload(
             src_dim_coverage,
@@ -3857,6 +3847,110 @@ class Test__prepare_local_payload(tests.IrisTest):
         self.assertEqual(1, m_prepare_scalar.call_count)
         expected = [mock.call(src_aux_coverage, tgt_aux_coverage)]
         self.assertEqual(expected, m_prepare_scalar.call_args_list)
+
+
+class Test__metadata_prepare(tests.IrisTest):
+    def setUp(self):
+        self.src_cube = sentinel.src_cube
+        self.src_category_local = sentinel.src_category_local
+        self.src_dim_coverage = sentinel.src_dim_coverage
+        self.src_aux_coverage = mock.Mock(
+            common_items_aux=sentinel.src_aux_coverage_common_items_aux,
+            common_items_scalar=sentinel.src_aux_coverage_common_items_scalar,
+        )
+        self.tgt_cube = sentinel.tgt_cube
+        self.tgt_category_local = sentinel.tgt_category_local
+        self.tgt_dim_coverage = sentinel.tgt_dim_coverage
+        self.tgt_aux_coverage = mock.Mock(
+            common_items_aux=sentinel.tgt_aux_coverage_common_items_aux,
+            common_items_scalar=sentinel.tgt_aux_coverage_common_items_scalar,
+        )
+        self.resolve = Resolve()
+        root = "iris.common.resolve.Resolve"
+        self.m_prepare_common_dim_payload = self.patch(
+            f"{root}._prepare_common_dim_payload"
+        )
+        self.m_prepare_common_aux_payload = self.patch(
+            f"{root}._prepare_common_aux_payload"
+        )
+        self.m_prepare_local_payload = self.patch(
+            f"{root}._prepare_local_payload"
+        )
+        self.m_prepare_factory_payload = self.patch(
+            f"{root}._prepare_factory_payload"
+        )
+
+    def _check(self):
+        self.assertIsNone(self.resolve.prepared_category)
+        self.assertIsNone(self.resolve.prepared_factories)
+        self.resolve._metadata_prepare()
+        expected = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
+        self.assertEqual(expected, self.resolve.prepared_category)
+        self.assertEqual([], self.resolve.prepared_factories)
+        self.assertEqual(1, self.m_prepare_common_dim_payload.call_count)
+        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        self.assertEqual(
+            expected, self.m_prepare_common_dim_payload.call_args_list
+        )
+        self.assertEqual(2, self.m_prepare_common_aux_payload.call_count)
+        expected = [
+            mock.call(
+                self.src_aux_coverage.common_items_aux,
+                self.tgt_aux_coverage.common_items_aux,
+                [],
+            ),
+            mock.call(
+                self.src_aux_coverage.common_items_scalar,
+                self.tgt_aux_coverage.common_items_scalar,
+                [],
+                ignore_mismatch=True,
+            ),
+        ]
+        self.assertEqual(
+            expected, self.m_prepare_common_aux_payload.call_args_list
+        )
+        self.assertEqual(1, self.m_prepare_local_payload.call_count)
+        expected = [
+            mock.call(
+                self.src_dim_coverage,
+                self.src_aux_coverage,
+                self.tgt_dim_coverage,
+                self.tgt_aux_coverage,
+            )
+        ]
+        self.assertEqual(expected, self.m_prepare_local_payload.call_args_list)
+        self.assertEqual(2, self.m_prepare_factory_payload.call_count)
+        expected = [
+            mock.call(self.tgt_cube, self.tgt_category_local, from_src=False),
+            mock.call(self.src_cube, self.src_category_local),
+        ]
+        self.assertEqual(
+            expected, self.m_prepare_factory_payload.call_args_list
+        )
+
+    def test_map_rhs_to_lhs__true(self):
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.rhs_cube = self.src_cube
+        self.resolve.rhs_cube_category_local = self.src_category_local
+        self.resolve.rhs_cube_dim_coverage = self.src_dim_coverage
+        self.resolve.rhs_cube_aux_coverage = self.src_aux_coverage
+        self.resolve.lhs_cube = self.tgt_cube
+        self.resolve.lhs_cube_category_local = self.tgt_category_local
+        self.resolve.lhs_cube_dim_coverage = self.tgt_dim_coverage
+        self.resolve.lhs_cube_aux_coverage = self.tgt_aux_coverage
+        self._check()
+
+    def test_map_rhs_to_lhs__false(self):
+        self.resolve.map_rhs_to_lhs = False
+        self.resolve.lhs_cube = self.src_cube
+        self.resolve.lhs_cube_category_local = self.src_category_local
+        self.resolve.lhs_cube_dim_coverage = self.src_dim_coverage
+        self.resolve.lhs_cube_aux_coverage = self.src_aux_coverage
+        self.resolve.rhs_cube = self.tgt_cube
+        self.resolve.rhs_cube_category_local = self.tgt_category_local
+        self.resolve.rhs_cube_dim_coverage = self.tgt_dim_coverage
+        self.resolve.rhs_cube_aux_coverage = self.tgt_aux_coverage
+        self._check()
 
 
 if __name__ == "__main__":
