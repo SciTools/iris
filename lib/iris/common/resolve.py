@@ -1685,7 +1685,7 @@ class Resolve:
             In general, a local coordinate will only be added if there is no other metadata competing
             to describe the same dimension/s on the ``tgt`` :class:`~iris.cube.Cube`. Lenient behaviour
             is more liberal, whereas strict behaviour will only add a local ``tgt`` coordinate covering
-            an unmapped "extra" ``tgt`` dimension.
+            an unmapped "extra" ``tgt`` dimension/s.
 
         Args:
 
@@ -1757,6 +1757,29 @@ class Resolve:
     def _prepare_local_payload_scalar(
         self, src_aux_coverage, tgt_aux_coverage
     ):
+        """
+        Populate the ``items_scalar`` member of :attr:`~iris.common.resolve.Resolve.prepared_category_items`
+        with a :class:`~iris.common.resolve._PreparedItem` containing the necessary metadata for each
+        ``src`` or ``tgt`` local scalar coordinate to be constructed and attached to the resulting
+        resolved :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            In general, lenient behaviour subscribes to the philosophy that it is easier to remove
+            metadata than it is to find then add metadata. To those ends, lenient behaviour supports
+            metadata richness by adding both local ``src`` and ``tgt`` scalar coordinates.
+            Alternatively, strict behaviour will only add a ``tgt`` local scalar coordinate when the
+            ``src`` is a scalar :class:`~iris.cube.Cube` with no local scalar coordinates.
+
+        Args:
+
+        * src_aux_coverage:
+            The :class:`~iris.common.resolve.Resolve._AuxCoverage` for the ``src`` :class:`~iris.cube.Cube`.
+
+        * tgt_aux_coverage:
+            The :class:~iris.common.resolve.Resolve._AuxCoverage` for the ``tgt`` :class:`~iris.cube.Cube`.
+
+        """
         # Add all local tgt scalar coordinates iff the src cube is a
         # scalar cube with no local src scalar coordinates.
         # Only for strict maths.

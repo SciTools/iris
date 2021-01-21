@@ -3497,5 +3497,329 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
 
 
+class Test__prepare_local_payload_scalar(tests.IrisTest):
+    def setUp(self):
+        self.Cube = namedtuple("Cube", ["ndim"])
+        self.resolve = Resolve()
+        self.resolve.prepared_category = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        self.src_coverage = dict(
+            cube=None,
+            common_items_aux=None,
+            common_items_scalar=None,
+            local_items_aux=None,
+            local_items_scalar=[],
+            dims_common=None,
+            dims_local=[],
+            dims_free=None,
+        )
+        self.tgt_coverage = deepcopy(self.src_coverage)
+        self.src_prepared_item = sentinel.src_prepared_item
+        self.tgt_prepared_item = sentinel.tgt_prepared_item
+        self.m_create_prepared_item = self.patch(
+            "iris.common.resolve.Resolve._create_prepared_item",
+            side_effect=(self.src_prepared_item, self.tgt_prepared_item),
+        )
+        self.src_dims = ()
+        self.tgt_dims = ()
+
+    def test_src_no_local_with_tgt_no_local(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_no_local_with_tgt_no_local__strict(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_no_local_with_tgt_no_local__src_scalar_cube(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_no_local_with_tgt_no_local__src_scalar_cube_strict(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_local_with_tgt_no_local(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.src_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(src_coord, self.src_dims, src_metadata=src_metadata)
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_no_local__strict(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_local_with_tgt_no_local__src_scalar_cube(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.src_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(src_coord, self.src_dims, src_metadata=src_metadata)
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_no_local__src_scalar_cube_strict(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_no_local_with_tgt_local(self):
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_no_local_with_tgt_local__strict(self):
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_no_local_with_tgt_local__src_scalar_cube(self):
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_no_local_with_tgt_local__src_scalar_cube_strict(self):
+        self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_local(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.src_prepared_item, self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(src_coord, self.src_dims, src_metadata=src_metadata),
+            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_local__strict(self):
+        ndim = 2
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+    def test_src_local_with_tgt_local__src_scalar_cube(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        expected = [self.src_prepared_item, self.tgt_prepared_item]
+        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        expected = [
+            mock.call(src_coord, self.src_dims, src_metadata=src_metadata),
+            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_src_local_with_tgt_local__src_scalar_cube_strict(self):
+        ndim = 0
+        self.src_coverage["cube"] = self.Cube(ndim=ndim)
+        src_metadata = sentinel.src_metadata
+        src_coord = sentinel.src_coord
+        src_item = _Item(
+            metadata=src_metadata, coord=src_coord, dims=self.src_dims
+        )
+        self.src_coverage["local_items_scalar"].append(src_item)
+        src_coverage = _AuxCoverage(**self.src_coverage)
+        tgt_metadata = sentinel.tgt_metadata
+        tgt_coord = sentinel.tgt_coord
+        tgt_item = _Item(
+            metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims
+        )
+        self.tgt_coverage["local_items_scalar"].append(tgt_item)
+        tgt_coverage = _AuxCoverage(**self.tgt_coverage)
+        with LENIENT.context(maths=False):
+            self.resolve._prepare_local_payload_scalar(
+                src_coverage, tgt_coverage
+            )
+        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+
+
 if __name__ == "__main__":
     tests.main()
