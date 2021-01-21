@@ -32,6 +32,7 @@ from iris.common import (
     CellMeasureMetadata,
     CoordMetadata,
     DimCoordMetadata,
+    ConnectivityMetadata,
     metadata_manager_factory,
 )
 import iris.exceptions
@@ -624,6 +625,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        elif isinstance(self, Connectivity):
+            values_term = "indices"
         else:
             values_term = "data"
         element.setAttribute(values_term, self._xml_array_repr(self._values))
@@ -2773,6 +2776,227 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
+
+
+class Connectivity(_DimensionalMetadata):
+    def __init__(
+        self,
+        indices,
+        cf_role,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        start_index=0,
+        element_dim=1,
+    ):
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(ConnectivityMetadata)
+
+        self.validate_arg_vs_list("start_index", start_index, [0, 1])
+        # indices array will be 2-dimensional, so must be either 0 or 1.
+        self.validate_arg_vs_list("element_dim", element_dim, [0, 1])
+        # TODO: find a better 'common' location to store valid cf_roles.
+        valid_cf_roles = [
+            "edge_node_connectivity",
+            "face_node_connectivity",
+            "face_edge_connectivity",
+            "face_face_connectivity",
+            "edge_face_connectivity",
+            "boundary_node_connectivity",
+            "volume_node_connectivity",
+            "volume_edge_connectivity",
+            "volume_face_connectivity",
+            "volume_volume_connectivity",
+        ]
+        self.validate_arg_vs_list("cf_role", cf_role, valid_cf_roles)
+
+        self._metadata_manager.start_index = start_index
+        self._metadata_manager.element_dim = element_dim
+        self._metadata_manager.cf_role = cf_role
+
+        self._validate_indices(indices)
+
+        super().__init__(
+            values=indices,
+            standard_name=None,
+            long_name=long_name,
+            var_name=var_name,
+            units="1",
+            attributes=attributes,
+        )
+
+    @staticmethod
+    def validate_arg_vs_list(arg_name, arg, list):
+        if arg not in list:
+            error_msg = (
+                f"Invalid {arg_name} . Got: {arg} . Must be one of: "
+                f"{list} ."
+            )
+            raise ValueError(error_msg)
+
+    @property
+    def cf_role(self):
+        return self._metadata_manager.cf_role
+
+    @property
+    def cf_role_element(self):
+        return self._metadata_manager.cf_role.split("_")[0]
+
+    @property
+    def cf_role_indexed_element(self):
+        return self._metadata_manager.cf_role.split("_")[1]
+
+    @property
+    def start_index(self):
+        """The expected lowest value in the `indices` array; either 0 or 1."""
+        return self._metadata_manager.start_index
+
+    @property
+    def element_dim(self):
+        return self._metadata_manager.element_dim
+
+    @property
+    def indices(self):
+        return self._values
+
+    def _validate_indices(self, indices):
+        def indices_error(message):
+            raise ValueError("Invalid indeces provided. " + message)
+
+        indices = self._sanitise_array(indices, 0)
+
+        indices_dtype = indices.dtype
+        if not np.issubdtype(indices_dtype, np.integer):
+            indices_error(
+                f"dtype must be numpy integer subtype, got: {indices_dtype} ."
+            )
+
+        indices_min = indices.min()
+        if _lazy.is_lazy_data(indices_min):
+            indices_min = indices_min.compute()
+        if indices_min < self.start_index:
+            indices_error(
+                f"Lowest index: {indices_min} < start_index: {self.start_index} ."
+            )
+
+        indices_shape = indices.shape
+        if len(indices_shape) != 2:
+            indices_error(
+                f"Expected 2-dimensional shape, got: shape={indices_shape} ."
+            )
+
+        len_req_fail = False
+        element_size = indices_shape[self.element_dim]
+        if self.cf_role_element in ("edge", "boundary"):
+            if element_size != 2:
+                len_req_fail = "len=2"
+            else:
+                if self.cf_role_element == "face":
+                    min_size = 3
+                elif self.cf_role_element == "volume":
+                    if self.cf_role_indexed_element == "edge":
+                        min_size = 6
+                    else:
+                        min_size = 4
+                else:
+                    raise NotImplementedError
+                if element_size < min_size:
+                    len_req_fail = f"len>{min_size}"
+        if len_req_fail:
+            indices_error(
+                f"Element dimension must be {len_req_fail} to describe "
+                f"{self.cf_role}, got len={element_size} ."
+            )
+
+    def switch_start_index(self):
+        # Don't use a normal property setter - would be inappropriate since
+        # other properties are also modified.
+        """
+        Change `start_index` to its alternative value and change the `indices`
+        values to match. (start_index can either =0 or =1).
+
+        """
+        new_index = 1 - self.start_index
+        index_change = new_index - self.start_index
+        self._metadata_manager.start_index = new_index
+        # Modify the indices values to correspond with the new start_index.
+        self._values += index_change
+
+    def switch_element_dim(self):
+        # Don't use a normal property setter - would be inappropriate since
+        # other properties are also modified.
+        """
+        Change `element_dim` to its alternative value and restructure `indices`
+        to match. (`element_dim` can either =0 or =1).
+
+        """
+        self._metadata_manager.element_dim = 1 - self.element_dim
+        # Modify the indices structure to match the new element_dim.
+        # We know that indices is 2-dimensional so can just swap the two axes.
+        new_indices = self._values.swapaxes(0, 1)
+        # Replace the data manager with one for the new shaped indices.
+        # This is safe to override since Connectivity is not attached to a cube
+        # dimension unlike other _DimensionalMetadata-using classes.
+        self._values_dm = DataManager(new_indices)
+
+    def lazy_indices(self):
+        """
+        Return a lazy array representing the connectivity's indices.
+
+        Accessing this method will never cause the indices values to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the connectivity to have loaded indices.
+
+        If the indices have already been loaded for the connectivity, the
+        returned Array will be a new lazy array wrapper.
+
+        Returns:
+            A lazy array, representing the connectivity indices array.
+
+        """
+        return super()._lazy_values()
+
+    def core_indices(self):
+        """
+        The indices array at the core of this connectivity, which may be a
+        NumPy array or a dask array.
+
+        """
+        return super()._core_values()
+
+    def has_lazy_indices(self):
+        """
+        Return a boolean indicating whether the connectivity's indices array
+        is a lazy dask array or not.
+
+        """
+        return super()._has_lazy_values()
+
+    def __str__(self):
+        result = repr(self)
+        return result
+
+    def __repr__(self):
+        cls = type(self).__name__
+        result = (
+            f"{cls}({self.indices}), cf_role="
+            f"'{self.cf_role}', start_index={self.start_index}, "
+            f"element_dim={self.element_dim}{self._repr_other_metadata()})"
+        )
+        return result
+
+    def cube_dims(self, cube):
+        """Not available on :class:`Connectivity`."""
+        raise NotImplementedError
+
+    def xml_element(self, doc):
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name
+        element = super().xml_element(doc)
+
+        element.setAttribute("cf_role", self.cf_role)
+        element.setAttribute("start_index", self.start_index)
+        element.setAttribute("element_dim", self.element_dim)
 
 
 # See Coord.cells() for the description/context.

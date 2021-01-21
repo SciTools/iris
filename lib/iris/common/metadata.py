@@ -37,7 +37,7 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
-    "TopologyMetadata",
+    "ConnectivityMetadata",
     "metadata_manager_factory",
 ]
 
@@ -1317,13 +1317,13 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-class TopologyMetadata(BaseMetadata):
+class ConnectivityMetadata(BaseMetadata):
     """
-    Metadata container for a :class:`~iris.coords.Topology`.
+    Metadata container for a :class:`~iris.coords.Connectivity`.
 
     """
 
-    _members = ("cf_role", "start_index")
+    _members = ("cf_role", "start_index", "element_dim")
 
     __slots__ = ()
 
@@ -1338,7 +1338,7 @@ class TopologyMetadata(BaseMetadata):
 
         Args:
 
-        * other (TopologyMetadata):
+        * other (ConnectivityMetadata):
             The other topology metadata participating in the lenient
             combination.
 
@@ -1346,14 +1346,14 @@ class TopologyMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
-        # Perform "strict" combination for "cf_role" and "start_index".
+        # Perform "strict" combination for "cf_role", "start_index", "element_dim".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
             return left if left == right else None
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in TopologyMetadata._members]
+        values = [func(field) for field in ConnectivityMetadata._members]
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
         result.extend(values)
@@ -1366,7 +1366,7 @@ class TopologyMetadata(BaseMetadata):
 
         Args:
 
-        * other (TopologyMetadata):
+        * other (ConnectivityMetadata):
             The other topology metadata participating in the lenient
             comparison.
 
@@ -1374,11 +1374,11 @@ class TopologyMetadata(BaseMetadata):
             Boolean.
 
         """
-        # Perform "strict" comparison for "cf_role" and "start_index".
+        # Perform "strict" comparison for "cf_role", "start_index", "element_dim".
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
-                for field in TopologyMetadata._members
+                for field in ConnectivityMetadata._members
             ]
         )
         if result:
@@ -1393,7 +1393,7 @@ class TopologyMetadata(BaseMetadata):
 
         Args:
 
-        * other (TopologyMetadata):
+        * other (ConnectivityMetadata):
             The other topology metadata participating in the lenient
             difference.
 
@@ -1401,14 +1401,14 @@ class TopologyMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
-        # Perform "strict" difference for "cf_role" and "start_index".
+        # Perform "strict" difference for "cf_role", "start_index", "element_dim".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
             return None if left == right else (left, right)
 
         # Note that, we use "_members" not "_fields".
-        values = [func(field) for field in TopologyMetadata._members]
+        values = [func(field) for field in ConnectivityMetadata._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.extend(values)
@@ -1577,7 +1577,7 @@ SERVICES_COMBINE = (
     CoordMetadata.combine,
     CubeMetadata.combine,
     DimCoordMetadata.combine,
-    TopologyMetadata.combine,
+    ConnectivityMetadata.combine,
 )
 
 
@@ -1589,7 +1589,7 @@ SERVICES_DIFFERENCE = (
     CoordMetadata.difference,
     CubeMetadata.difference,
     DimCoordMetadata.difference,
-    TopologyMetadata.difference,
+    ConnectivityMetadata.difference,
 )
 
 
@@ -1607,8 +1607,8 @@ SERVICES_EQUAL = (
     CubeMetadata.equal,
     DimCoordMetadata.__eq__,
     DimCoordMetadata.equal,
-    TopologyMetadata.__eq__,
-    TopologyMetadata.equal,
+    ConnectivityMetadata.__eq__,
+    ConnectivityMetadata.equal,
 )
 
 
