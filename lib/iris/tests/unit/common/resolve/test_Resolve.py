@@ -26,6 +26,7 @@ from iris.common.resolve import (
     _DimCoverage,
     _Item,
     _PreparedItem,
+    _PreparedFactory,
     _PreparedMetadata,
 )
 from iris.coords import DimCoord
@@ -3951,6 +3952,197 @@ class Test__metadata_prepare(tests.IrisTest):
         self.resolve.rhs_cube_dim_coverage = self.tgt_dim_coverage
         self.resolve.rhs_cube_aux_coverage = self.tgt_aux_coverage
         self._check()
+
+
+class Test__prepare_factory_payload(tests.IrisTest):
+    def setUp(self):
+        self.Cube = namedtuple("Cube", ["aux_factories"])
+        self.Coord = namedtuple("Coord", ["metadata"])
+        self.Factory_T1 = namedtuple(
+            "Factory_T1", ["dependencies"]
+        )  # dummy factory type
+        self.container_T1 = type(self.Factory_T1(None))
+        self.Factory_T2 = namedtuple(
+            "Factory_T2", ["dependencies"]
+        )  # dummy factory type
+        self.container_T2 = type(self.Factory_T2(None))
+        self.resolve = Resolve()
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve.prepared_factories = []
+        self.m_get_prepared_item = self.patch(
+            "iris.common.resolve.Resolve._get_prepared_item"
+        )
+        self.category_local = sentinel.category_local
+        self.from_src = sentinel.from_src
+
+    def test_no_factory(self):
+        cube = self.Cube(aux_factories=[])
+        self.resolve._prepare_factory_payload(cube, self.category_local)
+        self.assertEqual(0, len(self.resolve.prepared_factories))
+
+    def test_skip_factory__already_prepared(self):
+        aux_factory = self.Factory_T1(dependencies=None)
+        aux_factories = [aux_factory]
+        cube = self.Cube(aux_factories=aux_factories)
+        prepared_factories = [
+            _PreparedFactory(container=self.container_T1, dependencies=None),
+            _PreparedFactory(container=self.container_T2, dependencies=None),
+        ]
+        self.resolve.prepared_factories.extend(prepared_factories)
+        self.resolve._prepare_factory_payload(cube, self.category_local)
+        self.assertEqual(prepared_factories, self.resolve.prepared_factories)
+
+    def test_factory__dependency_already_prepared(self):
+        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+        side_effect = (coord_a, coord_b, coord_c)
+        self.m_get_prepared_item.side_effect = side_effect
+        dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
+        aux_factory = self.Factory_T1(dependencies=dependencies)
+        aux_factories = [aux_factory]
+        cube = self.Cube(aux_factories=aux_factories)
+        self.resolve._prepare_factory_payload(
+            cube, self.category_local, from_src=self.from_src
+        )
+        self.assertEqual(1, len(self.resolve.prepared_factories))
+        prepared_dependencies = {
+            name: coord.metadata for name, coord in dependencies.items()
+        }
+        expected = [
+            _PreparedFactory(
+                container=self.container_T1, dependencies=prepared_dependencies
+            )
+        ]
+        self.assertEqual(expected, self.resolve.prepared_factories)
+        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        expected = [
+            mock.call(
+                coord_a.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_b.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_c.metadata, self.category_local, from_src=self.from_src
+            ),
+        ]
+        actual = self.m_get_prepared_item.call_args_list
+        for call in expected:
+            self.assertIn(call, actual)
+
+    def test_factory__dependency_local_not_prepared(self):
+        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+        side_effect = (None, coord_a, None, coord_b, None, coord_c)
+        self.m_get_prepared_item.side_effect = side_effect
+        dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
+        aux_factory = self.Factory_T1(dependencies=dependencies)
+        aux_factories = [aux_factory]
+        cube = self.Cube(aux_factories=aux_factories)
+        self.resolve._prepare_factory_payload(
+            cube, self.category_local, from_src=self.from_src
+        )
+        self.assertEqual(1, len(self.resolve.prepared_factories))
+        prepared_dependencies = {
+            name: coord.metadata for name, coord in dependencies.items()
+        }
+        expected = [
+            _PreparedFactory(
+                container=self.container_T1, dependencies=prepared_dependencies
+            )
+        ]
+        self.assertEqual(expected, self.resolve.prepared_factories)
+        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        expected = [
+            mock.call(
+                coord_a.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_b.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_c.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_a.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+            mock.call(
+                coord_b.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+            mock.call(
+                coord_c.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+        ]
+        actual = self.m_get_prepared_item.call_args_list
+        for call in expected:
+            self.assertIn(call, actual)
+
+    def test_factory__dependency_not_found(self):
+        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+        side_effect = (None, None)
+        self.m_get_prepared_item.side_effect = side_effect
+        dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
+        aux_factory = self.Factory_T1(dependencies=dependencies)
+        aux_factories = [aux_factory]
+        cube = self.Cube(aux_factories=aux_factories)
+        self.resolve._prepare_factory_payload(
+            cube, self.category_local, from_src=self.from_src
+        )
+        self.assertEqual(0, len(self.resolve.prepared_factories))
+        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        expected = [
+            mock.call(
+                coord_a.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_b.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_c.metadata, self.category_local, from_src=self.from_src
+            ),
+            mock.call(
+                coord_a.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+            mock.call(
+                coord_b.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+            mock.call(
+                coord_c.metadata,
+                self.category_local,
+                from_src=self.from_src,
+                from_local=True,
+            ),
+        ]
+        actual = self.m_get_prepared_item.call_args_list
+        for call in actual:
+            self.assertIn(call, expected)
+
+
+class Test__get_prepared_item(tests.IrisTest):
+    pass
+
+
+class Test_cube(tests.IrisTest):
+    pass
 
 
 if __name__ == "__main__":

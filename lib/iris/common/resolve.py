@@ -1514,58 +1514,90 @@ class Resolve:
                 )
                 self.prepared_category.items_dim.append(prepared_item)
 
-    def _prepare_factory_payload(self, cube, category_local, from_src=True):
-        def _get_prepared_item(metadata, from_src=True, from_local=False):
-            result = None
-            if from_local:
-                category = category_local
-                match = lambda item: item.metadata == metadata
+    def _get_prepared_item(
+        self, metadata, category_local, from_src=True, from_local=False
+    ):
+        """
+        TBD
+
+        """
+        result = None
+        if from_local:
+            category = category_local
+            match = lambda item: item.metadata == metadata
+        else:
+            category = self.prepared_category
+            if from_src:
+                match = lambda item: item.metadata.src == metadata
             else:
-                category = self.prepared_category
-                if from_src:
-                    match = lambda item: item.metadata.src == metadata
+                match = lambda item: item.metadata.tgt == metadata
+        for member in category._fields:
+            category_items = getattr(category, member)
+            matched_items = tuple(filter(match, category_items))
+            if matched_items:
+                if len(matched_items) > 1:
+                    dmsg = (
+                        f"ignoring factory dependency {metadata}, multiple {'src' if from_src else 'tgt'} "
+                        f"{'local' if from_local else 'prepared'} metadata matches"
+                    )
+                    logger.debug(dmsg)
                 else:
-                    match = lambda item: item.metadata.tgt == metadata
-            for member in category._fields:
-                category_items = getattr(category, member)
-                matched_items = tuple(filter(match, category_items))
-                if matched_items:
-                    if len(matched_items) > 1:
-                        dmsg = (
-                            f"ignoring factory dependency {metadata}, multiple {'src' if from_src else 'tgt'} "
-                            f"{'local' if from_local else 'prepared'} metadata matches"
-                        )
-                        logger.debug(dmsg)
-                    else:
-                        (item,) = matched_items
-                        if from_local:
-                            src = tgt = None
-                            if from_src:
-                                src = item.metadata
-                                dims = tuple(
-                                    [self.mapping[dim] for dim in item.dims]
-                                )
-                            else:
-                                tgt = item.metadata
-                                dims = item.dims
-                            result = self._create_prepared_item(
-                                item.coord,
-                                dims,
-                                src_metadata=src,
-                                tgt_metadata=tgt,
-                            )
-                            getattr(self.prepared_category, member).append(
-                                result
+                    (item,) = matched_items
+                    if from_local:
+                        src = tgt = None
+                        if from_src:
+                            src = item.metadata
+                            dims = tuple(
+                                [self.mapping[dim] for dim in item.dims]
                             )
                         else:
-                            result = item
-                    break
-            return result
+                            tgt = item.metadata
+                            dims = item.dims
+                        result = self._create_prepared_item(
+                            item.coord,
+                            dims,
+                            src_metadata=src,
+                            tgt_metadata=tgt,
+                        )
+                        getattr(self.prepared_category, member).append(result)
+                    else:
+                        result = item
+                break
+        return result
 
+    def _prepare_factory_payload(self, cube, category_local, from_src=True):
+        """
+        Populate the :attr:`~iris.common.resolve.Resolve.prepared_factories` with a :class:`~iris.common.resolve._PreparedFactory`
+        containing the necessary metadata for each ``src`` and/or ``tgt`` auxiliary factory to be constructed and
+        attached to the resulting resolved :class:`~iris.cube.Cube`.
+
+        .. note::
+
+            The required dependencies of an auxiliary factory may not all be available in the
+            :attr:`~iris.common.resolve.Resolve.prepared_category` and therefore this is a legitimate
+            reason to add the associated metadata of the local dependency to the ``prepared_category``.
+
+        Args:
+
+        * cube:
+            The :class:`~iris.cube.Cube` that may contain an auxiliary factory to be prepared.
+
+        * category_local:
+            The :class:`~iris.common.resolve._CategoryItems` of all metadata local to the provided ``cube``.
+
+        Kwargs:
+
+        * from_src:
+            Boolean stating whether the provided ``cube`` is either a ``src`` or ``tgt``
+            :class:`~iris.cube.Cube` - used to retrieve the appropriate metadata from a
+            :class:`~iris.common.resolve._PreparedMetadata`.
+
+        """
         for factory in cube.aux_factories:
             container = type(factory)
             dependencies = {}
             prepared_item = None
+            found = True
 
             if tuple(
                 filter(
@@ -1586,18 +1618,24 @@ class Resolve:
                 dependency_coord,
             ) in factory.dependencies.items():
                 metadata = dependency_coord.metadata
-                prepared_item = _get_prepared_item(metadata, from_src=from_src)
+                prepared_item = self._get_prepared_item(
+                    metadata, category_local, from_src=from_src
+                )
                 if prepared_item is None:
-                    prepared_item = _get_prepared_item(
-                        metadata, from_src=from_src, from_local=True
+                    prepared_item = self._get_prepared_item(
+                        metadata,
+                        category_local,
+                        from_src=from_src,
+                        from_local=True,
                     )
                     if prepared_item is None:
                         dmsg = f"cannot find matching {metadata} for {container} dependency {dependency_name}"
                         logger.debug(dmsg)
+                        found = False
                         break
                 dependencies[dependency_name] = prepared_item.metadata
 
-            if prepared_item is not None:
+            if found and prepared_item is not None:
                 prepared_factory = _PreparedFactory(
                     container=container, dependencies=dependencies
                 )
@@ -1937,7 +1975,7 @@ class Resolve:
             tgt_broadcasting = tgt_shape != tgt_shape_broadcast
 
             if src_broadcasting and tgt_broadcasting:
-                # TDB: Extend capability to support attempting to broadcast two-way multi-dimensional coordinates.
+                # TBD: Extend capability to support attempting to broadcast two-way multi-dimensional coordinates.
                 emsg = (
                     f"Cannot broadcast the coordinate {src_coord.name()!r} on "
                     f"{self._src_cube_position} cube {self._src_cube.name()!r} and "
