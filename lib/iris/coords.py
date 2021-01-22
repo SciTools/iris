@@ -19,6 +19,7 @@ import warnings
 import zlib
 
 import cftime
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -2792,9 +2793,9 @@ class Connectivity(_DimensionalMetadata):
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(ConnectivityMetadata)
 
-        self.validate_arg_vs_list("start_index", start_index, [0, 1])
+        self._validate_arg_vs_list("start_index", start_index, [0, 1])
         # indices array will be 2-dimensional, so must be either 0 or 1.
-        self.validate_arg_vs_list("element_dim", element_dim, [0, 1])
+        self._validate_arg_vs_list("element_dim", element_dim, [0, 1])
         # TODO: find a better 'common' location to store valid cf_roles.
         valid_cf_roles = [
             "edge_node_connectivity",
@@ -2808,7 +2809,7 @@ class Connectivity(_DimensionalMetadata):
             "volume_face_connectivity",
             "volume_volume_connectivity",
         ]
-        self.validate_arg_vs_list("cf_role", cf_role, valid_cf_roles)
+        self._validate_arg_vs_list("cf_role", cf_role, valid_cf_roles)
 
         self._metadata_manager.start_index = start_index
         self._metadata_manager.element_dim = element_dim
@@ -2826,13 +2827,21 @@ class Connectivity(_DimensionalMetadata):
         )
 
     @staticmethod
-    def validate_arg_vs_list(arg_name, arg, list):
+    def _validate_arg_vs_list(arg_name, arg, list):
         if arg not in list:
             error_msg = (
                 f"Invalid {arg_name} . Got: {arg} . Must be one of: "
                 f"{list} ."
             )
             raise ValueError(error_msg)
+
+    @staticmethod
+    def _lazy_element_lengths(array, element_dim):
+        element_mask_counts = da.sum(
+            da.ma.getmaskarray(array), axis=element_dim
+        )
+        max_element_size = array.shape[element_dim]
+        return max_element_size - element_mask_counts
 
     @property
     def cf_role(self):
@@ -2858,6 +2867,17 @@ class Connectivity(_DimensionalMetadata):
     @property
     def indices(self):
         return self._values
+
+    @property
+    def element_lengths(self):
+        lengths = self._lazy_element_lengths(self.indices, self.element_dim)
+        return lengths.compute()
+
+    @property
+    def has_equal_element_lengths(self):
+        lengths = self._lazy_element_lengths(self.indices, self.element_dim)
+        has_equal = lengths.min() == lengths.max()
+        return has_equal.compute()
 
     def _validate_indices(self, indices):
         def indices_error(message):
@@ -2886,26 +2906,26 @@ class Connectivity(_DimensionalMetadata):
             )
 
         len_req_fail = False
-        element_size = indices_shape[self.element_dim]
+        element_lengths = self._lazy_element_lengths(indices, self.element_dim)
         if self.cf_role_element in ("edge", "boundary"):
-            if element_size != 2:
+            if (element_lengths != 2).any().compute():
                 len_req_fail = "len=2"
-            else:
-                if self.cf_role_element == "face":
-                    min_size = 3
-                elif self.cf_role_element == "volume":
-                    if self.cf_role_indexed_element == "edge":
-                        min_size = 6
-                    else:
-                        min_size = 4
+        else:
+            if self.cf_role_element == "face":
+                min_size = 3
+            elif self.cf_role_element == "volume":
+                if self.cf_role_indexed_element == "edge":
+                    min_size = 6
                 else:
-                    raise NotImplementedError
-                if element_size < min_size:
-                    len_req_fail = f"len>{min_size}"
+                    min_size = 4
+            else:
+                raise NotImplementedError
+            if (element_lengths < min_size).any().compute():
+                len_req_fail = f"len>{min_size}"
         if len_req_fail:
             indices_error(
-                f"Element dimension must be {len_req_fail} to describe "
-                f"{self.cf_role}, got len={element_size} ."
+                f"Not all elements meet requirement: {len_req_fail} , needed "
+                f"to describe '{self.cf_role}' ."
             )
 
     def switch_start_index(self):
