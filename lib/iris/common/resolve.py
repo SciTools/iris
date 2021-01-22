@@ -361,8 +361,8 @@ class Resolve:
         Determine whether the ``src`` and ``tgt`` :class:`~iris.cube.Cube` can
         be transposed and/or broadcast successfully together.
 
-        If compatible, the ``_broadcast_shape`` is calculated of the resultant
-        resolved cube, and the ``_src_cube_resolved`` (transposed/broadcast ``src``
+        If compatible, the ``_broadcast_shape`` of the resultant resolved cube is
+        calculated, and the ``_src_cube_resolved`` (transposed/broadcast ``src``
         cube) and ``_tgt_cube_resolved`` (same as the ``tgt`` cube) are
         calculated.
 
