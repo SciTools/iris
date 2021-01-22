@@ -256,31 +256,33 @@ class CubeSummary:
             cm for cm in cube.cell_measures() if cm.shape == (1,)
         ]
 
-        self.dim_coord_section = VectorSection(
-            "Dimension coordinates:", cube, vector_dim_coords, True
-        )
-        self.aux_coord_section = VectorSection(
-            "Auxiliary coordinates:", cube, vector_aux_coords, True
-        )
-        self.derived_coord_section = VectorSection(
-            "Derived coordinates:", cube, vector_derived_coords, True
-        )
-        self.cell_measure_section = VectorSection(
-            "Cell Measures:", cube, vector_cell_measures, False
-        )
-        self.ancillary_variable_section = VectorSection(
-            "Ancillary variables:", cube, vector_ancillary_variables, False
+        self.vector_sections = {}
+
+        def add_vector_section(title, contents, iscoord=True):
+            self.vector_sections[title] = VectorSection(
+                title, cube, contents, iscoord
+            )
+
+        add_vector_section("Dimension coordinates:", vector_dim_coords)
+        add_vector_section("Auxiliary coordinates:", vector_aux_coords)
+        add_vector_section("Derived coordinates:", vector_derived_coords)
+        add_vector_section("Cell Measures:", vector_cell_measures, False)
+        add_vector_section(
+            "Ancillary Variables:", vector_ancillary_variables, False
         )
 
-        self.scalar_section = ScalarSection(
-            "Scalar Coordinates:", cube, scalar_coords
+        self.scalar_sections = {}
+
+        def add_scalar_section(section_class, title, *args):
+            self.scalar_sections[title] = section_class(title, *args)
+
+        add_scalar_section(
+            ScalarSection, "Scalar Coordinates:", cube, scalar_coords
         )
-        self.scalar_cm_section = ScalarCMSection(
-            "Scalar cell measures:", scalar_cell_measures
+        add_scalar_section(
+            ScalarCMSection, "Scalar cell measures:", scalar_cell_measures
         )
-        self.attribute_section = AttributeSection(
-            "Attributes:", cube.attributes
-        )
-        self.cell_method_section = CellMethodSection(
-            "Cell methods:", cube.cell_methods
+        add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
+        add_scalar_section(
+            CellMethodSection, "Cell methods:", cube.cell_methods
         )

@@ -45,7 +45,7 @@ class Test_CubeSummary(tests.IrisTest):
 
     def test_vector_coord(self):
         rep = iris._representation.CubeSummary(self.cube)
-        dim_section = rep.dim_coord_section
+        dim_section = rep.vector_sections["Dimension coordinates:"]
 
         self.assertEqual(len(dim_section.contents), 1)
 
@@ -73,7 +73,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_aux_coord(scalar_coord_text)
         rep = iris._representation.CubeSummary(cube)
 
-        scalar_section = rep.scalar_section
+        scalar_section = rep.scalar_sections["Scalar Coordinates:"]
 
         self.assertEqual(len(scalar_section.contents), 3)
 
