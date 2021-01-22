@@ -4138,7 +4138,286 @@ class Test__prepare_factory_payload(tests.IrisTest):
 
 
 class Test__get_prepared_item(tests.IrisTest):
-    pass
+    def setUp(self):
+        PreparedItem = namedtuple("PreparedItem", ["metadata"])
+        self.resolve = Resolve()
+        self.prepared_dim_metadata_src = sentinel.prepared_dim_metadata_src
+        self.prepared_dim_metadata_tgt = sentinel.prepared_dim_metadata_tgt
+        self.prepared_items_dim = PreparedItem(
+            metadata=_PreparedMetadata(
+                combined=None,
+                src=self.prepared_dim_metadata_src,
+                tgt=self.prepared_dim_metadata_tgt,
+            )
+        )
+        self.prepared_aux_metadata_src = sentinel.prepared_aux_metadata_src
+        self.prepared_aux_metadata_tgt = sentinel.prepared_aux_metadata_tgt
+        self.prepared_items_aux = PreparedItem(
+            metadata=_PreparedMetadata(
+                combined=None,
+                src=self.prepared_aux_metadata_src,
+                tgt=self.prepared_aux_metadata_tgt,
+            )
+        )
+        self.prepared_scalar_metadata_src = (
+            sentinel.prepared_scalar_metadata_src
+        )
+        self.prepared_scalar_metadata_tgt = (
+            sentinel.prepared_scalar_metadata_tgt
+        )
+        self.prepared_items_scalar = PreparedItem(
+            metadata=_PreparedMetadata(
+                combined=None,
+                src=self.prepared_scalar_metadata_src,
+                tgt=self.prepared_scalar_metadata_tgt,
+            )
+        )
+        self.resolve.prepared_category = _CategoryItems(
+            items_dim=[self.prepared_items_dim],
+            items_aux=[self.prepared_items_aux],
+            items_scalar=[self.prepared_items_scalar],
+        )
+        self.resolve.mapping = {0: 10}
+        self.m_create_prepared_item = self.patch(
+            "iris.common.resolve.Resolve._create_prepared_item"
+        )
+        self.local_dim_metadata = sentinel.local_dim_metadata
+        self.local_aux_metadata = sentinel.local_aux_metadata
+        self.local_scalar_metadata = sentinel.local_scalar_metadata
+        self.local_coord = sentinel.local_coord
+        self.local_coord_dims = (0,)
+        self.local_items_dim = _Item(
+            metadata=self.local_dim_metadata,
+            coord=self.local_coord,
+            dims=self.local_coord_dims,
+        )
+        self.local_items_aux = _Item(
+            metadata=self.local_aux_metadata,
+            coord=self.local_coord,
+            dims=self.local_coord_dims,
+        )
+        self.local_items_scalar = _Item(
+            metadata=self.local_scalar_metadata,
+            coord=self.local_coord,
+            dims=self.local_coord_dims,
+        )
+        self.category_local = _CategoryItems(
+            items_dim=[self.local_items_dim],
+            items_aux=[self.local_items_aux],
+            items_scalar=[self.local_items_scalar],
+        )
+
+    def test_missing_prepared_coord__from_src(self):
+        metadata = sentinel.missing
+        category_local = None
+        result = self.resolve._get_prepared_item(metadata, category_local)
+        self.assertIsNone(result)
+
+    def test_missing_prepared_coord__from_tgt(self):
+        metadata = sentinel.missing
+        category_local = None
+        result = self.resolve._get_prepared_item(
+            metadata, category_local, from_src=False
+        )
+        self.assertIsNone(result)
+
+    def test_get_prepared_dim_coord__from_src(self):
+        metadata = self.prepared_dim_metadata_src
+        category_local = None
+        result = self.resolve._get_prepared_item(metadata, category_local)
+        self.assertEqual(self.prepared_items_dim, result)
+
+    def test_get_prepared_dim_coord__from_tgt(self):
+        metadata = self.prepared_dim_metadata_tgt
+        category_local = None
+        result = self.resolve._get_prepared_item(
+            metadata, category_local, from_src=False
+        )
+        self.assertEqual(self.prepared_items_dim, result)
+
+    def test_get_prepared_aux_coord__from_src(self):
+        metadata = self.prepared_aux_metadata_src
+        category_local = None
+        result = self.resolve._get_prepared_item(metadata, category_local)
+        self.assertEqual(self.prepared_items_aux, result)
+
+    def test_get_prepared_aux_coord__from_tgt(self):
+        metadata = self.prepared_aux_metadata_tgt
+        category_local = None
+        result = self.resolve._get_prepared_item(
+            metadata, category_local, from_src=False
+        )
+        self.assertEqual(self.prepared_items_aux, result)
+
+    def test_get_prepared_scalar_coord__from_src(self):
+        metadata = self.prepared_scalar_metadata_src
+        category_local = None
+        result = self.resolve._get_prepared_item(metadata, category_local)
+        self.assertEqual(self.prepared_items_scalar, result)
+
+    def test_get_prepared_scalar_coord__from_tgt(self):
+        metadata = self.prepared_scalar_metadata_tgt
+        category_local = None
+        result = self.resolve._get_prepared_item(
+            metadata, category_local, from_src=False
+        )
+        self.assertEqual(self.prepared_items_scalar, result)
+
+    def test_missing_local_coord__from_src(self):
+        metadata = sentinel.missing
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_local=True
+        )
+        self.assertIsNone(result)
+
+    def test_missing_local_coord__from_tgt(self):
+        metadata = sentinel.missing
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_src=False, from_local=True
+        )
+        self.assertIsNone(result)
+
+    def test_get_local_dim_coord__from_src(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_dim_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_dim))
+        self.assertEqual(expected, self.resolve.prepared_category.items_dim[1])
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = (self.resolve.mapping[self.local_coord_dims[0]],)
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=metadata,
+                tgt_metadata=None,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_get_local_dim_coord__from_tgt(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_dim_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_src=False, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_dim))
+        self.assertEqual(expected, self.resolve.prepared_category.items_dim[1])
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = self.local_coord_dims
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=None,
+                tgt_metadata=metadata,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_get_local_aux_coord__from_src(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_aux_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux[1])
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = (self.resolve.mapping[self.local_coord_dims[0]],)
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=metadata,
+                tgt_metadata=None,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_get_local_aux_coord__from_tgt(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_aux_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_src=False, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
+        self.assertEqual(expected, self.resolve.prepared_category.items_aux[1])
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = self.local_coord_dims
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=None,
+                tgt_metadata=metadata,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_get_local_scalar_coord__from_src(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_scalar_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        self.assertEqual(
+            expected, self.resolve.prepared_category.items_scalar[1]
+        )
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = (self.resolve.mapping[self.local_coord_dims[0]],)
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=metadata,
+                tgt_metadata=None,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+
+    def test_get_local_scalar_coord__from_tgt(self):
+        created_local_item = sentinel.created_local_item
+        self.m_create_prepared_item.return_value = created_local_item
+        metadata = self.local_scalar_metadata
+        result = self.resolve._get_prepared_item(
+            metadata, self.category_local, from_src=False, from_local=True
+        )
+        expected = created_local_item
+        self.assertEqual(expected, result)
+        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        self.assertEqual(
+            expected, self.resolve.prepared_category.items_scalar[1]
+        )
+        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        dims = self.local_coord_dims
+        expected = [
+            mock.call(
+                self.local_coord,
+                dims,
+                src_metadata=None,
+                tgt_metadata=metadata,
+            )
+        ]
+        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
 
 
 class Test_cube(tests.IrisTest):

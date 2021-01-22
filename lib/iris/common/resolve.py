@@ -1518,10 +1518,42 @@ class Resolve:
         self, metadata, category_local, from_src=True, from_local=False
     ):
         """
-        TBD
+        Find the :attr:`~iris.common.resolve._PreparedItem` from the
+        :attr:`~iris.common.resolve.Resolve.prepared_category` that matches the provided ``metadata``.
+
+        Alternatively, the ``category_local`` is searched to find a :class:`~iris.common.resolve._Item`
+        with matching ``metadata`` from either the local ``src`` or ``tgt`` :class:`~iris.cube.Cube`.
+        If a match is found, then a new `~iris.common.resolve._PreparedItem` is created and added to
+        :attr:`~iris.common.resolve.Resolve.prepared_category` and returned. See ``from_local``.
+
+        Args:
+
+        * metadata:
+            The target metadata of the prepared (or local) item to retrieve.
+
+        * category_local:
+            The :class:`~iris.common.resolve._CategoryItems` containing the
+            local metadata of either the ``src`` or ``tgt`` :class:`~iris.cube.Cube`.
+            See ``from_local``.
+
+        Kwargs:
+
+        * from_src:
+            Boolean stating whether the ``metadata`` is from the ``src`` (``True``)
+            or ``tgt`` :class:`~iris.cube.Cube`.
+            Defaults to ``True``.
+
+        * from_local:
+            Boolean controlling whether the ``metadata`` is used to search the
+            ``category_local`` (``True``) or the :attr:`~iris.common.resolve.Resolve.prepared_category`.
+            Defaults to ``False``.
+
+        Returns:
+            The :class:`~iris.common.resolve._PreparedItem` matching the provided ``metadata``.
 
         """
         result = None
+
         if from_local:
             category = category_local
             match = lambda item: item.metadata == metadata
@@ -1531,6 +1563,7 @@ class Resolve:
                 match = lambda item: item.metadata.src == metadata
             else:
                 match = lambda item: item.metadata.tgt == metadata
+
         for member in category._fields:
             category_items = getattr(category, member)
             matched_items = tuple(filter(match, category_items))
