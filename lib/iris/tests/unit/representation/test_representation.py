@@ -93,6 +93,32 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(text_summary.content, "a\nb\nc")
         self.assertEqual(text_summary.extra, "key='value'")
 
+    def test_cell_measure(self):
+        cube = self.cube
+        cell_measure = CellMeasure([1, 2, 3], long_name="foo")
+        cube.add_cell_measure(cell_measure, 0)
+        rep = iris._representation.CubeSummary(cube)
+
+        cm_section = rep.vector_sections["Cell Measures:"]
+        self.assertEqual(len(cm_section.contents), 1)
+
+        cm_summary = cm_section.contents[0]
+        self.assertEqual(cm_summary.name, "foo")
+        self.assertEqual(cm_summary.dim_chars, ["x", "-"])
+
+    def test_ancillary_variable(self):
+        cube = self.cube
+        cell_measure = AncillaryVariable([1, 2, 3], long_name="foo")
+        cube.add_ancillary_variable(cell_measure, 0)
+        rep = iris._representation.CubeSummary(cube)
+
+        av_section = rep.vector_sections["Ancillary Variables:"]
+        self.assertEqual(len(av_section.contents), 1)
+
+        av_summary = av_section.contents[0]
+        self.assertEqual(av_summary.name, "foo")
+        self.assertEqual(av_summary.dim_chars, ["x", "-"])
+
 
 if __name__ == "__main__":
     tests.main()
