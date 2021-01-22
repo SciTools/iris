@@ -101,7 +101,7 @@ class VectorSummary(CoordSummary):
             "x" if dim in dims else "-" for dim in range(len(cube.shape))
         ]
         if iscoord:
-            extra = self._summary_coord_extra()
+            extra = self._summary_coord_extra(cube, vector)
             self.extra = iris.util.clip_string(
                 extra, clip_length=70 - extra_indent
             )
@@ -158,7 +158,9 @@ class Section:
 class VectorSection(Section):
     def __init__(self, title, cube, vectors, iscoord):
         self.title = title
-        self.contents = [VectorSummary(vector, cube, iscoord) for vector in vectors]
+        self.contents = [
+            VectorSummary(cube, vector, iscoord) for vector in vectors
+        ]
 
 
 class ScalarSection(Section):
