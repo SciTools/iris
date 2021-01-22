@@ -110,7 +110,7 @@ class VectorSummary(CoordSummary):
 
 
 class ScalarSummary(CoordSummary):
-    def __init__(self, coord):
+    def __init__(self, cube, coord):
         extra_indent = 13
         self.name = coord.name()
         if (
@@ -132,19 +132,20 @@ class ScalarSummary(CoordSummary):
             self.content = "\n".join(self.lines)
         else:
             self.string_type = False
+            self.lines = None
             self.point = "{!s}".format(coord_cell.point)
             coord_cell_cbound = coord_cell.bound
             if coord_cell_cbound is not None:
                 self.bound = "({})".format(
                     ", ".join(str(val) for val in coord_cell_cbound)
                 )
+                self.content = "{}{}, bound={}{}".format(
+                    self.point, self.unit, self.bound, self.unit
+                )
             else:
                 self.bound = None
-            self.lines = None
-            self.content = "{}{}, bound={}{}".format(
-                self.point, self.unit, self.bound, self.unit
-            )
-        extra = self._summary_coord_extra()
+                self.content = "{}{}".format(self.point, self.unit)
+        extra = self._summary_coord_extra(cube, coord)
         self.extra = iris.util.clip_string(
             extra, clip_length=70 - extra_indent
         )
@@ -164,9 +165,9 @@ class VectorSection(Section):
 
 
 class ScalarSection(Section):
-    def __init__(self, title, scalars):
+    def __init__(self, title, cube, scalars):
         self.title = title
-        self.contents = [ScalarSummary(scalar) for scalar in scalars]
+        self.contents = [ScalarSummary(cube, scalar) for scalar in scalars]
 
 
 class ScalarCMSection(Section):
@@ -272,7 +273,7 @@ class CubeSummary:
         )
 
         self.scalar_section = ScalarSection(
-            "Scalar Coordinates:", scalar_coords
+            "Scalar Coordinates:", cube, scalar_coords
         )
         self.scalar_cm_section = ScalarCMSection(
             "Scalar cell measures:", scalar_cell_measures
