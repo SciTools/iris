@@ -15,10 +15,13 @@ import iris.tests as tests
 from collections import namedtuple
 from copy import deepcopy
 
+from cf_units import Unit
+import numpy as np
 import unittest.mock as mock
 from unittest.mock import sentinel
 
 from iris.common.lenient import LENIENT
+from iris.common.metadata import CubeMetadata
 from iris.common.resolve import (
     Resolve,
     _AuxCoverage,
@@ -4421,7 +4424,371 @@ class Test__get_prepared_item(tests.IrisTest):
 
 
 class Test_cube(tests.IrisTest):
-    pass
+    def setUp(self):
+        self.shape = (2, 3)
+        self.data = np.zeros(np.multiply(*self.shape), dtype=np.int8).reshape(
+            self.shape
+        )
+        self.bad_data = np.zeros(np.multiply(*self.shape), dtype=np.int8)
+        self.resolve = Resolve()
+        self.resolve.map_rhs_to_lhs = True
+        self.resolve._broadcast_shape = self.shape
+        self.cube_metadata = CubeMetadata(
+            standard_name="air_temperature",
+            long_name="air temp",
+            var_name="airT",
+            units=Unit("K"),
+            attributes={},
+            cell_methods=(),
+        )
+        lhs_cube = Cube(self.data)
+        lhs_cube.metadata = self.cube_metadata
+        self.resolve.lhs_cube = lhs_cube
+        rhs_cube = Cube(self.data)
+        rhs_cube.metadata = self.cube_metadata
+        self.resolve.rhs_cube = rhs_cube
+        self.m_add_dim_coord = self.patch("iris.cube.Cube.add_dim_coord")
+        self.m_add_aux_coord = self.patch("iris.cube.Cube.add_aux_coord")
+        self.m_add_aux_factory = self.patch("iris.cube.Cube.add_aux_factory")
+        self.m_coord = self.patch("iris.cube.Cube.coord")
+        #
+        # prepared coordinates
+        #
+        prepared_category = _CategoryItems(
+            items_dim=[], items_aux=[], items_scalar=[]
+        )
+        # prepared dim coordinates
+        self.prepared_dim_0_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_dim_0_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_dim_0_points = sentinel.prepared_dim_0_points
+        self.prepared_dim_0_bounds = sentinel.prepared_dim_0_bounds
+        self.prepared_dim_0_dims = (0,)
+        self.prepared_dim_0_coord = mock.Mock(metadata=None)
+        self.prepared_dim_0_container = mock.Mock(
+            return_value=self.prepared_dim_0_coord
+        )
+        self.prepared_dim_0 = _PreparedItem(
+            metadata=self.prepared_dim_0_metadata,
+            points=self.prepared_dim_0_points,
+            bounds=self.prepared_dim_0_bounds,
+            dims=self.prepared_dim_0_dims,
+            container=self.prepared_dim_0_container,
+        )
+        prepared_category.items_dim.append(self.prepared_dim_0)
+        self.prepared_dim_1_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_dim_1_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_dim_1_points = sentinel.prepared_dim_1_points
+        self.prepared_dim_1_bounds = sentinel.prepared_dim_1_bounds
+        self.prepared_dim_1_dims = (1,)
+        self.prepared_dim_1_coord = mock.Mock(metadata=None)
+        self.prepared_dim_1_container = mock.Mock(
+            return_value=self.prepared_dim_1_coord
+        )
+        self.prepared_dim_1 = _PreparedItem(
+            metadata=self.prepared_dim_1_metadata,
+            points=self.prepared_dim_1_points,
+            bounds=self.prepared_dim_1_bounds,
+            dims=self.prepared_dim_1_dims,
+            container=self.prepared_dim_1_container,
+        )
+        prepared_category.items_dim.append(self.prepared_dim_1)
+
+        # prepared auxiliary coordinates
+        self.prepared_aux_0_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_aux_0_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_aux_0_points = sentinel.prepared_aux_0_points
+        self.prepared_aux_0_bounds = sentinel.prepared_aux_0_bounds
+        self.prepared_aux_0_dims = (0,)
+        self.prepared_aux_0_coord = mock.Mock(metadata=None)
+        self.prepared_aux_0_container = mock.Mock(
+            return_value=self.prepared_aux_0_coord
+        )
+        self.prepared_aux_0 = _PreparedItem(
+            metadata=self.prepared_aux_0_metadata,
+            points=self.prepared_aux_0_points,
+            bounds=self.prepared_aux_0_bounds,
+            dims=self.prepared_aux_0_dims,
+            container=self.prepared_aux_0_container,
+        )
+        prepared_category.items_aux.append(self.prepared_aux_0)
+        self.prepared_aux_1_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_aux_1_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_aux_1_points = sentinel.prepared_aux_1_points
+        self.prepared_aux_1_bounds = sentinel.prepared_aux_1_bounds
+        self.prepared_aux_1_dims = (1,)
+        self.prepared_aux_1_coord = mock.Mock(metadata=None)
+        self.prepared_aux_1_container = mock.Mock(
+            return_value=self.prepared_aux_1_coord
+        )
+        self.prepared_aux_1 = _PreparedItem(
+            metadata=self.prepared_aux_1_metadata,
+            points=self.prepared_aux_1_points,
+            bounds=self.prepared_aux_1_bounds,
+            dims=self.prepared_aux_1_dims,
+            container=self.prepared_aux_1_container,
+        )
+        prepared_category.items_aux.append(self.prepared_aux_1)
+
+        # prepare scalar coordinates
+        self.prepared_scalar_0_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_scalar_0_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_scalar_0_points = sentinel.prepared_scalar_0_points
+        self.prepared_scalar_0_bounds = sentinel.prepared_scalar_0_bounds
+        self.prepared_scalar_0_dims = ()
+        self.prepared_scalar_0_coord = mock.Mock(metadata=None)
+        self.prepared_scalar_0_container = mock.Mock(
+            return_value=self.prepared_scalar_0_coord
+        )
+        self.prepared_scalar_0 = _PreparedItem(
+            metadata=self.prepared_scalar_0_metadata,
+            points=self.prepared_scalar_0_points,
+            bounds=self.prepared_scalar_0_bounds,
+            dims=self.prepared_scalar_0_dims,
+            container=self.prepared_scalar_0_container,
+        )
+        prepared_category.items_scalar.append(self.prepared_scalar_0)
+        self.prepared_scalar_1_metadata = _PreparedMetadata(
+            combined=sentinel.prepared_scalar_1_metadata_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_scalar_1_points = sentinel.prepared_scalar_1_points
+        self.prepared_scalar_1_bounds = sentinel.prepared_scalar_1_bounds
+        self.prepared_scalar_1_dims = ()
+        self.prepared_scalar_1_coord = mock.Mock(metadata=None)
+        self.prepared_scalar_1_container = mock.Mock(
+            return_value=self.prepared_scalar_1_coord
+        )
+        self.prepared_scalar_1 = _PreparedItem(
+            metadata=self.prepared_scalar_1_metadata,
+            points=self.prepared_scalar_1_points,
+            bounds=self.prepared_scalar_1_bounds,
+            dims=self.prepared_scalar_1_dims,
+            container=self.prepared_scalar_1_container,
+        )
+        prepared_category.items_scalar.append(self.prepared_scalar_1)
+        #
+        # prepared factories
+        #
+        prepared_factories = []
+        self.aux_factory = sentinel.aux_factory
+        self.prepared_factory_container = mock.Mock(
+            return_value=self.aux_factory
+        )
+        self.prepared_factory_metadata_a = _PreparedMetadata(
+            combined=sentinel.prepared_factory_metadata_a_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_factory_metadata_b = _PreparedMetadata(
+            combined=sentinel.prepared_factory_metadata_b_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_factory_metadata_c = _PreparedMetadata(
+            combined=sentinel.prepared_factory_metadata_c_combined,
+            src=None,
+            tgt=None,
+        )
+        self.prepared_factory_dependencies = dict(
+            name_a=self.prepared_factory_metadata_a,
+            name_b=self.prepared_factory_metadata_b,
+            name_c=self.prepared_factory_metadata_c,
+        )
+        self.prepared_factory = _PreparedFactory(
+            container=self.prepared_factory_container,
+            dependencies=self.prepared_factory_dependencies,
+        )
+        prepared_factories.append(self.prepared_factory)
+        self.prepared_factory_side_effect = (
+            sentinel.prepared_factory_coord_a,
+            sentinel.prepared_factory_coord_b,
+            sentinel.prepared_factory_coord_c,
+        )
+        self.m_coord.side_effect = self.prepared_factory_side_effect
+        self.resolve.prepared_category = prepared_category
+        self.resolve.prepared_factories = prepared_factories
+
+    def test_no_resolved_shape(self):
+        self.resolve._broadcast_shape = None
+        data = None
+        emsg = "Cannot resolve resultant cube, as no candidate cubes have been provided"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve.cube(data)
+
+    def test_bad_data_shape(self):
+        emsg = "Cannot resolve resultant cube, as the provided data must have shape"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve.cube(self.bad_data)
+
+    def test_bad_data_shape__inplace(self):
+        self.resolve.lhs_cube = Cube(self.bad_data)
+        emsg = "Cannot resolve resultant cube in-place"
+        with self.assertRaisesRegex(ValueError, emsg):
+            _ = self.resolve.cube(self.data, in_place=True)
+
+    def _check(self):
+        # check dim coordinate 0
+        self.assertEqual(1, self.prepared_dim_0.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_dim_0_points, bounds=self.prepared_dim_0_bounds
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_dim_0.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_dim_0_coord.metadata,
+            self.prepared_dim_0_metadata.combined,
+        )
+        # check dim coordinate 1
+        self.assertEqual(1, self.prepared_dim_1.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_dim_1_points, bounds=self.prepared_dim_1_bounds
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_dim_1.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_dim_1_coord.metadata,
+            self.prepared_dim_1_metadata.combined,
+        )
+        # check add_dim_coord
+        self.assertEqual(2, self.m_add_dim_coord.call_count)
+        expected = [
+            mock.call(self.prepared_dim_0_coord, self.prepared_dim_0_dims),
+            mock.call(self.prepared_dim_1_coord, self.prepared_dim_1_dims),
+        ]
+        self.assertEqual(expected, self.m_add_dim_coord.call_args_list)
+
+        # check aux coordinate 0
+        self.assertEqual(1, self.prepared_aux_0.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_aux_0_points, bounds=self.prepared_aux_0_bounds
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_aux_0.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_aux_0_coord.metadata,
+            self.prepared_aux_0_metadata.combined,
+        )
+        # check aux coordinate 1
+        self.assertEqual(1, self.prepared_aux_1.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_aux_1_points, bounds=self.prepared_aux_1_bounds
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_aux_1.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_aux_1_coord.metadata,
+            self.prepared_aux_1_metadata.combined,
+        )
+        # check scalar coordinate 0
+        self.assertEqual(1, self.prepared_scalar_0.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_scalar_0_points,
+                bounds=self.prepared_scalar_0_bounds,
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_scalar_0.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_scalar_0_coord.metadata,
+            self.prepared_scalar_0_metadata.combined,
+        )
+        # check scalar coordinate 1
+        self.assertEqual(1, self.prepared_scalar_1.container.call_count)
+        expected = [
+            mock.call(
+                self.prepared_scalar_1_points,
+                bounds=self.prepared_scalar_1_bounds,
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_scalar_1.container.call_args_list
+        )
+        self.assertEqual(
+            self.prepared_scalar_1_coord.metadata,
+            self.prepared_scalar_1_metadata.combined,
+        )
+        # check add_aux_coord
+        self.assertEqual(4, self.m_add_aux_coord.call_count)
+        expected = [
+            mock.call(self.prepared_aux_0_coord, self.prepared_aux_0_dims),
+            mock.call(self.prepared_aux_1_coord, self.prepared_aux_1_dims),
+            mock.call(
+                self.prepared_scalar_0_coord, self.prepared_scalar_0_dims
+            ),
+            mock.call(
+                self.prepared_scalar_1_coord, self.prepared_scalar_1_dims
+            ),
+        ]
+        self.assertEqual(expected, self.m_add_aux_coord.call_args_list)
+
+        # check auxiliary factories
+        self.assertEqual(1, self.m_add_aux_factory.call_count)
+        expected = [mock.call(self.aux_factory)]
+        self.assertEqual(expected, self.m_add_aux_factory.call_args_list)
+        self.assertEqual(1, self.prepared_factory_container.call_count)
+        expected = [
+            mock.call(
+                **{
+                    name: value
+                    for name, value in zip(
+                        sorted(self.prepared_factory_dependencies.keys()),
+                        self.prepared_factory_side_effect,
+                    )
+                }
+            )
+        ]
+        self.assertEqual(
+            expected, self.prepared_factory_container.call_args_list
+        )
+        self.assertEqual(3, self.m_coord.call_count)
+        expected = [
+            mock.call(self.prepared_factory_metadata_a.combined),
+            mock.call(self.prepared_factory_metadata_b.combined),
+            mock.call(self.prepared_factory_metadata_c.combined),
+        ]
+        self.assertEqual(expected, self.m_coord.call_args_list)
+
+    def test_resolve(self):
+        result = self.resolve.cube(self.data)
+        self.assertEqual(self.cube_metadata, result.metadata)
+        self._check()
+        self.assertIsNot(self.resolve.lhs_cube, result)
+
+    def test_resolve__inplace(self):
+        result = self.resolve.cube(self.data, in_place=True)
+        self.assertEqual(self.cube_metadata, result.metadata)
+        self._check()
+        self.assertIs(self.resolve.lhs_cube, result)
 
 
 if __name__ == "__main__":
