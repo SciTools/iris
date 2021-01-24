@@ -38,7 +38,7 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check the documentation builds without warnings or errors**.  See
    :ref:`contributing.documentation.building`
 
-#. **Check for any new dependencies in the** `.travis.yml`_ **config file.**
+#. **Check for any new dependencies in the** `.cirrus.yml`_ **config file.**
 
 #. **Check for any new dependencies in the** `readthedocs.yml`_ **file**.  This
    file is used to build the documentation that is served from

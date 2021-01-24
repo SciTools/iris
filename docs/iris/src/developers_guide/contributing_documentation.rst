@@ -28,7 +28,7 @@ The build can be run from the documentation directory ``iris/docs/iris/src``.
 
 The build output for the html is found in the ``_build/html`` sub directory.
 When updating the documentation ensure the html build has *no errors* or
-*warnings* otherwise it may fail the automated `travis-ci`_  build.
+*warnings* otherwise it may fail the automated `cirrus-ci`_  build.
 
 Once the build is complete, if it is rerun it will only rebuild the impacted
 build artefacts so should take less time.
@@ -50,7 +50,7 @@ This is useful for a final test before committing your changes.
           have been promoted to be **errors** to ensure they are addressed.
           This **only** applies when ``make html`` is run.
 
-.. _travis-ci: https://travis-ci.org/github/SciTools/iris
+.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 
 .. _contributing.documentation.testing:
 
@@ -99,7 +99,7 @@ or ignore the url.
     ``spelling_word_list_filename``.
 
 
-.. note:: In addition to the automated `travis-ci`_ build of all the
+.. note:: In addition to the automated `cirrus-ci`_ build of all the
           documentation build options above, the
           https://readthedocs.org/ service is also used.  The configuration
           of this held in a file in the root of the
