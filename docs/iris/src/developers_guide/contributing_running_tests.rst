@@ -91,3 +91,73 @@ due to an experimental dependency not being present.
    All Python decorators that skip tests will be defined in
    ``lib/iris/tests/__init__.py`` with a function name with a prefix of
    ``skip_``.
+
+
+Using Nox for Testing
+=====================
+
+Iris has adopted the use of the `nox`_ tool for automated testing on `cirrus-ci`_,
+and also locally on the command-line for developers.
+
+`nox`_ is similar to `tox`_, but instead leverages the expressiveness and power of a Python
+configuration file rather than an `.ini` file. Additionally, `nox`_ also supports `conda`_ as
+a testing environment backend, as well as `virtualenv`_.
+
+Where is Nox Used?
+------------------
+
+Iris uses `nox`_ as a convenience to fully automate the process of executing the Iris tests, building
+the documentation, linting the code-base and ensuring the coding style conforms to `black`_. 
+
+You can perform all of these tasks manually yourself, however the onus is on you to first ensure
+that all of the required package dependencies are installed and available in the testing environment.
+
+`Nox`_ has been configured to automatically do this for you, and provides a means to easily replicate
+the remote testing behaviour of `cirrus-ci`_ locally.
+
+
+Installing Nox
+--------------
+
+We recommend installing `nox`_ using `conda`_::
+
+  conda create -n nox -c conda-forge nox
+  conda activate nox
+
+The `nox`_ package is also available on PyPI, however `nox`_ has been configured to use the `conda`_
+backend for Iris, so an installation of `conda`_ must always be available.
+
+
+Testing with Nox
+----------------
+
+The `nox`_ configuration file `noxfile.py` is available in the root ``iris`` project directory, and
+defines all the `nox`_ sessions (i.e., tasks) that may be performed. `nox`_ must always be executed
+from the ``iris`` root directory.
+
+To list the configured `nox`_ sessions for Iris::
+
+  nox --list
+
+To run the Iris tests for all configured versions of Python::
+
+  nox --session tests
+
+To build the Iris documentation specifically for Python 3.7::
+
+  nox --session doctest-3.7
+
+To run all the Iris `nox`_ sessions::
+
+  nox
+
+For further `nox`_ command-line options::
+
+  nox --help
+
+
+.. _black: https://black.readthedocs.io/en/stable/
+.. _nox: https://nox.thea.codes/en/latest/
+.. _tox: https://tox.readthedocs.io/en/latest/
+.. _virtualenv: https://virtualenv.pypa.io/en/latest/
+.. _PyPI: https://pypi.org/project/nox/
