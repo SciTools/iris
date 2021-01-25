@@ -2815,8 +2815,6 @@ class Connectivity(_DimensionalMetadata):
         self._metadata_manager.element_dim = element_dim
         self._metadata_manager.cf_role = cf_role
 
-        self._validate_indices(indices)
-
         super().__init__(
             values=indices,
             standard_name=None,
@@ -2842,6 +2840,16 @@ class Connectivity(_DimensionalMetadata):
         )
         max_element_size = array.shape[element_dim]
         return max_element_size - element_mask_counts
+
+    @property
+    def _values(self):
+        """Overridden just to allow .setter override."""
+        return super()._values
+
+    @_values.setter
+    def _values(self, values):
+        self._validate_indices(values)
+        super(Connectivity, self.__class__)._values.fset(self, values)
 
     @property
     def cf_role(self):
@@ -3017,6 +3025,8 @@ class Connectivity(_DimensionalMetadata):
         element.setAttribute("cf_role", self.cf_role)
         element.setAttribute("start_index", self.start_index)
         element.setAttribute("element_dim", self.element_dim)
+
+        return element
 
 
 # See Coord.cells() for the description/context.
