@@ -2929,7 +2929,7 @@ class Connectivity(_DimensionalMetadata):
             else:
                 raise NotImplementedError
             if (element_lengths < min_size).any().compute():
-                len_req_fail = f"len>{min_size}"
+                len_req_fail = f"len>={min_size}"
         if len_req_fail:
             indices_error(
                 f"Not all elements meet requirement: {len_req_fail} - needed "
