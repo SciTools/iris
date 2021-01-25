@@ -197,6 +197,12 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
+    """
+    This class provides a structure for output representations of an Iris cube.
+    It is used to produce the printout of :meth:`iris.cube.Cube.__str__`.
+
+    """
+
     def __init__(self, cube, shorten=False, name_padding=35):
         self.section_indent = 5
         self.item_indent = 10
