@@ -12,8 +12,8 @@
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
-.. _travis-ci: https://travis-ci.org/github/SciTools/iris
-.. _.travis.yml: https://github.com/SciTools/iris/blob/master/.travis.yml
+.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
+.. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _using git: https://docs.github.com/en/github/using-git

@@ -442,7 +442,7 @@ This document explains the changes made to Iris for this release
 
 * `@znicholls`_ made :func:`~iris.tests.idiff.step_over_diffs` robust to hyphens (``-``) in the input path (i.e. the ``result_dir`` argument) (:pull:`3902`).
 
-* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_. (:pull:`3928`)
+* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_, and removed `stickler-ci`_ support. (:pull:`3928`)
 
 * `@bjlittle`_ introduced `nox`_ as a common and easy entry-point for test automation.
   It can be used both from `cirrus-ci`_ in the cloud, and locally by the developer to
@@ -498,3 +498,5 @@ This document explains the changes made to Iris for this release
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _nox: https://nox.thea.codes/en/stable/
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
+.. _travis-ci: https://travis-ci.org/github/SciTools/iris
+.. _stickler-ci: https://stickler-ci.com/
