@@ -2932,7 +2932,7 @@ class Connectivity(_DimensionalMetadata):
                 len_req_fail = f"len>{min_size}"
         if len_req_fail:
             indices_error(
-                f"Not all elements meet requirement: {len_req_fail} , needed "
+                f"Not all elements meet requirement: {len_req_fail} - needed "
                 f"to describe '{self.cf_role}' ."
             )
 
