@@ -3,11 +3,10 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :mod:`iris._representation` module."""
+"""Unit tests for the :mod:`iris._representation.cube_summary` module."""
 
 import numpy as np
 import iris.tests as tests
-import iris._representation
 from iris.cube import Cube
 from iris.coords import (
     DimCoord,
@@ -16,6 +15,8 @@ from iris.coords import (
     AncillaryVariable,
     CellMethod,
 )
+
+from iris._representation import cube_summary
 
 
 def example_cube():
@@ -36,7 +37,7 @@ class Test_CubeSummary(tests.IrisTest):
         self.cube = example_cube()
 
     def test_header(self):
-        rep = iris._representation.CubeSummary(self.cube)
+        rep = cube_summary.CubeSummary(self.cube)
         header_left = rep.header.nameunit
         header_right = rep.header.dimension_header.contents
 
@@ -44,7 +45,7 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(header_right, ["latitude: 3", "-- : 2"])
 
     def test_vector_coord(self):
-        rep = iris._representation.CubeSummary(self.cube)
+        rep = cube_summary.CubeSummary(self.cube)
         dim_section = rep.vector_sections["Dimension coordinates:"]
 
         self.assertEqual(len(dim_section.contents), 1)
@@ -71,7 +72,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_aux_coord(scalar_coord_no_bounds)
         cube.add_aux_coord(scalar_coord_with_bounds)
         cube.add_aux_coord(scalar_coord_text)
-        rep = iris._representation.CubeSummary(cube)
+        rep = cube_summary.CubeSummary(cube)
 
         scalar_section = rep.scalar_sections["Scalar Coordinates:"]
 
@@ -97,7 +98,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube = self.cube
         cell_measure = CellMeasure([1, 2, 3], long_name="foo")
         cube.add_cell_measure(cell_measure, 0)
-        rep = iris._representation.CubeSummary(cube)
+        rep = cube_summary.CubeSummary(cube)
 
         cm_section = rep.vector_sections["Cell Measures:"]
         self.assertEqual(len(cm_section.contents), 1)
@@ -110,7 +111,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube = self.cube
         cell_measure = AncillaryVariable([1, 2, 3], long_name="foo")
         cube.add_ancillary_variable(cell_measure, 0)
-        rep = iris._representation.CubeSummary(cube)
+        rep = cube_summary.CubeSummary(cube)
 
         av_section = rep.vector_sections["Ancillary Variables:"]
         self.assertEqual(len(av_section.contents), 1)
@@ -122,7 +123,7 @@ class Test_CubeSummary(tests.IrisTest):
     def test_attributes(self):
         cube = self.cube
         cube.attributes = {"a": 1, "b": "two"}
-        rep = iris._representation.CubeSummary(cube)
+        rep = cube_summary.CubeSummary(cube)
 
         attribute_section = rep.scalar_sections["Attributes:"]
         attribute_contents = attribute_section.contents
@@ -139,7 +140,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_cell_method(cell_method_xy)
         cube.add_cell_method(cell_method_x)
 
-        rep = iris._representation.CubeSummary(cube)
+        rep = cube_summary.CubeSummary(cube)
         cell_method_section = rep.scalar_sections["Cell methods:"]
         expected_contents = ["mean: x, y", "mean: x"]
         self.assertEqual(cell_method_section.contents, expected_contents)
