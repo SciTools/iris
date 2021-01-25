@@ -3,11 +3,10 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :mod:`iris._representation` module."""
+"""Unit tests for the :mod:`iris._representation.cube_summary` module."""
 
 import numpy as np
 import iris.tests as tests
-import iris._representation
 from iris.cube import Cube
 from iris.coords import (
     DimCoord,
@@ -16,6 +15,8 @@ from iris.coords import (
     AncillaryVariable,
     CellMethod,
 )
+
+from iris._representation.cube_summary import CubeSummary
 
 
 def example_cube():
@@ -36,7 +37,7 @@ class Test_CubeSummary(tests.IrisTest):
         self.cube = example_cube()
 
     def test_header(self):
-        rep = iris._representation.CubeSummary(self.cube)
+        rep = CubeSummary(self.cube)
         header_left = rep.header.nameunit
         header_right = rep.header.dimension_header.contents
 
@@ -45,7 +46,7 @@ class Test_CubeSummary(tests.IrisTest):
 
     def test_blank_cube(self):
         cube = Cube([1, 2])
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
 
         self.assertEqual(rep.header.nameunit, "unknown / (unknown)")
         self.assertEqual(rep.header.dimension_header.contents, ["-- : 2"])
@@ -81,7 +82,7 @@ class Test_CubeSummary(tests.IrisTest):
             self.assertTrue(scalar_section.is_empty())
 
     def test_vector_coord(self):
-        rep = iris._representation.CubeSummary(self.cube)
+        rep = CubeSummary(self.cube)
         dim_section = rep.vector_sections["Dimension coordinates:"]
 
         self.assertEqual(len(dim_section.contents), 1)
@@ -115,7 +116,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_aux_coord(scalar_coord_with_bounds)
         cube.add_aux_coord(scalar_coord_simple_text)
         cube.add_aux_coord(scalar_coord_awkward_text)
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
 
         scalar_section = rep.scalar_sections["Scalar coordinates:"]
 
@@ -148,7 +149,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube = self.cube
         cell_measure = CellMeasure([1, 2, 3], long_name="foo")
         cube.add_cell_measure(cell_measure, 0)
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
 
         cm_section = rep.vector_sections["Cell measures:"]
         self.assertEqual(len(cm_section.contents), 1)
@@ -161,7 +162,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube = self.cube
         cell_measure = AncillaryVariable([1, 2, 3], long_name="foo")
         cube.add_ancillary_variable(cell_measure, 0)
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
 
         av_section = rep.vector_sections["Ancillary variables:"]
         self.assertEqual(len(av_section.contents), 1)
@@ -173,7 +174,7 @@ class Test_CubeSummary(tests.IrisTest):
     def test_attributes(self):
         cube = self.cube
         cube.attributes = {"a": 1, "b": "two", "c": " this \n   that\tand."}
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
 
         attribute_section = rep.scalar_sections["Attributes:"]
         attribute_contents = attribute_section.contents
@@ -192,7 +193,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_cell_method(cell_method_xy)
         cube.add_cell_method(cell_method_x)
 
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
         cell_method_section = rep.scalar_sections["Cell methods:"]
         expected_contents = ["mean: x, y", "mean: x"]
         self.assertEqual(cell_method_section.contents, expected_contents)
@@ -201,7 +202,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube = self.cube
         while cube.ndim > 0:
             cube = cube[0]
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
         self.assertEqual(rep.header.nameunit, "air_temperature / (K)")
         self.assertTrue(rep.header.dimension_header.scalar)
         self.assertEqual(rep.header.dimension_header.dim_names, [])
@@ -228,7 +229,7 @@ class Test_CubeSummary(tests.IrisTest):
         co2 = co1.copy()
         co2.attributes.update(dict(a=7, z=77, text="ok", text2="multi\nline"))
         cube.add_aux_coord(co2, cube.coord_dims(co1))
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
         co1_summ = rep.vector_sections["Dimension coordinates:"].contents[0]
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
         # Notes: 'b' is same so does not appear; sorted order; quoted strings.
@@ -244,7 +245,7 @@ class Test_CubeSummary(tests.IrisTest):
         co2 = co1.copy()
         co2.attributes.update(dict(b=2, array=np.array([3.2, 1])))
         cube.add_aux_coord(co2, cube.coord_dims(co1))
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
         co1_summ = rep.vector_sections["Dimension coordinates:"].contents[0]
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
         self.assertEqual(co1_summ.extra, "array=array([1.2, 3. ])")
