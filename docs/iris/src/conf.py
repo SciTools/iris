@@ -269,6 +269,8 @@ linkcheck_ignore = [
     "http://schacon.github.com/git",
     "http://scitools.github.com/cartopy",
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://software.ac.uk/how-cite-software",
+    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
 ]
 
 # list of sources to exclude from the build.
