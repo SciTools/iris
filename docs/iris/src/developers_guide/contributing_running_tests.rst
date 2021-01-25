@@ -5,6 +5,11 @@
 Running the Tests
 *****************
 
+Using setuptools for Testing Iris
+=================================
+
+.. warning:: The `setuptools`_ ``test`` command was deprecated in `v41.5.0`_. See :ref:`using nox`.
+
 A prerequisite of running the tests is to have the Python environment
 setup.  For more information on this see :ref:`installing_from_source`.
 
@@ -93,27 +98,38 @@ due to an experimental dependency not being present.
    ``skip_``.
 
 
-Using Nox for Testing
-=====================
+.. _using nox:
 
-Iris has adopted the use of the `nox`_ tool for automated testing on `cirrus-ci`_,
+Using Nox for Testing Iris
+==========================
+
+Iris has adopted the use of the `nox`_ tool for automated testing on `cirrus-ci`_
 and also locally on the command-line for developers.
 
 `nox`_ is similar to `tox`_, but instead leverages the expressiveness and power of a Python
-configuration file rather than an `.ini` file. Additionally, `nox`_ also supports `conda`_ as
-a testing environment backend, as well as `virtualenv`_.
+configuration file rather than an `.ini` style file. As with `tox`_, `nox`_ can use `virtualenv`_
+to create isolated Python environments, but in addition also supports `conda`_ as a testing
+environment backend.
+
 
 Where is Nox Used?
 ------------------
 
-Iris uses `nox`_ as a convenience to fully automate the process of executing the Iris tests, building
-the documentation, linting the code-base and ensuring the coding style conforms to `black`_. 
+Iris uses `nox`_ as a convenience to fully automate the process of executing the Iris tests, but also
+automates the process of:
+
+* building the documentation and executing the doc-tests
+* building the documentation gallery
+* running the documentation URL link check
+* linting the code-base
+* ensuring the code-base style conforms to the `black`_ standard
+
 
 You can perform all of these tasks manually yourself, however the onus is on you to first ensure
 that all of the required package dependencies are installed and available in the testing environment.
 
 `Nox`_ has been configured to automatically do this for you, and provides a means to easily replicate
-the remote testing behaviour of `cirrus-ci`_ locally.
+the remote testing behaviour of `cirrus-ci`_ locally for the developer.
 
 
 Installing Nox
@@ -155,9 +171,13 @@ For further `nox`_ command-line options::
 
   nox --help
 
+.. note:: `nox`_ will cache its testing environments in the `.nox` root ``iris`` project directory.
+
 
 .. _black: https://black.readthedocs.io/en/stable/
 .. _nox: https://nox.thea.codes/en/latest/
+.. _setuptools: https://setuptools.readthedocs.io/en/latest/
 .. _tox: https://tox.readthedocs.io/en/latest/
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
 .. _PyPI: https://pypi.org/project/nox/
+.. _v41.5.0: https://setuptools.readthedocs.io/en/latest/history.html#v41-5-0
