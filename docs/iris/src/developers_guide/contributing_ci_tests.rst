@@ -11,7 +11,6 @@ Iris **master**.  The checks performed are:
 
 * :ref:`testing_cla`
 * :ref:`testing_travis`
-* :ref:`testing_stickler`
 
 
 .. _testing_cla:
@@ -22,16 +21,6 @@ SciTools CLA Checker
 A bot that checks the user who created the pull request has signed the
 **Contributor's License Agreement (CLA)**.  For more information on this this
 please see https://scitools.org.uk/organisation.html#governance
-
-
-.. _testing_stickler:
-
-Stickler CI
-***********
-
-Automatically enforces coding standards.  The configuration file named
-`.stickler.yml`_ is in the Iris_ root directory.  For more information see
-https://stickler-ci.com/.
 
 
 .. _testing_travis:

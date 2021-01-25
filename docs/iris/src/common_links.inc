@@ -14,7 +14,6 @@
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _.travis.yml: https://github.com/SciTools/iris/blob/master/.travis.yml
-.. _.stickler.yml: https://github.com/SciTools/iris/blob/master/.stickler.yml
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _using git: https://docs.github.com/en/github/using-git
