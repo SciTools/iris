@@ -498,3 +498,4 @@ This document explains the changes made to Iris for this release
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _nox: https://nox.thea.codes/en/stable/
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
+.. _travis-ci: https://travis-ci.org/github/SciTools/iris
