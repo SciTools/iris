@@ -119,6 +119,31 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(av_summary.name, "foo")
         self.assertEqual(av_summary.dim_chars, ["x", "-"])
 
+    def test_attributes(self):
+        cube = self.cube
+        cube.attributes = {"a": 1, "b": "two"}
+        rep = iris._representation.CubeSummary(cube)
+
+        attribute_section = rep.scalar_sections["Attributes:"]
+        attribute_contents = attribute_section.contents
+        expected_contents = ["a: 1", "b: two"]
+
+        self.assertEqual(attribute_contents, expected_contents)
+
+    def test_cell_methods(self):
+        cube = self.cube
+        x = AuxCoord(1, long_name="x")
+        y = AuxCoord(1, long_name="y")
+        cell_method_xy = CellMethod("mean", [x, y])
+        cell_method_x = CellMethod("mean", x)
+        cube.add_cell_method(cell_method_xy)
+        cube.add_cell_method(cell_method_x)
+
+        rep = iris._representation.CubeSummary(cube)
+        cell_method_section = rep.scalar_sections["Cell methods:"]
+        expected_contents = ["mean: x, y", "mean: x"]
+        self.assertEqual(cell_method_section.contents, expected_contents)
+
 
 if __name__ == "__main__":
     tests.main()
