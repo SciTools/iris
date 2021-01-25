@@ -161,6 +161,12 @@ class TestStandard(tests.IrisTest):
 
 
 class TestAltIndices(tests.IrisTest):
+    def setUp(self):
+        mask = ([0, 0, 0, 0, 1] * 2) + [0, 0, 0, 1, 1]
+        data = np.linspace(1, 15, 15, dtype=int).reshape((-1, 5))
+        self.masked_indices = ma.array(data=data, mask=mask)
+        self.lazy_indices = as_lazy_data(data)
+
     def common(self, indices):
         connectivity = Connectivity(
             indices=indices, cf_role="face_node_connectivity"
@@ -176,22 +182,26 @@ class TestAltIndices(tests.IrisTest):
         self.common(indices)
 
     def test_lazy(self):
-        indices = as_lazy_data(
-            np.linspace(1, 9, 9, dtype=int).reshape((-1, 3))
-        )
-        self.common(indices)
+        self.common(self.lazy_indices)
 
     def test_masked(self):
-        mask = [0, 0, 0, 1] * 3
-        data = np.linspace(1, 12, 12, dtype=int).reshape((-1, 4))
-        indices = ma.array(data=data, mask=mask)
-        self.common(indices)
+        self.common(self.masked_indices)
 
     def test_masked_lazy(self):
-        mask = [0, 0, 0, 1] * 3
-        data = np.linspace(1, 12, 12, dtype=int).reshape((-1, 4))
-        indices = as_lazy_data(ma.array(data=data, mask=mask))
-        self.common(indices)
+        self.common(as_lazy_data(self.masked_indices))
+
+    def test_has_lazy_indices(self):
+        connectivity = Connectivity(
+            indices=self.lazy_indices, cf_role="face_node_connectivity"
+        )
+        self.assertTrue(connectivity.has_lazy_indices())
+
+    def test_element_lengths(self):
+        connectivity = Connectivity(
+            indices=self.masked_indices, cf_role="face_node_connectivity"
+        )
+        self.assertArrayEqual([4, 4, 3], connectivity.element_lengths)
+        self.assertFalse(connectivity.has_equal_element_lengths)
 
 
 class TestValidations(tests.IrisTest):
@@ -321,6 +331,20 @@ class TestValidations(tests.IrisTest):
         self.assertRaisesRegex(
             ValueError,
             "Not all elements meet requirement: len>=4",
+            Connectivity,
+            **kwargs,
+        )
+
+    def test_indices_elements_masked(self):
+        mask = ([0, 0, 0] * 2) + [0, 0, 1]
+        data = np.linspace(1, 9, 9, dtype=int).reshape((3, -1))
+        kwargs = {
+            "indices": ma.array(data=data, mask=mask),
+            "cf_role": "face_node_connectivity",
+        }
+        self.assertRaisesRegex(
+            ValueError,
+            "Not all elements meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )
