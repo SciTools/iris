@@ -135,10 +135,14 @@ the remote testing behaviour of `cirrus-ci`_ locally for the developer.
 Installing Nox
 --------------
 
-We recommend installing `nox`_ using `conda`_::
+We recommend installing `nox`_ using `conda`_. To install `nox`_ in a separate `conda`_ environment::
 
   conda create -n nox -c conda-forge nox
   conda activate nox
+
+To install `nox`_ in an existing active `conda`_ environment::
+
+  conda install -c conda-forge nox
 
 The `nox`_ package is also available on PyPI, however `nox`_ has been configured to use the `conda`_
 backend for Iris, so an installation of `conda`_ must always be available.
