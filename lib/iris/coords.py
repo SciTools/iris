@@ -2780,6 +2780,15 @@ class CellMethod(iris.util._OrderedHashable):
 
 
 class Connectivity(_DimensionalMetadata):
+    """
+    A CF-UGRID topology connectivity, describing the topological relationship
+    between two collections of dimensional elements. One or more connectivities
+    make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
+
+    See: https://ugrid-conventions.github.io/ugrid-conventions
+
+    """
+
     def __init__(
         self,
         indices,
@@ -2790,6 +2799,55 @@ class Connectivity(_DimensionalMetadata):
         start_index=0,
         element_dim=1,
     ):
+        """
+        Constructs a single connectivity.
+
+        Args:
+
+        * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
+            The index values describing a topological relationship. Constructed
+            of 2 dimensions - the list of elements, and within each element:
+            the indices of the elements it relates to.
+            Use a :class:`numpy.ma.core.MaskedArray` if element lengths vary -
+            mask unused indices within each element. Use a
+            :class:`dask.array.Array` to keep indices 'lazy'.
+            **Read-only** - index values are only meaningful when combined with
+            an appropriate `cf_role`, `start_index` and `element_dim`. It is
+            therefore best to define a new :class:~iris.coords.Connectivity
+            if something needs to change.
+        * cf_role (str):
+            Denotes the topological relationship that this connectivity
+            describes. Made up of this array's elements, and the indexed
+            element within each element. E.g. `face_node_connectivity`,
+            `edge_face_connectivity`.
+            **Read-only** - validity of `indices` is dependent on `cf_role`. It
+            is therefore best to define a new :class:~iris.coords.Connectivity
+            if something needs to change.
+
+        Kwargs:
+
+        * long_name (str):
+            Descriptive name of the connectivity.
+        * var_name (str):
+            The netCDF variable name for the connectivity.
+        * attributes (dict):
+            A dictionary containing other cf and user-defined attributes.
+        * start_index (int):
+            Either `0` or `1`. Denotes whether `indices` uses 0- or 1-based
+            indexing (supports Fortran and legacy NetCDF files).
+            **Read-only** - validity of `indices` is dependent on
+            `start_index`. It is therefore best to define a new
+            :class:~iris.coords.Connectivity if something needs to change.
+        * element_dim (int):
+            Either `0` or `1`. Denotes which dimension of `indices` refers to
+            the contents of individual elements (supports fastest varying index
+            being either first or last). E.g. for `face_node_connectivity`,
+            where the faces are 3-sided, `indices.shape[element_dim]=3`.
+            **Read-only** - validity of `indices` is dependent on
+            `element_dim`. It is therefore best to define a new
+            :class:~iris.coords.Connectivity if something needs to change.
+
+        """
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(ConnectivityMetadata)
 
