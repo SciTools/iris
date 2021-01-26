@@ -18,7 +18,6 @@ from iris._representation.cube_printout import CubePrinter
 
 
 def test_cube(n_extra_dims=0):
-    # cube = istk.realistic_3d()
     cube = istk.realistic_4d()  # this one has a derived coord
 
     # Optionally : add multiple extra dimensions to test the width controls
@@ -109,7 +108,7 @@ def test_cube(n_extra_dims=0):
     co_orig = cube.coord(vector_duplicate_name)
     dim_orig = cube.coord_dims(co_orig)
     co_new = co_orig.copy()
-    co_new.attributes.update(dict(extra_distinguishing="this", a=1, b=2))
+    co_new.attributes.update(dict(a=1, b=2))
     cube.add_aux_coord(co_new, dim_orig)
 
     vector_different_name = "sigma"
@@ -128,21 +127,27 @@ def test_cube(n_extra_dims=0):
     co_new.attributes["different"] = "True"
     cube.add_aux_coord(co_new)
 
+    # Add a scalar coord with a *really* long name, to challenge the column width formatting
+    long_name = "long_long_long_long_long_long_long_long_long_long_long_name"
+    cube.add_aux_coord(DimCoord([0], long_name=long_name))
     return cube
 
 
 class TestCubePrintout(tests.IrisTest):
-    def test_basic(self):
-        cube = test_cube(
-            n_extra_dims=4
-        )  # NB does not yet work with factories.
-        # cube = test_cube()
+    def _exercise_methods(self, cube):
         summ = icr.CubeSummary(cube)
         printer = CubePrinter(summ, max_width=110)
+        has_scalar_ancils = any(
+            len(anc.cube_dims(cube)) == 0 for anc in cube.ancillary_variables()
+        )
+        unprintable = has_scalar_ancils and cube.ndim == 0
         print("EXISTING full :")
-        print(cube)
+        if unprintable:
+            print("  ( would fail, due to scalar-cube with scalar-ancils )")
+        else:
+            print(cube)
         print("---full--- :")
-        print(printer.to_string(max_width=80))
+        print(printer.to_string(max_width=120))
         print("")
         print("EXISTING oneline :")
         print(repr(cube))
@@ -150,5 +155,18 @@ class TestCubePrintout(tests.IrisTest):
         print(printer.to_string(oneline=True))
         print("")
         print("original table form:")
-        print(printer.table)
+        tb = printer.table
+        tb.maxwidth = 140
+        print(tb)
         print("")
+        print("")
+
+    def test_basic(self):
+        cube = test_cube(
+            n_extra_dims=4
+        )  # NB does not yet work with factories.
+        self._exercise_methods(cube)
+
+    def test_scalar_cube(self):
+        cube = test_cube()[0, 0, 0, 0]
+        self._exercise_methods(cube)

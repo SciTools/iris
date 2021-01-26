@@ -81,7 +81,6 @@ class CubePrinter:
         nameunits_string = fullheader.nameunit
         dimheader = fullheader.dimension_header
         cube_is_scalar = dimheader.scalar
-        assert not cube_is_scalar  # Just for now...
 
         cube_shape = dimheader.shape  # may be empty
         dim_names = dimheader.dim_names  # may be empty
@@ -95,10 +94,16 @@ class CubePrinter:
         #   - x1 @1 "value" content (for scalar items)
         #   - x2n @2 (name, length) for each of n dimensions
         column_texts = [nameunits_string, ""]
-        for dim_name, length in zip(dim_names, cube_shape):
-            column_texts.append(f"{dim_name}:")
-            column_texts.append(f"{length:d}")
 
+        if cube_is_scalar:
+            # We will put this in the column-2 position (replacing the dim-map)
+            column_texts.append("(scalar cube)")
+        else:
+            for dim_name, length in zip(dim_names, cube_shape):
+                column_texts.append(f"{dim_name}:")
+                column_texts.append(f"{length:d}")
+
+        n_cols = len(column_texts)
         tb.columns.header = column_texts[:]  # Making copy, in case (!)
 
         # Add rows from all the vector sections
@@ -106,7 +111,7 @@ class CubePrinter:
             if sect.contents:
                 sect_name = sect.title
                 column_texts = [sect_indent + sect_name, ""]
-                column_texts += [""] * (2 * n_dims)
+                column_texts += [""] * (n_cols - 2)
                 tb.rows.append(column_texts)
                 for vec_summary in sect.contents:
                     element_name = vec_summary.name
@@ -115,6 +120,7 @@ class CubePrinter:
                     column_texts = [item_indent + element_name, ""]
                     for dim_char in dim_chars:
                         column_texts += ["", dim_char]
+                    column_texts += [""] * (n_cols - len(column_texts))
                     tb.rows.append(column_texts)
                     if extra_string:
                         column_texts = [""] * len(column_texts)
@@ -130,13 +136,13 @@ class CubePrinter:
                 # Add a row for the "section title" text.
                 sect_name = sect.title
                 column_texts = [sect_indent + sect_name, ""]
-                column_texts += [""] * (2 * n_dims)
+                column_texts += [""] * (n_cols - 2)
                 tb.rows.append(column_texts)
                 title = sect_name.lower()
 
                 def add_scalar(name, value=""):
                     column_texts = [item_indent + name, value]
-                    column_texts += [""] * (2 * n_dims)
+                    column_texts += [""] * (n_cols - 2)
                     tb.rows.append(column_texts)
 
                 # Add a row for each item
@@ -195,17 +201,24 @@ class CubePrinter:
         tb = bt.BeautifulTable()  # start from a new table
 
         # Add column headers, with extra text modifications.
-        column_headers = self.table.column_headers[:]
-        column_headers[0] = "<iris 'Cube' of " + column_headers[0]
-        column_headers[2] = "(" + column_headers[2]
-        column_headers[-1] = column_headers[-1] + ")>"
+        cols = self.table.column_headers[:]
+        # Add parentheses around the dim column texts, unless already present
+        # - e.g. "(scalar cube)".
+        if len(cols) > 2 and not cols[2].startswith("("):
+            # Add parentheses around the dim columns
+            cols[2] = "(" + cols[2]
+            cols[-1] = cols[-1] + ")"
+
+        # Add <> context.
+        cols[0] = "<iris 'Cube' of " + cols[0]
+        cols[-1] = cols[-1] + ">"
         # Add semicolons as column spacers
-        for i_col in range(3, len(column_headers) - 1, 2):
-            column_headers[i_col] += ";"
+        for i_col in range(3, len(cols) - 1, 2):
+            cols[i_col] += ";"
             # NOTE: it would be "nice" use `table.columns.separator` to do
             # this, but bt doesn't currently support that :  Setting it
             # affects the header-underscore/separator line instead.
-        tb.column_headers = column_headers
+        tb.column_headers = cols
 
         # Add a single row matching the header (or nothing will print).
         # -- as used inside bt.BeautifulTable._get_string().
@@ -263,11 +276,19 @@ class CubePrinter:
         cols = list(self.table.columns.header)
         del cols[1]
         tb = bt.BeautifulTable()
+
+        # Add parentheses around the dim column texts, unless already present
+        # - e.g. "(scalar cube)".
+        if len(cols) > 1 and not cols[1].startswith("("):
+            # Add parentheses around the dim columns
+            cols[1] = "(" + cols[1]
+            cols[-1] = cols[-1] + ")"
+
         tb.columns.header = cols
 
-        # Copy vector rows only, removing column#1 (which should be blank)
+        # Copy the rows, also removing column#1 throughout
         # - which puts the dim-map columns in the column#1 place.
-        for i_row in range(self.i_first_scalar_row):
+        for i_row in range(len(self.table.rows)):
             row = list(self.table.rows[i_row])
             del row[1]
             tb.rows.append(row)
@@ -275,32 +296,42 @@ class CubePrinter:
         # Establish our standard style settings (alignment etc).
         self._set_table_style(tb, no_values_column=True)
 
-        # Add parentheses around the dim column texts.
-        column_headers = tb.columns.header
-        column_headers[1] = "(" + column_headers[1]
-        column_headers[-1] = column_headers[-1] + ")"
-        tb.columns.header = column_headers
-
         # Use no width limitation.
         tb.maxwidth = 9999
-        # Use _get_string to fetch a list of lines.
-        summary_lines = list(tb._get_string())
+        # First "pre-render", to calculate widths with all of column 0, to
+        # account for any long scalar names
+        str(tb)
+        # Capture the column widths for later
+        # WARNING: "table.columns.width" is not a simple list, but this works..
+        column_widths = list(tb.columns.width[:])
+
+        # Get just the 'vector rows', as a list of strings
+        tb = tb.rows[: self.i_first_scalar_row]
+        if len(tb.rows) > 0:
+            # 'Normal' case with vector rows : _get_string--> list of lines
+            summary_lines = list(tb._get_string(recalculate_width=False))
+        else:
+            # When there *are* no vector rows..
+            # add a 'dummy' row and get just the first line (= the header)
+            # ( N.B. as done in bt code table._get_string ).
+            tb.rows.append(tb.columns.header)
+            summary_lines = [next(tb._get_string(recalculate_width=False))]
 
         # Now add the "scalar rows".
         # For this part, we have only 2 columns + we force wrapping of the
         # second column at a specific width.
 
         tb = self.table.rows[self.i_first_scalar_row :]
+        # Reset style : *needed* for derived table -- really not obvious ?!?
         CubePrinter._set_table_style(tb)
-        # Pre-render with no width restriction, to pre-calculate widths
-        tb.maxwidth = 9999
-        str(tb)
 
         # Force any wrapping needed in the 'value column' (== column #1)
-        widths = tb.columns.width[:]
-        widths[1] = max_width - widths[0]
-        # widths[2:] = 0
-        tb.columns.width = widths
+        # WARNING: the 'table.columns.width' parameter behaves strangely :
+        # - you cannot always simply assign an iterable ?
+        tb.columns.width[0] = column_widths[0]
+        tb.columns.width[1] = max_width - column_widths[0]
+        for i in range(2, len(column_widths)):
+            column_widths[i] = 0
         tb.columns.width_exceed_policy = bt.WEP_WRAP
 
         # Get rows for the scalar part
