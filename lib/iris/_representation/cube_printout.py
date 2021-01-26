@@ -71,9 +71,10 @@ class CubePrinter:
         # column spanning (at least).
         # So a 'normal' cube summary is produced by "CubePrinter.to_string()",
         # which must also use information *not* stored in the table.
-        extra_indent = " " * n_indent_extra
         sect_indent = " " * n_indent_section
         item_indent = sect_indent + " " * n_indent_item
+        item_to_extra_indent = " " * n_indent_extra
+        extra_indent = item_indent + item_to_extra_indent
         summ = cube_summary
 
         fullheader = summ.header
@@ -117,7 +118,8 @@ class CubePrinter:
                     tb.rows.append(column_texts)
                     if extra_string:
                         column_texts = [""] * len(column_texts)
-                        column_texts[1] = extra_indent + extra_string
+                        column_texts[0] = extra_indent + extra_string
+                        tb.rows.append(column_texts)
 
         # Record where the 'scalar' part starts.
         self.i_first_scalar_row = len(tb.rows)
@@ -132,7 +134,7 @@ class CubePrinter:
                 tb.rows.append(column_texts)
                 title = sect_name.lower()
 
-                def add_scalar(name, value):
+                def add_scalar(name, value=""):
                     column_texts = [item_indent + name, value]
                     column_texts += [""] * (2 * n_dims)
                     tb.rows.append(column_texts)
@@ -142,13 +144,15 @@ class CubePrinter:
                 if "scalar coordinate" in title:
                     for item in sect.contents:
                         add_scalar(item.name, item.content)
+                        if item.extra:
+                            add_scalar(item_to_extra_indent + item.extra)
                 elif "attribute" in title:
                     for title, value in zip(sect.names, sect.values):
                         add_scalar(title, value)
                 elif "scalar cell measure" in title or "cell method" in title:
                     # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:
-                        add_scalar(name, "")
+                        add_scalar(name)
                 # elif "mesh" in title:
                 #     for line in sect.contents()
                 #         add_scalar(line, "")
