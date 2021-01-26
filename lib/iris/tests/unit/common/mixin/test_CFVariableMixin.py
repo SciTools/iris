@@ -21,6 +21,7 @@ from iris.common.metadata import (
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
 )
@@ -279,6 +280,21 @@ class Test__metadata_setter(tests.IrisTest):
         self.item.metadata = metadata
         expected = metadata._asdict()
         del expected["measure"]
+        self.assertEqual(self.item._metadata_manager.values, expected)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_connectivitymetadata(self):
+        self.args.update(
+            dict(cf_role=None, start_index=None, element_dim=None)
+        )
+        metadata = ConnectivityMetadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        del expected["cf_role"]
+        del expected["start_index"]
+        del expected["element_dim"]
         self.assertEqual(self.item._metadata_manager.values, expected)
         self.assertIsNot(
             self.item._metadata_manager.attributes, metadata.attributes

@@ -21,6 +21,7 @@ from iris.common.metadata import (
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
     metadata_manager_factory,
@@ -31,6 +32,7 @@ BASES = [
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
 ]
