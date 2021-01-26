@@ -70,7 +70,7 @@ Finally, Iris and its Python dependencies can be installed with the following co
 
 This procedure was tested on a Ubuntu 20.04 system on the 26th of January, 2021. Be aware that through updates of the involved Debian and/or Python packages, dependency conflicts might arise or the procedure might have to modified.
 
-.. _installing_from_source_with_conda:
+.. _installing_from_source:
 
 Installing from source with conda (devs)
 ----------------------------------------
