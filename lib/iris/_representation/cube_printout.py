@@ -201,7 +201,7 @@ class CubePrinter:
         tb = bt.BeautifulTable()  # start from a new table
 
         # Add column headers, with extra text modifications.
-        cols = self.table.column_headers[:]
+        cols = self.table.columns.header[:]
         # Add parentheses around the dim column texts, unless already present
         # - e.g. "(scalar cube)".
         if len(cols) > 2 and not cols[2].startswith("("):
@@ -218,7 +218,7 @@ class CubePrinter:
             # NOTE: it would be "nice" use `table.columns.separator` to do
             # this, but bt doesn't currently support that :  Setting it
             # affects the header-underscore/separator line instead.
-        tb.column_headers = cols
+        tb.columns.header = cols
 
         # Add a single row matching the header (or nothing will print).
         # -- as used inside bt.BeautifulTable._get_string().
