@@ -50,21 +50,21 @@ Iris can also be installed without a conda environment. The instructions in
 this section are valid for Debian-based Linux distributions (Debian, Ubuntu, Kubuntu, etc.).
 
 Iris and its dependencies need some shared libraries in order to work properly. These can be installed
-with apt:
+with apt::
 
   sudo apt-get install python3-pip python3-tk libudunits2-dev libproj-dev proj-bin libgeos-dev libcunit1-dev
   
-Consider executing
+Consider executing::
 
   sudo apt-get update
   
 before and after installation of Debian packages.
 
-The rest can be done with pip. Begin with numpy:
+The rest can be done with pip. Begin with numpy::
 
   pip3 install numpy
 
-Finally, Iris and its Python dependencies can be installed with the following command:
+Finally, Iris and its Python dependencies can be installed with the following command::
 
   pip3 install astropy tqdm oktopus bs4 setuptools nc_time_axis cython cfunits cf-units cf-python pandas stratify pyugrid scitools-pyke black imagehash nose asv scitools-iris
 
