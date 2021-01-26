@@ -1,5 +1,5 @@
 v1.9 (10 Dec 2015)
-********************
+******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -93,7 +93,7 @@ Features
   read Fieldsfile data after the original
   :class:`iris.experimental.um.FieldsFileVariant` has been closed.
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Fixed a bug in :meth:`iris.unit.Unit.convert`
@@ -170,7 +170,7 @@ v1.9.2 (28 Jan 2016)
 * Fixed a bug regarding unsuccessful dot import.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * GRIB message/file reading and writing may not be available for Python 3 due

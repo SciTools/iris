@@ -147,7 +147,7 @@ Features
   `metarelate/metOcean commit 448f2ef, 2019-11-29 <https://github.com/metarelate/metOcean/tree/448f2ef5e676edaaa27408b9f3ddbecbf05e3289>`_
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Cube equality of boolean data is now handled correctly.

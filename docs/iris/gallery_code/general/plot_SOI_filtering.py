@@ -1,5 +1,5 @@
 """
-Applying a filter to a time-series
+Applying a Filter to a Time-Series
 ==================================
 
 This example demonstrates low pass filtering a time-series by applying a

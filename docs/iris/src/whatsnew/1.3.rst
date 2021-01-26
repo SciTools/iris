@@ -30,7 +30,7 @@ Features
 
 .. _whats-new-abf:
 
-Loading ABF/ABL files
+Loading ABF/ABL Files
 ---------------------
 
 Support for the ABF and ABL file formats (as
@@ -51,7 +51,7 @@ For example::
 
 .. _whats-new-cf-profile:
 
-Customised CF profiles
+Customised CF Profiles
 ----------------------
 
 Iris now provides hooks in the CF-netCDF export process to allow
@@ -74,7 +74,7 @@ For further implementation details see ``iris/fileformats/netcdf.py``.
 
 .. _whats-new-concat:
 
-Cube concatenation
+Cube Concatenation
 ------------------
 
 Iris now provides initial support for concatenating Cubes along one or
@@ -101,7 +101,7 @@ combine these into a single Cube as follows::
 
     As this is an experimental feature, your feedback is especially welcome.
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Printing a Cube now supports Unicode attribute values.
@@ -123,7 +123,7 @@ Deprecations
   naming conventions.
 
   ====================================== ===========================================
-  Deprecated property/method             New method
+  Deprecated Property/Method             New Method
   ====================================== ===========================================
   :meth:`~iris.unit.Unit.convertible()`  :meth:`~iris.unit.Unit.is_convertible()`
   :attr:`~iris.unit.Unit.dimensionless`  :meth:`~iris.unit.Unit.is_dimensionless()`

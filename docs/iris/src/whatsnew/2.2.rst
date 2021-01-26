@@ -66,7 +66,7 @@ Features
   a NaN-tolerant array comparison.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * The bug has been fixed that prevented printing time coordinates with bounds

@@ -1,5 +1,5 @@
 """
-Ionosphere space weather
+Ionosphere Space Weather
 ========================
 
 This space weather example plots a filled contour of rotated pole point

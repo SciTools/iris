@@ -16,7 +16,7 @@ Features
 * The coordinate system :class:`iris.coord_systems.LambertAzimuthalEqualArea`
   has been added with NetCDF saving support.
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Fixed a floating point tolerance bug in

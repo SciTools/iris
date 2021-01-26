@@ -1,5 +1,5 @@
 """
-Calculating a custom statistic
+Calculating a Custom Statistic
 ==============================
 
 This example shows how to define and use a custom

@@ -1,5 +1,5 @@
 v1.8 (14 Apr 2015)
-********************
+******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -151,7 +151,7 @@ Features
   "iris.experimental.regrid.regrid_bilinear_rectilinear_src_and_grid".
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Fix in netCDF loader to correctly determine whether the longitude coordinate

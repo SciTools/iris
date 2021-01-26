@@ -44,7 +44,7 @@ some notable improvements to netCDF/PP import.
   with product template 4.9.
 
 
-Coordinate categorisation
+Coordinate Categorisation
 -------------------------
 
 An :func:`~iris.coord_categorisation.add_day_of_year` categorisation
@@ -52,7 +52,7 @@ function has been added to the existing suite in
 :mod:`iris.coord_categorisation`.
 
 
-Custom seasons
+Custom Seasons
 ~~~~~~~~~~~~~~
 
 The conventional seasonal categorisation functions have been
@@ -87,7 +87,7 @@ This function adds a coordinate containing True/False values determined
 by membership of a single custom season.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * PP export no longer attempts to set/overwrite the STASH code based on

@@ -8,7 +8,7 @@ If Iris played an important part in your research then please add us to your
 reference list by using one of the recommendations below.
 
 ************
-BibTeX entry
+BibTeX Entry
 ************
 
 For example::
@@ -24,7 +24,7 @@ For example::
 
 
 *******************
-Downloaded software
+Downloaded Software
 *******************
 
 Suggested format::
@@ -37,7 +37,7 @@ For example::
 
 
 ********************
-Checked out software
+Checked Out Software
 ********************
 
 Suggested format::
@@ -48,7 +48,7 @@ For example::
 
  Iris. Met Office. git@github.com:SciTools/iris.git 06-03-2013
 
-.. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
+.. _How to cite and describe software: https://software.ac.uk/how-cite-software
 
 
 Reference: [Jackson]_.

@@ -1,8 +1,8 @@
 .. _plotting_a_cube:
 
-==================================
-Plotting a cube
-==================================
+===============
+Plotting a Cube
+===============
 
 Iris utilises the power of Python's 
 `Matplotlib <http://matplotlib.sourceforge.net/>`_ package in order to generate 
@@ -13,7 +13,7 @@ been extended within Iris to facilitate easy visualisation of a cube's data.
 
 
 ***************************
-Matplotlib's pyplot basics
+Matplotlib's Pyplot Basics
 ***************************
 
 A simple line plot can be created using the 
@@ -35,7 +35,7 @@ There are two modes of rendering within Matplotlib; **interactive** and
 **non-interactive**.
 
 
-Interactive plot rendering
+Interactive Plot Rendering
 ==========================
 The previous example was *non-interactive* as the figure is only rendered 
 *after* the call to :py:func:`plt.show() <matplotlib.pyplot.show>`. 
@@ -84,7 +84,7 @@ so ensure that interactive mode is turned off with::
         plt.interactive(False)
 
 
-Saving a plot
+Saving a Plot
 =============
 
 The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()** 
@@ -113,7 +113,7 @@ Some of the formats which are supported by **plt.savefig**:
 	======  ======  ======================================================================
 
 ******************
-Iris cube plotting
+Iris Cube Plotting
 ******************
 
 The Iris modules :py:mod:`iris.quickplot` and :py:mod:`iris.plot` extend the 
@@ -149,7 +149,7 @@ where appropriate.
        import iris.quickplot as qplt
 
 
-Plotting 1-dimensional cubes 
+Plotting 1-Dimensional Cubes 
 ============================
 
 The simplest 1D plot is achieved with the :py:func:`iris.plot.plot` function. 
@@ -181,7 +181,7 @@ For example, the previous plot can be improved quickly by replacing
 
 
 
-Multi-line plot
+Multi-Line Plot
 ---------------
 
 A multi-lined (or over-plotted) plot, with a legend, can be achieved easily by 
@@ -212,10 +212,10 @@ the temperature at some latitude cross-sections.
     and run it using ``python my_file.py``.
 
 
-Plotting 2-dimensional cubes
+Plotting 2-Dimensional Cubes
 ============================
 
-Creating maps
+Creating Maps
 -------------
 Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem`,
 a cartopy :class:`~cartopy.mpl.GeoAxes` instance is created, which can be
@@ -230,7 +230,7 @@ things.
     :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
 
 
-Cube contour
+Cube Contour
 ------------
 A simple contour plot of a cube can be created with either the 
 :func:`iris.plot.contour` or :func:`iris.quickplot.contour` functions:
@@ -239,7 +239,7 @@ A simple contour plot of a cube can be created with either the
    :include-source:
 
 
-Cube filled contour
+Cube Filled Contour
 -------------------
 Similarly a filled contour plot of a cube can be created with the 
 :func:`iris.plot.contourf` or :func:`iris.quickplot.contourf` functions:
@@ -248,7 +248,7 @@ Similarly a filled contour plot of a cube can be created with the
    :include-source:
 
 
-Cube block plot
+Cube Block Plot
 ---------------
 In some situations the underlying coordinates are better represented with a
 continuous bounded coordinate, in which case a "block" plot may be more
@@ -268,7 +268,7 @@ or :func:`iris.quickplot.pcolormesh`.
 .. _brewer-info:
 
 ***********************
-Brewer colour palettes
+Brewer Colour Palettes
 ***********************
 
 Iris includes colour specifications and designs developed by 
@@ -303,7 +303,7 @@ The following subset of Brewer palettes found at
 .. plot:: userguide/plotting_examples/brewer.py
 
 
-Plotting with Brewer
+Plotting With Brewer
 ====================
 
 To plot a cube using a Brewer colour palette, simply select one of the Iris 
@@ -316,7 +316,7 @@ become available once :mod:`iris.plot` or :mod:`iris.quickplot` are imported.
 
 .. _brewer-cite:
 
-Adding a citation
+Adding a Citation
 =================
 
 Citations can be easily added to a plot using the 

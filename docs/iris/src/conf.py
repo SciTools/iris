@@ -230,7 +230,7 @@ html_context = {
     "menu_links_name": "Support",
     "menu_links": [
         (
-            '<i class="fa fa-github fa-fw"></i> Source code',
+            '<i class="fa fa-github fa-fw"></i> Source Code',
             "https://github.com/SciTools/iris",
         ),
         (
@@ -242,11 +242,11 @@ html_context = {
             "https://groups.google.com/forum/#!forum/scitools-iris-dev",
         ),
         (
-            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How do I?"',
+            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How Do I?"',
             "https://stackoverflow.com/questions/tagged/python-iris",
         ),
         (
-            '<i class="fa fa-book fa-fw"></i> Legacy documentation',
+            '<i class="fa fa-book fa-fw"></i> Legacy Documentation',
             "https://scitools.org.uk/iris/docs/v2.4.0/index.html",
         ),
     ],
@@ -269,6 +269,8 @@ linkcheck_ignore = [
     "http://schacon.github.com/git",
     "http://scitools.github.com/cartopy",
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://software.ac.uk/how-cite-software",
+    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
 ]
 
 # list of sources to exclude from the build.

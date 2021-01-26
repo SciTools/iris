@@ -1,5 +1,5 @@
 """
-Quickplot of a 2d cube on a map
+Quickplot of a 2D Cube on a Map
 ===============================
 
 This example demonstrates a contour plot of global air temperature. The plot

@@ -1,5 +1,5 @@
 =============================
-Missing data handling in Iris
+Missing Data Handling in Iris
 =============================
 
 This document provides a brief overview of how Iris handles missing data values
@@ -73,7 +73,7 @@ all have the same fill-value. If the components have differing fill-values, a
 default fill-value will be used instead.
 
 
-Other operations
+Other Operations
 ----------------
 
 Other operations, such as :class:`~iris.cube.Cube` arithmetic operations,

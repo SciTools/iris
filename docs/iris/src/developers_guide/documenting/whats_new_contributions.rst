@@ -1,7 +1,7 @@
 .. _whats_new_contributions:
 
 =================================
-Contributing a "What's New" entry
+Contributing a "What's New" Entry
 =================================
 
 Iris uses a file named ``latest.rst`` to keep a draft of upcoming changes
@@ -38,7 +38,7 @@ situation is thought likely (large PR, high repo activity etc.):
 * PR author: create the "What's New" pull request
 
 * PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (this will fix any `travis-ci`_ linkcheck errors where the links in the
+  (this will fix any `cirrus-ci`_ linkcheck errors where the links in the
   "What's New" PR reference new features introduced in the main PR)
 
 * PR reviewer: review the "What's New" PR, merge once acceptable
@@ -48,7 +48,7 @@ for the minimum time, minimising conflicts and minimising the need to rebase or
 merge from trunk.
 
 
-Writing a contribution
+Writing a Contribution
 ======================
 
 As introduced above, a contribution is the description of a change to Iris
@@ -96,14 +96,14 @@ examine past what's :ref:`iris_whatsnew` entries.
 
 .. note:: The reStructuredText syntax will be checked as part of building
           the documentation.  Any warnings should be corrected.
-          `travis-ci`_ will automatically build the documentation when
+          `cirrus-ci`_ will automatically build the documentation when
           creating a pull request, however you can also manually
           :ref:`build <contributing.documentation.building>` the documentation.
 
-.. _travis-ci: https://travis-ci.org/github/SciTools/iris
+.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 
 
-Contribution categories
+Contribution Categories
 =======================
 
 The structure of the what's new release note should be easy to read by

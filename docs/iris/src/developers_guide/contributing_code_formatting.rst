@@ -2,7 +2,7 @@
 
 .. _code_formatting:
 
-Code formatting
+Code Formatting
 ===============
 
 To ensure a consistent code format throughout Iris, we recommend using

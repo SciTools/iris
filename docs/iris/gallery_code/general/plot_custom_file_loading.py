@@ -1,5 +1,5 @@
 """
-Loading a cube from a custom file format
+Loading a Cube From a Custom File Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This example shows how a custom text file can be loaded using the standard Iris
