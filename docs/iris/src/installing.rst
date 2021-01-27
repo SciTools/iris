@@ -41,11 +41,45 @@ need the Iris sample data. This can also be installed using conda::
 Further documentation on using conda and the features it provides can be found
 at https://conda.io/en/latest/index.html.
 
+.. _installing_from_source_without_conda:
+
+Installing from source without conda on Debian-based Linux distros (devs)
+-------------------------------------------------------------------------
+
+Iris can also be installed without a conda environment. The instructions in
+this section are valid for Debian-based Linux distributions (Debian, Ubuntu,
+Kubuntu, etc.).
+
+Iris and its dependencies need some shared libraries in order to work properly.
+These can be installed
+with apt::
+
+  sudo apt-get install python3-pip python3-tk libudunits2-dev libproj-dev proj-bin libgeos-dev libcunit1-dev
+  
+Consider executing::
+
+  sudo apt-get update
+  
+before and after installation of Debian packages.
+
+The rest can be done with pip. Begin with numpy::
+
+  pip3 install numpy
+
+Finally, Iris and its Python dependencies can be installed with the following
+command::
+
+  pip3 install setuptools cftime==1.2.1 cf-units scitools-pyke scitools-iris
+
+This procedure was tested on a Ubuntu 20.04 system on the
+27th of January, 2021.
+Be aware that through updates of the involved Debian and/or Python packages,
+dependency conflicts might arise or the procedure might have to modified.
 
 .. _installing_from_source:
 
-Installing From Source (Developers)
------------------------------------
+Installing from Source with Conda (Developers)
+----------------------------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
