@@ -49,7 +49,8 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
-
+from iris._representation.cube_summary import CubeSummary
+from iris._representation.cube_printout import CubePrinter
 
 __all__ = ["Cube", "CubeList"]
 
@@ -2213,6 +2214,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return new_summary
 
     def summary(self, shorten=False, name_padding=35):
+        result = CubePrinter(CubeSummary(self))
+        if shorten:
+            # CubePrinter init doesn't have a "oneline" control, so we return
+            # a different type in this case.
+            result = result.to_string(oneline=True)
+        return result
+
+    def summary_OLDSTYLE(self, shorten=False, name_padding=35):
         """
         Unicode string summary of the Cube with name, a list of dim coord names
         versus length and optionally relevant coordinate information.
@@ -2591,15 +2600,13 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def __str__(self):
-        return self.summary()
+        return self.summary().to_string()
 
     def __unicode__(self):
-        return self.summary()
+        return self.summary().to_string()
 
     def __repr__(self):
-        return "<iris 'Cube' of %s>" % self.summary(
-            shorten=True, name_padding=1
-        )
+        return self.summary().to_string(oneline=True)
 
     def _repr_html_(self):
         from iris.experimental.representation import CubeRepresentation
