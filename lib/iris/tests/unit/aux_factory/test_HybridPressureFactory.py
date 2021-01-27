@@ -113,6 +113,15 @@ class Test___init__(tests.IrisTest):
         self.assertIsNone(factory.coord_system)
         self.assertEqual(factory.attributes, {})
 
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
+        sigma = mock.Mock(units=cf_units.Unit("unknown"), nbounds=0)
+        factory = HybridPressureFactory(
+            delta=self.delta,
+            sigma=sigma,
+            surface_air_pressure=self.surface_air_pressure,
+        )
+        self.assertEqual("1", factory.dependencies["sigma"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
