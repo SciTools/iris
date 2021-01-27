@@ -60,7 +60,7 @@ Features
     respectively.
 
 
-The :data:`iris.FUTURE` has arrived!
+The :data:`iris.FUTURE` has Arrived!
 ------------------------------------
 
 Throughout version 1 of Iris a set of toggles in
@@ -111,7 +111,7 @@ all existing toggles in :attr:`iris.FUTURE` now default to :data:`True`.
      off is now deprecated.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Indexing or slicing an :class:`~iris.coords.AuxCoord` coordinate will return a coordinate with

@@ -10,7 +10,7 @@ The summary below is of the main areas that constitute the release.  The final
 section details the :ref:`iris_development_releases_steps` to take.
 
 
-Before release
+Before Release
 --------------
 
 Deprecations
@@ -21,7 +21,7 @@ previous releases is now finally changed. More detail, including the correct
 number of releases, is in :ref:`iris_development_deprecations`.
 
 
-Release branch
+Release Branch
 --------------
 
 Once the features intended for the release are on master, a release branch
@@ -37,7 +37,7 @@ This branch shall be used to finalise the release details in preparation for
 the release candidate.
 
 
-Release candidate
+Release Candidate
 -----------------
 
 Prior to a release, a release candidate tag may be created, marked as a
@@ -67,7 +67,7 @@ This content should be reviewed and adapted as required.
 Steps to achieve this can be found in the :ref:`iris_development_releases_steps`.
 
 
-The release
+The Release
 -----------
 
 The final steps are to change the version string in the source of
@@ -78,7 +78,7 @@ Once all checks are complete, the release is cut by the creation of a new tag
 in the SciTools Iris repository.
 
 
-Conda recipe
+Conda Recipe
 ------------
 
 Once a release is cut, the `Iris feedstock`_ for the conda recipe must be
@@ -88,7 +88,7 @@ updated to build the latest release of Iris and push this artefact to
 .. _Iris feedstock: https://github.com/conda-forge/iris-feedstock/tree/master/recipe
 .. _conda forge: https://anaconda.org/conda-forge/iris
 
-Merge back
+Merge Back
 ----------
 
 After the release is cut, the changes shall be merged back onto the
@@ -101,7 +101,7 @@ pull request to master.  This work flow ensures that the commit identifiers are
 consistent between the :literal:`.x` branch and :literal:`master`.
 
 
-Point releases
+Point Releases
 --------------
 
 Bug fixes may be implemented and targeted as the :literal:`.x` branch.  These
@@ -118,12 +118,12 @@ release process is to be followed, including the merge back of changes into
 
 .. _iris_development_releases_steps:
 
-Maintainer steps
+Maintainer Steps
 ----------------
 
 These steps assume a release for ``v1.9`` is to be created
 
-Release steps
+Release Steps
 ~~~~~~~~~~~~~
 
 #. Create the branch ``1.9.x`` on the main repo, not in a forked repo, for the
@@ -156,7 +156,7 @@ Release steps
    `Iris release page <https://github.com/SciTools/iris/releases>`_
 
 
-Post release steps
+Post Release Steps
 ~~~~~~~~~~~~~~~~~~
 
 #. Check the documentation has built on `Read The Docs`_.  The build is

@@ -146,7 +146,7 @@ Features
 
 .. _caching:
 
-A new utility function to assist with caching
+A New Utility Function to Assist With Caching
 ---------------------------------------------
 To assist with management of caching results to file, the new utility
 function :func:`iris.util.file_is_newer_than` may be used to easily determine whether
@@ -173,7 +173,7 @@ consuming processing, or to reap the benefit of fast-loading a pickled cube.
 
 .. _rms:
 
-The RMS aggregator supports weights
+The RMS Aggregator Supports Weights
 -----------------------------------
 
 The :data:`iris.analysis.RMS` aggregator has been extended to allow the use of
@@ -189,7 +189,7 @@ For example, an RMS weighted cube collapse is performed as follows:
 
 .. _equalise:
 
-Equalise cube attributes
+Equalise Cube Attributes
 ------------------------
 
 To assist with :class:`iris.cube.Cube` merging, the new experimental in-place
@@ -202,7 +202,7 @@ have the same attributes.
 
 .. _tolerance:
 
-Masking a collapsed result by missing-data tolerance
+Masking a Collapsed Result by Missing-Data Tolerance
 ----------------------------------------------------
 
 The result from collapsing masked cube data may now be completely
@@ -216,7 +216,7 @@ less than or equal to the provided tolerance.
 
 .. _promote:
 
-Promote a scalar coordinate
+Promote a Scalar Coordinate
 ---------------------------
 
 The new utility function :func:`iris.util.new_axis` creates a new cube with
@@ -229,7 +229,7 @@ Note that, this function will load the data payload of the cube.
 
 .. _peak:
 
-A new PEAK aggregator providing spline interpolation
+A New PEAK Aggregator Providing Spline Interpolation
 ----------------------------------------------------
 
 The new :data:`iris.analysis.PEAK` aggregator calculates the global peak
@@ -244,7 +244,7 @@ For example, to calculate the peak time:
     collapsed_cube = cube.collapsed('time', PEAK)
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * :meth:`iris.cube.Cube.rolling_window` has been extended to support masked
@@ -283,7 +283,7 @@ Bugs fixed
 * Exception no longer raised for any ellipsoid definition in nimrod loading.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * The experimental 'concatenate' function is now a method of a
@@ -312,7 +312,7 @@ Incompatible changes
   been removed.
 
   ====================================== ===========================================
-  Removed property/method                New method
+  Removed Property/Method                New Method
   ====================================== ===========================================
   :meth:`~iris.unit.Unit.convertible()`  :meth:`~iris.unit.Unit.is_convertible()`
   :attr:`~iris.unit.Unit.dimensionless`  :meth:`~iris.unit.Unit.is_dimensionless()`
@@ -335,7 +335,7 @@ Incompatible changes
   removed.
 
   =============================================================== =======================================================
-  Removed function                                                New function
+  Removed Function                                                New Function
   =============================================================== =======================================================
   :func:`~iris.coord_categorisation.add_custom_season`            :func:`~iris.coord_categorisation.add_season`
   :func:`~iris.coord_categorisation.add_custom_season_number`     :func:`~iris.coord_categorisation.add_season_number`

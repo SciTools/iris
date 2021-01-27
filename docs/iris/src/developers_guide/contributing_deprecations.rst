@@ -10,12 +10,12 @@ one release, before removing/updating it in the next
 `major release <http://semver.org/>`_.
 
 
-Adding a deprecation
+Adding a Deprecation
 ====================
 
 .. _removing-a-public-api:
 
-Removing a public API
+Removing a Public API
 ---------------------
 
 The simplest form of deprecation occurs when you need to remove a public
@@ -49,7 +49,7 @@ Under these circumstances the following points apply:
  - You should check the documentation for references to the deprecated
    API and update them as appropriate.
 
-Changing a default
+Changing a Default
 ------------------
 
 When you need to change the default behaviour of a public API the
@@ -74,7 +74,7 @@ API:
    deprecation warning and corresponding Sphinx deprecation directive.
 
 
-Removing a deprecation
+Removing a Deprecation
 ======================
 
 When the time comes to make a new major release you should locate any
@@ -83,7 +83,7 @@ minimum period described previously. Locating deprecated APIs can easily
 be done by searching for the Sphinx deprecation directives and/or
 deprecation warnings.
 
-Removing a public API
+Removing a Public API
 ---------------------
 
 The deprecated API should be removed and any corresponding documentation
@@ -91,7 +91,7 @@ and/or example code should be removed/updated as appropriate.
 
 .. _iris_developer_future:
 
-Changing a default
+Changing a Default
 ------------------
 
  - You should update the initial state of the relevant boolean attribute

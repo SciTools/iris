@@ -8,7 +8,7 @@ If Iris played an important part in your research then please add us to your
 reference list by using one of the recommendations below.
 
 ************
-BibTeX entry
+BibTeX Entry
 ************
 
 For example::
@@ -24,7 +24,7 @@ For example::
 
 
 *******************
-Downloaded software
+Downloaded Software
 *******************
 
 Suggested format::
@@ -37,7 +37,7 @@ For example::
 
 
 ********************
-Checked out software
+Checked Out Software
 ********************
 
 Suggested format::

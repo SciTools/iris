@@ -1,6 +1,6 @@
 .. _using-git:
 
-Working with Iris source code
+Working With Iris Source Code
 =============================
 
 .. toctree::

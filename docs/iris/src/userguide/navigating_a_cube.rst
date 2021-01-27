@@ -1,5 +1,5 @@
 =================
-Navigating a cube
+Navigating a Cube
 =================
 
 .. testsetup::
@@ -15,7 +15,7 @@ Navigating a cube
 After loading any cube, you will want to investigate precisely what it contains. This section is all about accessing 
 and manipulating the metadata contained within a cube.
 
-Cube string representations
+Cube String Representations
 ---------------------------
 
 We have already seen a basic string representation of a cube when printing:
@@ -52,7 +52,7 @@ variable. In most cases it is reasonable to ignore anything starting with a "``_
     dir(cube)
     help(cube)
 
-Working with cubes
+Working With Cubes
 ------------------
 
 Every cube has a standard name, long name and units which are accessed with 
@@ -111,7 +111,7 @@ cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute:
     print(cube.cell_methods)
 
 
-Accessing coordinates on the cube
+Accessing Coordinates on the Cube
 ---------------------------------
 
 A cube's coordinates can be retrieved via :meth:`Cube.coords <iris.cube.Cube.coords>`. 
@@ -148,7 +148,7 @@ numpy array. If the coordinate has no bounds ``None`` will be returned::
      print(type(coord.bounds))
 
 
-Adding metadata to a cube
+Adding Metadata to a Cube
 -------------------------
 
 We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.add_dim_coord>`, 
@@ -177,7 +177,7 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.
 
 
-Adding and removing metadata to the cube at load time
+Adding and Removing Metadata to the Cube at Load Time
 -----------------------------------------------------
 
 Sometimes when loading a cube problems occur when the amount of metadata is more or less than expected.

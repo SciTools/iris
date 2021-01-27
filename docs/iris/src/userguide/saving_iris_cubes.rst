@@ -1,7 +1,7 @@
 .. _saving_iris_cubes:
 
 ==================
-Saving Iris cubes
+Saving Iris Cubes
 ==================
 
 Iris supports the saving of cubes and cube lists to:
@@ -39,8 +39,8 @@ and the keyword argument `saver` is not required.
     attempting to overwrite an existing file.
 
 
-Controlling the save process
------------------------------
+Controlling the Save Process
+----------------------------
 
 The :py:func:`iris.save` function passes all other keywords through to the saver function defined, or automatically set from the file extension.  This enables saver specific functionality to be called.
 
@@ -73,8 +73,8 @@ See
 
 for more details on supported arguments for the individual savers.
 
-Customising the save process
------------------------------
+Customising the Save Process
+----------------------------
 
 When saving to GRIB or PP, the save process may be intercepted between the translation step and the file writing.  This enables customisation of the output messages, based on Cube metadata if required, over and above the translations supplied by Iris.
 
@@ -103,14 +103,14 @@ Similarly a PP field may need to be written out with a specific value for LBEXP.
         iris.fileformats.pp.save_fields(tweaked_fields(cubes[0]), '/tmp/app.pp')
 
 
-netCDF
-^^^^^^^
+NetCDF
+^^^^^^
 
 NetCDF is a flexible container for metadata and cube metadata is closely related to the CF for netCDF semantics.  This means that cube metadata is well represented in netCDF files, closely resembling the in memory metadata representation.
 Thus there is no provision for similar save customisation functionality for netCDF saving, all customisations should be applied to the cube prior to saving to netCDF.
 
-Bespoke saver
---------------
+Bespoke Saver
+-------------
 
 A bespoke saver may be written to support an alternative file format.  This can be provided to the :py:func:`iris.save`  function, enabling Iris to write to a different file format.
 Such a custom saver will need be written to meet the needs of the file format and to handle the metadata translation from cube metadata effectively. 

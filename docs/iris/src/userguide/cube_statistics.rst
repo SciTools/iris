@@ -1,12 +1,12 @@
 .. _cube-statistics:
 
 ===============
-Cube statistics
+Cube Statistics
 ===============
 
 .. _cube-statistics-collapsing:
 
-Collapsing entire data dimensions
+Collapsing Entire Data Dimensions
 ---------------------------------
 
 .. testsetup::
@@ -100,7 +100,7 @@ in the gallery takes a zonal mean of an ``XYT`` cube by using the
 
 .. _cube-statistics-collapsing-average:
 
-Area averaging
+Area Averaging
 ^^^^^^^^^^^^^^
 
 Some operators support additional keywords to the ``cube.collapsed`` method. 
@@ -152,14 +152,14 @@ including an example on taking a :ref:`global area-weighted mean
 
 .. _cube-statistics-aggregated-by:
 
-Partially reducing data dimensions
+Partially Reducing Data Dimensions
 ----------------------------------
 
 Instead of completely collapsing a dimension, other methods can be applied 
 to reduce or filter the number of data points of a particular dimension. 
 
 
-Aggregation of grouped data
+Aggregation of Grouped Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :meth:`Cube.aggregated_by <iris.cube.Cube.aggregated_by>` operation 

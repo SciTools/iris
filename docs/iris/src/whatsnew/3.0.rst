@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-v3.0 (02 Oct 2020)
+v3.0 (25 Jan 2021)
 ******************
 
 This document explains the changes made to Iris for this release
@@ -113,6 +113,12 @@ This document explains the changes made to Iris for this release
   and preservation of common metadata and coordinates during cube math operations.
   Resolves :issue:`1887`, :issue:`2765`, and :issue:`3478`. (:pull:`3785`)
 
+* `@pp-mo`_ and `@TomekTrzeciak`_ enhanced :meth:`~iris.cube.Cube.collapse` to allow a 1-D weights array when
+  collapsing over a single dimension.
+  Previously, the weights had to be the same shape as the whole cube, which could cost a lot of memory in some cases.
+  The 1-D form is supported by most weighted array statistics (such as :meth:`np.average`), so this now works
+  with the corresponding Iris schemes (in that case, :const:`~iris.analysis.MEAN`).  (:pull:`3943`)
+
 
 🐛 Bugs Fixed
 =============
@@ -168,7 +174,11 @@ This document explains the changes made to Iris for this release
   Previously, the first tick label would occasionally be duplicated. This also
   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
 
-* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
+* `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check 
+  ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
+
+* `@rcomer`_ fixed a bug whereby numpy array type attributes on a cube's 
+  coordinates could prevent printing it.  See :issue:`3921`.  (:pull:`3922`)
 
 .. _whatsnew 3.0 changes:
 
@@ -356,6 +366,11 @@ This document explains the changes made to Iris for this release
 
 * `@jonseddon`_ updated the CF version of the netCDF saver in the 
   :ref:`saving_iris_cubes` section and in the equivalent function docstring.
+  (:pull:`3925`)
+
+* `@bjlittle`_ applied `Title Case Capitalization`_ to the documentation.
+  (:pull:`3940`)
+
 
 💼 Internal
 ===========
@@ -427,7 +442,7 @@ This document explains the changes made to Iris for this release
 
 * `@znicholls`_ made :func:`~iris.tests.idiff.step_over_diffs` robust to hyphens (``-``) in the input path (i.e. the ``result_dir`` argument) (:pull:`3902`).
 
-* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_. (:pull:`3928`)
+* `@bjlittle`_ migrated the CIaaS from `travis-ci`_ to `cirrus-ci`_, and removed `stickler-ci`_ support. (:pull:`3928`)
 
 * `@bjlittle`_ introduced `nox`_ as a common and easy entry-point for test automation.
   It can be used both from `cirrus-ci`_ in the cloud, and locally by the developer to
@@ -463,6 +478,7 @@ This document explains the changes made to Iris for this release
 .. _@tkknight: https://github.com/tkknight
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@SimonPeatman: https://github.com/SimonPeatman
+.. _@TomekTrzeciak: https://github.com/TomekTrzeciak
 .. _@rcomer: https://github.com/rcomer
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@zklaus: https://github.com/zklaus
@@ -481,3 +497,6 @@ This document explains the changes made to Iris for this release
 .. _CF Conventions and Metadata: https://cfconventions.org/
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _nox: https://nox.thea.codes/en/stable/
+.. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
+.. _travis-ci: https://travis-ci.org/github/SciTools/iris
+.. _stickler-ci: https://stickler-ci.com/

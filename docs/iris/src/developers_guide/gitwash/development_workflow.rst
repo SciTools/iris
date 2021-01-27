@@ -1,14 +1,14 @@
 .. _development-workflow:
 
 ####################
-Development workflow
+Development Workflow
 ####################
 
 You already have your own forked copy of the `iris`_ repository, by
 following :ref:`forking`. You have :ref:`set-up-fork`. You have configured
 git by following :ref:`configure-git`.  Now you are ready for some real work.
 
-Workflow summary
+Workflow Summary
 ================
 
 In what follows we'll refer to the upstream iris ``master`` branch, as
@@ -34,7 +34,7 @@ what you've done, and why you did it.
 
 See `linux git workflow`_ for some explanation.
 
-Consider deleting your master branch
+Consider Deleting Your Master Branch
 ====================================
 
 It may sound strange, but deleting your own ``master`` branch can help reduce
@@ -43,7 +43,7 @@ details.
 
 .. _update-mirror-trunk:
 
-Update the mirror of trunk
+Update the Mirror of Trunk
 ==========================
 
 First make sure you have done :ref:`linking-to-upstream`.
@@ -59,7 +59,7 @@ you last checked, ``upstream/master`` will change after you do the fetch.
 
 .. _make-feature-branch:
 
-Make a new feature branch
+Make a New Feature Branch
 =========================
 
 When you are ready to make some changes to the code, you should start a new
@@ -99,7 +99,7 @@ From now on git will know that ``my-new-feature`` is related to the
 
 .. _edit-flow:
 
-The editing workflow
+The Editing Workflow
 ====================
 
 Overview
@@ -112,7 +112,7 @@ Overview
    git commit -am 'NF - some message'
    git push
 
-In more detail
+In More Detail
 --------------
 
 #. Make some changes
@@ -144,14 +144,14 @@ In more detail
    push`` (see `git push`_).
 
 
-Testing your changes
+Testing Your Changes
 ====================
 
 Once you are happy with your changes, work thorough the :ref:`pr_check` and
 make sure your branch passes all the relevant tests.
 
 
-Ask for your changes to be reviewed or merged
+Ask for Your Changes to be Reviewed or Merged
 =============================================
 
 When you are ready to ask for someone to review your code and consider a merge:
@@ -175,10 +175,10 @@ When you are ready to ask for someone to review your code and consider a merge:
    pull request message.  This is still a good way of getting some preliminary
    code review.
 
-Some other things you might want to do
+Some Other Things you Might Want to do
 ======================================
 
-Delete a branch on github
+Delete a Branch on Github
 -------------------------
 
 ::
@@ -193,7 +193,7 @@ Note the colon ``:`` before ``test-branch``.  See also:
 http://github.com/guides/remove-a-remote-branch
 
 
-Several people sharing a single repository
+Several People Sharing a Single Repository
 ------------------------------------------
 
 If you want to work on some stuff with other people, where you are all
@@ -225,7 +225,7 @@ usual::
      git commit -am 'ENH - much better code'
      git push origin master # pushes directly into your repo
 
-Explore your repository
+Explore Your Repository
 -----------------------
 
 To see a graphical representation of the repository branches and
@@ -243,7 +243,7 @@ graph of the repository.
 
 .. _rebase-on-trunk:
 
-Rebasing on trunk
+Rebasing on Trunk
 -----------------
 
 For more information please see the

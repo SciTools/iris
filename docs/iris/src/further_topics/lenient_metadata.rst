@@ -1,6 +1,6 @@
 .. _lenient metadata:
 
-Lenient metadata
+Lenient Metadata
 ****************
 
 This section discusses lenient metadata; what it is, what it means, and how you
@@ -27,7 +27,7 @@ methods that provide this rich metadata behaviour, all of which are explored
 more fully in :ref:`metadata`.
 
 
-Strict behaviour
+Strict Behaviour
 ================
 
 .. testsetup:: strict-behaviour
@@ -137,7 +137,7 @@ practical behaviour is available.
 
 .. _lenient behaviour:
 
-Lenient behaviour
+Lenient Behaviour
 =================
 
 .. testsetup:: lenient-behaviour
@@ -210,7 +210,7 @@ lenient behaviour for each of the metadata classes.
 
 .. _lenient equality:
 
-Lenient equality
+Lenient Equality
 ----------------
 
 Lenient equality is enabled using the ``lenient`` keyword argument, therefore
@@ -273,7 +273,7 @@ forgiving and practical alternative to strict behaviour.
 
 .. _lenient difference:
 
-Lenient difference
+Lenient Difference
 ------------------
 
 Similar to :ref:`lenient equality`, the lenient ``difference`` method
@@ -330,7 +330,7 @@ highlights the change in how such dissimilar metadata is treated gracefully,
 
 .. _lenient combination:
 
-Lenient combination
+Lenient Combination
 -------------------
 
 The behaviour of the lenient ``combine`` metadata class method is outlined
@@ -380,7 +380,7 @@ for more inclusive, richer metadata,
 
 .. _lenient members:
 
-Lenient members
+Lenient Members
 ---------------
 
 :ref:`lenient behaviour` is not applied regardlessly across all metadata members
@@ -429,7 +429,7 @@ strict behaviour, regardlessly.
 
 .. _special lenient name:
 
-Special lenient name behaviour
+Special Lenient Name Behaviour
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``standard_name``, ``long_name`` and ``var_name`` have a closer association

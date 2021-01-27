@@ -1,5 +1,5 @@
 v1.7 (04 Jul 2014)
-********************
+******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -196,7 +196,7 @@ Features
 * A speed improvement when loading PP or FF data and constraining on STASH code.
 
 
-Bugs fixed
+Bugs Fixed
 ==========
 
 * Data containing more than one reference cube for constructing hybrid height
@@ -282,7 +282,7 @@ v1.7.4 (15 Apr 2015)
   create LambertConformal coordinate systems with Cartopy >= 0.12.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * Saving a cube with a STASH attribute to NetCDF now produces a variable

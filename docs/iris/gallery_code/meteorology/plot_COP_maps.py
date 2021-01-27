@@ -1,5 +1,5 @@
 """
-Global average annual temperature maps
+Global Average Annual Temperature Maps
 ======================================
 
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.

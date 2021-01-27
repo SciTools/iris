@@ -10,7 +10,7 @@ work. Following this release we plan to deliver significant performance
 improvements and additional features.
 
 
-The role of 1.x
+The Role of 1.x
 ===============
 
 The 1.x series of releases is intended to provide a relatively stable,
@@ -58,7 +58,7 @@ A summary of the main features added with version 1.0:
   contain bounds.
 
 
-CF-netCDF coordinate systems
+CF-NetCDF Coordinate Systems
 ----------------------------
 
 The coordinate systems in Iris are now defined by the CF-netCDF
@@ -73,7 +73,7 @@ The coordinate systems available in Iris 1.0 and their corresponding
 Iris classes are:
 
 ================================================================================================================= =========================================
-CF name                                                                                                           Iris class
+CF Name                                                                                                           Iris Class
 ================================================================================================================= =========================================
 `Latitude-longitude <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_latitude_longitude>`_   :class:`~iris.coord_systems.GeogCS`
 `Rotated pole <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_rotated_pole>`_               :class:`~iris.coord_systems.RotatedGeogCS`
@@ -88,7 +88,7 @@ coordinate system used by the British
 
 .. _whats-new-cartopy:
 
-Using Cartopy for mapping in matplotlib
+Using Cartopy for Mapping in Matplotlib
 ---------------------------------------
 
 The underlying map drawing package has now been updated to use
@@ -135,7 +135,7 @@ For more examples of what can be done with Cartopy, see the Iris gallery and
 `Cartopy's documentation  <http://scitools.github.com/cartopy>`_.
 
 
-Hybrid-pressure
+Hybrid-Pressure
 ---------------
 
 With the introduction of the :class:`~iris.aux_factory.HybridPressureFactory`
@@ -181,7 +181,7 @@ dealing with large numbers of netCDF files, or in long running
 processes.
 
 
-Brewer colour palettes
+Brewer Colour Palettes
 ----------------------
 
 Iris includes a selection of carefully designed colour palettes produced
@@ -207,7 +207,7 @@ To include a reference in a journal article or report please refer to
 in the citation guidance provided by Cynthia Brewer.
 
 
-Metadata attributes
+Metadata Attributes
 -------------------
 
 Iris now stores "source" and "history" metadata in Cube attributes.
@@ -241,7 +241,7 @@ Where previously it would have appeared as::
         cube.add_aux_coord(src_coord)
 
 
-New loading functions
+New Loading Functions
 ---------------------
 
 The main functions for loading cubes are now:
@@ -264,7 +264,7 @@ now use the :func:`iris.load_cube()` and :func:`iris.load_cubes()`
 functions instead.
 
 
-Cube projection
+Cube Projection
 ---------------
 
 Iris now has the ability to project a cube into a number of map projections.
@@ -302,7 +302,7 @@ preserved. This function currently assumes global data and will if
 necessary extrapolate beyond the geographical extent of the source cube.
 
 
-Incompatible changes
+Incompatible Changes
 ====================
 
 * The "source" and "history" metadata are now represented as Cube

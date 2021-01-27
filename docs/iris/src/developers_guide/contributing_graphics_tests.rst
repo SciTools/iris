@@ -2,7 +2,7 @@
 
 .. _testing.graphics:
 
-Graphics tests
+Graphics Tests
 **************
 
 Iris may be used to create various forms of graphical output; to ensure
@@ -31,10 +31,10 @@ known acceptable output may fail.  The failure may also not be visually
 perceived as it may be a simple pixel shift.
 
 
-Testing strategy
+Testing Strategy
 ================
 
-The `Iris Travis matrix`_ defines multiple test runs that use
+The `Iris Cirrus-CI matrix`_ defines multiple test runs that use
 different versions of Python to ensure Iris is working as expected.
 
 To make this manageable, the ``iris.tests.IrisTest_nometa.check_graphic`` test
@@ -64,7 +64,7 @@ This consists of:
    against the existing accepted reference images, for each failing test.
 
 
-Reviewing failing tests
+Reviewing Failing Tests
 =======================
 
 When you find that a graphics test in the Iris testing suite has failed,
@@ -122,7 +122,7 @@ you should follow:
    happens, simply repeat the check-and-accept process until all tests pass.
 
 
-Add your changes to Iris
+Add Your Changes to Iris
 ========================
 
 To add your changes to Iris, you need to make two pull requests (PR).
@@ -155,7 +155,7 @@ To add your changes to Iris, you need to make two pull requests (PR).
 
 .. important::
 
-  The Iris pull-request will not test successfully in Travis until the
+  The Iris pull-request will not test successfully in Cirrus-CI until the
   ``test-iris-imagehash`` pull request has been merged.  This is because there
   is an Iris_ test which ensures the existence of the reference images (uris)
   for all the targets in the image results database.  It will also fail
@@ -163,4 +163,4 @@ To add your changes to Iris, you need to make two pull requests (PR).
   image-listing file in ``test-iris-imagehash``.
 
 
-.. _Iris travis matrix: https://github.com/scitools/iris/blob/master/.travis.yml#L15
+.. _Iris Cirrus-CI matrix: https://github.com/scitools/iris/blob/master/.cirrus.yml

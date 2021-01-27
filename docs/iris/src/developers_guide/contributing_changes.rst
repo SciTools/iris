@@ -1,7 +1,7 @@
 
 .. _contributing.changes:
 
-Contributing your changes
+Contributing Your Changes
 =========================
 
 .. toctree::

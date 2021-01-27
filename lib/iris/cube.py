@@ -981,9 +981,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
-        .. warning::
-            Calling this method will trigger any deferred loading, causing
-            the cube's data array to be loaded into memory.
+        This operation preserves lazy data.
 
         """
         # If the cube has units convert the data.
@@ -2186,23 +2184,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         extra = ""
         similar_coords = self.coords(coord.name())
         if len(similar_coords) > 1:
-            # Find all the attribute keys
-            keys = set()
-            for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.keys())
-            # Look for any attributes that vary
+            similar_coords.remove(coord)
+            # Look for any attributes that vary.
             vary = set()
-            attributes = {}
-            for key in keys:
+            for key, value in coord.attributes.items():
                 for similar_coord in similar_coords:
                     if key not in similar_coord.attributes:
                         vary.add(key)
                         break
-                    value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
+                    if not np.array_equal(
+                        similar_coord.attributes[key], value
+                    ):
                         vary.add(key)
                         break
-            keys = sorted(vary & set(coord.attributes.keys()))
+            keys = sorted(vary)
             bits = [
                 "{}={!r}".format(key, coord.attributes[key]) for key in keys
             ]
@@ -3923,10 +3918,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = list(dims_to_collapse)
+            collapse_axes = list(dims_to_collapse)
+            if len(collapse_axes) == 1:
+                # Replace a "list of 1 axes" with just a number :  This single-axis form is *required* by functions
+                # like da.average (and np.average), if a 1d weights array is specified.
+                collapse_axes = collapse_axes[0]
+
             try:
                 data_result = aggregator.lazy_aggregate(
-                    self.lazy_data(), axis=collapse_axis, **kwargs
+                    self.lazy_data(), axis=collapse_axes, **kwargs
                 )
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as
@@ -3950,8 +3950,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             unrolled_data = np.transpose(self.data, dims).reshape(new_shape)
 
             # Perform the same operation on the weights if applicable
-            if kwargs.get("weights") is not None:
-                weights = kwargs["weights"].view()
+            weights = kwargs.get("weights")
+            if weights is not None and weights.ndim > 1:
+                # Note: *don't* adjust 1d weights arrays, these have a special meaning for statistics functions.
+                weights = weights.view()
                 kwargs["weights"] = np.transpose(weights, dims).reshape(
                     new_shape
                 )

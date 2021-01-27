@@ -3,7 +3,7 @@
 .. _developer_test_categories:
 
 
-Test categories
+Test Categories
 ***************
 
 There are two main categories of tests within Iris:
@@ -20,7 +20,7 @@ feel free to submit a pull-request in any state and ask for assistance.
 
 .. _testing.unit_test:
 
-Unit tests
+Unit Tests
 ==========
 
 Code changes should be accompanied by enough unit tests to give a
@@ -128,7 +128,7 @@ Within that file the tests might look something like:
 
 .. _testing.integration:
 
-Integration tests
+Integration Tests
 =================
 
 Some code changes may require tests which exercise several units in

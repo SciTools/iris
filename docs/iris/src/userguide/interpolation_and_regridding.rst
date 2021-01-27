@@ -8,7 +8,7 @@
   warnings.simplefilter('ignore')
 
 =================================
-Cube interpolation and regridding
+Cube Interpolation and Regridding
 =================================
 
 Iris provides powerful cube-aware interpolation and regridding functionality,
@@ -123,7 +123,7 @@ will be orthogonal:
     air_temperature / (K)               (latitude: 13; longitude: 14)
 
 
-Interpolating non-horizontal coordinates
+Interpolating Non-Horizontal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Interpolation in Iris is not limited to horizontal-spatial coordinates - any
@@ -195,7 +195,7 @@ For example, to mask values that lie beyond the range of the original data:
 
 .. _caching_an_interpolator:
 
-Caching an interpolator
+Caching an Interpolator
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 If you need to interpolate a cube on multiple sets of sample points you can
@@ -305,7 +305,7 @@ cells have now become rectangular in a plate carrée (equirectangular) projectio
 The spatial grid of the resulting cube is really global, with a large proportion of the
 data being masked.
 
-Area-weighted regridding
+Area-Weighted Regridding
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is often the case that a point-based regridding scheme (such as
@@ -384,7 +384,7 @@ To visualise the above regrid, let's plot the original data, along with 3 distin
 
 .. _caching_a_regridder:
 
-Caching a regridder
+Caching a Regridder
 ^^^^^^^^^^^^^^^^^^^
 
 If you need to regrid multiple cubes with a common source grid onto a common
@@ -415,7 +415,7 @@ In each case ``result`` will be the input cube regridded to the grid defined by
 the target grid cube (in this case ``rotated_psl``) that we used to define the
 cached regridder.
 
-Regridding lazy data
+Regridding Lazy Data
 ^^^^^^^^^^^^^^^^^^^^
 
 If you are working with large cubes, especially when you are regridding to a
