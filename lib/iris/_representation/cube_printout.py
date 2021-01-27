@@ -322,24 +322,25 @@ class CubePrinter:
         # second column at a specific width.
 
         tb = self.table.rows[self.i_first_scalar_row :]
-        # Reset style : *needed* for derived table -- really not obvious ?!?
-        CubePrinter._set_table_style(tb)
+        if tb.rows:
+            # Reset style : *needed* for derived table -- really not obvious ?!?
+            CubePrinter._set_table_style(tb)
 
-        # Force any wrapping needed in the 'value column' (== column #1)
-        # WARNING: the 'table.columns.width' parameter behaves strangely :
-        # - you cannot always simply assign an iterable ?
-        tb.columns.width[0] = column_widths[0]
-        tb.columns.width[1] = max_width - column_widths[0]
-        for i in range(2, len(column_widths)):
-            column_widths[i] = 0
-        tb.columns.width_exceed_policy = bt.WEP_WRAP
+            # Force any wrapping needed in the 'value column' (== column #1)
+            # WARNING: the 'table.columns.width' parameter behaves strangely :
+            # - you cannot always simply assign an iterable ?
+            tb.columns.width[0] = column_widths[0]
+            tb.columns.width[1] = max_width - column_widths[0]
+            for i in range(2, len(column_widths)):
+                column_widths[i] = 0
+            tb.columns.width_exceed_policy = bt.WEP_WRAP
 
-        # Get rows for the scalar part
-        scalar_lines = tb._get_string(recalculate_width=False)
-        # discard first line (header)
-        next(scalar_lines)
-        # add the rest to the summary lines
-        summary_lines += list(scalar_lines)
+            # Get rows for the scalar part
+            scalar_lines = tb._get_string(recalculate_width=False)
+            # discard first line (header)
+            next(scalar_lines)
+            # add the rest to the summary lines
+            summary_lines += list(scalar_lines)
 
         result = "\n".join(summary_lines)
         return result
