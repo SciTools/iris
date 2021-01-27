@@ -68,3 +68,4 @@ This document explains the changes made to Iris for this release
 .. _@trexfeathers: https://github.com/trexfeathers
 .. _@gcaria: https://github.com/gcaria
 .. _@rcomer: https://github.com/rcomer
+.. _@MHBalsmeier: https://github.com/MHBalsmeier
