@@ -53,6 +53,8 @@ This document explains the changes made to Iris for this release
 
 * `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
   (:pull:`3933`)
+* `@MHBalsmeier`_ Described non-conda installation on Debian-based distros.
+  (:pull:`3958`)
 
 
 💼 Internal
