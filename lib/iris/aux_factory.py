@@ -11,6 +11,7 @@ Definitions of derived coordinates.
 from abc import ABCMeta, abstractmethod
 import warnings
 
+import cf_units
 import dask.array as da
 import numpy as np
 
@@ -621,7 +622,7 @@ class HybridPressureFactory(AuxCoordFactory):
         # Check units.
         if sigma is not None and sigma.units.is_unknown():
             # Be graceful, and promote unknown to dimensionless units.
-            sigma.units = "1"
+            sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
             raise ValueError("Invalid units: sigma must be dimensionless.")
@@ -869,7 +870,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         if sigma is not None and sigma.units.is_unknown():
             # Be graceful, and promote unknown to dimensionless units.
-            sigma.units = "1"
+            sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
             msg = (
@@ -1137,7 +1138,7 @@ class OceanSigmaFactory(AuxCoordFactory):
         # Check units.
         if sigma is not None and sigma.units.is_unknown():
             # Be graceful, and promote unknown to dimensionless units.
-            sigma.units = "1"
+            sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
             msg = (
@@ -1349,7 +1350,7 @@ class OceanSg1Factory(AuxCoordFactory):
         for coord, term in coords:
             if coord is not None and coord.units.is_unknown():
                 # Be graceful, and promote unknown to dimensionless units.
-                coord.units = "1"
+                coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
                 msg = (
@@ -1569,7 +1570,7 @@ class OceanSFactory(AuxCoordFactory):
         # Check units.
         if s is not None and s.units.is_unknown():
             # Be graceful, and promote unknown to dimensionless units.
-            s.units = "1"
+            s.units = cf_units.Unit("1")
 
         if s is not None and not s.units.is_dimensionless():
             msg = (
@@ -1798,7 +1799,7 @@ class OceanSg2Factory(AuxCoordFactory):
         for coord, term in coords:
             if coord is not None and coord.units.is_unknown():
                 # Be graceful, and promote unknown to dimensionless units.
-                coord.units = "1"
+                coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
                 msg = (

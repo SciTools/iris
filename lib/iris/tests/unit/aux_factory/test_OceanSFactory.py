@@ -137,6 +137,12 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSFactory(**self.kwargs)
 
+    def test_promote_s_units_unknown_to_dimensionless(self):
+        s = mock.Mock(units=Unit("unknown"), nbounds=0)
+        self.kwargs["s"] = s
+        factory = OceanSFactory(**self.kwargs)
+        self.assertEqual("1", factory.dependencies["s"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):

@@ -719,6 +719,9 @@ def _load_aux_factory(engine, cube):
                         warnings.warn(msg)
                     coord_a = coord_from_term("a")
                     if coord_a is not None:
+                        if coord_a.units.is_unknown():
+                            # Be graceful, and promote unknown to dimensionless units.
+                            coord_a.units = "1"
                         delta = coord_a * coord_p0.points[0]
                         delta.units = coord_a.units * coord_p0.units
                         delta.rename("vertical pressure")
