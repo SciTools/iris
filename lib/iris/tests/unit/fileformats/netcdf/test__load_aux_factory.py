@@ -53,8 +53,8 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         self.assertEqual(factory.surface_air_pressure, self.ps)
 
     def test_formula_terms_a_p0(self):
-        coord_a = DimCoord(np.arange(5), units="Pa")
-        coord_p0 = DimCoord(10, units="1")
+        coord_a = DimCoord(np.arange(5), units="1")
+        coord_p0 = DimCoord(10, units="Pa")
         coord_expected = DimCoord(
             np.arange(5) * 10,
             units="Pa",
@@ -71,6 +71,43 @@ class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):
         args, _ = self.cube.coord_dims.call_args
         self.assertEqual(len(args), 1)
         self.assertIs(args[0], coord_a)
+        # Check cube.add_aux_coord method.
+        self.assertEqual(self.cube.add_aux_coord.call_count, 1)
+        args, _ = self.cube.add_aux_coord.call_args
+        self.assertEqual(len(args), 2)
+        self.assertEqual(args[0], coord_expected)
+        self.assertIsInstance(args[1], mock.Mock)
+        # Check cube.add_aux_factory method.
+        self.assertEqual(self.cube.add_aux_factory.call_count, 1)
+        args, _ = self.cube.add_aux_factory.call_args
+        self.assertEqual(len(args), 1)
+        factory = args[0]
+        self.assertEqual(factory.delta, coord_expected)
+        self.assertEqual(factory.sigma, mock.sentinel.b)
+        self.assertEqual(factory.surface_air_pressure, self.ps)
+
+    def test_formula_terms_a_p0__promote_a_units_unknown_to_dimensionless(
+        self,
+    ):
+        coord_a = DimCoord(np.arange(5), units="unknown")
+        coord_p0 = DimCoord(10, units="Pa")
+        coord_expected = DimCoord(
+            np.arange(5) * 10,
+            units="Pa",
+            long_name="vertical pressure",
+            var_name="ap",
+        )
+        self.cube_parts["coordinates"].extend(
+            [(coord_a, "a"), (coord_p0, "p0")]
+        )
+        self.requires["formula_terms"] = dict(a="a", b="b", ps="ps", p0="p0")
+        _load_aux_factory(self.engine, self.cube)
+        # Check cube.coord_dims method.
+        self.assertEqual(self.cube.coord_dims.call_count, 1)
+        args, _ = self.cube.coord_dims.call_args
+        self.assertEqual(len(args), 1)
+        self.assertIs(args[0], coord_a)
+        self.assertEqual("1", args[0].units)
         # Check cube.add_aux_coord method.
         self.assertEqual(self.cube.add_aux_coord.call_count, 1)
         args, _ = self.cube.add_aux_coord.call_args
