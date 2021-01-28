@@ -20,7 +20,9 @@ dependencies:
   - numpy>=1.14
   - python-xxhash
   - scipy
-  - beautifultable
+  - pip
+  - pip:
+      - beautifultable>=1
 
 # Optional dependencies.
   - esmpy>=7.0

@@ -9,4 +9,4 @@ netcdf4
 numpy>=1.14
 scipy
 xxhash
-beautifultable
+beautifultable>=1
