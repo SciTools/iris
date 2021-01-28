@@ -18,10 +18,10 @@ This document explains the changes made to Iris for this release
 
    💼 **Internal**
 
-   * `@bjlittle`_ gracefully promote formula terms within :mod:`~iris.aux_factory` that have ``units`` of ``unknown``
-     to ``units`` of ``1`` (dimensionless), where the formula term **must** have dimensionless ``units``. Without this
-     graceful treatment of ``units`` the resulting :class:`~iris.cube.Cube` will **not** contain the expected auxiliary
-     factory, and the associated derived coordinate will be missing. (:pull:`3965`)
+   #. `@bjlittle`_ gracefully promote formula terms within :mod:`~iris.aux_factory` that have ``units`` of ``unknown``
+      to ``units`` of ``1`` (dimensionless), where the formula term **must** have dimensionless ``units``. Without this
+      graceful treatment of ``units`` the resulting :class:`~iris.cube.Cube` will **not** contain the expected auxiliary
+      factory, and the associated derived coordinate will be missing. (:pull:`3965`)
 
 
 .. dropdown:: :opticon:`report` Release Highlights
