@@ -59,6 +59,12 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSigmaFactory(**self.kwargs)
 
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
+        sigma = mock.Mock(units=Unit("unknown"), nbounds=0)
+        self.kwargs["sigma"] = sigma
+        factory = OceanSigmaFactory(**self.kwargs)
+        self.assertEqual("1", factory.dependencies["sigma"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
