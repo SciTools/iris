@@ -1334,12 +1334,12 @@ class ConnectivityMetadata(BaseMetadata):
 
     def _combine_lenient(self, other):
         """
-        Perform lenient combination of metadata members for topologies.
+        Perform lenient combination of metadata members for connectivities.
 
         Args:
 
         * other (ConnectivityMetadata):
-            The other topology metadata participating in the lenient
+            The other connectivity metadata participating in the lenient
             combination.
 
         Returns:
@@ -1362,12 +1362,12 @@ class ConnectivityMetadata(BaseMetadata):
 
     def _compare_lenient(self, other):
         """
-        Perform lenient equality of metadata members for topologies.
+        Perform lenient equality of metadata members for connectivities.
 
         Args:
 
         * other (ConnectivityMetadata):
-            The other topology metadata participating in the lenient
+            The other connectivity metadata participating in the lenient
             comparison.
 
         Returns:
@@ -1389,12 +1389,12 @@ class ConnectivityMetadata(BaseMetadata):
 
     def _difference_lenient(self, other):
         """
-        Perform lenient difference of metadata members for topologies.
+        Perform lenient difference of metadata members for connectivities.
 
         Args:
 
         * other (ConnectivityMetadata):
-            The other topology metadata participating in the lenient
+            The other connectivity metadata participating in the lenient
             difference.
 
         Returns:

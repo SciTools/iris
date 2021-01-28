@@ -2782,7 +2782,7 @@ class CellMethod(iris.util._OrderedHashable):
 class Connectivity(_DimensionalMetadata):
     """
     A CF-UGRID topology connectivity, describing the topological relationship
-    between two collections of dimensional elements. One or more connectivities
+    between two lists of dimensional elements. One or more connectivities
     make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
 
     See: https://ugrid-conventions.github.io/ugrid-conventions
@@ -2809,20 +2809,13 @@ class Connectivity(_DimensionalMetadata):
             of 2 dimensions - the list of elements, and within each element:
             the indices of the elements it relates to.
             Use a :class:`numpy.ma.core.MaskedArray` if element lengths vary -
-            mask unused indices within each element. Use a
+            mask unused index 'slots' within each element. Use a
             :class:`dask.array.Array` to keep indices 'lazy'.
-            **Read-only** - index values are only meaningful when combined with
-            an appropriate `cf_role`, `start_index` and `element_dim`. It is
-            therefore best to define a new :class:~iris.coords.Connectivity
-            if something needs to change.
         * cf_role (str):
             Denotes the topological relationship that this connectivity
             describes. Made up of this array's elements, and the indexed
-            element within each element. E.g. `face_node_connectivity`,
-            `edge_face_connectivity`.
-            **Read-only** - validity of `indices` is dependent on `cf_role`. It
-            is therefore best to define a new :class:~iris.coords.Connectivity
-            if something needs to change.
+            element within each element. E.g. ``face_node_connectivity``,
+            ``edge_face_connectivity``.
 
         Kwargs:
 
@@ -2833,19 +2826,15 @@ class Connectivity(_DimensionalMetadata):
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
-            Either `0` or `1`. Denotes whether `indices` uses 0- or 1-based
-            indexing (supports Fortran and legacy NetCDF files).
-            **Read-only** - validity of `indices` is dependent on
-            `start_index`. It is therefore best to define a new
-            :class:~iris.coords.Connectivity if something needs to change.
+            Either ``0`` or ``1``. Denotes whether :attr:`indices` uses 0- or
+            1-based indexing (allows support for Fortran and legacy NetCDF
+            files).
         * element_dim (int):
-            Either `0` or `1`. Denotes which dimension of `indices` refers to
-            the contents of individual elements (supports fastest varying index
-            being either first or last). E.g. for `face_node_connectivity`,
-            where the faces are 3-sided, `indices.shape[element_dim]=3`.
-            **Read-only** - validity of `indices` is dependent on
-            `element_dim`. It is therefore best to define a new
-            :class:~iris.coords.Connectivity if something needs to change.
+            Either ``0`` or ``1``. Denotes which dimension of :attr:`indices`
+            refers to the contents of individual elements (allows support
+            for fastest varying index being either first or last). E.g. for
+            ``face_node_connectivity``, where the faces are 3-sided:
+            ``indices.shape[element_dim] = 3``.
 
         """
         # Configure the metadata manager.
@@ -2901,46 +2890,102 @@ class Connectivity(_DimensionalMetadata):
 
     @property
     def _values(self):
-        """Overridden just to allow .setter override."""
+        # Overridden just to allow .setter override.
         return super()._values
 
     @_values.setter
     def _values(self, values):
         self._validate_indices(values)
+        # The recommended way of using the setter in super().
         super(Connectivity, self.__class__)._values.fset(self, values)
 
     @property
     def cf_role(self):
+        """
+        The category of topological relationship that this connectivity
+        describes.
+        **Read-only** - validity of :attr:`indices` is dependent on
+        :attr:`cf_role`. A new :class:`Connectivity` must therefore be defined
+        if a different :attr:`cf_role` is needed.
+
+        """
         return self._metadata_manager.cf_role
 
     @property
     def cf_role_element(self):
+        """
+        Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
+        ``face`` in ``face_node_connectivity``. Refers to the elements
+        described by the structure of the connectivity's :attr:`indices` array.
+
+        """
         return self._metadata_manager.cf_role.split("_")[0]
 
     @property
     def cf_role_indexed_element(self):
+        """
+        Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
+        ``node`` in ``face_node_connectivity``. Refers to the elements indexed
+        by the values in the connectivity's :attr:`indices` array.
+
+        """
         return self._metadata_manager.cf_role.split("_")[1]
 
     @property
     def start_index(self):
-        """The expected lowest value in the `indices` array; either 0 or 1."""
+        """
+        The base value of the connectivity's :attr:`indices` array; either
+        ``0`` or ``1``.
+        **Read-only** - to change value: use :meth:`switch_start_index`.
+
+        """
         return self._metadata_manager.start_index
 
     @property
     def element_dim(self):
+        """
+        The dimension of the connectivity's :attr:`indices` array that details
+        individual elements.
+        **Read-only** - to change value: use :meth:`switch_element_dim`.
+
+        """
         return self._metadata_manager.element_dim
 
     @property
     def indices(self):
+        """
+        The index values describing the topological relationship of the
+        connectivity, as a NumPy array. Masked points indicate an element
+        shorter than the longest element described in this array - unused
+        index 'slots' are masked.
+        **Read-only** - index values are only meaningful when combined with
+        an appropriate :attr:`cf_role`, :attr:`start_index` and
+        :attr:`element_dim`. A new :class:`Connectivity` must therefore be
+        defined if different indices are needed.
+
+        """
         return self._values
 
     @property
     def element_lengths(self):
+        """
+        A NumPy array of the lengths of each element in the :attr:`element_dim`
+        of the connectivity's :attr:`indices` array, accounting for masks if
+        present.
+
+        """
         lengths = self._lazy_element_lengths(self.indices, self.element_dim)
         return lengths.compute()
 
     @property
     def has_equal_element_lengths(self):
+        """
+        A boolean stating whether all values from
+        :attr:`element_lengths` are equal. Provided
+        for lazy calculation without needing to realise :attr:`indices` or
+        :attr:`element_lengths`.
+
+        """
         lengths = self._lazy_element_lengths(self.indices, self.element_dim)
         has_equal = lengths.min() == lengths.max()
         return has_equal.compute()
@@ -2998,8 +3043,9 @@ class Connectivity(_DimensionalMetadata):
         # Don't use a normal property setter - would be inappropriate since
         # other properties are also modified.
         """
-        Change `start_index` to its alternative value and change the `indices`
-        values to match. (start_index can either =0 or =1).
+        Change :attr:`start_index` to its alternative value and change the
+        :attr:`indices` values to match. (:attr:`start_index` can be either
+        ``0`` or ``1``).
 
         """
         new_index = 1 - self.start_index
@@ -3012,8 +3058,8 @@ class Connectivity(_DimensionalMetadata):
         # Don't use a normal property setter - would be inappropriate since
         # other properties are also modified.
         """
-        Change `element_dim` to its alternative value and restructure `indices`
-        to match. (`element_dim` can either =0 or =1).
+        Change :attr:`element_dim` to its alternative value and restructure
+        :attr:`indices` to match. (:attr:`element_dim` can be ``0`` or ``1``).
 
         """
         self._metadata_manager.element_dim = 1 - self.element_dim
@@ -3045,15 +3091,21 @@ class Connectivity(_DimensionalMetadata):
     def core_indices(self):
         """
         The indices array at the core of this connectivity, which may be a
-        NumPy array or a dask array.
+        NumPy array or a Dask array.
+
+        Returns:
+            numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array
 
         """
         return super()._core_values()
 
     def has_lazy_indices(self):
         """
-        Return a boolean indicating whether the connectivity's indices array
-        is a lazy dask array or not.
+        Return a boolean indicating whether the connectivity's :attr:`indices`
+        array is a lazy Dask array or not.
+
+        Returns:
+            boolean
 
         """
         return super()._has_lazy_values()
