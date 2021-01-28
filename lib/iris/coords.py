@@ -19,6 +19,7 @@ import warnings
 import zlib
 
 import cftime
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -32,6 +33,7 @@ from iris.common import (
     CellMeasureMetadata,
     CoordMetadata,
     DimCoordMetadata,
+    ConnectivityMetadata,
     metadata_manager_factory,
 )
 import iris.exceptions
@@ -624,6 +626,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        elif isinstance(self, Connectivity):
+            values_term = "indices"
         else:
             values_term = "data"
         element.setAttribute(values_term, self._xml_array_repr(self._values))
@@ -2773,6 +2777,366 @@ class CellMethod(iris.util._OrderedHashable):
                 cellMethod_xml_element.appendChild(coord_xml_element)
 
         return cellMethod_xml_element
+
+
+class Connectivity(_DimensionalMetadata):
+    """
+    A CF-UGRID topology connectivity, describing the topological relationship
+    between two lists of dimensional elements. One or more connectivities
+    make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
+
+    See: https://ugrid-conventions.github.io/ugrid-conventions
+
+    """
+
+    def __init__(
+        self,
+        indices,
+        cf_role,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        start_index=0,
+        element_dim=1,
+    ):
+        """
+        Constructs a single connectivity.
+
+        Args:
+
+        * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
+            The index values describing a topological relationship. Constructed
+            of 2 dimensions - the list of elements, and within each element:
+            the indices of the elements it relates to.
+            Use a :class:`numpy.ma.core.MaskedArray` if element lengths vary -
+            mask unused index 'slots' within each element. Use a
+            :class:`dask.array.Array` to keep indices 'lazy'.
+        * cf_role (str):
+            Denotes the topological relationship that this connectivity
+            describes. Made up of this array's elements, and the indexed
+            element within each element. E.g. ``face_node_connectivity``,
+            ``edge_face_connectivity``.
+
+        Kwargs:
+
+        * long_name (str):
+            Descriptive name of the connectivity.
+        * var_name (str):
+            The netCDF variable name for the connectivity.
+        * attributes (dict):
+            A dictionary containing other cf and user-defined attributes.
+        * start_index (int):
+            Either ``0`` or ``1``. Denotes whether :attr:`indices` uses 0- or
+            1-based indexing (allows support for Fortran and legacy NetCDF
+            files).
+        * element_dim (int):
+            Either ``0`` or ``1``. Denotes which dimension of :attr:`indices`
+            refers to the contents of individual elements (allows support
+            for fastest varying index being either first or last). E.g. for
+            ``face_node_connectivity``, where the faces are 3-sided:
+            ``indices.shape[element_dim] = 3``.
+
+        """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(ConnectivityMetadata)
+
+        self._validate_arg_vs_list("start_index", start_index, [0, 1])
+        # indices array will be 2-dimensional, so must be either 0 or 1.
+        self._validate_arg_vs_list("element_dim", element_dim, [0, 1])
+        # TODO: find a better 'common' location to store valid cf_roles.
+        valid_cf_roles = [
+            "edge_node_connectivity",
+            "face_node_connectivity",
+            "face_edge_connectivity",
+            "face_face_connectivity",
+            "edge_face_connectivity",
+            "boundary_node_connectivity",
+            "volume_node_connectivity",
+            "volume_edge_connectivity",
+            "volume_face_connectivity",
+            "volume_volume_connectivity",
+        ]
+        self._validate_arg_vs_list("cf_role", cf_role, valid_cf_roles)
+
+        self._metadata_manager.start_index = start_index
+        self._metadata_manager.element_dim = element_dim
+        self._metadata_manager.cf_role = cf_role
+
+        super().__init__(
+            values=indices,
+            standard_name=None,
+            long_name=long_name,
+            var_name=var_name,
+            units="1",
+            attributes=attributes,
+        )
+
+    @staticmethod
+    def _validate_arg_vs_list(arg_name, arg, list):
+        if arg not in list:
+            error_msg = (
+                f"Invalid {arg_name} . Got: {arg} . Must be one of: "
+                f"{list} ."
+            )
+            raise ValueError(error_msg)
+
+    @staticmethod
+    def _lazy_element_lengths(array, element_dim):
+        element_mask_counts = da.sum(
+            da.ma.getmaskarray(array), axis=element_dim
+        )
+        max_element_size = array.shape[element_dim]
+        return max_element_size - element_mask_counts
+
+    @property
+    def _values(self):
+        # Overridden just to allow .setter override.
+        return super()._values
+
+    @_values.setter
+    def _values(self, values):
+        self._validate_indices(values)
+        # The recommended way of using the setter in super().
+        super(Connectivity, self.__class__)._values.fset(self, values)
+
+    @property
+    def cf_role(self):
+        """
+        The category of topological relationship that this connectivity
+        describes.
+        **Read-only** - validity of :attr:`indices` is dependent on
+        :attr:`cf_role`. A new :class:`Connectivity` must therefore be defined
+        if a different :attr:`cf_role` is needed.
+
+        """
+        return self._metadata_manager.cf_role
+
+    @property
+    def cf_role_element(self):
+        """
+        Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
+        ``face`` in ``face_node_connectivity``. Refers to the elements
+        described by the structure of the connectivity's :attr:`indices` array.
+
+        """
+        return self._metadata_manager.cf_role.split("_")[0]
+
+    @property
+    def cf_role_indexed_element(self):
+        """
+        Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
+        ``node`` in ``face_node_connectivity``. Refers to the elements indexed
+        by the values in the connectivity's :attr:`indices` array.
+
+        """
+        return self._metadata_manager.cf_role.split("_")[1]
+
+    @property
+    def start_index(self):
+        """
+        The base value of the connectivity's :attr:`indices` array; either
+        ``0`` or ``1``.
+        **Read-only** - to change value: use :meth:`switch_start_index`.
+
+        """
+        return self._metadata_manager.start_index
+
+    @property
+    def element_dim(self):
+        """
+        The dimension of the connectivity's :attr:`indices` array that details
+        individual elements.
+        **Read-only** - to change value: use :meth:`switch_element_dim`.
+
+        """
+        return self._metadata_manager.element_dim
+
+    @property
+    def indices(self):
+        """
+        The index values describing the topological relationship of the
+        connectivity, as a NumPy array. Masked points indicate an element
+        shorter than the longest element described in this array - unused
+        index 'slots' are masked.
+        **Read-only** - index values are only meaningful when combined with
+        an appropriate :attr:`cf_role`, :attr:`start_index` and
+        :attr:`element_dim`. A new :class:`Connectivity` must therefore be
+        defined if different indices are needed.
+
+        """
+        return self._values
+
+    @property
+    def element_lengths(self):
+        """
+        A NumPy array of the lengths of each element in the :attr:`element_dim`
+        of the connectivity's :attr:`indices` array, accounting for masks if
+        present.
+
+        """
+        lengths = self._lazy_element_lengths(self.indices, self.element_dim)
+        return lengths.compute()
+
+    @property
+    def has_equal_element_lengths(self):
+        """
+        A boolean stating whether all values from
+        :attr:`element_lengths` are equal. Provided
+        for lazy calculation without needing to realise :attr:`indices` or
+        :attr:`element_lengths`.
+
+        """
+        lengths = self._lazy_element_lengths(self.indices, self.element_dim)
+        has_equal = lengths.min() == lengths.max()
+        return has_equal.compute()
+
+    def _validate_indices(self, indices):
+        def indices_error(message):
+            raise ValueError("Invalid indeces provided. " + message)
+
+        indices = self._sanitise_array(indices, 0)
+
+        indices_dtype = indices.dtype
+        if not np.issubdtype(indices_dtype, np.integer):
+            indices_error(
+                f"dtype must be numpy integer subtype, got: {indices_dtype} ."
+            )
+
+        indices_min = indices.min()
+        if _lazy.is_lazy_data(indices_min):
+            indices_min = indices_min.compute()
+        if indices_min < self.start_index:
+            indices_error(
+                f"Lowest index: {indices_min} < start_index: {self.start_index} ."
+            )
+
+        indices_shape = indices.shape
+        if len(indices_shape) != 2:
+            indices_error(
+                f"Expected 2-dimensional shape, got: shape={indices_shape} ."
+            )
+
+        len_req_fail = False
+        element_lengths = self._lazy_element_lengths(indices, self.element_dim)
+        if self.cf_role_element in ("edge", "boundary"):
+            if (element_lengths != 2).any().compute():
+                len_req_fail = "len=2"
+        else:
+            if self.cf_role_element == "face":
+                min_size = 3
+            elif self.cf_role_element == "volume":
+                if self.cf_role_indexed_element == "edge":
+                    min_size = 6
+                else:
+                    min_size = 4
+            else:
+                raise NotImplementedError
+            if (element_lengths < min_size).any().compute():
+                len_req_fail = f"len>={min_size}"
+        if len_req_fail:
+            indices_error(
+                f"Not all elements meet requirement: {len_req_fail} - needed "
+                f"to describe '{self.cf_role}' ."
+            )
+
+    def switch_start_index(self):
+        # Don't use a normal property setter - would be inappropriate since
+        # other properties are also modified.
+        """
+        Change :attr:`start_index` to its alternative value and change the
+        :attr:`indices` values to match. (:attr:`start_index` can be either
+        ``0`` or ``1``).
+
+        """
+        new_index = 1 - self.start_index
+        index_change = new_index - self.start_index
+        self._metadata_manager.start_index = new_index
+        # Modify the indices values to correspond with the new start_index.
+        self._values += index_change
+
+    def switch_element_dim(self):
+        # Don't use a normal property setter - would be inappropriate since
+        # other properties are also modified.
+        """
+        Change :attr:`element_dim` to its alternative value and restructure
+        :attr:`indices` to match. (:attr:`element_dim` can be ``0`` or ``1``).
+
+        """
+        self._metadata_manager.element_dim = 1 - self.element_dim
+        # Modify the indices structure to match the new element_dim.
+        # We know that indices is 2-dimensional so can just swap the two axes.
+        new_indices = self._values.swapaxes(0, 1)
+        # Replace the data manager with one for the new shaped indices.
+        # This is safe to override since Connectivity is not attached to a cube
+        # dimension unlike other _DimensionalMetadata-using classes.
+        self._values_dm = DataManager(new_indices)
+
+    def lazy_indices(self):
+        """
+        Return a lazy array representing the connectivity's indices.
+
+        Accessing this method will never cause the indices values to be loaded.
+        Similarly, calling methods on, or indexing, the returned Array
+        will not cause the connectivity to have loaded indices.
+
+        If the indices have already been loaded for the connectivity, the
+        returned Array will be a new lazy array wrapper.
+
+        Returns:
+            A lazy array, representing the connectivity indices array.
+
+        """
+        return super()._lazy_values()
+
+    def core_indices(self):
+        """
+        The indices array at the core of this connectivity, which may be a
+        NumPy array or a Dask array.
+
+        Returns:
+            numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array
+
+        """
+        return super()._core_values()
+
+    def has_lazy_indices(self):
+        """
+        Return a boolean indicating whether the connectivity's :attr:`indices`
+        array is a lazy Dask array or not.
+
+        Returns:
+            boolean
+
+        """
+        return super()._has_lazy_values()
+
+    def __str__(self):
+        result = repr(self)
+        return result
+
+    def __repr__(self):
+        cls = type(self).__name__
+        result = (
+            f"{cls}({self.indices}), cf_role="
+            f"'{self.cf_role}', start_index={self.start_index}, "
+            f"element_dim={self.element_dim}{self._repr_other_metadata()})"
+        )
+        return result
+
+    def cube_dims(self, cube):
+        """Not available on :class:`Connectivity`."""
+        raise NotImplementedError
+
+    def xml_element(self, doc):
+        # Create the XML element as the camelCaseEquivalent of the
+        # class name
+        element = super().xml_element(doc)
+
+        element.setAttribute("cf_role", self.cf_role)
+        element.setAttribute("start_index", self.start_index)
+        element.setAttribute("element_dim", self.element_dim)
+
+        return element
 
 
 # See Coord.cells() for the description/context.
