@@ -10,58 +10,59 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-* N/A
+#. N/A
 
 
 ✨ Features
 ===========
 
-* `@pelson`_ and `@trexfeathers`_ enhanced :meth:iris.plot.plot and
-  :meth:iris.quickplot.plot to automatically place the cube on the x axis if
-  the primary coordinate being plotted against is a vertical coordinate. E.g.
-  ``iris.plot.plot(z_cube)`` will produce a z-vs-phenomenon plot, where before
-  it would have produced a phenomenon-vs-z plot. (:pull:`3906`)
+#. `@pelson`_ and `@trexfeathers`_ enhanced :meth:iris.plot.plot and
+   :meth:iris.quickplot.plot to automatically place the cube on the x axis if
+   the primary coordinate being plotted against is a vertical coordinate. E.g.
+   ``iris.plot.plot(z_cube)`` will produce a z-vs-phenomenon plot, where before
+   it would have produced a phenomenon-vs-z plot. (:pull:`3906`)
 
 
 🐛 Bugs Fixed
 =============
 
-* `@gcaria`_ fixed :meth:`~iris.cube.Cube.cell_measure_dims` to also accept the string name of a :class:`~iris.coords.CellMeasure`. (:pull:`3931`)
-* `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
+#. `@gcaria`_ fixed :meth:`~iris.cube.Cube.cell_measure_dims` to also accept the
+   string name of a :class:`~iris.coords.CellMeasure`. (:pull:`3931`)
+#. `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept
+   the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
 
 
 💣 Incompatible Changes
 =======================
 
-* N/A
+#. N/A
 
 
 🔥 Deprecations
 ===============
 
-* N/A
+#. N/A
 
 
 🔗 Dependencies
 ===============
 
-* N/A
+#. N/A
 
 
 📚 Documentation
 ================
 
-* `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
-  (:pull:`3933`)
-* `@MHBalsmeier`_ Described non-conda installation on Debian-based distros.
-  (:pull:`3958`)
+#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
+   (:pull:`3933`)
+#. `@MHBalsmeier`_ Described non-conda installation on Debian-based distros.
+   (:pull:`3958`)
 
 
 💼 Internal
 ===========
 
-* `@rcomer`_ removed an old unused test file. (:pull:`3913`)
-
+#. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
 
 .. _@pelson: https://github.com/pelson
