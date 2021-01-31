@@ -7,6 +7,21 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
+.. dropdown:: :opticon:`report` Release Highlights
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+   :open:
+
+   The highlights for this major/minor release of Iris include:
+
+   * N/A
+
+   And finally, get in touch with us on `GitHub`_ if you have any issues or
+   feature requests for improving Iris. Enjoy!
+
+
 📢 Announcements
 ================
 
@@ -65,6 +80,8 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
 
+
+.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _@pelson: https://github.com/pelson
 .. _@trexfeathers: https://github.com/trexfeathers
 .. _@gcaria: https://github.com/gcaria
