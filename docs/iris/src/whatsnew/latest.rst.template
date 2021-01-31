@@ -79,9 +79,18 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-* N/A
+#. N/A
+
+
+.. only:: Comment
+
+    What's new author names (@github name) in alphabetical order:
 
 
 
+
+.. only:: Comment
+
+    What's new resources in alphabetical order:
 
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
