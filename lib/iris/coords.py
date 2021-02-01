@@ -12,7 +12,6 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterator
 import copy
-from functools import wraps
 from itertools import chain, zip_longest
 import operator
 import warnings
@@ -1272,7 +1271,7 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
 class Coord(_DimensionalMetadata):
     """
-    Superclass for coordinates.
+    Abstract base class for coordinates.
 
     """
 
@@ -1291,7 +1290,7 @@ class Coord(_DimensionalMetadata):
     ):
 
         """
-        Constructs a single coordinate.
+        Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
         Args:
 
@@ -1313,17 +1312,17 @@ class Coord(_DimensionalMetadata):
         * bounds
             An array of values describing the bounds of each cell. Given n
             bounds for each cell, the shape of the bounds array should be
-            points.shape + (n,). For example, a 1d coordinate with 100 points
+            points.shape + (n,). For example, a 1D coordinate with 100 points
             and two bounds per cell would have a bounds array of shape
             (100, 2)
             Note if the data is a climatology, `climatological`
             should be set.
         * attributes
-            A dictionary containing other cf and user-defined attributes.
+            A dictionary containing other CF and user-defined attributes.
         * coord_system
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
-            e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
         * climatological (bool):
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
@@ -2250,7 +2249,8 @@ class Coord(_DimensionalMetadata):
 
 class DimCoord(Coord):
     """
-    A coordinate that is 1D, numeric, and strictly monotonic.
+    A coordinate that is 1D, and numeric, with values that have a strict monotonic ordering. Missing values are not
+    permitted in a :class:`DimCoord`.
 
     """
 
@@ -2275,7 +2275,7 @@ class DimCoord(Coord):
         optionally bounds.
 
         The majority of the arguments are defined as for
-        :meth:`Coord.__init__`, but those which differ are defined below.
+        :class:`Coord`, but those which differ are defined below.
 
         Args:
 
@@ -2336,8 +2336,9 @@ class DimCoord(Coord):
         climatological=False,
     ):
         """
-        Create a 1D, numeric, and strictly monotonic :class:`Coord` with
-        read-only points and bounds.
+        Create a 1D, numeric, and strictly monotonic coordinate with **immutable** points and bounds.
+
+        Missing values are not permitted.
 
         Args:
 
@@ -2369,11 +2370,11 @@ class DimCoord(Coord):
             Note if the data is a climatology, `climatological`
             should be set.
         * attributes:
-            A dictionary containing other cf and user-defined attributes.
+            A dictionary containing other CF and user-defined attributes.
         * coord_system:
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
-            e.g. a :class:`~iris.coord_systems.GeogCS` for a longitude Coord.
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
         * circular (bool):
             Whether the coordinate wraps by the :attr:`~iris.coords.DimCoord.units.modulus`
             i.e., the longitude coordinate wraps around the full great circle.
@@ -2624,15 +2625,54 @@ class AuxCoord(Coord):
     """
     A CF auxiliary coordinate.
 
-    .. note::
-
-        There are currently no specific properties of :class:`AuxCoord`,
-        everything is inherited from :class:`Coord`.
-
     """
 
-    @wraps(Coord.__init__, assigned=("__doc__",), updated=())
     def __init__(self, *args, **kwargs):
+        """
+        Create a coordinate with **mutable** points and bounds.
+
+        Args:
+
+        * points:
+            The values (or value in the case of a scalar coordinate) for each
+            cell of the coordinate.
+
+        Kwargs:
+
+        * standard_name:
+            CF standard name of the coordinate.
+        * long_name:
+            Descriptive name of the coordinate.
+        * var_name:
+            The netCDF variable name for the coordinate.
+        * units
+            The :class:`~cf_units.Unit` of the coordinate's values.
+            Can be a string, which will be converted to a Unit object.
+        * bounds
+            An array of values describing the bounds of each cell. Given n
+            bounds for each cell, the shape of the bounds array should be
+            points.shape + (n,). For example, a 1D coordinate with 100 points
+            and two bounds per cell would have a bounds array of shape
+            (100, 2)
+            Note if the data is a climatology, `climatological`
+            should be set.
+        * attributes
+            A dictionary containing other CF and user-defined attributes.
+        * coord_system
+            A :class:`~iris.coord_systems.CoordSystem` representing the
+            coordinate system of the coordinate,
+            e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
+        * climatological (bool):
+            When True: the coordinate is a NetCDF climatological time axis.
+            When True: saving in NetCDF will give the coordinate variable a
+            'climatology' attribute and will create a boundary variable called
+            '<coordinate-name>_climatology' in place of a standard bounds
+            attribute and bounds variable.
+            Will set to True when a climatological time axis is loaded
+            from NetCDF.
+            Always False if no bounds exist.
+
+        """
         super().__init__(*args, **kwargs)
 
     # Logically, :class:`Coord` is an abstract class and all actual coords must

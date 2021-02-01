@@ -43,6 +43,7 @@ This document explains the changes made to Iris for this release
 
 #. `@gcaria`_ fixed :meth:`~iris.cube.Cube.cell_measure_dims` to also accept the
    string name of a :class:`~iris.coords.CellMeasure`. (:pull:`3931`)
+
 #. `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept
    the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
 
@@ -68,10 +69,12 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
-   (:pull:`3933`)
-#. `@MHBalsmeier`_ Described non-conda installation on Debian-based distros.
-   (:pull:`3958`)
+#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example. (:pull:`3933`)
+
+#. `@MHBalsmeier`_ described non-conda installation on Debian-based distros. (:pull:`3958`)
+
+#. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord` is now an `abstract base class`_ of
+   coordinates since ``v3.0.0``, and it is **not** possible to create an instance of it. (:pull:`3971`)
 
 
 💼 Internal
@@ -80,10 +83,19 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
 
+.. comment
+    What's new author names (@github name) in alphabetical order:
 
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
-.. _@pelson: https://github.com/pelson
-.. _@trexfeathers: https://github.com/trexfeathers
+.. _@bjlittle: https://github.com/bjlittle
 .. _@gcaria: https://github.com/gcaria
-.. _@rcomer: https://github.com/rcomer
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
+.. _@pelson: https://github.com/pelson
+.. _@rcomer: https://github.com/rcomer
+.. _@trexfeathers: https://github.com/trexfeathers
+
+
+.. comment
+    What's new resources in alphabetical order:
+
+.. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
