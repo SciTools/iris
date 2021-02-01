@@ -84,18 +84,15 @@ This document explains the changes made to Iris for this release
 
 
 .. comment
-    What's new author names (@github name) in alphabetical order:
+    Whatsnew author names (@github name) in alphabetical order. Note that,
+    core dev names are automatically included by the common_links.inc:
 
-.. _@bjlittle: https://github.com/bjlittle
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
-.. _@pelson: https://github.com/pelson
-.. _@rcomer: https://github.com/rcomer
-.. _@trexfeathers: https://github.com/trexfeathers
 
 
 .. comment
-    What's new resources in alphabetical order:
+    Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
