@@ -56,11 +56,11 @@ lib/iris/tests/results/imagerepo.lock
 *.cover
 
 # Auto generated documentation files
-docs/iris/src/_build/*
-docs/iris/src/generated
+docs/src/_build/*
+docs/src/generated
 
 # Example test results
-docs/iris/iris_image_test_output/
+docs/iris_image_test_output/
 
 # Created by editiors
 *~
