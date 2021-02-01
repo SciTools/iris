@@ -24,7 +24,7 @@ The documentation uses specific packages that need to be present.  Please see
 Building
 ~~~~~~~~
 
-The build can be run from the documentation directory ``iris/docs/iris/src``.
+The build can be run from the documentation directory ``iris/docs/src``.
 
 The build output for the html is found in the ``_build/html`` sub directory.
 When updating the documentation ensure the html build has *no errors* or
@@ -58,8 +58,8 @@ Testing
 ~~~~~~~
 
 There are a ways to test various aspects of the documentation.  The
-``make`` commands shown below can be run in the ``iris/docs/iris`` or
-``iris/docs/iris/src`` directory.
+``make`` commands shown below can be run in the ``iris/docs`` or
+``iris/docs/src`` directory.
 
 Each :ref:`contributing.documentation.gallery` entry has a corresponding test.
 To run the tests::
@@ -117,14 +117,14 @@ Generating API Documentation
 
 In order to auto generate the API documentation based upon the docstrings a
 custom set of python scripts are used, these are located in the directory
-``iris/docs/iris/src/sphinxext``.  Once the ``make html`` command has been run,
+``iris/docs/src/sphinxext``.  Once the ``make html`` command has been run,
 the output of these scripts can be found in
-``iris/docs/iris/src/generated/api``.
+``iris/docs/src/generated/api``.
 
 If there is a particularly troublesome module that breaks the ``make html`` you
 can exclude the module from the API documentation.  Add the entry to the
 ``exclude_modules`` tuple list in the
-``iris/docs/iris/src/sphinxext/generate_package_rst.py`` file.
+``iris/docs/src/sphinxext/generate_package_rst.py`` file.
 
 
 .. _contributing.documentation.gallery:
@@ -137,12 +137,12 @@ The Iris :ref:`sphx_glr_generated_gallery` uses a sphinx extension named
 that auto generates reStructuredText (rst) files based upon a gallery source
 directory that abides directory and filename convention.
 
-The code for the gallery entries are in ``iris/docs/iris/gallery_code``.
+The code for the gallery entries are in ``iris/docs/gallery_code``.
 Each sub directory in this directory is a sub section of the gallery.  The
 respective ``README.rst`` in each folder is included in the gallery output.
 
 For each gallery entry there must be a corresponding test script located in
-``iris/docs/iris/gallery_tests``.
+``iris/docs/gallery_tests``.
 
 To add an entry to the gallery simple place your python code into the
 appropriate sub directory and name it with a prefix of ``plot_``.  If your
@@ -150,7 +150,7 @@ gallery entry does not fit into any existing sub directories then create a new
 directory and place it in there.
 
 The reStructuredText (rst) output of the gallery is located in
-``iris/docs/iris/src/generated/gallery``.
+``iris/docs/src/generated/gallery``.
 
 For more information on the directory structure and options please see the
 `sphinx-gallery getting started
