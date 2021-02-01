@@ -1,3 +1,6 @@
+.. comment
+    Common resources in alphabetical order:
+
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
@@ -25,6 +28,9 @@
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
 
+
+.. comment
+    Core developers (@github names) in alphabetical order:
 
 .. _@abooton: https://github.com/abooton
 .. _@alastair-gemmell: https://github.com/alastair-gemmell
