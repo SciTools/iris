@@ -1,27 +1,57 @@
-.. _SciTools: https://github.com/SciTools
+.. comment
+    Common resources in alphabetical order:
+
+.. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
+.. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
+.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
+.. _conda: https://docs.conda.io/en/latest/
+.. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
+.. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
+.. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
+.. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _Iris: https://github.com/SciTools/iris
 .. _Iris GitHub: https://github.com/SciTools/iris
 .. _iris mailing list: https://groups.google.com/forum/#!forum/scitools-iris
+.. _iris-sample-data: https://github.com/SciTools/iris-sample-data
+.. _iris-test-data: https://github.com/SciTools/iris-test-data
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
+.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
+.. _matplotlib: https://matplotlib.org/
+.. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+.. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
-.. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
-.. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
-.. _iris-test-data: https://github.com/SciTools/iris-test-data
-.. _iris-sample-data: https://github.com/SciTools/iris-sample-data
-.. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
-.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
-.. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
-.. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
-.. _GitHub Help Documentation: https://docs.github.com/en/github
-.. _using git: https://docs.github.com/en/github/using-git
-.. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
-.. _New Issue: https://github.com/scitools/iris/issues/new/choose
-.. _matplotlib: https://matplotlib.org/
-.. _conda: https://docs.conda.io/en/latest/
+.. _SciTools: https://github.com/SciTools
 .. _sphinx: https://www.sphinx-doc.org/en/master/
-.. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
-.. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
-.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
+.. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
+.. _using git: https://docs.github.com/en/github/using-git
+
+
+.. comment
+    Core developers (@github names) in alphabetical order:
+
+.. _@abooton: https://github.com/abooton
+.. _@alastair-gemmell: https://github.com/alastair-gemmell
+.. _@ajdawson: https://github.com/ajdawson
+.. _@bjlittle: https://github.com/bjlittle
+.. _@bouweandela: https://github.com/bouweandela
+.. _@corinnebosley: https://github.com/corinnebosley
+.. _@cpelley: https://github.com/cpelley
+.. _@djkirkham: https://github.com/djkirkham
+.. _@DPeterK: https://github.com/DPeterK
+.. _@esc24: https://github.com/esc24
+.. _@jonseddon: https://github.com/jonseddon
+.. _@jvegasbsc: https://github.com/jvegasbsc
+.. _@lbdreyer: https://github.com/lbdreyer
+.. _@marqh: https://github.com/marqh
+.. _@pelson: https://github.com/pelson
+.. _@pp-mo: https://github.com/pp-mo
+.. _@QuLogic: https://github.com/QuLogic
+.. _@rcomer: https://github.com/rcomer
+.. _@rhattersley: https://github.com/rhattersley
+.. _@stephenworsley: https://github.com/stephenworsley
+.. _@tkknight: https://github.com/tkknight
+.. _@trexfeathers: https://github.com/trexfeathers
+.. _@zklaus: https://github.com/zklaus
