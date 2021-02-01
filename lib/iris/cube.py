@@ -3406,16 +3406,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return doc.toprettyxml(indent="  ")
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
+        def set_attributes(element, attributes):
+            """Inset the attributes explicitly in alphabetical order."""
+            for key in sorted(attributes.keys()):
+                element.setAttribute(key, attributes[key])
+
         cube_xml_element = doc.createElement("cube")
+        cube_xml_element_attributes = {}
 
         if self.standard_name:
-            cube_xml_element.setAttribute("standard_name", self.standard_name)
+            cube_xml_element_attributes["standard_name"] = self.standard_name
         if self.long_name:
-            cube_xml_element.setAttribute("long_name", self.long_name)
+            cube_xml_element_attributes["long_name"] = self.long_name
         if self.var_name:
-            cube_xml_element.setAttribute("var_name", self.var_name)
-        cube_xml_element.setAttribute("units", str(self.units))
-        cube_xml_element.setAttribute("dtype", self.dtype.name)
+            cube_xml_element_attributes["var_name"] = self.var_name
+        cube_xml_element_attributes["units"] = str(self.units)
+        cube_xml_element_attributes["dtype"] = self.dtype.name
 
         if self.attributes:
             attributes_element = doc.createElement("attributes")
@@ -3440,16 +3446,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             cube_xml_element.appendChild(attributes_element)
 
-        def dimmeta_xml_element(element, typename, dimscall):
+        def dimmeta_xml_element(item, typename, dimscall):
             # Make an inner xml element for a cube DimensionalMetadata element, with a
             # 'datadims' property showing how it maps to the parent cube dims.
             xml_element = doc.createElement(typename)
-            dims = list(dimscall(element))
+            dims = list(dimscall(item))
             if dims:
                 xml_element.setAttribute("datadims", repr(dims))
-            xml_element.appendChild(element.xml_element(doc))
+            item_element = item.xml_element(doc)
+            xml_element.appendChild(item_element)
             return xml_element
 
+        # coordinates
         coords_xml_element = doc.createElement("coords")
         for coord in sorted(self.coords(), key=lambda coord: coord.name()):
             # make a "cube coordinate" element which holds the dimensions (if
@@ -3470,7 +3478,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         # cell measures
         cell_measures = sorted(self.cell_measures(), key=lambda cm: cm.name())
         if cell_measures:
-            # This one is an optional subelement.
+            # This one is an optional sub-element.
             cms_xml_element = doc.createElement("cellMeasures")
             for cm in cell_measures:
                 cms_xml_element.appendChild(
@@ -3493,9 +3501,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 )
             cube_xml_element.appendChild(ancs_xml_element)
 
-        # data
+        # cube data
         data_xml_element = doc.createElement("data")
-        data_xml_element.setAttribute("shape", str(self.shape))
+        data_xml_element_attributes = {"shape": str(self.shape)}
 
         # NB. Getting a checksum triggers any deferred loading,
         # in which case it also has the side-effect of forcing the
@@ -3526,14 +3534,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     )
                 else:
                     crc = "no-masked-elements"
-                data_xml_element.setAttribute("mask_checksum", crc)
+                data_xml_element_attributes["mask_checksum"] = crc
             else:
                 crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
+                data_xml_element_attributes["checksum"] = crc
         elif self.has_lazy_data():
-            data_xml_element.setAttribute("state", "deferred")
+            data_xml_element_attributes["state"] = "deferred"
         else:
-            data_xml_element.setAttribute("state", "loaded")
+            data_xml_element_attributes["state"] = "loaded"
 
         # Add the dtype, and also the array and mask orders if the
         # data is loaded.
@@ -3550,7 +3558,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 return order
 
             if order:
-                data_xml_element.setAttribute("order", _order(data))
+                data_xml_element_attributes["order"] = _order(data)
 
             # NB. dtype.byteorder can return '=', which is bad for
             # cross-platform consistency - so we use dtype.str
@@ -3558,15 +3566,18 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             if byteorder:
                 array_byteorder = {">": "big", "<": "little"}.get(dtype.str[0])
                 if array_byteorder is not None:
-                    data_xml_element.setAttribute("byteorder", array_byteorder)
+                    data_xml_element_attributes["byteorder"] = array_byteorder
 
             if order and ma.isMaskedArray(data):
-                data_xml_element.setAttribute("mask_order", _order(data.mask))
+                data_xml_element_attributes["mask_order"] = _order(data.mask)
         else:
             dtype = self.lazy_data().dtype
-        data_xml_element.setAttribute("dtype", dtype.name)
+        data_xml_element_attributes["dtype"] = dtype.name
 
+        set_attributes(data_xml_element, data_xml_element_attributes)
         cube_xml_element.appendChild(data_xml_element)
+
+        set_attributes(cube_xml_element, cube_xml_element_attributes)
 
         return cube_xml_element
 

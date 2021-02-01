@@ -578,27 +578,25 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Return a DOM element describing this metadata."""
-        # Create the XML element as the camelCaseEquivalent of the
-        # class name.
+        """Return a DOM element describing this metadata and a dictionary of its attributes."""
+        # Create the XML element as the camelCaseEquivalent of the class name.
         element_name = type(self).__name__
         element_name = element_name[0].lower() + element_name[1:]
         element = doc.createElement(element_name)
+        attributes = {}
 
-        element.setAttribute("id", self._xml_id())
+        attributes["id"] = self._xml_id()
 
         if self.standard_name:
-            element.setAttribute("standard_name", str(self.standard_name))
+            attributes["standard_name"] = str(self.standard_name)
         if self.long_name:
-            element.setAttribute("long_name", str(self.long_name))
+            attributes["long_name"] = str(self.long_name)
         if self.var_name:
-            element.setAttribute("var_name", str(self.var_name))
-        element.setAttribute("units", repr(self.units))
+            attributes["var_name"] = str(self.var_name)
+        attributes["units"] = repr(self.units)
         if isinstance(self, Coord):
             if self.climatological:
-                element.setAttribute(
-                    "climatological", str(self.climatological)
-                )
+                attributes["climatological"] = str(self.climatological)
 
         if self.attributes:
             attributes_element = doc.createElement("attributes")
@@ -616,18 +614,18 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 element.appendChild(self.coord_system.xml_element(doc))
 
         # Add the values
-        element.setAttribute("value_type", str(self._value_type_name()))
-        element.setAttribute("shape", str(self.shape))
+        attributes["value_type"] = str(self._value_type_name())
+        attributes["shape"] = str(self.shape)
 
-        # The values are referred to "points" of a coordinate and "data"
+        # The values are referred to as "points" for a coordinate and "data"
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
         else:
             values_term = "data"
-        element.setAttribute(values_term, self._xml_array_repr(self._values))
+        attributes[values_term] = self._xml_array_repr(self._values)
 
-        return element
+        return element, attributes
 
     def _xml_id_extra(self, unique_value):
         return unique_value
@@ -777,6 +775,24 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         return cube.ancillary_variable_dims(self)
 
+    def xml_element(self, doc, split=None):
+        """Return DOM element describing this :class:`AncillaryVariable`."""
+
+        if split is None:
+            split = False
+
+        element, attributes = super().xml_element(doc=doc)
+
+        if split:
+            result = element, attributes
+        else:
+            # Explicitly set the attributes in alphabetical order.
+            for key in sorted(attributes.keys()):
+                element.setAttribute(key, attributes[key])
+            result = element
+
+        return result
+
 
 class CellMeasure(AncillaryVariable):
     """
@@ -881,12 +897,16 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
-        # Create the XML element as the camelCaseEquivalent of the
-        # class name
-        element = super().xml_element(doc=doc)
+        """Return DOM element describing this :class:`CellMeasure`."""
+
+        element, attributes = super().xml_element(doc=doc, split=True)
 
         # Add the 'measure' property
-        element.setAttribute("measure", self.measure)
+        attributes["measure"] = self.measure
+
+        # Explicitly set the attributes in alphabetical order.
+        for key in sorted(attributes.keys()):
+            element.setAttribute(key, attributes[key])
 
         return element
 
@@ -2228,18 +2248,14 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """Return a DOM element describing this Coord."""
-        # Create the XML element as the camelCaseEquivalent of the
-        # class name
-        element = super().xml_element(doc=doc)
+        """Return a DOM element describing this :class:`Coord` and a dictionary of its attributes."""
+        element, attributes = super().xml_element(doc=doc)
 
-        element.setAttribute("points", self._xml_array_repr(self.points))
-
-        # Add bounds handling
+        # Add bounds, points are handled by the parent class.
         if self.has_bounds():
-            element.setAttribute("bounds", self._xml_array_repr(self.bounds))
+            attributes["bounds"] = self._xml_array_repr(self.bounds)
 
-        return element
+        return element, attributes
 
     def _xml_id_extra(self, unique_value):
         """Coord specific stuff for the xml id"""
@@ -2614,10 +2630,16 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`iris.coords.DimCoord`."""
-        element = super().xml_element(doc)
+        """Return DOM element describing this :class:`DimCoord`."""
+        element, attributes = super().xml_element(doc=doc)
+
         if self.circular:
-            element.setAttribute("circular", str(self.circular))
+            attributes["circular"] = str(self.circular)
+
+        # Explicitly set the attributes in alphabetical order.
+        for key in sorted(attributes.keys()):
+            element.setAttribute(key, attributes[key])
+
         return element
 
 
@@ -2675,12 +2697,15 @@ class AuxCoord(Coord):
         """
         super().__init__(*args, **kwargs)
 
-    # Logically, :class:`Coord` is an abstract class and all actual coords must
-    # be members of some concrete subclass, i.e. an :class:`AuxCoord` or
-    # a :class:`DimCoord`.
-    # So we retain :class:`AuxCoord` as a distinct concrete subclass.
-    # This provides clarity, backwards compatibility, and so we can add
-    # AuxCoord-specific code if needed in future.
+    def xml_element(self, doc):
+        """Return DOM element describing this :class:`AuxCoord`."""
+        element, attributes = super().xml_element(doc=doc)
+
+        # Explicitly set the attributes in alphabetical order.
+        for key in sorted(attributes.keys()):
+            element.setAttribute(key, attributes[key])
+
+        return element
 
 
 class CellMethod(iris.util._OrderedHashable):
@@ -2793,24 +2818,26 @@ class CellMethod(iris.util._OrderedHashable):
         raise NotImplementedError()
 
     def xml_element(self, doc):
-        """
-        Return a dom element describing itself
-
-        """
+        """Return DOM element describing this :class:`CellMethod`."""
         cellMethod_xml_element = doc.createElement("cellMethod")
-        cellMethod_xml_element.setAttribute("method", self.method)
+        attributes = {"method": self.method}
 
         for coord_name, interval, comment in zip_longest(
             self.coord_names, self.intervals, self.comments
         ):
             coord_xml_element = doc.createElement("coord")
             if coord_name is not None:
-                coord_xml_element.setAttribute("name", coord_name)
-                if interval is not None:
-                    coord_xml_element.setAttribute("interval", interval)
+                # Add attributes in alphabetical order.
                 if comment is not None:
                     coord_xml_element.setAttribute("comment", comment)
+                if interval is not None:
+                    coord_xml_element.setAttribute("interval", interval)
+                coord_xml_element.setAttribute("name", coord_name)
                 cellMethod_xml_element.appendChild(coord_xml_element)
+
+        # Explicitly set the attributes in alphabetical order.
+        for key in sorted(attributes.keys()):
+            cellMethod_xml_element.setAttribute(key, attributes[key])
 
         return cellMethod_xml_element
 
