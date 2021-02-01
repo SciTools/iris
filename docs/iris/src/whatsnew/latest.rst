@@ -83,8 +83,7 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
 
-.. only:: Comment
-
+.. comment
     What's new author names (@github name) in alphabetical order:
 
 .. _@bjlittle: https://github.com/bjlittle
@@ -95,8 +94,7 @@ This document explains the changes made to Iris for this release
 .. _@trexfeathers: https://github.com/trexfeathers
 
 
-.. only:: Comment
-
+.. comment
     What's new resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
