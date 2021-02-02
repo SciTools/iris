@@ -1,6 +1,7 @@
 .. comment
     Common resources in alphabetical order:
 
+.. _black: https://black.readthedocs.io/en/stable/
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
@@ -19,6 +20,7 @@
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
 .. _matplotlib: https://matplotlib.org/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+.. _nox: https://nox.thea.codes/en/stable/
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls

@@ -12,7 +12,6 @@ This document explains the changes made to Iris for this release
    :title: text-primary text-center font-weight-bold
    :body: bg-light
    :animate: fade-in
-   :open:
 
    The highlights for this major/minor release of Iris include:
 
@@ -96,7 +95,10 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ moved the ``docs/iris`` directory to be in the parent
    directory ``docs``.  (:pull:`3975`)
 
-#. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
+#. `@jamesp`_ updated a test for `numpy`_ ``1.20.0``. (:pull:`3977`)
+
+#. `@bjlittle`_ extended the `cirrus-ci`_ testing and `nox`_ testing
+   automation to support `Python 3.8`_. (:pull:`3976`)
 
 #. `@bjlittle`_ rationalised the ``noxfile.py``, and added the ability for
    each ``nox`` session to list its ``conda`` environment packages and
@@ -117,3 +119,5 @@ This document explains the changes made to Iris for this release
 .. _abstract base class: https://docs.python.org/3/library/abc.html
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
+.. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
+.. _Python 3.8: https://www.python.org/downloads/release/python-380/
