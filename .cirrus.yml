@@ -121,6 +121,8 @@ linux_task:
       PY_VER: 3.6
     env:
       PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
   container:
     image: gcc:latest
@@ -148,9 +150,7 @@ linux_task:
 gallery_task:
   matrix:
     env:
-      PY_VER: 3.6
-    env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
   container:
     image: gcc:latest
