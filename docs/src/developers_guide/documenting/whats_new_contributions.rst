@@ -11,7 +11,7 @@ The contribution should be included as part of the Iris Pull Request that
 introduces the change.
 
 The ``latest.rst`` and the past release notes are kept in
-``docs/iris/src/whatsnew/``. If you are writing the first contribution after
+``docs/src/whatsnew/``. If you are writing the first contribution after
 an Iris release: **create the new** ``latest.rst`` by copying the content from
 ``latest.rst.template`` in the same directory.
 

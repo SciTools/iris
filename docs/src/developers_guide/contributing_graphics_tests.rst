@@ -15,7 +15,7 @@ At present graphical tests are used in the following areas of Iris:
 * Module ``iris.tests.test_plot``
 * Module ``iris.tests.test_quickplot``
 * :ref:`sphx_glr_generated_gallery` plots contained in
-  ``docs/iris/gallery_tests``.
+  ``docs/gallery_tests``.
 
 
 Challenges

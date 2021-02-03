@@ -85,8 +85,8 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
-#. `@tkknight`_ moved the ``iris/docs/iris`` directory to be in the parent
-   directory ``iris/docs``.  (:pull:`3975`)
+#. `@tkknight`_ moved the ``docs/iris`` directory to be in the parent
+   directory ``docs``.  (:pull:`3975`)
 
 
 
