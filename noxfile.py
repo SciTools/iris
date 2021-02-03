@@ -250,7 +250,7 @@ def doctest(session):
 
     cache_cartopy(session)
     session.install("--no-deps", "--editable", ".")
-    session.cd("docs/iris")
+    session.cd("docs")
     session.run(
         "make",
         "clean",
@@ -298,7 +298,7 @@ def linkcheck(session):
 
     cache_cartopy(session)
     session.install("--no-deps", "--editable", ".")
-    session.cd("docs/iris")
+    session.cd("docs")
     session.run(
         "make",
         "clean",

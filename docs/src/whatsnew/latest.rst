@@ -69,12 +69,15 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example. (:pull:`3933`)
+#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
+   (:pull:`3933`)
 
-#. `@MHBalsmeier`_ described non-conda installation on Debian-based distros. (:pull:`3958`)
+#. `@MHBalsmeier`_ described non-conda installation on Debian-based distros.
+   (:pull:`3958`)
 
-#. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord` is now an `abstract base class`_ of
-   coordinates since ``v3.0.0``, and it is **not** possible to create an instance of it. (:pull:`3971`)
+#. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord`
+   is now an `abstract base class`_ of coordinates since ``v3.0.0``, and it
+   is **not** possible to create an instance of it. (:pull:`3971`)
 
 
 💼 Internal
@@ -82,7 +85,11 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
 
+#. `@tkknight`_ moved the ``docs/iris`` directory to be in the parent
+   directory ``docs``.  (:pull:`3975`)
+
 #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

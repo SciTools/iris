@@ -131,9 +131,9 @@ Release Steps
    release as it should already exist
 #. Update the what's new for the release:
 
-    * Copy ``docs/iris/src/whatsnew/latest.rst`` to a file named
+    * Copy ``docs/src/whatsnew/latest.rst`` to a file named
       ``v1.9.rst``
-    * Delete the ``docs/iris/src/whatsnew/latest.rst`` file so it will not
+    * Delete the ``docs/src/whatsnew/latest.rst`` file so it will not
       cause an issue in the build
     * In ``v1.9.rst`` update the page title (first line of the file) to show
       the date and version in the format of ``v1.9 (DD MMM YYYY)``.  For
@@ -144,7 +144,7 @@ Release Steps
     * Add ``v1.9.rst`` to git and commit all changes, including removal of
       ``latest.rst``
 
-#. Update the what's new index ``docs/iris/src/whatsnew/index.rst``
+#. Update the what's new index ``docs/src/whatsnew/index.rst``
 
    * Temporarily remove reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
@@ -164,12 +164,12 @@ Post Release Steps
    available in the pop out menu in the bottom left corner include the new
    release version.  If it is not present you will need to configure the
    versions available in the **admin** dashboard in Read The Docs
-#. Copy ``docs/iris/src/whatsnew/latest.rst.template`` to
-   ``docs/iris/src/whatsnew/latest.rst``.  This will reset
+#. Copy ``docs/src/whatsnew/latest.rst.template`` to
+   ``docs/src/whatsnew/latest.rst``.  This will reset
    the file with the ``unreleased`` heading and placeholders for the what's
    new headings
 #. Add back in the reference to ``latest.rst`` to the what's new index
-   ``docs/iris/src/whatsnew/index.rst``
+   ``docs/src/whatsnew/index.rst``
 #. Update ``Iris.__init__.py`` version string to show as ``1.10.dev0``
 #. Merge back to master
 
