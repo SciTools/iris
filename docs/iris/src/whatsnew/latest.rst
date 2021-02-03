@@ -81,7 +81,7 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
-
+#. `@jamesp`_ updated a test to the latest numpy version (:pull: `3977`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
