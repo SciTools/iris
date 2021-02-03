@@ -42,6 +42,7 @@
 .. _@djkirkham: https://github.com/djkirkham
 .. _@DPeterK: https://github.com/DPeterK
 .. _@esc24: https://github.com/esc24
+.. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@lbdreyer: https://github.com/lbdreyer
