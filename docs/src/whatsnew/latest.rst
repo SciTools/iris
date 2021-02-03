@@ -88,6 +88,7 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ moved the ``docs/iris`` directory to be in the parent
    directory ``docs``.  (:pull:`3975`)
 
+#. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
 
 
 .. comment
