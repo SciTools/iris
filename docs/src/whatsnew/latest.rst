@@ -77,8 +77,11 @@ This document explains the changes made to Iris for this release
    (:pull:`3958`)
 
 #. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord`
-   is now an `abstract base class`_ of coordinates since Iris ``3.0.0``, and
-   it is **not** possible to create an instance of it. (:pull:`3971`)
+   is now an `abstract base class`_ since Iris ``3.0.0``, and it is **not**
+   possible to create an instance of it. (:pull:`3971`)
+
+#. `@bjlittle`_ added automated Iris version discovery for the ``latest.rst``
+   in the ``whatsnew`` documentation. (:pull:`3981`)
 
 
 💼 Internal

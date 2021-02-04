@@ -121,7 +121,7 @@ release process is to be followed, including the merge back of changes into
 Maintainer Steps
 ----------------
 
-These steps assume a release for ``v1.9`` is to be created
+These steps assume a release for ``v1.9`` is to be created.
 
 Release Steps
 ~~~~~~~~~~~~~
@@ -131,25 +131,26 @@ Release Steps
    release as it should already exist
 #. Update the what's new for the release:
 
-    * Copy ``docs/src/whatsnew/latest.rst`` to a file named
-      ``v1.9.rst``
-    * Delete the ``docs/src/whatsnew/latest.rst`` file so it will not
-      cause an issue in the build
+    * Use git to rename ``docs/src/whatsnew/latest.rst`` to the release
+      version file ``v1.9.rst``
+    * Use git to delete the ``docs/src/whatsnew/latest.rst.template`` file
     * In ``v1.9.rst`` update the page title (first line of the file) to show
-      the date and version in the format of ``v1.9 (DD MMM YYYY)``.  For
-      example ``v1.9 (03 Aug 2020)``
+      the release date in the format of ``v1.9 (DD MMM YYYY)``.  For
+      example ``v1.9 (03 Aug 2020)``. Note that, the release version in the
+      title is updated automatically
     * Review the file for correctness
-    * Work with the development team to create a 'highlights' section at the
-      top of the file, providing extra detail on notable changes
-    * Add ``v1.9.rst`` to git and commit all changes, including removal of
-      ``latest.rst``
+    * Work with the development team to populate the ``Release Highlights``
+      dropdown at the top of the file, which provides extra detail on notable
+      changes
+    * Use git to add and commit all changes, including removal of
+      ``latest.rst.template``
 
 #. Update the what's new index ``docs/src/whatsnew/index.rst``
 
-   * Temporarily remove reference to ``latest.rst``
+   * Remove the reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
-#. Update the ``Iris.__init__.py`` version string, to ``1.9.0``
+#. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Check your changes by building the documentation and viewing the changes
 #. Once all the above steps are complete, the release is cut, using
    the :guilabel:`Draft a new release` button on the
