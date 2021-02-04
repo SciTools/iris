@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-<unreleased>
-************
+|iris_version| (unreleased)
+***************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
