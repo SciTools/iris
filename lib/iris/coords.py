@@ -578,7 +578,21 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Return a DOM element describing this metadata and a dictionary of its attributes."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`_DimensionalMetadata`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`_DimensionalMetadata`, and the dictionary of attributes
+            that require to be added to this element.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the class name.
         element_name = type(self).__name__
         element_name = element_name[0].lower() + element_name[1:]
@@ -775,15 +789,38 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         return cube.ancillary_variable_dims(self)
 
-    def xml_element(self, doc, split=None):
-        """Return DOM element describing this :class:`AncillaryVariable`."""
+    def xml_element(self, doc, separated=None):
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`AncillaryVariable`.
 
-        if split is None:
-            split = False
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Kwargs:
+
+        * separated:
+            Boolean determining whether a :class:`xml.dom.minidom.Element`
+            fully describing the attributes of this :class:`AncillaryVariable`
+            is returned (``False``). Otherwise, return the
+            :class:`xml.dom.minidom.Element` that will describe this
+            :class:`AncillaryVariable`, and the a dictionary of the attributes
+            to set on the element. Defaults to ``False``.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`DimCoord`, and the dictionary of attributes that require
+            to be added to this element, if ``separated`` is ``True``.
+
+        """
+        if separated is None:
+            separated = False
 
         element, attributes = super().xml_element(doc=doc)
 
-        if split:
+        if separated:
             result = element, attributes
         else:
             # Explicitly set the attributes in alphabetical order.
@@ -897,9 +934,21 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`CellMeasure`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMeasure`.
 
-        element, attributes = super().xml_element(doc=doc, split=True)
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMeasure`.
+
+        """
+        element, attributes = super().xml_element(doc=doc, separated=True)
 
         # Add the 'measure' property
         attributes["measure"] = self.measure
@@ -2248,7 +2297,21 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """Return a DOM element describing this :class:`Coord` and a dictionary of its attributes."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`Coord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`DimCoord`, and the dictionary of attributes that require
+            to be added to this element.
+
+        """
         element, attributes = super().xml_element(doc=doc)
 
         # Add bounds, points are handled by the parent class.
@@ -2630,7 +2693,20 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`DimCoord`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`DimCoord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`DimCoord`.
+
+        """
         element, attributes = super().xml_element(doc=doc)
 
         if self.circular:
@@ -2698,7 +2774,20 @@ class AuxCoord(Coord):
         super().__init__(*args, **kwargs)
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`AuxCoord`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`AuxCoord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`AuxCoord`.
+
+        """
         element, attributes = super().xml_element(doc=doc)
 
         # Explicitly set the attributes in alphabetical order.
@@ -2818,7 +2907,20 @@ class CellMethod(iris.util._OrderedHashable):
         raise NotImplementedError()
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`CellMethod`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMethod`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMethod`.
+
+        """
         cellMethod_xml_element = doc.createElement("cellMethod")
         attributes = {"method": self.method}
 
