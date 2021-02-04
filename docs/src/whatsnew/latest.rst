@@ -25,7 +25,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Congratulations to `@jamesp`_ who recently became an Iris core developer
+   after joining the Iris development team at the `Met Office`_. 🎉
 
 
 ✨ Features
@@ -76,8 +77,8 @@ This document explains the changes made to Iris for this release
    (:pull:`3958`)
 
 #. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord`
-   is now an `abstract base class`_ of coordinates since ``v3.0.0``, and it
-   is **not** possible to create an instance of it. (:pull:`3971`)
+   is now an `abstract base class`_ of coordinates since Iris ``3.0.0``, and
+   it is **not** possible to create an instance of it. (:pull:`3971`)
 
 
 💼 Internal
@@ -104,3 +105,4 @@ This document explains the changes made to Iris for this release
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _Met Office: https://www.metoffice.gov.uk/
