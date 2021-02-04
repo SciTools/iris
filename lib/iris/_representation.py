@@ -91,27 +91,20 @@ class CoordSummary:
 
 class VectorSummary(CoordSummary):
     def __init__(self, cube, vector, iscoord):
-        vector_indent = 10
-        extra_indent = 13
-        self.name = iris.util.clip_string(
-            vector.name(), clip_length=70 - vector_indent
-        )
+        self.name = iris.util.clip_string(vector.name())
         dims = vector.cube_dims(cube)
         self.dim_chars = [
             "x" if dim in dims else "-" for dim in range(len(cube.shape))
         ]
         if iscoord:
             extra = self._summary_coord_extra(cube, vector)
-            self.extra = iris.util.clip_string(
-                extra, clip_length=70 - extra_indent
-            )
+            self.extra = iris.util.clip_string(extra)
         else:
             self.extra = ""
 
 
 class ScalarSummary(CoordSummary):
     def __init__(self, cube, coord):
-        extra_indent = 13
         self.name = coord.name()
         if (
             coord.units in ["1", "no_unit", "unknown"]
@@ -146,12 +139,12 @@ class ScalarSummary(CoordSummary):
                 self.bound = None
                 self.content = "{}{}".format(self.point, self.unit)
         extra = self._summary_coord_extra(cube, coord)
-        self.extra = iris.util.clip_string(
-            extra, clip_length=70 - extra_indent
-        )
+        self.extra = iris.util.clip_string(extra)
 
 
 class Section:
+    contents = []
+
     def is_empty(self):
         return self.contents == []
 
@@ -181,7 +174,6 @@ class AttributeSection(Section):
         self.title = title
         self.names = []
         self.values = []
-        self.contents = []
         for name, value in sorted(attributes.items()):
             value = iris.util.clip_string(str(value))
             self.names.append(name)

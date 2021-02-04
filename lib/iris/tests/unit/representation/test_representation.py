@@ -43,11 +43,49 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(header_left, "air_temperature / (K)")
         self.assertEqual(header_right, ["latitude: 3", "-- : 2"])
 
+    def test_blank_cube(self):
+        cube = Cube([1, 2])
+        rep = iris._representation.CubeSummary(cube)
+
+        self.assertEqual(rep.header.nameunit, "unknown / (unknown)")
+        self.assertEqual(rep.header.dimension_header.contents, ["-- : 2"])
+
+        expected_vector_sections = [
+            "Dimension coordinates:",
+            "Auxiliary coordinates:",
+            "Derived coordinates:",
+            "Cell Measures:",
+            "Ancillary Variables:",
+        ]
+        self.assertEqual(
+            list(rep.vector_sections.keys()), expected_vector_sections
+        )
+        for title in expected_vector_sections:
+            vector_section = rep.vector_sections[title]
+            self.assertEqual(vector_section.contents, [])
+            self.assertTrue(vector_section.is_empty())
+
+        expected_scalar_sections = [
+            "Scalar Coordinates:",
+            "Scalar cell measures:",
+            "Attributes:",
+            "Cell methods:",
+        ]
+
+        self.assertEqual(
+            list(rep.scalar_sections.keys()), expected_scalar_sections
+        )
+        for title in expected_scalar_sections:
+            scalar_section = rep.scalar_sections[title]
+            self.assertEqual(scalar_section.contents, [])
+            self.assertTrue(scalar_section.is_empty())
+
     def test_vector_coord(self):
         rep = iris._representation.CubeSummary(self.cube)
         dim_section = rep.vector_sections["Dimension coordinates:"]
 
         self.assertEqual(len(dim_section.contents), 1)
+        self.assertFalse(dim_section.is_empty())
 
         dim_summary = dim_section.contents[0]
 
