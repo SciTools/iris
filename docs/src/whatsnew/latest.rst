@@ -32,8 +32,8 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@pelson`_ and `@trexfeathers`_ enhanced :meth:iris.plot.plot and
-   :meth:iris.quickplot.plot to automatically place the cube on the x axis if
+#. `@pelson`_ and `@trexfeathers`_ enhanced :meth:`iris.plot.plot` and
+   :meth:`iris.quickplot.plot` to automatically place the cube on the x axis if
    the primary coordinate being plotted against is a vertical coordinate. E.g.
    ``iris.plot.plot(z_cube)`` will produce a z-vs-phenomenon plot, where before
    it would have produced a phenomenon-vs-z plot. (:pull:`3906`)
