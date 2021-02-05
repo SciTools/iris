@@ -2864,15 +2864,22 @@ class Connectivity(_DimensionalMetadata):
             ``indices.shape[src_dim] = 10``.
 
         """
+
+        def validate_arg_vs_list(arg_name, arg, valid_list):
+            if arg not in valid_list:
+                error_msg = (
+                    f"Invalid {arg_name} . Got: {arg} . Must be one of: "
+                    f"{valid_list} ."
+                )
+                raise ValueError(error_msg)
+
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(ConnectivityMetadata)
 
-        self._validate_arg_vs_list("start_index", start_index, [0, 1])
+        validate_arg_vs_list("start_index", start_index, [0, 1])
         # indices array will be 2-dimensional, so must be either 0 or 1.
-        self._validate_arg_vs_list("src_dim", src_dim, [0, 1])
-        self._validate_arg_vs_list(
-            "cf_role", cf_role, Connectivity.UGRID_CF_ROLES
-        )
+        validate_arg_vs_list("src_dim", src_dim, [0, 1])
+        validate_arg_vs_list("cf_role", cf_role, Connectivity.UGRID_CF_ROLES)
 
         self._metadata_manager.start_index = start_index
         self._metadata_manager.src_dim = src_dim
@@ -2889,15 +2896,6 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
-
-    @staticmethod
-    def _validate_arg_vs_list(arg_name, arg, list):
-        if arg not in list:
-            error_msg = (
-                f"Invalid {arg_name} . Got: {arg} . Must be one of: "
-                f"{list} ."
-            )
-            raise ValueError(error_msg)
 
     @staticmethod
     def _lazy_src_lengths(array, src_dim):
