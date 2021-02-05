@@ -272,7 +272,9 @@ class CubeSummary:
             ScalarSection, "Scalar Coordinates:", cube, scalar_coords
         )
         add_scalar_section(
-            ScalarCellMeasureSection, "Scalar cell measures:", scalar_cell_measures
+            ScalarCellMeasureSection,
+            "Scalar cell measures:",
+            scalar_cell_measures,
         )
         add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
         add_scalar_section(
