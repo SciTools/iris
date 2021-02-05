@@ -76,20 +76,12 @@ class TestStandard(tests.IrisTest):
                 1,
             )
 
-    def test_switch_start_index(self):
-        expected_index = 1 - self.kwargs["start_index"]
-        expected_change = expected_index - self.kwargs["start_index"]
-        expected_indices = self.kwargs["indices"] + expected_change
-        self.connectivity.switch_start_index()
-        self.assertEqual(expected_index, self.connectivity.start_index)
-        self.assertArrayEqual(expected_indices, self.connectivity.indices)
-
-    def test_switch_src_dim(self):
+    def test_transpose(self):
         expected_dim = 1 - self.kwargs["src_dim"]
-        expected_indices = self.kwargs["indices"].swapaxes(0, 1)
-        self.connectivity.switch_src_dim()
-        self.assertEqual(expected_dim, self.connectivity.src_dim)
-        self.assertArrayEqual(expected_indices, self.connectivity.indices)
+        expected_indices = self.kwargs["indices"].transpose()
+        new_connectivity = self.connectivity.transpose()
+        self.assertEqual(expected_dim, new_connectivity.src_dim)
+        self.assertArrayEqual(expected_indices, new_connectivity.indices)
 
     def test_lazy_indices(self):
         self.assertTrue(is_lazy_data(self.connectivity.lazy_indices()))
@@ -142,15 +134,6 @@ class TestStandard(tests.IrisTest):
     def test___getitem_(self):
         subset = self.connectivity[:, 0:1]
         self.assertArrayEqual(self.kwargs["indices"][:, 0:1], subset.indices)
-
-    def test___getitem__data_copy(self):
-        # Check that a sliced connectivity has independent data.
-        subset = self.connectivity[:, 1:2]
-        old_indices = subset.indices.copy()
-        # Change the original one.
-        self.connectivity.switch_start_index()
-        # Check the new one has not changed.
-        self.assertArrayEqual(old_indices, subset.indices)
 
     def test_copy(self):
         new_indices = np.linspace(11, 16, 6, dtype=int).reshape((3, -1))

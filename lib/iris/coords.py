@@ -2954,7 +2954,9 @@ class Connectivity(_DimensionalMetadata):
         """
         The base value of the connectivity's :attr:`indices` array; either
         ``0`` or ``1``.
-        **Read-only** - to change value: use :meth:`switch_start_index`.
+        **Read-only** - validity of :attr:`indices` is dependent on
+        :attr:`start_index`. A new :class:`Connectivity` must therefore be
+        defined if a different :attr:`start_index` is needed.
 
         """
         return self._metadata_manager.start_index
@@ -2963,8 +2965,10 @@ class Connectivity(_DimensionalMetadata):
     def src_dim(self):
         """
         The dimension of the connectivity's :attr:`indices` array that varies
-        over its :attr:`src_location`s. Either ``0`` or ``1``.
-        **Read-only** - to change value: use :meth:`switch_src_dim`.
+        over the connectivity's :attr:`src_location`s. Either ``0`` or ``1``.
+        **Read-only** - validity of :attr:`indices` is dependent on
+        :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
+        :class:`Connectivity` if a different :attr:`src_dim` is needed.
 
         """
         return self._metadata_manager.src_dim
@@ -2972,12 +2976,15 @@ class Connectivity(_DimensionalMetadata):
     @property
     def tgt_dim(self):
         """
+        Derived as the alternate value of :attr:`src_dim` - each must equal
+        either ``0`` or ``1``.
         The dimension of the connectivity's :attr:`indices` array that varies
-        within its individual :attr:`src_location`s. Derived as the alternate
-        value of :attr:`src_dim` - each must equal either ``0`` or ``1``.
+        within the connectivity's individual :attr:`src_location`s.
 
         """
-        return self._tgt_dim
+        # Computed (rather than stored) property necessary since a new
+        # Connectivity returned by self.transpose() would have a flipped src_dim.
+        return 1 - self._metadata_manager.src_dim
 
     @property
     def indices(self):
@@ -3067,37 +3074,27 @@ class Connectivity(_DimensionalMetadata):
                 f"needed to describe '{self.cf_role}' ."
             )
 
-    def switch_start_index(self):
-        # Don't use a normal property setter - would be inappropriate since
-        # other properties are also modified.
+    def transpose(self):
         """
-        Change :attr:`start_index` to its alternative value and change the
-        :attr:`indices` values to match. (:attr:`start_index` can be either
-        ``0`` or ``1``).
+        Create a deep copy of this :class:`Connectivity` with the
+        :attr:`indices` array transposed and the :attr:`src_dim` value flipped.
+
+        Returns:
+            A new :class:`Connectivity` that is the transposed equivalent of
+            the original.
 
         """
-        new_index = 1 - self.start_index
-        index_change = new_index - self.start_index
-        self._metadata_manager.start_index = new_index
-        # Modify the indices values to correspond with the new start_index.
-        self._values += index_change
+        new_connectivity = self.copy()
+        new_src_dim = 1 - self.src_dim
+        new_indices = self.indices.transpose()
 
-    def switch_src_dim(self):
-        # Don't use a normal property setter - would be inappropriate since
-        # other properties are also modified.
-        """
-        Change :attr:`src_dim` to its alternative value and restructure
-        :attr:`indices` to match. (:attr:`src_dim` can be ``0`` or ``1``).
-
-        """
-        self._metadata_manager.src_dim = 1 - self.src_dim
-        # Modify the indices structure to match the new src_dim.
-        # We know that indices is 2-dimensional so can just swap the two axes.
-        new_indices = self._values.swapaxes(0, 1)
+        new_connectivity._metadata_manager.src_dim = new_src_dim
         # Replace the data manager with one for the new shaped indices.
         # This is safe to override since Connectivity is not attached to a cube
         # dimension unlike other _DimensionalMetadata-using classes.
-        self._values_dm = DataManager(new_indices)
+        new_connectivity._values_dm = DataManager(new_indices)
+
+        return new_connectivity
 
     def lazy_indices(self):
         """
