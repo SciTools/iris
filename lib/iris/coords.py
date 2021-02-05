@@ -2850,14 +2850,14 @@ class Connectivity(_DimensionalMetadata):
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
-            Either ``0`` or ``1``. Denotes whether :attr:`indices` uses 0-based
-            or 1-based indexing (allows support for Fortran and legacy NetCDF
-            files).
+            Either ``0`` or ``1``. Default is ``0``. Denotes whether
+            :attr:`indices` uses 0-based or 1-based indexing (allows support
+            for Fortran and legacy NetCDF files).
         * src_dim (int):
-            Either ``0`` or ``1``. Denotes which dimension of :attr:`indices`
-            varies over the :attr:`src_location`s (the alternate dimension
-            therefore varying within individual :attr:`src_location`s).
-            (This parameter allows support for fastest varying index being
+            Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
+            of :attr:`indices` varies over the :attr:`src_location`s (the
+            alternate dimension therefore varying within individual
+            :attr:`src_location`s). (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
             ``indices.shape[src_dim] = 10``.
@@ -3010,7 +3010,7 @@ class Connectivity(_DimensionalMetadata):
         Kwargs:
         * indices (array):
             The array on which to operate. If ``None``, will operate on
-            :attr:`indices`.
+            :attr:`indices`. Default is ``None``.
 
         Returns:
             A view of the indices array transposed - if necessary - to put
