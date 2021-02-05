@@ -2834,7 +2834,7 @@ class Connectivity(_DimensionalMetadata):
 
         Kwargs:
 
-        * standard_name(str):
+        * standard_name (str):
             CF standard name of the connectivity.
             (NOTE: this is not expected by the UGRID conventions, but will be
             handled in Iris' standard way if provided).
@@ -2855,9 +2855,9 @@ class Connectivity(_DimensionalMetadata):
             for Fortran and legacy NetCDF files).
         * src_dim (int):
             Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
-            of :attr:`indices` varies over the :attr:`src_location`s (the
+            of :attr:`indices` varies over the :attr:`src_location`'s (the
             alternate dimension therefore varying within individual
-            :attr:`src_location`s). (This parameter allows support for fastest varying index being
+            :attr:`src_location`'s). (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
             ``indices.shape[src_dim] = 10``.
@@ -2964,7 +2964,7 @@ class Connectivity(_DimensionalMetadata):
     def src_dim(self):
         """
         The dimension of the connectivity's :attr:`indices` array that varies
-        over the connectivity's :attr:`src_location`s. Either ``0`` or ``1``.
+        over the connectivity's :attr:`src_location`'s. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
         :class:`Connectivity` if a different :attr:`src_dim` is needed.
@@ -2978,7 +2978,7 @@ class Connectivity(_DimensionalMetadata):
         Derived as the alternate value of :attr:`src_dim` - each must equal
         either ``0`` or ``1``.
         The dimension of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`src_location`s.
+        within the connectivity's individual :attr:`src_location`'s.
 
         """
         # Computed (rather than stored) property necessary since a new
@@ -3008,12 +3008,13 @@ class Connectivity(_DimensionalMetadata):
         output from :meth:`core_indices` or :meth:`lazy_indices`).
 
         Kwargs:
+
         * indices (array):
             The array on which to operate. If ``None``, will operate on
             :attr:`indices`. Default is ``None``.
 
         Returns:
-            A view of the indices array transposed - if necessary - to put
+            A view of the indices array, transposed - if necessary - to put
             :attr:`src_dim` first.
 
         """
@@ -3099,14 +3100,16 @@ class Connectivity(_DimensionalMetadata):
         """
         Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the sizes of individual
-        :attr:`src_location`s (specified using masks on the
+        :attr:`src_location`'s (specified using masks on the
         :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
         passes silently.
 
-        NOTE: while this uses lazy computation, it will still be a high
-        resource demand for a large :attr:`indices` array.
+        .. note::
+
+            While this uses lazy computation, it will still be a high
+            resource demand for a large :attr:`indices` array.
 
         """
         self._validate_indices(self.indices, shapes_only=False)
