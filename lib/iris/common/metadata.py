@@ -182,9 +182,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
-                # The "circular" member does not participate in strict equivalence.
+                # The "circular" and "src_dim" members do not participate in strict equivalence.
                 fields = filter(
-                    lambda field: field != "circular", self._fields
+                    lambda field: field not in ("circular", "src_dim"),
+                    self._fields,
                 )
                 result = all([func(field) for field in fields])
 
@@ -882,6 +883,8 @@ class ConnectivityMetadata(BaseMetadata):
 
     """
 
+    # The "src_dim" member is stateful only, and does not participate in
+    # lenient/strict equivalence.
     _members = ("cf_role", "start_index", "src_dim")
 
     __slots__ = ()
@@ -933,11 +936,15 @@ class ConnectivityMetadata(BaseMetadata):
             Boolean.
 
         """
-        # Perform "strict" comparison for "cf_role", "start_index", "src_dim".
+        # Perform "strict" comparison for "cf_role", "start_index".
+        # The "src_dim" member is not part of lenient equivalence.
+        members = filter(
+            lambda member: member != "src_dim", ConnectivityMetadata._members
+        )
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
-                for field in ConnectivityMetadata._members
+                for field in members
             ]
         )
         if result:

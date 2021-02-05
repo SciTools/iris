@@ -120,7 +120,20 @@ class TestStandard(tests.IrisTest):
             self.assertIn(attribute, connectivity_element.attributes)
 
     def test___eq__(self):
-        self.assertEqual(self.connectivity, self.connectivity)
+        equivalent_kwargs = self.kwargs
+        equivalent_kwargs["indices"] = self.kwargs["indices"].transpose()
+        equivalent_kwargs["src_dim"] = 1 - self.kwargs["src_dim"]
+        equivalent = Connectivity(**equivalent_kwargs)
+        self.assertFalse(
+            (equivalent.indices == self.connectivity.indices).all()
+        )
+        self.assertEqual(equivalent, self.connectivity)
+
+    def test_different(self):
+        different_kwargs = self.kwargs
+        different_kwargs["indices"] = self.kwargs["indices"].transpose()
+        different = Connectivity(**different_kwargs)
+        self.assertNotEqual(different, self.connectivity)
 
     def test_no_cube_dims(self):
         self.assertRaises(NotImplementedError, self.connectivity.cube_dims, 1)
@@ -139,6 +152,17 @@ class TestStandard(tests.IrisTest):
         new_indices = np.linspace(11, 16, 6, dtype=int).reshape((3, -1))
         copy_connectivity = self.connectivity.copy(new_indices)
         self.assertArrayEqual(new_indices, copy_connectivity.indices)
+
+    def test_indices_by_src(self):
+        expected = self.kwargs["indices"].transpose()
+        self.assertArrayEqual(expected, self.connectivity.indices_by_src())
+
+    def test_indices_by_src_input(self):
+        expected = as_lazy_data(self.kwargs["indices"].transpose())
+        by_src = self.connectivity.indices_by_src(
+            self.connectivity.lazy_indices()
+        )
+        self.assertArrayEqual(expected, by_src)
 
 
 class TestAltIndices(tests.IrisTest):

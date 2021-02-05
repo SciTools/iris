@@ -3000,6 +3000,41 @@ class Connectivity(_DimensionalMetadata):
         """
         return self._values
 
+    def indices_by_src(self, indices=None):
+        """
+        Return a view of the indices array with :attr:`src_dim` **always** as
+        the first index - transposed if necessary. Can optionally pass in an
+        identically shaped array on which to perform this operation (e.g. the
+        output from :meth:`core_indices` or :meth:`lazy_indices`).
+
+        Kwargs:
+        * indices (array):
+            The array on which to operate. If ``None``, will operate on
+            :attr:`indices`.
+
+        Returns:
+            A view of the indices array transposed - if necessary - to put
+            :attr:`src_dim` first.
+
+        """
+        if indices is None:
+            indices = self.indices
+
+        if indices.shape != self.shape:
+            raise ValueError(
+                f"Invalid indices provided. Must be shape={self.shape} , "
+                f"got shape={indices.shape} ."
+            )
+
+        if self.src_dim == 0:
+            result = indices
+        elif self.src_dim == 1:
+            result = indices.transpose()
+        else:
+            raise ValueError("Invalid src_dim.")
+
+        return result
+
     def _validate_indices(self, indices, shapes_only=False):
         # Use shapes_only=True for a lower resource, less thorough validation
         # of indices by just inspecting the array shape instead of inspecting
@@ -3075,6 +3110,24 @@ class Connectivity(_DimensionalMetadata):
 
         """
         self._validate_indices(self.indices, shapes_only=False)
+
+    def __eq__(self, other):
+        eq = NotImplemented
+        if isinstance(other, Connectivity):
+            # Account for the fact that other could be the transposed equivalent
+            # of self, which we consider 'safe' since the recommended
+            # interaction with the indices array is via indices_by_src, which
+            # corrects for this difference. (To enable this, src_dim does
+            # not participate in ConnectivityMetadata to ConnectivityMetadata
+            # equivalence).
+            if hasattr(other, "metadata"):
+                # metadata comparison
+                eq = self.metadata == other.metadata
+                eq = (
+                    eq
+                    and (self.indices_by_src() == other.indices_by_src()).all()
+                )
+        return eq
 
     def transpose(self):
         """

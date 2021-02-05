@@ -91,6 +91,11 @@ class Test__eq__(tests.IrisTest):
         )
         self.dummy = sentinel.dummy
         self.cls = ConnectivityMetadata
+        # The "src_dim" member is stateful only, and does not participate in
+        # lenient/strict equivalence.
+        self.members_no_src_dim = filter(
+            lambda member: member != "src_dim", self.cls._members
+        )
 
     def test_wraps_docstring(self):
         self.assertEqual(BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__)
@@ -135,7 +140,7 @@ class Test__eq__(tests.IrisTest):
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_lenient_same_members_none(self):
-        for member in self.cls._members:
+        for member in self.members_no_src_dim:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
@@ -146,6 +151,16 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_lenient_same_src_dim_none(self):
+        lmetadata = self.cls(**self.values)
+        right = self.values.copy()
+        right["src_dim"] = None
+        rmetadata = self.cls(**right)
+
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)
@@ -158,7 +173,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_lenient_different_members(self):
-        for member in self.cls._members:
+        for member in self.members_no_src_dim:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
@@ -169,6 +184,16 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_lenient_different_src_dim(self):
+        lmetadata = self.cls(**self.values)
+        right = self.values.copy()
+        right["src_dim"] = self.dummy
+        rmetadata = self.cls(**right)
+
+        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
@@ -189,7 +214,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_members(self):
-        for member in self.cls._members:
+        for member in self.members_no_src_dim:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
@@ -200,6 +225,16 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_strict_different_src_dim(self):
+        lmetadata = self.cls(**self.values)
+        right = self.values.copy()
+        right["src_dim"] = self.dummy
+        rmetadata = self.cls(**right)
+
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_none(self):
         lmetadata = self.cls(**self.values)
@@ -212,7 +247,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_members_none(self):
-        for member in self.cls._members:
+        for member in self.members_no_src_dim:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
@@ -223,6 +258,16 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_strict_different_src_dim_none(self):
+        lmetadata = self.cls(**self.values)
+        right = self.values.copy()
+        right["src_dim"] = None
+        rmetadata = self.cls(**right)
+
+        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
+            self.assertTrue(lmetadata.__eq__(rmetadata))
+            self.assertTrue(rmetadata.__eq__(lmetadata))
 
 
 class Test___lt__(tests.IrisTest):
