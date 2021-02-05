@@ -2793,8 +2793,10 @@ class Connectivity(_DimensionalMetadata):
         self,
         indices,
         cf_role,
+        standard_name=None,
         long_name=None,
         var_name=None,
+        units=None,
         attributes=None,
         start_index=0,
         src_dim=0,
@@ -2820,10 +2822,19 @@ class Connectivity(_DimensionalMetadata):
 
         Kwargs:
 
+        * standard_name(str):
+            CF standard name of the connectivity.
+            (NOTE: this is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided).
         * long_name (str):
             Descriptive name of the connectivity.
         * var_name (str):
             The netCDF variable name for the connectivity.
+        * units (cf_units.Unit):
+            The :class:`~cf_units.Unit` of the connectivity's values.
+            Can be a string, which will be converted to a Unit object.
+            (NOTE: this is not expected by the UGRID conventions, but will be
+            handled in Iris' standard way if provided).
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
@@ -2870,10 +2881,10 @@ class Connectivity(_DimensionalMetadata):
 
         super().__init__(
             values=indices,
-            standard_name=None,
+            standard_name=standard_name,
             long_name=long_name,
             var_name=var_name,
-            units="1",
+            units=units,
             attributes=attributes,
         )
 
