@@ -31,9 +31,9 @@ from iris.common import (
     BaseMetadata,
     CFVariableMixin,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     DimCoordMetadata,
-    ConnectivityMetadata,
     metadata_manager_factory,
 )
 import iris.exceptions
