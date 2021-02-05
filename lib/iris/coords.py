@@ -3003,7 +3003,7 @@ class Connectivity(_DimensionalMetadata):
 
     def _validate_indices(self, indices):
         def indices_error(message):
-            raise ValueError("Invalid indeces provided. " + message)
+            raise ValueError("Invalid indices provided. " + message)
 
         indices = self._sanitise_array(indices, 0)
 
