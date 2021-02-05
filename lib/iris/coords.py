@@ -1918,7 +1918,6 @@ class Coord(_DimensionalMetadata):
 
         Replaces the points & bounds with a simple bounded region.
         """
-        import dask.array as da
 
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
@@ -2898,7 +2897,7 @@ class Connectivity(_DimensionalMetadata):
         )
 
     def _lazy_src_lengths(self, indices):
-        # Used during indices validation so cannot use self.indices.
+        # Used during __init__ indices validation so cannot use self.indices.
         src_mask_counts = da.sum(
             da.ma.getmaskarray(indices), axis=self.tgt_dim
         )
@@ -2912,7 +2911,7 @@ class Connectivity(_DimensionalMetadata):
 
     @_values.setter
     def _values(self, values):
-        self._validate_indices(values)
+        self._validate_indices(values, shapes_only=True)
         # The recommended way of using the setter in super().
         super(Connectivity, self.__class__)._values.fset(self, values)
 
@@ -3001,7 +3000,12 @@ class Connectivity(_DimensionalMetadata):
         """
         return self._values
 
-    def _validate_indices(self, indices):
+    def _validate_indices(self, indices, shapes_only=False):
+        # Use shapes_only=True for a lower resource, less thorough validation
+        # of indices by just inspecting the array shape instead of inspecting
+        # individual masks. So will not catch individual src_locations being
+        # unacceptably small.
+
         def indices_error(message):
             raise ValueError("Invalid indices provided. " + message)
 
@@ -3028,7 +3032,13 @@ class Connectivity(_DimensionalMetadata):
             )
 
         len_req_fail = False
-        src_lengths = self._lazy_src_lengths(indices)
+        if shapes_only:
+            src_shape = indices_shape[self.tgt_dim]
+            # Wrap as lazy to allow use of the same operations below
+            # regardless of shapes_only.
+            src_lengths = _lazy.as_lazy_data(np.asarray(src_shape))
+        else:
+            src_lengths = self._lazy_src_lengths(indices)
         if self.src_location in ("edge", "boundary"):
             if (src_lengths != 2).any().compute():
                 len_req_fail = "len=2"
@@ -3049,6 +3059,22 @@ class Connectivity(_DimensionalMetadata):
                 f"Not all src_locations meet requirement: {len_req_fail} - "
                 f"needed to describe '{self.cf_role}' ."
             )
+
+    def validate_indices(self):
+        """
+        Perform a thorough validity check of this connectivity's
+        :attr:`indices`. Includes checking the sizes of individual
+        :attr:`src_location`s (specified using masks on the
+        :attr:`indices` array) against the :attr:`cf_role`.
+
+        Raises a ``ValueError`` if any problems are encountered, otherwise
+        passes silently.
+
+        NOTE: while this uses lazy computation, it will still be a high
+        resource demand for a large :attr:`indices` array.
+
+        """
+        self._validate_indices(self.indices, shapes_only=False)
 
     def transpose(self):
         """

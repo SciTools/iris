@@ -316,9 +316,11 @@ class TestValidations(tests.IrisTest):
             "indices": ma.array(data=data, mask=mask),
             "cf_role": "face_node_connectivity",
         }
+        # Validation of individual location sizes (denoted by masks) only
+        # available through explicit call of Connectivity.validate_indices().
+        connectivity = Connectivity(**kwargs)
         self.assertRaisesRegex(
             ValueError,
             "Not all src_locations meet requirement: len>=3",
-            Connectivity,
-            **kwargs,
+            connectivity.validate_indices,
         )
