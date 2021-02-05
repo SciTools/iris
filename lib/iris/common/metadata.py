@@ -882,7 +882,7 @@ class ConnectivityMetadata(BaseMetadata):
 
     """
 
-    _members = ("cf_role", "start_index", "element_dim")
+    _members = ("cf_role", "start_index", "src_dim")
 
     __slots__ = ()
 
@@ -905,7 +905,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
-        # Perform "strict" combination for "cf_role", "start_index", "element_dim".
+        # Perform "strict" combination for "cf_role", "start_index", "src_dim".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
@@ -933,7 +933,7 @@ class ConnectivityMetadata(BaseMetadata):
             Boolean.
 
         """
-        # Perform "strict" comparison for "cf_role", "start_index", "element_dim".
+        # Perform "strict" comparison for "cf_role", "start_index", "src_dim".
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
@@ -960,7 +960,7 @@ class ConnectivityMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
-        # Perform "strict" difference for "cf_role", "start_index", "element_dim".
+        # Perform "strict" difference for "cf_role", "start_index", "src_dim".
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)

@@ -29,45 +29,43 @@ class TestStandard(tests.IrisTest):
             "var_name": "face_nodes",
             "attributes": {"notes": "this is a test"},
             "start_index": 1,
-            "element_dim": 0,
+            "src_dim": 1,
         }
         self.connectivity = Connectivity(**self.kwargs)
 
     def test_cf_role(self):
         self.assertEqual(self.kwargs["cf_role"], self.connectivity.cf_role)
 
-    def test_cf_role_element(self):
+    def test_src_location(self):
         expected = self.kwargs["cf_role"].split("_")[0]
-        self.assertEqual(expected, self.connectivity.cf_role_element)
+        self.assertEqual(expected, self.connectivity.src_location)
 
-    def test_cf_role_indexed_element(self):
+    def test_tgt_location(self):
         expected = self.kwargs["cf_role"].split("_")[1]
-        self.assertEqual(expected, self.connectivity.cf_role_indexed_element)
+        self.assertEqual(expected, self.connectivity.tgt_location)
 
     def test_start_index(self):
         self.assertEqual(
             self.kwargs["start_index"], self.connectivity.start_index
         )
 
-    def test_element_dim(self):
-        self.assertEqual(
-            self.kwargs["element_dim"], self.connectivity.element_dim
-        )
+    def test_src_dim(self):
+        self.assertEqual(self.kwargs["src_dim"], self.connectivity.src_dim)
 
     def test_indices(self):
         self.assertArrayEqual(
             self.kwargs["indices"], self.connectivity.indices
         )
 
-    def test_element_lengths(self):
+    def test_src_lengths(self):
         expected = [3, 3, 3]
-        self.assertArrayEqual(expected, self.connectivity.element_lengths)
+        self.assertArrayEqual(expected, self.connectivity.src_lengths)
 
-    def test_has_equal_element_lengths(self):
-        self.assertTrue(self.connectivity.has_equal_element_lengths)
+    def test_has_equal_src_lengths(self):
+        self.assertTrue(self.connectivity.has_equal_src_lengths)
 
     def test_read_only(self):
-        attributes = ("indices", "cf_role", "start_index", "element_dim")
+        attributes = ("indices", "cf_role", "start_index", "src_dim")
         for attribute in attributes:
             self.assertRaisesRegex(
                 AttributeError,
@@ -86,11 +84,11 @@ class TestStandard(tests.IrisTest):
         self.assertEqual(expected_index, self.connectivity.start_index)
         self.assertArrayEqual(expected_indices, self.connectivity.indices)
 
-    def test_switch_element_dim(self):
-        expected_dim = 1 - self.kwargs["element_dim"]
+    def test_switch_src_dim(self):
+        expected_dim = 1 - self.kwargs["src_dim"]
         expected_indices = self.kwargs["indices"].swapaxes(0, 1)
-        self.connectivity.switch_element_dim()
-        self.assertEqual(expected_dim, self.connectivity.element_dim)
+        self.connectivity.switch_src_dim()
+        self.assertEqual(expected_dim, self.connectivity.src_dim)
         self.assertArrayEqual(expected_indices, self.connectivity.indices)
 
     def test_lazy_indices(self):
@@ -107,7 +105,7 @@ class TestStandard(tests.IrisTest):
     def test___str__(self):
         expected = (
             "Connectivity([[1 2 3]\n [4 5 6]\n [7 8 9]]), "
-            "cf_role='face_node_connectivity', start_index=1, element_dim=0, "
+            "cf_role='face_node_connectivity', start_index=1, src_dim=1, "
             "long_name='my_face_nodes', var_name='face_nodes', "
             "attributes={'notes': 'this is a test'})"
         )
@@ -116,7 +114,7 @@ class TestStandard(tests.IrisTest):
     def test___repr__(self):
         expected = (
             "Connectivity([[1 2 3]\n [4 5 6]\n [7 8 9]]), "
-            "cf_role='face_node_connectivity', start_index=1, element_dim=0, "
+            "cf_role='face_node_connectivity', start_index=1, src_dim=1, "
             "long_name='my_face_nodes', var_name='face_nodes', "
             "attributes={'notes': 'this is a test'})"
         )
@@ -126,7 +124,7 @@ class TestStandard(tests.IrisTest):
         doc = minidom.Document()
         connectivity_element = self.connectivity.xml_element(doc)
         self.assertEqual(connectivity_element.tagName, "connectivity")
-        for attribute in ("cf_role", "start_index", "element_dim"):
+        for attribute in ("cf_role", "start_index", "src_dim"):
             self.assertIn(attribute, connectivity_element.attributes)
 
     def test___eq__(self):
@@ -196,12 +194,12 @@ class TestAltIndices(tests.IrisTest):
         )
         self.assertTrue(connectivity.has_lazy_indices())
 
-    def test_element_lengths(self):
+    def test_src_lengths(self):
         connectivity = Connectivity(
             indices=self.masked_indices, cf_role="face_node_connectivity"
         )
-        self.assertArrayEqual([4, 4, 3], connectivity.element_lengths)
-        self.assertFalse(connectivity.has_equal_element_lengths)
+        self.assertArrayEqual([4, 4, 3], connectivity.src_lengths)
+        self.assertFalse(connectivity.has_equal_src_lengths)
 
 
 class TestValidations(tests.IrisTest):
@@ -215,14 +213,14 @@ class TestValidations(tests.IrisTest):
             ValueError, "Invalid start_index .", Connectivity, **kwargs
         )
 
-    def test_element_dim(self):
+    def test_src_dim(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
-            "element_dim": 2,
+            "src_dim": 2,
         }
         self.assertRaisesRegex(
-            ValueError, "Invalid element_dim .", Connectivity, **kwargs
+            ValueError, "Invalid src_dim .", Connectivity, **kwargs
         )
 
     def test_cf_role(self):
@@ -273,69 +271,69 @@ class TestValidations(tests.IrisTest):
             ValueError, "Expected 2-dimensional shape,", Connectivity, **kwargs
         )
 
-    def test_indices_elements_edge(self):
+    def test_indices_locations_edge(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "edge_node_connectivity",
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len=2",
+            "Not all src_locations meet requirement: len=2",
             Connectivity,
             **kwargs,
         )
 
-    def test_indices_elements_face(self):
+    def test_indices_locations_face(self):
         kwargs = {
             "indices": np.linspace(1, 6, 6, dtype=int).reshape((-1, 2)),
             "cf_role": "face_node_connectivity",
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len>=3",
+            "Not all src_locations meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )
 
-    def test_indices_elements_volume_face(self):
+    def test_indices_locations_volume_face(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "volume_face_connectivity",
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len>=4",
+            "Not all src_locations meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
 
-    def test_indices_elements_volume_edge(self):
+    def test_indices_locations_volume_edge(self):
         kwargs = {
             "indices": np.linspace(1, 12, 12, dtype=int).reshape((-1, 3)),
             "cf_role": "volume_edge_connectivity",
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len>=6",
+            "Not all src_locations meet requirement: len>=6",
             Connectivity,
             **kwargs,
         )
 
-    def test_indices_elements_alt_dim(self):
-        """The transposed equivalent of `test_indices_elements_volume_face`."""
+    def test_indices_locations_alt_dim(self):
+        """The transposed equivalent of `test_indices_locations_volume_face`."""
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((3, -1)),
             "cf_role": "volume_face_connectivity",
-            "element_dim": 1,
+            "src_dim": 1,
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len>=4",
+            "Not all src_locations meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
 
-    def test_indices_elements_masked(self):
+    def test_indices_locations_masked(self):
         mask = ([0, 0, 0] * 2) + [0, 0, 1]
         data = np.linspace(1, 9, 9, dtype=int).reshape((3, -1))
         kwargs = {
@@ -344,7 +342,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all elements meet requirement: len>=3",
+            "Not all src_locations meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )

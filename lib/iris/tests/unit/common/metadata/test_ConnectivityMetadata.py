@@ -29,7 +29,7 @@ class Test(tests.IrisTest):
         self.attributes = mock.sentinel.attributes
         self.cf_role = mock.sentinel.cf_role
         self.start_index = mock.sentinel.start_index
-        self.element_dim = mock.sentinel.element_dim
+        self.src_dim = mock.sentinel.src_dim
         self.cls = ConnectivityMetadata
 
     def test_repr(self):
@@ -41,12 +41,12 @@ class Test(tests.IrisTest):
             attributes=self.attributes,
             cf_role=self.cf_role,
             start_index=self.start_index,
-            element_dim=self.element_dim,
+            src_dim=self.src_dim,
         )
         fmt = (
             "ConnectivityMetadata(standard_name={!r}, long_name={!r}, "
             "var_name={!r}, units={!r}, attributes={!r}, cf_role={!r}, "
-            "start_index={!r}, element_dim={!r})"
+            "start_index={!r}, src_dim={!r})"
         )
         expected = fmt.format(
             self.standard_name,
@@ -56,7 +56,7 @@ class Test(tests.IrisTest):
             self.attributes,
             self.cf_role,
             self.start_index,
-            self.element_dim,
+            self.src_dim,
         )
         self.assertEqual(expected, repr(metadata))
 
@@ -69,7 +69,7 @@ class Test(tests.IrisTest):
             "attributes",
             "cf_role",
             "start_index",
-            "element_dim",
+            "src_dim",
         )
         self.assertEqual(self.cls._fields, expected)
 
@@ -87,7 +87,7 @@ class Test__eq__(tests.IrisTest):
             attributes=sentinel.attributes,
             cf_role=sentinel.cf_role,
             start_index=sentinel.start_index,
-            element_dim=sentinel.element_dim,
+            src_dim=sentinel.src_dim,
         )
         self.dummy = sentinel.dummy
         self.cls = ConnectivityMetadata
@@ -266,7 +266,7 @@ class Test_combine(tests.IrisTest):
             attributes=sentinel.attributes,
             cf_role=sentinel.cf_role,
             start_index=sentinel.start_index,
-            element_dim=sentinel.element_dim,
+            src_dim=sentinel.src_dim,
         )
         self.dummy = sentinel.dummy
         self.cls = ConnectivityMetadata
@@ -463,7 +463,7 @@ class Test_difference(tests.IrisTest):
             attributes=sentinel.attributes,
             cf_role=sentinel.cf_role,
             start_index=sentinel.start_index,
-            element_dim=sentinel.element_dim,
+            src_dim=sentinel.src_dim,
         )
         self.dummy = sentinel.dummy
         self.cls = ConnectivityMetadata
