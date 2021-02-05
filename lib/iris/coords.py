@@ -3135,19 +3135,6 @@ class Connectivity(_DimensionalMetadata):
         """
         return super()._has_lazy_values()
 
-    def __str__(self):
-        result = repr(self)
-        return result
-
-    def __repr__(self):
-        cls = type(self).__name__
-        result = (
-            f"{cls}({self.indices}), cf_role="
-            f"'{self.cf_role}', start_index={self.start_index}, "
-            f"src_dim={self.src_dim}{self._repr_other_metadata()})"
-        )
-        return result
-
     def cube_dims(self, cube):
         """Not available on :class:`Connectivity`."""
         raise NotImplementedError
