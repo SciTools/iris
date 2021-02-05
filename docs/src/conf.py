@@ -99,10 +99,12 @@ rst_epilog = """
 .. |copyright_years| replace:: {year_range}
 .. |python_version| replace:: {python_version}
 .. |iris_version| replace:: {iris_version}
+.. |build_date| replace:: {build_date}
 """.format(
     year_range=f"2010 - {upper_copy_year}",
     python_version=".".join([str(i) for i in sys.version_info[:3]]),
     iris_version=f"v{version}",
+    build_date=f"({datetime.datetime.now().strftime('%d %b %Y')})",
 )
 
 # Add any Sphinx extension module names here, as strings. They can be

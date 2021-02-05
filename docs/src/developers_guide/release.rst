@@ -129,15 +129,15 @@ Release Steps
 #. Create the branch ``1.9.x`` on the main repo, not in a forked repo, for the
    release candidate or release.  The only exception is for a point/bugfix
    release as it should already exist
+#. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the what's new for the release:
 
     * Use git to rename ``docs/src/whatsnew/latest.rst`` to the release
       version file ``v1.9.rst``
     * Use git to delete the ``docs/src/whatsnew/latest.rst.template`` file
-    * In ``v1.9.rst`` update the page title (first line of the file) to show
-      the release date in the format of ``v1.9 (DD MMM YYYY)``.  For
-      example ``v1.9 (03 Aug 2020)``. Note that, the release version in the
-      title is updated automatically
+    * In ``v1.9.rst`` remove the ``[unreleased]`` caption from the page title.
+      Note that, the Iris version and release date are updated automatically
+      when the documentation is built
     * Review the file for correctness
     * Work with the development team to populate the ``Release Highlights``
       dropdown at the top of the file, which provides extra detail on notable
@@ -150,8 +150,7 @@ Release Steps
    * Remove the reference to ``latest.rst``
    * Add a reference to ``v1.9.rst`` to the top of the list
 
-#. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
-#. Check your changes by building the documentation and viewing the changes
+#. Check your changes by building the documentation and reviewing
 #. Once all the above steps are complete, the release is cut, using
    the :guilabel:`Draft a new release` button on the
    `Iris release page <https://github.com/SciTools/iris/releases>`_
@@ -171,7 +170,7 @@ Post Release Steps
    new headings
 #. Add back in the reference to ``latest.rst`` to the what's new index
    ``docs/src/whatsnew/index.rst``
-#. Update ``Iris.__init__.py`` version string to show as ``1.10.dev0``
+#. Update ``iris.__init__.py`` version string to show as ``1.10.dev0``
 #. Merge back to master
 
 
