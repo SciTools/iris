@@ -143,7 +143,8 @@ class ScalarSummary(CoordSummary):
 
 
 class Section:
-    contents = []
+    def _init_(self):
+        self.contents = []
 
     def is_empty(self):
         return self.contents == []
@@ -174,6 +175,7 @@ class AttributeSection(Section):
         self.title = title
         self.names = []
         self.values = []
+        self.contents = []
         for name, value in sorted(attributes.items()):
             value = iris.util.clip_string(str(value))
             self.names.append(name)
