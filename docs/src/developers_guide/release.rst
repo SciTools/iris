@@ -126,9 +126,8 @@ These steps assume a release for ``v1.9`` is to be created.
 Release Steps
 ~~~~~~~~~~~~~
 
-#. Create the branch ``1.9.x`` on the main repo, not in a forked repo, for the
-   release candidate or release.  The only exception is for a point/bugfix
-   release as it should already exist
+#. Create the release feature branch ``1.9.x`` on `SciTools/iris`_.
+   The only exception is for a point/bugfix release, as it should already exist
 #. Update the ``iris.__init__.py`` version string e.g., to ``1.9.0``
 #. Update the what's new for the release:
 
@@ -175,4 +174,5 @@ Post Release Steps
 
 
 .. _Read The Docs: https://readthedocs.org/projects/scitools-iris/builds/
+.. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases

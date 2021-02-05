@@ -95,17 +95,12 @@ autolog("Iris Release = {}".format(release))
 
 # Create a variable that can be inserted in the rst "|copyright_years|".
 # You can add more variables here if needed.
-rst_epilog = """
-.. |copyright_years| replace:: {year_range}
-.. |python_version| replace:: {python_version}
-.. |iris_version| replace:: {iris_version}
-.. |build_date| replace:: {build_date}
-""".format(
-    year_range=f"2010 - {upper_copy_year}",
-    python_version=".".join([str(i) for i in sys.version_info[:3]]),
-    iris_version=f"v{version}",
-    build_date=f"({datetime.datetime.now().strftime('%d %b %Y')})",
-)
+rst_epilog = f"""
+.. |copyright_years| replace:: {2010 - upper_copy_year}
+.. |python_version| replace:: {'.'.join([str(i) for i in sys.version_info[:3]])}
+.. |iris_version| replace:: v{version}
+.. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
+"""
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
