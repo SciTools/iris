@@ -2838,8 +2838,8 @@ class Connectivity(_DimensionalMetadata):
         * attributes (dict):
             A dictionary containing other cf and user-defined attributes.
         * start_index (int):
-            Either ``0`` or ``1``. Denotes whether :attr:`indices` uses 0- or
-            1-based indexing (allows support for Fortran and legacy NetCDF
+            Either ``0`` or ``1``. Denotes whether :attr:`indices` uses 0-based
+            or 1-based indexing (allows support for Fortran and legacy NetCDF
             files).
         * src_dim (int):
             Either ``0`` or ``1``. Denotes which dimension of :attr:`indices`
