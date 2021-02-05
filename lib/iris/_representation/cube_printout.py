@@ -7,8 +7,83 @@
 Provides text printouts of Iris cubes.
 
 """
+from copy import deepcopy
 
-import beautifultable as bt
+
+class Row:
+    def __init__(self, cols, aligns, i_col_unlimited=None):
+        assert len(cols) == len(aligns)
+        self.cols = cols
+        self.aligns = aligns
+        self.i_col_unlimited = i_col_unlimited
+        # This col + those after do not add to width
+        # - a crude alternative to proper column spanning
+
+
+class Table:
+    def __init__(self, rows=None, col_widths=None):
+        if rows is None:
+            rows = []
+        self.rows = [deepcopy(row) for row in rows]
+        self.col_widths = col_widths
+
+    def copy(self):
+        return Table(self.rows, col_widths=self.col_widths)
+
+    @property
+    def n_columns(self):
+        if self.rows:
+            result = len(self.rows[0].cols)
+        else:
+            result = None
+        return result
+
+    def add_row(self, cols, aligns, i_col_unlimited=None):
+        n_cols = len(cols)
+        assert len(aligns) == n_cols
+        if self.n_columns is not None:
+            # For now, all rows must have same number of columns
+            assert n_cols == self.n_columns
+        row = Row(cols, aligns, i_col_unlimited)
+        self.rows.append(row)
+
+    def set_min_column_widths(self):
+        """Set all column widths to minimum required for current content."""
+        if self.rows:
+            widths = [0] * self.n_columns
+            for row in self.rows:
+                cols, lim = row.cols, row.i_col_unlimited
+                if lim is not None:
+                    cols = cols[:lim]  # Ignore "unlimited" columns
+                for i_col, col in enumerate(cols):
+                    widths[i_col] = max(widths[i_col], len(col))
+
+            self.col_widths = widths
+
+    def formatted_as_strings(self):
+        """Return lines formatted to the set column widths."""
+        if self.col_widths is None:
+            # If not set, calculate minimum widths.
+            self.set_min_column_widths()
+        result_lines = []
+        for row in self.rows:
+            col_texts = []
+            for col, align, width in zip(
+                row.cols, row.aligns, self.col_widths
+            ):
+                if align == "left":
+                    col_text = col.ljust(width)
+                elif align == "right":
+                    col_text = col.rjust(width)
+                else:
+                    msg = (
+                        f'Unknown alignment "{align}" '
+                        'not in ("left", "right")'
+                    )
+                    raise ValueError(msg)
+                col_texts.append(col_text)
+            result_lines.append(" ".join(col_texts))
+        return result_lines
 
 
 class CubePrinter:
@@ -17,19 +92,10 @@ class CubePrinter:
     :class:`iris._representation.cube_summary.CubeSummary`, which provides
     text printout of a :class:`iris.cube.Cube`.
 
-    This is the type of object now returned by :meth:`iris.cube.Cube.summary`
-    (when 'oneline=False') :  Hence it needs to be printable, so it has a
-    :meth:`__str__` method which calls its :meth:`to_string`.
-
     The cube :meth:`iris.cube.Cube.__str__`  and
     :meth:`iris.cube.Cube.__repr__`  methods, and
     :meth:`iris.cube.Cube.summary` with 'oneline=True', also use this to
     produce cube summary strings.
-
-    It's "table" property is a :class:`beautifultable.BeautifulTable`, which
-    provides a representation of cube content as a flexible table object.
-    However, but this cannot currently produce output identical to the
-    :meth:`to_string` method, which uses additional techniques.
 
     In principle, this class does not have any internal knowledge of
     :class:`iris.cube.Cube`, but only of
@@ -37,40 +103,18 @@ class CubePrinter:
 
     """
 
-    def __init__(self, cube_summary, max_width=None):
-        # Extract what we need from the cube summary, to produce printouts.
+    def __init__(self, cube_summary):
+        # Create our internal table from the summary, to produce the printouts.
+        self.table = self._ingest_summary(cube_summary)
 
-        if max_width is None:
-            max_width = 120  # Our magic best guess
-        self.max_width = max_width
-
-        # Create a table to produce the printouts.
-        self.table = self._make_table(cube_summary, max_width)
-        # NOTE: although beautifultable is useful and provides a flexible output
-        # form, its formatting features are not yet adequate to produce our
-        # desired "standard cube summary" appearance.
-        # (It really needs column-spanning, at least).
-        # So +make_table the table is useful, it does not encode the whole of the
-        # state / object info to produce
-        # So the 'normal' cube summary is produced by "CubePrinter.to_string()",
-        # which must also use information *not* stored in the table.
-        # in :meth:`to_string`.
-
-    def _make_table(
+    def _ingest_summary(
         self,
         cube_summary,
-        max_width,
         n_indent_section=4,
         n_indent_item=4,
         n_indent_extra=4,
     ):
-        """Make a beautifultable representing the cube-summary."""
-        # NOTE: although beautifultable is useful and provides a flexible output
-        # form, its formatting features are not yet adequate to produce our
-        # desired "standard cube summary" appearance :  For that, we still need
-        # column spanning (at least).
-        # So a 'normal' cube summary is produced by "CubePrinter.to_string()",
-        # which must also use information *not* stored in the table.
+        """Make a table of strings representing the cube-summary."""
         sect_indent = " " * n_indent_section
         item_indent = sect_indent + " " * n_indent_item
         item_to_extra_indent = " " * n_indent_extra
@@ -87,195 +131,109 @@ class CubePrinter:
         n_dims = len(dim_names)
         assert len(cube_shape) == n_dims
 
-        tb = bt.BeautifulTable(maxwidth=max_width)
-
         # First setup the columns
         #   - x1 @0 column-1 content : main title; headings; elements-names
         #   - x1 @1 "value" content (for scalar items)
-        #   - x2n @2 (name, length) for each of n dimensions
-        column_texts = [nameunits_string, ""]
+        #   - OR x2n @1.. (name, length) for each of n dimensions
+        column_header_texts = [nameunits_string]  # Note extra spacer here
 
         if cube_is_scalar:
-            # We will put this in the column-2 position (replacing the dim-map)
-            column_texts.append("(scalar cube)")
+            # We will put this in the column-1 position (replacing the dim-map)
+            column_header_texts.append("(scalar cube)")
         else:
             for dim_name, length in zip(dim_names, cube_shape):
-                column_texts.append(f"{dim_name}:")
-                column_texts.append(f"{length:d}")
+                column_header_texts.append(f"{dim_name}:")
+                column_header_texts.append(f"{length:d}")
 
-        n_cols = len(column_texts)
-        tb.columns.header = column_texts[:]  # Making copy, in case (!)
+        n_cols = len(column_header_texts)
+
+        # Create a table : a (n_rows) list of (n_cols) strings
+
+        table = Table()
+
+        # Code for adding a row, with control options.
+        scalar_column_aligns = ["left"] * n_cols
+        vector_column_aligns = deepcopy(scalar_column_aligns)
+        if cube_is_scalar:
+            vector_column_aligns[1] = "left"
+        else:
+            vector_column_aligns[1:] = n_dims * ["right", "left"]
+
+        def add_row(col_texts, scalar=False):
+            aligns = scalar_column_aligns if scalar else vector_column_aligns
+            i_col_unlimited = 1 if scalar else None
+            n_missing = n_cols - len(col_texts)
+            col_texts += [" "] * n_missing
+            table.add_row(col_texts, aligns, i_col_unlimited=i_col_unlimited)
+
+        # Start with the header line
+        add_row(column_header_texts)
 
         # Add rows from all the vector sections
         for sect in summ.vector_sections.values():
             if sect.contents:
                 sect_name = sect.title
-                column_texts = [sect_indent + sect_name, ""]
-                column_texts += [""] * (n_cols - 2)
-                tb.rows.append(column_texts)
+                column_texts = [sect_indent + sect_name]
+                add_row(column_texts)
                 for vec_summary in sect.contents:
                     element_name = vec_summary.name
                     dim_chars = vec_summary.dim_chars
                     extra_string = vec_summary.extra
-                    column_texts = [item_indent + element_name, ""]
+                    column_texts = [item_indent + element_name]
                     for dim_char in dim_chars:
                         column_texts += ["", dim_char]
-                    column_texts += [""] * (n_cols - len(column_texts))
-                    tb.rows.append(column_texts)
+                    add_row(column_texts)
                     if extra_string:
-                        column_texts = [""] * len(column_texts)
-                        column_texts[0] = extra_indent + extra_string
-                        tb.rows.append(column_texts)
-
-        # Record where the 'scalar' part starts.
-        self.i_first_scalar_row = len(tb.rows)
+                        column_texts = [extra_indent + extra_string]
+                        add_row(column_texts)
 
         # Similar for scalar sections
         for sect in summ.scalar_sections.values():
             if sect.contents:
                 # Add a row for the "section title" text.
                 sect_name = sect.title
-                column_texts = [sect_indent + sect_name, ""]
-                column_texts += [""] * (n_cols - 2)
-                tb.rows.append(column_texts)
-                title = sect_name.lower()
+                add_row([sect_indent + sect_name])
 
-                def add_scalar(name, value=""):
+                def add_scalar_row(name, value=""):
                     column_texts = [item_indent + name, value]
-                    column_texts += [""] * (n_cols - 2)
-                    tb.rows.append(column_texts)
+                    add_row(column_texts, scalar=True)
 
                 # Add a row for each item
                 # NOTE: different section types handle differently
+                title = sect_name.lower()
                 if "scalar coordinate" in title:
                     for item in sect.contents:
-                        add_scalar(item.name, item.content)
+                        add_scalar_row(item.name, item.content)
                         if item.extra:
-                            add_scalar(item_to_extra_indent + item.extra)
+                            add_scalar_row(item_to_extra_indent + item.extra)
                 elif "attribute" in title:
                     for title, value in zip(sect.names, sect.values):
-                        add_scalar(title, value)
+                        add_scalar_row(title, value)
                 elif "scalar cell measure" in title or "cell method" in title:
                     # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:
-                        add_scalar(name)
+                        add_scalar_row(name)
                 # elif "mesh" in title:
                 #     for line in sect.contents()
-                #         add_scalar(line, "")
+                #         add_scalar_row(line)
                 else:
                     msg = f"Unknown section type : {type(sect)}"
                     raise ValueError(msg)
 
-        # Setup our "standard" style options, which is important because the
-        # column alignment is very helpful to readability.
-        CubePrinter._set_table_style(tb)
-        # .. but adopt a 'normal' overall style showing the boxes.
-        tb.set_style(bt.STYLE_DEFAULT)
-        return tb
+        return table
 
     @staticmethod
-    def _set_table_style(tb, no_values_column=False):
-        # Fix all the column paddings and alignments.
-        # tb.maxwidth = 9999  # don't curtail or wrap *anything* (initially)
-        tb.columns.alignment[0] = bt.ALIGN_LEFT
-        if no_values_column:
-            # Columns are: 1*(section/entry) + 2*(dim, dim-length)
-            dim_cols = range(1, len(tb.columns) - 1, 2)
-        else:
-            # Columns are: 1*(section/entry) + 1*(value) + 2*(dim, dim-length)
-            tb.columns.alignment[1] = bt.ALIGN_LEFT
-            dim_cols = range(2, len(tb.columns) - 1, 2)
-        for i_col in dim_cols:
-            tb.columns.alignment[i_col] = bt.ALIGN_RIGHT
-            tb.columns.alignment[i_col] = bt.ALIGN_LEFT
-            tb.columns.padding_left[i_col] = 2
-            tb.columns.padding_right[i_col] = 0
-            tb.columns.padding_left[i_col + 1] = 0
+    def _decorated_table(table, name_padding=None):
+        """Return a modified table with added characters in the header."""
 
-        # Default style uses no decoration at all.
-        tb.set_style(bt.STYLE_NONE)
+        # Copy the input table + extract the header + its columns.
+        table = table.copy()
+        header = table.rows[0]
+        cols = header.cols
 
-    def _oneline_string(self):
-        """Produce a one-line summary string."""
-        # Make a copy of the table, with no spacing and doctored columns.
-        tb = bt.BeautifulTable()  # start from a new table
-
-        # Add column headers, with extra text modifications.
-        cols = self.table.columns.header[:]
-        # Add parentheses around the dim column texts, unless already present
-        # - e.g. "(scalar cube)".
-        if len(cols) > 2 and not cols[2].startswith("("):
-            # Add parentheses around the dim columns
-            cols[2] = "(" + cols[2]
-            cols[-1] = cols[-1] + ")"
-
-        # Add <> context.
-        cols[0] = "<iris 'Cube' of " + cols[0]
-        cols[-1] = cols[-1] + ">"
-        # Add semicolons as column spacers
-        for i_col in range(3, len(cols) - 1, 2):
-            cols[i_col] += ";"
-            # NOTE: it would be "nice" use `table.columns.separator` to do
-            # this, but bt doesn't currently support that :  Setting it
-            # affects the header-underscore/separator line instead.
-        tb.columns.header = cols
-
-        # Add a single row matching the header (or nothing will print).
-        # -- as used inside bt.BeautifulTable._get_string().
-        tb.rows.append(tb.columns.header)
-
-        # Setup all our normal column styling options
-        CubePrinter._set_table_style(tb)
-
-        # Adjust all column paddings for minimal spacing.
-        tb.columns.padding_left = 0
-        tb.columns.padding_right = 1
-
-        # Print with no width restriction
-        tb.maxwidth = 9999
-
-        # Return only the top (header) line.
-        result = next(tb._get_string())
-        return result
-
-    def _multiline_string_OLD(self, max_width):
-        """Produce a one-line summary string."""
-        # pre-render with no width limitation whatsoever.
-        tb = self.table
-        tb.maxwidth = 9999
-        str(tb)
-
-        # Force wraps in the 'value column' (== column #1)
-        widths = tb.columns.width[:]
-        widths[1] = 0
-        widths[1] = max_width - sum(widths)
-        tb.columns.width = widths
-        tb.columns.width_exceed_policy = bt.WEP_WRAP
-        # Also must re-establish the style.
-        # Hmmm, none of this is that obvious, is it ??
-        tb.set_style(bt.STYLE_NONE)
-
-        # Finally, use _get_string to reprint *without* recalulting widths.
-        summary_lines = list(tb._get_string(recalculate_width=False))
-        result = "\n".join(summary_lines)
-
-        return result
-
-    def _multiline_summary(self, max_width):
-        """
-        Produce a one-line summary string.
-
-        Note: 'max_width' controls wrapping of the values column. but the
-        However, the sections-titles/item-names column and dim map are produced
-        *without* any width restriction. The max_width
-
-        """
-        # First print the vector sections.
-
-        # Make a copy, but omitting column 1 (the scalar "values" column)
-        cols = list(self.table.columns.header)
-        del cols[1]
-        tb = bt.BeautifulTable()
+        if name_padding:
+            # Extend header column#0 to a given minimum width.
+            cols[0] = cols[0].ljust(name_padding)
 
         # Add parentheses around the dim column texts, unless already present
         # - e.g. "(scalar cube)".
@@ -284,65 +242,42 @@ class CubePrinter:
             cols[1] = "(" + cols[1]
             cols[-1] = cols[-1] + ")"
 
-        tb.columns.header = cols
+        # Add semicolons as dim column spacers
+        for i_col in range(2, len(cols) - 1, 2):
+            cols[i_col] += ";"
 
-        # Copy the rows, also removing column#1 throughout
-        # - which puts the dim-map columns in the column#1 place.
-        for i_row in range(len(self.table.rows)):
-            row = list(self.table.rows[i_row])
-            del row[1]
-            tb.rows.append(row)
+        # Modify the new table to be returned, invalidate any stored widths.
+        header.cols = cols
+        table.rows[0] = header
 
-        # Establish our standard style settings (alignment etc).
-        self._set_table_style(tb, no_values_column=True)
+        # Recalc widths
+        table.set_min_column_widths()
 
-        # Use no width limitation.
-        tb.maxwidth = 9999
-        # First "pre-render", to calculate widths with all of column 0, to
-        # account for any long scalar names
-        str(tb)
-        # Capture the column widths for later
-        # WARNING: "table.columns.width" is not a simple list, but this works..
-        column_widths = list(tb.columns.width[:])
+        # Add extra spacing between columns 0 and 1
+        # (Ok because col#0 is left-aligned)
+        table.col_widths[0] += 1
 
-        # Get just the 'vector rows', as a list of strings
-        tb = tb.rows[: self.i_first_scalar_row]
-        if len(tb.rows) > 0:
-            # 'Normal' case with vector rows : _get_string--> list of lines
-            summary_lines = list(tb._get_string(recalculate_width=False))
-        else:
-            # When there *are* no vector rows..
-            # add a 'dummy' row and get just the first line (= the header)
-            # ( N.B. as done in bt code table._get_string ).
-            tb.rows.append(tb.columns.header)
-            summary_lines = [next(tb._get_string(recalculate_width=False))]
+        return table
 
-        # Now add the "scalar rows".
-        # For this part, we have only 2 columns + we force wrapping of the
-        # second column at a specific width.
+    def _oneline_string(self):
+        """Produce a one-line summary string."""
+        # Copy existing content -- just the header line.
+        table = Table(rows=[self.table.rows[0]])
+        # Note: by excluding other columns, we get a minimum-width result.
 
-        tb = self.table.rows[self.i_first_scalar_row :]
-        if tb.rows:
-            # Reset style : *needed* for derived table -- really not obvious ?!?
-            CubePrinter._set_table_style(tb)
+        # Add standard decorations.
+        table = self._decorated_table(table, name_padding=0)
 
-            # Force any wrapping needed in the 'value column' (== column #1)
-            # WARNING: the 'table.columns.width' parameter behaves strangely :
-            # - you cannot always simply assign an iterable ?
-            tb.columns.width[0] = column_widths[0]
-            tb.columns.width[1] = max_width - column_widths[0]
-            for i in range(2, len(column_widths)):
-                column_widths[i] = 0
-            tb.columns.width_exceed_policy = bt.WEP_WRAP
+        # Format (with no extra spacing) --> one-line result
+        (oneline_result,) = table.formatted_as_strings()
+        return oneline_result
 
-            # Get rows for the scalar part
-            scalar_lines = tb._get_string(recalculate_width=False)
-            # discard first line (header)
-            next(scalar_lines)
-            # add the rest to the summary lines
-            summary_lines += list(scalar_lines)
-
-        result = "\n".join(summary_lines)
+    def _multiline_summary(self, max_width):
+        """Produce a multi-line summary string."""
+        # Get a derived table with standard 'decorations' added.
+        table = self._decorated_table(self.table, name_padding=35)
+        result_lines = table.formatted_as_strings()
+        result = "\n".join(result_lines)
         return result
 
     def to_string(self, oneline=False, max_width=None):
@@ -361,8 +296,8 @@ class CubePrinter:
             result (string)
 
         """
-        if max_width is None:
-            max_width = self.max_width
+        # if max_width is None:
+        #     max_width = self.max_width
 
         if oneline:
             result = self._oneline_string()

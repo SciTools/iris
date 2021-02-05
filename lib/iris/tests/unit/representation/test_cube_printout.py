@@ -136,7 +136,7 @@ def test_cube(n_extra_dims=0):
 class TestCubePrintout(tests.IrisTest):
     def _exercise_methods(self, cube):
         summ = icr.CubeSummary(cube)
-        printer = CubePrinter(summ, max_width=110)
+        printer = CubePrinter(summ)  # , max_width=110)
         has_scalar_ancils = any(
             len(anc.cube_dims(cube)) == 0 for anc in cube.ancillary_variables()
         )
