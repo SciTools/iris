@@ -96,7 +96,7 @@ autolog("Iris Release = {}".format(release))
 # Create a variable that can be inserted in the rst "|copyright_years|".
 # You can add more variables here if needed.
 rst_epilog = f"""
-.. |copyright_years| replace:: {2010 - upper_copy_year}
+.. |copyright_years| replace:: 2010 - {upper_copy_year}
 .. |python_version| replace:: {'.'.join([str(i) for i in sys.version_info[:3]])}
 .. |iris_version| replace:: v{version}
 .. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
