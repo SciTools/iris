@@ -2789,6 +2789,19 @@ class Connectivity(_DimensionalMetadata):
 
     """
 
+    UGRID_CF_ROLES = [
+        "edge_node_connectivity",
+        "face_node_connectivity",
+        "face_edge_connectivity",
+        "face_face_connectivity",
+        "edge_face_connectivity",
+        "boundary_node_connectivity",
+        "volume_node_connectivity",
+        "volume_edge_connectivity",
+        "volume_face_connectivity",
+        "volume_volume_connectivity",
+    ]
+
     def __init__(
         self,
         indices,
@@ -2857,20 +2870,9 @@ class Connectivity(_DimensionalMetadata):
         self._validate_arg_vs_list("start_index", start_index, [0, 1])
         # indices array will be 2-dimensional, so must be either 0 or 1.
         self._validate_arg_vs_list("src_dim", src_dim, [0, 1])
-        # TODO: find a better 'common' location to store valid cf_roles.
-        valid_cf_roles = [
-            "edge_node_connectivity",
-            "face_node_connectivity",
-            "face_edge_connectivity",
-            "face_face_connectivity",
-            "edge_face_connectivity",
-            "boundary_node_connectivity",
-            "volume_node_connectivity",
-            "volume_edge_connectivity",
-            "volume_face_connectivity",
-            "volume_volume_connectivity",
-        ]
-        self._validate_arg_vs_list("cf_role", cf_role, valid_cf_roles)
+        self._validate_arg_vs_list(
+            "cf_role", cf_role, Connectivity.UGRID_CF_ROLES
+        )
 
         self._metadata_manager.start_index = start_index
         self._metadata_manager.src_dim = src_dim
