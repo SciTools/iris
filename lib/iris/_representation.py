@@ -10,17 +10,6 @@ Provides objects describing cube summaries.
 import iris.util
 
 
-def sorted_axes(axes):
-    """
-    Returns the axis names sorted alphabetically, with the exception that
-    't', 'z', 'y', and, 'x' are sorted to the end.
-    """
-    return sorted(
-        axes,
-        key=lambda name: ({"x": 4, "y": 3, "z": 2, "t": 1}.get(name, 0), name),
-    )
-
-
 class DimensionHeader:
     def __init__(self, cube):
         if cube.shape == ():
