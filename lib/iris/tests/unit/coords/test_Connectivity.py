@@ -57,13 +57,6 @@ class TestStandard(tests.IrisTest):
             self.kwargs["indices"], self.connectivity.indices
         )
 
-    def test_src_lengths(self):
-        expected = [3, 3, 3]
-        self.assertArrayEqual(expected, self.connectivity.src_lengths)
-
-    def test_has_equal_src_lengths(self):
-        self.assertTrue(self.connectivity.has_equal_src_lengths)
-
     def test_read_only(self):
         attributes = ("indices", "cf_role", "start_index", "src_dim")
         for attribute in attributes:
@@ -93,6 +86,13 @@ class TestStandard(tests.IrisTest):
 
     def test_has_lazy_indices(self):
         self.assertFalse(self.connectivity.has_lazy_indices())
+
+    def test_lazy_src_lengths(self):
+        self.assertTrue(is_lazy_data(self.connectivity.lazy_src_lengths()))
+
+    def test_src_lengths(self):
+        expected = [3, 3, 3]
+        self.assertArrayEqual(expected, self.connectivity.src_lengths())
 
     def test___str__(self):
         expected = (
@@ -176,13 +176,6 @@ class TestAltIndices(tests.IrisTest):
             indices=self.lazy_indices, cf_role="face_node_connectivity"
         )
         self.assertTrue(connectivity.has_lazy_indices())
-
-    def test_src_lengths(self):
-        connectivity = Connectivity(
-            indices=self.masked_indices, cf_role="face_node_connectivity"
-        )
-        self.assertArrayEqual([4, 4, 3], connectivity.src_lengths)
-        self.assertFalse(connectivity.has_equal_src_lengths)
 
 
 class TestValidations(tests.IrisTest):

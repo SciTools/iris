@@ -2897,12 +2897,12 @@ class Connectivity(_DimensionalMetadata):
             attributes=attributes,
         )
 
-    @staticmethod
-    def _lazy_src_lengths(array, src_dim):
-        # Used during __init__ validation so cannot use self.src_dim.
-        tgt_dim = 1 - src_dim
-        src_mask_counts = da.sum(da.ma.getmaskarray(array), axis=tgt_dim)
-        max_src_size = array.shape[tgt_dim]
+    def _lazy_src_lengths(self, indices):
+        # Used during indices validation so cannot use self.indices.
+        src_mask_counts = da.sum(
+            da.ma.getmaskarray(indices), axis=self.tgt_dim
+        )
+        max_src_size = indices.shape[self.tgt_dim]
         return max_src_size - src_mask_counts
 
     @property
@@ -3001,30 +3001,6 @@ class Connectivity(_DimensionalMetadata):
         """
         return self._values
 
-    @property
-    def src_lengths(self):
-        """
-        A NumPy array of the lengths of each :attr:`src_location` in the
-        :attr:`src_dim` of the connectivity's :attr:`indices` array, accounting
-        for masks if present.
-
-        """
-        lengths = self._lazy_src_lengths(self.indices, self.src_dim)
-        return lengths.compute()
-
-    @property
-    def has_equal_src_lengths(self):
-        """
-        A boolean stating whether all values from
-        :attr:`src_lengths` are equal. Provided
-        for lazy calculation without needing to realise :attr:`indices` or
-        :attr:`src_lengths`.
-
-        """
-        lengths = self._lazy_src_lengths(self.indices, self.src_dim)
-        has_equal = lengths.min() == lengths.max()
-        return has_equal.compute()
-
     def _validate_indices(self, indices):
         def indices_error(message):
             raise ValueError("Invalid indeces provided. " + message)
@@ -3052,7 +3028,7 @@ class Connectivity(_DimensionalMetadata):
             )
 
         len_req_fail = False
-        src_lengths = self._lazy_src_lengths(indices, self.src_dim)
+        src_lengths = self._lazy_src_lengths(indices)
         if self.src_location in ("edge", "boundary"):
             if (src_lengths != 2).any().compute():
                 len_req_fail = "len=2"
@@ -3100,12 +3076,12 @@ class Connectivity(_DimensionalMetadata):
         """
         Return a lazy array representing the connectivity's indices.
 
-        Accessing this method will never cause the indices values to be loaded.
-        Similarly, calling methods on, or indexing, the returned Array
-        will not cause the connectivity to have loaded indices.
+        Accessing this method will never cause the :attr:`indices` values to be
+        loaded. Similarly, calling methods on, or indexing, the returned Array
+        will not cause the connectivity to have loaded :attr:`indices`.
 
-        If the indices have already been loaded for the connectivity, the
-        returned Array will be a new lazy array wrapper.
+        If the :attr:`indices` have already been loaded for the connectivity,
+        the returned Array will be a new lazy array wrapper.
 
         Returns:
             A lazy array, representing the connectivity indices array.
@@ -3134,6 +3110,39 @@ class Connectivity(_DimensionalMetadata):
 
         """
         return super()._has_lazy_values()
+
+    def lazy_src_lengths(self):
+        """
+        Return a lazy array representing the lengths of each
+        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
+        :attr:`indices` array, accounting for masks if present.
+
+        Accessing this method will never cause the :attr:`indices` values to be
+        loaded. Similarly, calling methods on, or indexing, the returned Array
+        will not cause the connectivity to have loaded :attr:`indices`.
+
+        The returned Array will be lazy regardless of whether the
+        :attr:`indices` have already been loaded.
+
+        Returns:
+            A lazy array, representing the lengths of each :attr:`src_location`.
+
+        """
+        # Exactly the same as _lazy_src_lengths, using the connectivity's
+        # established properties as inputs.
+        return self._lazy_src_lengths(self.indices)
+
+    def src_lengths(self):
+        """
+        Return a NumPy array representing the lengths of each
+        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
+        :attr:`indices` array, accounting for masks if present.
+
+        Returns:
+            A NumPy array, representing the lengths of each :attr:`src_location`.
+
+        """
+        return self.lazy_src_lengths().compute()
 
     def cube_dims(self, cube):
         """Not available on :class:`Connectivity`."""
