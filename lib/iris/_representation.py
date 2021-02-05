@@ -163,7 +163,7 @@ class ScalarSection(Section):
         self.contents = [ScalarSummary(cube, scalar) for scalar in scalars]
 
 
-class ScalarCMSection(Section):
+class ScalarCellMeasureSection(Section):
     def __init__(self, title, cell_measures):
         self.title = title
         self.contents = [cm.name() for cm in cell_measures]
@@ -272,7 +272,7 @@ class CubeSummary:
             ScalarSection, "Scalar Coordinates:", cube, scalar_coords
         )
         add_scalar_section(
-            ScalarCMSection, "Scalar cell measures:", scalar_cell_measures
+            ScalarCellMeasureSection, "Scalar cell measures:", scalar_cell_measures
         )
         add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
         add_scalar_section(
