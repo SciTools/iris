@@ -165,6 +165,10 @@ def tests(session):
 
     cache_cartopy(session)
     session.install("--no-deps", "--editable", ".")
+
+    # Always echo the env content for CI test failure debugging.
+    session.run("python", "tools/env_listing.py")
+
     session.run(
         "python",
         "-m",
