@@ -90,6 +90,13 @@ def make_package_table(package_names, conda_info, pip_info):
         columns = [package] + [''] * 4
         if condaver:
             conda_extra_columns = conda_info[package][1:]
+            # Normally will get ", build, channel'
+            # But it seems we may need to allow for more or less.
+            while len(conda_extra_columns) < 2:
+                conda_extra_columns += ['']
+            if len(conda_extra_columns) > 2:
+                conda_extra_columns[1] = ' '.join(conda_extra_columns[1:])
+                conda_extra_columns = conda_extra_columns[:2]
             assert len(conda_extra_columns) == 2
             columns[3:] = conda_extra_columns
         if pipver is not None and condaver is None:
