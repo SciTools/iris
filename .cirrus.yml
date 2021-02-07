@@ -87,7 +87,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - echo "${CIRRUS_TASK_NAME}"
       - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${NOX_CACHE_BUILD}"
       - sha256sum ${CIRRUS_WORKING_DIR}/requirements/ci/py$(echo ${PY_VER} | tr -d ".").yml
-  conda_script:
+  conda2_script:
     - conda list --name base
     - conda list --name base --explicit
     - conda info
