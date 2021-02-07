@@ -2275,9 +2275,7 @@ class Coord(_DimensionalMetadata):
         # class name
         element = super().xml_element(doc=doc)
 
-        element.setAttribute("points", self._xml_array_repr(self.points))
-
-        # Add bounds handling
+        # Add bounds, points are handled by the parent class.
         if self.has_bounds():
             element.setAttribute("bounds", self._xml_array_repr(self.bounds))
 

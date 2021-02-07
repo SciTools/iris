@@ -97,8 +97,8 @@ This document explains the changes made to Iris for this release
 
 #. `@jamesp`_ updated a test for `numpy`_ ``1.20.0``. (:pull:`3977`)
 
-#. `@bjlittle`_ extended the `cirrus-ci`_ testing and `nox`_ testing
-   automation to support `Python 3.8`_. (:pull:`3976`)
+#. `@bjlittle`_ and `@jamesp`_ extended the `cirrus-ci`_ testing and `nox`_
+   testing automation to support `Python 3.8`_. (:pull:`3976`)
 
 #. `@bjlittle`_ rationalised the ``noxfile.py``, and added the ability for
    each ``nox`` session to list its ``conda`` environment packages and
