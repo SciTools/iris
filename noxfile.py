@@ -167,6 +167,7 @@ def tests(session):
     session.install("--no-deps", "--editable", ".")
 
     # Always echo the env content for CI test failure debugging.
+    session.install("beautifultable")
     session.run("python", "tools/env_listing.py")
 
     session.run(
