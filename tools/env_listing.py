@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the LGPL license.
