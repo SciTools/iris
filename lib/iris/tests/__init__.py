@@ -573,6 +573,10 @@ class IrisTest_nometa(unittest.TestCase):
         """
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
+        # sort the attributes on xml elements before testing against known good state.
+        # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
+        # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
+        doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
         self._check_same(
