@@ -93,6 +93,52 @@ def cache_cartopy(session):
         )
 
 
+def prepare_venv(session):
+    """
+    Create and cache the nox session conda environment, and additionally
+    provide conda environment package details and info.
+
+    Note that, iris is installed into the environment using pip.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    Notes
+    -----
+    See
+      - https://github.com/theacodes/nox/issues/346
+      - https://github.com/theacodes/nox/issues/260
+
+    """
+    if not venv_cached(session):
+        # Determine the conda requirements yaml file.
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
+        # Back-door approach to force nox to use "conda env update".
+        command = (
+            "conda",
+            "env",
+            "update",
+            f"--prefix={session.virtualenv.location}",
+            f"--file={fname}",
+            "--prune",
+        )
+        session._run(*command, silent=True, external="error")
+        cache_venv(session)
+
+    cache_cartopy(session)
+    session.install("--no-deps", "--editable", ".")
+    session.run("conda", "info")
+    session.run("conda", "list", f"--prefix={session.virtualenv.location}")
+    session.run(
+        "conda",
+        "list",
+        f"--prefix={session.virtualenv.location}",
+        "--explicit",
+    )
+
+
 @nox.session
 def flake8(session):
     """
@@ -141,30 +187,8 @@ def tests(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.install("--no-deps", "--editable", ".")
+    prepare_venv(session)
     session.run(
         "python",
         "-m",
@@ -184,30 +208,8 @@ def gallery(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.install("--no-deps", "--editable", ".")
+    prepare_venv(session)
     session.run(
         "python",
         "-m",
@@ -226,30 +228,8 @@ def doctest(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.install("--no-deps", "--editable", ".")
+    prepare_venv(session)
     session.cd("docs")
     session.run(
         "make",
@@ -274,30 +254,8 @@ def linkcheck(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.install("--no-deps", "--editable", ".")
+    prepare_venv(session)
     session.cd("docs")
     session.run(
         "make",
