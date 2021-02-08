@@ -2981,9 +2981,7 @@ class Connectivity(_DimensionalMetadata):
         within the connectivity's individual :attr:`src_location`'s.
 
         """
-        # Computed (rather than stored) property necessary since a new
-        # Connectivity returned by self.transpose() would have a flipped src_dim.
-        return 1 - self._metadata_manager.src_dim
+        return self._tgt_dim
 
     @property
     def indices(self):
@@ -3134,7 +3132,7 @@ class Connectivity(_DimensionalMetadata):
 
     def transpose(self):
         """
-        Create a deep copy of this :class:`Connectivity` with the
+        Create a new :class:`Connectivity`, identical to this one but with the
         :attr:`indices` array transposed and the :attr:`src_dim` value flipped.
 
         Returns:
@@ -3142,16 +3140,17 @@ class Connectivity(_DimensionalMetadata):
             the original.
 
         """
-        new_connectivity = self.copy()
-        new_src_dim = 1 - self.src_dim
-        new_indices = self.indices.transpose()
-
-        new_connectivity._metadata_manager.src_dim = new_src_dim
-        # Replace the data manager with one for the new shaped indices.
-        # This is safe to override since Connectivity is not attached to a cube
-        # dimension unlike other _DimensionalMetadata-using classes.
-        new_connectivity._values_dm = DataManager(new_indices)
-
+        new_connectivity = Connectivity(
+            indices=self.indices.transpose().copy(),
+            cf_role=self.cf_role,
+            standard_name=self.standard_name,
+            long_name=self.long_name,
+            var_name=self.var_name,
+            units=self.units,
+            attributes=self.attributes,
+            start_index=self.start_index,
+            src_dim=self.tgt_dim,
+        )
         return new_connectivity
 
     def lazy_indices(self):
