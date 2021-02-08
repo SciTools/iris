@@ -159,12 +159,14 @@ class Test_CubeSummary(tests.IrisTest):
 
     def test_attributes(self):
         cube = self.cube
-        cube.attributes = {"a": 1, "b": "two"}
+        cube.attributes = {"a": 1, "b": "two", "c": " this \n   that\tand."}
         rep = iris._representation.CubeSummary(cube)
 
         attribute_section = rep.scalar_sections["Attributes:"]
         attribute_contents = attribute_section.contents
-        expected_contents = ["a: 1", "b: two"]
+        expected_contents = ["a: 1", "b: two", "c: ' this \\n   that\\tand.'"]
+        # Note: a string with \n or \t in it gets "repr-d".
+        # Other strings don't (though in coord 'extra' lines, they do.)
 
         self.assertEqual(attribute_contents, expected_contents)
 
@@ -211,13 +213,16 @@ class Test_CubeSummary(tests.IrisTest):
         co1 = cube.coord("latitude")
         co1.attributes.update(dict(a=1, b=2))
         co2 = co1.copy()
-        co2.attributes.update(dict(a=7, z=77))
+        co2.attributes.update(dict(a=7, z=77, text="ok", text2="multi\nline"))
         cube.add_aux_coord(co2, cube.coord_dims(co1))
         rep = iris._representation.CubeSummary(cube)
         co1_summ = rep.vector_sections["Dimension coordinates:"].contents[0]
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
+        # Notes: 'b' is same so does not appear; sorted order; quoted strings.
         self.assertEqual(co1_summ.extra, "a=1")
-        self.assertEqual(co2_summ.extra, "a=7, z=77")
+        self.assertEqual(
+            co2_summ.extra, "a=7, text='ok', text2='multi\\nline', z=77"
+        )
 
     def test_array_attributes(self):
         cube = self.cube
@@ -231,6 +236,55 @@ class Test_CubeSummary(tests.IrisTest):
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
         self.assertEqual(co1_summ.extra, "array=array([1.2, 3. ])")
         self.assertEqual(co2_summ.extra, "array=array([3.2, 1. ]), b=2")
+
+    def test_attributes_subtle_differences(self):
+        cube = Cube([0])
+
+        # Add a pair that differ only in having a list instead of an array.
+        co1a = DimCoord(
+            [0],
+            long_name="co1_list_or_array",
+            attributes=dict(x=1, arr1=np.array(2), arr2=np.array([1, 2])),
+        )
+        co1b = co1a.copy()
+        co1b.attributes.update(dict(arr2=[1, 2]))
+        for co in (co1a, co1b):
+            cube.add_aux_coord(co)
+
+        # Add a pair that differ only in an attribute array dtype.
+        co2a = AuxCoord(
+            [0],
+            long_name="co2_dtype",
+            attributes=dict(x=1, arr1=np.array(2), arr2=np.array([3, 4])),
+        )
+        co2b = co2a.copy()
+        co2b.attributes.update(dict(arr2=np.array([3.0, 4.0])))
+        assert co2b != co2a
+        for co in (co2a, co2b):
+            cube.add_aux_coord(co)
+
+        # Add a pair that differ only in an attribute array shape.
+        co3a = DimCoord(
+            [0],
+            long_name="co3_shape",
+            attributes=dict(x=1, arr1=np.array([5, 6]), arr2=np.array([3, 4])),
+        )
+        co3b = co3a.copy()
+        co3b.attributes.update(dict(arr1=np.array([[5], [6]])))
+        for co in (co3a, co3b):
+            cube.add_aux_coord(co)
+
+        rep = iris._representation.CubeSummary(cube)
+        co_summs = rep.scalar_sections["Scalar coordinates:"].contents
+        co1a_summ, co1b_summ = co_summs[0:2]
+        self.assertEqual(co1a_summ.extra, "arr2=array([1, 2])")
+        self.assertEqual(co1b_summ.extra, "arr2=[1, 2]")
+        co2a_summ, co2b_summ = co_summs[2:4]
+        self.assertEqual(co2a_summ.extra, "arr2=array([3, 4])")
+        self.assertEqual(co2b_summ.extra, "arr2=array([3., 4.])")
+        co3a_summ, co3b_summ = co_summs[4:6]
+        self.assertEqual(co3a_summ.extra, "arr1=array([5, 6])")
+        self.assertEqual(co3b_summ.extra, "arr1=array([[5], [6]])")
 
 
 if __name__ == "__main__":

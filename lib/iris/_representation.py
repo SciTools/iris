@@ -6,8 +6,10 @@
 """
 Provides objects describing cube summaries.
 """
-import numpy as np
+import re
+
 import iris.util
+from iris.common.metadata import _hexdigest as quickhash
 
 
 class DimensionHeader:
@@ -46,6 +48,35 @@ class FullHeader:
         self.dimension_header = DimensionHeader(cube)
 
 
+def string_repr(text, quote_strings=False):
+    """Produce a one-line printable form of a text string."""
+    if re.findall("[\n\t]", text) or quote_strings:
+        # Replace the string with its repr (including quotes).
+        text = repr(text)
+    return text
+
+
+def array_repr(arr):
+    """Produce a single-line printable repr of an array."""
+    # First take whatever numpy produces..
+    text = repr(arr)
+    # ..then reduce any multiple spaces and newlines.
+    text = re.sub("[ \t\n]+", " ", text)
+    return text
+
+
+def value_repr(value, quote_strings=False):
+    """
+    Produce a single-line printable version of an attribute or scalar value.
+    """
+    if hasattr(value, "dtype"):
+        value = array_repr(value)
+    elif isinstance(value, str):
+        value = string_repr(value, quote_strings=quote_strings)
+    value = str(value)
+    return value
+
+
 class CoordSummary:
     def _summary_coord_extra(self, cube, coord):
         # Returns the text needed to ensure this coordinate can be
@@ -70,12 +101,17 @@ class CoordSummary:
                     # ..except setdefault fails if values are numpy arrays.
                     if key not in attributes:
                         attributes[key] = value
-                    elif not np.all(attributes[key] == value):
+                    elif quickhash(attributes[key]) != quickhash(value):
+                        # NOTE: fast and array-safe comparison, as used in
+                        # :mod:`iris.common.metadata`.
                         vary.add(key)
                         break
             keys = sorted(vary & set(coord.attributes.keys()))
             bits = [
-                "{}={!r}".format(key, coord.attributes[key]) for key in keys
+                "{}={}".format(
+                    key, value_repr(coord.attributes[key], quote_strings=True)
+                )
+                for key in keys
             ]
             if bits:
                 extra = ", ".join(bits)
@@ -167,7 +203,8 @@ class AttributeSection(Section):
         self.values = []
         self.contents = []
         for name, value in sorted(attributes.items()):
-            value = iris.util.clip_string(str(value))
+            value = value_repr(value)
+            value = iris.util.clip_string(value)
             self.names.append(name)
             self.values.append(value)
             content = "{}: {}".format(name, value)
