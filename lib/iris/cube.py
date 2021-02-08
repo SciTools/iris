@@ -727,6 +727,50 @@ def _is_single_item(testee):
     return isinstance(testee, str) or not isinstance(testee, Iterable)
 
 
+def _cubesummary_tolerant_lines(text):
+    """
+    Produce a regularised version of a summary string, as a list of lines.
+
+    Split at '\n' into lines.
+    Add spaces around all ':' characters (for attributes formatting).
+    Replace whitespace with single spaces, and remove leading+trailing.
+
+    """
+    lines = text.split("\n")
+    lines = [line.replace(":", " : ") for line in lines]
+    stripped_lines = []
+    for line in lines:
+        line = line.strip()
+        while "  " in line:
+            line = line.replace("  ", " ")
+        stripped_lines.append(line)
+    return stripped_lines
+
+
+def _cubesummary_traditional_lines(cube):
+    # Produce a list of lines from an old-method (extended) cube summary.
+    return _cubesummary_tolerant_lines(cube.summary())
+
+
+def _cubesummary_newstyle_lines(cube):
+    # Produce a list of lines from a new-method (extended) cube summary.
+    from iris._representation.cube_printout import CubePrinter
+
+    return _cubesummary_tolerant_lines(CubePrinter(cube).to_string())
+
+
+def _cubesummary_newold_compare(cube):
+    """
+    A temporary routine to compare old + new output for all cube summary
+    printouts.
+
+    """
+
+    oldstyle = _cubesummary_traditional_lines(cube)
+    newstyle = _cubesummary_newstyle_lines(cube)
+    assert oldstyle == newstyle
+
+
 class Cube(CFVariableMixin):
     """
     A single Iris cube of data and metadata.
@@ -2663,6 +2707,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def __str__(self):
+        _cubesummary_newold_compare(self)
         return self.summary()
 
     def __repr__(self):
