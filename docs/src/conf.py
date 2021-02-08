@@ -43,6 +43,7 @@ if on_rtd:
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -92,13 +93,14 @@ autolog("Iris Release = {}".format(release))
 
 # -- General configuration ---------------------------------------------------
 
-# Create a variable that can be insterted in the rst "|copyright_years|".
-# You can add more vairables here if needed
-rst_epilog = """
-.. |copyright_years| replace:: {year_range}
-""".format(
-    year_range="2010 - {}".format(upper_copy_year)
-)
+# Create a variable that can be inserted in the rst "|copyright_years|".
+# You can add more variables here if needed.
+rst_epilog = f"""
+.. |copyright_years| replace:: 2010 - {upper_copy_year}
+.. |python_version| replace:: {'.'.join([str(i) for i in sys.version_info[:3]])}
+.. |iris_version| replace:: v{version}
+.. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
+"""
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
