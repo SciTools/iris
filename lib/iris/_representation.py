@@ -8,6 +8,8 @@ Provides objects describing cube summaries.
 """
 import re
 
+import numpy as np
+
 import iris.util
 from iris.common.metadata import _hexdigest as quickhash
 
