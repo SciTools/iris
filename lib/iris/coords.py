@@ -2830,7 +2830,7 @@ class Connectivity(_DimensionalMetadata):
             Denotes the topological relationship that this connectivity
             describes. Made up of this array's locations, and the indexed
             'target location' within each location.
-            Examples: ``face_node_connectivity``, ``edge_face_connectivity``.
+            See :attr:`UGRID_CF_ROLES` for valid arguments.
 
         Kwargs:
 
@@ -2895,14 +2895,6 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
-
-    def _lazy_src_lengths(self, indices):
-        # Used during __init__ indices validation so cannot use self.indices.
-        src_mask_counts = da.sum(
-            da.ma.getmaskarray(indices), axis=self.tgt_dim
-        )
-        max_src_size = indices.shape[self.tgt_dim]
-        return max_src_size - src_mask_counts
 
     @property
     def _values(self):
@@ -3072,7 +3064,11 @@ class Connectivity(_DimensionalMetadata):
             # regardless of shapes_only.
             src_lengths = _lazy.as_lazy_data(np.asarray(src_shape))
         else:
-            src_lengths = self._lazy_src_lengths(indices)
+            # Wouldn't be safe to use during __init__ validation, since
+            # lazy_src_lengths requires self.indices to exist. Safe here since
+            # shapes_only==False is only called manually, i.e. after
+            # initialisation.
+            src_lengths = self.lazy_src_lengths()
         if self.src_location in ("edge", "boundary"):
             if (src_lengths != 2).any().compute():
                 len_req_fail = "len=2"
@@ -3124,10 +3120,10 @@ class Connectivity(_DimensionalMetadata):
             if hasattr(other, "metadata"):
                 # metadata comparison
                 eq = self.metadata == other.metadata
-                eq = (
-                    eq
-                    and (self.indices_by_src() == other.indices_by_src()).all()
-                )
+                if eq:
+                    eq = (
+                        self.indices_by_src() == other.indices_by_src()
+                    ).all()
         return eq
 
     def transpose(self):
@@ -3209,9 +3205,11 @@ class Connectivity(_DimensionalMetadata):
             A lazy array, representing the lengths of each :attr:`src_location`.
 
         """
-        # Exactly the same as _lazy_src_lengths, using the connectivity's
-        # established properties as inputs.
-        return self._lazy_src_lengths(self.indices)
+        src_mask_counts = da.sum(
+            da.ma.getmaskarray(self.indices), axis=self.tgt_dim
+        )
+        max_src_size = self.indices.shape[self.tgt_dim]
+        return max_src_size - src_mask_counts
 
     def src_lengths(self):
         """
