@@ -6,7 +6,7 @@
 """
 Provides objects describing cube summaries.
 """
-
+import numpy as np
 import iris.util
 
 
@@ -66,7 +66,11 @@ class CoordSummary:
                         vary.add(key)
                         break
                     value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
+                    # Like "if attributes.setdefault(key, value) != value:"
+                    # ..except setdefault fails if values are numpy arrays.
+                    if key not in attributes:
+                        attributes[key] = value
+                    elif not np.all(attributes[key] == value):
                         vary.add(key)
                         break
             keys = sorted(vary & set(coord.attributes.keys()))
