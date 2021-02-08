@@ -70,9 +70,6 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
-   (:pull:`3933`)
-
 #. `@rcomer`_ updated the "Seasonal ensemble model plots" and "Global average
    annual temperature maps" Gallery examples. (:pull:`3933` and :pull:`3934`)
 
