@@ -54,8 +54,8 @@ class Test_CubeSummary(tests.IrisTest):
             "Dimension coordinates:",
             "Auxiliary coordinates:",
             "Derived coordinates:",
-            "Cell Measures:",
-            "Ancillary Variables:",
+            "Cell measures:",
+            "Ancillary variables:",
         ]
         self.assertEqual(
             list(rep.vector_sections.keys()), expected_vector_sections
@@ -66,7 +66,7 @@ class Test_CubeSummary(tests.IrisTest):
             self.assertTrue(vector_section.is_empty())
 
         expected_scalar_sections = [
-            "Scalar Coordinates:",
+            "Scalar coordinates:",
             "Scalar cell measures:",
             "Attributes:",
             "Cell methods:",
@@ -111,7 +111,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_aux_coord(scalar_coord_text)
         rep = iris._representation.CubeSummary(cube)
 
-        scalar_section = rep.scalar_sections["Scalar Coordinates:"]
+        scalar_section = rep.scalar_sections["Scalar coordinates:"]
 
         self.assertEqual(len(scalar_section.contents), 3)
 
@@ -137,7 +137,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_cell_measure(cell_measure, 0)
         rep = iris._representation.CubeSummary(cube)
 
-        cm_section = rep.vector_sections["Cell Measures:"]
+        cm_section = rep.vector_sections["Cell measures:"]
         self.assertEqual(len(cm_section.contents), 1)
 
         cm_summary = cm_section.contents[0]
@@ -150,7 +150,7 @@ class Test_CubeSummary(tests.IrisTest):
         cube.add_ancillary_variable(cell_measure, 0)
         rep = iris._representation.CubeSummary(cube)
 
-        av_section = rep.vector_sections["Ancillary Variables:"]
+        av_section = rep.vector_sections["Ancillary variables:"]
         self.assertEqual(len(av_section.contents), 1)
 
         av_summary = av_section.contents[0]
@@ -198,7 +198,7 @@ class Test_CubeSummary(tests.IrisTest):
         )
         self.assertEqual(len(rep.scalar_sections), 4)
         self.assertEqual(
-            len(rep.scalar_sections["Scalar Coordinates:"].contents), 1
+            len(rep.scalar_sections["Scalar coordinates:"].contents), 1
         )
         self.assertTrue(
             rep.scalar_sections["Scalar cell measures:"].is_empty()

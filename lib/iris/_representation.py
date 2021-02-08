@@ -252,9 +252,9 @@ class CubeSummary:
         add_vector_section("Dimension coordinates:", vector_dim_coords)
         add_vector_section("Auxiliary coordinates:", vector_aux_coords)
         add_vector_section("Derived coordinates:", vector_derived_coords)
-        add_vector_section("Cell Measures:", vector_cell_measures, False)
+        add_vector_section("Cell measures:", vector_cell_measures, False)
         add_vector_section(
-            "Ancillary Variables:", vector_ancillary_variables, False
+            "Ancillary variables:", vector_ancillary_variables, False
         )
 
         self.scalar_sections = {}
@@ -263,7 +263,7 @@ class CubeSummary:
             self.scalar_sections[title] = section_class(title, *args)
 
         add_scalar_section(
-            ScalarSection, "Scalar Coordinates:", cube, scalar_coords
+            ScalarSection, "Scalar coordinates:", cube, scalar_coords
         )
         add_scalar_section(
             ScalarCellMeasureSection,
