@@ -136,9 +136,6 @@ class ScalarSummary(CoordSummary):
 
 
 class Section:
-    def _init_(self):
-        self.contents = []
-
     def is_empty(self):
         return self.contents == []
 
@@ -184,11 +181,13 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
+    """
+    This class provides a structure for output representations of an Iris cube.
+    TODO: use to produce the printout of :meth:`iris.cube.Cube.__str__`.
+
+    """
+
     def __init__(self, cube, shorten=False, name_padding=35):
-        self.section_indent = 5
-        self.item_indent = 10
-        self.extra_indent = 13
-        self.shorten = shorten
         self.header = FullHeader(cube, name_padding)
 
         # Cache the derived coords so we can rely on consistent
