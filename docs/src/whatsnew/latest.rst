@@ -83,6 +83,10 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added automated Iris version discovery for the ``latest.rst``
    in the ``whatsnew`` documentation. (:pull:`3981`)
 
+#. `@tkknight`_ stated the Python version used to build the documentation
+   on :ref:`installing_iris` and to the footer of all pages.  Also added the
+   copyright years to the footer. (:pull:`3989`)
+
 
 💼 Internal
 ===========
