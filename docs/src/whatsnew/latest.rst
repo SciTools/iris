@@ -117,7 +117,7 @@ This document explains the changes made to Iris for this release
    as well as some long-standing bugs with vertical coordinates and number
    formats. (:pull:`4411`)
 
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if 
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if
    no value match is found.  (:pull:`4417`)
 
 #. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
@@ -209,10 +209,16 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
    deprecation warning.  (:issue:`4374`, :pull:`4376`)
 
+#. `@akuhnregnier`_ removed addition of period from
+   :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
+   using assertArrayAllClose following :issue:`3993`.
+   (:pull:`4421`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw

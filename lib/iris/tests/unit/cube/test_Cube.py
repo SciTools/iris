@@ -1662,11 +1662,8 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         cube = create_cube(0, 360)
         cube.coord("longitude").convert_units("radians")
         result = cube.intersection(longitude=(-1, 0.5))
-        self.assertEqual(
-            result.coord("longitude").points[0], -0.99483767363676634
-        )
-        self.assertEqual(
-            result.coord("longitude").points[-1], 0.48869219055841207
+        self.assertArrayAllClose(
+            result.coord("longitude").points, np.arange(-57, 29) * np.pi / 180
         )
         self.assertEqual(result.data[0, 0, 0], 303)
         self.assertEqual(result.data[0, 0, -1], 28)
