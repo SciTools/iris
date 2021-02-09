@@ -69,8 +69,8 @@ project = "Iris"
 
 # define the copyright information for latex builds. Note, for html builds,
 # the copyright exists directly inside "_templates/layout.html"
-upper_copy_year = datetime.datetime.now().year
-copyright = "Iris Contributors"
+copyright_years = f"2010 - {datetime.datetime.now().year}"
+copyright = f"{copyright_years}, Iris Contributors"
 author = "Iris Developers"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -95,9 +95,12 @@ autolog("Iris Release = {}".format(release))
 
 # Create a variable that can be inserted in the rst "|copyright_years|".
 # You can add more variables here if needed.
+
+build_python_version = ".".join([str(i) for i in sys.version_info[:3]])
+
 rst_epilog = f"""
-.. |copyright_years| replace:: 2010 - {upper_copy_year}
-.. |python_version| replace:: {'.'.join([str(i) for i in sys.version_info[:3]])}
+.. |copyright_years| replace:: {copyright_years}
+.. |python_version| replace:: {build_python_version}
 .. |iris_version| replace:: v{version}
 .. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
 """
@@ -225,7 +228,8 @@ html_theme_options = {
 }
 
 html_context = {
-    "copyright_years": "2010 - {}".format(upper_copy_year),
+    "copyright_years": copyright_years,
+    "python_version": build_python_version,
     # menu_links and menu_links_name are used in _templates/layout.html
     # to include some nice icons.  See http://fontawesome.io for a list of
     # icons (used in the sphinx_rtd_theme)
