@@ -107,7 +107,7 @@ linux_minimal_task:
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session tests
+    - nox --session tests -- --verbose
 
 
 #
@@ -137,7 +137,7 @@ linux_task:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session tests
+    - nox --session tests -- --verbose
 
 
 #
@@ -167,7 +167,7 @@ gallery_task:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session gallery
+    - nox --session gallery -- --verbose
 
 
 #
@@ -201,7 +201,7 @@ doctest_task:
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
-    - nox --session doctest
+    - nox --session doctest -- --verbose
 
 
 #
@@ -224,4 +224,4 @@ link_task:
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
-    - nox --session linkcheck
+    - nox --session linkcheck -- --verbose

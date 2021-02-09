@@ -129,14 +129,20 @@ def prepare_venv(session):
 
     cache_cartopy(session)
     session.install("--no-deps", "--editable", ".")
-    session.run("conda", "info")
-    session.run("conda", "list", f"--prefix={session.virtualenv.location}")
-    session.run(
-        "conda",
-        "list",
-        f"--prefix={session.virtualenv.location}",
-        "--explicit",
-    )
+
+    # Determine whether verbose diagnostics have been requested
+    # from the command line.
+    verbose = "-v" in session.posargs or "--verbose" in session.posargs
+
+    if verbose:
+        session.run("conda", "info")
+        session.run("conda", "list", f"--prefix={session.virtualenv.location}")
+        session.run(
+            "conda",
+            "list",
+            f"--prefix={session.virtualenv.location}",
+            "--explicit",
+        )
 
 
 @nox.session
