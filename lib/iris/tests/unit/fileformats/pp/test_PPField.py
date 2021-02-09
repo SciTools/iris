@@ -199,8 +199,8 @@ class Test_coord_system(tests.IrisTest):
 
 class Test__init__(tests.IrisTest):
     def setUp(self):
-        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int)
-        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float)
+        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
+        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
 
     def test_no_headers(self):
@@ -232,8 +232,8 @@ class Test__init__(tests.IrisTest):
 
 class Test__getattr__(tests.IrisTest):
     def setUp(self):
-        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int)
-        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float)
+        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
+        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
 
     def test_attr_singular_long(self):

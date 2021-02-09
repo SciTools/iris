@@ -294,7 +294,7 @@ class _CoordConstraint:
             except TypeError:
                 try_quick = False
         if try_quick:
-            r = np.zeros(coord.shape, dtype=np.bool)
+            r = np.zeros(coord.shape, dtype=np.bool_)
             if coord.cell(i) == self._coord_thing:
                 r[i] = True
         else:

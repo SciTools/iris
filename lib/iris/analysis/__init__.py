@@ -1454,7 +1454,7 @@ def _peak(array, **kwargs):
     slices[-1] = endslice
     slices = tuple(slices)  # Numpy>=1.16 : index with tuple, *not* list.
 
-    if isinstance(array.dtype, np.float):
+    if isinstance(array.dtype, np.float64):
         data = array[slices]
     else:
         # Cast non-float data type.
