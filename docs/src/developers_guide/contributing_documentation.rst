@@ -24,7 +24,7 @@ The documentation uses specific packages that need to be present.  Please see
 Building
 ~~~~~~~~
 
-This documentation is built using the latest Python version that Iris
+This documentation was built using the latest Python version that Iris
 supports.  For more information see :ref:`installing_iris`.
 
 The build can be run from the documentation directory ``docs/src``.
