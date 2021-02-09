@@ -199,10 +199,16 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
    deprecation warning.  (:issue:`4374`, :pull:`4376`)
 
+#. `@akuhnregnier`_ removed addition of period from
+   :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
+   using assertArrayAllClose following :issue:`3993`.
+   (:pull:`3994`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
