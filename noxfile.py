@@ -19,7 +19,7 @@ nox.options.reuse_existing_virtualenvs = True
 PACKAGE = str("lib" / Path("iris"))
 
 #: Cirrus-CI environment variable hook.
-PY_VER = os.environ.get("PY_VER", ["3.6", "3.7"])
+PY_VER = os.environ.get("PY_VER", ["3.6", "3.7", "3.8"])
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
