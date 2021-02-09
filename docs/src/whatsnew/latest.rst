@@ -94,6 +94,10 @@ This document explains the changes made to Iris for this release
 
 #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
 
+#. `@bjlittle`_ rationalised the ``noxfile.py``, and added the ability for
+   each ``nox`` session to list its ``conda`` environment packages and
+   environment info. (:pull:`3990`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
