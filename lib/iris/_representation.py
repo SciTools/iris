@@ -145,13 +145,17 @@ class ScalarSummary(CoordSummary):
         coord_cell = coord.cell(0)
         if isinstance(coord_cell.point, str):
             self.string_type = True
+            # 'lines' is value split on '\n', and _each one_ length-clipped.
             self.lines = [
                 iris.util.clip_string(str(item))
                 for item in coord_cell.point.split("\n")
             ]
             self.point = None
             self.bound = None
-            self.content = "\n".join(self.lines)
+            # 'content' contains a one-line printable version of the string,
+            content = string_repr(coord_cell.point)
+            content = iris.util.clip_string(content)
+            self.content = content
         else:
             self.string_type = False
             self.lines = None

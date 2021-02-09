@@ -103,21 +103,28 @@ class Test_CubeSummary(tests.IrisTest):
         scalar_coord_with_bounds = AuxCoord(
             [10], long_name="foo", units="K", bounds=[(5, 15)]
         )
-        scalar_coord_text = AuxCoord(
-            ["a\nb\nc"], long_name="foo", attributes={"key": "value"}
+        scalar_coord_simple_text = AuxCoord(
+            ["this and that"],
+            long_name="foo",
+            attributes={"key": 42, "key2": "value-str"},
+        )
+        scalar_coord_awkward_text = AuxCoord(
+            ["a is\nb\n and c"], long_name="foo_2"
         )
         cube.add_aux_coord(scalar_coord_no_bounds)
         cube.add_aux_coord(scalar_coord_with_bounds)
-        cube.add_aux_coord(scalar_coord_text)
+        cube.add_aux_coord(scalar_coord_simple_text)
+        cube.add_aux_coord(scalar_coord_awkward_text)
         rep = iris._representation.CubeSummary(cube)
 
         scalar_section = rep.scalar_sections["Scalar coordinates:"]
 
-        self.assertEqual(len(scalar_section.contents), 3)
+        self.assertEqual(len(scalar_section.contents), 4)
 
         no_bounds_summary = scalar_section.contents[0]
         bounds_summary = scalar_section.contents[1]
-        text_summary = scalar_section.contents[2]
+        text_summary_simple = scalar_section.contents[2]
+        text_summary_awkward = scalar_section.contents[3]
 
         self.assertEqual(no_bounds_summary.name, "bar")
         self.assertEqual(no_bounds_summary.content, "10 K")
@@ -127,9 +134,15 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(bounds_summary.content, "10 K, bound=(5, 15) K")
         self.assertEqual(bounds_summary.extra, "")
 
-        self.assertEqual(text_summary.name, "foo")
-        self.assertEqual(text_summary.content, "a\nb\nc")
-        self.assertEqual(text_summary.extra, "key='value'")
+        self.assertEqual(text_summary_simple.name, "foo")
+        self.assertEqual(text_summary_simple.content, "this and that")
+        self.assertEqual(text_summary_simple.lines, ["this and that"])
+        self.assertEqual(text_summary_simple.extra, "key=42, key2='value-str'")
+
+        self.assertEqual(text_summary_awkward.name, "foo_2")
+        self.assertEqual(text_summary_awkward.content, r"'a is\nb\n and c'")
+        self.assertEqual(text_summary_awkward.lines, ["a is", "b", " and c"])
+        self.assertEqual(text_summary_awkward.extra, "")
 
     def test_cell_measure(self):
         cube = self.cube
