@@ -9,7 +9,13 @@ import iris.tests as tests
 import numpy as np
 
 from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import (
+    AuxCoord,
+    DimCoord,
+    AncillaryVariable,
+    CellMeasure,
+    CellMethod,
+)
 from iris._representation.cube_summary import CubeSummary
 
 from iris._representation.cube_printout import CubePrinter
@@ -113,7 +119,6 @@ class TestCubePrintout__to_string(tests.IrisTest):
         self.assertEqual(rep, expected)
 
     def test_coord_extra_attributes__array(self):
-        # Include : long
         cube = Cube(0, long_name="name", units=1)
         # Add a pair of vector coords with same name but different attributes.
         array1 = np.arange(0, 3)
@@ -193,7 +198,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             AuxCoord(
                 [2],
                 long_name="co",
-                attributes=dict(note="line 1\nline 2\nends."),
+                attributes=dict(note="line 1\nline 2\tends."),
             )
         )
         rep = cube_replines(cube)
@@ -202,7 +207,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Scalar coordinates:",
             "        co                               1",
             "        co                               2",
-            "            note='line 1\\nline 2\\nends.'",
+            "            note='line 1\\nline 2\\tends.'",
         ]
         self.assertEqual(rep, expected)
 
@@ -240,7 +245,6 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_section_vector_dimcoords(self):
         cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
-        # Add a pair of vector coords with same name but different attributes.
         cube.add_dim_coord(DimCoord([0, 1], long_name="y"), 0)
         cube.add_dim_coord(DimCoord([0, 1, 2], long_name="x"), 1)
 
@@ -254,40 +258,182 @@ class TestCubePrintout__to_string(tests.IrisTest):
         self.assertEqual(rep, expected)
 
     def test_section_vector_auxcoords(self):
-        pass
+        cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
+        cube.add_aux_coord(DimCoord([0, 1], long_name="y"), 0)
+        cube.add_aux_coord(DimCoord([0, 1, 2], long_name="x"), 1)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 3)",
+            "    Auxiliary coordinates:",
+            "        y                                 x       -",
+            "        x                                 -       x",
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_vector_ancils(self):
-        pass
+        cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
+        cube.add_ancillary_variable(
+            AncillaryVariable([0, 1], long_name="av1"), 0
+        )
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 3)",
+            "    Ancillary variables:",
+            "        av1                               x       -",
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_vector_cell_measures(self):
-        pass
+        cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
+        cube.add_cell_measure(CellMeasure([0, 1, 2], long_name="cm"), 1)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 3)",
+            "    Cell measures:",
+            "        cm                                -       x",
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_scalar_coords(self):
         # incl points + bounds
         # TODO: ought to incorporate coord-based summary
         #  - which would allow for special printout of time values
-        pass
+        cube = Cube([0], long_name="name", units=1)
+        cube.add_aux_coord(DimCoord([0.0], long_name="unbounded"))
+        cube.add_aux_coord(DimCoord([0], bounds=[[0, 7]], long_name="bounded"))
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1)",
+            "    Scalar coordinates:",
+            "        bounded                     0, bound=(0, 7)",
+            "        unbounded                   0.0",
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_scalar_coords__string(self):
         # incl a newline-escaped one
         # incl a long (clipped) one
         # CHECK THAT CLIPPED+ESCAPED WORKS (don't lose final quote)
-        pass
+        cube = Cube([0], long_name="name", units=1)
+        cube.add_aux_coord(AuxCoord(["string-value"], long_name="text"))
+        long_string = (
+            "A string value which is very very very very very very "
+            "very very very very very very very very long."
+        )
+        cube.add_aux_coord(
+            AuxCoord([long_string], long_name="very_long_string")
+        )
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1)",
+            "    Scalar coordinates:",
+            "        text                        string-value",
+            (
+                "        very_long_string            A string value which is "
+                "very very very very very very very very very very..."
+            ),
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_scalar_cell_measures(self):
-        pass
+        cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
+        cube.add_cell_measure(CellMeasure([0], long_name="cm"))
 
-    def test_section_scalar_cube_attributes(self):
-        pass
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 3)",
+            "    Scalar cell measures:",
+            "        cm",
+        ]
+        self.assertEqual(rep, expected)
 
-    def test_section_cube_attributes__string(self):
-        # incl a newline-escaped one
-        # incl a long (clipped) one
-        # CHECK THAT CLIPPED+ESCAPED WORKS (don't lose final quote)
-        pass
+    def test_section_scalar_ancillaries(self):
+        # There *is* no section for this.  But there probably ought to be.
+        cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
+        cube.add_ancillary_variable(AncillaryVariable([0], long_name="av"))
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 3)",
+            "    Ancillary variables:",
+            "        av                                -       -",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_cube_attributes(self):
+        cube = Cube([0], long_name="name", units=1)
+        cube.attributes["number"] = 1.2
+        cube.attributes["list"] = [3]
+        cube.attributes["string"] = "four five in a string"
+        cube.attributes["z_tupular"] = (6, (7, 8))
+        rep = cube_replines(cube)
+        # NOTE: 'list' before 'number', as it uses "sorted(attrs.items())"
+        expected = [
+            "name / (1)                          (-- : 1)",
+            "    Attributes:",
+            "        list                        [3]",
+            "        number                      1.2",
+            "        string                      four five in a string",
+            "        z_tupular                   (6, (7, 8))",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_cube_attributes__string_extras(self):
+        cube = Cube([0], long_name="name", units=1)
+        long_string = (
+            "this is very very very very very very very "
+            "very very very very very very very long."
+        )
+        cube.attributes["escaped"] = "escaped\tstring"
+        cube.attributes["long"] = long_string
+        cube.attributes["long_multi"] = "multi\nline, " + long_string
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1)",
+            "    Attributes:",
+            "        escaped                     'escaped\\tstring'",
+            (
+                "        long                        this is very very very "
+                "very very very very very very very very very very..."
+            ),
+            (
+                "        long_multi                  'multi\\nline, "
+                "this is very very very very very very very very very very..."
+            ),
+        ]
+        self.assertEqual(rep, expected)
 
     def test_section_cube_attributes__array(self):
         # incl a long one
+        cube = Cube([0], long_name="name", units=1)
+        small_array = np.array([1.2, 3.4])
+        large_array = np.arange(36).reshape((18, 2))
+        cube.attributes["array"] = small_array
+        cube.attributes["bigarray"] = large_array
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1)",
+            "    Attributes:",
+            "        array                       array([1.2, 3.4])",
+            (
+                "        bigarray                    array([[ 0, 1], [ 2, 3], "
+                "[ 4, 5], [ 6, 7], [ 8, 9], [10, 11], [12, 13],..."
+            ),
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_cell_methods(self):
+        # cube = Cube([0], long_name="name", units=1)
+        # cm_simple =
+        CellMethod("min", "x")
+        # cm_complex = CellMethod("max", "time", "3 hrs", "with this comment")
+        # cm_complex = CellMethod('max', 'time', '3 hrs')
+        # cube.add
         pass
 
 
