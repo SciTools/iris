@@ -14,7 +14,7 @@ from iris.coords import (
     DimCoord,
     AncillaryVariable,
     CellMeasure,
-    CellMethod,
+    # CellMethod,
 )
 from iris._representation.cube_summary import CubeSummary
 
@@ -427,14 +427,12 @@ class TestCubePrintout__to_string(tests.IrisTest):
         ]
         self.assertEqual(rep, expected)
 
-    def test_section_cell_methods(self):
-        # cube = Cube([0], long_name="name", units=1)
-        # cm_simple =
-        CellMethod("min", "x")
-        # cm_complex = CellMethod("max", "time", "3 hrs", "with this comment")
-        # cm_complex = CellMethod('max', 'time', '3 hrs')
-        # cube.add
-        pass
+    # def test_section_cell_methods(self):
+    #     cube = Cube([0], long_name="name", units=1)
+    #     cm_simple = CellMethod("min", "x")
+    #     cm_complex = CellMethod("max", "time", "3 hrs", "with this comment")
+    #     cm_complex = CellMethod('max', 'time', '3 hrs')
+    #     cube.add
 
 
 if __name__ == "__main__":
