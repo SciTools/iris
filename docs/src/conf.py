@@ -223,7 +223,7 @@ html_favicon = "_static/favicon.ico"
 html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
-    "display_version": False,
+    "display_version": True,
     "style_external_links": True,
     "logo_only": "True",
 }
