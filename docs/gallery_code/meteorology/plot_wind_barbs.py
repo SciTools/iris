@@ -1,6 +1,6 @@
 """
-Plotting wind direction using barbs
-===========================================================
+Plotting Wind Direction Using Barbs
+===================================
 
 This example demonstrates using barbs to plot wind speed contours and wind
 direction barbs from wind vector component input data. The vector components
