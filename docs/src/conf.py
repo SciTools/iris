@@ -86,7 +86,6 @@ else:
     # major.minor.patch-dev -> major.minor.patch
     version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
 # The full version, including alpha/beta/rc tags.
-
 release = iris.__version__
 
 autolog("Iris Version = {}".format(version))
