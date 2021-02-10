@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.common.metadata.ConnectivityMetadata`.
+Unit tests for the :class:`iris.experimental.ugrid.ConnectivityMetadata`.
 
 """
 
@@ -17,7 +17,8 @@ import unittest.mock as mock
 from unittest.mock import sentinel
 
 from iris.common.lenient import _LENIENT, _qualname
-from iris.common.metadata import BaseMetadata, ConnectivityMetadata
+from iris.common.metadata import BaseMetadata
+from iris.experimental.ugrid import ConnectivityMetadata
 
 
 class Test(tests.IrisTest):

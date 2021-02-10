@@ -21,11 +21,11 @@ from iris.common.metadata import (
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
-    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
 )
 from iris.common.mixin import CFVariableMixin, LimitedAttributeDict
+from iris.experimental.ugrid import ConnectivityMetadata
 
 
 class Test__getter(tests.IrisTest):
