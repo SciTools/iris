@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :class:`iris.coords.Connectivity` class."""
+"""Unit tests for the :class:`iris.experimental.ugrid.Connectivity` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -14,7 +14,7 @@ from xml.dom import minidom
 import numpy as np
 from numpy import ma
 
-from iris.coords import Connectivity
+from iris.experimental.ugrid import Connectivity
 from iris._lazy_data import as_lazy_data, is_lazy_data
 
 
