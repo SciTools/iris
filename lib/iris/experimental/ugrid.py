@@ -25,7 +25,6 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
-from ..config import get_logger
 from ..coords import _DimensionalMetadata
 
 
@@ -33,10 +32,6 @@ __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
 ]
-
-
-# Configure the logger.
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 
 class Connectivity(_DimensionalMetadata):
