@@ -6,7 +6,7 @@
 
 """
 Infra-structure for unstructured mesh support, based on
-CF UGRID Convetions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/
+CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/
 
 """
 
