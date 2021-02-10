@@ -638,6 +638,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        # TODO: replace with isinstance(self, Connectivity) once Connectivity
+        # is re-integrated here (currently in experimental.ugrid).
         elif hasattr(self, "indices"):
             values_term = "indices"
         else:
