@@ -580,7 +580,21 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.shape
 
     def xml_element(self, doc):
-        """Return a DOM element describing this metadata."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`_DimensionalMetadata`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`_DimensionalMetadata`, and the dictionary of attributes
+            that require to be added to this element.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name.
         element_name = type(self).__name__
@@ -885,6 +899,20 @@ class CellMeasure(AncillaryVariable):
         return cube.cell_measure_dims(self)
 
     def xml_element(self, doc):
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMeasure`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMeasure`.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
         element = super().xml_element(doc=doc)
@@ -2231,14 +2259,26 @@ class Coord(_DimensionalMetadata):
         return result_index
 
     def xml_element(self, doc):
-        """Return a DOM element describing this Coord."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`Coord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`DimCoord`, and the dictionary of attributes that require
+            to be added to this element.
+
+        """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
         element = super().xml_element(doc=doc)
 
-        element.setAttribute("points", self._xml_array_repr(self.points))
-
-        # Add bounds handling
+        # Add bounds, points are handled by the parent class.
         if self.has_bounds():
             element.setAttribute("bounds", self._xml_array_repr(self.bounds))
 
@@ -2617,7 +2657,20 @@ class DimCoord(Coord):
         return True
 
     def xml_element(self, doc):
-        """Return DOM element describing this :class:`iris.coords.DimCoord`."""
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`DimCoord`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`DimCoord`.
+
+        """
         element = super().xml_element(doc)
         if self.circular:
             element.setAttribute("circular", str(self.circular))
@@ -2797,7 +2850,17 @@ class CellMethod(iris.util._OrderedHashable):
 
     def xml_element(self, doc):
         """
-        Return a dom element describing itself
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`CellMethod`.
+
+        Args:
+
+        * doc:
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that describes this
+            :class:`CellMethod`.
 
         """
         cellMethod_xml_element = doc.createElement("cellMethod")

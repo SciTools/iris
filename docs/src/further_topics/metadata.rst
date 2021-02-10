@@ -258,12 +258,12 @@ create a **new** instance directly from the metadata class itself,
     >>> DimCoordMetadata._make(values)
     DimCoordMetadata(standard_name=1, long_name=2, var_name=3, units=4, attributes=5, coord_system=6, climatological=7, circular=8)
 
-It is also possible to easily convert ``metadata`` to an `OrderedDict`_
+It is also possible to easily convert ``metadata`` to an `dict`_
 using the `namedtuple._asdict`_ method. This can be particularly handy when a
 standard Python built-in container is required to represent your ``metadata``,
 
     >>> metadata._asdict()
-    OrderedDict([('standard_name', 'longitude'), ('long_name', None), ('var_name', 'longitude'), ('units', Unit('degrees')), ('attributes', {'grinning face': '🙃'}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    {'standard_name': 'longitude', 'long_name': None, 'var_name': 'longitude', 'units': Unit('degrees'), 'attributes': {'grinning face': '🙃'}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
 
 Using the `namedtuple._replace`_ method allows you to create a new metadata
 class instance, but replacing specified members with **new** associated values,
@@ -943,7 +943,7 @@ such as a `dict`_,
 
     >>> mapping = latitude.metadata._asdict()
     >>> mapping
-    OrderedDict([('standard_name', 'latitude'), ('long_name', None), ('var_name', 'latitude'), ('units', Unit('degrees')), ('attributes', {}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    {'standard_name': 'latitude', 'long_name': None, 'var_name': 'latitude', 'units': Unit('degrees'), 'attributes': {}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
     >>> longitude.metadata = mapping
     >>> longitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
@@ -1000,7 +1000,6 @@ values. All other metadata members will be left unaltered.
 .. _NetCDF: https://www.unidata.ucar.edu/software/netcdf/
 .. _NetCDF CF Metadata Conventions: https://cfconventions.org/
 .. _NumPy: https://github.com/numpy/numpy
-.. _OrderedDict: https://docs.python.org/3/library/collections.html#collections.OrderedDict
 .. _Parametric Vertical Coordinate: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#parametric-vertical-coordinate
 .. _rich comparison: https://www.python.org/dev/peps/pep-0207/
 .. _SciTools/iris: https://github.com/SciTools/iris

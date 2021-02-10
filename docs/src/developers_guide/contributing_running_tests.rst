@@ -175,11 +175,17 @@ For further `nox`_ command-line options::
 
   nox --help
 
+.. tip::
+    For `nox`_ sessions that use the `conda`_ backend, you can use the ``-v`` or ``--verbose``
+    flag to display the `nox`_ `conda`_ environment package details and environment info.
+    For example::
+
+        nox --session tests -- --verbose
+
+
 .. note:: `nox`_ will cache its testing environments in the `.nox` root ``iris`` project directory.
 
 
-.. _black: https://black.readthedocs.io/en/stable/
-.. _nox: https://nox.thea.codes/en/latest/
 .. _setuptools: https://setuptools.readthedocs.io/en/latest/
 .. _tox: https://tox.readthedocs.io/en/latest/
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/

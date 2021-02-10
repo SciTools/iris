@@ -98,6 +98,8 @@ linux_minimal_task:
       PY_VER: 3.6
     env:
       PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
   container:
     image: gcc:latest
@@ -107,7 +109,7 @@ linux_minimal_task:
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session tests
+    - nox --session tests -- --verbose
 
 
 #
@@ -119,6 +121,8 @@ linux_task:
       PY_VER: 3.6
     env:
       PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
   container:
     image: gcc:latest
@@ -137,7 +141,7 @@ linux_task:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session tests
+    - nox --session tests -- --verbose
 
 
 #
@@ -146,9 +150,7 @@ linux_task:
 gallery_task:
   matrix:
     env:
-      PY_VER: 3.6
-    env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
   container:
     image: gcc:latest
@@ -167,7 +169,7 @@ gallery_task:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session gallery
+    - nox --session gallery -- --verbose
 
 
 #
@@ -176,7 +178,7 @@ gallery_task:
 doctest_task:
   matrix:
     env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests"
   container:
     image: gcc:latest
@@ -201,7 +203,7 @@ doctest_task:
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
-    - nox --session doctest
+    - nox --session doctest -- --verbose
 
 
 #
@@ -210,7 +212,7 @@ doctest_task:
 link_task:
   matrix:
     env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc link check"
   container:
     image: gcc:latest
@@ -224,4 +226,4 @@ link_task:
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
-    - nox --session linkcheck
+    - nox --session linkcheck -- --verbose
