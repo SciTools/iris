@@ -14,11 +14,20 @@ from iris.coords import (
     DimCoord,
     AncillaryVariable,
     CellMeasure,
-    # CellMethod,
+    CellMethod,
 )
 from iris._representation.cube_summary import CubeSummary
 
 from iris._representation.cube_printout import CubePrinter
+
+
+class TestCubePrintout___str__(tests.IrisTest):
+    def test_str(self):
+        # Just check that its str representation is the 'to_string' result.
+        cube = Cube(0)
+        printer = CubePrinter(CubeSummary(cube))
+        result = str(printer)
+        self.assertEqual(result, printer.to_string())
 
 
 def cube_replines(cube, **kwargs):
@@ -427,12 +436,26 @@ class TestCubePrintout__to_string(tests.IrisTest):
         ]
         self.assertEqual(rep, expected)
 
-    # def test_section_cell_methods(self):
-    #     cube = Cube([0], long_name="name", units=1)
-    #     cm_simple = CellMethod("min", "x")
-    #     cm_complex = CellMethod("max", "time", "3 hrs", "with this comment")
-    #     cm_complex = CellMethod('max', 'time', '3 hrs')
-    #     cube.add
+    def test_section_cell_methods(self):
+        cube = Cube([0], long_name="name", units=1)
+        cube.add_cell_method(CellMethod("stdev", "area"))
+        cube.add_cell_method(
+            CellMethod(
+                method="mean",
+                coords=["y", "time"],
+                intervals=["10m", "3min"],
+                comments=["vertical", "=duration"],
+            )
+        )
+        rep = cube_replines(cube)
+        # Note: not alphabetical -- provided order is significant
+        expected = [
+            "name / (1)                                              (-- : 1)",
+            "    Cell methods:",
+            "        stdev: area",
+            "        mean: y (10m, vertical), time (3min, =duration)",
+        ]
+        self.assertEqual(rep, expected)
 
 
 if __name__ == "__main__":

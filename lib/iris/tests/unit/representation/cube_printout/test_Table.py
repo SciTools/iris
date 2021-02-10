@@ -74,12 +74,86 @@ class TestTable(tests.IrisTest):
         )
         self.assertEqual(len(table.rows), 2)
         self.assertEqual(table.rows[-1].i_col_unlimited, 199)
+
         # Fails with bad number of columns
-        with self.assertRaisesRegex(ValueError, "columns.*!=.*existing"):
-            table.add_row(["one"], ["left"])
+        regex = "columns.*!=.*existing"
+        with self.assertRaisesRegex(ValueError, regex):
+            table.add_row(["1", "2"], ["left", "right"])
+
         # Fails with bad number of aligns
-        with self.assertRaisesRegex(ValueError, "aligns.*!=.*col"):
-            table.add_row(["one", "two"], ["left"])
+        regex = "aligns.*!=.*col"
+        with self.assertRaisesRegex(ValueError, regex):
+            table.add_row(["1", "2", "3"], ["left", "left", "left", "left"])
+
+    def test_formatted_as_strings(self):
+        # Test simple self-print is same as
+        table = Table()
+        aligns = ["left", "right", "left"]
+        table.add_row(["1", "266", "32"], aligns)
+        table.add_row(["123", "2", "3"], aligns)
+
+        # Check that printing calculates default column widths, and result..
+        self.assertEqual(table.col_widths, None)
+        result = table.formatted_as_strings()
+        self.assertEqual(result, ["1   266 32", "123   2 3"])
+        self.assertEqual(table.col_widths, [3, 3, 2])
+
+    def test_fail_bad_alignments(self):
+        # Invalid 'aligns' content : only detected when printed
+        table = Table()
+        table.add_row(["1", "2", "3"], ["left", "right", "BAD"])
+        regex = 'Unknown alignment "BAD"'
+        with self.assertRaisesRegex(ValueError, regex):
+            str(table)
+
+    def test_table_set_width(self):
+        # Check that changes do *not* affect pre-existing widths.
+        table = Table()
+        aligns = ["left", "right", "left"]
+        table.col_widths = [3, 3, 2]
+        table.add_row(["333", "333", "22"], aligns)
+        table.add_row(["a", "b", "c"], aligns)
+        table.add_row(["12345", "12345", "12345"], aligns)
+        result = table.formatted_as_strings()
+        self.assertEqual(table.col_widths, [3, 3, 2])
+        self.assertEqual(
+            result,
+            [
+                "333 333 22",
+                "a     b c",
+                "12345 12345 12345",  # These are exceeding the given widths.
+            ],
+        )
+
+    def test_unlimited_column(self):
+        table = Table()
+        aligns = ["left", "right", "left"]
+        table.add_row(["a", "beee", "c"], aligns)
+        table.add_row(
+            ["abcd", "any-longer-stuff", "this"], aligns, i_col_unlimited=1
+        )
+        table.add_row(["12", "x", "yy"], aligns)
+        result = table.formatted_as_strings()
+        self.assertEqual(
+            result,
+            [
+                "a    beee c",
+                "abcd any-longer-stuff this",
+                # NOTE: the widths-calc is ignoring cols 1-2, but
+                # entry#0 *is* extending the width of col#0
+                "12      x yy",
+            ],
+        )
+
+    def test_str(self):
+        # Check that str returns the formatted_as_strings() output.
+        table = Table()
+        aligns = ["left", "left", "left"]
+        table.add_row(["one", "two", "three"], aligns=aligns)
+        table.add_row(["1", "2", "3"], aligns=aligns)
+        expected = "\n".join(table.formatted_as_strings())
+        result = str(table)
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
