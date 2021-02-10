@@ -6,8 +6,10 @@
 """
 Provides objects describing cube summaries.
 """
+import re
 
 import iris.util
+from iris.common.metadata import _hexdigest as quickhash
 
 
 class DimensionHeader:
@@ -46,6 +48,35 @@ class FullHeader:
         self.dimension_header = DimensionHeader(cube)
 
 
+def string_repr(text, quote_strings=False):
+    """Produce a one-line printable form of a text string."""
+    if re.findall("[\n\t]", text) or quote_strings:
+        # Replace the string with its repr (including quotes).
+        text = repr(text)
+    return text
+
+
+def array_repr(arr):
+    """Produce a single-line printable repr of an array."""
+    # First take whatever numpy produces..
+    text = repr(arr)
+    # ..then reduce any multiple spaces and newlines.
+    text = re.sub("[ \t\n]+", " ", text)
+    return text
+
+
+def value_repr(value, quote_strings=False):
+    """
+    Produce a single-line printable version of an attribute or scalar value.
+    """
+    if hasattr(value, "dtype"):
+        value = array_repr(value)
+    elif isinstance(value, str):
+        value = string_repr(value, quote_strings=quote_strings)
+    value = str(value)
+    return value
+
+
 class CoordSummary:
     def _summary_coord_extra(self, cube, coord):
         # Returns the text needed to ensure this coordinate can be
@@ -66,12 +97,21 @@ class CoordSummary:
                         vary.add(key)
                         break
                     value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
+                    # Like "if attributes.setdefault(key, value) != value:"
+                    # ..except setdefault fails if values are numpy arrays.
+                    if key not in attributes:
+                        attributes[key] = value
+                    elif quickhash(attributes[key]) != quickhash(value):
+                        # NOTE: fast and array-safe comparison, as used in
+                        # :mod:`iris.common.metadata`.
                         vary.add(key)
                         break
             keys = sorted(vary & set(coord.attributes.keys()))
             bits = [
-                "{}={!r}".format(key, coord.attributes[key]) for key in keys
+                "{}={}".format(
+                    key, value_repr(coord.attributes[key], quote_strings=True)
+                )
+                for key in keys
             ]
             if bits:
                 extra = ", ".join(bits)
@@ -105,13 +145,17 @@ class ScalarSummary(CoordSummary):
         coord_cell = coord.cell(0)
         if isinstance(coord_cell.point, str):
             self.string_type = True
+            # 'lines' is value split on '\n', and _each one_ length-clipped.
             self.lines = [
                 iris.util.clip_string(str(item))
                 for item in coord_cell.point.split("\n")
             ]
             self.point = None
             self.bound = None
-            self.content = "\n".join(self.lines)
+            # 'content' contains a one-line printable version of the string,
+            content = string_repr(coord_cell.point)
+            content = iris.util.clip_string(content)
+            self.content = content
         else:
             self.string_type = False
             self.lines = None
@@ -132,9 +176,6 @@ class ScalarSummary(CoordSummary):
 
 
 class Section:
-    def _init_(self):
-        self.contents = []
-
     def is_empty(self):
         return self.contents == []
 
@@ -166,7 +207,8 @@ class AttributeSection(Section):
         self.values = []
         self.contents = []
         for name, value in sorted(attributes.items()):
-            value = iris.util.clip_string(str(value))
+            value = value_repr(value)
+            value = iris.util.clip_string(value)
             self.names.append(name)
             self.values.append(value)
             content = "{}: {}".format(name, value)
@@ -180,11 +222,13 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
+    """
+    This class provides a structure for output representations of an Iris cube.
+    TODO: use to produce the printout of :meth:`iris.cube.Cube.__str__`.
+
+    """
+
     def __init__(self, cube, shorten=False, name_padding=35):
-        self.section_indent = 5
-        self.item_indent = 10
-        self.extra_indent = 13
-        self.shorten = shorten
         self.header = FullHeader(cube, name_padding)
 
         # Cache the derived coords so we can rely on consistent
@@ -249,9 +293,9 @@ class CubeSummary:
         add_vector_section("Dimension coordinates:", vector_dim_coords)
         add_vector_section("Auxiliary coordinates:", vector_aux_coords)
         add_vector_section("Derived coordinates:", vector_derived_coords)
-        add_vector_section("Cell Measures:", vector_cell_measures, False)
+        add_vector_section("Cell measures:", vector_cell_measures, False)
         add_vector_section(
-            "Ancillary Variables:", vector_ancillary_variables, False
+            "Ancillary variables:", vector_ancillary_variables, False
         )
 
         self.scalar_sections = {}
@@ -260,7 +304,7 @@ class CubeSummary:
             self.scalar_sections[title] = section_class(title, *args)
 
         add_scalar_section(
-            ScalarSection, "Scalar Coordinates:", cube, scalar_coords
+            ScalarSection, "Scalar coordinates:", cube, scalar_coords
         )
         add_scalar_section(
             ScalarCellMeasureSection,
