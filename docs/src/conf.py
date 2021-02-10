@@ -80,7 +80,6 @@ author = "Iris Developers"
 import iris
 
 # The short X.Y version.
-# TREMTEST: This seems pointless now?  Is it ever true?
 if iris.__version__ == "dev":
     version = "dev"
 else:
@@ -88,7 +87,6 @@ else:
     version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
 # The full version, including alpha/beta/rc tags.
 
-# TREMTEST: lets try to not define release?
 release = iris.__version__
 
 autolog("Iris Version = {}".format(version))
