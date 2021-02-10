@@ -34,6 +34,7 @@ __all__ = [
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
+    "ConnectivityMetadata",
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
@@ -181,9 +182,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
-                # The "circular" member does not participate in strict equivalence.
+                # The "circular" and "src_dim" members do not participate in strict equivalence.
                 fields = filter(
-                    lambda field: field != "circular", self._fields
+                    lambda field: field not in ("circular", "src_dim"),
+                    self._fields,
                 )
                 result = all([func(field) for field in fields])
 
@@ -875,6 +877,126 @@ class CellMeasureMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
+class ConnectivityMetadata(BaseMetadata):
+    """
+    Metadata container for a :class:`~iris.coords.Connectivity`.
+
+    """
+
+    # The "src_dim" member is stateful only, and does not participate in
+    # lenient/strict equivalence.
+    _members = ("cf_role", "start_index", "src_dim")
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for connectivities.
+
+        Args:
+
+        * other (ConnectivityMetadata):
+            The other connectivity metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # Perform "strict" combination for "cf_role", "start_index", "src_dim".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in ConnectivityMetadata._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for connectivities.
+
+        Args:
+
+        * other (ConnectivityMetadata):
+            The other connectivity metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "cf_role", "start_index".
+        # The "src_dim" member is not part of lenient equivalence.
+        members = filter(
+            lambda member: member != "src_dim", ConnectivityMetadata._members
+        )
+        result = all(
+            [
+                getattr(self, field) == getattr(other, field)
+                for field in members
+            ]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for connectivities.
+
+        Args:
+
+        * other (ConnectivityMetadata):
+            The other connectivity metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "cf_role", "start_index", "src_dim".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in ConnectivityMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
 class CoordMetadata(BaseMetadata):
     """
     Metadata container for a :class:`~iris.coords.Coord`.
@@ -1459,6 +1581,7 @@ SERVICES_COMBINE = (
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
+    ConnectivityMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
     DimCoordMetadata.combine,
@@ -1470,6 +1593,7 @@ SERVICES_DIFFERENCE = (
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
+    ConnectivityMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
     DimCoordMetadata.difference,
@@ -1484,6 +1608,8 @@ SERVICES_EQUAL = (
     BaseMetadata.equal,
     CellMeasureMetadata.__eq__,
     CellMeasureMetadata.equal,
+    ConnectivityMetadata.__eq__,
+    ConnectivityMetadata.equal,
     CoordMetadata.__eq__,
     CoordMetadata.equal,
     CubeMetadata.__eq__,
