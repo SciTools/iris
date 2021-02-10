@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :mod:`iris._representation.cube_summary` module."""
+"""Unit tests for :class:`iris._representation.cube_summary.CubeSummary`."""
 
 import numpy as np
 import iris.tests as tests
