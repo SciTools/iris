@@ -26,3 +26,17 @@ table.docutils td {
     word-wrap: break-word;
 }
 
+/* Used for very strong warning */
+#slim-red-box-message {
+  background: #ff0000;
+  box-sizing: border-box;
+  color: #ffffff;
+  font-weight: normal;
+  padding: 0.5em;
+  width: 100%;
+}
+
+#slim-red-box-message a {
+  color: #ffffff;
+  text-decoration:underline;
+}

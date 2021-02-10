@@ -80,12 +80,15 @@ author = "Iris Developers"
 import iris
 
 # The short X.Y version.
+# TREMTEST: This seems pointless now?  Is it ever true?
 if iris.__version__ == "dev":
     version = "dev"
 else:
     # major.minor.patch-dev -> major.minor.patch
     version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
 # The full version, including alpha/beta/rc tags.
+
+# TREMTEST: lets try to not define release?
 release = iris.__version__
 
 autolog("Iris Version = {}".format(version))
@@ -222,12 +225,13 @@ html_favicon = "_static/favicon.ico"
 html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
-    "display_version": True,
+    "display_version": False,
     "style_external_links": True,
     "logo_only": "True",
 }
 
 html_context = {
+    "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
     # menu_links and menu_links_name are used in _templates/layout.html
