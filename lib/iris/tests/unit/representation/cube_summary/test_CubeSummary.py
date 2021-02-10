@@ -288,7 +288,7 @@ class Test_CubeSummary(tests.IrisTest):
         for co in (co3a, co3b):
             cube.add_aux_coord(co)
 
-        rep = iris._representation.CubeSummary(cube)
+        rep = CubeSummary(cube)
         co_summs = rep.scalar_sections["Scalar coordinates:"].contents
         co1a_summ, co1b_summ = co_summs[0:2]
         self.assertEqual(co1a_summ.extra, "arr2=array([1, 2])")

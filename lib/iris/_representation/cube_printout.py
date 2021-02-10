@@ -65,10 +65,20 @@ class Table:
 
         """
         n_cols = len(cols)
-        assert len(aligns) == n_cols
+        if len(aligns) != n_cols:
+            msg = (
+                f"Number of aligns ({len(aligns)})"
+                f" != number of cols ({n_cols})"
+            )
+            raise ValueError(msg)
         if self.n_columns is not None:
             # For now, all rows must have same number of columns
-            assert n_cols == self.n_columns
+            if n_cols != self.n_columns:
+                msg = (
+                    f"Number of columns ({n_cols})"
+                    f" != existing table.n_columns ({self.n_columns})"
+                )
+                raise ValueError(msg)
         row = self.Row(cols, aligns, i_col_unlimited)
         self.rows.append(row)
 
@@ -107,7 +117,9 @@ class Table:
                     )
                     raise ValueError(msg)
                 col_texts.append(col_text)
-            result_lines.append(" ".join(col_texts))
+
+            row_line = " ".join(col_texts).rstrip()
+            result_lines.append(row_line)
         return result_lines
 
     def __str__(self):
@@ -297,15 +309,15 @@ class CubePrinter:
         (oneline_result,) = table.formatted_as_strings()
         return oneline_result
 
-    def _multiline_summary(self, max_width):
+    def _multiline_summary(self, name_padding):
         """Produce a multi-line summary string."""
         # Get a derived table with standard 'decorations' added.
-        table = self._decorated_table(self.table, name_padding=35)
+        table = self._decorated_table(self.table, name_padding=name_padding)
         result_lines = table.formatted_as_strings()
         result = "\n".join(result_lines)
         return result
 
-    def to_string(self, oneline=False, max_width=None):
+    def to_string(self, oneline=False, name_padding=35):
         """
         Produce a printable summary.
 
@@ -327,7 +339,7 @@ class CubePrinter:
         if oneline:
             result = self._oneline_string()
         else:
-            result = self._multiline_summary(max_width)
+            result = self._multiline_summary(name_padding)
 
         return result
 
