@@ -615,6 +615,437 @@ class ConnectivityMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
+# class Mesh(CFVariableMixin):
+#     """
+#
+#     .. todo::
+#
+#     .. questions::
+#
+#         - decide on the verbose/succinct version of __str__ vs __repr__
+#
+#     .. notes::
+#
+#         - the mesh is location agnostic
+#
+#         - no need to support volume at mesh level, yet
+#
+#         - topology_dimension
+#             - use for fast equality between Mesh instances
+#             - checking connectivity dimensionality, specifically the highest dimensonality of the
+#               "geometric element" being added i.e., reference the src_location/tgt_location
+#             - used to honour and enforce the minimum UGRID connectivity contract
+#
+#         - support pickling
+#
+#         - copy is off the table!!
+#
+#         - MeshCoord.guess_points()
+#
+#         - don't provide public methods to return the coordinate and connectivity
+#           managers
+#
+#     """
+#     def __init__(
+#             self,
+#             topology_dimension,
+#             standard_name=None,
+#             long_name=None,
+#             var_name=None,
+#             units=None,
+#             attributes=None,
+#             node_dimension=None,
+#             edge_dimension=None,
+#             face_dimension=None,
+#             node_coords_and_axes=None,   # [(coord, "x"), (coord, "y")] this is a stronger contract, not relying on guessing
+#             edge_coords_and_axes=None,   # ditto
+#             face_coords_and_axes=None,   # ditto
+#             connectivities=None,         # [Connectivity, [Connectivity], ...]
+#     ):
+#         # TODO: support volumes.
+#         # TODO: support (coord, "z")
+#
+#         # These are strings, if None is provided then assign the default string.
+#         self.node_dimension = node_dimension
+#         self.edge_dimension = edge_dimension
+#         self.face_dimension = face_dimension
+#
+#         self._metadata_manager = metadata_manager_factory(MeshMetadata)
+#
+#         self._metadata_manager.topology_dimension = topology_dimension
+#
+#         self.standard_name = standard_name
+#         self.long_name = long_name
+#         self.var_name = var_name
+#         self.units = units
+#         self.attributes = attributes
+#
+#         # based on the topology_dimension create the appropriate coordinate manager
+#         # with some intelligence
+#         self._coord_manager = ...
+#
+#         # based on the topology_dimension create the appropriate connectivity manager
+#         # with some intelligence
+#         self._connectivity_manager = ...
+#
+#     @property
+#     def all_coords(self):
+#         # coords = mesh.all_coords
+#         # coords.face_x, coords.edge_y
+#         pass
+#
+#     @property
+#     def node_coords(self):
+#         # perhaps return a namedtuple?
+#         # this would give:
+#         # node_coords = mesh.node_coords
+#         # node_coords.x
+#         # node_coords.y
+#         pass
+#
+#     @property
+#     def edge_coords(self):
+#         # as above
+#         pass
+#
+#     @property
+#     def face_coords(self):
+#         # as above
+#         pass
+#
+#     @property
+#     def all_connectivities(self):
+#         # conns = mesh.all_connectivities
+#         # conns.edge_node, conns.boundary_node
+#         pass
+#
+#     @property
+#     def face_node_connectivity(self):
+#         # required
+#         return self._connectivity_manager.face_node
+#
+#     @property
+#     def edge_node_connectivity(self):
+#         # optionally required
+#         return self._connectivity_manager.edge_node
+#
+#     @property
+#     def face_edge_connectivity(self):
+#         # optional
+#         return self._connectivity_manager.face_edge
+#
+#     @property
+#     def face_face_connectivity(self):
+#         # optional
+#         return self._connectivity_manager.face_face
+#
+#     @property
+#     def edge_face_connectivity(self):
+#         # optional
+#         return self._connectivity_manager.edge_face
+#
+#     @property
+#     def boundary_node_connectivity(self):
+#         # optional
+#         return self._connectivity_manager.boundard_node
+#
+#     def coord(self, ...):
+#         # as Cube.coord i.e., ensure that one and only one coord-like is returned
+#         # otherwise raise and exception
+#         pass
+#
+#     def coords(
+#             self,
+#             name_or_coord=None,
+#             standard_name=None,
+#             long_name=None,
+#             var_name=None,
+#             attributes=None,
+#             axis=None,
+#             node=False,
+#             edge=False,
+#             face=False,
+#     ):
+#         # do we support the coord_system kwargs?
+#         self._coord_manager.coords(...)
+#
+#     def connectivity(self, ...):
+#         pass
+#
+#     def connectivities(
+#             self,
+#             name_or_coord=None,
+#             standard_name=None,
+#             long_name=None,
+#             var_name=None,
+#             attributes=None,
+#             node=False,
+#             edge=False,
+#             face=False,
+#     ):
+#         pass
+#
+#     def add_coords(self, node_x=None, node_y=None, edge_x=None, edge_y=None, face_x=None, face_y=None):
+#         # this supports add a new coord to the manager, but also replacing an exiting coord
+#         self._coord_manager.add(...)
+#
+#     def add_connectivities(self, *args):
+#         # this supports add a new connectivity to the manager, but also replacing an exiting connectivity
+#         self._connectivity_manager.add(*args)
+#
+#     def remove_coords(self, ...):
+#         # could prove the "name", "metadata", "coord"-instance
+#         # this could use mesh.coords() to find the coords
+#         self._coord_manager.remove(...)
+#
+#     def remove_connectivities(self, ...):
+#         # needs to respect the minimum UGRID contract
+#         self._connectivity_manager.remove(...)
+#
+#     def __eq__(self, other):
+#         # Full equality could be MASSIVE, so we want to avoid that.
+#         # Ideally we want a mesh signature from LFRic for comparison, although this would
+#         # limit Iris' relevance outside MO.
+#         # TL;DR: unknown quantity.
+#         raise NotImplemented
+#
+#     def __ne__(self, other):
+#         # See __eq__
+#         raise NotImplemented
+#
+#     def __str__(self):
+#         pass
+#
+#     def __repr__(self):
+#         pass
+#
+#     def __unicode__(self, ...):
+#         pass
+#
+#     def xml_element(self):
+#         pass
+#
+#     # the MeshCoord will always have bounds, perhaps points. However the MeshCoord.guess_points() may
+#     # be a very useful part of its behaviour.
+#     # after using MeshCoord.guess_points(), the user may wish to add the associated MeshCoord.points into
+#     # the Mesh as face_coordinates.
+#
+#     def to_MeshCoord(self, location, axis):
+#         # return MeshCoord(..., location=location, axis=axis)
+#         # use Connectivity.indices_by_src() for fetching indices.
+#
+#     def to_MeshCoords(self, location):
+#         # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
+#         # use Connectivity.indices_by_src() for fetching indices.
+#
+#     def dimension_names_reset(self, node=False, face=False, edge=False):
+#         # reset to defaults like this (suggestion)
+#
+#     def dimension_names(self, node=None, face=None, edge=None):
+#         # e.g., only set self.node iff node != None. these attributes will
+#         #       always be set to a user provided string or the default string.
+#         # return a namedtuple of dict-like
+#
+#     @property
+#     def cf_role(self):
+#         return "mesh_topology"
+#
+#     @property
+#     def topology_dimension(self):
+#         """
+#         read-only
+#
+#         """
+#         return self._metadata_manager.topology_dimension
+#
+#
+# class MeshMetadata(BaseMetadata):
+#     """
+#     .. notes::
+#
+#         - topology_dimension is treated strictly in both
+#           strict and lenient modes, and does participate in __eq__
+#     """
+#     _members = "topology_dimension"
+#
+#
+# #
+# # - validate coord_systems
+# # - validate climatological
+# # - use guess_coord_axis (iris.utils)
+# # - others?
+# #
+# class _Mesh1DCoordinateManager:
+#     REQUIRED = (
+#         "node_x",
+#         "node_y",
+#     )
+#     OPTIONAL = (
+#         "edge_x",
+#         "edge_y",
+#     )
+#     def __init__(self, node_x, node_y, edge_x=None, edge_y=None):
+#         # required
+#         self.node_x = node_x
+#         self.node_y = node_y
+#         # optional
+#         self.edge_x = edge_x
+#         self.edge_y = edge_y
+#
+#         # WOO-GA - this can easily get out of sync with the self attributes.
+#         # choose the container wisely e.g., could be an dict..., also the self
+#         # attributes may need to be @property's that access the chosen _members container
+#         self._members = [ ... ]
+#
+#     def __iter__(self):
+#         for member in self._members:
+#             yield member
+#
+#     def coord(self, **kwargs):
+#         # see Cube.coord for pattern, checking for a single result
+#         return self.coords(**kwargs)[0]
+#
+#     def coords(self, ...):
+#         # see Cube.coords for relevant patterns
+#         # return [ ... ]
+#         pass
+#
+#     def add(self, **kwargs):
+#         pass
+#
+#     def remove(self, ...):
+#         # needs to respect the minimum UGRID contract
+#         # use logging/warning to flag items not removed - highlight in doc-string
+#         # don't raise an exception
+#
+#     def __str__(self):
+#         pass
+#
+#     def __repr__(self):
+#         pass
+#
+#     def __eq__(self, other):
+#         # Full equality could be MASSIVE, so we want to avoid that.
+#         # Ideally we want a mesh signature from LFRic for comparison, although this would
+#         # limit Iris' relevance outside MO.
+#         # TL;DR: unknown quantity.
+#         raise NotImplemented
+#
+#     def __ne__(self, other):
+#         # See __eq__
+#         raise NotImplemented
+#
+#
+# class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
+#     OPTIONAL = (
+#         "edge_x",
+#         "edge_y",
+#         "face_x",
+#         "face_y",
+#     )
+#     def __init__(self, node_x, node_y, edge_x=None, edge_y=None, face_x=None, face_y=None):
+#         # optional
+#         self.face_x = face_x
+#         self.face_y = face_y
+#
+#         super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+#
+#         # does the order matter?
+#         self._members.extend([self.face_x, self.face_y])
+#
+#
+# # keep an eye on the __init__ inheritance
+# class _Mesh1DConnectivityManager:
+#     REQUIRED = (
+#         "edge_node",
+#     )
+#     OPTIONAL = ()
+#     def __init__(self, edge_node):
+#         # required
+#         self.edge_node = edge_node
+#
+#         # WOO-GA - this can easily get out of sync with the self attributes.
+#         # choose the container wisely e.g., could be an dict..., also the self
+#         # attributes may need to be @property's that access the chosen _members container
+#
+#         # is this a list? as dict? a namedtuple? use case is self.add()
+#         self._members = []
+#
+#         if self.edge_node is not None:
+#             self._members.append(self.edge_node)
+#
+#     def __iter__(self):
+#         for member in self._members:
+#             yield member
+#
+#     def connectivity(self, **kwargs):
+#         # see Cube.coord for pattern, checking for a single result
+#         return self.connectivities(**kwargs)[0]
+#
+#     def connectivities(self, ...):
+#         # see Cube.coords for relevant patterns
+#         # return [ ... ]
+#         pass
+#
+#     def add(self, *args):
+#         # loop thru args and add (clobber)
+#         # adopt same philosophy as remove for adding connectivites with unsupported cf-role
+#         pass
+#
+#     def remove(self, ...):
+#         # needs to respect the minimum UGRID contract
+#         # use logging/warning to flag items not removed - highlight in doc-string
+#         # don't raise an exception
+#
+#     def __str__(self):
+#         pass
+#
+#     def __repr__(self):
+#         pass
+#
+#     def __eq__(self, other):
+#         # Full equality could be MASSIVE, so we want to avoid that.
+#         # Ideally we want a mesh signature from LFRic for comparison, although this would
+#         # limit Iris' relevance outside MO.
+#         # TL;DR: unknown quantity.
+#         raise NotImplemented
+#
+#     def __ne__(self, other):
+#         # See __eq__
+#         raise NotImplemented
+#
+#
+# class _Mesh2DConnectivityManager(_Mesh1DConnectivityManager):
+#     REQUIRED = (
+#         "face_node",
+#     )
+#     OPTIONAL = (
+#         "edge_node",
+#         "face_edge",
+#         "face_face",
+#         "edge_face",
+#         "boundary_node",
+#     )
+#     def __init__(self, face_node, edge_node=None, face_edge=None, face_face=None, edge_face=None, boundary_node=None):
+#         # required
+#         self.face_node = face_node
+#         self._members = [self.face_node]
+#
+#         # optionally required
+#         self.edge_node = edge_node
+#         # optional
+#         self.face_edge = face_edge
+#         self.face_face = face_face
+#         self.edge_face = edge_face
+#         self.boundary_node = boundary_node
+#
+#         # edge_node could be None here. are we okay with this pattern?
+#         super().__init__(edge_node)
+#
+#         # does order matter?
+#         self._members.extend([member for member in self.OPTIONAL if member is not None and member != "edge_node"])
+
+
 #: Convenience collection of lenient metadata combine services.
 SERVICES_COMBINE.append(ConnectivityMetadata.combine)
 SERVICES.append(ConnectivityMetadata.combine)
