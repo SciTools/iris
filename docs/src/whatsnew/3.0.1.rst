@@ -470,7 +470,7 @@ This document explains the changes made to Iris for this release
    with `flake8`_ and `black`_. (:pull:`3928`)
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _Matplotlib: https://matplotlib.org/
+.. _Matplotlib: https://matplotlib.org/stable/
 .. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
@@ -480,7 +480,7 @@ This document explains the changes made to Iris for this release
 .. _Cartopy#1105: https://github.com/SciTools/cartopy/pull/1105
 .. _Cartopy#1117: https://github.com/SciTools/cartopy/pull/1117
 .. _Dask: https://github.com/dask/dask
-.. _matplotlib.dates.date2num: https://matplotlib.org/api/dates_api.html#matplotlib.dates.date2num
+.. _matplotlib.dates.date2num: https://matplotlib.org/stable/api/dates_api.html#matplotlib.dates.date2num
 .. _Proj: https://github.com/OSGeo/PROJ
 .. _black: https://black.readthedocs.io/en/stable/
 .. _Proj#1292: https://github.com/OSGeo/PROJ/pull/1292
@@ -510,7 +510,7 @@ This document explains the changes made to Iris for this release
 .. _numpy: https://github.com/numpy/numpy
 .. _xxHash: https://github.com/Cyan4973/xxHash
 .. _PyKE: https://pypi.org/project/scitools-pyke/
-.. _matplotlib.rcdefaults: https://matplotlib.org/3.1.1/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
+.. _matplotlib.rcdefaults: https://matplotlib.org/stable/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
 .. _@owena11: https://github.com/owena11
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _readthedocs: https://readthedocs.org/

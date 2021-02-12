@@ -13,7 +13,7 @@ magnitude may be considered "not significant", so we put these into a separate
 
 To do this, we create a custom value mapping function (normalization) using
 the matplotlib Norm class `matplotlib.colours.SymLogNorm
-<https://matplotlib.org/api/_as_gen/matplotlib.colors.SymLogNorm.html#matplotlib.colors.SymLogNorm>`_.
+<https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.SymLogNorm.html>`_.
 We use this to make a cell-filled pseudocolour plot with a colorbar.
 
 NOTE: By "pseudocolour", we mean that each data point is drawn as a "cell"
@@ -21,9 +21,9 @@ region on the plot, coloured according to its data value.
 This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
 :meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
 functions of the same names (i.e. `matplotlib.pyplot.pcolor
-<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolor>`_
+<http://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pcolor>`_
 and  `matplotlib.pyplot.pcolormesh
-<http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.pcolormesh>`_).
+<http://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.pcolormesh>`_).
 See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
@@ -65,7 +65,7 @@ def main():
 
     # Use a standard colour map which varies blue-white-red.
     # For suitable options, see the 'Diverging colormaps' section in:
-    # http://matplotlib.org/examples/color/colormaps_reference.html
+    # http://matplotlib.org/stable/gallery/color/colormaps_reference.html
     anom_cmap = "bwr"
 
     # Create a 'logarithmic' data normalization.
