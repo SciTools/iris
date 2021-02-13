@@ -12,15 +12,15 @@ magnitude may be considered "not significant", so we put these into a separate
 "zero band" which is plotted in white.
 
 To do this, we create a custom value mapping function (normalization) using
-the matplotlib Norm class :doc:`matplotlib:api/_as_gen/matplotlib.colors.SymLogNorm`.
+the matplotlib Norm class :obj:`matplotlib.colors.SymLogNorm`.
 We use this to make a cell-filled pseudocolor plot with a colorbar.
 
 NOTE: By "pseudocolour", we mean that each data point is drawn as a "cell"
 region on the plot, coloured according to its data value.
 This is provided in Iris by the functions :meth:`iris.plot.pcolor` and
 :meth:`iris.plot.pcolormesh`, which call the underlying matplotlib
-functions of the same names (i.e., :doc:`matplotlib:api/_as_gen/matplotlib.pyplot.pcolor`
-and  :doc:`matplotlib:api/_as_gen/matplotlib.pyplot.pcolormesh`).
+functions of the same names (i.e., :obj:`matplotlib.pyplot.pcolor`
+and :obj:`matplotlib.pyplot.pcolormesh`).
 See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 
 """
