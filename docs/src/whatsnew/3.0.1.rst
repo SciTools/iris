@@ -189,7 +189,7 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ changed the way tick labels are assigned from string coords.
    Previously, the first tick label would occasionally be duplicated. This also
-   removes the use of Matplotlib's deprecated ``IndexFormatter``. (:pull:`3857`)
+   removes the use of the deprecated `matplotlib`_ ``IndexFormatter``. (:pull:`3857`)
 
 #. `@znicholls`_ fixed :meth:`~iris.quickplot._title` to only check
    ``units.is_time_reference`` if the ``units`` symbol is not used. (:pull:`3902`)
@@ -295,11 +295,11 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ and `@trexfeathers`_ pinned Iris to require
    `Cartopy`_ ``>=0.18``, in order to remain compatible with the latest version
-   of `Matplotlib`_. (:pull:`3762`)
+   of `matplotlib`_. (:pull:`3762`)
 
-#. `@bjlittle`_ unpinned Iris to use the latest version of `Matplotlib`_.
+#. `@bjlittle`_ unpinned Iris to use the latest version of `matplotlib`_.
    Supporting ``Iris`` for both ``Python2`` and ``Python3`` had resulted in
-   pinning our dependency on `Matplotlib`_ at ``v2.x``.  But this is no longer
+   pinning our dependency on `matplotlib`_ at ``v2.x``.  But this is no longer
    necessary now that ``Python2`` support has been dropped. (:pull:`3468`)
 
 #. `@stephenworsley`_ and `@trexfeathers`_ unpinned Iris to use the latest version
@@ -422,10 +422,10 @@ This document explains the changes made to Iris for this release
    grid-line spacing in `Cartopy`_. (:pull:`3762`) (see also `Cartopy#1117`_)
 
 #. `@trexfeathers`_ added additional acceptable graphics test targets to account
-   for very minor changes in `Matplotlib`_ version ``3.3`` (colormaps, fonts and
+   for very minor changes in `matplotlib`_ version ``3.3`` (colormaps, fonts and
    axes borders). (:pull:`3762`)
 
-#. `@rcomer`_ corrected the Matplotlib backend in Iris tests to ignore
+#. `@rcomer`_ corrected the `matplotlib`_ backend in Iris tests to ignore
    `matplotlib.rcdefaults`_, instead the tests will **always** use ``agg``.
    (:pull:`3846`)
 
@@ -470,7 +470,6 @@ This document explains the changes made to Iris for this release
    with `flake8`_ and `black`_. (:pull:`3928`)
 
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _Matplotlib: https://matplotlib.org/stable/
 .. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
@@ -510,7 +509,7 @@ This document explains the changes made to Iris for this release
 .. _numpy: https://github.com/numpy/numpy
 .. _xxHash: https://github.com/Cyan4973/xxHash
 .. _PyKE: https://pypi.org/project/scitools-pyke/
-.. _matplotlib.rcdefaults: https://matplotlib.org/stable/api/matplotlib_configuration_api.html?highlight=rcdefaults#matplotlib.rcdefaults
+.. _matplotlib.rcdefaults: https://matplotlib.org/stable/api/matplotlib_configuration_api.html#matplotlib.rcdefaults
 .. _@owena11: https://github.com/owena11
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _readthedocs: https://readthedocs.org/
