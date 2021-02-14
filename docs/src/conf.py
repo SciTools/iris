@@ -186,18 +186,18 @@ templates_path = ["_templates"]
 # -- intersphinx extension ----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
-    "cartopy": ("http://scitools.org.uk/cartopy/docs/latest/", None),
-    "matplotlib": ("http://matplotlib.org/", None),
-    "numpy": ("http://docs.scipy.org/doc/numpy/", None),
-    "python": ("http://docs.python.org/2.7", None),
-    "scipy": ("http://docs.scipy.org/doc/scipy/reference/", None),
+    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
 # -- plot_directive extension -------------------------------------------------
-# See https://matplotlib.org/3.1.3/devel/plot_directive.html#options
+# See https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html#options
 plot_formats = [
     ("png", 100),
 ]
