@@ -62,7 +62,7 @@ def main():
 
     # Use a standard colour map which varies blue-white-red.
     # For suitable options, see the 'Diverging colormaps' section in:
-    # http://matplotlib.org/stable/gallery/color/colormaps_reference.html
+    # http://matplotlib.org/stable/gallery/color/colormap_reference.html
     anom_cmap = "bwr"
 
     # Create a 'logarithmic' data normalization.
