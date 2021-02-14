@@ -43,7 +43,7 @@ if on_rtd:
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
-# This is the version "name" rtd uses, such as: latest, stable, v3.0.1 etc
+# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
@@ -131,8 +131,7 @@ extensions = [
     # better api documentation (custom)
     "custom_class_autodoc",
     "custom_data_autodoc",
-    # TREMTEST
-    #    "generate_package_rst",
+    "generate_package_rst",
 ]
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
