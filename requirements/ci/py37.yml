@@ -49,5 +49,3 @@ dependencies:
   - sphinx-gallery
   - sphinx-panels
   - sphinx_rtd_theme
-  - pip:
-    - sphinx-version-warning

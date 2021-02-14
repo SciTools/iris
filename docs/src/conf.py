@@ -43,6 +43,8 @@ if on_rtd:
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
+# This is the version "name" rtd uses, such as: latest, stable, v3.0.1 etc
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
 
@@ -147,15 +149,15 @@ versionwarning_messages = {
 }
 
 versionwarning_admonition_type = "tip"
-versionwarning_banner_title = "Tip"
-versionwarning_body_selector = 'div[itemprop="articleBody"]'
+# versionwarning_banner_title = "Tip"
+# versionwarning_body_selector = 'div[itemprop="articleBody"]'
 
 # ===
 # Show warning at top of page
 # versionwarning_body_selector = "div.document"
 # versionwarning_banner_title = ""
 # For debugging locally
-# versionwarning_project_version = "latest"
+versionwarning_project_version = "latest"
 
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
@@ -253,6 +255,7 @@ html_theme_options = {
 }
 
 html_context = {
+    "rtd_version": rtd_version,
     "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
