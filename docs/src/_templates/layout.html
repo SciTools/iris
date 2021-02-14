@@ -7,24 +7,6 @@
 /*---------------------------------------------------------------------------*/
 
 {%- block document %}
-{% if theme_display_version %}
-{%- set nav_version = version %}
-{% if READTHEDOCS and current_version %}
-  {%- set nav_version = current_version %}
-{% endif %}
-{% if nav_version %}
-  <div class="version">
-    {{ nav_version }}
-  </div>
-{% endif %}
-{% endif %}
-
-
-DEBUG: theme_display_version = {{ theme_display_version }}<br>
-    DEBUG: current_version = {{ current_version }}<br>
-    DEBUG: nav_version = {{ nav_version }}<br>
-    DEBUG: version = {{ version }}<br>
-
     {% if rtd_version == 'latest' %}
         <div id="slim-red-box-message">
             (rtd_version1) You a viewing the <b>latest</b> unreleased documentation
@@ -44,12 +26,10 @@ DEBUG: theme_display_version = {{ theme_display_version }}<br>
             version.
         <p>
     </div>
-
     <p></p>
     {%- endif %}
 
     {{ super() }}
-
 {%- endblock %}
 
 /*---------------------------------------------------------------------------*/

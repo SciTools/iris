@@ -128,7 +128,6 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
-    "versionwarning.extension",
     # better api documentation (custom)
     "custom_class_autodoc",
     "custom_data_autodoc",
