@@ -25,7 +25,7 @@ DEBUG: theme_display_version = {{ theme_display_version }}<br>
     DEBUG: nav_version = {{ nav_version }}<br>
     DEBUG: version = {{ version }}<br>
 
-    {% if rtd_version = "latest" %}
+    {% if rtd_version == 'latest' %}
         <div id="slim-red-box-message">
             (rtd_version1) You a viewing the <b>latest</b> unreleased documentation
             <b>v{{ version }}</b>.  You may prefer a 
@@ -35,7 +35,7 @@ DEBUG: theme_display_version = {{ theme_display_version }}<br>
         <p></p>
     {%- endif %}
 
-    {% if rtd_version = "latest" %}
+    {% if rtd_version == 'latest' %}
     <div class="admonition warning">
         <p class="admonition-title">Warning</p>
             (rtd_version2) You a viewing the <b>latest</b> unreleased documentation
