@@ -86,6 +86,9 @@ This document explains the changes made to Iris for this release
    on :ref:`installing_iris` and to the footer of all pages.  Also added the
    copyright years to the footer. (:pull:`3989`)
 
+#. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
+   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`)
+
 
 💼 Internal
 ===========
