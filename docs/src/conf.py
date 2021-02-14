@@ -134,30 +134,6 @@ extensions = [
     # TREMTEST
     #    "generate_package_rst",
 ]
-
-# -- sphinx-version-warning extension------------------------------------------
-# See https://sphinx-version-warning.readthedocs.io/en/latest/index.html
-
-versionwarning_messages = {
-    "latest": (
-        "(exntesion) You a viewing the <b>latest</b> unreleased documentation "
-        "<b>v{{ version }}</b>.  You may prefer a "
-        "<a href='https://scitools-iris.readthedocs.io/en/stable/'>stable</a>"
-        "version."
-    ),
-}
-
-versionwarning_admonition_type = "tip"
-# versionwarning_banner_title = "Tip"
-# versionwarning_body_selector = 'div[itemprop="articleBody"]'
-
-# ===
-# Show warning at top of page
-# versionwarning_body_selector = "div.document"
-# versionwarning_banner_title = ""
-# For debugging locally
-versionwarning_project_version = "latest"
-
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
 
@@ -191,7 +167,7 @@ spelling_ignore_python_builtins = True
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = ">>> "
 
-# sphinx.ext.todo configuration
+# sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
