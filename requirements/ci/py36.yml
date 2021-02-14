@@ -29,7 +29,6 @@ dependencies:
   - nc-time-axis
   - pandas
   - python-stratify
-  - pyugrid
 
 # Test dependencies.
   - asv
