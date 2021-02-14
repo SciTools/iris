@@ -129,7 +129,8 @@ extensions = [
     # better api documentation (custom)
     "custom_class_autodoc",
     "custom_data_autodoc",
-    "generate_package_rst",
+    # TREMTEST
+    #    "generate_package_rst",
 ]
 
 # -- panels extension ---------------------------------------------------------

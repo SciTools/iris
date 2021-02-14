@@ -7,27 +7,45 @@
 /*---------------------------------------------------------------------------*/
 
 {%- block document %}
+{% if theme_display_version %}
+{%- set nav_version = version %}
+{% if READTHEDOCS and current_version %}
+  {%- set nav_version = current_version %}
+{% endif %}
+{% if nav_version %}
+  <div class="version">
+    {{ nav_version }}
+  </div>
+{% endif %}
+{% endif %}
 
-    DEBUG: version is <b>{{ version }}</b>.  Below are two different presentations
-    on showing a warning message.
 
-    {%- if (("dev" in version) or ("rc" in version)) %}
-    <div id="slim-red-box-message">
-        You a viewing the <b>latest</b> unreleased documentation.
-        Please see the 
-        <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
-        version.
-    </div>
-    <p></p>
+DEBUG: theme_display_version = {{ theme_display_version }}<br>
+    DEBUG: current_version = {{ current_version }}<br>
+    DEBUG: nav_version = {{ nav_version }}<br>
+    DEBUG: version = {{ version }}<br>
 
+    {%- if "dev" in version %}
+        <div id="slim-red-box-message">
+            You a viewing the <b>latest</b> unreleased documentation
+            <b>v{{ version }}</b>.  You may prefer a 
+            <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+            version.
+        </div>
+        <p></p>
+    {%- endif %}
+
+    {%- if "dev" in version %}
     <div class="admonition warning">
         <p class="admonition-title">Warning</p>
-            You a viewing the <b>latest</b> unreleased documentation.
-            Please see the 
+            You a viewing the <b>latest</b> unreleased documentation
+            <b>v{{ version }}</b>.  You may prefer a 
             <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
             version.
         <p>
     </div>
+
+    <p></p>
     {%- endif %}
 
     {{ super() }}

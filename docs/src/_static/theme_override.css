@@ -33,10 +33,10 @@ table.docutils td {
   color: #ffffff;
   font-weight: normal;
   padding: 0.5em;
-  width: 100%;
 }
 
 #slim-red-box-message a {
   color: #ffffff;
+  font-weight: normal;  
   text-decoration:underline;
 }
