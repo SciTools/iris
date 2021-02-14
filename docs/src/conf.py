@@ -44,6 +44,7 @@ if on_rtd:
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
+# TREMTEST: I may not need to create a variable, see https://docs.readthedocs.io/en/stable/development/design/theme-context.html?highlight=html_
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
