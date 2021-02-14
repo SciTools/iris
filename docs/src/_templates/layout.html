@@ -7,6 +7,10 @@
 /*---------------------------------------------------------------------------*/
 
 {%- block document %}
+    DEBUG:
+    readthedocs.v1.vcs.type = {{ readthedocs.v1.vcs.type }}
+    readthedocs.v1 = {{ readthedocs.v1 }}
+
     {% if rtd_version == 'latest' %}
     <div class="admonition warning">
         <p class="admonition-title">Warning</p>
