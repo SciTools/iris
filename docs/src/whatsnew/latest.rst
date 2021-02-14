@@ -107,6 +107,9 @@ This document explains the changes made to Iris for this release
    each ``nox`` session to list its ``conda`` environment packages and
    environment info. (:pull:`3990`)
 
+#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
