@@ -4,6 +4,7 @@
 .. _iris mailing list: https://groups.google.com/forum/#!forum/scitools-iris
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
+.. _matplotlib: https://matplotlib.org/stable/
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
@@ -19,7 +20,6 @@
 .. _using git: https://docs.github.com/en/github/using-git
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
-.. _matplotlib: https://matplotlib.org/
 .. _conda: https://docs.conda.io/en/latest/
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
