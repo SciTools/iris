@@ -112,11 +112,15 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
    from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
 
+#. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
+   (:pull:`3997`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
 
@@ -125,6 +129,7 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
