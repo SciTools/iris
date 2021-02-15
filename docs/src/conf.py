@@ -44,7 +44,7 @@ if on_rtd:
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
-# For testing purposes this could be explicitly set to one of the above.
+# For local testing purposes this could be explicitly set latest or stable.
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
