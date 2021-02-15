@@ -38,34 +38,32 @@ def cop_metadata_callback(cube, field, filename):
     filename.
     """
 
-    # Extract the experiment name (such as a1b or e1) from the filename (in
-    # this case it is just the parent folder's name)
-    containing_folder = os.path.dirname(filename)
-    experiment_label = os.path.basename(containing_folder)
+    # Extract the experiment name (such as A1B or E1) from the filename (in
+    # this case it is just the start of the file name, before the first ".").
+    fname = os.path.basename(filename)  # filename without path.
+    experiment_label = fname.split(".")[0]
 
-    # Create a coordinate with the experiment label in it
+    # Create a coordinate with the experiment label in it...
     exp_coord = coords.AuxCoord(
         experiment_label, long_name="Experiment", units="no_unit"
     )
 
-    # and add it to the cube
+    # ...and add it to the cube.
     cube.add_aux_coord(exp_coord)
 
 
 def main():
-    # Load e1 and a1 using the callback to update the metadata
-    e1 = iris.load_cube(
-        iris.sample_data_path("E1.2098.pp"), callback=cop_metadata_callback
-    )
-    a1b = iris.load_cube(
-        iris.sample_data_path("A1B.2098.pp"), callback=cop_metadata_callback
-    )
+    # Load E1 and A1B scenarios using the callback to update the metadata.
+    scenario_files = [
+        iris.sample_data_path(fname) for fname in ["E1.2098.pp", "A1B.2098.pp"]
+    ]
+    scenarios = iris.load(scenario_files, callback=cop_metadata_callback)
 
-    # Load the global average data and add an 'Experiment' coord it
-    global_avg = iris.load_cube(iris.sample_data_path("pre-industrial.pp"))
+    # Load the preindustrial reference data.
+    preindustrial = iris.load_cube(iris.sample_data_path("pre-industrial.pp"))
 
     # Define evenly spaced contour levels: -2.5, -1.5, ... 15.5, 16.5 with the
-    # specific colours
+    # specific colours.
     levels = np.arange(20) - 2.5
     red = (
         np.array(
@@ -147,81 +145,67 @@ def main():
     )
 
     # Put those colours into an array which can be passed to contourf as the
-    # specific colours for each level
-    colors = np.array([red, green, blue]).T
+    # specific colours for each level.
+    colors = np.stack([red, green, blue], axis=1)
 
-    # Subtract the global
+    # Make a wider than normal figure to house two maps side-by-side.
+    fig, ax_array = plt.subplots(1, 2, figsize=(12, 5))
 
-    # Iterate over each latitude longitude slice for both e1 and a1b scenarios
-    # simultaneously
-    for e1_slice, a1b_slice in zip(
-        e1.slices(["latitude", "longitude"]),
-        a1b.slices(["latitude", "longitude"]),
+    # Loop over our scenarios to make a plot for each.
+    for ax, experiment, label in zip(
+        ax_array, ["E1", "A1B"], ["E1", "A1B-Image"]
     ):
-
-        time_coord = a1b_slice.coord("time")
-
-        # Calculate the difference from the mean
-        delta_e1 = e1_slice - global_avg
-        delta_a1b = a1b_slice - global_avg
-
-        # Make a wider than normal figure to house two maps side-by-side
-        fig = plt.figure(figsize=(12, 5))
-
-        # Get the time datetime from the coordinate
-        time = time_coord.units.num2date(time_coord.points[0])
-        # Set a title for the entire figure, giving the time in a nice format
-        # of "MonthName Year". Also, set the y value for the title so that it
-        # is not tight to the top of the plot.
-        fig.suptitle(
-            "Annual Temperature Predictions for " + time.strftime("%Y"),
-            y=0.9,
-            fontsize=18,
+        exp_cube = scenarios.extract_cube(
+            iris.Constraint(Experiment=experiment)
         )
+        time_coord = exp_cube.coord("time")
 
-        # Add the first subplot showing the E1 scenario
-        plt.subplot(121)
-        plt.title("HadGEM2 E1 Scenario", fontsize=10)
-        iplt.contourf(delta_e1, levels, colors=colors, extend="both")
-        plt.gca().coastlines()
-        # get the current axes' subplot for use later on
-        plt1_ax = plt.gca()
+        # Calculate the difference from the preindustial control run.
+        exp_anom_cube = exp_cube - preindustrial
 
-        # Add the second subplot showing the A1B scenario
-        plt.subplot(122)
-        plt.title("HadGEM2 A1B-Image Scenario", fontsize=10)
+        # Plot this anomaly.
+        plt.sca(ax)
+        ax.set_title(f"HadGEM2 {label} Scenario", fontsize=10)
         contour_result = iplt.contourf(
-            delta_a1b, levels, colors=colors, extend="both"
+            exp_anom_cube, levels, colors=colors, extend="both"
         )
         plt.gca().coastlines()
-        # get the current axes' subplot for use later on
-        plt2_ax = plt.gca()
 
-        # Now add a colourbar who's leftmost point is the same as the leftmost
-        # point of the left hand plot and rightmost point is the rightmost
-        # point of the right hand plot
+    # Now add a colourbar who's leftmost point is the same as the leftmost
+    # point of the left hand plot and rightmost point is the rightmost
+    # point of the right hand plot.
 
-        # Get the positions of the 2nd plot and the left position of the 1st
-        # plot
-        left, bottom, width, height = plt2_ax.get_position().bounds
-        first_plot_left = plt1_ax.get_position().bounds[0]
+    # Get the positions of the 2nd plot and the left position of the 1st plot.
+    left, bottom, width, height = ax_array[1].get_position().bounds
+    first_plot_left = ax_array[0].get_position().bounds[0]
 
-        # the width of the colorbar should now be simple
-        width = left - first_plot_left + width
+    # The width of the colorbar should now be simple.
+    width = left - first_plot_left + width
 
-        # Add axes to the figure, to place the colour bar
-        colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
+    # Add axes to the figure, to place the colour bar.
+    colorbar_axes = fig.add_axes([first_plot_left, 0.18, width, 0.03])
 
-        # Add the colour bar
-        cbar = plt.colorbar(
-            contour_result, colorbar_axes, orientation="horizontal"
-        )
+    # Add the colour bar.
+    cbar = plt.colorbar(
+        contour_result, colorbar_axes, orientation="horizontal"
+    )
 
-        # Label the colour bar and add ticks
-        cbar.set_label(e1_slice.units)
-        cbar.ax.tick_params(length=0)
+    # Label the colour bar and add ticks.
+    cbar.set_label(preindustrial.units)
+    cbar.ax.tick_params(length=0)
 
-        iplt.show()
+    # Get the time datetime from the coordinate.
+    time = time_coord.units.num2date(time_coord.points[0])
+    # Set a title for the entire figure, using the year from the datetime
+    # object. Also, set the y value for the title so that it is not tight to
+    # the top of the plot.
+    fig.suptitle(
+        f"Annual Temperature Predictions for {time.year}",
+        y=0.9,
+        fontsize=18,
+    )
+
+    iplt.show()
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
-.. _matplotlib: https://matplotlib.org/
+.. _matplotlib: https://matplotlib.org/stable/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _nox: https://nox.thea.codes/en/stable/
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose

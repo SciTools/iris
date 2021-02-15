@@ -69,8 +69,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Seasonal ensemble model plots" Gallery example.
-   (:pull:`3933`)
+#. `@rcomer`_ updated the "Seasonal ensemble model plots" and "Global average
+   annual temperature maps" Gallery examples. (:pull:`3933` and :pull:`3934`)
 
 #. `@MHBalsmeier`_ described non-conda installation on Debian-based distros.
    (:pull:`3958`)
@@ -85,6 +85,11 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ stated the Python version used to build the documentation
    on :ref:`installing_iris` and to the footer of all pages.  Also added the
    copyright years to the footer. (:pull:`3989`)
+
+#. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
+   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`)
+
+#. `@bjlittle`_ added the |PyPI|_ badge to the `README.md`_. (:pull:`4004`)
 
 
 💼 Internal
@@ -120,4 +125,7 @@ This document explains the changes made to Iris for this release
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
+.. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
+.. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
+.. _README.md: https://github.com/SciTools/iris#-----
