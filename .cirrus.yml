@@ -1,5 +1,6 @@
 # Reference:
 #   - https://cirrus-ci.org/guide/writing-tasks/
+#   - https://cirrus-ci.org/guide/writing-tasks/#environment-variables
 #   - https://cirrus-ci.org/guide/tips-and-tricks/#sharing-configuration-between-tasks
 #   - https://cirrus-ci.org/guide/linux/
 #   - https://cirrus-ci.org/guide/macOS/
@@ -33,25 +34,6 @@ env:
   IRIS_TEST_DATA_REF: "fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
-
-
-#
-# Linting
-#
-lint_task:
-  auto_cancellation: true
-  name: "${CIRRUS_OS}: flake8 and black"
-  pip_cache:
-    folder: ~/.cache/pip
-    fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
-  lint_script:
-    - pip list
-    - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
-    - pip list
-    - nox --session flake8
-    - nox --session black
 
 
 #
@@ -90,9 +72,37 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 
 
 #
+# YAML alias for compute credits
+#
+compute_credits_template: &CREDITS_TEMPLATE
+  # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
+  use_compute_credits: $CIRRUS_REPO_FULL_NAME == 'SciTools/iris' && $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_PR_DRAFT == 'false' && $CIRRUS_BASE_BRANCH == 'master' && $CIRRUS_PR != ''
+
+#
+# Linting
+#
+lint_task:
+  << : *CREDITS_TEMPLATE
+  auto_cancellation: true
+  name: "${CIRRUS_OS}: flake8 and black"
+  pip_cache:
+    folder: ~/.cache/pip
+    fingerprint_script:
+      - echo "${CIRRUS_TASK_NAME}"
+      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
+  lint_script:
+    - pip list
+    - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
+    - pip list
+    - nox --session flake8
+    - nox --session black
+
+
+#
 # Testing Minimal (Linux)
 #
 linux_minimal_task:
+  << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.6
@@ -116,6 +126,7 @@ linux_minimal_task:
 # Testing Full (Linux)
 #
 linux_task:
+  << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.6
@@ -148,6 +159,7 @@ linux_task:
 # Testing Documentation Gallery (Linux)
 #
 gallery_task:
+  << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.8
@@ -176,6 +188,7 @@ gallery_task:
 # Testing Documentation (Linux)
 #
 doctest_task:
+  << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.8
@@ -210,6 +223,7 @@ doctest_task:
 # Testing Documentation Link Check (Linux)
 #
 link_task:
+  << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.8
