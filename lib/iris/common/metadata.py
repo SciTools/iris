@@ -181,9 +181,18 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
-                # The "circular" and "src_dim" members do not participate in strict equivalence.
+                # TODO: refactor so that 'non-participants' can be held in their specific subclasses.
+                # Certain members never participate in strict equivalence, so
+                # are filtered out.
                 fields = filter(
-                    lambda field: field not in ("circular", "src_dim"),
+                    lambda field: field
+                    not in (
+                        "circular",
+                        "src_dim",
+                        "node_dimension",
+                        "edge_dimension",
+                        "face_dimension",
+                    ),
                     self._fields,
                 )
                 result = all([func(field) for field in fields])

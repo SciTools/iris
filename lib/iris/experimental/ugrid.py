@@ -497,7 +497,7 @@ class Connectivity(_DimensionalMetadata):
 
 class ConnectivityMetadata(BaseMetadata):
     """
-    Metadata container for a :class:`~iris.coords.Connectivity`.
+    Metadata container for a :class:`~iris.experimental.ugrid.Connectivity`.
 
     """
 
@@ -593,6 +593,127 @@ class ConnectivityMetadata(BaseMetadata):
 
         # Note that, we use "_members" not "_fields".
         values = [func(field) for field in ConnectivityMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class MeshMetadata(BaseMetadata):
+    """
+    Metadata container for a :class:`~iris.experimental.ugrid.Mesh`.
+
+    """
+
+    # The node_dimension", "edge_dimension" and "face_dimension" members are
+    # stateful only; they not participate in lenient/strict equivalence.
+    _members = (
+        "topology_dimension",
+        "node_dimension",
+        "edge_dimension",
+        "face_dimension",
+    )
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+
+        # Perform "strict" combination for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "topology_dimension".
+        # "node_dimension", "edge_dimension" and "face_dimension" are not part
+        # of lenient equivalence at all.
+        result = self.topology_dimension == other.topology_dimension
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.extend(values)
@@ -875,17 +996,6 @@ class ConnectivityMetadata(BaseMetadata):
 #
 #         """
 #         return self._metadata_manager.topology_dimension
-#
-#
-# class MeshMetadata(BaseMetadata):
-#     """
-#     .. notes::
-#
-#         - topology_dimension is treated strictly in both
-#           strict and lenient modes, and does participate in __eq__
-#     """
-#     _members = "topology_dimension"
-#
 #
 # #
 # # - validate coord_systems
