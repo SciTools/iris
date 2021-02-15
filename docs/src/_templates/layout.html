@@ -6,30 +6,25 @@
 
 /*---------------------------------------------------------------------------*/
 
-{%- block sidebartitle  %}
-    {{ super() }}
-
-    FOO!
-{%- endblock %}
-
-/*---------------------------------------------------------------------------*/
-
 {%- block document %}
-    DEBUG:
-    {% if readthedocs %}
-        readthedocs.v1.vcs.type = {{ readthedocs.v1.vcs.type }}
-        readthedocs.v1 = {{ readthedocs.v1 }}
-    {%- endif %}
 
     {% if rtd_version == 'latest' %}
-    <div class="admonition warning">
-        <p class="admonition-title">Warning</p>
+        <div id="slim-red-box-message">
             You a viewing the <b>latest</b> unreleased documentation
             <b>v{{ version }}</b>.  You may prefer a 
             <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
             version.
-    </div>
-    <p></p>
+        </div>
+        <p></p>
+        
+        <div class="admonition warning">
+            <p class="admonition-title">Warning</p>
+                You a viewing the <b>latest</b> unreleased documentation
+                <b>v{{ version }}</b>.  You may prefer a 
+                <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+                version.
+        </div>
+        <p></p>
     {%- endif %}
 
     {{ super() }}

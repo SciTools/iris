@@ -44,7 +44,7 @@ if on_rtd:
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
-# TREMTEST: I may not need to create a variable, see https://docs.readthedocs.io/en/stable/development/design/theme-context.html?highlight=html_
+# For testing purposes this could be explicitly set to one of the above.
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
@@ -300,7 +300,6 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
 }
 
-
 # -----------------------------------------------------------------------------
 # Remove matplotlib agg warnings from generated doc when using plt.show
 warnings.filterwarnings(
@@ -309,7 +308,6 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
-
 
 # -- numfig options (built-in) ------------------------------------------------
 # Enable numfig.
