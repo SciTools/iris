@@ -6,10 +6,20 @@
 
 /*---------------------------------------------------------------------------*/
 
+{%- block sidebartitle  %}
+    {{ super() }}
+
+    FOO!
+{%- endblock %}
+
+/*---------------------------------------------------------------------------*/
+
 {%- block document %}
     DEBUG:
-    readthedocs.v1.vcs.type = {{ readthedocs.v1.vcs.type }}
-    readthedocs.v1 = {{ readthedocs.v1 }}
+    {% if readthedocs %}
+        readthedocs.v1.vcs.type = {{ readthedocs.v1.vcs.type }}
+        readthedocs.v1 = {{ readthedocs.v1 }}
+    {%- endif %}
 
     {% if rtd_version == 'latest' %}
     <div class="admonition warning">
@@ -25,7 +35,7 @@
     {{ super() }}
 {%- endblock %}
 
-/*---------------------------------------------------------------------------*/
+/*-----------------------------------------------------z----------------------*/
 
 {% block menu %}
     {{ super() }}
