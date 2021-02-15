@@ -641,6 +641,7 @@ class ConnectivityMetadata(BaseMetadata):
 #         - copy is off the table!!
 #
 #         - MeshCoord.guess_points()
+#         - MeshCoord.to_AuxCoord()
 #
 #         - don't provide public methods to return the coordinate and connectivity
 #           managers
@@ -690,14 +691,14 @@ class ConnectivityMetadata(BaseMetadata):
 #
 #     @property
 #     def all_coords(self):
+#         # return a namedtuple
 #         # coords = mesh.all_coords
 #         # coords.face_x, coords.edge_y
 #         pass
 #
 #     @property
 #     def node_coords(self):
-#         # perhaps return a namedtuple?
-#         # this would give:
+#         # return a namedtuple
 #         # node_coords = mesh.node_coords
 #         # node_coords.x
 #         # node_coords.y
@@ -715,6 +716,7 @@ class ConnectivityMetadata(BaseMetadata):
 #
 #     @property
 #     def all_connectivities(self):
+#         # return a namedtuple
 #         # conns = mesh.all_connectivities
 #         # conns.edge_node, conns.boundary_node
 #         pass
@@ -786,15 +788,15 @@ class ConnectivityMetadata(BaseMetadata):
 #         pass
 #
 #     def add_coords(self, node_x=None, node_y=None, edge_x=None, edge_y=None, face_x=None, face_y=None):
-#         # this supports add a new coord to the manager, but also replacing an exiting coord
+#         # this supports adding a new coord to the manager, but also replacing an existing coord
 #         self._coord_manager.add(...)
 #
 #     def add_connectivities(self, *args):
-#         # this supports add a new connectivity to the manager, but also replacing an exiting connectivity
+#         # this supports adding a new connectivity to the manager, but also replacing an existing connectivity
 #         self._connectivity_manager.add(*args)
 #
 #     def remove_coords(self, ...):
-#         # could prove the "name", "metadata", "coord"-instance
+#         # could provide the "name", "metadata", "coord"-instance
 #         # this could use mesh.coords() to find the coords
 #         self._coord_manager.remove(...)
 #
@@ -822,6 +824,12 @@ class ConnectivityMetadata(BaseMetadata):
 #     def __unicode__(self, ...):
 #         pass
 #
+#     def __getstate__(self):
+#         pass
+#
+#     def __setstate__(self, state):
+#         pass
+#
 #     def xml_element(self):
 #         pass
 #
@@ -830,11 +838,21 @@ class ConnectivityMetadata(BaseMetadata):
 #     # after using MeshCoord.guess_points(), the user may wish to add the associated MeshCoord.points into
 #     # the Mesh as face_coordinates.
 #
+#     def to_AuxCoord(self, location, axis):
+#         # factory method
+#         # return the lazy AuxCoord(...) for the given location and axis
+#
+#     def to_AuxCoords(self, location):
+#         # factory method
+#         # return the lazy AuxCoord(...), AuxCoord(...)
+#
 #     def to_MeshCoord(self, location, axis):
+#         # factory method
 #         # return MeshCoord(..., location=location, axis=axis)
 #         # use Connectivity.indices_by_src() for fetching indices.
 #
 #     def to_MeshCoords(self, location):
+#         # factory method
 #         # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
 #         # use Connectivity.indices_by_src() for fetching indices.
 #
@@ -900,6 +918,12 @@ class ConnectivityMetadata(BaseMetadata):
 #     def __iter__(self):
 #         for member in self._members:
 #             yield member
+#
+#     def __getstate__(self):
+#         pass
+#
+#     def __setstate__(self, state):
+#         pass
 #
 #     def coord(self, **kwargs):
 #         # see Cube.coord for pattern, checking for a single result
@@ -977,6 +1001,12 @@ class ConnectivityMetadata(BaseMetadata):
 #     def __iter__(self):
 #         for member in self._members:
 #             yield member
+#
+#     def __getstate__(self):
+#         pass
+#
+#     def __setstate__(self, state):
+#         pass
 #
 #     def connectivity(self, **kwargs):
 #         # see Cube.coord for pattern, checking for a single result
