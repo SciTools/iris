@@ -130,7 +130,7 @@ class TestCells(tests.IrisTest):
         self.assertEqual(self.d.__ne__(Terry()), NotImplemented)
 
     def test_numpy_int_equality(self):
-        dtypes = (int, np.int16, np.int32, np.int64)
+        dtypes = (np.int_, np.int16, np.int32, np.int64)
         for dtype in dtypes:
             val = dtype(3)
             cell = iris.coords.Cell(val, None)
