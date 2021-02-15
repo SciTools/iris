@@ -138,7 +138,7 @@ class TestCells(tests.IrisTest):
 
     def test_numpy_float_equality(self):
         dtypes = (
-            float,
+            np.float_,
             np.float16,
             np.float32,
             np.float64,
