@@ -29,6 +29,9 @@ class Test(tests.IrisTest):
         self.units = mock.sentinel.units
         self.attributes = mock.sentinel.attributes
         self.topology_dimension = mock.sentinel.topology_dimension
+        self.node_dimension = mock.sentinel.node_dimension
+        self.edge_dimension = mock.sentinel.edge_dimension
+        self.face_dimension = mock.sentinel.face_dimension
         self.cls = MeshMetadata
 
     def test_repr(self):
@@ -39,10 +42,15 @@ class Test(tests.IrisTest):
             units=self.units,
             attributes=self.attributes,
             topology_dimension=self.topology_dimension,
+            node_dimension=self.node_dimension,
+            edge_dimension=self.edge_dimension,
+            face_dimension=self.face_dimension,
         )
         fmt = (
             "MeshMetadata(standard_name={!r}, long_name={!r}, "
-            "var_name={!r}, units={!r}, attributes={!r}, topology_dimension={!r})"
+            "var_name={!r}, units={!r}, attributes={!r}, "
+            "topology_dimension={!r}, node_dimension={!r}, "
+            "edge_dimension={!r}, face_dimension={!r})"
         )
         expected = fmt.format(
             self.standard_name,
@@ -51,6 +59,9 @@ class Test(tests.IrisTest):
             self.units,
             self.attributes,
             self.topology_dimension,
+            self.node_dimension,
+            self.edge_dimension,
+            self.face_dimension,
         )
         self.assertEqual(expected, repr(metadata))
 
@@ -62,6 +73,9 @@ class Test(tests.IrisTest):
             "units",
             "attributes",
             "topology_dimension",
+            "node_dimension",
+            "edge_dimension",
+            "face_dimension",
         )
         self.assertEqual(self.cls._fields, expected)
 
@@ -78,9 +92,19 @@ class Test__eq__(tests.IrisTest):
             units=sentinel.units,
             attributes=sentinel.attributes,
             topology_dimension=sentinel.topology_dimension,
+            node_dimension=sentinel.node_dimension,
+            edge_dimension=sentinel.edge_dimension,
+            face_dimension=sentinel.face_dimension,
         )
         self.dummy = sentinel.dummy
         self.cls = MeshMetadata
+        # The "node_dimension", "edge_dimension" and "face_dimension" members
+        # are stateful only; they do not participate in lenient/strict equivalence.
+        self.members_dim_names = filter(
+            lambda member: member
+            in ("node_dimension", "edge_dimension", "face_dimension"),
+            self.cls._members,
+        )
 
     def test_wraps_docstring(self):
         self.assertEqual(BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__)
@@ -134,6 +158,19 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
+    def test_op_lenient_same_dim_names_none(self):
+        for member in self.members_dim_names:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertTrue(lmetadata.__eq__(rmetadata))
+                self.assertTrue(rmetadata.__eq__(lmetadata))
+
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
@@ -153,6 +190,19 @@ class Test__eq__(tests.IrisTest):
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
+
+    def test_op_lenient_different_dim_names(self):
+        for member in self.members_dim_names:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertTrue(lmetadata.__eq__(rmetadata))
+                self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
@@ -182,6 +232,19 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
+    def test_op_strict_different_dim_names(self):
+        for member in self.members_dim_names:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertTrue(lmetadata.__eq__(rmetadata))
+                self.assertTrue(rmetadata.__eq__(lmetadata))
+
     def test_op_strict_different_none(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
@@ -202,14 +265,27 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(lmetadata.__eq__(rmetadata))
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
+    def test_op_strict_different_dim_names_none(self):
+        for member in self.members_dim_names:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertTrue(lmetadata.__eq__(rmetadata))
+                self.assertTrue(rmetadata.__eq__(lmetadata))
+
 
 class Test___lt__(tests.IrisTest):
     def setUp(self):
         self.cls = MeshMetadata
-        self.one = self.cls(1, 1, 1, 1, 1, 1)
-        self.two = self.cls(1, 1, 1, 2, 1, 1)
-        self.none = self.cls(1, 1, 1, None, 1, 1)
-        self.attributes = self.cls(1, 1, 1, 1, 10, 1)
+        self.one = self.cls(1, 1, 1, 1, 1, 1, 1, 1, 1)
+        self.two = self.cls(1, 1, 1, 2, 1, 1, 1, 1, 1)
+        self.none = self.cls(1, 1, 1, None, 1, 1, 1, 1, 1)
+        self.attributes = self.cls(1, 1, 1, 1, 10, 1, 1, 1, 1)
 
     def test__ascending_lt(self):
         result = self.one < self.two
@@ -243,6 +319,9 @@ class Test_combine(tests.IrisTest):
             units=sentinel.units,
             attributes=sentinel.attributes,
             topology_dimension=sentinel.topology_dimension,
+            node_dimension=sentinel.node_dimension,
+            edge_dimension=sentinel.edge_dimension,
+            face_dimension=sentinel.face_dimension,
         )
         self.dummy = sentinel.dummy
         self.cls = MeshMetadata
@@ -308,16 +387,23 @@ class Test_combine(tests.IrisTest):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
-    def test_op_lenient_same_topology_dim_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["topology_dimension"] = None
-        rmetadata = self.cls(**right)
-        expected = right.copy()
+    def test_op_lenient_same_members_none(self):
+        for member in self.cls._members:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+            expected = right.copy()
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertTrue(expected, rmetadata.combine(lmetadata)._asdict())
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertTrue(
+                    expected, lmetadata.combine(rmetadata)._asdict()
+                )
+                self.assertTrue(
+                    expected, rmetadata.combine(lmetadata)._asdict()
+                )
 
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)
@@ -331,17 +417,24 @@ class Test_combine(tests.IrisTest):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
-    def test_op_lenient_different_topology_dim(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["topology_dimension"] = self.dummy
-        rmetadata = self.cls(**right)
-        expected = self.values.copy()
-        expected["topology_dimension"] = None
+    def test_op_lenient_different_members(self):
+        for member in self.cls._members:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+            expected = self.values.copy()
+            expected[member] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertEqual(
+                    expected, lmetadata.combine(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    expected, rmetadata.combine(lmetadata)._asdict()
+                )
 
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
@@ -364,17 +457,24 @@ class Test_combine(tests.IrisTest):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
-    def test_op_strict_different_topology_dim(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["topology_dimension"] = self.dummy
-        rmetadata = self.cls(**right)
-        expected = self.values.copy()
-        expected["topology_dimension"] = None
+    def test_op_strict_different_members(self):
+        for member in self.cls._members:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+            expected = self.values.copy()
+            expected[member] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertEqual(
+                    expected, lmetadata.combine(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    expected, rmetadata.combine(lmetadata)._asdict()
+                )
 
     def test_op_strict_different_none(self):
         lmetadata = self.cls(**self.values)
@@ -388,17 +488,24 @@ class Test_combine(tests.IrisTest):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
             self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
-    def test_op_strict_different_topology_dim_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["topology_dimension"] = None
-        rmetadata = self.cls(**right)
-        expected = self.values.copy()
-        expected["topology_dimension"] = None
+    def test_op_strict_different_members_none(self):
+        for member in self.cls._members:
+            lmetadata = self.cls(**self.values)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+            expected = self.values.copy()
+            expected[member] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertEqual(
+                    expected, lmetadata.combine(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    expected, rmetadata.combine(lmetadata)._asdict()
+                )
 
 
 class Test_difference(tests.IrisTest):
@@ -410,6 +517,9 @@ class Test_difference(tests.IrisTest):
             units=sentinel.units,
             attributes=sentinel.attributes,
             topology_dimension=sentinel.topology_dimension,
+            node_dimension=sentinel.node_dimension,
+            edge_dimension=sentinel.edge_dimension,
+            face_dimension=sentinel.face_dimension,
         )
         self.dummy = sentinel.dummy
         self.cls = MeshMetadata
@@ -473,23 +583,27 @@ class Test_difference(tests.IrisTest):
             self.assertIsNone(lmetadata.difference(rmetadata))
             self.assertIsNone(rmetadata.difference(lmetadata))
 
-    def test_op_lenient_same_topology_dim_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["topology_dimension"] = None
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["topology_dimension"] = (sentinel.topology_dimension, None)
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["topology_dimension"] = (None, sentinel.topology_dimension)
+    def test_op_lenient_same_members_none(self):
+        for member in self.cls._members:
+            lmetadata = self.cls(**self.values)
+            member_value = getattr(lmetadata, member)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+            lexpected = deepcopy(self.none)._asdict()
+            lexpected[member] = (member_value, None)
+            rexpected = deepcopy(self.none)._asdict()
+            rexpected[member] = (None, member_value)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertEqual(
+                    lexpected, lmetadata.difference(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    rexpected, rmetadata.difference(lmetadata)._asdict()
+                )
 
     def test_op_lenient_different(self):
         left = self.values.copy()
@@ -510,27 +624,27 @@ class Test_difference(tests.IrisTest):
                 rexpected, rmetadata.difference(lmetadata)._asdict()
             )
 
-    def test_op_lenient_different_topology_dim(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["topology_dimension"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["topology_dimension"] = (
-            left["topology_dimension"],
-            right["topology_dimension"],
-        )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["topology_dimension"] = lexpected["topology_dimension"][::-1]
+    def test_op_lenient_different_members(self):
+        for member in self.cls._members:
+            left = self.values.copy()
+            lmetadata = self.cls(**left)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+            lexpected = deepcopy(self.none)._asdict()
+            lexpected[member] = (left[member], right[member])
+            rexpected = deepcopy(self.none)._asdict()
+            rexpected[member] = lexpected[member][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=True
+            ):
+                self.assertEqual(
+                    lexpected, lmetadata.difference(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    rexpected, rmetadata.difference(lmetadata)._asdict()
+                )
 
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
@@ -559,27 +673,27 @@ class Test_difference(tests.IrisTest):
                 rexpected, rmetadata.difference(lmetadata)._asdict()
             )
 
-    def test_op_strict_different_topology_dim(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["topology_dimension"] = self.dummy
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["topology_dimension"] = (
-            left["topology_dimension"],
-            right["topology_dimension"],
-        )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["topology_dimension"] = lexpected["topology_dimension"][::-1]
+    def test_op_strict_different_members(self):
+        for member in self.cls._members:
+            left = self.values.copy()
+            lmetadata = self.cls(**left)
+            right = self.values.copy()
+            right[member] = self.dummy
+            rmetadata = self.cls(**right)
+            lexpected = deepcopy(self.none)._asdict()
+            lexpected[member] = (left[member], right[member])
+            rexpected = deepcopy(self.none)._asdict()
+            rexpected[member] = lexpected[member][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertEqual(
+                    lexpected, lmetadata.difference(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    rexpected, rmetadata.difference(lmetadata)._asdict()
+                )
 
     def test_op_strict_different_none(self):
         left = self.values.copy()
@@ -600,27 +714,27 @@ class Test_difference(tests.IrisTest):
                 rexpected, rmetadata.difference(lmetadata)._asdict()
             )
 
-    def test_op_strict_different_topology_dim_none(self):
-        left = self.values.copy()
-        lmetadata = self.cls(**left)
-        right = self.values.copy()
-        right["topology_dimension"] = None
-        rmetadata = self.cls(**right)
-        lexpected = deepcopy(self.none)._asdict()
-        lexpected["topology_dimension"] = (
-            left["topology_dimension"],
-            right["topology_dimension"],
-        )
-        rexpected = deepcopy(self.none)._asdict()
-        rexpected["topology_dimension"] = lexpected["topology_dimension"][::-1]
+    def test_op_strict_different_members_none(self):
+        for member in self.cls._members:
+            left = self.values.copy()
+            lmetadata = self.cls(**left)
+            right = self.values.copy()
+            right[member] = None
+            rmetadata = self.cls(**right)
+            lexpected = deepcopy(self.none)._asdict()
+            lexpected[member] = (left[member], right[member])
+            rexpected = deepcopy(self.none)._asdict()
+            rexpected[member] = lexpected[member][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(
-                lexpected, lmetadata.difference(rmetadata)._asdict()
-            )
-            self.assertEqual(
-                rexpected, rmetadata.difference(lmetadata)._asdict()
-            )
+            with mock.patch(
+                "iris.common.metadata._LENIENT", return_value=False
+            ):
+                self.assertEqual(
+                    lexpected, lmetadata.difference(rmetadata)._asdict()
+                )
+                self.assertEqual(
+                    rexpected, rmetadata.difference(lmetadata)._asdict()
+                )
 
 
 class Test_equal(tests.IrisTest):

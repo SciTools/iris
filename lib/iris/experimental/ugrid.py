@@ -621,7 +621,14 @@ class MeshMetadata(BaseMetadata):
 
     """
 
-    _members = "topology_dimension"
+    # The node_dimension", "edge_dimension" and "face_dimension" members are
+    # stateful only; they not participate in lenient/strict equivalence.
+    _members = (
+        "topology_dimension",
+        "node_dimension",
+        "edge_dimension",
+        "face_dimension",
+    )
 
     __slots__ = ()
 
@@ -644,15 +651,19 @@ class MeshMetadata(BaseMetadata):
             A list of combined metadata member values.
 
         """
-        # Perform "strict" combination for "topology_dimension".
-        value = (
-            self.topology_dimension
-            if self.topology_dimension == other.topology_dimension
-            else None
-        )
+
+        # Perform "strict" combination for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
-        result.append(value)
+        result.extend(values)
 
         return result
 
@@ -671,6 +682,8 @@ class MeshMetadata(BaseMetadata):
 
         """
         # Perform "strict" comparison for "topology_dimension".
+        # "node_dimension", "edge_dimension" and "face_dimension" are not part
+        # of lenient equivalence at all.
         result = self.topology_dimension == other.topology_dimension
         if result:
             # Perform lenient comparison of the other parent members.
@@ -692,15 +705,18 @@ class MeshMetadata(BaseMetadata):
             A list of difference metadata member values.
 
         """
-        # Perform "strict" difference for "topology_dimension".
-        value = (
-            None
-            if self.topology_dimension == other.topology_dimension
-            else (self.topology_dimension, other.topology_dimension)
-        )
+        # Perform "strict" difference for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
-        result.append(value)
+        result.extend(values)
 
         return result
 
