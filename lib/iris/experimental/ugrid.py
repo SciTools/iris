@@ -31,6 +31,7 @@ from ..coords import _DimensionalMetadata
 __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
+    "MeshMetadata",
 ]
 
 
@@ -1187,16 +1188,24 @@ class MeshMetadata(BaseMetadata):
 
 
 #: Convenience collection of lenient metadata combine services.
-SERVICES_COMBINE.append(ConnectivityMetadata.combine)
-SERVICES.append(ConnectivityMetadata.combine)
+_services = [ConnectivityMetadata.combine, MeshMetadata.combine]
+SERVICES_COMBINE.extend(_services)
+SERVICES.extend(_services)
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE.append(ConnectivityMetadata.difference)
-SERVICES.append(ConnectivityMetadata.difference)
+_services = [ConnectivityMetadata.difference, MeshMetadata.difference]
+SERVICES_DIFFERENCE.extend(_services)
+SERVICES.extend(_services)
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL.extend(
-    [ConnectivityMetadata.__eq__, ConnectivityMetadata.equal]
-)
-SERVICES.extend([ConnectivityMetadata.__eq__, ConnectivityMetadata.equal])
+_services = [
+    ConnectivityMetadata.__eq__,
+    ConnectivityMetadata.equal,
+    MeshMetadata.__eq__,
+    MeshMetadata.equal,
+]
+SERVICES_EQUAL.extend(_services)
+SERVICES.extend(_services)
+
+del _services
