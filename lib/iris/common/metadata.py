@@ -181,6 +181,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
+                # TODO: refactor so that 'non-participants' can be held in their specific subclasses.
                 # Certain members never participate in strict equivalence, so
                 # are filtered out.
                 fields = filter(
