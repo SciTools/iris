@@ -431,7 +431,7 @@ class TestMasking(tests.IrisTest):
                 [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
                 [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
             ],
-            np.bool,
+            np.bool_,
         )
         self.assertArrayEqual(expected_mask, ut.data.mask)
         self.assertArrayEqual(expected_mask, vt.data.mask)

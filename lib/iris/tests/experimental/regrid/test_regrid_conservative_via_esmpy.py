@@ -675,7 +675,7 @@ class TestConservativeRegrid(tests.IrisTest):
                 [100, 100, 100, 100, 100, 100, 100, 100, 100],
                 [100, 100, 100, 100, 100, 100, 100, 100, 100],
             ],
-            dtype=np.float,
+            dtype=np.float64,
         )
 
         c1_areasum = _cube_area_sum(c1)
@@ -715,7 +715,7 @@ class TestConservativeRegrid(tests.IrisTest):
                 [100, 100, 199, 199, 100],
                 [100, 100, 199, 199, 199],
             ],
-            dtype=np.float,
+            dtype=np.float64,
         )
         c2_areasum = _cube_area_sum(c2)
 
@@ -770,7 +770,7 @@ class TestConservativeRegrid(tests.IrisTest):
                     [100, 100, 100, 100, 100, 100, 100, 100, 100],
                     [100, 100, 100, 100, 100, 100, 100, 100, 100],
                 ],
-                dtype=np.float,
+                dtype=np.float64,
             )
 
             if do_add_missing:

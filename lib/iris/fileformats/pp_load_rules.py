@@ -580,7 +580,7 @@ def _epoch_date_hours(epoch_hours_unit, datetime):
     # numpy.float64.  The behaviour of round is to recast this to an
     # int, which is not the desired behaviour for PP files.
     # So, cast the answer to numpy.float_ to be safe.
-    epoch_hours = np.float_(epoch_hours_unit.date2num(datetime))
+    epoch_hours = np.float64(epoch_hours_unit.date2num(datetime))
 
     if days_offset is not None:
         # Correct for any modifications to achieve a valid date.
