@@ -29,6 +29,7 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
+from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
 from ..exceptions import CoordinateNotFoundError
 from ..util import guess_coord_axis
@@ -41,9 +42,18 @@ __all__ = [
 ]
 
 
+# Configure the logger.
+logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+
+
 # Mesh coordinate manager namedtuples.
-Mesh1DCoords = namedtuple("Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"])
-Mesh2DCoords = namedtuple("Mesh2DCoords", ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"])
+Mesh1DCoords = namedtuple(
+    "Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"]
+)
+Mesh2DCoords = namedtuple(
+    "Mesh2DCoords",
+    ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"],
+)
 MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
 MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
 MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
@@ -1017,6 +1027,7 @@ class MeshMetadata(BaseMetadata):
 #
 #
 
+
 class _Mesh1DCoordinateManager:
     """
 
@@ -1025,6 +1036,7 @@ class _Mesh1DCoordinateManager:
     TBD: rationalise self.coords() logic with other manager and Cube
 
     """
+
     REQUIRED = (
         "node_x",
         "node_y",
@@ -1056,50 +1068,36 @@ class _Mesh1DCoordinateManager:
     def __setstate__(self, state):
         pass
 
-    def _satisfied(self):
-        # is this needed?
-        return all([getattr(self, member) is not None for member in self.REQUIRED])
-
-    def _node_setter(self, axis, coord):
+    def _setter(self, location, axis, coord, shape):
         axis = axis.lower()
-        member = f"node_{axis}"
-        if coord is None:
-            emsg = f"{member!r} is a required coordinate, cannot set to 'None'."
-            raise ValueError(emsg)
-        if not isinstance(coord, AuxCoord):
-            emsg = f"{member!r} requires to be an 'AuxCoord', got {type(coord)}."
-            raise TypeError(emsg)
-        guess_axis = guess_coord_axis(coord)
-        if guess_axis and guess_axis.lower() != axis:
-            emsg = f"{member!r} requires an {axis}-axis like 'AuxCoord', got an {guess_axis.lower()}-axis like."
-            raise TypeError(emsg)
-        if coord.climatological:
-            emsg = f"{member!r} cannot be a climatological 'AuxCoord'."
-            raise TypeError(emsg)
-        node_shape = self.node_shape
-        if node_shape is not None and coord.shape != node_shape:
-            emsg = f"{member!r} requires to have shape {node_shape!r}, got {coord.shape!r}."
-            raise ValueError(emsg)
-        self._members[member] = coord
+        member = f"{location}_{axis}"
 
-    def _edge_setter(self, axis, coord):
-        axis = axis.lower()
-        member = f"edge_{axis}"
+        # enforce the UGRID minimum coordinate requirement
+        if location == "node" and coord is None:
+            emsg = (
+                f"{member!r} is a required coordinate, cannot set to 'None'."
+            )
+            raise ValueError(emsg)
+
         if coord is not None:
             if not isinstance(coord, AuxCoord):
-                emsg = f"{member!r} requires to be a 'AuxCoord', got {type(coord)}."
+                emsg = f"{member!r} requires to be an 'AuxCoord', got {type(coord)}."
                 raise TypeError(emsg)
+
             guess_axis = guess_coord_axis(coord)
+
             if guess_axis and guess_axis.lower() != axis:
                 emsg = f"{member!r} requires an {axis}-axis like 'AuxCoord', got an {guess_axis.lower()}-axis like."
                 raise TypeError(emsg)
+
             if coord.climatological:
                 emsg = f"{member!r} cannot be a climatological 'AuxCoord'."
                 raise TypeError(emsg)
-            edge_shape = self.edge_shape
-            if edge_shape is not None and coord.shape != edge_shape:
-                emsg = f"{member!r} requires to have shape {edge_shape!r}, got {coord.shape!r}."
+
+            if shape is not None and coord.shape != shape:
+                emsg = f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
                 raise ValueError(emsg)
+
         self._members[member] = coord
 
     @property
@@ -1108,7 +1106,9 @@ class _Mesh1DCoordinateManager:
 
     @node_x.setter
     def node_x(self, coord):
-        self._node_setter("x", coord)
+        self._setter(
+            location="node", axis="x", coord=coord, shape=self.node_shape
+        )
 
     @property
     def node_y(self):
@@ -1116,7 +1116,9 @@ class _Mesh1DCoordinateManager:
 
     @node_y.setter
     def node_y(self, coord):
-        self._node_setter("y", coord)
+        self._setter(
+            location="node", axis="y", coord=coord, shape=self.node_shape
+        )
 
     @property
     def edge_x(self):
@@ -1124,7 +1126,9 @@ class _Mesh1DCoordinateManager:
 
     @edge_x.setter
     def edge_x(self, coord):
-        self._edge_setter("x", coord)
+        self._setter(
+            location="edge", axis="x", coord=coord, shape=self.edge_shape
+        )
 
     @property
     def edge_y(self):
@@ -1132,7 +1136,9 @@ class _Mesh1DCoordinateManager:
 
     @edge_y.setter
     def edge_y(self, coord):
-        self._edge_setter("y", coord)
+        self._setter(
+            location="edge", axis="y", coord=coord, shape=self.edge_shape
+        )
 
     def _shape(self, location):
         coord = getattr(self, f"{location}_x")
@@ -1145,11 +1151,11 @@ class _Mesh1DCoordinateManager:
 
     @property
     def node_shape(self):
-        return self._shape("node")
+        return self._shape(location="node")
 
     @property
     def edge_shape(self):
-        return self._shape("edge")
+        return self._shape(location="edge")
 
     @property
     def all_coords(self):
@@ -1164,17 +1170,17 @@ class _Mesh1DCoordinateManager:
         return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
 
     def _coords(
-            self,
-            coords,
-            item=None,
-            standard_name=None,
-            long_name=None,
-            var_name=None,
-            attributes=None,
-            axis=None,
+        self,
+        members,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
     ):
         """
-        TDB: support coord_systems
+        TDB: support coord_systems?
 
         """
         name = None
@@ -1186,41 +1192,30 @@ class _Mesh1DCoordinateManager:
             coord = item
 
         if name is not None:
-            coords = [
-                member
-                for member in coords
-                if member.name() == name
-            ]
+            members = {k: v for k, v in members.items() if v.name() == name}
 
         if standard_name is not None:
-            coords = [
-                member
-                for member in coords
-                if member.standard_name == standard_name
-            ]
+            members = {
+                k: v
+                for k, v in members.items()
+                if v.standard_name == standard_name
+            }
 
         if long_name is not None:
-            coords = [
-                member
-                for member in coords
-                if member.long_name == long_name
-            ]
+            members = {
+                k: v for k, v in members.items() if v.long_name == long_name
+            }
 
         if var_name is not None:
-            coords = [
-                member
-                for member in coords
-                if member.var_name == var_name
-            ]
+            members = {
+                k: v for k, v in members.items() if v.var_name == var_name
+            }
 
         if axis is not None:
             axis = axis.upper()
-            guess_axis = guess_coord_axis
-            coords = [
-                member
-                for member in coords
-                if guess_axis(member) == axis
-            ]
+            members = {
+                k: v for k, v in members.items() if guess_coord_axis(v) == axis
+            }
 
         if attributes is not None:
             if not isinstance(attributes, Mapping):
@@ -1230,17 +1225,14 @@ class _Mesh1DCoordinateManager:
                 )
                 raise ValueError(emsg)
 
-            def attr_filter(member):
+            def _filter(coord):
                 return all(
-                    k in member.attributes and _hexdigest(member.attributes[k]) == _hexdigest(v)
+                    k in coord.attributes
+                    and _hexdigest(coord.attributes[k]) == _hexdigest(v)
                     for k, v in attributes.items()
                 )
 
-            coords = [
-                member
-                for member in coords
-                if attr_filter(member)
-            ]
+            members = {k: v for k, v in members.items() if _filter(v)}
 
         if coord is not None:
             if hasattr(coord, "__class__") and coord.__class__ in (
@@ -1250,46 +1242,98 @@ class _Mesh1DCoordinateManager:
                 target_metadata = coord
             else:
                 target_metadata = coord.metadata
-            coords = [
-                member
-                for member in coords
-                if member.metadata == target_metadata
-            ]
 
-        return coords
+            members = {
+                k: v
+                for k, v in members.items()
+                if v.metadata == target_metadata
+            }
 
-    def coord(self, **kwargs):
-        coords = self.coords(**kwargs)
-        if len(coords) > 1:
+        return members
+
+    def _coord(self, **kwargs):
+        asdict = kwargs["asdict"]
+        kwargs["asdict"] = True
+        members = self.coords(**kwargs)
+
+        if len(members) > 1:
+            names = ", ".join(
+                f"{member}={coord!r}" for member, coord in members.items()
+            )
             emsg = (
-                f"Expected to find exactly 1 coordinate, but found {len(coords)}. "
-                f"They were: {', '.join(coord.name() for coord in coords)}."
+                f"Expected to find exactly 1 coordinate, but found {len(members)}. "
+                f"They were: {names}."
             )
             raise CoordinateNotFoundError(emsg)
-        if len(coords) == 0:
+
+        if len(members) == 0:
             item = kwargs["item"]
             if item is not None:
                 if not isinstance(item, str):
                     item = item.name()
-            name = item or kwargs["standard_name"] or kwargs["long_name"] or kwargs["var_name"] or None
-            name = "" if name is None else f"{name} "
-            emsg = f"Expected to find exactly 1 {name}coordinate, but found none."
+            name = (
+                item
+                or kwargs["standard_name"]
+                or kwargs["long_name"]
+                or kwargs["var_name"]
+                or None
+            )
+            name = "" if name is None else f"{name!r} "
+            emsg = (
+                f"Expected to find exactly 1 {name}coordinate, but found none."
+            )
             raise CoordinateNotFoundError(emsg)
-        return coords[0]
+
+        if not asdict:
+            members = list(members.values())[0]
+
+        return members
+
+    def coord(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        asdict=True,
+    ):
+        return self._coord(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            asdict=asdict,
+        )
+
+    @staticmethod
+    def _filter_members(members):
+        """Remove non-None coordinate members."""
+        return {
+            member: coord
+            for member, coord in members._asdict().items()
+            if coord is not None
+        }
 
     def coords(
-            self,
-            item=None,
-            standard_name=None,
-            long_name=None,
-            var_name=None,
-            attributes=None,
-            axis=None,
-            node=None,
-            edge=None,
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        asdict=True,
     ):
-        coords = []
-
         # rationalise the tri-state behaviour
         if node is None and edge is None:
             node = edge = True
@@ -1297,14 +1341,14 @@ class _Mesh1DCoordinateManager:
             node = True if node else False
             edge = True if edge else False
 
+        members = {}
         if node:
-            coords.extend([coord for coord in self.node_coords if coord is not None])
-
+            members.update(self._filter_members(self.node_coords))
         if edge:
-            coords.extend([coord for coord in self.edge_coords if coord is not None])
+            members.update(self._filter_members(self.edge_coords))
 
-        return self._coords(
-            coords,
+        result = self._coords(
+            members,
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1313,10 +1357,15 @@ class _Mesh1DCoordinateManager:
             axis=axis,
         )
 
+        if not asdict:
+            result = list(result.values())
+
+        return result
+
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
         """
-        use self.remove to remove a coordinate e.g., using the pattern self.add(edge_x=None)
-        will not remove the edge_x coordinate
+        use self.remove(edge_x=True) to remove a coordinate e.g., using the
+        pattern self.add(edge_x=None) will not remove the edge_x coordinate
 
         """
         # deal with the special case where both required members are changing
@@ -1325,6 +1374,7 @@ class _Mesh1DCoordinateManager:
             cache_y = self.node_y
             self._members["node_x"] = None
             self._members["node_y"] = None
+
             try:
                 self.node_x = node_x
                 self.node_y = node_y
@@ -1347,13 +1397,57 @@ class _Mesh1DCoordinateManager:
         if edge_y is not None:
             self.edge_y = edge_y
 
-    # def remove(self, ...):
-    #     # needs to respect the minimum UGRID contract
-    #     # use logging/warning to flag items not removed - highlight in doc-string
-    #     # don't raise an exception
+    def _remove(self, **kwargs):
+        result = {}
+        members = self.coords(**kwargs)
+
+        for member in members.keys():
+            if member in self.REQUIRED:
+                dmsg = f"Ignoring request to remove required coordinate {member!r}"
+                logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
+            else:
+                result[member] = members[member]
+                setattr(self, member, None)
+
+        return result
+
+    def remove(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+    ):
+        return self._remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            asdict=True,
+        )
+
+    def __str__(self):
+        args = [
+            f"{member}=True"
+            for member, coord in self
+            if coord is not None
+        ]
+        return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __repr__(self):
-        args = [f"{member}={coord!r}" for member, coord in self if coord is not None]
+        args = [
+            f"{member}={coord!r}"
+            for member, coord in self
+            if coord is not None
+        ]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __eq__(self, other):
@@ -1372,15 +1466,165 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         "face_x",
         "face_y",
     )
-    def __init__(self, node_x, node_y, edge_x=None, edge_y=None, face_x=None, face_y=None):
-        # optional
+
+    def __init__(
+        self,
+        node_x,
+        node_y,
+        edge_x=None,
+        edge_y=None,
+        face_x=None,
+        face_y=None,
+    ):
+        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+
+        # optional coordinates
         self.face_x = face_x
         self.face_y = face_y
 
-        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+    @property
+    def face_x(self):
+        return self._members["face_x"]
 
-        # does the order matter?
-        self._members.extend([self.face_x, self.face_y])
+    @face_x.setter
+    def face_x(self, coord):
+        self._setter(
+            location="face", axis="x", coord=coord, shape=self.face_shape
+        )
+
+    @property
+    def face_y(self):
+        return self._members["face_y"]
+
+    @face_y.setter
+    def face_y(self, coord):
+        self._setter(
+            location="face", axis="y", coord=coord, shape=self.face_shape
+        )
+
+    @property
+    def face_shape(self):
+        return self._shape(location="face")
+
+    @property
+    def all_coords(self):
+        return Mesh2DCoords(**self._members)
+
+    @property
+    def face_coords(self):
+        return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
+
+    def coord(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+        asdict=True,
+    ):
+        return self._coord(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+            asdict=asdict,
+        )
+
+    def coords(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+        asdict=True,
+    ):
+        # rationalise the tri-state behaviour
+        if node is None and edge is None and face is None:
+            node = edge = face = True
+        else:
+            node = True if node else False
+            edge = True if edge else False
+            face = True if face else False
+
+        members = {}
+        if node:
+            members.update(self._filter_members(self.node_coords))
+        if edge:
+            members.update(self._filter_members(self.edge_coords))
+        if face:
+            members.update(self._filter_members(self.face_coords))
+
+        result = self._coords(
+            members,
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+        )
+
+        if not asdict:
+            result = list(result.values())
+
+        return result
+
+    def add(
+        self,
+        node_x=None,
+        node_y=None,
+        edge_x=None,
+        edge_y=None,
+        face_x=None,
+        face_y=None,
+    ):
+        super().add(node_x=node_x, node_y=node_y, edge_x=edge_x, edge_y=edge_y)
+
+        # deal with the optional members
+        if face_x is not None:
+            self.face_x = face_x
+        if face_y is not None:
+            self.face_y = face_y
+
+    def remove(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+            asdict=True,
+        )
 
 
 # # keep an eye on the __init__ inheritance
