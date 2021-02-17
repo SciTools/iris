@@ -27,6 +27,11 @@ This document explains the changes made to Iris for this release
 #. Congratulations to `@jamesp`_ who recently became an Iris core developer
    after joining the Iris development team at the `Met Office`_. 🎉
 
+#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_ and
+   `@MHBalsmeier`_ all of whom made their first contributions to Iris, which
+   were gratefully received and included in this release. Keep up the awesome
+   work! 🍻
+
 
 ✨ Features
 ===========
