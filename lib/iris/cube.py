@@ -13,7 +13,6 @@ from collections import OrderedDict
 from collections.abc import (
     Iterable,
     Container,
-    Mapping,
     MutableMapping,
     Iterator,
 )
@@ -40,10 +39,9 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.common import (
     CFVariableMixin,
-    CoordMetadata,
     CubeMetadata,
-    DimCoordMetadata,
     metadata_manager_factory,
+    filter_cf,
 )
 import iris.coord_systems
 import iris.coords
@@ -1639,14 +1637,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
 
         """
-        name = None
-        coord = None
-
-        if isinstance(name_or_coord, str):
-            name = name_or_coord
-        else:
-            coord = name_or_coord
-
         coords_and_factories = []
 
         if dim_coords in [True, None]:
@@ -1656,33 +1646,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
 
-        if name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.name() == name
-            ]
-
-        if standard_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.standard_name == standard_name
-            ]
-
-        if long_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.long_name == long_name
-            ]
-
-        if var_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.var_name == var_name
-            ]
+        coords_and_factories = filter_cf(
+            coords_and_factories,
+            item=name_or_coord,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+        )
 
         if axis is not None:
             axis = axis.upper()
@@ -1693,45 +1664,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 if guess_axis(coord_) == axis
             ]
 
-        if attributes is not None:
-            if not isinstance(attributes, Mapping):
-                msg = (
-                    "The attributes keyword was expecting a dictionary "
-                    "type, but got a %s instead." % type(attributes)
-                )
-                raise ValueError(msg)
-
-            def attr_filter(coord_):
-                return all(
-                    k in coord_.attributes and coord_.attributes[k] == v
-                    for k, v in attributes.items()
-                )
-
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if attr_filter(coord_)
-            ]
-
         if coord_system is not None:
             coords_and_factories = [
                 coord_
                 for coord_ in coords_and_factories
                 if coord_.coord_system == coord_system
-            ]
-
-        if coord is not None:
-            if hasattr(coord, "__class__") and coord.__class__ in (
-                CoordMetadata,
-                DimCoordMetadata,
-            ):
-                target_metadata = coord
-            else:
-                target_metadata = coord.metadata
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.metadata == target_metadata
             ]
 
         if contains_dimension is not None:
