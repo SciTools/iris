@@ -13,7 +13,6 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from functools import wraps
-from warnings import warn
 
 import dask.array as da
 import numpy as np
@@ -29,6 +28,7 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
+from ..config import get_logger
 from ..coords import _DimensionalMetadata
 from .. import exceptions
 
@@ -36,7 +36,26 @@ from .. import exceptions
 __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
+    "Mesh1DConnectivities",
+    "Mesh2DConnectivities",
 ]
+
+
+# Configure the logger.
+logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+
+Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
+Mesh2DConnectivities = namedtuple(
+    "Mesh2DConnectivities",
+    [
+        "face_node",
+        "edge_node",
+        "face_edge",
+        "face_face",
+        "edge_face",
+        "boundary_node",
+    ],
+)
 
 
 class Connectivity(_DimensionalMetadata):
@@ -745,7 +764,6 @@ class _MeshConnectivityManagerMixin(ABC):
     REQUIRED = ()
     OPTIONAL = ()
     NDIM = NotImplemented
-    MembersTuple = NotImplemented
 
     @abstractmethod
     def __init__(self, *connectivities):
@@ -755,18 +773,20 @@ class _MeshConnectivityManagerMixin(ABC):
                 message = f"{self.NDIM}D meshes require a {requisite}."
                 raise ValueError(message)
 
-        self.valid_roles = self.REQUIRED + self.OPTIONAL
+        self.ALL = self.REQUIRED + self.OPTIONAL
         self._members = {}
         self.add(*connectivities)
 
     def __iter__(self):
-        for member, connectivity in self._members.items():
-            yield member, connectivity
+        for item in self._members.items():
+            yield item
 
     def __getstate__(self):
+        # TBD
         pass
 
     def __setstate__(self, state):
+        # TBD
         pass
 
     @property
@@ -785,7 +805,6 @@ class _MeshConnectivityManagerMixin(ABC):
         edge=None,
         face=None,
     ):
-        # see Cube.coords for relevant patterns
         result = filter_cf(
             self._members.values(),
             item=item,
@@ -795,24 +814,26 @@ class _MeshConnectivityManagerMixin(ABC):
             attributes=attributes,
         )
 
-        def location_filter(instances, parameter, location_name):
-            result = instances
-            if parameter is True:
-                result = [
+        def location_filter(instances_, parameter_, location_name_):
+            if parameter_ is False:
+                result_ = [
                     instance_
-                    for instance_ in result
-                    if location_name
-                    in (instance_.src_location, instance_.tgt_location)
-                ]
-            elif parameter is False:
-                result = [
-                    instance_
-                    for instance_ in result
-                    if location_name
+                    for instance_ in instances_
+                    if location_name_
                     not in (instance_.src_location, instance_.tgt_location)
                 ]
+            elif parameter_ is None:
+                result_ = instances_
+            else:
+                # Interpret any other value as =True.
+                result_ = [
+                    instance_
+                    for instance_ in instances_
+                    if location_name_
+                    in (instance_.src_location, instance_.tgt_location)
+                ]
 
-            return result
+            return result_
 
         for parameter, location_name in (
             (node, "node"),
@@ -821,7 +842,8 @@ class _MeshConnectivityManagerMixin(ABC):
         ):
             result = location_filter(result, parameter, location_name)
 
-        return result
+        result_dict = {k: v for k, v in self._members.items() if v in result}
+        return result_dict
 
     def filter_single(self, **kwargs):
         result = self.filter(**kwargs)
@@ -856,14 +878,18 @@ class _MeshConnectivityManagerMixin(ABC):
         # validate their outputs.
         add_dict = {}
         for connectivity in connectivities:
-            assert isinstance(connectivity, Connectivity)
+            if not isinstance(connectivity, Connectivity):
+                message = f"Expected Connectivity, got: {type(connectivity)} ."
+                raise ValueError(message)
             cf_role = connectivity.cf_role
-            if cf_role not in self.valid_roles:
+            if cf_role not in self.ALL:
                 message = (
                     f"Connectivity not added. Got cf_role={cf_role} . "
-                    f"Expected one of: {self.valid_roles} ."
+                    f"Expected one of: {self.ALL} ."
                 )
-                warn(message)
+                logger.warning(
+                    message, extra=dict(cls=self.__class__.__name__)
+                )
             else:
                 add_dict[cf_role] = connectivity
 
@@ -916,7 +942,9 @@ class _MeshConnectivityManagerMixin(ABC):
                     f"Connectivity not removed: {cf_role} - required "
                     f"for a valid {self.NDIM}D Mesh."
                 )
-                warn(message)
+                logger.warning(
+                    message, extra=dict(cls=self.__class__.__name__)
+                )
 
         for cf_role in removal_dict.keys():
             del self._members[cf_role]
@@ -924,22 +952,16 @@ class _MeshConnectivityManagerMixin(ABC):
         return removal_dict
 
     def __repr__(self):
-        class_name = type(self).__name__
-        content = ", ".join(
-            f"{member}={connectivity}" for member, connectivity in self
-        )
-        return ", ".join((class_name, content))
+        args = [f"{member}={connectivity}" for member, connectivity in self]
+        return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __eq__(self, other):
-        # Full equality could be MASSIVE, so we want to avoid that.
-        # Ideally we want a mesh signature from LFRic for comparison, although this would
-        # limit Iris' relevance outside MO.
-        # TL;DR: unknown quantity.
-        raise NotImplementedError
+        # TBD
+        return NotImplemented
 
     def __ne__(self, other):
-        # See __eq__
-        raise NotImplementedError
+        # TBD
+        return NotImplemented
 
 
 # keep an eye on the __init__ inheritance
@@ -947,15 +969,14 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
     REQUIRED = ("edge_node_connectivity",)
     OPTIONAL = ()
     NDIM = 1
-    MembersTuple = namedtuple("Mesh1DConnectivities", ["edge_node"])
 
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
 
-    # TODO: debatable whether one couldn't just use self.filter().
+    # TODO: debatable whether a user couldn't just use self.filter() with no args.
     @property
     def all_members(self):
-        return self.MembersTuple(self.edge_node)
+        return Mesh1DConnectivities(self.edge_node)
 
     @property
     def edge_node(self):
@@ -972,25 +993,14 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
         "boundary_node_connectivity",
     )
     NDIM = 2
-    MembersTuple = namedtuple(
-        "Mesh2DConnectivities",
-        [
-            "face_node",
-            "edge_node",
-            "face_edge",
-            "face_face",
-            "edge_face",
-            "boundary_node",
-        ],
-    )
 
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
 
-    # TODO: debatable whether one couldn't just use self.filter().
+    # TODO: debatable whether a user couldn't just use self.filter() with no args.
     @property
     def all_members(self):
-        return self.MembersTuple(
+        return Mesh2DConnectivities(
             self.face_node,
             self.edge_node,
             self.face_edge,

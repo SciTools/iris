@@ -68,7 +68,9 @@ def filter_cf(
 
         def attr_filter(instance_):
             return all(
-                k in instance_.attributes and instance_.attributes[k] == v
+                k in instance_.attributes
+                and metadata._hexdigest(instance_.attributes[k])
+                == metadata._hexdigest(v)
                 for k, v in attributes.items()
             )
 
