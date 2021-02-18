@@ -761,6 +761,7 @@ class MeshMetadata(BaseMetadata):
 
 
 class _MeshConnectivityManagerMixin(ABC):
+    # TODO: re-order methods, properties etc to align with Coord Managers.
     REQUIRED = ()
     OPTIONAL = ()
     NDIM = NotImplemented
@@ -777,24 +778,109 @@ class _MeshConnectivityManagerMixin(ABC):
         self._members = {}
         self.add(*connectivities)
 
-    def __iter__(self):
-        for item in self._members.items():
-            yield item
+    def __eq__(self, other):
+        # TBD
+        return NotImplemented
 
     def __getstate__(self):
         # TBD
         pass
 
+    def __iter__(self):
+        for item in self._members.items():
+            yield item
+
+    def __ne__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __repr__(self):
+        args = [f"{member}={connectivity!r}" for member, connectivity in self]
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
     def __setstate__(self, state):
         # TBD
         pass
+
+    def __str__(self):
+        args = [f"{member}=True" for member, connectivity in self]
+        return f"{self.__class__.__name__}({', '.join(args)})"
 
     @property
     @abstractmethod
     def all_members(self):
         return NotImplemented
 
-    def filter(
+    def add(self, *connectivities):
+        # Since Connectivity classes include their cf_role, no setters will be
+        # provided, just a means to add one or more connectivities to the
+        # manager.
+        # No warning is raised for duplicate cf_roles - user is trusted to
+        # validate their outputs.
+        add_dict = {}
+        for connectivity in connectivities:
+            if not isinstance(connectivity, Connectivity):
+                message = f"Expected Connectivity, got: {type(connectivity)} ."
+                raise ValueError(message)
+            cf_role = connectivity.cf_role
+            if cf_role not in self.ALL:
+                message = (
+                    f"Not adding connectivity {connectivity!r} - cf_role must "
+                    f"be one of: {self.ALL} ."
+                )
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
+            else:
+                add_dict[cf_role] = connectivity
+
+        # Validate shapes.
+        proposed_members = {**self._members, **add_dict}
+        locations = set([c.src_location for c in proposed_members.values()])
+        for location in locations:
+            counts = [
+                len(c.indices_by_src())
+                for c in proposed_members.values()
+                if c.src_location == location
+            ]
+            # Check is list values are identical.
+            if not counts.count(counts[0]) == len(counts):
+                message = (
+                    f"Invalid Connectivities provided - inconsistent "
+                    f"{location} counts."
+                )
+                raise ValueError(message)
+
+        self._members = proposed_members
+
+    def filter(self, **kwargs):
+        result = self.filters(**kwargs)
+        if len(result) > 1:
+            names = ", ".join(
+                f"{member}={connectivity!r}"
+                for member, connectivity in result.items()
+            )
+            message = (
+                f"Expected to find exactly 1 connectivity, but found "
+                f"{len(result)}. They were: {names}."
+            )
+            raise exceptions.ConnectivityNotFoundError(message)
+        elif len(result) == 0:
+            item = kwargs["item"]
+            _name = item
+            if item is not None:
+                if not isinstance(item, str):
+                    _name = item.name()
+            bad_name = (
+                _name or kwargs["standard_name"] or kwargs["long_name"] or ""
+            )
+            message = (
+                f"Expected to find exactly 1 {bad_name} connectivity, "
+                f"but found none."
+            )
+            raise exceptions.ConnectivityNotFoundError(message)
+
+        return result
+
+    def filters(
         self,
         item=None,
         standard_name=None,
@@ -845,73 +931,6 @@ class _MeshConnectivityManagerMixin(ABC):
         result_dict = {k: v for k, v in self._members.items() if v in result}
         return result_dict
 
-    def filter_single(self, **kwargs):
-        result = self.filter(**kwargs)
-        if len(result) > 1:
-            message = (
-                f"Expected to find exactly 1 connectivity, but found "
-                f"{len(result)}. They were: {[c.name for c in result]}."
-            )
-            raise exceptions.ConnectivityNotFoundError(message)
-        elif len(result) == 0:
-            item = kwargs["item"]
-            _name = item
-            if item is not None:
-                if not isinstance(item, str):
-                    _name = item.name()
-            bad_name = (
-                _name or kwargs["standard_name"] or kwargs["long_name"] or ""
-            )
-            message = (
-                f"Expected to find exactly 1 {bad_name} connectivity, "
-                f"but found none."
-            )
-            raise exceptions.ConnectivityNotFoundError(message)
-
-        return result[0]
-
-    def add(self, *connectivities):
-        # Since Connectivity classes include their cf_role, no setters will be
-        # provided, just a means to add one or more connectivities to the
-        # manager.
-        # No warning is raised for duplicate cf_roles - user is trusted to
-        # validate their outputs.
-        add_dict = {}
-        for connectivity in connectivities:
-            if not isinstance(connectivity, Connectivity):
-                message = f"Expected Connectivity, got: {type(connectivity)} ."
-                raise ValueError(message)
-            cf_role = connectivity.cf_role
-            if cf_role not in self.ALL:
-                message = (
-                    f"Connectivity not added. Got cf_role={cf_role} . "
-                    f"Expected one of: {self.ALL} ."
-                )
-                logger.warning(
-                    message, extra=dict(cls=self.__class__.__name__)
-                )
-            else:
-                add_dict[cf_role] = connectivity
-
-        # Validate shapes.
-        proposed_members = {**self._members, **add_dict}
-        locations = set([c.src_location for c in proposed_members.values()])
-        for location in locations:
-            counts = [
-                len(c.indices_by_src())
-                for c in proposed_members.values()
-                if c.src_location == location
-            ]
-            # Check is list values are identical.
-            if not counts.count(counts[0]) == len(counts):
-                message = (
-                    f"Invalid Connectivities provided - inconsistent "
-                    f"{location} counts."
-                )
-                raise ValueError(message)
-
-        self._members = proposed_members
-
     def remove(
         self,
         item=None,
@@ -923,9 +942,7 @@ class _MeshConnectivityManagerMixin(ABC):
         edge=None,
         face=None,
     ):
-        # use logging/warning to flag items not removed - highlight in doc-string
-        # don't raise an exception
-        removal_list = self.filter(
+        removal_list = self.filters(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -937,34 +954,20 @@ class _MeshConnectivityManagerMixin(ABC):
         )
         removal_dict = {c.cf_role: c for c in removal_list}
         for cf_role in self.REQUIRED:
-            if removal_dict.pop(cf_role, None):
+            not_removed = removal_dict.pop(cf_role, None)
+            if not_removed:
                 message = (
-                    f"Connectivity not removed: {cf_role} - required "
-                    f"for a valid {self.NDIM}D Mesh."
+                    f"Ignoring request to remove required connectivity "
+                    f"{not_removed!r}"
                 )
-                logger.warning(
-                    message, extra=dict(cls=self.__class__.__name__)
-                )
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
         for cf_role in removal_dict.keys():
             del self._members[cf_role]
 
         return removal_dict
 
-    def __repr__(self):
-        args = [f"{member}={connectivity}" for member, connectivity in self]
-        return f"{self.__class__.__name__}({', '.join(args)})"
 
-    def __eq__(self, other):
-        # TBD
-        return NotImplemented
-
-    def __ne__(self, other):
-        # TBD
-        return NotImplemented
-
-
-# keep an eye on the __init__ inheritance
 class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
     REQUIRED = ("edge_node_connectivity",)
     OPTIONAL = ()
@@ -973,7 +976,6 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
 
-    # TODO: debatable whether a user couldn't just use self.filter() with no args.
     @property
     def all_members(self):
         return Mesh1DConnectivities(self.edge_node)
@@ -997,7 +999,6 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
 
-    # TODO: debatable whether a user couldn't just use self.filter() with no args.
     @property
     def all_members(self):
         return Mesh2DConnectivities(
@@ -1010,8 +1011,12 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
         )
 
     @property
-    def face_node(self):
-        return self._members["face_node_connectivity"]
+    def boundary_node(self):
+        return self._members.get("boundary_node_connectivity")
+
+    @property
+    def edge_face(self):
+        return self._members.get("edge_face_connectivity")
 
     @property
     def edge_node(self):
@@ -1026,12 +1031,8 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
         return self._members.get("face_face_connectivity")
 
     @property
-    def edge_face(self):
-        return self._members.get("edge_face_connectivity")
-
-    @property
-    def boundary_node(self):
-        return self._members.get("boundary_node_connectivity")
+    def face_node(self):
+        return self._members["face_node_connectivity"]
 
 
 # class Mesh(CFVariableMixin):
