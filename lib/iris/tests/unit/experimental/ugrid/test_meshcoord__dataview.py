@@ -121,40 +121,61 @@ def create_meshcoordlike(
     assert facenodeinds_shape == (face_x_shape[0], 4)
     assert np.dtype(facenodeinds_dtype).kind == "i"
 
+    # chunking = 'auto'
+    chunking = 2
     # Wrap the basic access operations as deferred-access arrays, using the
     # ArrayMimic (func --> arraylike) and Dask (arraylike --> da.Array).
     face_x_arraylike = ArrayMimic(
         fetch_face_xs, shape=face_x_shape, dtype=face_x_dtype
     )
-    lazy_face_x = da.from_array(face_x_arraylike, chunks="auto")
+    lazy_face_x = da.from_array(face_x_arraylike, chunks=chunking)
     node_x_arraylike = ArrayMimic(
         fetch_node_xs, shape=node_x_shape, dtype=node_x_dtype
     )
-    lazy_node_x = da.from_array(node_x_arraylike, chunks="auto")
+    lazy_node_x = da.from_array(node_x_arraylike, chunks=chunking)
     facenodeinds_arraylike = ArrayMimic(
         fetch_face_node_inds,
         dtype=facenodeinds_dtype,
         shape=facenodeinds_shape,
     )
-    lazy_facenodeinds = da.from_array(facenodeinds_arraylike, chunks="auto")
+    lazy_facenodeinds = da.from_array(facenodeinds_arraylike, chunks=chunking)
 
     # Construct the appropriate lazy bounds calculation for the MeshCoord.
-    # This type of multidimensional indexing is not supported...
-    #    "lazy_face_bounds_x = lazy_node_x[lazy_facenodeinds]"
-    # ...so we build that calculation by iterating over the final (bounds)
-    # index, and stacking those to reconstruct the output.
-    # Within that operation, we also apply our 'array_index_with_missing'
-    # function, which ensures that any -1 indices yield NaN points.
-    lazy_face_bounds_x = da.stack(
-        [
-            array_index_with_missing(
-                lazy_node_x, lazy_facenodeinds[:, i_bound]
-            )
-            for i_bound in range(4)
-        ],
-        axis=-1,
-    )
-    assert lazy_face_bounds_x.shape == facenodeinds_shape
+    # We have investigated 2 ways of doing this.
+    method = "reshape"  # or 'slicing'
+    if method == "slicing":
+        # This type of multidimensional indexing is not supported...
+        #    "lazy_face_bounds_x = lazy_node_x[lazy_facenodeinds]"
+        # ...so we build that calculation by iterating over the final (bounds)
+        # index, and stacking those to reconstruct the output.
+        # Within that operation, we also apply our 'array_index_with_missing'
+        # function, which ensures that any -1 indices yield NaN points.
+        lazy_face_bounds_x = da.stack(
+            [
+                array_index_with_missing(
+                    lazy_node_x, lazy_facenodeinds[:, i_bound]
+                )
+                for i_bound in range(facenodeinds_shape[1])
+            ],
+            axis=-1,
+        )
+        assert lazy_face_bounds_x.shape == facenodeinds_shape
+    elif method == "reshape":
+        # An alternative way.  This seems simpler for now.
+        # This type of multidimensional indexing is not supported...
+        #    "lazy_face_bounds_x = lazy_node_x[lazy_facenodeinds]"
+        # ...so we flatten the indices + re-instate the shape afterwards.
+        lazy_face_bounds_x = array_index_with_missing(
+            lazy_node_x, lazy_facenodeinds.flatten()
+        ).reshape(facenodeinds_shape)
+
+    debug = False
+    if debug:
+        print(
+            f"Construction method = {method} :\n"
+            f"  result chunks = {lazy_face_bounds_x.chunksize}"
+        )
+        # Chunksize results here : reshape => (1, 4) ;  slicing => (2, 1)
 
     # Create an AuxCoord wrapping the appropriate calculations.
     result = AuxCoord(
@@ -409,8 +430,7 @@ class Test_MeshCoord__dataview(tests.IrisTest):
         return lazy_array, wrapper
 
     def test_partial_access_points(self):
-        # TODO: this does not achieve what we hoped for, i.e.
-        # " Fetching part of MeshCoord.points uses only part of face_x. "
+        # Show that fetching part of MeshCoord.points uses only part of face_x.
         cube = self.cube
         co_face_x = cube.coord("face_x")
         lazy_wrapped, wrapper = self.access_wrapped_array(co_face_x.points)
@@ -418,22 +438,88 @@ class Test_MeshCoord__dataview(tests.IrisTest):
 
         mesh_coord = self.mesh_coord
         self.assertEqual(wrapper.accesses, [])
-        mesh_coord.points[1:2]
-        # NOTE: this does *not* work as desired, at present..
-        #   self.assertEqual(wrapper.accesses, [(slice(1,2),)])
-        # ..instead it fetches the whole thing :
-        self.assertEqual(wrapper.accesses, [(slice(0, self.n_faces),)])
+        mesh_coord[1:3].points  # compute just part of it
+
+        # Get sorted accesses : order can vary due to Dask threaded operation.
+        result = sorted(wrapper.accesses)
+        self.assertEqual(result, [(slice(1, 2),), (slice(2, 3),)])
+
+        # Interpretation : in this case, we have to fetch 2 chunks
+        #  - but not all of it
+        #  - and not all of (either of) those chunks.
 
     def test_partial_access_bounds__nodex(self):
-        # TODO:
-        # Fetching part of MeshCoord.bounds uses only part of node_x.
-        pass
+        # TODO: this does not achieve what we hoped for, i.e.
+        # " fetching part of MeshCoord.bounds uses only part of node_x ".
+        cube = self.cube
+        co_node_x = cube.coord("node_x")
+        lazy_wrapped, wrapper = self.access_wrapped_array(co_node_x.points)
+        co_node_x.points = lazy_wrapped
+
+        mesh_coord = self.mesh_coord
+        self.assertEqual(wrapper.accesses, [])
+        mesh_coord[1:2].bounds  # compute just part of it
+
+        # Sort accesses as Dask may not execute in a consistent order.
+        result = sorted(wrapper.accesses)
+
+        self.assertEqual(
+            result,
+            [
+                (slice(0, 2),),
+                (slice(2, 4),),
+                (slice(4, 6),),
+                (slice(6, 8),),
+                (slice(8, 10),),
+                (slice(10, 12),),
+                (slice(12, 14),),
+                (slice(14, 16),),
+                (slice(16, 18),),
+                (slice(18, 20),),
+            ],
+        )
+        # Interpretation:
+        # Fetching bounds[1:2] should only involve nodes [1, 3, 10, 13].
+        # Even the whole of face_nodes[0:2] (if that is one chunk) would only
+        # need --> nodes [0, 1, 2, 3, 10, 13].
+        # So *ideally*, it need only get chunks 0:2, 2:4, 10:12 and 12:14.
+        #  - and potentially not *all* of those.
+        # However it *actually* fetches the whole face-x array.
+        # This does not change between the 'reshape' and 'slicing' methods.
+
+        # Obviously not an ideal result, but this captures what it does at
+        # present.
+        # This is presumably due to Dask being unable to allow, in advance, for
+        # the unknown effects of indexing with deferred values.
+        # Special code will probably be needed, if we want to improve on this.
 
     def test_partial_access_bounds__facenodes(self):
-        # TODO:
-        # Fetching part of MeshCoord.bounds fetches only part of
+        # Show that fetching part of MeshCoord.bounds fetches only part of
         # face_node_connectivity.
-        pass
+        cube = self.cube
+        co_face_nodes = cube.coord("face_node_connectivity")
+        lazy_wrapped, wrapper = self.access_wrapped_array(co_face_nodes.bounds)
+        co_face_nodes.bounds = lazy_wrapped
+
+        mesh_coord = self.mesh_coord
+        self.assertEqual(wrapper.accesses, [])
+        mesh_coord[1:2].bounds  # compute just part of it
+
+        # Sort accesses as Dask may not execute in a consistent order.
+        result = sorted(wrapper.accesses)
+
+        # It fetches only the required part of the face_node_connectivity
+        # = shape (5, 4).
+        self.assertEqual(
+            result, [(slice(1, 2), slice(0, 2)), (slice(1, 2), slice(2, 4))]
+        )
+        # Interpretation:
+        # This result changes if the 'slicing' construction is used :
+        #  - the first-axis slices become slice(0,2) instead of slice(1,2).
+        # This is presumably because the 'sliced' output chunks of (2, 1) are
+        # different to the 'reshape' ones (1, 4), as shown by optional debug
+        # code output (see 'debug' in 'create_meshcoordlike').
+        # In either case less than *all* of it is fetched, which is encouraging.
 
 
 if __name__ == "__main__":
