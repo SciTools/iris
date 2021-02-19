@@ -838,7 +838,7 @@ class Mesh(CFVariableMixin):
         attributes=None,
         edge_coords_and_axes=None,
         face_coords_and_axes=None,
-        # connectivities=None,
+        connectivities=None,
         node_dimension=None,
         edge_dimension=None,
         face_dimension=None,
@@ -898,14 +898,17 @@ class Mesh(CFVariableMixin):
 
         if self.topology_dimension == 1:
             self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh1DConnectivityManager(
+                *connectivities
+            )
         elif self.topology_dimension == 2:
             self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh2DConnectivityManager(
+                *connectivities
+            )
         else:
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
-
-        # based on the topology_dimension, create the appropriate connectivity manager
-        # self._connectivity_manager = ...
 
     def __eq__(self, other):
         # TBD
@@ -1012,42 +1015,39 @@ class Mesh(CFVariableMixin):
     def node_coords(self):
         return self._coord_manager.node_coords
 
-    # @property
-    # def all_connectivities(self):
-    #     # return a namedtuple
-    #     # conns = mesh.all_connectivities
-    #     # conns.edge_node, conns.boundary_node
-    #     pass
-    #
-    # @property
-    # def face_node_connectivity(self):
-    #     # required
-    #     return self._connectivity_manager.face_node
-    #
-    # @property
-    # def edge_node_connectivity(self):
-    #     # optionally required
-    #     return self._connectivity_manager.edge_node
-    #
-    # @property
-    # def face_edge_connectivity(self):
-    #     # optional
-    #     return self._connectivity_manager.face_edge
-    #
-    # @property
-    # def face_face_connectivity(self):
-    #     # optional
-    #     return self._connectivity_manager.face_face
-    #
-    # @property
-    # def edge_face_connectivity(self):
-    #     # optional
-    #     return self._connectivity_manager.edge_face
-    #
-    # @property
-    # def boundary_node_connectivity(self):
-    #     # optional
-    #     return self._connectivity_manager.boundary_node
+    @property
+    def all_connectivities(self):
+        return self._connectivity_manager.all_members
+
+    @property
+    def face_node_connectivity(self):
+        # required
+        return self._connectivity_manager.face_node
+
+    @property
+    def edge_node_connectivity(self):
+        # optionally required
+        return self._connectivity_manager.edge_node
+
+    @property
+    def face_edge_connectivity(self):
+        # optional
+        return self._connectivity_manager.face_edge
+
+    @property
+    def face_face_connectivity(self):
+        # optional
+        return self._connectivity_manager.face_face
+
+    @property
+    def edge_face_connectivity(self):
+        # optional
+        return self._connectivity_manager.edge_face
+
+    @property
+    def boundary_node_connectivity(self):
+        # optional
+        return self._connectivity_manager.boundary_node
 
     def add_coords(
         self,
@@ -1067,25 +1067,56 @@ class Mesh(CFVariableMixin):
             face_y=face_y,
         )
 
-    # def add_connectivities(self, *args):
-    #     # this supports adding a new connectivity to the manager, but also replacing an existing connectivity
-    #     self._connectivity_manager.add(*args)
+    def add_connectivities(self, *connectivities):
+        self._connectivity_manager.add(*connectivities)
 
-    # def connectivities(
-    #         self,
-    #         name_or_coord=None,
-    #         standard_name=None,
-    #         long_name=None,
-    #         var_name=None,
-    #         attributes=None,
-    #         node=False,
-    #         edge=False,
-    #         face=False,
-    # ):
-    #     pass
+    def connectivities(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.filters(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
 
-    # def connectivity(self, ...):
-    #     pass
+    def connectivity(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.filter(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
 
     def coord(
         self,
@@ -1135,9 +1166,29 @@ class Mesh(CFVariableMixin):
             face=face,
         )
 
-    # def remove_connectivities(self, ...):
-    #     # needs to respect the minimum UGRID contract
-    #     self._connectivity_manager.remove(...)
+    def remove_connectivities(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
 
     def remove_coords(
         self,
@@ -1151,7 +1202,7 @@ class Mesh(CFVariableMixin):
         edge=None,
         face=None,
     ):
-        self._coord_manager.remove(
+        return self._coord_manager.remove(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1191,10 +1242,10 @@ class Mesh(CFVariableMixin):
     #     # use Connectivity.indices_by_src() for fetching indices.
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
-        self._set_dimension_names(node, edge, face, reset=True)
+        return self._set_dimension_names(node, edge, face, reset=True)
 
     def dimension_names(self, node=None, edge=None, face=None):
-        self._set_dimension_names(node, edge, face, reset=False)
+        return self._set_dimension_names(node, edge, face, reset=False)
 
     @property
     def cf_role(self):
@@ -1813,7 +1864,7 @@ class _MeshConnectivityManagerMixin(ABC):
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.
-        if self.NDIM < 2:
+        if face and self.NDIM < 2:
             message = (
                 "Ignoring request to filter for non-existent 'face' cf-roles."
             )

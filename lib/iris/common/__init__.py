@@ -24,6 +24,41 @@ def filter_cf(
     var_name=None,
     attributes=None,
 ):
+    """
+    Filter a list of :class:`iris.common.CFVariableMixin` subclasses to fit
+    the given criteria.
+
+    Kwargs:
+
+    * item
+        Either
+
+        (a) a :attr:`standard_name`, :attr:`long_name`, or
+        :attr:`var_name`. Defaults to value of `default`
+        (which itself defaults to `unknown`) as defined in
+        :class:`iris.common.CFVariableMixin`.
+
+        (b) a 'coordinate' instance with metadata equal to that of
+        the desired coordinates. Accepts either a
+        :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
+        :class:`iris.aux_factory.AuxCoordFactory`,
+        :class:`iris.common.CoordMetadata` or
+        :class:`iris.common.DimCoordMetadata` or
+        :class:`iris.experimental.ugrid.ConnectivityMetadata`.
+    * standard_name
+        The CF standard name of the desired coordinate. If None, does not
+        check for standard name.
+    * long_name
+        An unconstrained description of the coordinate. If None, does not
+        check for long_name.
+    * var_name
+        The netCDF variable name of the desired coordinate. If None, does
+        not check for var_name.
+    * attributes
+        A dictionary of attributes desired on the coordinates. If None,
+        does not check for attributes.
+
+    """
     name = None
     instance = None
 
