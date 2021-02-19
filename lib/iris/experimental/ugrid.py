@@ -871,10 +871,14 @@ class Mesh(CFVariableMixin):
 
         # check the UGRID minimum requirement for coordinates
         if "node_x" not in kwargs:
-            emsg = f"Require a node coordinate that is x-axis like to be provided."
+            emsg = (
+                "Require a node coordinate that is x-axis like to be provided."
+            )
             raise ValueError(emsg)
         if "node_y" not in kwargs:
-            emsg = f"Require a node coordinate that is y-axis like to be provided."
+            emsg = (
+                "Require a node coordinate that is y-axis like to be provided."
+            )
             raise ValueError(emsg)
 
         if self.topology_dimension == 1:
@@ -890,7 +894,7 @@ class Mesh(CFVariableMixin):
 
     def __eq__(self, other):
         # TBD
-        raise NotImplemented
+        return NotImplemented
 
     def __getstate__(self):
         # TBD
@@ -898,7 +902,7 @@ class Mesh(CFVariableMixin):
 
     def __ne__(self, other):
         # TBD
-        raise NotImplemented
+        return NotImplemented
 
     def __repr__(self):
         # TBD
@@ -1224,7 +1228,7 @@ class _Mesh1DCoordinateManager:
 
     def __ne__(self, other):
         # TBD
-        raise NotImplemented
+        return NotImplemented
 
     def __repr__(self):
         args = [
