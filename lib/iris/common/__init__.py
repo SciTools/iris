@@ -77,9 +77,8 @@ def filter_cf(
         result = [instance_ for instance_ in result if attr_filter(instance_)]
 
     if instance is not None:
-        if hasattr(instance, "__class__") and instance.__class__ in (
-            CoordMetadata,
-            DimCoordMetadata,
+        if hasattr(instance, "__class__") and issubclass(
+            instance.__class__, BaseMetadata
         ):
             target_metadata = instance
         else:

@@ -11,7 +11,7 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 """
 
 from abc import ABC, abstractmethod
-from collections import Mapping, namedtuple
+from collections import namedtuple
 from functools import wraps
 
 import dask.array as da
@@ -20,10 +20,7 @@ import numpy as np
 from .. import _lazy_data as _lazy
 from ..common import filter_cf
 from ..common.metadata import (
-    _hexdigest,
     BaseMetadata,
-    CoordMetadata,
-    DimCoordMetadata,
     metadata_manager_factory,
     SERVICES,
     SERVICES_COMBINE,
@@ -1272,88 +1269,6 @@ class _Mesh1DCoordinateManager:
         ]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
-    @staticmethod
-    def _filters(
-        members,
-        item=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        attributes=None,
-        axis=None,
-    ):
-        """
-        TDB: support coord_systems?
-
-        """
-        name = None
-        coord = None
-
-        if isinstance(item, str):
-            name = item
-        else:
-            coord = item
-
-        if name is not None:
-            members = {k: v for k, v in members.items() if v.name() == name}
-
-        if standard_name is not None:
-            members = {
-                k: v
-                for k, v in members.items()
-                if v.standard_name == standard_name
-            }
-
-        if long_name is not None:
-            members = {
-                k: v for k, v in members.items() if v.long_name == long_name
-            }
-
-        if var_name is not None:
-            members = {
-                k: v for k, v in members.items() if v.var_name == var_name
-            }
-
-        if axis is not None:
-            axis = axis.upper()
-            members = {
-                k: v for k, v in members.items() if guess_coord_axis(v) == axis
-            }
-
-        if attributes is not None:
-            if not isinstance(attributes, Mapping):
-                emsg = (
-                    "The attributes keyword was expecting a dictionary "
-                    f"type, but got a {type(attributes)} instead."
-                )
-                raise ValueError(emsg)
-
-            def _filter(coord):
-                return all(
-                    k in coord.attributes
-                    and _hexdigest(coord.attributes[k]) == _hexdigest(v)
-                    for k, v in attributes.items()
-                )
-
-            members = {k: v for k, v in members.items() if _filter(v)}
-
-        if coord is not None:
-            if hasattr(coord, "__class__") and coord.__class__ in (
-                CoordMetadata,
-                DimCoordMetadata,
-            ):
-                target_metadata = coord
-            else:
-                target_metadata = coord.metadata
-
-            members = {
-                k: v
-                for k, v in members.items()
-                if v.metadata == target_metadata
-            }
-
-        return members
-
     def _remove(self, **kwargs):
         result = {}
         members = self.filters(**kwargs)
@@ -1505,6 +1420,7 @@ class _Mesh1DCoordinateManager:
         self._add(MeshEdgeCoords(edge_x, edge_y))
 
     def filter(self, **kwargs):
+        # TODO: rationalise commonality with MeshConnectivityManager.filter and Cube.coord.
         result = self.filters(**kwargs)
 
         if len(result) > 1:
@@ -1549,6 +1465,8 @@ class _Mesh1DCoordinateManager:
         edge=None,
         face=None,
     ):
+        # TBD: support coord_systems?
+
         # rationalise the tri-state behaviour
         args = [node, edge, face]
         state = not any(set(filter(lambda arg: arg is not None, args)))
@@ -1556,38 +1474,44 @@ class _Mesh1DCoordinateManager:
             lambda arg: arg if arg is not None else state, args
         )
 
-        def func(args):
-            return args[1] is not None
+        def populated_coords(coords_tuple):
+            return list(filter(None, list(coords_tuple)))
 
-        members = {}
+        members = []
         if node:
-            members.update(
-                dict(filter(func, self.node_coords._asdict().items()))
-            )
+            members += populated_coords(self.node_coords)
         if edge:
-            members.update(
-                dict(filter(func, self.edge_coords._asdict().items()))
-            )
+            members += populated_coords(self.edge_coords)
         if hasattr(self, "face_coords"):
             if face:
-                members.update(
-                    dict(filter(func, self.face_coords._asdict().items()))
-                )
+                members += populated_coords(self.face_coords)
         else:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
-        result = self._filters(
+        if axis is not None:
+            axis = axis.upper()
+            members = [
+                instance_
+                for instance_ in members
+                if guess_coord_axis(instance_) == axis
+            ]
+
+        result = filter_cf(
             members,
             item=item,
             standard_name=standard_name,
             long_name=long_name,
             var_name=var_name,
             attributes=attributes,
-            axis=axis,
         )
 
-        return result
+        # Use the results to filter the _members dict for returning.
+        result_ids = [id(r) for r in result]
+        result_dict = {
+            k: v for k, v in self._members.items() if id(v) in result_ids
+        }
+        return result_dict
 
     def remove(
         self,
@@ -1809,6 +1733,7 @@ class _MeshConnectivityManagerMixin(ABC):
         self._members = proposed_members
 
     def filter(self, **kwargs):
+        # TODO: rationalise commonality with MeshCoordManager.filter and Cube.coord.
         result = self.filters(**kwargs)
         if len(result) > 1:
             names = ", ".join(
@@ -1849,14 +1774,7 @@ class _MeshConnectivityManagerMixin(ABC):
         edge=None,
         face=None,
     ):
-        members = filter_cf(
-            [c for c in self._members.values() if c is not None],
-            item=item,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            attributes=attributes,
-        )
+        members = [c for c in self._members.values() if c is not None]
 
         if cf_role is not None:
             members = [
@@ -1901,7 +1819,20 @@ class _MeshConnectivityManagerMixin(ABC):
             )
             logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
-        result_dict = {k: v for k, v in self._members.items() if v in members}
+        result = filter_cf(
+            members,
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+        )
+
+        # Use the results to filter the _members dict for returning.
+        result_ids = [id(r) for r in result]
+        result_dict = {
+            k: v for k, v in self._members.items() if id(v) in result_ids
+        }
         return result_dict
 
     def remove(
