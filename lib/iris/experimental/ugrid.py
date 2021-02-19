@@ -936,6 +936,33 @@ class Mesh(CFVariableMixin):
         args = []
         return f"{self.__class__.__name__}({', '.join(args)})"
 
+    def _set_dimension_names(self, node, edge, face, reset=False):
+        inputs = (node, edge, face)
+        currents = (
+            self.node_dimension,
+            self.edge_dimension,
+            self.face_dimension,
+        )
+        zipped = zip(inputs, currents)
+        if reset:
+            node, edge, face = [
+                None if check else current for check, current in zipped
+            ]
+        else:
+            node, edge, face = [new or current for new, current in zipped]
+
+        self.node_dimension = node
+        self.edge_dimension = edge
+        self.face_dimension = face
+
+        if self.topology_dimension == 1:
+            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
+        else:
+            result = Mesh2DNames(
+                self.node_dimension, self.edge_dimension, self.face_dimension
+            )
+        return result
+
     @property
     def all_coords(self):
         return self._coord_manager.all_members
@@ -1167,34 +1194,10 @@ class Mesh(CFVariableMixin):
     #     # use Connectivity.indices_by_src() for fetching indices.
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
-        if node:
-            self.node_dimension = None
-        if edge:
-            self.edge_dimension = None
-        if face:
-            self.face_dimension = None
-        if self.topology_dimension == 1:
-            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
-        else:
-            result = Mesh2DNames(
-                self.node_dimension, self.edge_dimension, self.face_dimension
-            )
-        return result
+        self._set_dimension_names(node, edge, face, reset=True)
 
     def dimension_names(self, node=None, edge=None, face=None):
-        if node:
-            self.node_dimension = node
-        if edge:
-            self.edge_dimension = edge
-        if face:
-            self.face_dimension = face
-        if self.topology_dimension == 1:
-            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
-        else:
-            result = Mesh2DNames(
-                self.node_dimension, self.edge_dimension, self.node_dimension
-            )
-        return result
+        self._set_dimension_names(node, edge, face, reset=False)
 
     @property
     def cf_role(self):
