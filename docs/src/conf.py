@@ -43,6 +43,9 @@ if on_rtd:
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
 
+# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
+# For local testing purposes this could be explicitly set latest or stable.
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
 
@@ -131,7 +134,6 @@ extensions = [
     "custom_data_autodoc",
     "generate_package_rst",
 ]
-
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
 
@@ -165,7 +167,7 @@ spelling_ignore_python_builtins = True
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = ">>> "
 
-# sphinx.ext.todo configuration
+# sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
@@ -228,6 +230,8 @@ html_theme_options = {
 }
 
 html_context = {
+    "rtd_version": rtd_version,
+    "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
     # menu_links and menu_links_name are used in _templates/layout.html
@@ -296,7 +300,6 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
 }
 
-
 # -----------------------------------------------------------------------------
 # Remove matplotlib agg warnings from generated doc when using plt.show
 warnings.filterwarnings(
@@ -305,7 +308,6 @@ warnings.filterwarnings(
     message="Matplotlib is currently using agg, which is a"
     " non-GUI backend, so cannot show the figure.",
 )
-
 
 # -- numfig options (built-in) ------------------------------------------------
 # Enable numfig.
