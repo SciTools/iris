@@ -2652,9 +2652,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __str__(self):
         return self.summary()
 
-    def __unicode__(self):
-        return self.summary()
-
     def __repr__(self):
         return "<iris 'Cube' of %s>" % self.summary(
             shorten=True, name_padding=1
