@@ -91,8 +91,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ added the |PyPI|_ badge to the `README.md`_. (:pull:`4004`)
 
-#. `@tkknight`_ added a banner at the top of every page if the unreleased
-   development documentatiion is being viewed. (:pull:`3999`)
+#. `@tkknight`_ added a banner at the top of every page of the unreleased
+   development documentation if being viewed on `Read the Docs`_.
+   (:pull:`3999`)
 
 
 💼 Internal

@@ -24,6 +24,7 @@
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
+.. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
 .. _sphinx: https://www.sphinx-doc.org/en/master/
