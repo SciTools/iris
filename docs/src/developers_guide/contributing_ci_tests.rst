@@ -28,19 +28,46 @@ please see https://scitools.org.uk/organisation.html#governance
 Cirrus-CI
 *********
 
-The unit and integration tests in Iris are an essential mechanism to ensure
+Iris unit and integration tests are an essential mechanism to ensure
 that the Iris code base is working as expected.  :ref:`developer_running_tests`
-may be run manually but to ensure the checks are performed a
-continuous integration testing tool named `cirrus-ci`_ is used.
+may be performed manually by a developer locally. However Iris is configured to
+use the `cirrus-ci`_ service for automated Continuous Integration (CI) testing.
 
-A `cirrus-ci`_ configuration file named `.cirrus.yml`_
-is in the Iris repository which tells Cirrus-CI what commands to run.  The
-commands include retrieving the Iris code base and associated test files using
-conda and then running the tests.  `cirrus-ci`_ allows for a matrix of tests to
-be performed to ensure that all expected variations test successfully.
+The `cirrus-ci`_ configuration file  `.cirrus.yml`_ in the root of the Iris repository
+defines the tasks to be performed by `cirrus-ci`_. For further details
+refer to the `Cirrus-CI Documentation`_. The tasks performed during CI include:
 
-The `cirrus-ci`_ tests are run automatically against the `Iris`_ master
-repository when a pull request is submitted, updated or merged.
+* linting the code base and ensuring it adheres to the `black`_ format
+* running the system, integration and unit tests for Iris
+* ensuring the documentation gallery builds successfully
+* performing all doc-tests within the code base
+* checking all URL references within the code base and documentation are valid
+
+The above `cirrus-ci`_ tasks are run automatically against all `Iris`_ branches
+on GitHub whenever a pull request is submitted, updated or merged. See the
+`Cirrus-CI Dashboard`_ for details of recent past and active Iris jobs.
+
+.. _skipping Cirrus-CI tasks:
+
+Skipping Cirrus-CI Tasks
+------------------------
+
+As a developer you may not wish to run all the CI tasks when you are actively
+developing e.g., you are writing documentation and there is no need for linting,
+or long running compute intensive testing tasks to be executed.
+
+As a convenience, it is possible to easily skip one or more tasks by setting
+the appropriate environment variable within the `.cirrus.yml`_ file:
+
+* ``SKIP_LINT_TASK`` to skip `flake8`_ linting and `black`_ formatting
+* ``SKIP_TEST_MINIMAL_TASK`` to skip restricted unit and integration testing
+* ``SKIP_TEST_FULL_TASK`` to skip full unit and integration testing
+* ``SKIP_GALLERY_TASK`` to skip building the documentation gallery
+* ``SKIP_DOCTEST_TASK`` to skip running the documentation doc-tests
+* ``SKIP_LINKCHECK_TASK`` to skip checking for broken documentation URL references
+* ``SKIP_ALL_TEST_TASKS`` which is equivalent to setting ``SKIP_TEST_MINIMAL_TASK`` and ``SKIP_TEST_FULL_TASK``
+* ``SKIP_ALL_DOC_TASKS`` which is equivalent to setting ``SKIP_GALLERY_TASK``, ``SKIP_DOCTEST_TASK``, and ``SKIP_LINKCHECK_TASK``
+
 
 GitHub Checklist
 ****************
@@ -50,6 +77,10 @@ passing:
 
 .. image:: ci_checks.png
 
-If any CI checks fail, then the pull request is unlikely to be merged to the
+If any CI tasks fail, then the pull request is unlikely to be merged to the
 Iris target branch by a core developer.
+
+
+.. _Cirrus-CI Dashboard: https://cirrus-ci.com/github/SciTools/iris
+.. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
 

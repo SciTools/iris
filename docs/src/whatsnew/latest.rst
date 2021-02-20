@@ -124,6 +124,10 @@ This document explains the changes made to Iris for this release
 #. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
    (:pull:`3997`)
 
+#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+   developers to easily disable `cirrus-ci`_ tasks. See
+   :ref:`skipping Cirrus-CI tasks`. (:pull:`4018`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

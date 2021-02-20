@@ -18,6 +18,16 @@ container:
 
 
 env:
+  # Skip specific tasks by name.
+  SKIP_LINT_TASK: ""
+  SKIP_TEST_MINIMAL_TASK: ""
+  SKIP_TEST_FULL_TASK: ""
+  SKIP_GALLERY_TASK: ""
+  SKIP_DOCTEST_TASK: ""
+  SKIP_LINKCHECK_TASK: ""
+  # Skip task groups by type.
+  SKIP_ALL_TEST_TASKS: ""
+  SKIP_ALL_DOC_TASKS: ""
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
@@ -50,7 +60,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
       - echo "${CIRRUS_OS} $(sha256sum miniconda.sh)"
-      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${CONDA_CACHE_BUILD}"
+      - echo "$(date +%Y).$(($(echo $(date +%U) | sed 's/^0*//') / ${CACHE_PERIOD})):${CONDA_CACHE_BUILD}"
     populate_script:
       - bash miniconda.sh -b -p ${HOME}/miniconda
       - conda config --set always_yes yes --set changeps1 no
@@ -62,12 +72,12 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     folder: ${HOME}/.local/share/cartopy
     fingerprint_script:
       - echo "${CIRRUS_OS}"
-      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${CARTOPY_CACHE_BUILD}"
+      - echo "$(date +%Y).$(($(echo $(date +%U) | sed 's/^0*//') / ${CACHE_PERIOD})):${CARTOPY_CACHE_BUILD}"
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${NOX_CACHE_BUILD}"
+      - echo "$(date +%Y).$(($(echo $(date +%U) | sed 's/^0*//') / ${CACHE_PERIOD})):${NOX_CACHE_BUILD}"
       - sha256sum ${CIRRUS_WORKING_DIR}/requirements/ci/py$(echo ${PY_VER} | tr -d ".").yml
 
 
@@ -82,6 +92,7 @@ compute_credits_template: &CREDITS_TEMPLATE
 # Linting
 #
 lint_task:
+  only_if: $SKIP_LINT_TASK == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
   name: "${CIRRUS_OS}: flake8 and black"
@@ -89,7 +100,7 @@ lint_task:
     folder: ~/.cache/pip
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(($(date +%U) / ${CACHE_PERIOD})):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
+      - echo "$(date +%Y).$(($(echo $(date +%U) | sed 's/^0*//') / ${CACHE_PERIOD})):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
   lint_script:
     - pip list
     - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
@@ -101,7 +112,8 @@ lint_task:
 #
 # Testing Minimal (Linux)
 #
-linux_minimal_task:
+test_minimal_task:
+  only_if: $SKIP_TEST_MINIMAL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -125,7 +137,8 @@ linux_minimal_task:
 #
 # Testing Full (Linux)
 #
-linux_task:
+test_full_task:
+  only_if: $SKIP_TEST_FULL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -159,6 +172,7 @@ linux_task:
 # Testing Documentation Gallery (Linux)
 #
 gallery_task:
+  only_if: $SKIP_GALLERY_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -188,6 +202,7 @@ gallery_task:
 # Testing Documentation (Linux)
 #
 doctest_task:
+  only_if: $SKIP_DOCTEST_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -222,7 +237,8 @@ doctest_task:
 #
 # Testing Documentation Link Check (Linux)
 #
-link_task:
+linkcheck_task:
+  only_if: $SKIP_LINKCHECK_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
