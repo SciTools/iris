@@ -58,7 +58,7 @@ or long running compute intensive testing tasks to be executed.
 
 As a convenience, it is possible to easily skip one or more tasks by setting
 the appropriate environment variable within the `.cirrus.yml`_ file to a
-non-empty string:
+**non-empty** string:
 
 * ``SKIP_LINT_TASK`` to skip `flake8`_ linting and `black`_ formatting
 * ``SKIP_TEST_MINIMAL_TASK`` to skip restricted unit and integration testing

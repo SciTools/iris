@@ -126,7 +126,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
    developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4018`)
+   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
 
 
 .. comment
