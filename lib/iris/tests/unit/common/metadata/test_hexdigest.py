@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.metadata._hexdigest`.
+Unit tests for the :func:`iris.common.metadata.hexdigest`.
 
 """
 
@@ -18,7 +18,7 @@ import numpy.ma as ma
 import numpy as np
 from xxhash import xxh64, xxh64_hexdigest
 
-from iris.common.metadata import _hexdigest as hexdigest
+from iris.common.metadata import hexdigest
 
 
 class TestBytesLikeObject(tests.IrisTest):
