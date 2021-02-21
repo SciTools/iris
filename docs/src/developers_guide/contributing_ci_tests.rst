@@ -5,9 +5,9 @@
 Continuous Integration (CI) Testing
 ===================================
 
-The `Iris`_ GitHub repository is configured to run checks on the code
-automatically when a pull request is created, updated or merged against
-Iris **master**.  The checks performed are:
+The `Iris`_ GitHub repository is configured to run checks against all its
+branches automatically whenever a pull request is created, updated or merged.
+The checks performed are:
 
 * :ref:`testing_cla`
 * :ref:`testing_cirrus`
@@ -18,9 +18,9 @@ Iris **master**.  The checks performed are:
 SciTools CLA Checker
 ********************
 
-A bot that checks the user who created the pull request has signed the
-**Contributor's License Agreement (CLA)**.  For more information on this this
-please see https://scitools.org.uk/organisation.html#governance
+A bot which checks that the GitHub author of the pull request has signed the
+**SciTools Contributor's License Agreement (CLA)**.  For more information on
+this please see https://scitools.org.uk/organisation.html#governance.
 
 
 .. _testing_cirrus:
