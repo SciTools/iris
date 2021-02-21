@@ -52,12 +52,13 @@ on GitHub whenever a pull request is submitted, updated or merged. See the
 Skipping Cirrus-CI Tasks
 ------------------------
 
-As a developer you may not wish to run all the CI tasks when you are actively
+As a developer you may wish to not run all the CI tasks when you are actively
 developing e.g., you are writing documentation and there is no need for linting,
 or long running compute intensive testing tasks to be executed.
 
 As a convenience, it is possible to easily skip one or more tasks by setting
-the appropriate environment variable within the `.cirrus.yml`_ file:
+the appropriate environment variable within the `.cirrus.yml`_ file to a
+non-empty string:
 
 * ``SKIP_LINT_TASK`` to skip `flake8`_ linting and `black`_ formatting
 * ``SKIP_TEST_MINIMAL_TASK`` to skip restricted unit and integration testing
@@ -67,6 +68,14 @@ the appropriate environment variable within the `.cirrus.yml`_ file:
 * ``SKIP_LINKCHECK_TASK`` to skip checking for broken documentation URL references
 * ``SKIP_ALL_TEST_TASKS`` which is equivalent to setting ``SKIP_TEST_MINIMAL_TASK`` and ``SKIP_TEST_FULL_TASK``
 * ``SKIP_ALL_DOC_TASKS`` which is equivalent to setting ``SKIP_GALLERY_TASK``, ``SKIP_DOCTEST_TASK``, and ``SKIP_LINKCHECK_TASK``
+
+e.g., to skip the linting task, the following are all equivalent::
+
+   SKIP_LINT_TASK: "1"
+   SKIP_LINT_TASK: "true"
+   SKIP_LINT_TASK: "false"
+   SKIP_LINT_TASK: "skip"
+   SKIP_LINT_TASK: "unicorn"
 
 
 GitHub Checklist
