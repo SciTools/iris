@@ -58,6 +58,4 @@ will look similar to::
           their officially documentation for more information.
 
 
-.. _black: https://black.readthedocs.io/en/stable/
-.. _flake8: https://flake8.pycqa.org/en/stable/
 .. _pre-commit: https://pre-commit.com/

@@ -1,4 +1,5 @@
 .. _SciTools: https://github.com/SciTools
+.. _black: https://black.readthedocs.io/en/stable/
 .. _Iris: https://github.com/SciTools/iris
 .. _Iris GitHub: https://github.com/SciTools/iris
 .. _iris mailing list: https://groups.google.com/forum/#!forum/scitools-iris
@@ -15,6 +16,7 @@
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
+.. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _using git: https://docs.github.com/en/github/using-git
@@ -24,4 +26,3 @@
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
-.. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
