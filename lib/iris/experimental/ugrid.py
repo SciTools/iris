@@ -2092,7 +2092,7 @@ class MeshCoordMetadata(BaseMetadata):
             A list of different metadata member values.
 
         """
-        # Perform "strict" difference for "cf_role", "start_index", "src_dim".
+        # Perform "strict" difference for mesh / location / axis.
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
