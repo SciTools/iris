@@ -1681,14 +1681,15 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
 class _MeshConnectivityManagerMixin(ABC):
     REQUIRED = ()
     OPTIONAL = ()
-    NDIM = NotImplemented
 
     @abstractmethod
     def __init__(self, *connectivities):
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
-                message = f"{self.NDIM}D meshes require a {requisite}."
+                message = (
+                    f"{self.__name__} requires a {requisite} Connectivity."
+                )
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
@@ -1861,7 +1862,8 @@ class _MeshConnectivityManagerMixin(ABC):
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.
-        if face and self.NDIM < 2:
+        supports_faces = any(["face" in role for role in self.ALL])
+        if face and not supports_faces:
             message = (
                 "Ignoring request to filter for non-existent 'face' cf-roles."
             )
@@ -1924,7 +1926,6 @@ class _MeshConnectivityManagerMixin(ABC):
 class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
     REQUIRED = ("edge_node_connectivity",)
     OPTIONAL = ()
-    NDIM = 1
 
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
@@ -1947,7 +1948,6 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
         "edge_face_connectivity",
         "boundary_node_connectivity",
     )
-    NDIM = 2
 
     def __init__(self, *connectivities):
         super().__init__(*connectivities)
