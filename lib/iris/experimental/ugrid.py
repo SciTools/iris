@@ -2125,14 +2125,14 @@ class MeshCoordMetadata(BaseMetadata):
 # Add our new optional metadata operations into the 'convenience collections'
 # of lenient metadata services.
 # TODO: when included in 'iris.common.metadata', install each one directly ?
-for cls in (ConnectivityMetadata, MeshCoordMetadata):
-    op_names_and_collections = {
-        "combine": SERVICES_COMBINE,
-        "difference": SERVICES_DIFFERENCE,
-        "__eq__": SERVICES_EQUAL,
-        "equal": SERVICES_EQUAL,
-    }
-    for name, collection in op_names_and_collections.items():
-        method = getattr(cls, name)
-        collection.append(method)
-        SERVICES.append(method)
+_op_names_and_service_collections = [
+    ("combine", SERVICES_COMBINE),
+    ("difference", SERVICES_DIFFERENCE),
+    ("__eq__", SERVICES_EQUAL),
+    ("equal", SERVICES_EQUAL),
+]
+for _cls in (ConnectivityMetadata, MeshCoordMetadata):
+    for _name, _service_collection in _op_names_and_service_collections:
+        _method = getattr(_cls, _name)
+        _service_collection.append(_method)
+        SERVICES.append(_method)
