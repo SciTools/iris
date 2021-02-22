@@ -1342,7 +1342,7 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def filter(
+def metadata_filter(
     instances,
     item=None,
     standard_name=None,

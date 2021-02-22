@@ -42,7 +42,7 @@ from iris.common import (
     CubeMetadata,
     metadata_manager_factory,
 )
-from iris.common.metadata import filter
+from iris.common.metadata import metadata_filter
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -1646,7 +1646,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
 
-        coords_and_factories = filter(
+        coords_and_factories = metadata_filter(
             coords_and_factories,
             item=name_or_coord,
             standard_name=standard_name,

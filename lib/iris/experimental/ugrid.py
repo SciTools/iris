@@ -25,7 +25,7 @@ from ..common.metadata import (
     SERVICES_COMBINE,
     SERVICES_EQUAL,
     SERVICES_DIFFERENCE,
-    filter,
+    metadata_filter,
 )
 from ..common.lenient import _lenient_service as lenient_service
 from ..common.mixin import CFVariableMixin
@@ -1546,7 +1546,7 @@ class _Mesh1DCoordinateManager:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
-        result = filter(
+        result = metadata_filter(
             members,
             item=item,
             standard_name=standard_name,
@@ -1869,7 +1869,7 @@ class _MeshConnectivityManagerBase(ABC):
             )
             logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
-        result = filter(
+        result = metadata_filter(
             members,
             item=item,
             standard_name=standard_name,
