@@ -1909,11 +1909,11 @@ class _MeshConnectivityManagerMixin(ABC):
             face=face,
         )
         for cf_role in self.REQUIRED:
-            not_removed = removal_dict.pop(cf_role, None)
-            if not_removed:
+            excluded = removal_dict.pop(cf_role, None)
+            if excluded:
                 message = (
                     f"Ignoring request to remove required connectivity "
-                    f"({cf_role}: {not_removed!r})"
+                    f"({cf_role}: {excluded!r})"
                 )
                 logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
