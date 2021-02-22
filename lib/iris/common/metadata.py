@@ -1441,7 +1441,7 @@ def filter(
         def attr_filter(instance):
             return all(
                 k in instance.attributes
-                and _hexdigest(instance.attributes[k]) == _hexdigest(v)
+                and hexdigest(instance.attributes[k]) == hexdigest(v)
                 for k, v in attributes.items()
             )
 
