@@ -25,6 +25,7 @@ from iris.common.metadata import (
     CubeMetadata,
 )
 from iris.common.mixin import CFVariableMixin, LimitedAttributeDict
+from iris.experimental.ugrid import ConnectivityMetadata
 
 
 class Test__getter(tests.IrisTest):
@@ -279,6 +280,19 @@ class Test__metadata_setter(tests.IrisTest):
         self.item.metadata = metadata
         expected = metadata._asdict()
         del expected["measure"]
+        self.assertEqual(self.item._metadata_manager.values, expected)
+        self.assertIsNot(
+            self.item._metadata_manager.attributes, metadata.attributes
+        )
+
+    def test_class_connectivitymetadata(self):
+        self.args.update(dict(cf_role=None, start_index=None, src_dim=None))
+        metadata = ConnectivityMetadata(**self.args)
+        self.item.metadata = metadata
+        expected = metadata._asdict()
+        del expected["cf_role"]
+        del expected["start_index"]
+        del expected["src_dim"]
         self.assertEqual(self.item._metadata_manager.values, expected)
         self.assertIsNot(
             self.item._metadata_manager.attributes, metadata.attributes
