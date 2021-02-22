@@ -1678,9 +1678,10 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         )
 
 
-class _MeshConnectivityManagerMixin(ABC):
-    REQUIRED = ()
-    OPTIONAL = ()
+class _MeshConnectivityManagerBase(ABC):
+    # Override these in subclasses.
+    REQUIRED: tuple = NotImplemented
+    OPTIONAL: tuple = NotImplemented
 
     def __init__(self, *connectivities):
         cf_roles = [c.cf_role for c in connectivities]
@@ -1922,7 +1923,7 @@ class _MeshConnectivityManagerMixin(ABC):
         return removal_dict
 
 
-class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
+class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
     REQUIRED = ("edge_node_connectivity",)
     OPTIONAL = ()
 
@@ -1935,7 +1936,7 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
         return self._members["edge_node_connectivity"]
 
 
-class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
+class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     REQUIRED = ("face_node_connectivity",)
     OPTIONAL = (
         "edge_node_connectivity",
