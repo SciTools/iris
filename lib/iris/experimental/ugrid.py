@@ -31,9 +31,8 @@ from ..common.lenient import _lenient_service as lenient_service
 from ..common.mixin import CFVariableMixin
 from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
-from ..exceptions import CoordinateNotFoundError
+from ..exceptions import CoordinateNotFoundError, ConnectivityNotFoundError
 from ..util import guess_coord_axis
-from .. import exceptions
 
 
 __all__ = [
@@ -1795,7 +1794,7 @@ class _MeshConnectivityManagerMixin(ABC):
                 f"Expected to find exactly 1 connectivity, but found "
                 f"{len(result)}. They were: {names}."
             )
-            raise exceptions.ConnectivityNotFoundError(message)
+            raise ConnectivityNotFoundError(message)
         elif len(result) == 0:
             item = kwargs["item"]
             _name = item
@@ -1809,7 +1808,7 @@ class _MeshConnectivityManagerMixin(ABC):
                 f"Expected to find exactly 1 {bad_name} connectivity, "
                 f"but found none."
             )
-            raise exceptions.ConnectivityNotFoundError(message)
+            raise ConnectivityNotFoundError(message)
 
         return result
 
