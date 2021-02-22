@@ -18,7 +18,6 @@ import dask.array as da
 import numpy as np
 
 from .. import _lazy_data as _lazy
-from ..common import filter_cf
 from ..common.metadata import (
     BaseMetadata,
     metadata_manager_factory,
@@ -26,6 +25,7 @@ from ..common.metadata import (
     SERVICES_COMBINE,
     SERVICES_EQUAL,
     SERVICES_DIFFERENCE,
+    filter,
 )
 from ..common.lenient import _lenient_service as lenient_service
 from ..common.mixin import CFVariableMixin
@@ -1540,7 +1540,7 @@ class _Mesh1DCoordinateManager:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
-        result = filter_cf(
+        result = filter(
             members,
             item=item,
             standard_name=standard_name,
@@ -1861,7 +1861,7 @@ class _MeshConnectivityManagerMixin(ABC):
             )
             logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
-        result = filter_cf(
+        result = filter(
             members,
             item=item,
             standard_name=standard_name,

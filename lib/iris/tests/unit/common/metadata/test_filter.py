@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.filter_cf`.
+Unit tests for the :func:`iris.common.filter`.
 
 """
 
@@ -14,8 +14,7 @@ import iris.tests as tests
 
 import numpy as np
 
-from iris.common import filter_cf
-from iris.common.metadata import CoordMetadata, DimCoordMetadata
+from iris.common.metadata import CoordMetadata, DimCoordMetadata, filter
 from iris.coords import AuxCoord
 
 Mock = tests.mock.Mock
@@ -28,7 +27,7 @@ class Test_standard(tests.IrisTest):
         name_two = Mock()
         name_two.name.return_value = "two"
         input_list = [name_one, name_two]
-        result = filter_cf(input_list, item="one")
+        result = filter(input_list, item="one")
         self.assertIn(name_one, result)
         self.assertNotIn(name_two, result)
 
@@ -36,7 +35,7 @@ class Test_standard(tests.IrisTest):
         coord = Mock(__class__=AuxCoord)
         mock = Mock()
         input_list = [coord, mock]
-        result = filter_cf(input_list, item=coord)
+        result = filter(input_list, item=coord)
         self.assertIn(coord, result)
         self.assertNotIn(mock, result)
 
@@ -44,7 +43,7 @@ class Test_standard(tests.IrisTest):
         coord = Mock(metadata=CoordMetadata)
         dim_coord = Mock(metadata=DimCoordMetadata)
         input_list = [coord, dim_coord]
-        result = filter_cf(input_list, item=coord)
+        result = filter(input_list, item=coord)
         self.assertIn(coord, result)
         self.assertNotIn(dim_coord, result)
 
@@ -52,7 +51,7 @@ class Test_standard(tests.IrisTest):
         name_one = Mock(standard_name="one")
         name_two = Mock(standard_name="two")
         input_list = [name_one, name_two]
-        result = filter_cf(input_list, standard_name="one")
+        result = filter(input_list, standard_name="one")
         self.assertIn(name_one, result)
         self.assertNotIn(name_two, result)
 
@@ -60,7 +59,7 @@ class Test_standard(tests.IrisTest):
         name_one = Mock(long_name="one")
         name_two = Mock(long_name="two")
         input_list = [name_one, name_two]
-        result = filter_cf(input_list, long_name="one")
+        result = filter(input_list, long_name="one")
         self.assertIn(name_one, result)
         self.assertNotIn(name_two, result)
 
@@ -68,7 +67,7 @@ class Test_standard(tests.IrisTest):
         name_one = Mock(var_name="one")
         name_two = Mock(var_name="two")
         input_list = [name_one, name_two]
-        result = filter_cf(input_list, var_name="one")
+        result = filter(input_list, var_name="one")
         self.assertIn(name_one, result)
         self.assertNotIn(name_two, result)
 
@@ -81,7 +80,7 @@ class Test_standard(tests.IrisTest):
             attributes={"three": np.arange(3), "four": np.arange(4)}
         )
         input_list = [attrib_one_two, attrib_three_four]
-        result = filter_cf(input_list, attributes=attrib_one_two.attributes)
+        result = filter(input_list, attributes=attrib_one_two.attributes)
         self.assertIn(attrib_one_two, result)
         self.assertNotIn(attrib_three_four, result)
 
@@ -91,7 +90,7 @@ class Test_standard(tests.IrisTest):
         self.assertRaisesRegex(
             ValueError,
             ".*expecting a dictionary.*",
-            filter_cf,
+            filter,
             input_list,
             attributes="one",
         )
@@ -100,7 +99,7 @@ class Test_standard(tests.IrisTest):
         axis_lon = Mock(standard_name="longitude")
         axis_lat = Mock(standard_name="latitude")
         input_list = [axis_lon, axis_lat]
-        result = filter_cf(input_list, axis="x")
+        result = filter(input_list, axis="x")
         self.assertIn(axis_lon, result)
         self.assertNotIn(axis_lat, result)
 
@@ -108,6 +107,6 @@ class Test_standard(tests.IrisTest):
         coord_one = Mock(__class__=AuxCoord, long_name="one")
         coord_two = Mock(__class__=AuxCoord, long_name="two")
         input_list = [coord_one, coord_two]
-        result = filter_cf(input_list, item=coord_one, long_name="one")
+        result = filter(input_list, item=coord_one, long_name="one")
         self.assertIn(coord_one, result)
         self.assertNotIn(coord_two, result)
