@@ -3,6 +3,7 @@
 
 .. _black: https://black.readthedocs.io/en/stable/
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
+.. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _conda: https://docs.conda.io/en/latest/
@@ -24,6 +25,7 @@
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
+.. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
 .. _sphinx: https://www.sphinx-doc.org/en/master/

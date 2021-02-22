@@ -9,7 +9,7 @@ Provides objects describing cube summaries.
 import re
 
 import iris.util
-from iris.common.metadata import _hexdigest as quickhash
+from iris.common.metadata import hexdigest
 
 
 class DimensionHeader:
@@ -101,7 +101,7 @@ class CoordSummary:
                     # ..except setdefault fails if values are numpy arrays.
                     if key not in attributes:
                         attributes[key] = value
-                    elif quickhash(attributes[key]) != quickhash(value):
+                    elif hexdigest(attributes[key]) != hexdigest(value):
                         # NOTE: fast and array-safe comparison, as used in
                         # :mod:`iris.common.metadata`.
                         vary.add(key)

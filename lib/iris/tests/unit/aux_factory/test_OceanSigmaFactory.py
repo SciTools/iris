@@ -102,12 +102,12 @@ class Test_make_coord(tests.IrisTest):
             np.linspace(-0.05, -1, 5), long_name="sigma", units="1"
         )
         self.eta = AuxCoord(
-            np.arange(-1, 3, dtype=np.float).reshape(2, 2),
+            np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",
             units="m",
         )
         self.depth = AuxCoord(
-            np.arange(4, dtype=np.float).reshape(2, 2) * 1e3,
+            np.arange(4, dtype=np.float64).reshape(2, 2) * 1e3,
             long_name="depth",
             units="m",
         )

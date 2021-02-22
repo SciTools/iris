@@ -44,7 +44,7 @@ class Test_lazy_elementwise(tests.IrisTest):
         lazy_array = as_lazy_data(concrete_array)
         wrapped = lazy_elementwise(lazy_array, _test_elementwise_op)
         self.assertTrue(is_lazy_data(wrapped))
-        self.assertEqual(wrapped.dtype, np.int)
+        self.assertEqual(wrapped.dtype, np.int_)
         self.assertEqual(wrapped.compute().dtype, wrapped.dtype)
 
 

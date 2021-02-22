@@ -1,5 +1,27 @@
 {% extends "!layout.html" %}
 
+{# This uses blocks.  See: 
+     https://www.sphinx-doc.org/en/master/templating.html
+#}
+
+/*---------------------------------------------------------------------------*/
+
+{%- block document %}
+    {% if READTHEDOCS and rtd_version == 'latest' %}
+        <div id="slim-red-box-message">
+            You are viewing the <b>latest</b> unreleased documentation
+            <b>v{{ version }}</b>.  You may prefer a 
+            <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+            version.
+        </div>
+        <p></p>
+    {%- endif %}
+
+    {{ super() }}
+{%- endblock %}
+
+/*-----------------------------------------------------z----------------------*/
+
 {% block menu %}
     {{ super() }}
 

@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.metadata._hexdigest`.
+Unit tests for the :func:`iris.common.metadata.hexdigest`.
 
 """
 
@@ -18,7 +18,7 @@ import numpy.ma as ma
 import numpy as np
 from xxhash import xxh64, xxh64_hexdigest
 
-from iris.common.metadata import _hexdigest as hexdigest
+from iris.common.metadata import hexdigest
 
 
 class TestBytesLikeObject(tests.IrisTest):
@@ -49,18 +49,18 @@ class TestBytesLikeObject(tests.IrisTest):
         self.assertEqual(expected, hexdigest(value))
 
     def test_numpy_array_int(self):
-        value = np.arange(10, dtype=np.int)
+        value = np.arange(10, dtype=np.int_)
         expected = self._ndarray(value)
         self.assertEqual(expected, hexdigest(value))
 
     def test_numpy_array_float(self):
-        value = np.arange(10, dtype=np.float)
+        value = np.arange(10, dtype=np.float64)
         expected = self._ndarray(value)
         self.assertEqual(expected, hexdigest(value))
 
     def test_numpy_array_float_not_int(self):
-        ivalue = np.arange(10, dtype=np.int)
-        fvalue = np.arange(10, dtype=np.float)
+        ivalue = np.arange(10, dtype=np.int_)
+        fvalue = np.arange(10, dtype=np.float64)
         expected = self._ndarray(ivalue)
         self.assertNotEqual(expected, hexdigest(fvalue))
 
@@ -75,7 +75,7 @@ class TestBytesLikeObject(tests.IrisTest):
         self.assertNotEqual(expected, hexdigest(value.flatten()))
 
     def test_masked_array_int(self):
-        value = ma.arange(10, dtype=np.int)
+        value = ma.arange(10, dtype=np.int_)
         expected = self._masked(value)
         self.assertEqual(expected, hexdigest(value))
 
@@ -85,7 +85,7 @@ class TestBytesLikeObject(tests.IrisTest):
         self.assertEqual(expected, hexdigest(value))
 
     def test_masked_array_float(self):
-        value = ma.arange(10, dtype=np.float)
+        value = ma.arange(10, dtype=np.float64)
         expected = self._masked(value)
         self.assertEqual(expected, hexdigest(value))
 
@@ -95,8 +95,8 @@ class TestBytesLikeObject(tests.IrisTest):
         self.assertEqual(expected, hexdigest(value))
 
     def test_masked_array_float_not_int(self):
-        ivalue = ma.arange(10, dtype=np.int)
-        fvalue = ma.arange(10, dtype=np.float)
+        ivalue = ma.arange(10, dtype=np.int_)
+        fvalue = ma.arange(10, dtype=np.float64)
         expected = self._masked(ivalue)
         self.assertNotEqual(expected, hexdigest(fvalue))
 
@@ -127,7 +127,7 @@ class TestNotBytesLikeObject(tests.IrisTest):
         self.assertEqual(expected, hexdigest(value))
 
     def test_numpy_int(self):
-        value = np.int(123)
+        value = int(123)
         expected = self._expected(value)
         self.assertEqual(expected, hexdigest(value))
 
@@ -137,7 +137,7 @@ class TestNotBytesLikeObject(tests.IrisTest):
         self.assertEqual(expected, hexdigest(value))
 
     def test_numpy_float(self):
-        value = np.float(123.4)
+        value = float(123.4)
         expected = self._expected(value)
         self.assertEqual(expected, hexdigest(value))
 
