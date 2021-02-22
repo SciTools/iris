@@ -1540,14 +1540,6 @@ class _Mesh1DCoordinateManager:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
-        if axis is not None:
-            axis = axis.upper()
-            members = [
-                instance_
-                for instance_ in members
-                if guess_coord_axis(instance_) == axis
-            ]
-
         result = filter_cf(
             members,
             item=item,
@@ -1555,6 +1547,7 @@ class _Mesh1DCoordinateManager:
             long_name=long_name,
             var_name=var_name,
             attributes=attributes,
+            axis=axis,
         )
 
         # Use the results to filter the _members dict for returning.
@@ -1829,38 +1822,36 @@ class _MeshConnectivityManagerMixin(ABC):
 
         if cf_role is not None:
             members = [
-                instance_
-                for instance_ in members
-                if instance_.cf_role == cf_role
+                instance for instance in members if instance.cf_role == cf_role
             ]
 
-        def location_filter(instances_, parameter_, location_name_):
-            if parameter_ is False:
-                members_ = [
-                    instance_
-                    for instance_ in instances_
-                    if location_name_
-                    not in (instance_.src_location, instance_.tgt_location)
+        def location_filter(instances, loc_arg, loc_name):
+            if loc_arg is False:
+                filtered = [
+                    instance
+                    for instance in instances
+                    if loc_name
+                    not in (instance.src_location, instance.tgt_location)
                 ]
-            elif parameter_ is None:
-                members_ = instances_
+            elif loc_arg is None:
+                filtered = instances
             else:
                 # Interpret any other value as =True.
-                members_ = [
-                    instance_
-                    for instance_ in instances_
-                    if location_name_
-                    in (instance_.src_location, instance_.tgt_location)
+                filtered = [
+                    instance
+                    for instance in instances
+                    if loc_name
+                    in (instance.src_location, instance.tgt_location)
                 ]
 
-            return members_
+            return filtered
 
-        for parameter, location_name in (
+        for arg, loc in (
             (node, "node"),
             (edge, "edge"),
             (face, "face"),
         ):
-            members = location_filter(members, parameter, location_name)
+            members = location_filter(members, arg, loc)
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.

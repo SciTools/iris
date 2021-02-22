@@ -96,6 +96,14 @@ class Test_standard(tests.IrisTest):
             attributes="one",
         )
 
+    def test_axis(self):
+        axis_lon = Mock(standard_name="longitude")
+        axis_lat = Mock(standard_name="latitude")
+        input_list = [axis_lon, axis_lat]
+        result = filter_cf(input_list, axis="x")
+        self.assertIn(axis_lon, result)
+        self.assertNotIn(axis_lat, result)
+
     def test_multiple_args(self):
         coord_one = Mock(__class__=AuxCoord, long_name="one")
         coord_two = Mock(__class__=AuxCoord, long_name="two")

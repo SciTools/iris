@@ -14,6 +14,7 @@ from .lenient import *
 from .metadata import *
 from .mixin import *
 from .resolve import *
+from ..util import guess_coord_axis
 
 
 def filter_cf(
@@ -23,10 +24,17 @@ def filter_cf(
     long_name=None,
     var_name=None,
     attributes=None,
+    axis=None,
 ):
     """
-    Filter a list of :class:`iris.common.CFVariableMixin` subclasses to fit
-    the given criteria.
+    Filter a collection of objects by their metadata to fit the given metadata
+    criteria. Criteria be one or both of: specific properties / other objects
+    carrying metadata to be matched.
+
+    Args:
+
+    * instances
+        An iterable of objects to be filtered.
 
     Kwargs:
 
@@ -36,15 +44,15 @@ def filter_cf(
         (a) a :attr:`standard_name`, :attr:`long_name`, or
         :attr:`var_name`. Defaults to value of `default`
         (which itself defaults to `unknown`) as defined in
-        :class:`iris.common.CFVariableMixin`.
+        :class:`~iris.common.CFVariableMixin`.
 
         (b) a 'coordinate' instance with metadata equal to that of
         the desired coordinates. Accepts either a
-        :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-        :class:`iris.aux_factory.AuxCoordFactory`,
-        :class:`iris.common.CoordMetadata` or
-        :class:`iris.common.DimCoordMetadata` or
-        :class:`iris.experimental.ugrid.ConnectivityMetadata`.
+        :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+        :class:`~iris.aux_factory.AuxCoordFactory`,
+        :class:`~iris.common.CoordMetadata` or
+        :class:`~iris.common.DimCoordMetadata` or
+        :class:`~iris.experimental.ugrid.ConnectivityMetadata`.
     * standard_name
         The CF standard name of the desired coordinate. If None, does not
         check for standard name.
@@ -57,40 +65,44 @@ def filter_cf(
     * attributes
         A dictionary of attributes desired on the coordinates. If None,
         does not check for attributes.
+    * axis
+        The desired coordinate axis, see
+        :func:`~iris.util.guess_coord_axis`. If None, does not check for
+        axis. Accepts the values 'X', 'Y', 'Z' and 'T' (case-insensitive).
+
+    Returns:
+        A list of the objects supplied in the ``instances`` argument, limited
+        to only those that matched the given criteria.
 
     """
     name = None
-    instance = None
+    obj = None
 
     if isinstance(item, str):
         name = item
     else:
-        instance = item
+        obj = item
 
     result = instances
 
     if name is not None:
-        result = [
-            instance_ for instance_ in result if instance_.name() == name
-        ]
+        result = [instance for instance in result if instance.name() == name]
 
     if standard_name is not None:
         result = [
-            instance_
-            for instance_ in result
-            if instance_.standard_name == standard_name
+            instance
+            for instance in result
+            if instance.standard_name == standard_name
         ]
 
     if long_name is not None:
         result = [
-            instance_
-            for instance_ in result
-            if instance_.long_name == long_name
+            instance for instance in result if instance.long_name == long_name
         ]
 
     if var_name is not None:
         result = [
-            instance_ for instance_ in result if instance_.var_name == var_name
+            instance for instance in result if instance.var_name == var_name
         ]
 
     if attributes is not None:
@@ -101,28 +113,36 @@ def filter_cf(
             )
             raise ValueError(msg)
 
-        def attr_filter(instance_):
+        def attr_filter(instance):
             return all(
-                k in instance_.attributes
-                and metadata._hexdigest(instance_.attributes[k])
+                k in instance.attributes
+                and metadata._hexdigest(instance.attributes[k])
                 == metadata._hexdigest(v)
                 for k, v in attributes.items()
             )
 
-        result = [instance_ for instance_ in result if attr_filter(instance_)]
+        result = [instance for instance in result if attr_filter(instance)]
 
-    if instance is not None:
-        if hasattr(instance, "__class__") and issubclass(
-            instance.__class__, BaseMetadata
+    if axis is not None:
+        axis = axis.upper()
+        result = [
+            instance
+            for instance in result
+            if guess_coord_axis(instance) == axis
+        ]
+
+    if obj is not None:
+        if hasattr(obj, "__class__") and issubclass(
+            obj.__class__, BaseMetadata
         ):
-            target_metadata = instance
+            target_metadata = obj
         else:
-            target_metadata = instance.metadata
+            target_metadata = obj.metadata
 
         result = [
-            instance_
-            for instance_ in result
-            if instance_.metadata == target_metadata
+            instance
+            for instance in result
+            if instance.metadata == target_metadata
         ]
 
     return result

@@ -1653,16 +1653,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             long_name=long_name,
             var_name=var_name,
             attributes=attributes,
+            axis=axis,
         )
-
-        if axis is not None:
-            axis = axis.upper()
-            guess_axis = iris.util.guess_coord_axis
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if guess_axis(coord_) == axis
-            ]
 
         if coord_system is not None:
             coords_and_factories = [
