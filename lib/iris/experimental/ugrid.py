@@ -1240,12 +1240,12 @@ class Mesh(CFVariableMixin):
     # def to_MeshCoord(self, location, axis):
     #     # factory method
     #     # return MeshCoord(..., location=location, axis=axis)
-    #     # use Connectivity.indices_by_src() for fetching indices.
+    #     # use Connectivity.indices_by_src() for fetching indices, passing in the lazy_indices() result as an argument.
     #
     # def to_MeshCoords(self, location):
     #     # factory method
     #     # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
-    #     # use Connectivity.indices_by_src() for fetching indices.
+    #     # use Connectivity.indices_by_src for fetching indices, passing in the lazy_indices() result as an argument.
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
         return self._set_dimension_names(node, edge, face, reset=True)
@@ -1769,7 +1769,7 @@ class _MeshConnectivityManagerMixin(ABC):
         )
         for location in locations:
             counts = [
-                len(c.indices_by_src())
+                len(c.indices_by_src(c.lazy_indices()))
                 for c in proposed_members.values()
                 if c is not None and c.src_location == location
             ]
