@@ -194,9 +194,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
-                # The "circular" member does not participate in strict equivalence.
+                # The "circular" and "src_dim" members do not participate in strict equivalence.
                 fields = filter(
-                    lambda field: field != "circular", self._fields
+                    lambda field: field not in ("circular", "src_dim"),
+                    self._fields,
                 )
                 result = all([func(field) for field in fields])
 
@@ -1468,29 +1469,31 @@ def metadata_manager_factory(cls, **kwargs):
 
 
 #: Convenience collection of lenient metadata combine services.
-SERVICES_COMBINE = (
+# TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
+# here (currently in experimental.ugrid).
+SERVICES_COMBINE = [
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
     DimCoordMetadata.combine,
-)
+]
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE = (
+SERVICES_DIFFERENCE = [
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
     DimCoordMetadata.difference,
-)
+]
 
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL = (
+SERVICES_EQUAL = [
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,
     BaseMetadata.__eq__,
@@ -1503,7 +1506,7 @@ SERVICES_EQUAL = (
     CubeMetadata.equal,
     DimCoordMetadata.__eq__,
     DimCoordMetadata.equal,
-)
+]
 
 
 #: Convenience collection of lenient metadata services.
