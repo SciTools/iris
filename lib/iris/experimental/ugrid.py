@@ -1682,7 +1682,6 @@ class _MeshConnectivityManagerMixin(ABC):
     REQUIRED = ()
     OPTIONAL = ()
 
-    @abstractmethod
     def __init__(self, *connectivities):
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
@@ -1927,9 +1926,6 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerMixin):
     REQUIRED = ("edge_node_connectivity",)
     OPTIONAL = ()
 
-    def __init__(self, *connectivities):
-        super().__init__(*connectivities)
-
     @property
     def all_members(self):
         return Mesh1DConnectivities(edge_node=self.edge_node)
@@ -1948,9 +1944,6 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerMixin):
         "edge_face_connectivity",
         "boundary_node_connectivity",
     )
-
-    def __init__(self, *connectivities):
-        super().__init__(*connectivities)
 
     @property
     def all_members(self):
