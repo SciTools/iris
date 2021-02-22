@@ -27,10 +27,6 @@ from .lenient import _qualname as qualname
 
 
 __all__ = [
-    "SERVICES_COMBINE",
-    "SERVICES_DIFFERENCE",
-    "SERVICES_EQUAL",
-    "SERVICES",
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
@@ -38,7 +34,12 @@ __all__ = [
     "CubeMetadata",
     "DimCoordMetadata",
     "hexdigest",
+    "metadata_filter",
     "metadata_manager_factory",
+    "SERVICES",
+    "SERVICES_COMBINE",
+    "SERVICES_DIFFERENCE",
+    "SERVICES_EQUAL",
 ]
 
 
@@ -1353,13 +1354,13 @@ def metadata_filter(
 ):
     """
     Filter a collection of objects by their metadata to fit the given metadata
-    criteria. Criteria be one or both of: specific properties / other objects
+    criteria. Criteria can be one or both of: specific properties / other objects
     carrying metadata to be matched.
 
     Args:
 
     * instances
-        An iterable of objects to be filtered.
+        One or more objects to be filtered.
 
     Kwargs:
 
@@ -1408,6 +1409,10 @@ def metadata_filter(
     else:
         obj = item
 
+    # apply de morgan's law for one less logical operation
+    if not (isinstance(instances, str) or isinstance(instances, Iterable)):
+        instances = [instances]
+
     result = instances
 
     if name is not None:
@@ -1449,10 +1454,16 @@ def metadata_filter(
 
     if axis is not None:
         axis = axis.upper()
+
+        def get_axis(instance):
+            if hasattr(instance, "axis"):
+                axis = instance.axis.upper()
+            else:
+                axis = guess_coord_axis(instance)
+            return axis
+
         result = [
-            instance
-            for instance in result
-            if guess_coord_axis(instance) == axis
+            instance for instance in result if get_axis(instance) == axis
         ]
 
     if obj is not None:
