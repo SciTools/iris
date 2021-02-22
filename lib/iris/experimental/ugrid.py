@@ -938,19 +938,19 @@ class Mesh(CFVariableMixin):
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def _set_dimension_names(self, node, edge, face, reset=False):
-        inputs = (node, edge, face)
+        args = (node, edge, face)
         currents = (
             self.node_dimension,
             self.edge_dimension,
             self.face_dimension,
         )
-        zipped = zip(inputs, currents)
+        zipped = zip(args, currents)
         if reset:
             node, edge, face = [
-                None if check else current for check, current in zipped
+                None if arg else current for arg, current in zipped
             ]
         else:
-            node, edge, face = [new or current for new, current in zipped]
+            node, edge, face = [arg or current for arg, current in zipped]
 
         self.node_dimension = node
         self.edge_dimension = edge
@@ -958,10 +958,16 @@ class Mesh(CFVariableMixin):
 
         if self.topology_dimension == 1:
             result = Mesh1DNames(self.node_dimension, self.edge_dimension)
-        else:
+        elif self.topology_dimension == 2:
             result = Mesh2DNames(
                 self.node_dimension, self.edge_dimension, self.face_dimension
             )
+        else:
+            message = (
+                f"Unsupported topology_dimension: {self.topology_dimension} ."
+            )
+            raise NotImplementedError(message)
+
         return result
 
     @property
