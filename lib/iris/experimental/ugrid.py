@@ -975,10 +975,10 @@ class Mesh(CFVariableMixin):
     @edge_dimension.setter
     def edge_dimension(self, name):
         if not name or not isinstance(name, str):
-            edge_dimension_ = f"Mesh{self.topology_dimension}d_edge"
+            edge_dimension = f"Mesh{self.topology_dimension}d_edge"
         else:
-            edge_dimension_ = name
-        self._metadata_manager.edge_dimension = edge_dimension_
+            edge_dimension = name
+        self._metadata_manager.edge_dimension = edge_dimension
 
     @property
     def edge_coords(self):
@@ -991,10 +991,10 @@ class Mesh(CFVariableMixin):
     @face_dimension.setter
     def face_dimension(self, name):
         if not name or not isinstance(name, str):
-            face_dimension_ = f"Mesh{self.topology_dimension}d_face"
+            face_dimension = f"Mesh{self.topology_dimension}d_face"
         else:
-            face_dimension_ = name
-        self._metadata_manager.face_dimension = face_dimension_
+            face_dimension = name
+        self._metadata_manager.face_dimension = face_dimension
 
     @property
     def face_coords(self):
@@ -1007,10 +1007,10 @@ class Mesh(CFVariableMixin):
     @node_dimension.setter
     def node_dimension(self, name):
         if not name or not isinstance(name, str):
-            node_dimension_ = f"Mesh{self.topology_dimension}d_node"
+            node_dimension = f"Mesh{self.topology_dimension}d_node"
         else:
-            node_dimension_ = name
-        self._metadata_manager.node_dimension = node_dimension_
+            node_dimension = name
+        self._metadata_manager.node_dimension = node_dimension
 
     @property
     def node_coords(self):
