@@ -41,7 +41,7 @@ env:
   # Pip package to be upgraded/installed.
   PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_REF: "fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30"
+  IRIS_TEST_DATA_VERSION: "2.0.0"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
@@ -82,11 +82,26 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 
 
 #
-# YAML alias for compute credits
+# YAML alias for compute credits.
 #
 compute_credits_template: &CREDITS_TEMPLATE
   # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
   use_compute_credits: $CIRRUS_REPO_FULL_NAME == 'SciTools/iris' && $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_PR_DRAFT == 'false' && $CIRRUS_BASE_BRANCH == 'master' && $CIRRUS_PR != ''
+
+
+#
+# YAML alias for the iris-test-data cache.
+#
+iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR}
+    fingerprint_script:
+      - echo "iris-test-data v${IRIS_TEST_DATA_VERSION}"
+    populate_script:
+      - wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
+      - unzip -q iris-test-data.zip
+      - mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${IRIS_TEST_DATA_DIR}
+
 
 #
 # Linting
@@ -152,14 +167,7 @@ test_full_task:
     image: gcc:latest
     cpu: 6
     memory: 8G
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
@@ -182,14 +190,7 @@ gallery_task:
     image: gcc:latest
     cpu: 2
     memory: 4G
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
@@ -215,14 +216,7 @@ doctest_task:
   env:
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
