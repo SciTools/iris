@@ -72,6 +72,7 @@ MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
 MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
 MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 
+# Mesh connectivity manager namedtuples.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
