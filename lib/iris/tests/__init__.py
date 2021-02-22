@@ -483,26 +483,26 @@ class IrisTest_nometa(unittest.TestCase):
                         stats.get("max", 0.0),
                         stats.get("min", 0.0),
                     ),
-                    dtype=np.float_,
+                    dtype=np.float64,
                 )
                 if math.isnan(stats.get("mean", 0.0)):
                     self.assertTrue(math.isnan(data.mean()))
                 else:
                     data_stats = np.array(
                         (data.mean(), data.std(), data.max(), data.min()),
-                        dtype=np.float_,
+                        dtype=np.float64,
                     )
                     self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             stats = collections.OrderedDict(
                 [
-                    ("std", np.float_(data.std())),
-                    ("min", np.float_(data.min())),
-                    ("max", np.float_(data.max())),
+                    ("std", np.float64(data.std())),
+                    ("min", np.float64(data.min())),
+                    ("max", np.float64(data.max())),
                     ("shape", data.shape),
                     ("masked", ma.is_masked(data)),
-                    ("mean", np.float_(data.mean())),
+                    ("mean", np.float64(data.mean())),
                 ]
             )
             with open(reference_path, "w") as reference_file:

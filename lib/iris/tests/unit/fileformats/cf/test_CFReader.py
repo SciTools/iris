@@ -59,7 +59,7 @@ def netcdf_variable(
 
 class Test_translate__global_attributes(tests.IrisTest):
     def setUp(self):
-        ncvar = netcdf_variable("ncvar", "height", np.float)
+        ncvar = netcdf_variable("ncvar", "height", np.float64)
         ncattrs = mock.Mock(return_value=["dimensions"])
         getncattr = mock.Mock(return_value="something something_else")
         self.dataset = mock.Mock(
@@ -80,24 +80,24 @@ class Test_translate__global_attributes(tests.IrisTest):
 class Test_translate__formula_terms(tests.IrisTest):
     def setUp(self):
         self.delta = netcdf_variable(
-            "delta", "height", np.float, bounds="delta_bnds"
+            "delta", "height", np.float64, bounds="delta_bnds"
         )
         self.delta_bnds = netcdf_variable(
             "delta_bnds", "height bnds", np.float
         )
         self.sigma = netcdf_variable(
-            "sigma", "height", np.float, bounds="sigma_bnds"
+            "sigma", "height", np.float64, bounds="sigma_bnds"
         )
         self.sigma_bnds = netcdf_variable(
             "sigma_bnds", "height bnds", np.float
         )
-        self.orography = netcdf_variable("orography", "lat lon", np.float)
+        self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
         standard_name = "atmosphere_hybrid_height_coordinate"
         self.height = netcdf_variable(
             "height",
             "height",
-            np.float,
+            np.float64,
             formula_terms=formula_terms,
             bounds="height_bnds",
             standard_name=standard_name,
@@ -106,13 +106,16 @@ class Test_translate__formula_terms(tests.IrisTest):
         # which will be ignored by the cf loader.
         formula_terms = "a: delta_bnds b: sigma_bnds orog: orography"
         self.height_bnds = netcdf_variable(
-            "height_bnds", "height bnds", np.float, formula_terms=formula_terms
+            "height_bnds",
+            "height bnds",
+            np.float64,
+            formula_terms=formula_terms,
         )
-        self.lat = netcdf_variable("lat", "lat", np.float)
-        self.lon = netcdf_variable("lon", "lon", np.float)
+        self.lat = netcdf_variable("lat", "lat", np.float64)
+        self.lon = netcdf_variable("lon", "lon", np.float64)
         # Note that, only lat and lon are explicitly associated as coordinates.
         self.temp = netcdf_variable(
-            "temp", "height lat lon", np.float, coordinates="lat lon"
+            "temp", "height lat lon", np.float64, coordinates="lat lon"
         )
 
         self.variables = dict(
@@ -179,24 +182,24 @@ class Test_translate__formula_terms(tests.IrisTest):
 class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def setUp(self):
         self.delta = netcdf_variable(
-            "delta", "height", np.float, bounds="delta_bnds"
+            "delta", "height", np.float64, bounds="delta_bnds"
         )
         self.delta_bnds = netcdf_variable(
             "delta_bnds", "height bnds", np.float
         )
         self.sigma = netcdf_variable(
-            "sigma", "height", np.float, bounds="sigma_bnds"
+            "sigma", "height", np.float64, bounds="sigma_bnds"
         )
         self.sigma_bnds = netcdf_variable(
             "sigma_bnds", "height bnds", np.float
         )
-        self.orography = netcdf_variable("orography", "lat lon", np.float)
+        self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
         standard_name = "atmosphere_hybrid_height_coordinate"
         self.height = netcdf_variable(
             "height",
             "height",
-            np.float,
+            np.float64,
             formula_terms=formula_terms,
             bounds="height_bnds",
             standard_name=standard_name,
@@ -205,15 +208,18 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
         # which will be ignored by the cf loader.
         formula_terms = "a: delta_bnds b: sigma_bnds orog: orography"
         self.height_bnds = netcdf_variable(
-            "height_bnds", "height bnds", np.float, formula_terms=formula_terms
+            "height_bnds",
+            "height bnds",
+            np.float64,
+            formula_terms=formula_terms,
         )
-        self.lat = netcdf_variable("lat", "lat", np.float)
-        self.lon = netcdf_variable("lon", "lon", np.float)
-        self.x = netcdf_variable("x", "lat lon", np.float)
-        self.y = netcdf_variable("y", "lat lon", np.float)
+        self.lat = netcdf_variable("lat", "lat", np.float64)
+        self.lon = netcdf_variable("lon", "lon", np.float64)
+        self.x = netcdf_variable("x", "lat lon", np.float64)
+        self.y = netcdf_variable("y", "lat lon", np.float64)
         # Note that, only lat and lon are explicitly associated as coordinates.
         self.temp = netcdf_variable(
-            "temp", "height lat lon", np.float, coordinates="x y"
+            "temp", "height lat lon", np.float64, coordinates="x y"
         )
 
         self.variables = dict(
@@ -332,7 +338,7 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(warn.call_count, 1)
 
     def test_promoted_auxiliary_ignore(self):
-        self.wibble = netcdf_variable("wibble", "lat wibble", np.float)
+        self.wibble = netcdf_variable("wibble", "lat wibble", np.float64)
         self.variables["wibble"] = self.wibble
         self.orography.coordinates = "wibble"
         with mock.patch(

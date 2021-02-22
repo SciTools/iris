@@ -1074,8 +1074,8 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=np.float(3.14),
-            four=np.arange(10, dtype=np.float),
+            three=np.float64(3.14),
+            four=np.arange(10, dtype=np.float64),
             five=ma.arange(10, dtype=np.int16),
         )
         self.cls = BaseMetadata

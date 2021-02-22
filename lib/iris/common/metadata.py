@@ -37,6 +37,7 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
+    "hexdigest",
     "metadata_manager_factory",
 ]
 
@@ -48,34 +49,46 @@ _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 
-def _hexdigest(value):
+def hexdigest(item):
     """
-    Return a hexidecimal string hash representation of the provided value.
+    Calculate a hexidecimal string hash representation of the provided item.
 
-    Calculates a 64-bit non-cryptographic hash of the provided value,
-    and returns the hexdigest string representation of the calculated hash.
+    Calculates a 64-bit non-cryptographic hash of the provided item, using
+    the extremely fast ``xxhash`` hashing algorithm, and returns the hexdigest
+    string representation of the hash.
+
+    This provides a means to compare large and/or complex objects through
+    simple string hexdigest comparison.
+
+    Args:
+
+    * item (object):
+        The item that requires to have its hexdigest calculated.
+
+    Returns:
+        The string hexidecimal representation of the item's 64-bit hash.
 
     """
     # Special case: deal with numpy arrays.
-    if ma.isMaskedArray(value):
+    if ma.isMaskedArray(item):
         parts = (
-            value.shape,
-            xxh64_hexdigest(value.data),
-            xxh64_hexdigest(value.mask),
+            item.shape,
+            xxh64_hexdigest(item.data),
+            xxh64_hexdigest(item.mask),
         )
-        value = str(parts)
-    elif isinstance(value, np.ndarray):
-        parts = (value.shape, xxh64_hexdigest(value))
-        value = str(parts)
+        item = str(parts)
+    elif isinstance(item, np.ndarray):
+        parts = (item.shape, xxh64_hexdigest(item))
+        item = str(parts)
 
     try:
         # Calculate single-shot hash to avoid allocating state on the heap
-        result = xxh64_hexdigest(value)
+        result = xxh64_hexdigest(item)
     except TypeError:
         # xxhash expects a bytes-like object, so try hashing the
-        # string representation of the provided value instead, but
+        # string representation of the provided item instead, but
         # also fold in the object type...
-        parts = (type(value), value)
+        parts = (type(item), item)
         result = xxh64_hexdigest(str(parts))
 
     return result
@@ -348,8 +361,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Intersection of common items.
         common = sleft & sright
         # Items in sleft different from sright.
@@ -377,8 +390,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Intersection of common items.
         common = sleft & sright
         # Now bring the result together.
@@ -436,8 +449,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -453,8 +466,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
 
         return sleft == sright
 
@@ -522,8 +535,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.
@@ -550,8 +563,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         # Use xxhash to perform an extremely fast non-cryptographic hash of
         # each dictionary key rvalue, thus ensuring that the dictionary is
         # completely hashable, as required by a set.
-        sleft = {(k, _hexdigest(v)) for k, v in left.items()}
-        sright = {(k, _hexdigest(v)) for k, v in right.items()}
+        sleft = {(k, hexdigest(v)) for k, v in left.items()}
+        sright = {(k, hexdigest(v)) for k, v in right.items()}
         # Items in sleft different from sright.
         dsleft = dict(sleft - sright)
         # Items in sright different from sleft.

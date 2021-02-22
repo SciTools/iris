@@ -27,6 +27,11 @@ This document explains the changes made to Iris for this release
 #. Congratulations to `@jamesp`_ who recently became an Iris core developer
    after joining the Iris development team at the `Met Office`_. 🎉
 
+#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_ and
+   `@MHBalsmeier`_ all of whom made their first contributions to Iris, which
+   were gratefully received and included in this release. Keep up the awesome
+   work! 🍻
+
 
 ✨ Features
 ===========
@@ -36,6 +41,12 @@ This document explains the changes made to Iris for this release
    the primary coordinate being plotted against is a vertical coordinate. E.g.
    ``iris.plot.plot(z_cube)`` will produce a z-vs-phenomenon plot, where before
    it would have produced a phenomenon-vs-z plot. (:pull:`3906`)
+
+#. `@bjlittle`_ introduced :func:`iris.common.metadata.hexdigest` to the
+   public API. Previously it was a private function introduced in ``v3.0.0``.
+   Given any object, :func:`~iris.common.metadata.hexdigest` returns a string
+   representation of the 64-bit non-cryptographic hash of the object using the
+   extremely fast `xxhash`_ hashing algorithm. (:pull:`4020`)
 
 
 🐛 Bugs Fixed
@@ -91,6 +102,10 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ added the |PyPI|_ badge to the `README.md`_. (:pull:`4004`)
 
+#. `@tkknight`_ added a banner at the top of every page of the unreleased
+   development documentation if being viewed on `Read the Docs`_.
+   (:pull:`3999`)
+
 
 💼 Internal
 ===========
@@ -109,11 +124,22 @@ This document explains the changes made to Iris for this release
    each ``nox`` session to list its ``conda`` environment packages and
    environment info. (:pull:`3990`)
 
+#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+
+#. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
+   (:pull:`3997`)
+
+#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+   developers to easily disable `cirrus-ci`_ tasks. See
+   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
 
@@ -122,6 +148,7 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
@@ -129,3 +156,4 @@ This document explains the changes made to Iris for this release
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _README.md: https://github.com/SciTools/iris#-----
+.. _xxhash: http://cyan4973.github.io/xxHash/
