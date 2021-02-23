@@ -28,7 +28,6 @@ class Test__identity(tests.IrisTest):
         self.var_name = mock.sentinel.var_name
         self.units = mock.sentinel.units
         self.attributes = mock.sentinel.attributes
-        self.mesh = mock.sentinel.mesh
         self.location = mock.sentinel.location
         self.axis = mock.sentinel.axis
         self.cls = MeshCoordMetadata
@@ -40,13 +39,12 @@ class Test__identity(tests.IrisTest):
             var_name=self.var_name,
             units=self.units,
             attributes=self.attributes,
-            mesh=self.mesh,
             location=self.location,
             axis=self.axis,
         )
         fmt = (
             "MeshCoordMetadata(standard_name={!r}, long_name={!r}, "
-            "var_name={!r}, units={!r}, attributes={!r}, mesh={!r}, "
+            "var_name={!r}, units={!r}, attributes={!r}, "
             "location={!r}, axis={!r})"
         )
         expected = fmt.format(
@@ -55,7 +53,6 @@ class Test__identity(tests.IrisTest):
             self.var_name,
             self.units,
             self.attributes,
-            self.mesh,
             self.location,
             self.axis,
         )
@@ -68,7 +65,6 @@ class Test__identity(tests.IrisTest):
             "var_name",
             "units",
             "attributes",
-            "mesh",
             "location",
             "axis",
         )
@@ -86,7 +82,6 @@ class Test__eq__(tests.IrisTest):
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            mesh=sentinel.mesh,
             location=sentinel.location,
             axis=sentinel.axis,
         )
@@ -276,7 +271,6 @@ class Test_combine(tests.IrisTest):
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            mesh=sentinel.mesh,
             location=sentinel.location,
             axis=sentinel.axis,
         )
@@ -473,7 +467,6 @@ class Test_difference(tests.IrisTest):
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            mesh=sentinel.mesh,
             location=sentinel.location,
             axis=sentinel.axis,
         )

@@ -2015,7 +2015,13 @@ class MeshCoordMetadata(BaseMetadata):
     """
     Metadata container for a :class:`~iris.coords.MeshCoord`.
     """
-    _members = ("mesh", "location", "axis")
+    _members = ("location", "axis")
+    # NOTE: in future, we may add 'mesh' as part of this metadata,
+    # as the Mesh seems part of the 'identity' of a MeshCoord.
+    # For now we omit it, particularly as we don't yet implement Mesh.__eq__.
+    #
+    # Thus, for now, the MeshCoord class will need to handle 'mesh' explicitly
+    # in identity / comparison, but in future that may be simplified.
 
     __slots__ = ()
 
@@ -2065,7 +2071,7 @@ class MeshCoordMetadata(BaseMetadata):
 
         """
         # Perform "strict" comparison for the MeshCoord specific members
-        # (i.e. mesh, location, axis) : for equality, they must all match.
+        # 'location', 'axis' : for equality, they must all match.
         result = all(
             [
                 getattr(self, field) == getattr(other, field)
@@ -2092,7 +2098,7 @@ class MeshCoordMetadata(BaseMetadata):
             A list of different metadata member values.
 
         """
-        # Perform "strict" difference for mesh / location / axis.
+        # Perform "strict" difference for location / axis.
         def func(field):
             left = getattr(self, field)
             right = getattr(other, field)
