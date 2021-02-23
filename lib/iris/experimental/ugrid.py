@@ -915,8 +915,11 @@ class Mesh(CFVariableMixin):
         return NotImplemented
 
     def __getstate__(self):
-        # TBD
-        pass
+        return (
+            self._metadata_manager,
+            self._coord_manager,
+            self._connectivity_manager,
+        )
 
     def __ne__(self, other):
         # TBD
@@ -928,8 +931,10 @@ class Mesh(CFVariableMixin):
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
-        # TBD
-        pass
+        metadata_manager, coord_manager, connectivity_manager = state
+        self._metadata_manager = metadata_manager
+        self._coord_manager = coord_manager
+        self._connectivity_manager = connectivity_manager
 
     def __str__(self):
         # TBD
@@ -1297,8 +1302,7 @@ class _Mesh1DCoordinateManager:
         return NotImplemented
 
     def __getstate__(self):
-        # TBD
-        pass
+        return self._members
 
     def __iter__(self):
         for item in self._members.items():
@@ -1317,8 +1321,7 @@ class _Mesh1DCoordinateManager:
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
-        # TBD
-        pass
+        self._members = state
 
     def __str__(self):
         args = [
@@ -1701,8 +1704,7 @@ class _MeshConnectivityManagerBase(ABC):
         return NotImplemented
 
     def __getstate__(self):
-        # TBD
-        pass
+        return self._members
 
     def __iter__(self):
         for item in self._members.items():
@@ -1721,8 +1723,7 @@ class _MeshConnectivityManagerBase(ABC):
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
-        # TBD
-        pass
+        self._members = state
 
     def __str__(self):
         args = [
