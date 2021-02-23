@@ -10,6 +10,8 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 
 """
 
+from abc import ABC, abstractmethod
+from collections import Iterable, namedtuple
 from functools import wraps
 
 import dask.array as da
@@ -18,6 +20,7 @@ import numpy as np
 from .. import _lazy_data as _lazy
 from ..common.metadata import (
     BaseMetadata,
+    metadata_filter,
     metadata_manager_factory,
     SERVICES,
     SERVICES_COMBINE,
@@ -25,13 +28,62 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
-from ..coords import _DimensionalMetadata
+from ..common.mixin import CFVariableMixin
+from ..config import get_logger
+from ..coords import _DimensionalMetadata, AuxCoord
+from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ..util import guess_coord_axis
 
 
 __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
+    "Mesh1DConnectivities",
+    "Mesh1DCoords",
+    "Mesh2DConnectivities",
+    "Mesh2DCoords",
+    "MeshEdgeCoords",
+    "MeshFaceCoords",
+    "MeshNodeCoords",
+    "MeshMetadata",
 ]
+
+
+# Configure the logger.
+logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+
+
+# Mesh dimension names namedtuples.
+Mesh1DNames = namedtuple("Mesh1DNames", ["node_dimension", "edge_dimension"])
+Mesh2DNames = namedtuple(
+    "Mesh2DNames", ["node_dimension", "edge_dimension", "face_dimension"]
+)
+
+# Mesh coordinate manager namedtuples.
+Mesh1DCoords = namedtuple(
+    "Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"]
+)
+Mesh2DCoords = namedtuple(
+    "Mesh2DCoords",
+    ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"],
+)
+MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
+MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
+MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
+
+# Mesh connectivity manager namedtuples.
+Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
+Mesh2DConnectivities = namedtuple(
+    "Mesh2DConnectivities",
+    [
+        "face_node",
+        "edge_node",
+        "face_edge",
+        "face_face",
+        "edge_face",
+        "boundary_node",
+    ],
+)
 
 
 class Connectivity(_DimensionalMetadata):
@@ -497,7 +549,7 @@ class Connectivity(_DimensionalMetadata):
 
 class ConnectivityMetadata(BaseMetadata):
     """
-    Metadata container for a :class:`~iris.coords.Connectivity`.
+    Metadata container for a :class:`~iris.experimental.ugrid.Connectivity`.
 
     """
 
@@ -615,17 +667,1347 @@ class ConnectivityMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
+class MeshMetadata(BaseMetadata):
+    """
+    Metadata container for a :class:`~iris.experimental.ugrid.Mesh`.
+
+    """
+
+    # The node_dimension", "edge_dimension" and "face_dimension" members are
+    # stateful only; they not participate in lenient/strict equivalence.
+    _members = (
+        "topology_dimension",
+        "node_dimension",
+        "edge_dimension",
+        "face_dimension",
+    )
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+
+        # Perform "strict" combination for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for "topology_dimension".
+        # "node_dimension", "edge_dimension" and "face_dimension" are not part
+        # of lenient equivalence at all.
+        result = self.topology_dimension == other.topology_dimension
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for meshes.
+
+        Args:
+
+        * other (MeshMetadata):
+            The other mesh metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of difference metadata member values.
+
+        """
+        # Perform "strict" difference for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class Mesh(CFVariableMixin):
+    """
+
+    .. todo::
+
+    .. questions::
+
+        - decide on the verbose/succinct version of __str__ vs __repr__
+
+    .. notes::
+
+        - the mesh is location agnostic
+
+        - no need to support volume at mesh level, yet
+
+        - topology_dimension
+            - use for fast equality between Mesh instances
+            - checking connectivity dimensionality, specifically the highest dimensonality of the
+              "geometric element" being added i.e., reference the src_location/tgt_location
+            - used to honour and enforce the minimum UGRID connectivity contract
+
+        - support pickling
+
+        - copy is off the table!!
+
+        - MeshCoord.guess_points()
+        - MeshCoord.to_AuxCoord()
+
+        - don't provide public methods to return the coordinate and connectivity
+          managers
+
+        - validate both managers contents e.g., shape? more...?
+
+    """
+
+    # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
+    AXES = ("x", "y")
+    TOPOLOGY_DIMENSIONS = (1, 2)
+
+    def __init__(
+        self,
+        topology_dimension,
+        node_coords_and_axes,
+        connectivities,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units=None,
+        attributes=None,
+        edge_coords_and_axes=None,
+        face_coords_and_axes=None,
+        node_dimension=None,
+        edge_dimension=None,
+        face_dimension=None,
+    ):
+        # TODO: support volumes.
+        # TODO: support (coord, "z")
+
+        self._metadata_manager = metadata_manager_factory(MeshMetadata)
+
+        # topology_dimension is read-only, so assign directly to the metadata manager
+        if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
+            emsg = f"Expected 'topology_dimension' in range {self.TOPOLOGY_DIMENSIONS!r}, got {topology_dimension!r}."
+            raise ValueError(emsg)
+        self._metadata_manager.topology_dimension = topology_dimension
+
+        # TBD: these are strings, if None is provided then assign the default string.
+        self.node_dimension = node_dimension
+        self.edge_dimension = edge_dimension
+        self.face_dimension = face_dimension
+
+        # assign the metadata to the metadata manager
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.var_name = var_name
+        self.units = units
+        self.attributes = attributes
+
+        # based on the topology_dimension, create the appropriate coordinate manager
+        def normalise(location, axis):
+            result = str(axis).lower()
+            if result not in self.AXES:
+                emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
+                raise ValueError(emsg)
+            return f"{location}_{axis}"
+
+        if not isinstance(node_coords_and_axes, Iterable):
+            node_coords_and_axes = [node_coords_and_axes]
+
+        if not isinstance(connectivities, Iterable):
+            connectivities = [connectivities]
+
+        kwargs = {}
+        for coord, axis in node_coords_and_axes:
+            kwargs[normalise("node", axis)] = coord
+        if edge_coords_and_axes is not None:
+            for coord, axis in edge_coords_and_axes:
+                kwargs[normalise("edge", axis)] = coord
+        if face_coords_and_axes is not None:
+            for coord, axis in face_coords_and_axes:
+                kwargs[normalise("face", axis)] = coord
+
+        # check the UGRID minimum requirement for coordinates
+        if "node_x" not in kwargs:
+            emsg = (
+                "Require a node coordinate that is x-axis like to be provided."
+            )
+            raise ValueError(emsg)
+        if "node_y" not in kwargs:
+            emsg = (
+                "Require a node coordinate that is y-axis like to be provided."
+            )
+            raise ValueError(emsg)
+
+        if self.topology_dimension == 1:
+            self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh1DConnectivityManager(
+                *connectivities
+            )
+        elif self.topology_dimension == 2:
+            self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh2DConnectivityManager(
+                *connectivities
+            )
+        else:
+            emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
+            raise NotImplementedError(emsg)
+
+    def __eq__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __getstate__(self):
+        return (
+            self._metadata_manager,
+            self._coord_manager,
+            self._connectivity_manager,
+        )
+
+    def __ne__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __repr__(self):
+        # TBD
+        args = []
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    def __setstate__(self, state):
+        metadata_manager, coord_manager, connectivity_manager = state
+        self._metadata_manager = metadata_manager
+        self._coord_manager = coord_manager
+        self._connectivity_manager = connectivity_manager
+
+    def __str__(self):
+        # TBD
+        args = []
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    def _set_dimension_names(self, node, edge, face, reset=False):
+        args = (node, edge, face)
+        currents = (
+            self.node_dimension,
+            self.edge_dimension,
+            self.face_dimension,
+        )
+        zipped = zip(args, currents)
+        if reset:
+            node, edge, face = [
+                None if arg else current for arg, current in zipped
+            ]
+        else:
+            node, edge, face = [arg or current for arg, current in zipped]
+
+        self.node_dimension = node
+        self.edge_dimension = edge
+        self.face_dimension = face
+
+        if self.topology_dimension == 1:
+            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
+        elif self.topology_dimension == 2:
+            result = Mesh2DNames(
+                self.node_dimension, self.edge_dimension, self.face_dimension
+            )
+        else:
+            message = (
+                f"Unsupported topology_dimension: {self.topology_dimension} ."
+            )
+            raise NotImplementedError(message)
+
+        return result
+
+    @property
+    def all_coords(self):
+        return self._coord_manager.all_members
+
+    @property
+    def edge_dimension(self):
+        return self._metadata_manager.edge_dimension
+
+    @edge_dimension.setter
+    def edge_dimension(self, name):
+        if not name or not isinstance(name, str):
+            edge_dimension = f"Mesh{self.topology_dimension}d_edge"
+        else:
+            edge_dimension = name
+        self._metadata_manager.edge_dimension = edge_dimension
+
+    @property
+    def edge_coords(self):
+        return self._coord_manager.edge_coords
+
+    @property
+    def face_dimension(self):
+        return self._metadata_manager.face_dimension
+
+    @face_dimension.setter
+    def face_dimension(self, name):
+        if not name or not isinstance(name, str):
+            face_dimension = f"Mesh{self.topology_dimension}d_face"
+        else:
+            face_dimension = name
+        self._metadata_manager.face_dimension = face_dimension
+
+    @property
+    def face_coords(self):
+        return self._coord_manager.face_coords
+
+    @property
+    def node_dimension(self):
+        return self._metadata_manager.node_dimension
+
+    @node_dimension.setter
+    def node_dimension(self, name):
+        if not name or not isinstance(name, str):
+            node_dimension = f"Mesh{self.topology_dimension}d_node"
+        else:
+            node_dimension = name
+        self._metadata_manager.node_dimension = node_dimension
+
+    @property
+    def node_coords(self):
+        return self._coord_manager.node_coords
+
+    @property
+    def all_connectivities(self):
+        return self._connectivity_manager.all_members
+
+    @property
+    def face_node_connectivity(self):
+        # required
+        return self._connectivity_manager.face_node
+
+    @property
+    def edge_node_connectivity(self):
+        # optionally required
+        return self._connectivity_manager.edge_node
+
+    @property
+    def face_edge_connectivity(self):
+        # optional
+        return self._connectivity_manager.face_edge
+
+    @property
+    def face_face_connectivity(self):
+        # optional
+        return self._connectivity_manager.face_face
+
+    @property
+    def edge_face_connectivity(self):
+        # optional
+        return self._connectivity_manager.edge_face
+
+    @property
+    def boundary_node_connectivity(self):
+        # optional
+        return self._connectivity_manager.boundary_node
+
+    def add_coords(
+        self,
+        node_x=None,
+        node_y=None,
+        edge_x=None,
+        edge_y=None,
+        face_x=None,
+        face_y=None,
+    ):
+        self._coord_manager.add(
+            node_x=node_x,
+            node_y=node_y,
+            edge_x=edge_x,
+            edge_y=edge_y,
+            face_x=face_x,
+            face_y=face_y,
+        )
+
+    def add_connectivities(self, *connectivities):
+        self._connectivity_manager.add(*connectivities)
+
+    def connectivities(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.filters(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def connectivity(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.filter(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def coord(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._coord_manager.filter(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def coords(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=False,
+        edge=False,
+        face=False,
+    ):
+        return self._coord_manager.filters(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def remove_connectivities(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._connectivity_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def remove_coords(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._coord_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+    def xml_element(self):
+        # TBD
+        pass
+
+    # the MeshCoord will always have bounds, perhaps points. However the MeshCoord.guess_points() may
+    # be a very useful part of its behaviour.
+    # after using MeshCoord.guess_points(), the user may wish to add the associated MeshCoord.points into
+    # the Mesh as face_coordinates.
+
+    # def to_AuxCoord(self, location, axis):
+    #     # factory method
+    #     # return the lazy AuxCoord(...) for the given location and axis
+    #
+    # def to_AuxCoords(self, location):
+    #     # factory method
+    #     # return the lazy AuxCoord(...), AuxCoord(...)
+    #
+    # def to_MeshCoord(self, location, axis):
+    #     # factory method
+    #     # return MeshCoord(..., location=location, axis=axis)
+    #     # use Connectivity.indices_by_src() for fetching indices, passing in the lazy_indices() result as an argument.
+    #
+    # def to_MeshCoords(self, location):
+    #     # factory method
+    #     # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
+    #     # use Connectivity.indices_by_src for fetching indices, passing in the lazy_indices() result as an argument.
+
+    def dimension_names_reset(self, node=False, edge=False, face=False):
+        return self._set_dimension_names(node, edge, face, reset=True)
+
+    def dimension_names(self, node=None, edge=None, face=None):
+        return self._set_dimension_names(node, edge, face, reset=False)
+
+    @property
+    def cf_role(self):
+        return "mesh_topology"
+
+    @property
+    def topology_dimension(self):
+        return self._metadata_manager.topology_dimension
+
+
+class _Mesh1DCoordinateManager:
+    """
+
+    TBD: require clarity on coord_systems validation
+    TBD: require clarity on __eq__ support
+    TBD: rationalise self.coords() logic with other manager and Cube
+
+    """
+
+    REQUIRED = (
+        "node_x",
+        "node_y",
+    )
+    OPTIONAL = (
+        "edge_x",
+        "edge_y",
+    )
+
+    def __init__(self, node_x, node_y, edge_x=None, edge_y=None):
+        # initialise all the coordinates
+        self.ALL = self.REQUIRED + self.OPTIONAL
+        self._members = {member: None for member in self.ALL}
+
+        # required coordinates
+        self.node_x = node_x
+        self.node_y = node_y
+        # optional coordinates
+        self.edge_x = edge_x
+        self.edge_y = edge_y
+
+    def __eq__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __getstate__(self):
+        return self._members
+
+    def __iter__(self):
+        for item in self._members.items():
+            yield item
+
+    def __ne__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __repr__(self):
+        args = [
+            f"{member}={coord!r}"
+            for member, coord in self
+            if coord is not None
+        ]
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    def __setstate__(self, state):
+        self._members = state
+
+    def __str__(self):
+        args = [
+            f"{member}=True" for member, coord in self if coord is not None
+        ]
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    def _remove(self, **kwargs):
+        result = {}
+        members = self.filters(**kwargs)
+
+        for member in members.keys():
+            if member in self.REQUIRED:
+                dmsg = f"Ignoring request to remove required coordinate {member!r}"
+                logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
+            else:
+                result[member] = members[member]
+                setattr(self, member, None)
+
+        return result
+
+    def _setter(self, location, axis, coord, shape):
+        axis = axis.lower()
+        member = f"{location}_{axis}"
+
+        # enforce the UGRID minimum coordinate requirement
+        if location == "node" and coord is None:
+            emsg = (
+                f"{member!r} is a required coordinate, cannot set to 'None'."
+            )
+            raise ValueError(emsg)
+
+        if coord is not None:
+            if not isinstance(coord, AuxCoord):
+                emsg = f"{member!r} requires to be an 'AuxCoord', got {type(coord)}."
+                raise TypeError(emsg)
+
+            guess_axis = guess_coord_axis(coord)
+
+            if guess_axis and guess_axis.lower() != axis:
+                emsg = f"{member!r} requires a {axis}-axis like 'AuxCoord', got a {guess_axis.lower()}-axis like."
+                raise TypeError(emsg)
+
+            if coord.climatological:
+                emsg = f"{member!r} cannot be a climatological 'AuxCoord'."
+                raise TypeError(emsg)
+
+            if shape is not None and coord.shape != shape:
+                emsg = f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
+                raise ValueError(emsg)
+
+        self._members[member] = coord
+
+    def _shape(self, location):
+        coord = getattr(self, f"{location}_x")
+        shape = coord.shape if coord is not None else None
+        if shape is None:
+            coord = getattr(self, f"{location}_y")
+            if coord is not None:
+                shape = coord.shape
+        return shape
+
+    @property
+    def _edge_shape(self):
+        return self._shape(location="edge")
+
+    @property
+    def _node_shape(self):
+        return self._shape(location="node")
+
+    @property
+    def all_members(self):
+        return Mesh1DCoords(**self._members)
+
+    @property
+    def edge_coords(self):
+        return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
+
+    @property
+    def edge_x(self):
+        return self._members["edge_x"]
+
+    @edge_x.setter
+    def edge_x(self, coord):
+        self._setter(
+            location="edge", axis="x", coord=coord, shape=self._edge_shape
+        )
+
+    @property
+    def edge_y(self):
+        return self._members["edge_y"]
+
+    @edge_y.setter
+    def edge_y(self, coord):
+        self._setter(
+            location="edge", axis="y", coord=coord, shape=self._edge_shape
+        )
+
+    @property
+    def node_coords(self):
+        return MeshNodeCoords(node_x=self.node_x, node_y=self.node_y)
+
+    @property
+    def node_x(self):
+        return self._members["node_x"]
+
+    @node_x.setter
+    def node_x(self, coord):
+        self._setter(
+            location="node", axis="x", coord=coord, shape=self._node_shape
+        )
+
+    @property
+    def node_y(self):
+        return self._members["node_y"]
+
+    @node_y.setter
+    def node_y(self, coord):
+        self._setter(
+            location="node", axis="y", coord=coord, shape=self._node_shape
+        )
+
+    def _add(self, coords):
+        member_x, member_y = coords._fields
+
+        # deal with the special case where both members are changing
+        if coords[0] is not None and coords[1] is not None:
+            cache_x = self._members[member_x]
+            cache_y = self._members[member_y]
+            self._members[member_x] = None
+            self._members[member_y] = None
+
+            try:
+                setattr(self, member_x, coords[0])
+                setattr(self, member_y, coords[1])
+            except (TypeError, ValueError):
+                # restore previous valid state
+                self._members[member_x] = cache_x
+                self._members[member_y] = cache_y
+                # now, re-raise the exception
+                raise
+        else:
+            # deal with the case where one or no member is changing
+            if coords[0] is not None:
+                setattr(self, member_x, coords[0])
+            if coords[1] is not None:
+                setattr(self, member_y, coords[1])
+
+    def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
+        """
+        use self.remove(edge_x=True) to remove a coordinate e.g., using the
+        pattern self.add(edge_x=None) will not remove the edge_x coordinate
+
+        """
+        self._add(MeshNodeCoords(node_x, node_y))
+        self._add(MeshEdgeCoords(edge_x, edge_y))
+
+    def filter(self, **kwargs):
+        # TODO: rationalise commonality with MeshConnectivityManager.filter and Cube.coord.
+        result = self.filters(**kwargs)
+
+        if len(result) > 1:
+            names = ", ".join(
+                f"{member}={coord!r}" for member, coord in result.items()
+            )
+            emsg = (
+                f"Expected to find exactly 1 coordinate, but found {len(result)}. "
+                f"They were: {names}."
+            )
+            raise CoordinateNotFoundError(emsg)
+
+        if len(result) == 0:
+            item = kwargs["item"]
+            if item is not None:
+                if not isinstance(item, str):
+                    item = item.name()
+            name = (
+                item
+                or kwargs["standard_name"]
+                or kwargs["long_name"]
+                or kwargs["var_name"]
+                or None
+            )
+            name = "" if name is None else f"{name!r} "
+            emsg = (
+                f"Expected to find exactly 1 {name}coordinate, but found none."
+            )
+            raise CoordinateNotFoundError(emsg)
+
+        return result
+
+    def filters(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        # TBD: support coord_systems?
+
+        # rationalise the tri-state behaviour
+        args = [node, edge, face]
+        state = not any(set(filter(lambda arg: arg is not None, args)))
+        node, edge, face = map(
+            lambda arg: arg if arg is not None else state, args
+        )
+
+        def populated_coords(coords_tuple):
+            return list(filter(None, list(coords_tuple)))
+
+        members = []
+        if node:
+            members += populated_coords(self.node_coords)
+        if edge:
+            members += populated_coords(self.edge_coords)
+        if hasattr(self, "face_coords"):
+            if face:
+                members += populated_coords(self.face_coords)
+        else:
+            dmsg = "Ignoring request to filter non-existent 'face_coords'"
+            logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
+
+        result = metadata_filter(
+            members,
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+        )
+
+        # Use the results to filter the _members dict for returning.
+        result_ids = [id(r) for r in result]
+        result_dict = {
+            k: v for k, v in self._members.items() if id(v) in result_ids
+        }
+        return result_dict
+
+    def remove(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+    ):
+        return self._remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+        )
+
+
+class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
+    OPTIONAL = (
+        "edge_x",
+        "edge_y",
+        "face_x",
+        "face_y",
+    )
+
+    def __init__(
+        self,
+        node_x,
+        node_y,
+        edge_x=None,
+        edge_y=None,
+        face_x=None,
+        face_y=None,
+    ):
+        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+
+        # optional coordinates
+        self.face_x = face_x
+        self.face_y = face_y
+
+    @property
+    def _face_shape(self):
+        return self._shape(location="face")
+
+    @property
+    def all_members(self):
+        return Mesh2DCoords(**self._members)
+
+    @property
+    def face_coords(self):
+        return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
+
+    @property
+    def face_x(self):
+        return self._members["face_x"]
+
+    @face_x.setter
+    def face_x(self, coord):
+        self._setter(
+            location="face", axis="x", coord=coord, shape=self._face_shape
+        )
+
+    @property
+    def face_y(self):
+        return self._members["face_y"]
+
+    @face_y.setter
+    def face_y(self, coord):
+        self._setter(
+            location="face", axis="y", coord=coord, shape=self._face_shape
+        )
+
+    def add(
+        self,
+        node_x=None,
+        node_y=None,
+        edge_x=None,
+        edge_y=None,
+        face_x=None,
+        face_y=None,
+    ):
+        super().add(node_x=node_x, node_y=node_y, edge_x=edge_x, edge_y=edge_y)
+        self._add(MeshFaceCoords(face_x, face_y))
+
+    def remove(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        return self._remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+
+
+class _MeshConnectivityManagerBase(ABC):
+    # Override these in subclasses.
+    REQUIRED: tuple = NotImplemented
+    OPTIONAL: tuple = NotImplemented
+
+    def __init__(self, *connectivities):
+        cf_roles = [c.cf_role for c in connectivities]
+        for requisite in self.REQUIRED:
+            if requisite not in cf_roles:
+                message = (
+                    f"{self.__name__} requires a {requisite} Connectivity."
+                )
+                raise ValueError(message)
+
+        self.ALL = self.REQUIRED + self.OPTIONAL
+        self._members = {member: None for member in self.ALL}
+        self.add(*connectivities)
+
+    def __eq__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __getstate__(self):
+        return self._members
+
+    def __iter__(self):
+        for item in self._members.items():
+            yield item
+
+    def __ne__(self, other):
+        # TBD
+        return NotImplemented
+
+    def __repr__(self):
+        args = [
+            f"{member}={connectivity!r}"
+            for member, connectivity in self
+            if connectivity is not None
+        ]
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    def __setstate__(self, state):
+        self._members = state
+
+    def __str__(self):
+        args = [
+            f"{member}=True"
+            for member, connectivity in self
+            if connectivity is not None
+        ]
+        return f"{self.__class__.__name__}({', '.join(args)})"
+
+    @property
+    @abstractmethod
+    def all_members(self):
+        return NotImplemented
+
+    def add(self, *connectivities):
+        # Since Connectivity classes include their cf_role, no setters will be
+        # provided, just a means to add one or more connectivities to the
+        # manager.
+        # No warning is raised for duplicate cf_roles - user is trusted to
+        # validate their outputs.
+        add_dict = {}
+        for connectivity in connectivities:
+            if not isinstance(connectivity, Connectivity):
+                message = f"Expected Connectivity, got: {type(connectivity)} ."
+                raise ValueError(message)
+            cf_role = connectivity.cf_role
+            if cf_role not in self.ALL:
+                message = (
+                    f"Not adding connectivity ({cf_role}: "
+                    f"{connectivity!r}) - cf_role must be one of: {self.ALL} ."
+                )
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
+            else:
+                add_dict[cf_role] = connectivity
+
+        # Validate shapes.
+        proposed_members = {**self._members, **add_dict}
+        locations = set(
+            [
+                c.src_location
+                for c in proposed_members.values()
+                if c is not None
+            ]
+        )
+        for location in locations:
+            counts = [
+                len(c.indices_by_src(c.lazy_indices()))
+                for c in proposed_members.values()
+                if c is not None and c.src_location == location
+            ]
+            # Check is list values are identical.
+            if not counts.count(counts[0]) == len(counts):
+                message = (
+                    f"Invalid Connectivities provided - inconsistent "
+                    f"{location} counts."
+                )
+                raise ValueError(message)
+
+        self._members = proposed_members
+
+    def filter(self, **kwargs):
+        # TODO: rationalise commonality with MeshCoordManager.filter and Cube.coord.
+        result = self.filters(**kwargs)
+        if len(result) > 1:
+            names = ", ".join(
+                f"{member}={connectivity!r}"
+                for member, connectivity in result.items()
+            )
+            message = (
+                f"Expected to find exactly 1 connectivity, but found "
+                f"{len(result)}. They were: {names}."
+            )
+            raise ConnectivityNotFoundError(message)
+        elif len(result) == 0:
+            item = kwargs["item"]
+            _name = item
+            if item is not None:
+                if not isinstance(item, str):
+                    _name = item.name()
+            bad_name = (
+                _name or kwargs["standard_name"] or kwargs["long_name"] or ""
+            )
+            message = (
+                f"Expected to find exactly 1 {bad_name} connectivity, "
+                f"but found none."
+            )
+            raise ConnectivityNotFoundError(message)
+
+        return result
+
+    def filters(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        members = [c for c in self._members.values() if c is not None]
+
+        if cf_role is not None:
+            members = [
+                instance for instance in members if instance.cf_role == cf_role
+            ]
+
+        def location_filter(instances, loc_arg, loc_name):
+            if loc_arg is False:
+                filtered = [
+                    instance
+                    for instance in instances
+                    if loc_name
+                    not in (instance.src_location, instance.tgt_location)
+                ]
+            elif loc_arg is None:
+                filtered = instances
+            else:
+                # Interpret any other value as =True.
+                filtered = [
+                    instance
+                    for instance in instances
+                    if loc_name
+                    in (instance.src_location, instance.tgt_location)
+                ]
+
+            return filtered
+
+        for arg, loc in (
+            (node, "node"),
+            (edge, "edge"),
+            (face, "face"),
+        ):
+            members = location_filter(members, arg, loc)
+
+        # No need to actually modify filtering behaviour - already won't return
+        # any face cf-roles if none are present.
+        supports_faces = any(["face" in role for role in self.ALL])
+        if face and not supports_faces:
+            message = (
+                "Ignoring request to filter for non-existent 'face' cf-roles."
+            )
+            logger.debug(message, extra=dict(cls=self.__class__.__name__))
+
+        result = metadata_filter(
+            members,
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+        )
+
+        # Use the results to filter the _members dict for returning.
+        result_ids = [id(r) for r in result]
+        result_dict = {
+            k: v for k, v in self._members.items() if id(v) in result_ids
+        }
+        return result_dict
+
+    def remove(
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        cf_role=None,
+        node=None,
+        edge=None,
+        face=None,
+    ):
+        removal_dict = self.filters(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            cf_role=cf_role,
+            node=node,
+            edge=edge,
+            face=face,
+        )
+        for cf_role in self.REQUIRED:
+            excluded = removal_dict.pop(cf_role, None)
+            if excluded:
+                message = (
+                    f"Ignoring request to remove required connectivity "
+                    f"({cf_role}: {excluded!r})"
+                )
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
+
+        for cf_role in removal_dict.keys():
+            self._members[cf_role] = None
+
+        return removal_dict
+
+
+class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
+    REQUIRED = ("edge_node_connectivity",)
+    OPTIONAL = ()
+
+    @property
+    def all_members(self):
+        return Mesh1DConnectivities(edge_node=self.edge_node)
+
+    @property
+    def edge_node(self):
+        return self._members["edge_node_connectivity"]
+
+
+class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
+    REQUIRED = ("face_node_connectivity",)
+    OPTIONAL = (
+        "edge_node_connectivity",
+        "face_edge_connectivity",
+        "face_face_connectivity",
+        "edge_face_connectivity",
+        "boundary_node_connectivity",
+    )
+
+    @property
+    def all_members(self):
+        return Mesh2DConnectivities(
+            face_node=self.face_node,
+            edge_node=self.edge_node,
+            face_edge=self.face_edge,
+            face_face=self.face_face,
+            edge_face=self.edge_face,
+            boundary_node=self.boundary_node,
+        )
+
+    @property
+    def boundary_node(self):
+        return self._members["boundary_node_connectivity"]
+
+    @property
+    def edge_face(self):
+        return self._members["edge_face_connectivity"]
+
+    @property
+    def edge_node(self):
+        return self._members["edge_node_connectivity"]
+
+    @property
+    def face_edge(self):
+        return self._members["face_edge_connectivity"]
+
+    @property
+    def face_face(self):
+        return self._members["face_face_connectivity"]
+
+    @property
+    def face_node(self):
+        return self._members["face_node_connectivity"]
+
+
 #: Convenience collection of lenient metadata combine services.
-SERVICES_COMBINE.append(ConnectivityMetadata.combine)
-SERVICES.append(ConnectivityMetadata.combine)
+_services = [ConnectivityMetadata.combine, MeshMetadata.combine]
+SERVICES_COMBINE.extend(_services)
+SERVICES.extend(_services)
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE.append(ConnectivityMetadata.difference)
-SERVICES.append(ConnectivityMetadata.difference)
+_services = [ConnectivityMetadata.difference, MeshMetadata.difference]
+SERVICES_DIFFERENCE.extend(_services)
+SERVICES.extend(_services)
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL.extend(
-    [ConnectivityMetadata.__eq__, ConnectivityMetadata.equal]
-)
-SERVICES.extend([ConnectivityMetadata.__eq__, ConnectivityMetadata.equal])
+_services = [
+    ConnectivityMetadata.__eq__,
+    ConnectivityMetadata.equal,
+    MeshMetadata.__eq__,
+    MeshMetadata.equal,
+]
+SERVICES_EQUAL.extend(_services)
+SERVICES.extend(_services)
+
+del _services
