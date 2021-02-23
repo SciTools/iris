@@ -917,8 +917,8 @@ class Mesh(CFVariableMixin):
             raise NotImplementedError(emsg)
 
     def __eq__(self, other):
-        # TBD
-        return NotImplemented
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) == id(other)
 
     def __getstate__(self):
         return (
@@ -928,8 +928,10 @@ class Mesh(CFVariableMixin):
         )
 
     def __ne__(self, other):
-        # TBD
-        return NotImplemented
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def __repr__(self):
         # TBD
@@ -1304,8 +1306,8 @@ class _Mesh1DCoordinateManager:
         self.edge_y = edge_y
 
     def __eq__(self, other):
-        # TBD
-        return NotImplemented
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) == id(other)
 
     def __getstate__(self):
         return self._members
@@ -1315,8 +1317,10 @@ class _Mesh1DCoordinateManager:
             yield item
 
     def __ne__(self, other):
-        # TBD
-        return NotImplemented
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def __repr__(self):
         args = [
@@ -1706,8 +1710,8 @@ class _MeshConnectivityManagerBase(ABC):
         self.add(*connectivities)
 
     def __eq__(self, other):
-        # TBD
-        return NotImplemented
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) == id(other)
 
     def __getstate__(self):
         return self._members
@@ -1717,8 +1721,10 @@ class _MeshConnectivityManagerBase(ABC):
             yield item
 
     def __ne__(self, other):
-        # TBD
-        return NotImplemented
+        result = self.__eq__(other)
+        if result is not NotImplemented:
+            result = not result
+        return result
 
     def __repr__(self):
         args = [
