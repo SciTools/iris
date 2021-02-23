@@ -874,6 +874,12 @@ class Mesh(CFVariableMixin):
                 raise ValueError(emsg)
             return f"{location}_{axis}"
 
+        if not isinstance(node_coords_and_axes, Iterable):
+            node_coords_and_axes = [node_coords_and_axes]
+
+        if not isinstance(connectivities, Iterable):
+            connectivities = [connectivities]
+
         kwargs = {}
         for coord, axis in node_coords_and_axes:
             kwargs[normalise("node", axis)] = coord
@@ -895,9 +901,6 @@ class Mesh(CFVariableMixin):
                 "Require a node coordinate that is y-axis like to be provided."
             )
             raise ValueError(emsg)
-
-        if not isinstance(connectivities, Iterable):
-            connectivities = [connectivities]
 
         if self.topology_dimension == 1:
             self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
