@@ -11,7 +11,7 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 """
 
 from abc import ABC, abstractmethod
-from collections import namedtuple
+from collections import Iterable, namedtuple
 from functools import wraps
 
 import dask.array as da
@@ -20,18 +20,18 @@ import numpy as np
 from .. import _lazy_data as _lazy
 from ..common.metadata import (
     BaseMetadata,
+    metadata_filter,
     metadata_manager_factory,
     SERVICES,
     SERVICES_COMBINE,
     SERVICES_EQUAL,
     SERVICES_DIFFERENCE,
-    metadata_filter,
 )
 from ..common.lenient import _lenient_service as lenient_service
 from ..common.mixin import CFVariableMixin
 from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
-from ..exceptions import CoordinateNotFoundError, ConnectivityNotFoundError
+from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import guess_coord_axis
 
 
@@ -831,6 +831,7 @@ class Mesh(CFVariableMixin):
         self,
         topology_dimension,
         node_coords_and_axes,
+        connectivities,
         standard_name=None,
         long_name=None,
         var_name=None,
@@ -838,7 +839,6 @@ class Mesh(CFVariableMixin):
         attributes=None,
         edge_coords_and_axes=None,
         face_coords_and_axes=None,
-        connectivities=None,
         node_dimension=None,
         edge_dimension=None,
         face_dimension=None,
@@ -873,6 +873,12 @@ class Mesh(CFVariableMixin):
                 emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
                 raise ValueError(emsg)
             return f"{location}_{axis}"
+
+        if not isinstance(node_coords_and_axes, Iterable):
+            node_coords_and_axes = [node_coords_and_axes]
+
+        if not isinstance(connectivities, Iterable):
+            connectivities = [connectivities]
 
         kwargs = {}
         for coord, axis in node_coords_and_axes:

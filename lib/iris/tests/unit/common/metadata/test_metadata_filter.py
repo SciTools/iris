@@ -25,6 +25,13 @@ Mock = tests.mock.Mock
 
 
 class Test_standard(tests.IrisTest):
+    def test_instances_non_iterable(self):
+        item = Mock()
+        item.name.return_value = "one"
+        result = metadata_filter(item, item="one")
+        self.assertEqual(1, len(result))
+        self.assertIn(item, result)
+
     def test_name(self):
         name_one = Mock()
         name_one.name.return_value = "one"
@@ -101,13 +108,24 @@ class Test_standard(tests.IrisTest):
             attributes="one",
         )
 
-    def test_axis(self):
+    def test_axis__by_guess(self):
+        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
         axis_lon = Mock(standard_name="longitude")
+        del axis_lon.axis
         axis_lat = Mock(standard_name="latitude")
+        del axis_lat.axis
         input_list = [axis_lon, axis_lat]
         result = metadata_filter(input_list, axis="x")
         self.assertIn(axis_lon, result)
         self.assertNotIn(axis_lat, result)
+
+    def test_axis__by_member(self):
+        axis_x = Mock(axis="x")
+        axis_y = Mock(axis="y")
+        input_list = [axis_x, axis_y]
+        result = metadata_filter(input_list, axis="x")
+        self.assertEqual(1, len(result))
+        self.assertIn(axis_x, result)
 
     def test_multiple_args(self):
         coord_one = Mock(__class__=AuxCoord, long_name="one")
