@@ -46,6 +46,7 @@ __all__ = [
     "MeshFaceCoords",
     "MeshNodeCoords",
     "MeshMetadata",
+    "MeshCoordMetadata",
 ]
 
 
@@ -1989,32 +1990,11 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
         return self._members["face_node_connectivity"]
 
 
-#: Convenience collection of lenient metadata combine services.
-_services = [ConnectivityMetadata.combine, MeshMetadata.combine]
-SERVICES_COMBINE.extend(_services)
-SERVICES.extend(_services)
-#: Convenience collection of lenient metadata difference services.
-_services = [ConnectivityMetadata.difference, MeshMetadata.difference]
-SERVICES_DIFFERENCE.extend(_services)
-SERVICES.extend(_services)
-
-#: Convenience collection of lenient metadata equality services.
-_services = [
-    ConnectivityMetadata.__eq__,
-    ConnectivityMetadata.equal,
-    MeshMetadata.__eq__,
-    MeshMetadata.equal,
-]
-SERVICES_EQUAL.extend(_services)
-SERVICES.extend(_services)
-
-del _services
-
-
 class MeshCoordMetadata(BaseMetadata):
     """
     Metadata container for a :class:`~iris.coords.MeshCoord`.
     """
+
     _members = ("location", "axis")
     # NOTE: in future, we may add 'mesh' as part of this metadata,
     # as the Mesh seems part of the 'identity' of a MeshCoord.
@@ -2137,8 +2117,18 @@ _op_names_and_service_collections = [
     ("__eq__", SERVICES_EQUAL),
     ("equal", SERVICES_EQUAL),
 ]
-for _cls in (ConnectivityMetadata, MeshCoordMetadata):
+_metadata_classes = [ConnectivityMetadata, MeshMetadata, MeshCoordMetadata]
+for _cls in _metadata_classes:
     for _name, _service_collection in _op_names_and_service_collections:
         _method = getattr(_cls, _name)
         _service_collection.append(_method)
         SERVICES.append(_method)
+
+del (
+    _op_names_and_service_collections,
+    _metadata_classes,
+    _cls,
+    _name,
+    _service_collection,
+    _method,
+)
