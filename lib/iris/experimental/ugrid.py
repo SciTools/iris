@@ -46,6 +46,7 @@ __all__ = [
     "MeshFaceCoords",
     "MeshNodeCoords",
     "MeshMetadata",
+    "MeshCoordMetadata",
 ]
 
 
@@ -1995,25 +1996,145 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
         return self._members["face_node_connectivity"]
 
 
-#: Convenience collection of lenient metadata combine services.
-_services = [ConnectivityMetadata.combine, MeshMetadata.combine]
-SERVICES_COMBINE.extend(_services)
-SERVICES.extend(_services)
+class MeshCoordMetadata(BaseMetadata):
+    """
+    Metadata container for a :class:`~iris.coords.MeshCoord`.
+    """
+
+    _members = ("location", "axis")
+    # NOTE: in future, we may add 'mesh' as part of this metadata,
+    # as the Mesh seems part of the 'identity' of a MeshCoord.
+    # For now we omit it, particularly as we don't yet implement Mesh.__eq__.
+    #
+    # Thus, for now, the MeshCoord class will need to handle 'mesh' explicitly
+    # in identity / comparison, but in future that may be simplified.
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """
+        Perform lenient combination of metadata members for MeshCoord.
+
+        Args:
+
+        * other (MeshCoordMetadata):
+            The other metadata participating in the lenient combination.
+
+        Returns:
+            A list of combined metadata member values.
+
+        """
+        # It is actually "strict" : return None except where members are equal.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """
+        Perform lenient equality of metadata members for MeshCoord.
+
+        Args:
+
+        * other (MeshCoordMetadata):
+            The other metadata participating in the lenient comparison.
+
+        Returns:
+            Boolean.
+
+        """
+        # Perform "strict" comparison for the MeshCoord specific members
+        # 'location', 'axis' : for equality, they must all match.
+        result = all(
+            [
+                getattr(self, field) == getattr(other, field)
+                for field in self._members
+            ]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """
+        Perform lenient difference of metadata members for MeshCoord.
+
+        Args:
+
+        * other (MeshCoordMetadata):
+            The other MeshCoord metadata participating in the lenient
+            difference.
+
+        Returns:
+            A list of different metadata member values.
+
+        """
+        # Perform "strict" difference for location / axis.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
 
 
-#: Convenience collection of lenient metadata difference services.
-_services = [ConnectivityMetadata.difference, MeshMetadata.difference]
-SERVICES_DIFFERENCE.extend(_services)
-SERVICES.extend(_services)
-
-#: Convenience collection of lenient metadata equality services.
-_services = [
-    ConnectivityMetadata.__eq__,
-    ConnectivityMetadata.equal,
-    MeshMetadata.__eq__,
-    MeshMetadata.equal,
+# Add our new optional metadata operations into the 'convenience collections'
+# of lenient metadata services.
+# TODO: when included in 'iris.common.metadata', install each one directly ?
+_op_names_and_service_collections = [
+    ("combine", SERVICES_COMBINE),
+    ("difference", SERVICES_DIFFERENCE),
+    ("__eq__", SERVICES_EQUAL),
+    ("equal", SERVICES_EQUAL),
 ]
-SERVICES_EQUAL.extend(_services)
-SERVICES.extend(_services)
+_metadata_classes = [ConnectivityMetadata, MeshMetadata, MeshCoordMetadata]
+for _cls in _metadata_classes:
+    for _name, _service_collection in _op_names_and_service_collections:
+        _method = getattr(_cls, _name)
+        _service_collection.append(_method)
+        SERVICES.append(_method)
 
-del _services
+del (
+    _op_names_and_service_collections,
+    _metadata_classes,
+    _cls,
+    _name,
+    _service_collection,
+    _method,
+)

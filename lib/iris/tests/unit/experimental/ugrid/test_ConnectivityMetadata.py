@@ -389,10 +389,10 @@ class Test_combine(tests.IrisTest):
             with mock.patch(
                 "iris.common.metadata._LENIENT", return_value=True
             ):
-                self.assertTrue(
+                self.assertEqual(
                     expected, lmetadata.combine(rmetadata)._asdict()
                 )
-                self.assertTrue(
+                self.assertEqual(
                     expected, rmetadata.combine(lmetadata)._asdict()
                 )
 
