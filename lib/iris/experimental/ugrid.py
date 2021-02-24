@@ -1096,14 +1096,19 @@ class Mesh(CFVariableMixin):
         face_x=None,
         face_y=None,
     ):
-        self._coord_manager.add(
-            node_x=node_x,
-            node_y=node_y,
-            edge_x=edge_x,
-            edge_y=edge_y,
-            face_x=face_x,
-            face_y=face_y,
-        )
+        # Filter out absent arguments - only expecting face coords sometimes,
+        # same will be true of volumes in future.
+        kwargs = {
+            "node_x": node_x,
+            "node_y": node_y,
+            "edge_x": edge_x,
+            "edge_y": edge_y,
+            "face_x": face_x,
+            "face_y": face_y,
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v}
+
+        self._coord_manager.add(**kwargs)
 
     def add_connectivities(self, *connectivities):
         self._connectivity_manager.add(*connectivities)
