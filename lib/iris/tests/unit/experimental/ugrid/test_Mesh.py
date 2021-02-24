@@ -101,8 +101,10 @@ class Test1DTopology(tests.IrisTest):
     def test_face_dimension_set(self):
         # Don't modify self.mesh, which would prevent re-use.
         new_mesh = ugrid.Mesh(**self.KWARGS)
-        with self.assertRaises(ValueError):
+        with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             new_mesh.face_dimension = "foo"
+            self.assertIn("Not setting face_dimension", log.output[0])
+        self.assertIsNone(new_mesh.face_dimension)
 
     def test_face_edge(self):
         with self.assertRaises(AttributeError):

@@ -843,6 +843,18 @@ class Mesh(CFVariableMixin):
         edge_dimension=None,
         face_dimension=None,
     ):
+        """
+        .. note::
+
+            :attr:`node_dimension`, :attr:`edge_dimension` and
+            :attr:`face_dimension` are stored to help round-tripping of UGRID
+            files. As such their presence in :class:`Mesh` is not a direct
+            mirror of that written in the UGRID specification, where
+            :attr:`node_dimension` is not mentioned, while
+            :attr:`edge_dimension` is only present for
+            :attr:`topology_dimension` ``>=2``.
+
+        """
         # TODO: support volumes.
         # TODO: support (coord, "z")
 
@@ -1006,7 +1018,16 @@ class Mesh(CFVariableMixin):
 
     @face_dimension.setter
     def face_dimension(self, name):
-        if not name or not isinstance(name, str):
+        if self.topology_dimension < 2:
+            face_dimension = None
+            if name:
+                # Tell the user it is not being set if they expected otherwise.
+                message = (
+                    "Not setting face_dimension (inappropriate for "
+                    f"topology_dimension={self.topology_dimension} ."
+                )
+                logger.debug(message)
+        elif not name or not isinstance(name, str):
             face_dimension = f"Mesh{self.topology_dimension}d_face"
         else:
             face_dimension = name
