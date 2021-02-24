@@ -96,19 +96,16 @@ class TestStandard(tests.IrisTest):
 
     def test___str__(self):
         expected = (
-            "Connectivity(array([[1, 2, 3],\n       [4, 5, 6],\n       [7, 8, 9]]), "
-            "standard_name=None, units=Unit('unknown'), "
-            "long_name='my_face_nodes', var_name='face_nodes', "
-            "attributes={'notes': 'this is a test'})"
+            "Connectivity(cf_role='face_node_connectivity', start_index=1)"
         )
         self.assertEqual(expected, self.connectivity.__str__())
 
     def test___repr__(self):
         expected = (
-            "Connectivity(array([[1, 2, 3],\n       [4, 5, 6],\n       [7, 8, 9]]), "
-            "standard_name=None, units=Unit('unknown'), "
-            "long_name='my_face_nodes', var_name='face_nodes', "
-            "attributes={'notes': 'this is a test'})"
+            "Connectivity(array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), "
+            "cf_role='face_node_connectivity', long_name='my_face_nodes', "
+            "var_name='face_nodes', attributes={'notes': 'this is a test'}, "
+            "start_index=1, src_dim=1)"
         )
         self.assertEqual(expected, self.connectivity.__repr__())
 
