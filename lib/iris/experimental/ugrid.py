@@ -1193,9 +1193,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        node=False,
-        edge=False,
-        face=False,
+        node=None,
+        edge=None,
+        face=None,
     ):
         return self._coord_manager.filters(
             item=item,
@@ -1559,12 +1559,15 @@ class _Mesh1DCoordinateManager:
     ):
         # TBD: support coord_systems?
 
-        # rationalise the tri-state behaviour
         args = [node, edge, face]
-        state = not any(set(filter(lambda arg: arg is not None, args)))
-        node, edge, face = map(
-            lambda arg: arg if arg is not None else state, args
-        )
+        true_count = args.count(True)
+        if true_count > 1:
+            # Standard filter behaviour is 'AND', and coord locations are
+            # mutually exclusive, so multiple True cannot return any results.
+            node = edge = face = False
+        elif true_count == 0:
+            # Treat None as True in this case.
+            node, edge, face = [True if arg is None else arg for arg in args]
 
         def populated_coords(coords_tuple):
             return list(filter(None, list(coords_tuple)))
