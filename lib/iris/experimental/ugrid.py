@@ -903,6 +903,18 @@ class Mesh(CFVariableMixin):
         edge_dimension=None,
         face_dimension=None,
     ):
+        """
+        .. note::
+
+            :attr:`node_dimension`, :attr:`edge_dimension` and
+            :attr:`face_dimension` are stored to help round-tripping of UGRID
+            files. As such their presence in :class:`Mesh` is not a direct
+            mirror of that written in the UGRID specification, where
+            :attr:`node_dimension` is not mentioned, while
+            :attr:`edge_dimension` is only present for
+            :attr:`topology_dimension` ``>=2``.
+
+        """
         # TODO: support volumes.
         # TODO: support (coord, "z")
 
@@ -1130,7 +1142,16 @@ class Mesh(CFVariableMixin):
 
     @face_dimension.setter
     def face_dimension(self, name):
-        if not name or not isinstance(name, str):
+        if self.topology_dimension < 2:
+            face_dimension = None
+            if name:
+                # Tell the user it is not being set if they expected otherwise.
+                message = (
+                    "Not setting face_dimension (inappropriate for "
+                    f"topology_dimension={self.topology_dimension} ."
+                )
+                logger.debug(message)
+        elif not name or not isinstance(name, str):
             face_dimension = f"Mesh{self.topology_dimension}d_face"
         else:
             face_dimension = name
@@ -1199,14 +1220,19 @@ class Mesh(CFVariableMixin):
         face_x=None,
         face_y=None,
     ):
-        self._coord_manager.add(
-            node_x=node_x,
-            node_y=node_y,
-            edge_x=edge_x,
-            edge_y=edge_y,
-            face_x=face_x,
-            face_y=face_y,
-        )
+        # Filter out absent arguments - only expecting face coords sometimes,
+        # same will be true of volumes in future.
+        kwargs = {
+            "node_x": node_x,
+            "node_y": node_y,
+            "edge_x": edge_x,
+            "edge_y": edge_y,
+            "face_x": face_x,
+            "face_y": face_y,
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v}
+
+        self._coord_manager.add(**kwargs)
 
     def add_connectivities(self, *connectivities):
         self._connectivity_manager.add(*connectivities)
@@ -1219,9 +1245,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         cf_role=None,
-        node=None,
-        edge=None,
-        face=None,
+        contains_node=None,
+        contains_edge=None,
+        contains_face=None,
     ):
         return self._connectivity_manager.filters(
             item=item,
@@ -1230,9 +1256,9 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             cf_role=cf_role,
-            node=node,
-            edge=edge,
-            face=face,
+            contains_node=contains_node,
+            contains_edge=contains_edge,
+            contains_face=contains_face,
         )
 
     def connectivity(
@@ -1243,9 +1269,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         cf_role=None,
-        node=None,
-        edge=None,
-        face=None,
+        contains_node=None,
+        contains_edge=None,
+        contains_face=None,
     ):
         return self._connectivity_manager.filter(
             item=item,
@@ -1254,9 +1280,9 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             cf_role=cf_role,
-            node=node,
-            edge=edge,
-            face=face,
+            contains_node=contains_node,
+            contains_edge=contains_edge,
+            contains_face=contains_face,
         )
 
     def coord(
@@ -1267,9 +1293,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        node=None,
-        edge=None,
-        face=None,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
         return self._coord_manager.filter(
             item=item,
@@ -1278,9 +1304,9 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            node=node,
-            edge=edge,
-            face=face,
+            include_nodes=include_nodes,
+            include_edges=include_edges,
+            include_faces=include_faces,
         )
 
     def coords(
@@ -1291,9 +1317,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        node=False,
-        edge=False,
-        face=False,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
         return self._coord_manager.filters(
             item=item,
@@ -1302,9 +1328,9 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            node=node,
-            edge=edge,
-            face=face,
+            include_nodes=include_nodes,
+            include_edges=include_edges,
+            include_faces=include_faces,
         )
 
     def remove_connectivities(
@@ -1315,9 +1341,9 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         cf_role=None,
-        node=None,
-        edge=None,
-        face=None,
+        contains_node=None,
+        contains_edge=None,
+        contains_face=None,
     ):
         return self._connectivity_manager.remove(
             item=item,
@@ -1326,9 +1352,9 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             cf_role=cf_role,
-            node=node,
-            edge=edge,
-            face=face,
+            contains_node=contains_node,
+            contains_edge=contains_edge,
+            contains_face=contains_face,
         )
 
     def remove_coords(
@@ -1339,21 +1365,26 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        node=None,
-        edge=None,
-        face=None,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
-        return self._coord_manager.remove(
-            item=item,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            attributes=attributes,
-            axis=axis,
-            node=node,
-            edge=edge,
-            face=face,
-        )
+        # Filter out absent arguments - only expecting face coords sometimes,
+        # same will be true of volumes in future.
+        kwargs = {
+            "item": item,
+            "standard_name": standard_name,
+            "long_name": long_name,
+            "var_name": var_name,
+            "attributes": attributes,
+            "axis": axis,
+            "include_nodes": include_nodes,
+            "include_edges": include_edges,
+            "include_faces": include_faces,
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v}
+
+        return self._coord_manager.remove(**kwargs)
 
     def xml_element(self):
         # TBD
@@ -1651,16 +1682,19 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        node=None,
-        edge=None,
-        face=None,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
         # TBD: support coord_systems?
 
-        # rationalise the tri-state behaviour
-        args = [node, edge, face]
+        # Preserve original argument before modifying.
+        face_requested = include_faces
+
+        # Rationalise the tri-state behaviour.
+        args = [include_nodes, include_edges, include_faces]
         state = not any(set(filter(lambda arg: arg is not None, args)))
-        node, edge, face = map(
+        include_nodes, include_edges, include_faces = map(
             lambda arg: arg if arg is not None else state, args
         )
 
@@ -1668,14 +1702,14 @@ class _Mesh1DCoordinateManager:
             return list(filter(None, list(coords_tuple)))
 
         members = []
-        if node:
+        if include_nodes:
             members += populated_coords(self.node_coords)
-        if edge:
+        if include_edges:
             members += populated_coords(self.edge_coords)
         if hasattr(self, "face_coords"):
-            if face:
+            if include_faces:
                 members += populated_coords(self.face_coords)
-        else:
+        elif face_requested:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
@@ -1704,8 +1738,8 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        node=None,
-        edge=None,
+        include_nodes=None,
+        include_edges=None,
     ):
         return self._remove(
             item=item,
@@ -1714,8 +1748,8 @@ class _Mesh1DCoordinateManager:
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            node=node,
-            edge=edge,
+            include_nodes=include_nodes,
+            include_edges=include_edges,
         )
 
 
@@ -1794,9 +1828,9 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         var_name=None,
         attributes=None,
         axis=None,
-        node=None,
-        edge=None,
-        face=None,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
         return self._remove(
             item=item,
@@ -1805,9 +1839,9 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            node=node,
-            edge=edge,
-            face=face,
+            include_nodes=include_nodes,
+            include_edges=include_edges,
+            include_faces=include_faces,
         )
 
 
@@ -1820,9 +1854,7 @@ class _MeshConnectivityManagerBase(ABC):
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
-                message = (
-                    f"{self.__name__} requires a {requisite} Connectivity."
-                )
+                message = f"{type(self).__name__} requires a {requisite} Connectivity."
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
@@ -1880,7 +1912,7 @@ class _MeshConnectivityManagerBase(ABC):
         for connectivity in connectivities:
             if not isinstance(connectivity, Connectivity):
                 message = f"Expected Connectivity, got: {type(connectivity)} ."
-                raise ValueError(message)
+                raise TypeError(message)
             cf_role = connectivity.cf_role
             if cf_role not in self.ALL:
                 message = (
@@ -1954,9 +1986,9 @@ class _MeshConnectivityManagerBase(ABC):
         var_name=None,
         attributes=None,
         cf_role=None,
-        node=None,
-        edge=None,
-        face=None,
+        contains_node=None,
+        contains_edge=None,
+        contains_face=None,
     ):
         members = [c for c in self._members.values() if c is not None]
 
@@ -1987,16 +2019,16 @@ class _MeshConnectivityManagerBase(ABC):
             return filtered
 
         for arg, loc in (
-            (node, "node"),
-            (edge, "edge"),
-            (face, "face"),
+            (contains_node, "node"),
+            (contains_edge, "edge"),
+            (contains_face, "face"),
         ):
             members = location_filter(members, arg, loc)
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.
         supports_faces = any(["face" in role for role in self.ALL])
-        if face and not supports_faces:
+        if contains_face and not supports_faces:
             message = (
                 "Ignoring request to filter for non-existent 'face' cf-roles."
             )
@@ -2026,9 +2058,9 @@ class _MeshConnectivityManagerBase(ABC):
         var_name=None,
         attributes=None,
         cf_role=None,
-        node=None,
-        edge=None,
-        face=None,
+        contains_node=None,
+        contains_edge=None,
+        contains_face=None,
     ):
         removal_dict = self.filters(
             item=item,
@@ -2037,9 +2069,9 @@ class _MeshConnectivityManagerBase(ABC):
             var_name=var_name,
             attributes=attributes,
             cf_role=cf_role,
-            node=node,
-            edge=edge,
-            face=face,
+            contains_node=contains_node,
+            contains_edge=contains_edge,
+            contains_face=contains_face,
         )
         for cf_role in self.REQUIRED:
             excluded = removal_dict.pop(cf_role, None)
