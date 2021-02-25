@@ -1022,8 +1022,7 @@ fc_attribute_ukmo__um_stash_source
     foreach
         check hasattr(engine.cf_var, 'ukmo__um_stash_source') or hasattr(engine.cf_var, 'um_stash_source')
     assert
-        python attr_value = getattr(engine.cf_var, 'um_stash_source', None) or getattr(engine.cf_var, 'ukmo__um_stash_source')
-        python engine.cube.attributes['STASH'] = pp.STASH.from_msi(attr_value)
+        python get_um_stash_source(engine)
         python engine.rule_triggered.add(rule.name)
 
 #
@@ -1773,6 +1772,38 @@ fc_extras
                           cf_coord_var.cf_name))
 
         return cf_bounds_var, climatological
+
+
+    ################################################################################
+    def get_um_stash_source(engine):
+        """
+        If the CF variable has the um_stash_source or ukmo__um_stash_source
+        attributes and they are valid MSI STASH codes then the cube STASH
+        attribute is set with their value. If the attributes are not valid MSI
+        stash codes then the corresponding cube attribute is set with the value
+        from the variable and a warning is displayed. ukmo__um_stash_source
+        takes precedence over um_stash_source if both attributes exist.
+
+        """
+        attr = None
+        value = None
+
+        for attr_name in ['ukmo__um_stash_source', 'um_stash_source']:
+            if hasattr(engine.cf_var, attr):
+                attr = attr_name
+                value = getattr(engine.cf_var, attr_name)
+                break
+
+        if attr:
+            try:
+                stash_code = pp.STASH.from_msi(value)
+            except TypeError, ValueError as exc:
+                engine.cube.attributes[attr] = value
+                msg = (f'Unable to set attribute STASH as not a valid MSI'
+                       f'string "mXXsXXiXXX", got {value}')
+                warnings.warn(msg)
+            else:
+                engine.cube.attributes['STASH'] = stash_code
 
 
     ################################################################################
