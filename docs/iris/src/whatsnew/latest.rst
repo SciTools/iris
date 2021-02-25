@@ -24,7 +24,7 @@ This document explains the changes made to Iris for this release
 
 * `@jonseddon`_ Handle a malformed ``um_stash_source`` CF variable attribute in
   a netCDF file rather than raising a ``ValueError``.
-  (:pull:`XXXX`)
+  (:pull:`4035`)
 
 
 💣 Incompatible Changes
