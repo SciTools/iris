@@ -1245,17 +1245,22 @@ class Mesh(CFVariableMixin):
         edge=None,
         face=None,
     ):
-        return self._coord_manager.remove(
-            item=item,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            attributes=attributes,
-            axis=axis,
-            node=node,
-            edge=edge,
-            face=face,
-        )
+        # Filter out absent arguments - only expecting face coords sometimes,
+        # same will be true of volumes in future.
+        kwargs = {
+            "item": item,
+            "standard_name": standard_name,
+            "long_name": long_name,
+            "var_name": var_name,
+            "attributes": attributes,
+            "axis": axis,
+            "node": node,
+            "edge": edge,
+            "face": face,
+        }
+        kwargs = {k: v for k, v in kwargs.items() if v}
+
+        return self._coord_manager.remove(**kwargs)
 
     def xml_element(self):
         # TBD
@@ -1559,6 +1564,7 @@ class _Mesh1DCoordinateManager:
     ):
         # TBD: support coord_systems?
 
+        face_requested = face is True
         args = [node, edge, face]
         true_count = args.count(True)
         if true_count > 1:
@@ -1580,7 +1586,7 @@ class _Mesh1DCoordinateManager:
         if hasattr(self, "face_coords"):
             if face:
                 members += populated_coords(self.face_coords)
-        else:
+        elif face_requested:
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 

@@ -73,6 +73,12 @@ class TestProperties1D(tests.IrisTest):
     def setUpClass(cls):
         cls.mesh = ugrid.Mesh(**cls.KWARGS)
 
+    def test__metadata_manager(self):
+        self.assertEqual(
+            self.mesh._metadata_manager.cls.__name__,
+            ugrid.MeshMetadata.__name__,
+        )
+
     def test___getstate__(self):
         expected = (
             self.mesh._metadata_manager,
@@ -92,6 +98,11 @@ class TestProperties1D(tests.IrisTest):
     def test_boundary_node(self):
         with self.assertRaises(AttributeError):
             _ = self.mesh.boundary_node_connectivity
+
+    def test_cf_role(self):
+        self.assertEqual("mesh_topology", self.mesh.cf_role)
+        # Read only.
+        self.assertRaises(AttributeError, setattr, self.mesh.cf_role, "foo", 1)
 
     def test_connectivities(self):
         # General results. Method intended for inheritance.
@@ -127,10 +138,25 @@ class TestProperties1D(tests.IrisTest):
 
     def test_connectivities_locations(self):
         # topology_dimension-specific results. Method intended to be overridden.
+        positive_kwargs = (
+            {"node": True},
+            {"edge": True},
+            {"node": True, "edge": True},
+        )
+        negative_kwargs = (
+            {"node": False},
+            {"edge": False},
+            {"edge": True, "node": False},
+            {"edge": False, "node": False},
+        )
+
         expected = {EDGE_NODE.cf_role: EDGE_NODE}
         func = self.mesh.connectivities
-        self.assertEqual(expected, func(node=True))
-        self.assertEqual(expected, func(edge=True))
+        for kwargs in positive_kwargs:
+            self.assertEqual(expected, func(**kwargs))
+        for kwargs in negative_kwargs:
+            self.assertEqual({}, func(**kwargs))
+
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.assertEqual({}, func(face=True))
             self.assertIn("filter for non-existent", log.output[0])
@@ -180,6 +206,7 @@ class TestProperties1D(tests.IrisTest):
             ({"edge": False}, ("node_x", "node_y")),
             ({"node": True, "edge": True}, []),
             ({"node": False, "edge": False}, []),
+            ({"node": False, "edge": True}, ("edge_x", "edge_y")),
         )
 
         func = self.mesh.coords
@@ -241,6 +268,10 @@ class TestProperties1D(tests.IrisTest):
         self.assertEqual(
             self.KWARGS["topology_dimension"], self.mesh.topology_dimension
         )
+        # Read only.
+        self.assertRaises(
+            AttributeError, setattr, self.mesh.topology_dimension, "foo", 1
+        )
 
 
 class TestProperties2D(TestProperties1D):
@@ -290,6 +321,8 @@ class TestProperties2D(TestProperties1D):
             ({"face": False}, (EDGE_NODE, BOUNDARY_NODE)),
             ({"edge": True, "face": True}, (FACE_EDGE, EDGE_FACE)),
             ({"node": False, "edge": False}, (FACE_FACE,)),
+            ({"node": True, "edge": False}, (FACE_NODE, BOUNDARY_NODE)),
+            ({"node": False, "edge": False, "face": False}, []),
         )
         func = self.mesh.connectivities
         for kwargs, expected in kwargs_expected:
@@ -316,6 +349,7 @@ class TestProperties2D(TestProperties1D):
             ({"face": False}, ("node_x", "node_y", "edge_x", "edge_y")),
             ({"face": True, "edge": True}, []),
             ({"face": False, "edge": False}, ["node_x", "node_y"]),
+            ({"face": False, "edge": True}, ["edge_x", "edge_y"]),
         )
 
         func = self.mesh.coords
@@ -489,6 +523,27 @@ class TestOperations1D(tests.IrisTest):
     def test_add_coords_single_face(self):
         self.assertRaises(TypeError, self.mesh.add_coords, face_x=FACE_LON)
 
+    def test_dimension_names(self):
+        # Test defaults.
+        default = ugrid.Mesh1DNames("Mesh1d_node", "Mesh1d_edge")
+        self.assertEqual(default, self.mesh.dimension_names())
+
+        with self.assertLogs(ugrid.logger, level="DEBUG") as log:
+            self.mesh.dimension_names("foo", "bar", "baz")
+            self.assertIn("Not setting face_dimension", log.output[0])
+        self.assertEqual(
+            ugrid.Mesh1DNames("foo", "bar"), self.mesh.dimension_names()
+        )
+
+        self.mesh.dimension_names_reset(True, True, True)
+        self.assertEqual(default, self.mesh.dimension_names())
+
+        # Single.
+        self.mesh.dimension_names(edge="foo")
+        self.assertEqual("foo", self.mesh.edge_dimension)
+        self.mesh.dimension_names_reset(edge=True)
+        self.assertEqual(default, self.mesh.dimension_names())
+
     def test_edge_dimension_set(self):
         self.mesh.edge_dimension = "foo"
         self.assertEqual("foo", self.mesh.edge_dimension)
@@ -502,6 +557,99 @@ class TestOperations1D(tests.IrisTest):
     def test_node_dimension_set(self):
         self.mesh.node_dimension = "foo"
         self.assertEqual("foo", self.mesh.node_dimension)
+
+    def test_remove_connectivities(self):
+        """
+        Test that remove() mimics the connectivities() method correctly,
+        and prevents removal of mandatory connectivities.
+
+        """
+        positive_kwargs = (
+            {"item": EDGE_NODE},
+            {"item": "long_name"},
+            {"long_name": "long_name"},
+            {"var_name": "var_name"},
+            {"attributes": {"test": 1}},
+            {"cf_role": "edge_node_connectivity"},
+            {"node": True},
+            {"edge": True},
+            {"edge": True, "node": True},
+        )
+
+        fake_connectivity = tests.mock.Mock(
+            __class__=ugrid.Connectivity, cf_role="fake"
+        )
+        negative_kwargs = (
+            {"item": fake_connectivity},
+            {"item": "foo"},
+            {"standard_name": "air_temperature"},
+            {"long_name": "foo"},
+            {"var_name": "foo"},
+            {"attributes": {"test": 2}},
+            {"cf_role": "foo"},
+            {"node": False},
+            {"edge": False},
+            {"edge": True, "node": False},
+            {"edge": False, "node": False},
+        )
+
+        for kwargs in positive_kwargs:
+            with self.assertLogs(ugrid.logger, level="DEBUG") as log:
+                self.mesh.remove_connectivities(**kwargs)
+                self.assertIn("Ignoring request to remove", log.output[0])
+            self.assertEqual(EDGE_NODE, self.mesh.edge_node_connectivity)
+        for kwargs in negative_kwargs:
+            with self.assertLogs(ugrid.logger, level="DEBUG") as log:
+                # Check that the only debug log is the one we inserted.
+                ugrid.logger.debug("foo")
+                self.mesh.remove_connectivities(**kwargs)
+                self.assertEqual(1, len(log.output))
+            self.assertEqual(EDGE_NODE, self.mesh.edge_node_connectivity)
+
+    def test_remove_coords(self):
+        # Test that remove() mimics the coords() method correctly,
+        # and prevents removal of mandatory coords.
+        positive_kwargs = (
+            {"item": NODE_LON},
+            {"item": "longitude"},
+            {"standard_name": "longitude"},
+            {"long_name": "long_name"},
+            {"var_name": "node_lon"},
+            {"attributes": {"test": 1}},
+        )
+
+        fake_coord = AuxCoord([0])
+        negative_kwargs = (
+            {"item": fake_coord},
+            {"item": "foo"},
+            {"standard_name": "air_temperature"},
+            {"long_name": "foo"},
+            {"var_name": "foo"},
+            {"attributes": {"test": 2}},
+        )
+
+        for kwargs in positive_kwargs:
+            with self.assertLogs(ugrid.logger, level="DEBUG") as log:
+                self.mesh.remove_coords(**kwargs)
+                self.assertIn("Ignoring request to remove", log.output[0])
+            self.assertEqual(NODE_LON, self.mesh.node_coords.node_x)
+        for kwargs in negative_kwargs:
+            with self.assertLogs(ugrid.logger, level="DEBUG") as log:
+                # Check that the only debug log is the one we inserted.
+                ugrid.logger.debug("foo")
+                self.mesh.remove_coords(**kwargs)
+                self.assertEqual(1, len(log.output))
+            self.assertEqual(NODE_LON, self.mesh.node_coords.node_x)
+
+        # Test removal of optional connectivity.
+        self.mesh.add_coords(edge_x=EDGE_LON)
+        # Attempt to remove a non-existent coord.
+        self.mesh.remove_coords(EDGE_LAT)
+        # Confirm that EDGE_LON is still there.
+        self.assertEqual(EDGE_LON, self.mesh.edge_coords.edge_x)
+        # Remove EDGE_LON and confirm success.
+        self.mesh.remove_coords(EDGE_LON)
+        self.assertEqual(None, self.mesh.edge_coords.edge_x)
 
 
 class TestOperations2D(TestOperations1D):
@@ -613,6 +761,88 @@ class TestOperations2D(TestOperations1D):
             face_x=face_x,
         )
 
+    def test_dimension_names(self):
+        # Test defaults.
+        default = ugrid.Mesh2DNames(
+            "Mesh2d_node", "Mesh2d_edge", "Mesh2d_face"
+        )
+        self.assertEqual(default, self.mesh.dimension_names())
+
+        self.mesh.dimension_names("foo", "bar", "baz")
+        self.assertEqual(
+            ugrid.Mesh2DNames("foo", "bar", "baz"), self.mesh.dimension_names()
+        )
+
+        self.mesh.dimension_names_reset(True, True, True)
+        self.assertEqual(default, self.mesh.dimension_names())
+
+        # Single.
+        self.mesh.dimension_names(face="foo")
+        self.assertEqual("foo", self.mesh.face_dimension)
+        self.mesh.dimension_names_reset(face=True)
+        self.assertEqual(default, self.mesh.dimension_names())
+
     def test_face_dimension_set(self):
         self.mesh.face_dimension = "foo"
         self.assertEqual("foo", self.mesh.face_dimension)
+
+    def test_remove_connectivities(self):
+        """Do what 1D test could not - test removal of optional connectivity."""
+
+        # Add an optional connectivity.
+        self.mesh.add_connectivities(FACE_FACE)
+        # Attempt to remove a non-existent connectivity.
+        self.mesh.remove_connectivities(EDGE_NODE)
+        # Confirm that FACE_FACE is still there.
+        self.assertEqual(FACE_FACE, self.mesh.face_face_connectivity)
+        # Remove FACE_FACE and confirm success.
+        self.mesh.remove_connectivities(face=True)
+        self.assertEqual(None, self.mesh.face_face_connectivity)
+
+    def test_remove_coords(self):
+        """Test the face argument."""
+        super().test_remove_coords()
+        self.mesh.add_coords(face_x=FACE_LON)
+        self.assertEqual(FACE_LON, self.mesh.face_coords.face_x)
+        self.mesh.remove_coords(face=True)
+        self.assertEqual(None, self.mesh.face_coords.face_x)
+
+
+class InitValidation(tests.IrisTest):
+    def test_invalid_topology(self):
+        kwargs = {
+            "topology_dimension": 0,
+            "node_coords_and_axes": ((NODE_LON, "x"), (NODE_LAT, "y")),
+            "connectivities": EDGE_NODE,
+        }
+        self.assertRaisesRegex(
+            ValueError, "Expected 'topology_dimension'.*", ugrid.Mesh, **kwargs
+        )
+
+    def test_invalid_axes(self):
+        kwargs = {
+            "topology_dimension": 2,
+            "connectivities": FACE_NODE,
+        }
+        self.assertRaisesRegex(
+            ValueError,
+            "Invalid axis specified for node.*",
+            ugrid.Mesh,
+            node_coords_and_axes=((NODE_LON, "foo"), (NODE_LAT, "y")),
+            **kwargs,
+        )
+        kwargs["node_coords_and_axes"] = (((NODE_LON, "x"), (NODE_LAT, "y")),)
+        self.assertRaisesRegex(
+            ValueError,
+            "Invalid axis specified for edge.*",
+            ugrid.Mesh,
+            edge_coords_and_axes=((EDGE_LON, "foo"), (EDGE_LAT, "y")),
+            **kwargs,
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            "Invalid axis specified for face.*",
+            ugrid.Mesh,
+            face_coords_and_axes=((FACE_LON, "foo"), (FACE_LAT, "y")),
+            **kwargs,
+        )
