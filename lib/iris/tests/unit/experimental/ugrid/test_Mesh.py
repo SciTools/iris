@@ -177,15 +177,15 @@ class TestProperties1D(TestMeshCommon):
     def test_connectivities_locations(self):
         # topology_dimension-specific results. Method intended to be overridden.
         positive_kwargs = (
-            {"node": True},
-            {"edge": True},
-            {"node": True, "edge": True},
+            {"contains_node": True},
+            {"contains_edge": True},
+            {"contains_node": True, "contains_edge": True},
         )
         negative_kwargs = (
-            {"node": False},
-            {"edge": False},
-            {"edge": True, "node": False},
-            {"edge": False, "node": False},
+            {"contains_node": False},
+            {"contains_edge": False},
+            {"contains_edge": True, "contains_node": False},
+            {"contains_edge": False, "contains_node": False},
         )
 
         expected = {self.EDGE_NODE.cf_role: self.EDGE_NODE}
@@ -196,14 +196,16 @@ class TestProperties1D(TestMeshCommon):
             self.assertEqual({}, func(**kwargs))
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
-            self.assertEqual({}, func(face=True))
+            self.assertEqual({}, func(contains_face=True))
             self.assertIn("filter for non-existent", log.output[0])
 
     def test_coord(self):
         # See Mesh.coords tests for thorough coverage of cases.
         func = self.mesh.coord
         exception = CoordinateNotFoundError
-        self.assertRaisesRegex(exception, ".*but found 2", func, node=True)
+        self.assertRaisesRegex(
+            exception, ".*but found 2", func, include_nodes=True
+        )
         self.assertRaisesRegex(exception, ".*but found none", func, axis="t")
 
     def test_coords(self):
@@ -245,13 +247,19 @@ class TestProperties1D(TestMeshCommon):
         kwargs_expected = (
             ({"axis": "x"}, ("node_x", "edge_x")),
             ({"axis": "y"}, ("node_y", "edge_y")),
-            ({"node": True}, ("node_x", "node_y")),
-            ({"edge": True}, ("edge_x", "edge_y")),
-            ({"node": False}, ("edge_x", "edge_y")),
-            ({"edge": False}, ("node_x", "node_y")),
-            ({"node": True, "edge": True}, []),
-            ({"node": False, "edge": False}, []),
-            ({"node": False, "edge": True}, ("edge_x", "edge_y")),
+            ({"include_nodes": True}, ("node_x", "node_y")),
+            ({"include_edges": True}, ("edge_x", "edge_y")),
+            ({"include_nodes": False}, ("edge_x", "edge_y")),
+            ({"include_edges": False}, ("node_x", "node_y")),
+            (
+                {"include_nodes": True, "include_edges": True},
+                ["node_x", "node_y", "edge_x", "edge_y"],
+            ),
+            ({"include_nodes": False, "include_edges": False}, []),
+            (
+                {"include_nodes": False, "include_edges": True},
+                ("edge_x", "edge_y"),
+            ),
         )
 
         func = self.mesh.coords
@@ -262,7 +270,7 @@ class TestProperties1D(TestMeshCommon):
             self.assertEqual(expected, func(**kwargs))
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
-            self.assertEqual({}, func(face=True))
+            self.assertEqual({}, func(include_faces=True))
             self.assertIn("filter non-existent", log.output[0])
 
     def test_edge_dimension(self):
@@ -401,25 +409,30 @@ class TestProperties2D(TestProperties1D):
         # Can only test Mesh.connectivity for 2D since we need >1 connectivity.
         func = self.mesh.connectivity
         exception = ConnectivityNotFoundError
-        self.assertRaisesRegex(exception, ".*but found 3", func, node=True)
+        self.assertRaisesRegex(
+            exception, ".*but found 3", func, contains_node=True
+        )
         self.assertRaisesRegex(
             exception,
             ".*but found none",
             func,
-            node=False,
-            edge=False,
-            face=False,
+            contains_node=False,
+            contains_edge=False,
+            contains_face=False,
         )
 
     def test_connectivities_locations(self):
         kwargs_expected = (
             (
-                {"node": True},
+                {"contains_node": True},
                 (self.EDGE_NODE, self.FACE_NODE, self.BOUNDARY_NODE),
             ),
-            ({"edge": True}, (self.EDGE_NODE, self.FACE_EDGE, self.EDGE_FACE)),
             (
-                {"face": True},
+                {"contains_edge": True},
+                (self.EDGE_NODE, self.FACE_EDGE, self.EDGE_FACE),
+            ),
+            (
+                {"contains_face": True},
                 (
                     self.FACE_NODE,
                     self.FACE_EDGE,
@@ -428,21 +441,34 @@ class TestProperties2D(TestProperties1D):
                 ),
             ),
             (
-                {"node": False},
+                {"contains_node": False},
                 (self.FACE_EDGE, self.EDGE_FACE, self.FACE_FACE),
             ),
             (
-                {"edge": False},
+                {"contains_edge": False},
                 (self.FACE_NODE, self.BOUNDARY_NODE, self.FACE_FACE),
             ),
-            ({"face": False}, (self.EDGE_NODE, self.BOUNDARY_NODE)),
-            ({"edge": True, "face": True}, (self.FACE_EDGE, self.EDGE_FACE)),
-            ({"node": False, "edge": False}, (self.FACE_FACE,)),
+            ({"contains_face": False}, (self.EDGE_NODE, self.BOUNDARY_NODE)),
             (
-                {"node": True, "edge": False},
+                {"contains_edge": True, "contains_face": True},
+                (self.FACE_EDGE, self.EDGE_FACE),
+            ),
+            (
+                {"contains_node": False, "contains_edge": False},
+                (self.FACE_FACE,),
+            ),
+            (
+                {"contains_node": True, "contains_edge": False},
                 (self.FACE_NODE, self.BOUNDARY_NODE),
             ),
-            ({"node": False, "edge": False, "face": False}, []),
+            (
+                {
+                    "contains_node": False,
+                    "contains_edge": False,
+                    "contains_face": False,
+                },
+                [],
+            ),
         )
         func = self.mesh.connectivities
         for kwargs, expected in kwargs_expected:
@@ -462,14 +488,32 @@ class TestProperties2D(TestProperties1D):
         kwargs_expected = (
             ({"axis": "x"}, ("node_x", "edge_x", "face_x")),
             ({"axis": "y"}, ("node_y", "edge_y", "face_y")),
-            ({"node": True}, ("node_x", "node_y")),
-            ({"edge": True}, ("edge_x", "edge_y")),
-            ({"node": False}, ("edge_x", "edge_y", "face_x", "face_y")),
-            ({"edge": False}, ("node_x", "node_y", "face_x", "face_y")),
-            ({"face": False}, ("node_x", "node_y", "edge_x", "edge_y")),
-            ({"face": True, "edge": True}, []),
-            ({"face": False, "edge": False}, ["node_x", "node_y"]),
-            ({"face": False, "edge": True}, ["edge_x", "edge_y"]),
+            ({"include_nodes": True}, ("node_x", "node_y")),
+            ({"include_edges": True}, ("edge_x", "edge_y")),
+            (
+                {"include_nodes": False},
+                ("edge_x", "edge_y", "face_x", "face_y"),
+            ),
+            (
+                {"include_edges": False},
+                ("node_x", "node_y", "face_x", "face_y"),
+            ),
+            (
+                {"include_faces": False},
+                ("node_x", "node_y", "edge_x", "edge_y"),
+            ),
+            (
+                {"include_faces": True, "include_edges": True},
+                ("edge_x", "edge_y", "face_x", "face_y"),
+            ),
+            (
+                {"include_faces": False, "include_edges": False},
+                ("node_x", "node_y"),
+            ),
+            (
+                {"include_faces": False, "include_edges": True},
+                ("edge_x", "edge_y"),
+            ),
         )
 
         func = self.mesh.coords
@@ -729,9 +773,9 @@ class TestOperations1D(TestMeshCommon):
             {"var_name": "var_name"},
             {"attributes": {"test": 1}},
             {"cf_role": "edge_node_connectivity"},
-            {"node": True},
-            {"edge": True},
-            {"edge": True, "node": True},
+            {"contains_node": True},
+            {"contains_edge": True},
+            {"contains_edge": True, "contains_node": True},
         )
 
         fake_connectivity = tests.mock.Mock(
@@ -745,10 +789,10 @@ class TestOperations1D(TestMeshCommon):
             {"var_name": "foo"},
             {"attributes": {"test": 2}},
             {"cf_role": "foo"},
-            {"node": False},
-            {"edge": False},
-            {"edge": True, "node": False},
-            {"edge": False, "node": False},
+            {"contains_node": False},
+            {"contains_edge": False},
+            {"contains_edge": True, "contains_node": False},
+            {"contains_edge": False, "contains_node": False},
         )
 
         for kwargs in positive_kwargs:
@@ -954,7 +998,7 @@ class TestOperations2D(TestOperations1D):
         # Confirm that FACE_FACE is still there.
         self.assertEqual(self.FACE_FACE, self.mesh.face_face_connectivity)
         # Remove FACE_FACE and confirm success.
-        self.mesh.remove_connectivities(face=True)
+        self.mesh.remove_connectivities(contains_face=True)
         self.assertEqual(None, self.mesh.face_face_connectivity)
 
     def test_remove_coords(self):
@@ -962,7 +1006,7 @@ class TestOperations2D(TestOperations1D):
         super().test_remove_coords()
         self.mesh.add_coords(face_x=self.FACE_LON)
         self.assertEqual(self.FACE_LON, self.mesh.face_coords.face_x)
-        self.mesh.remove_coords(face=True)
+        self.mesh.remove_coords(include_faces=True)
         self.assertEqual(None, self.mesh.face_coords.face_x)
 
 
