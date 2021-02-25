@@ -88,6 +88,25 @@ class TestProperties1D(tests.IrisTest):
         )
         self.assertEqual(expected, self.mesh.__getstate__())
 
+    def test___repr__(self):
+        expected = (
+            "Mesh(topology_dimension=1, node_coords_and_axes=[(AuxCoord("
+            "array([0, 2, 1]), standard_name='longitude', units=Unit("
+            "'unknown'), long_name='long_name', var_name='node_lon', "
+            "attributes={'test': 1}), 'x'), (AuxCoord(array([0, 0, 1]), "
+            "standard_name='latitude', units=Unit('unknown'), "
+            "var_name='node_lat'), 'y')], connectivities=Connectivity("
+            "cf_role='edge_node_connectivity', start_index=0), "
+            "edge_coords_and_axes=[(AuxCoord(array([1. , 1.5, 0.5]), "
+            "standard_name='longitude', units=Unit('unknown'), "
+            "var_name='edge_lon'), 'x'), (AuxCoord(array([0. , 0.5, 0.5]), "
+            "standard_name='latitude', units=Unit('unknown'), "
+            "var_name='edge_lat'), 'y')], long_name='my_topology_mesh', "
+            "var_name='mesh', attributes={'notes': 'this is a test'}, "
+            "node_dimension='NodeDim', edge_dimension='EdgeDim')"
+        )
+        self.assertEqual(expected, self.mesh.__repr__())
+
     def test_all_connectivities(self):
         expected = ugrid.Mesh1DConnectivities(EDGE_NODE)
         self.assertEqual(expected, self.mesh.all_connectivities)
@@ -298,6 +317,35 @@ class TestProperties2D(TestProperties1D):
         cls.KWARGS["face_dimension"] = "FaceDim"
         cls.KWARGS["face_coords_and_axes"] = ((FACE_LON, "x"), (FACE_LAT, "y"))
         super().setUpClass()
+
+    def test___repr__(self):
+        expected = (
+            "Mesh(topology_dimension=2, node_coords_and_axes=[(AuxCoord("
+            "array([0, 2, 1]), standard_name='longitude', units=Unit("
+            "'unknown'), long_name='long_name', var_name='node_lon', "
+            "attributes={'test': 1}), 'x'), (AuxCoord(array([0, 0, 1]), "
+            "standard_name='latitude', units=Unit('unknown'), "
+            "var_name='node_lat'), 'y')], connectivities=[Connectivity("
+            "cf_role='face_node_connectivity', start_index=0), Connectivity("
+            "cf_role='edge_node_connectivity', start_index=0), Connectivity("
+            "cf_role='face_edge_connectivity', start_index=0), Connectivity("
+            "cf_role='face_face_connectivity', start_index=0), Connectivity("
+            "cf_role='edge_face_connectivity', start_index=0), Connectivity("
+            "cf_role='boundary_node_connectivity', start_index=0)], "
+            "edge_coords_and_axes=[(AuxCoord(array([1. , 1.5, 0.5]), "
+            "standard_name='longitude', units=Unit('unknown'), "
+            "var_name='edge_lon'), 'x'), (AuxCoord(array([0. , 0.5, 0.5]), "
+            "standard_name='latitude', units=Unit('unknown'), "
+            "var_name='edge_lat'), 'y')], face_coords_and_axes=[(AuxCoord("
+            "array([0.5]), standard_name='longitude', units=Unit('unknown'), "
+            "var_name='face_lon'), 'x'), (AuxCoord(array([0.5]), "
+            "standard_name='latitude', units=Unit('unknown'), "
+            "var_name='face_lat'), 'y')], long_name='my_topology_mesh', "
+            "var_name='mesh', attributes={'notes': 'this is a test'}, "
+            "node_dimension='NodeDim', edge_dimension='EdgeDim', "
+            "face_dimension='FaceDim')"
+        )
+        self.assertEqual(expected, self.mesh.__repr__())
 
     def test_all_connectivities(self):
         expected = ugrid.Mesh2DConnectivities(
