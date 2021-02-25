@@ -12,6 +12,7 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 
 from abc import ABC, abstractmethod
 from collections import Iterable, namedtuple
+from copy import deepcopy
 from functools import wraps
 import re
 
@@ -2680,6 +2681,242 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     @property
     def face_node(self):
         return self._members["face_node_connectivity"]
+
+
+class MeshCoord(AuxCoord):
+    """
+    Geographic coordinate values of data on an unstructured mesh.
+
+    A MeshCoord contains a `~iris.experiomental.ugrid.Mesh`.
+    When contained in a `~iris.cube.Cube` it connects the cube to the Mesh,
+    and records (a) which cube dimension is mapped to the mesh, and (b) on
+    which mesh location (e.g. 'face' or 'node') the cube data exists.
+
+    A MeshCoord also specifies its 'axis' : 'x' or 'y'.  Its values are then,
+    accordingly, longitudes or latitudes.  The values are taken from the
+    appropriate element coordinates and connectivities in the Mesh, determined
+    by its 'location' and 'axis'.
+
+    Any cube with data on a mesh will have a MeshCoord for each axis,
+    i.e. an 'X' and a 'Y'.
+
+    The points and bounds contain coordinate values for the mesh elements,
+    which depends on location.
+    For 'node', the ".points" contains node locations.
+    For 'edge', the ".bounds" contains edge endpoints, and the points contain
+    edge locations (typically centres), if the Mesh contains them (optional).
+    For 'face', the bounds contain the face corners, and the points contain the
+    face location (optionally).
+
+    .. note::
+        As described above, it is possible for a MeshCoord to have bounds but
+        no points.  This is not possible for a regular AuxCoord or DimCoord.
+
+    .. note::
+        A MeshCoord can not yet actually be created with bounds but no points.
+        This is intended in future, but for now it raises an error.
+
+    """
+
+    # Note: effectively this list of valid mesh locations is determined by
+    # the Mesh api, but it doesn't expose those choices in a generic form, so
+    # we will just set our own here.
+    VALID_MESH_LOCATIONS = ("face", "edge", "node")
+
+    def __init__(
+        self,
+        mesh,
+        location,
+        axis,
+        # NOTE: can *not* yet actually have no points: --> runtime error, but
+        # implement the correct signature so it does not change later.
+        points=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units=None,
+        bounds=None,
+        attributes=None,
+        coord_system=None,
+        climatological=False,
+    ):
+        # Note: the init is compatible with a standard Coord constructor.
+        # -- that is required for the inherited copy/getitem mechanism and the
+        # Coord.from_coord inter-class conversion method.
+        # But, we have added the 'mesh', 'location', and 'axis' kwargs.
+
+        # Setup the metadata.
+        self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
+
+        if points is None:
+            # We intend to support this in future, but it will require extra
+            # work to refactor the parent classes.
+            msg = "Cannot yet create a MeshCoord without points."
+            raise ValueError(msg)
+
+        # Call parent constructor to handle the common constructor args.
+        # NOTE: but any attempt to set coord_system or climatological will fail.
+        super().__init__(
+            points,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units,
+            bounds=bounds,
+            attributes=attributes,
+            coord_system=coord_system,
+            climatological=climatological,
+        )
+
+        # Validate and record the class-specific constructor args.
+        # We roughly validate them here, but in practice the location/axis must
+        # match the available content in the Mesh object.
+        # That is beyond checking here, but in practice all MeshCoords will be
+        # created by methods of the Mesh itself, which will ensure correctness.
+        if not isinstance(mesh, Mesh):
+            msg = (
+                "'mesh' must be an iris.experimental.ugrid.Mesh, "
+                f"got {mesh}."
+            )
+            raise ValueError(msg)
+        # Handled as a readonly ".mesh" property.
+        # NOTE: currently *not* included in metadata. In future it might be.
+        self._mesh = mesh
+
+        if location not in self.VALID_MESH_LOCATIONS:
+            # Effectively, the possible 'valid' locations are defined by the
+            # support provided in the Mesh api, but it does not declare that
+            # in general terms, so we define our own valid list for those.
+            msg = (
+                f"'location' of {location} is not a valid Mesh location', "
+                f"must be one of {self.VALID_MESH_LOCATIONS}."
+            )
+            raise ValueError(msg)
+        # Held in metadata, readable as self.location, but cannot set it.
+        self._metadata_manager.location = location
+
+        if axis not in Mesh.AXES:
+            # The valid axes are defined by the Mesh class.
+            msg = (
+                f"'axis' of {axis} is not a valid Mesh axis', "
+                f"must be one of {Mesh.AXES}."
+            )
+            raise ValueError(msg)
+        # Held in metadata, readable as self.axis, but cannot set it.
+        self._metadata_manager.axis = axis
+
+    # Define accessors for MeshCoord-specific properties mesh/location/axis.
+    # These are all read-only.
+
+    @property
+    def mesh(self):
+        return self._mesh
+
+    @mesh.setter
+    def mesh(self, value):
+        msg = "Cannot set the 'mesh' of a MeshCoord."
+        raise ValueError(msg)
+
+    @property
+    def location(self):
+        return self._metadata_manager.location
+
+    @location.setter
+    def location(self, value):
+        msg = "Cannot set the 'location' of a MeshCoord."
+        raise ValueError(msg)
+
+    @property
+    def axis(self):
+        return self._metadata_manager.axis
+
+    @axis.setter
+    def axis(self, value):
+        msg = "Cannot set the 'axis' of a MeshCoord."
+        raise ValueError(msg)
+
+    # Provide overrides to mimic the Coord-specific properties that are not
+    # supported by MeshCoord, i.e. "coord_sytem" and "climatological".
+    # These mimic the Coord properties, but always return fixed 'null' values,
+    # and cannot be set.
+
+    @property
+    def coord_system(self):
+        """The coordinate-system of a MeshCoord is always 'None'."""
+        return None
+
+    @coord_system.setter
+    def coord_system(self, value):
+        if value is not None:
+            msg = "Cannot set the coordinate-system of a MeshCoord."
+            raise ValueError(msg)
+
+    @property
+    def climatological(self):
+        """The 'climatological' of a MeshCoord is always 'False'."""
+        return False
+
+    @climatological.setter
+    def climatological(self, value):
+        if value:
+            msg = "Cannot set 'climatological' on a MeshCoord."
+            raise ValueError(msg)
+
+    # Override Coord.copy, so that we can potentially support bounds and no
+    # points, and ensure it does not duplicate the Mesh object.
+    def copy(self, points=None, bounds=None):
+        """
+        Returns a copy of the MeshCoord.
+
+        Kwargs:
+
+        * points: A points array for the new coordinate.
+                  This may be a different shape to the points of the coordinate
+                  being copied.
+
+        * bounds: A bounds array for the new coordinate.
+                  Given n bounds for each cell, the shape of the bounds array
+                  should be points.shape + (n,). For example, a 1d coordinate
+                  with 100 points and two bounds per cell would have a bounds
+                  array of shape (100, 2).
+
+        .. note:: If the points argument is specified and bounds are not, the
+                  resulting coordinate will have no bounds.
+                  If the bounds are set and not the points, the
+                  resulting coordinate will have no points.
+                  If neither bounds or points are set, the resulting coordinate
+                  has points and bounds copied from the original.
+
+        .. note:: Bounds and no points is a future feature, not yet actually
+                  supported :  This will raise an error.
+
+        """
+        # Make a new MeshCoord with copied data, except the Mesh which must be
+        # the original.
+        if points is None and bounds is None:
+            points = self.core_points()
+            bounds = self.core_bounds()
+        # Deep copy the metadata
+        # NOTE:  in future may include 'mesh' : then take care NOT to copy it.
+        kwargs = self.metadata._asdict()
+        kwargs = deepcopy(kwargs)
+        # Use the same mesh.
+        kwargs["mesh"] = self.mesh
+        kwargs["points"] = points
+        kwargs["bounds"] = bounds
+        new_coord = MeshCoord(**kwargs)
+        return new_coord
+
+    # Override _DimensionalMetadata.__eq__, to add 'mesh' comparison into the
+    # default implementation (which compares metadata, points and bounds).
+    # This is needed because 'mesh' is not included in our metadata.
+    def __eq__(self, other):
+        eq = super().__eq__(other)
+        # warning may return NotImplemented or a numpy boolean.
+        if eq is not NotImplemented and eq:
+            # Ensures that 'other' is also a MeshCoord
+            eq = self.mesh == other.mesh
+        return eq
 
 
 class MeshCoordMetadata(BaseMetadata):
