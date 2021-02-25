@@ -245,12 +245,12 @@ class TestProperties1D(TestMeshCommon):
         }
 
         kwargs_expected = (
-            ({"axis": "x"}, ("node_x", "edge_x")),
-            ({"axis": "y"}, ("node_y", "edge_y")),
-            ({"include_nodes": True}, ("node_x", "node_y")),
-            ({"include_edges": True}, ("edge_x", "edge_y")),
-            ({"include_nodes": False}, ("edge_x", "edge_y")),
-            ({"include_edges": False}, ("node_x", "node_y")),
+            ({"axis": "x"}, ["node_x", "edge_x"]),
+            ({"axis": "y"}, ["node_y", "edge_y"]),
+            ({"include_nodes": True}, ["node_x", "node_y"]),
+            ({"include_edges": True}, ["edge_x", "edge_y"]),
+            ({"include_nodes": False}, ["edge_x", "edge_y"]),
+            ({"include_edges": False}, ["node_x", "node_y"]),
             (
                 {"include_nodes": True, "include_edges": True},
                 ["node_x", "node_y", "edge_x", "edge_y"],
@@ -258,7 +258,7 @@ class TestProperties1D(TestMeshCommon):
             ({"include_nodes": False, "include_edges": False}, []),
             (
                 {"include_nodes": False, "include_edges": True},
-                ("edge_x", "edge_y"),
+                ["edge_x", "edge_y"],
             ),
         )
 
@@ -425,41 +425,41 @@ class TestProperties2D(TestProperties1D):
         kwargs_expected = (
             (
                 {"contains_node": True},
-                (self.EDGE_NODE, self.FACE_NODE, self.BOUNDARY_NODE),
+                [self.EDGE_NODE, self.FACE_NODE, self.BOUNDARY_NODE],
             ),
             (
                 {"contains_edge": True},
-                (self.EDGE_NODE, self.FACE_EDGE, self.EDGE_FACE),
+                [self.EDGE_NODE, self.FACE_EDGE, self.EDGE_FACE],
             ),
             (
                 {"contains_face": True},
-                (
+                [
                     self.FACE_NODE,
                     self.FACE_EDGE,
                     self.FACE_FACE,
                     self.EDGE_FACE,
-                ),
+                ],
             ),
             (
                 {"contains_node": False},
-                (self.FACE_EDGE, self.EDGE_FACE, self.FACE_FACE),
+                [self.FACE_EDGE, self.EDGE_FACE, self.FACE_FACE],
             ),
             (
                 {"contains_edge": False},
-                (self.FACE_NODE, self.BOUNDARY_NODE, self.FACE_FACE),
+                [self.FACE_NODE, self.BOUNDARY_NODE, self.FACE_FACE],
             ),
-            ({"contains_face": False}, (self.EDGE_NODE, self.BOUNDARY_NODE)),
+            ({"contains_face": False}, [self.EDGE_NODE, self.BOUNDARY_NODE]),
             (
                 {"contains_edge": True, "contains_face": True},
-                (self.FACE_EDGE, self.EDGE_FACE),
+                [self.FACE_EDGE, self.EDGE_FACE],
             ),
             (
                 {"contains_node": False, "contains_edge": False},
-                (self.FACE_FACE,),
+                [self.FACE_FACE],
             ),
             (
                 {"contains_node": True, "contains_edge": False},
-                (self.FACE_NODE, self.BOUNDARY_NODE),
+                [self.FACE_NODE, self.BOUNDARY_NODE],
             ),
             (
                 {
@@ -486,33 +486,33 @@ class TestProperties2D(TestProperties1D):
         }
 
         kwargs_expected = (
-            ({"axis": "x"}, ("node_x", "edge_x", "face_x")),
-            ({"axis": "y"}, ("node_y", "edge_y", "face_y")),
-            ({"include_nodes": True}, ("node_x", "node_y")),
-            ({"include_edges": True}, ("edge_x", "edge_y")),
+            ({"axis": "x"}, ["node_x", "edge_x", "face_x"]),
+            ({"axis": "y"}, ["node_y", "edge_y", "face_y"]),
+            ({"include_nodes": True}, ["node_x", "node_y"]),
+            ({"include_edges": True}, ["edge_x", "edge_y"]),
             (
                 {"include_nodes": False},
-                ("edge_x", "edge_y", "face_x", "face_y"),
+                ["edge_x", "edge_y", "face_x", "face_y"],
             ),
             (
                 {"include_edges": False},
-                ("node_x", "node_y", "face_x", "face_y"),
+                ["node_x", "node_y", "face_x", "face_y"],
             ),
             (
                 {"include_faces": False},
-                ("node_x", "node_y", "edge_x", "edge_y"),
+                ["node_x", "node_y", "edge_x", "edge_y"],
             ),
             (
                 {"include_faces": True, "include_edges": True},
-                ("edge_x", "edge_y", "face_x", "face_y"),
+                ["edge_x", "edge_y", "face_x", "face_y"],
             ),
             (
                 {"include_faces": False, "include_edges": False},
-                ("node_x", "node_y"),
+                ["node_x", "node_y"],
             ),
             (
                 {"include_faces": False, "include_edges": True},
-                ("edge_x", "edge_y"),
+                ["edge_x", "edge_y"],
             ),
         )
 
