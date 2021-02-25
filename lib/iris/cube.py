@@ -1588,53 +1588,62 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Kwargs:
 
-        * name_or_coord
-            Either
+        * name_or_coord:
+            Either,
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :class:`~iris.common.mixin.CFVariableMixin.name`.
 
-            (b) a coordinate instance with metadata equal to that of
-            the desired coordinates. Accepts either a
-            :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-            :class:`iris.aux_factory.AuxCoordFactory`,
-            :class:`iris.common.CoordMetadata` or
-            :class:`iris.common.DimCoordMetadata`.
-        * standard_name
-            The CF standard name of the desired coordinate. If None, does not
-            check for standard name.
-        * long_name
-            An unconstrained description of the coordinate. If None, does not
-            check for long_name.
-        * var_name
-            The netCDF variable name of the desired coordinate. If None, does
-            not check for var_name.
-        * attributes
-            A dictionary of attributes desired on the coordinates. If None,
-            does not check for attributes.
-        * axis
-            The desired coordinate axis, see
-            :func:`iris.util.guess_coord_axis`. If None, does not check for
-            axis. Accepts the values 'X', 'Y', 'Z' and 'T' (case-insensitive).
-        * contains_dimension
-            The desired coordinate contains the data dimension. If None, does
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The netCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        * dimensions
+
+        * dimensions:
             The exact data dimensions of the desired coordinate. Coordinates
-            with no data dimension can be found with an empty tuple or list
-            (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
-        * coord_system
-            Whether the desired coordinates have coordinate systems equal to
-            the given coordinate system. If None, no check is done.
-        * dim_coords
-            Set to True to only return coordinates that are the cube's
-            dimension coordinates. Set to False to only return coordinates
-            that are the cube's auxiliary and derived coordinates. If None,
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary and derived coordinates. If ``None``,
             returns all coordinates.
 
-        See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
+        .. seealso:
+
+            The :meth:`Cube.coord` method for matching exactly one coordinate.
 
         """
         coords_and_factories = []
@@ -1715,18 +1724,16 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dim_coords=None,
     ):
         """
-        Return a single coord given the same arguments as :meth:`Cube.coords`.
+        Return a single coordinate given the same arguments as :meth:`Cube.coords`.
 
         .. note::
 
-            If the arguments given do not result in precisely 1 coordinate
-            being matched, an :class:`iris.exceptions.CoordinateNotFoundError`
-            is raised.
+            If the arguments given do not result in **precisely one** coordinate,
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
 
         .. seealso::
 
-            :meth:`Cube.coords()<iris.cube.Cube.coords>` for full keyword
-            documentation.
+            :meth:`Cube.coords()` for full keyword documentation.
 
         """
         coords = self.coords(

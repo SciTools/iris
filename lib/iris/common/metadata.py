@@ -1354,47 +1354,50 @@ def metadata_filter(
 ):
     """
     Filter a collection of objects by their metadata to fit the given metadata
-    criteria. Criteria can be one or both of: specific properties / other objects
-    carrying metadata to be matched.
+    criteria.
+
+    Criteria can be either specific properties or other objects with metadata
+    to be matched.
 
     Args:
 
-    * instances
+    * instances:
         One or more objects to be filtered.
 
     Kwargs:
 
-    * item
-        Either
+    * item:
+        Either,
 
-        (a) a :attr:`standard_name`, :attr:`long_name`, or
-        :attr:`var_name`. Defaults to value of `default`
-        (which itself defaults to `unknown`) as defined in
-        :class:`~iris.common.CFVariableMixin`.
+        * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+          :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+          :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is compared
+          against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-        (b) a 'coordinate' instance with metadata equal to that of
-        the desired coordinates. Accepts either a
-        :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
-        :class:`~iris.aux_factory.AuxCoordFactory`,
-        :class:`~iris.common.CoordMetadata` or
-        :class:`~iris.common.DimCoordMetadata` or
-        :class:`~iris.experimental.ugrid.ConnectivityMetadata`.
-    * standard_name
-        The CF standard name of the desired coordinate. If None, does not
-        check for standard name.
-    * long_name
-        An unconstrained description of the coordinate. If None, does not
-        check for long_name.
-    * var_name
-        The netCDF variable name of the desired coordinate. If None, does
-        not check for var_name.
-    * attributes
-        A dictionary of attributes desired on the coordinates. If None,
-        does not check for attributes.
-    * axis
-        The desired coordinate axis, see
-        :func:`~iris.util.guess_coord_axis`. If None, does not check for
-        axis. Accepts the values 'X', 'Y', 'Z' and 'T' (case-insensitive).
+        * a coordinate or metadata instance equal to that of
+          the desired coordinates e.g., :class:`~iris.coords.DimCoord`
+          or :class:`CoordMetadata`.
+
+    * standard_name:
+        The CF standard name of the desired coordinate. If ``None``, does not
+        check for ``standard_name``.
+
+    * long_name:
+        An unconstrained description of the coordinate. If ``None``, does not
+        check for ``long_name``.
+
+    * var_name:
+        The netCDF variable name of the desired coordinate. If ``None``, does
+        not check for ``var_name``.
+
+    * attributes:
+        A dictionary of attributes desired on the coordinates. If ``None``,
+        does not check for ``attributes``.
+
+    * axis:
+        The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
+        If ``None``, does not check for ``axis``. Accepts the values ``X``,
+        ``Y``, ``Z`` and ``T`` (case-insensitive).
 
     Returns:
         A list of the objects supplied in the ``instances`` argument, limited
