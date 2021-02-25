@@ -15,64 +15,82 @@ from iris.coords import AuxCoord
 from iris.exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from iris.experimental import ugrid
 
-# A collection of minimal coords and connectivities describing an equilateral triangle.
-NODE_LON = AuxCoord(
-    [0, 2, 1],
-    standard_name="longitude",
-    long_name="long_name",
-    var_name="node_lon",
-    attributes={"test": 1},
-)
-NODE_LAT = AuxCoord([0, 0, 1], standard_name="latitude", var_name="node_lat")
-EDGE_LON = AuxCoord(
-    [1, 1.5, 0.5], standard_name="longitude", var_name="edge_lon"
-)
-EDGE_LAT = AuxCoord(
-    [0, 0.5, 0.5], standard_name="latitude", var_name="edge_lat"
-)
-FACE_LON = AuxCoord([0.5], standard_name="longitude", var_name="face_lon")
-FACE_LAT = AuxCoord([0.5], standard_name="latitude", var_name="face_lat")
 
-EDGE_NODE = ugrid.Connectivity(
-    [[0, 1], [1, 2], [2, 0]],
-    cf_role="edge_node_connectivity",
-    long_name="long_name",
-    var_name="var_name",
-    attributes={"test": 1},
-)
-FACE_NODE = ugrid.Connectivity([[0, 1, 2]], cf_role="face_node_connectivity")
-FACE_EDGE = ugrid.Connectivity([[0, 1, 2]], cf_role="face_edge_connectivity")
-# Actually meaningless:
-FACE_FACE = ugrid.Connectivity([[0, 0, 0]], cf_role="face_face_connectivity")
-# Actually meaningless:
-EDGE_FACE = ugrid.Connectivity(
-    [[0, 0], [0, 0], [0, 0]], cf_role="edge_face_connectivity"
-)
-BOUNDARY_NODE = ugrid.Connectivity(
-    [[0, 1], [1, 2], [2, 0]], cf_role="boundary_node_connectivity"
-)
-
-
-class TestProperties1D(tests.IrisTest):
-    # Tests that can re-use a single instance for greater efficiency.
-
-    # Mesh kwargs with topology_dimension=1 and all applicable arguments
-    # populated - this tests correct property setting.
-    KWARGS = {
-        "topology_dimension": 1,
-        "node_coords_and_axes": ((NODE_LON, "x"), (NODE_LAT, "y")),
-        "connectivities": EDGE_NODE,
-        "long_name": "my_topology_mesh",
-        "var_name": "mesh",
-        "attributes": {"notes": "this is a test"},
-        "node_dimension": "NodeDim",
-        "edge_dimension": "EdgeDim",
-        "edge_coords_and_axes": ((EDGE_LON, "x"), (EDGE_LAT, "y")),
-    }
-
+class TestMeshCommon(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
-        cls.mesh = ugrid.Mesh(**cls.KWARGS)
+        # A collection of minimal coords and connectivities describing an equilateral triangle.
+        # Re-used in most/all of the test classes, hence globals.
+        # global NODE_LON, NODE_LAT, EDGE_LON, EDGE_LAT, FACE_LON, FACE_LAT, EDGE_NODE, FACE_NODE, FACE_EDGE, FACE_FACE, EDGE_FACE, BOUNDARY_NODE
+
+        cls.NODE_LON = AuxCoord(
+            [0, 2, 1],
+            standard_name="longitude",
+            long_name="long_name",
+            var_name="node_lon",
+            attributes={"test": 1},
+        )
+        cls.NODE_LAT = AuxCoord(
+            [0, 0, 1], standard_name="latitude", var_name="node_lat"
+        )
+        cls.EDGE_LON = AuxCoord(
+            [1, 1.5, 0.5], standard_name="longitude", var_name="edge_lon"
+        )
+        cls.EDGE_LAT = AuxCoord(
+            [0, 0.5, 0.5], standard_name="latitude", var_name="edge_lat"
+        )
+        cls.FACE_LON = AuxCoord(
+            [0.5], standard_name="longitude", var_name="face_lon"
+        )
+        cls.FACE_LAT = AuxCoord(
+            [0.5], standard_name="latitude", var_name="face_lat"
+        )
+
+        cls.EDGE_NODE = ugrid.Connectivity(
+            [[0, 1], [1, 2], [2, 0]],
+            cf_role="edge_node_connectivity",
+            long_name="long_name",
+            var_name="var_name",
+            attributes={"test": 1},
+        )
+        cls.FACE_NODE = ugrid.Connectivity(
+            [[0, 1, 2]], cf_role="face_node_connectivity"
+        )
+        cls.FACE_EDGE = ugrid.Connectivity(
+            [[0, 1, 2]], cf_role="face_edge_connectivity"
+        )
+        # (Actually meaningless:)
+        cls.FACE_FACE = ugrid.Connectivity(
+            [[0, 0, 0]], cf_role="face_face_connectivity"
+        )
+        # (Actually meaningless:)
+        cls.EDGE_FACE = ugrid.Connectivity(
+            [[0, 0], [0, 0], [0, 0]], cf_role="edge_face_connectivity"
+        )
+        cls.BOUNDARY_NODE = ugrid.Connectivity(
+            [[0, 1], [1, 2], [2, 0]], cf_role="boundary_node_connectivity"
+        )
+
+
+class TestProperties1D(TestMeshCommon):
+    # Tests that can re-use a single instance for greater efficiency.
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Mesh kwargs with topology_dimension=1 and all applicable
+        # arguments populated - this tests correct property setting.
+        cls.kwargs = {
+            "topology_dimension": 1,
+            "node_coords_and_axes": ((cls.NODE_LON, "x"), (cls.NODE_LAT, "y")),
+            "connectivities": cls.EDGE_NODE,
+            "long_name": "my_topology_mesh",
+            "var_name": "mesh",
+            "attributes": {"notes": "this is a test"},
+            "node_dimension": "NodeDim",
+            "edge_dimension": "EdgeDim",
+            "edge_coords_and_axes": ((cls.EDGE_LON, "x"), (cls.EDGE_LAT, "y")),
+        }
+        cls.mesh = ugrid.Mesh(**cls.kwargs)
 
     def test__metadata_manager(self):
         self.assertEqual(
@@ -108,11 +126,13 @@ class TestProperties1D(tests.IrisTest):
         self.assertEqual(expected, self.mesh.__repr__())
 
     def test_all_connectivities(self):
-        expected = ugrid.Mesh1DConnectivities(EDGE_NODE)
+        expected = ugrid.Mesh1DConnectivities(self.EDGE_NODE)
         self.assertEqual(expected, self.mesh.all_connectivities)
 
     def test_all_coords(self):
-        expected = ugrid.Mesh1DCoords(NODE_LON, NODE_LAT, EDGE_LON, EDGE_LAT)
+        expected = ugrid.Mesh1DCoords(
+            self.NODE_LON, self.NODE_LAT, self.EDGE_LON, self.EDGE_LAT
+        )
         self.assertEqual(expected, self.mesh.all_coords)
 
     def test_boundary_node(self):
@@ -127,7 +147,7 @@ class TestProperties1D(tests.IrisTest):
     def test_connectivities(self):
         # General results. Method intended for inheritance.
         positive_kwargs = (
-            {"item": EDGE_NODE},
+            {"item": self.EDGE_NODE},
             {"item": "long_name"},
             {"long_name": "long_name"},
             {"var_name": "var_name"},
@@ -151,7 +171,7 @@ class TestProperties1D(tests.IrisTest):
         func = self.mesh.connectivities
         for kwargs in positive_kwargs:
             self.assertEqual(
-                EDGE_NODE, func(**kwargs)["edge_node_connectivity"]
+                self.EDGE_NODE, func(**kwargs)["edge_node_connectivity"]
             )
         for kwargs in negative_kwargs:
             self.assertNotIn("edge_node_connectivity", func(**kwargs))
@@ -170,7 +190,7 @@ class TestProperties1D(tests.IrisTest):
             {"edge": False, "node": False},
         )
 
-        expected = {EDGE_NODE.cf_role: EDGE_NODE}
+        expected = {self.EDGE_NODE.cf_role: self.EDGE_NODE}
         func = self.mesh.connectivities
         for kwargs in positive_kwargs:
             self.assertEqual(expected, func(**kwargs))
@@ -191,7 +211,7 @@ class TestProperties1D(tests.IrisTest):
     def test_coords(self):
         # General results. Method intended for inheritance.
         positive_kwargs = (
-            {"item": NODE_LON},
+            {"item": self.NODE_LON},
             {"item": "longitude"},
             {"standard_name": "longitude"},
             {"long_name": "long_name"},
@@ -211,17 +231,17 @@ class TestProperties1D(tests.IrisTest):
 
         func = self.mesh.coords
         for kwargs in positive_kwargs:
-            self.assertEqual(NODE_LON, func(**kwargs)["node_x"])
+            self.assertEqual(self.NODE_LON, func(**kwargs)["node_x"])
         for kwargs in negative_kwargs:
             self.assertNotIn("node_x", func(**kwargs))
 
     def test_coords_locations(self):
         # topology_dimension-specific results. Method intended to be overridden.
         all_expected = {
-            "node_x": NODE_LON,
-            "node_y": NODE_LAT,
-            "edge_x": EDGE_LON,
-            "edge_y": EDGE_LAT,
+            "node_x": self.NODE_LON,
+            "node_y": self.NODE_LAT,
+            "edge_x": self.EDGE_LON,
+            "edge_y": self.EDGE_LAT,
         }
 
         kwargs_expected = (
@@ -249,11 +269,11 @@ class TestProperties1D(tests.IrisTest):
 
     def test_edge_dimension(self):
         self.assertEqual(
-            self.KWARGS["edge_dimension"], self.mesh.edge_dimension
+            self.kwargs["edge_dimension"], self.mesh.edge_dimension
         )
 
     def test_edge_coords(self):
-        expected = ugrid.MeshEdgeCoords(EDGE_LON, EDGE_LAT)
+        expected = ugrid.MeshEdgeCoords(self.EDGE_LON, self.EDGE_LAT)
         self.assertEqual(expected, self.mesh.edge_coords)
 
     def test_edge_face(self):
@@ -261,7 +281,7 @@ class TestProperties1D(tests.IrisTest):
             _ = self.mesh.edge_face_connectivity
 
     def test_edge_node(self):
-        self.assertEqual(EDGE_NODE, self.mesh.edge_node_connectivity)
+        self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
 
     def test_face_coords(self):
         with self.assertRaises(AttributeError):
@@ -283,17 +303,17 @@ class TestProperties1D(tests.IrisTest):
             _ = self.mesh.face_node_connectivity
 
     def test_node_coords(self):
-        expected = ugrid.MeshNodeCoords(NODE_LON, NODE_LAT)
+        expected = ugrid.MeshNodeCoords(self.NODE_LON, self.NODE_LAT)
         self.assertEqual(expected, self.mesh.node_coords)
 
     def test_node_dimension(self):
         self.assertEqual(
-            self.KWARGS["node_dimension"], self.mesh.node_dimension
+            self.kwargs["node_dimension"], self.mesh.node_dimension
         )
 
     def test_topology_dimension(self):
         self.assertEqual(
-            self.KWARGS["topology_dimension"], self.mesh.topology_dimension
+            self.kwargs["topology_dimension"], self.mesh.topology_dimension
         )
         # Read only.
         self.assertRaises(
@@ -305,18 +325,22 @@ class TestProperties2D(TestProperties1D):
     # Additional/specialised tests for topology_dimension=2.
     @classmethod
     def setUpClass(cls):
-        cls.KWARGS["topology_dimension"] = 2
-        cls.KWARGS["connectivities"] = (
-            FACE_NODE,
-            EDGE_NODE,
-            FACE_EDGE,
-            FACE_FACE,
-            EDGE_FACE,
-            BOUNDARY_NODE,
-        )
-        cls.KWARGS["face_dimension"] = "FaceDim"
-        cls.KWARGS["face_coords_and_axes"] = ((FACE_LON, "x"), (FACE_LAT, "y"))
         super().setUpClass()
+        cls.kwargs["topology_dimension"] = 2
+        cls.kwargs["connectivities"] = (
+            cls.FACE_NODE,
+            cls.EDGE_NODE,
+            cls.FACE_EDGE,
+            cls.FACE_FACE,
+            cls.EDGE_FACE,
+            cls.BOUNDARY_NODE,
+        )
+        cls.kwargs["face_dimension"] = "FaceDim"
+        cls.kwargs["face_coords_and_axes"] = (
+            (cls.FACE_LON, "x"),
+            (cls.FACE_LAT, "y"),
+        )
+        cls.mesh = ugrid.Mesh(**cls.kwargs)
 
     def test___repr__(self):
         expected = (
@@ -349,23 +373,30 @@ class TestProperties2D(TestProperties1D):
 
     def test_all_connectivities(self):
         expected = ugrid.Mesh2DConnectivities(
-            FACE_NODE,
-            EDGE_NODE,
-            FACE_EDGE,
-            FACE_FACE,
-            EDGE_FACE,
-            BOUNDARY_NODE,
+            self.FACE_NODE,
+            self.EDGE_NODE,
+            self.FACE_EDGE,
+            self.FACE_FACE,
+            self.EDGE_FACE,
+            self.BOUNDARY_NODE,
         )
         self.assertEqual(expected, self.mesh.all_connectivities)
 
     def test_all_coords(self):
         expected = ugrid.Mesh2DCoords(
-            NODE_LON, NODE_LAT, EDGE_LON, EDGE_LAT, FACE_LON, FACE_LAT
+            self.NODE_LON,
+            self.NODE_LAT,
+            self.EDGE_LON,
+            self.EDGE_LAT,
+            self.FACE_LON,
+            self.FACE_LAT,
         )
         self.assertEqual(expected, self.mesh.all_coords)
 
     def test_boundary_node(self):
-        self.assertEqual(BOUNDARY_NODE, self.mesh.boundary_node_connectivity)
+        self.assertEqual(
+            self.BOUNDARY_NODE, self.mesh.boundary_node_connectivity
+        )
 
     def test_connectivity(self):
         # See Mesh.connectivities tests for thorough coverage of cases.
@@ -384,15 +415,35 @@ class TestProperties2D(TestProperties1D):
 
     def test_connectivities_locations(self):
         kwargs_expected = (
-            ({"node": True}, (EDGE_NODE, FACE_NODE, BOUNDARY_NODE)),
-            ({"edge": True}, (EDGE_NODE, FACE_EDGE, EDGE_FACE)),
-            ({"face": True}, (FACE_NODE, FACE_EDGE, FACE_FACE, EDGE_FACE)),
-            ({"node": False}, (FACE_EDGE, EDGE_FACE, FACE_FACE)),
-            ({"edge": False}, (FACE_NODE, BOUNDARY_NODE, FACE_FACE)),
-            ({"face": False}, (EDGE_NODE, BOUNDARY_NODE)),
-            ({"edge": True, "face": True}, (FACE_EDGE, EDGE_FACE)),
-            ({"node": False, "edge": False}, (FACE_FACE,)),
-            ({"node": True, "edge": False}, (FACE_NODE, BOUNDARY_NODE)),
+            (
+                {"node": True},
+                (self.EDGE_NODE, self.FACE_NODE, self.BOUNDARY_NODE),
+            ),
+            ({"edge": True}, (self.EDGE_NODE, self.FACE_EDGE, self.EDGE_FACE)),
+            (
+                {"face": True},
+                (
+                    self.FACE_NODE,
+                    self.FACE_EDGE,
+                    self.FACE_FACE,
+                    self.EDGE_FACE,
+                ),
+            ),
+            (
+                {"node": False},
+                (self.FACE_EDGE, self.EDGE_FACE, self.FACE_FACE),
+            ),
+            (
+                {"edge": False},
+                (self.FACE_NODE, self.BOUNDARY_NODE, self.FACE_FACE),
+            ),
+            ({"face": False}, (self.EDGE_NODE, self.BOUNDARY_NODE)),
+            ({"edge": True, "face": True}, (self.FACE_EDGE, self.EDGE_FACE)),
+            ({"node": False, "edge": False}, (self.FACE_FACE,)),
+            (
+                {"node": True, "edge": False},
+                (self.FACE_NODE, self.BOUNDARY_NODE),
+            ),
             ({"node": False, "edge": False, "face": False}, []),
         )
         func = self.mesh.connectivities
@@ -402,12 +453,12 @@ class TestProperties2D(TestProperties1D):
 
     def test_coords_locations(self):
         all_expected = {
-            "node_x": NODE_LON,
-            "node_y": NODE_LAT,
-            "edge_x": EDGE_LON,
-            "edge_y": EDGE_LAT,
-            "face_x": FACE_LON,
-            "face_y": FACE_LAT,
+            "node_x": self.NODE_LON,
+            "node_y": self.NODE_LAT,
+            "edge_x": self.EDGE_LON,
+            "edge_y": self.EDGE_LAT,
+            "face_x": self.FACE_LON,
+            "face_y": self.FACE_LAT,
         }
 
         kwargs_expected = (
@@ -431,35 +482,35 @@ class TestProperties2D(TestProperties1D):
             self.assertEqual(expected, func(**kwargs))
 
     def test_edge_face(self):
-        self.assertEqual(EDGE_FACE, self.mesh.edge_face_connectivity)
+        self.assertEqual(self.EDGE_FACE, self.mesh.edge_face_connectivity)
 
     def test_face_coords(self):
-        expected = ugrid.MeshFaceCoords(FACE_LON, FACE_LAT)
+        expected = ugrid.MeshFaceCoords(self.FACE_LON, self.FACE_LAT)
         self.assertEqual(expected, self.mesh.face_coords)
 
     def test_face_dimension(self):
         self.assertEqual(
-            self.KWARGS["face_dimension"], self.mesh.face_dimension
+            self.kwargs["face_dimension"], self.mesh.face_dimension
         )
 
     def test_face_edge(self):
-        self.assertEqual(FACE_EDGE, self.mesh.face_edge_connectivity)
+        self.assertEqual(self.FACE_EDGE, self.mesh.face_edge_connectivity)
 
     def test_face_face(self):
-        self.assertEqual(FACE_FACE, self.mesh.face_face_connectivity)
+        self.assertEqual(self.FACE_FACE, self.mesh.face_face_connectivity)
 
     def test_face_node(self):
-        self.assertEqual(FACE_NODE, self.mesh.face_node_connectivity)
+        self.assertEqual(self.FACE_NODE, self.mesh.face_node_connectivity)
 
 
-class TestOperations1D(tests.IrisTest):
+class TestOperations1D(TestMeshCommon):
     # Tests that cannot re-use an existing Mesh instance, instead need a new
     # one each time.
     def setUp(self):
         self.mesh = ugrid.Mesh(
             topology_dimension=1,
-            node_coords_and_axes=((NODE_LON, "x"), (NODE_LAT, "y")),
-            connectivities=EDGE_NODE,
+            node_coords_and_axes=((self.NODE_LON, "x"), (self.NODE_LAT, "y")),
+            connectivities=self.EDGE_NODE,
         )
 
     @staticmethod
@@ -505,7 +556,7 @@ class TestOperations1D(tests.IrisTest):
         for new_len in (False, True):
             # REPLACE connectivities, first with one of the same length, then
             # with one of different length.
-            edge_node = self.new_connectivity(EDGE_NODE, new_len)
+            edge_node = self.new_connectivity(self.EDGE_NODE, new_len)
             self.mesh.add_connectivities(edge_node)
             self.assertEqual(
                 ugrid.Mesh1DConnectivities(edge_node),
@@ -513,8 +564,8 @@ class TestOperations1D(tests.IrisTest):
             )
 
     def test_add_connectivities_duplicates(self):
-        edge_node_one = EDGE_NODE
-        edge_node_two = self.new_connectivity(EDGE_NODE)
+        edge_node_one = self.EDGE_NODE
+        edge_node_two = self.new_connectivity(self.EDGE_NODE)
         self.mesh.add_connectivities(edge_node_one, edge_node_two)
         self.assertEqual(
             edge_node_two,
@@ -529,14 +580,14 @@ class TestOperations1D(tests.IrisTest):
             "foo",
         )
 
-        face_node = FACE_NODE
+        face_node = self.FACE_NODE
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.add_connectivities(face_node)
             self.assertIn("Not adding connectivity", log.output[0])
 
     def test_add_coords(self):
         # ADD coords.
-        edge_kwargs = {"edge_x": EDGE_LON, "edge_y": EDGE_LAT}
+        edge_kwargs = {"edge_x": self.EDGE_LON, "edge_y": self.EDGE_LAT}
         self.mesh.add_coords(**edge_kwargs)
         self.assertEqual(
             ugrid.MeshEdgeCoords(**edge_kwargs), self.mesh.edge_coords
@@ -546,12 +597,12 @@ class TestOperations1D(tests.IrisTest):
             # REPLACE coords, first with ones of the same shape, then with ones
             # of different shape.
             node_kwargs = {
-                "node_x": self.new_coord(NODE_LON, new_shape),
-                "node_y": self.new_coord(NODE_LAT, new_shape),
+                "node_x": self.new_coord(self.NODE_LON, new_shape),
+                "node_y": self.new_coord(self.NODE_LAT, new_shape),
             }
             edge_kwargs = {
-                "edge_x": self.new_coord(EDGE_LON, new_shape),
-                "edge_y": self.new_coord(EDGE_LAT, new_shape),
+                "edge_x": self.new_coord(self.EDGE_LON, new_shape),
+                "edge_y": self.new_coord(self.EDGE_LAT, new_shape),
             }
             self.mesh.add_coords(**node_kwargs, **edge_kwargs)
             self.assertEqual(
@@ -563,7 +614,10 @@ class TestOperations1D(tests.IrisTest):
 
     def test_add_coords_face(self):
         self.assertRaises(
-            TypeError, self.mesh.add_coords, face_x=FACE_LON, face_y=FACE_LAT
+            TypeError,
+            self.mesh.add_coords,
+            face_x=self.FACE_LON,
+            face_y=self.FACE_LAT,
         )
 
     def test_add_coords_invalid(self):
@@ -572,7 +626,7 @@ class TestOperations1D(tests.IrisTest):
             TypeError, ".*requires to be an 'AuxCoord'.*", func, node_x="foo"
         )
         self.assertRaisesRegex(
-            TypeError, ".*requires a x-axis like.*", func, node_x=NODE_LAT
+            TypeError, ".*requires a x-axis like.*", func, node_x=self.NODE_LAT
         )
         climatological = AuxCoord(
             [0],
@@ -587,21 +641,21 @@ class TestOperations1D(tests.IrisTest):
             func,
             node_x=climatological,
         )
-        wrong_shape = NODE_LON.copy([0])
+        wrong_shape = self.NODE_LON.copy([0])
         self.assertRaisesRegex(
             ValueError, ".*requires to have shape.*", func, node_x=wrong_shape
         )
 
     def test_add_coords_single(self):
         # ADD coord.
-        edge_x = EDGE_LON
+        edge_x = self.EDGE_LON
         expected = ugrid.MeshEdgeCoords(edge_x=edge_x, edge_y=None)
         self.mesh.add_coords(edge_x=edge_x)
         self.assertEqual(expected, self.mesh.edge_coords)
 
         # REPLACE coords.
-        node_x = self.new_coord(NODE_LON)
-        edge_x = self.new_coord(EDGE_LON)
+        node_x = self.new_coord(self.NODE_LON)
+        edge_x = self.new_coord(self.EDGE_LON)
         expected_nodes = ugrid.MeshNodeCoords(
             node_x=node_x, node_y=self.mesh.node_coords.node_y
         )
@@ -611,8 +665,8 @@ class TestOperations1D(tests.IrisTest):
         self.assertEqual(expected_edges, self.mesh.edge_coords)
 
         # Attempt to REPLACE coords with those of DIFFERENT SHAPE.
-        node_x = self.new_coord(NODE_LON, new_shape=True)
-        edge_x = self.new_coord(EDGE_LON, new_shape=True)
+        node_x = self.new_coord(self.NODE_LON, new_shape=True)
+        edge_x = self.new_coord(self.EDGE_LON, new_shape=True)
         node_kwarg = {"node_x": node_x}
         edge_kwarg = {"edge_x": edge_x}
         both_kwargs = dict(**node_kwarg, **edge_kwarg)
@@ -625,7 +679,9 @@ class TestOperations1D(tests.IrisTest):
             )
 
     def test_add_coords_single_face(self):
-        self.assertRaises(TypeError, self.mesh.add_coords, face_x=FACE_LON)
+        self.assertRaises(
+            TypeError, self.mesh.add_coords, face_x=self.FACE_LON
+        )
 
     def test_dimension_names(self):
         # Test defaults.
@@ -669,7 +725,7 @@ class TestOperations1D(tests.IrisTest):
 
         """
         positive_kwargs = (
-            {"item": EDGE_NODE},
+            {"item": self.EDGE_NODE},
             {"item": "long_name"},
             {"long_name": "long_name"},
             {"var_name": "var_name"},
@@ -701,20 +757,20 @@ class TestOperations1D(tests.IrisTest):
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 self.mesh.remove_connectivities(**kwargs)
                 self.assertIn("Ignoring request to remove", log.output[0])
-            self.assertEqual(EDGE_NODE, self.mesh.edge_node_connectivity)
+            self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
                 ugrid.logger.debug("foo")
                 self.mesh.remove_connectivities(**kwargs)
                 self.assertEqual(1, len(log.output))
-            self.assertEqual(EDGE_NODE, self.mesh.edge_node_connectivity)
+            self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
 
     def test_remove_coords(self):
         # Test that remove() mimics the coords() method correctly,
         # and prevents removal of mandatory coords.
         positive_kwargs = (
-            {"item": NODE_LON},
+            {"item": self.NODE_LON},
             {"item": "longitude"},
             {"standard_name": "longitude"},
             {"long_name": "long_name"},
@@ -736,23 +792,23 @@ class TestOperations1D(tests.IrisTest):
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 self.mesh.remove_coords(**kwargs)
                 self.assertIn("Ignoring request to remove", log.output[0])
-            self.assertEqual(NODE_LON, self.mesh.node_coords.node_x)
+            self.assertEqual(self.NODE_LON, self.mesh.node_coords.node_x)
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
                 ugrid.logger.debug("foo")
                 self.mesh.remove_coords(**kwargs)
                 self.assertEqual(1, len(log.output))
-            self.assertEqual(NODE_LON, self.mesh.node_coords.node_x)
+            self.assertEqual(self.NODE_LON, self.mesh.node_coords.node_x)
 
         # Test removal of optional connectivity.
-        self.mesh.add_coords(edge_x=EDGE_LON)
+        self.mesh.add_coords(edge_x=self.EDGE_LON)
         # Attempt to remove a non-existent coord.
-        self.mesh.remove_coords(EDGE_LAT)
+        self.mesh.remove_coords(self.EDGE_LAT)
         # Confirm that EDGE_LON is still there.
-        self.assertEqual(EDGE_LON, self.mesh.edge_coords.edge_x)
+        self.assertEqual(self.EDGE_LON, self.mesh.edge_coords.edge_x)
         # Remove EDGE_LON and confirm success.
-        self.mesh.remove_coords(EDGE_LON)
+        self.mesh.remove_coords(self.EDGE_LON)
         self.assertEqual(None, self.mesh.edge_coords.edge_x)
 
 
@@ -761,18 +817,18 @@ class TestOperations2D(TestOperations1D):
     def setUp(self):
         self.mesh = ugrid.Mesh(
             topology_dimension=2,
-            node_coords_and_axes=((NODE_LON, "x"), (NODE_LAT, "y")),
-            connectivities=(FACE_NODE),
+            node_coords_and_axes=((self.NODE_LON, "x"), (self.NODE_LAT, "y")),
+            connectivities=(self.FACE_NODE),
         )
 
     def test_add_connectivities(self):
         # ADD connectivities.
         kwargs = {
-            "edge_node": EDGE_NODE,
-            "face_edge": FACE_EDGE,
-            "face_face": FACE_FACE,
-            "edge_face": EDGE_FACE,
-            "boundary_node": BOUNDARY_NODE,
+            "edge_node": self.EDGE_NODE,
+            "face_edge": self.FACE_EDGE,
+            "face_face": self.FACE_FACE,
+            "edge_face": self.EDGE_FACE,
+            "boundary_node": self.BOUNDARY_NODE,
         }
         expected = ugrid.Mesh2DConnectivities(
             face_node=self.mesh.face_node_connectivity, **kwargs
@@ -781,7 +837,7 @@ class TestOperations2D(TestOperations1D):
         self.assertEqual(expected, self.mesh.all_connectivities)
 
         # REPLACE connectivities.
-        kwargs["face_node"] = FACE_NODE
+        kwargs["face_node"] = self.FACE_NODE
         for new_len in (False, True):
             # First replace with ones of same length, then with ones of
             # different length.
@@ -796,9 +852,9 @@ class TestOperations2D(TestOperations1D):
 
     def test_add_connectivities_inconsistent(self):
         # ADD Connectivities.
-        self.mesh.add_connectivities(EDGE_NODE)
-        face_edge = self.new_connectivity(FACE_EDGE, new_len=True)
-        edge_face = self.new_connectivity(EDGE_FACE, new_len=True)
+        self.mesh.add_connectivities(self.EDGE_NODE)
+        face_edge = self.new_connectivity(self.FACE_EDGE, new_len=True)
+        edge_face = self.new_connectivity(self.EDGE_FACE, new_len=True)
         for args in ([face_edge], [edge_face], [face_edge, edge_face]):
             self.assertRaisesRegex(
                 ValueError,
@@ -808,7 +864,7 @@ class TestOperations2D(TestOperations1D):
             )
 
         # REPLACE Connectivities
-        self.mesh.add_connectivities(FACE_EDGE, EDGE_FACE)
+        self.mesh.add_connectivities(self.FACE_EDGE, self.EDGE_FACE)
         for args in ([face_edge], [edge_face], [face_edge, edge_face]):
             self.assertRaisesRegex(
                 ValueError,
@@ -827,7 +883,7 @@ class TestOperations2D(TestOperations1D):
 
     def test_add_coords_face(self):
         # ADD coords.
-        kwargs = {"face_x": FACE_LON, "face_y": FACE_LAT}
+        kwargs = {"face_x": self.FACE_LON, "face_y": self.FACE_LAT}
         self.mesh.add_coords(**kwargs)
         self.assertEqual(ugrid.MeshFaceCoords(**kwargs), self.mesh.face_coords)
 
@@ -835,8 +891,8 @@ class TestOperations2D(TestOperations1D):
             # REPLACE coords, first with ones of the same shape, then with ones
             # of different shape.
             kwargs = {
-                "face_x": self.new_coord(FACE_LON, new_shape),
-                "face_y": self.new_coord(FACE_LAT, new_shape),
+                "face_x": self.new_coord(self.FACE_LON, new_shape),
+                "face_y": self.new_coord(self.FACE_LAT, new_shape),
             }
             self.mesh.add_coords(**kwargs)
             self.assertEqual(
@@ -845,19 +901,19 @@ class TestOperations2D(TestOperations1D):
 
     def test_add_coords_single_face(self):
         # ADD coord.
-        face_x = FACE_LON
+        face_x = self.FACE_LON
         expected = ugrid.MeshFaceCoords(face_x=face_x, face_y=None)
         self.mesh.add_coords(face_x=face_x)
         self.assertEqual(expected, self.mesh.face_coords)
 
         # REPLACE coord.
-        face_x = self.new_coord(FACE_LON)
+        face_x = self.new_coord(self.FACE_LON)
         expected = ugrid.MeshFaceCoords(face_x=face_x, face_y=None)
         self.mesh.add_coords(face_x=face_x)
         self.assertEqual(expected, self.mesh.face_coords)
 
         # Attempt to REPLACE coord with that of DIFFERENT SHAPE.
-        face_x = self.new_coord(FACE_LON, new_shape=True)
+        face_x = self.new_coord(self.FACE_LON, new_shape=True)
         self.assertRaisesRegex(
             ValueError,
             ".*requires to have shape.*",
@@ -894,11 +950,11 @@ class TestOperations2D(TestOperations1D):
         """Do what 1D test could not - test removal of optional connectivity."""
 
         # Add an optional connectivity.
-        self.mesh.add_connectivities(FACE_FACE)
+        self.mesh.add_connectivities(self.FACE_FACE)
         # Attempt to remove a non-existent connectivity.
-        self.mesh.remove_connectivities(EDGE_NODE)
+        self.mesh.remove_connectivities(self.EDGE_NODE)
         # Confirm that FACE_FACE is still there.
-        self.assertEqual(FACE_FACE, self.mesh.face_face_connectivity)
+        self.assertEqual(self.FACE_FACE, self.mesh.face_face_connectivity)
         # Remove FACE_FACE and confirm success.
         self.mesh.remove_connectivities(face=True)
         self.assertEqual(None, self.mesh.face_face_connectivity)
@@ -906,18 +962,21 @@ class TestOperations2D(TestOperations1D):
     def test_remove_coords(self):
         """Test the face argument."""
         super().test_remove_coords()
-        self.mesh.add_coords(face_x=FACE_LON)
-        self.assertEqual(FACE_LON, self.mesh.face_coords.face_x)
+        self.mesh.add_coords(face_x=self.FACE_LON)
+        self.assertEqual(self.FACE_LON, self.mesh.face_coords.face_x)
         self.mesh.remove_coords(face=True)
         self.assertEqual(None, self.mesh.face_coords.face_x)
 
 
-class InitValidation(tests.IrisTest):
+class InitValidation(TestMeshCommon):
     def test_invalid_topology(self):
         kwargs = {
             "topology_dimension": 0,
-            "node_coords_and_axes": ((NODE_LON, "x"), (NODE_LAT, "y")),
-            "connectivities": EDGE_NODE,
+            "node_coords_and_axes": (
+                (self.NODE_LON, "x"),
+                (self.NODE_LAT, "y"),
+            ),
+            "connectivities": self.EDGE_NODE,
         }
         self.assertRaisesRegex(
             ValueError, "Expected 'topology_dimension'.*", ugrid.Mesh, **kwargs
@@ -926,28 +985,34 @@ class InitValidation(tests.IrisTest):
     def test_invalid_axes(self):
         kwargs = {
             "topology_dimension": 2,
-            "connectivities": FACE_NODE,
+            "connectivities": self.FACE_NODE,
         }
         self.assertRaisesRegex(
             ValueError,
             "Invalid axis specified for node.*",
             ugrid.Mesh,
-            node_coords_and_axes=((NODE_LON, "foo"), (NODE_LAT, "y")),
+            node_coords_and_axes=(
+                (self.NODE_LON, "foo"),
+                (self.NODE_LAT, "y"),
+            ),
             **kwargs,
         )
-        kwargs["node_coords_and_axes"] = ((NODE_LON, "x"), (NODE_LAT, "y"))
+        kwargs["node_coords_and_axes"] = (
+            (self.NODE_LON, "x"),
+            (self.NODE_LAT, "y"),
+        )
         self.assertRaisesRegex(
             ValueError,
             "Invalid axis specified for edge.*",
             ugrid.Mesh,
-            edge_coords_and_axes=((EDGE_LON, "foo"),),
+            edge_coords_and_axes=((self.EDGE_LON, "foo"),),
             **kwargs,
         )
         self.assertRaisesRegex(
             ValueError,
             "Invalid axis specified for face.*",
             ugrid.Mesh,
-            face_coords_and_axes=((FACE_LON, "foo"),),
+            face_coords_and_axes=((self.FACE_LON, "foo"),),
             **kwargs,
         )
 
@@ -957,8 +1022,11 @@ class InitValidation(tests.IrisTest):
         # Further validations are tested in add_connectivity tests.
         kwargs = {
             "topology_dimension": 1,
-            "node_coords_and_axes": ((NODE_LON, "x"), (NODE_LAT, "y")),
-            "connectivities": (FACE_NODE,),
+            "node_coords_and_axes": (
+                (self.NODE_LON, "x"),
+                (self.NODE_LAT, "y"),
+            ),
+            "connectivities": (self.FACE_NODE,),
         }
         self.assertRaisesRegex(
             ValueError,
@@ -971,8 +1039,8 @@ class InitValidation(tests.IrisTest):
         # Further validations are tested in add_coord tests.
         kwargs = {
             "topology_dimension": 1,
-            "node_coords_and_axes": ((NODE_LON, "x"), (None, "y")),
-            "connectivities": (FACE_NODE,),
+            "node_coords_and_axes": ((self.NODE_LON, "x"), (None, "y")),
+            "connectivities": (self.FACE_NODE,),
         }
         self.assertRaisesRegex(
             ValueError, ".*is a required coordinate.*", ugrid.Mesh, **kwargs
