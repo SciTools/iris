@@ -19,10 +19,8 @@ from iris.experimental import ugrid
 class TestMeshCommon(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
-        # A collection of minimal coords and connectivities describing an equilateral triangle.
-        # Re-used in most/all of the test classes, hence globals.
-        # global NODE_LON, NODE_LAT, EDGE_LON, EDGE_LAT, FACE_LON, FACE_LAT, EDGE_NODE, FACE_NODE, FACE_EDGE, FACE_FACE, EDGE_FACE, BOUNDARY_NODE
-
+        # A collection of minimal coords and connectivities describing an
+        # equilateral triangle.
         cls.NODE_LON = AuxCoord(
             [0, 2, 1],
             standard_name="longitude",
