@@ -1566,7 +1566,7 @@ class _Mesh1DCoordinateManager:
 
         face_requested = face is True
         args = [node, edge, face]
-        true_count = args.count(True)
+        true_count = len([arg for arg in args if arg])
         if true_count > 1:
             # Standard filter behaviour is 'AND', and coord locations are
             # mutually exclusive, so multiple True cannot return any results.
@@ -1731,9 +1731,7 @@ class _MeshConnectivityManagerBase(ABC):
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
-                message = (
-                    f"{self.__name__} requires a {requisite} Connectivity."
-                )
+                message = f"{type(self).__name__} requires a {requisite} Connectivity."
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
@@ -1789,7 +1787,7 @@ class _MeshConnectivityManagerBase(ABC):
         for connectivity in connectivities:
             if not isinstance(connectivity, Connectivity):
                 message = f"Expected Connectivity, got: {type(connectivity)} ."
-                raise ValueError(message)
+                raise TypeError(message)
             cf_role = connectivity.cf_role
             if cf_role not in self.ALL:
                 message = (

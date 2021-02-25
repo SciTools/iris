@@ -12,6 +12,7 @@ import iris.tests as tests
 import numpy as np
 
 from iris.coords import AuxCoord
+from iris.exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from iris.experimental import ugrid
 
 # A collection of minimal coords and connectivities describing an equilateral triangle.
@@ -160,6 +161,13 @@ class TestProperties1D(tests.IrisTest):
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.assertEqual({}, func(face=True))
             self.assertIn("filter for non-existent", log.output[0])
+
+    def test_coord(self):
+        # See Mesh.coords tests for thorough coverage of cases.
+        func = self.mesh.coord
+        exception = CoordinateNotFoundError
+        self.assertRaisesRegex(exception, ".*but found 2", func, node=True)
+        self.assertRaisesRegex(exception, ".*but found none", func, axis="t")
 
     def test_coords(self):
         # General results. Method intended for inheritance.
@@ -311,6 +319,21 @@ class TestProperties2D(TestProperties1D):
     def test_boundary_node(self):
         self.assertEqual(BOUNDARY_NODE, self.mesh.boundary_node_connectivity)
 
+    def test_connectivity(self):
+        # See Mesh.connectivities tests for thorough coverage of cases.
+        # Can only test Mesh.connectivity for 2D since we need >1 connectivity.
+        func = self.mesh.connectivity
+        exception = ConnectivityNotFoundError
+        self.assertRaisesRegex(exception, ".*but found 3", func, node=True)
+        self.assertRaisesRegex(
+            exception,
+            ".*but found none",
+            func,
+            node=False,
+            edge=False,
+            face=False,
+        )
+
     def test_connectivities_locations(self):
         kwargs_expected = (
             ({"node": True}, (EDGE_NODE, FACE_NODE, BOUNDARY_NODE)),
@@ -451,6 +474,13 @@ class TestOperations1D(tests.IrisTest):
         )
 
     def test_add_connectivities_invalid(self):
+        self.assertRaisesRegex(
+            TypeError,
+            "Expected Connectivity.*",
+            self.mesh.add_connectivities,
+            "foo",
+        )
+
         face_node = FACE_NODE
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.add_connectivities(face_node)
@@ -486,6 +516,32 @@ class TestOperations1D(tests.IrisTest):
     def test_add_coords_face(self):
         self.assertRaises(
             TypeError, self.mesh.add_coords, face_x=FACE_LON, face_y=FACE_LAT
+        )
+
+    def test_add_coords_invalid(self):
+        func = self.mesh.add_coords
+        self.assertRaisesRegex(
+            TypeError, ".*requires to be an 'AuxCoord'.*", func, node_x="foo"
+        )
+        self.assertRaisesRegex(
+            TypeError, ".*requires a x-axis like.*", func, node_x=NODE_LAT
+        )
+        climatological = AuxCoord(
+            [0],
+            bounds=[-1, 1],
+            standard_name="longitude",
+            climatological=True,
+            units="Days since 1970",
+        )
+        self.assertRaisesRegex(
+            TypeError,
+            ".*cannot be a climatological.*",
+            func,
+            node_x=climatological,
+        )
+        wrong_shape = NODE_LON.copy([0])
+        self.assertRaisesRegex(
+            ValueError, ".*requires to have shape.*", func, node_x=wrong_shape
         )
 
     def test_add_coords_single(self):
@@ -831,18 +887,45 @@ class InitValidation(tests.IrisTest):
             node_coords_and_axes=((NODE_LON, "foo"), (NODE_LAT, "y")),
             **kwargs,
         )
-        kwargs["node_coords_and_axes"] = (((NODE_LON, "x"), (NODE_LAT, "y")),)
+        kwargs["node_coords_and_axes"] = ((NODE_LON, "x"), (NODE_LAT, "y"))
         self.assertRaisesRegex(
             ValueError,
             "Invalid axis specified for edge.*",
             ugrid.Mesh,
-            edge_coords_and_axes=((EDGE_LON, "foo"), (EDGE_LAT, "y")),
+            edge_coords_and_axes=((EDGE_LON, "foo"),),
             **kwargs,
         )
         self.assertRaisesRegex(
             ValueError,
             "Invalid axis specified for face.*",
             ugrid.Mesh,
-            face_coords_and_axes=((FACE_LON, "foo"), (FACE_LAT, "y")),
+            face_coords_and_axes=((FACE_LON, "foo"),),
             **kwargs,
+        )
+
+    # Several arg safety checks in __init__ currently unreachable given earlier checks.
+
+    def test_minimum_connectivities(self):
+        # Further validations are tested in add_connectivity tests.
+        kwargs = {
+            "topology_dimension": 1,
+            "node_coords_and_axes": ((NODE_LON, "x"), (NODE_LAT, "y")),
+            "connectivities": (FACE_NODE,),
+        }
+        self.assertRaisesRegex(
+            ValueError,
+            ".*requires a edge_node_connectivity.*",
+            ugrid.Mesh,
+            **kwargs,
+        )
+
+    def test_minimum_coords(self):
+        # Further validations are tested in add_coord tests.
+        kwargs = {
+            "topology_dimension": 1,
+            "node_coords_and_axes": ((NODE_LON, "x"), (None, "y")),
+            "connectivities": (FACE_NODE,),
+        }
+        self.assertRaisesRegex(
+            ValueError, ".*is a required coordinate.*", ugrid.Mesh, **kwargs
         )
