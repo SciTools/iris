@@ -1789,7 +1789,7 @@ fc_extras
         value = None
 
         for attr_name in ['ukmo__um_stash_source', 'um_stash_source']:
-            if hasattr(engine.cf_var, attr):
+            if hasattr(engine.cf_var, attr_name):
                 attr = attr_name
                 value = getattr(engine.cf_var, attr_name)
                 break
@@ -1797,9 +1797,9 @@ fc_extras
         if attr:
             try:
                 stash_code = pp.STASH.from_msi(value)
-            except TypeError, ValueError as exc:
+            except (TypeError, ValueError) as exc:
                 engine.cube.attributes[attr] = value
-                msg = (f'Unable to set attribute STASH as not a valid MSI'
+                msg = (f'Unable to set attribute STASH as not a valid MSI '
                        f'string "mXXsXXiXXX", got {value}')
                 warnings.warn(msg)
             else:
