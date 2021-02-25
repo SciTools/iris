@@ -13,6 +13,7 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 from abc import ABC, abstractmethod
 from collections import Iterable, namedtuple
 from functools import wraps
+import re
 
 import dask.array as da
 import numpy as np
@@ -48,6 +49,12 @@ __all__ = [
     "MeshMetadata",
     "MeshCoordMetadata",
 ]
+
+
+#: Numpy "threshold" printoptions default argument.
+NP_PRINTOPTIONS_THRESHOLD = 10
+#: Numpy "edgeitems" printoptions default argument.
+NP_PRINTOPTIONS_EDGEITEMS = 2
 
 
 # Configure the logger.
@@ -204,6 +211,58 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
+
+    def __repr__(self):
+        def kwargs_filter(k, v):
+            result = False
+            if k != "cf_role":
+                if v is not None:
+                    result = True
+                    if (
+                        not isinstance(v, str)
+                        and isinstance(v, Iterable)
+                        and not v
+                    ):
+                        result = False
+                    elif k == "units" and v == "unknown":
+                        result = False
+            return result
+
+        def array2repr(array):
+            if self.has_lazy_indices():
+                result = repr(array)
+            else:
+                with np.printoptions(
+                    threshold=NP_PRINTOPTIONS_THRESHOLD,
+                    edgeitems=NP_PRINTOPTIONS_EDGEITEMS,
+                ):
+                    result = re.sub("\n  *", " ", repr(array))
+            return result
+
+        # positional arguments
+        args = ", ".join(
+            [
+                f"{array2repr(self.core_indices())}",
+                f"cf_role={self.cf_role!r}",
+            ]
+        )
+
+        # optional arguments (metadata)
+        kwargs = ", ".join(
+            [
+                f"{k}={v!r}"
+                for k, v in self.metadata._asdict().items()
+                if kwargs_filter(k, v)
+            ]
+        )
+
+        return f"{self.__class__.__name__}({', '.join([args, kwargs])})"
+
+    def __str__(self):
+        args = ", ".join(
+            [f"cf_role={self.cf_role!r}", f"start_index={self.start_index!r}"]
+        )
+        return f"{self.__class__.__name__}({args})"
 
     @property
     def _values(self):
@@ -833,13 +892,13 @@ class Mesh(CFVariableMixin):
         topology_dimension,
         node_coords_and_axes,
         connectivities,
+        edge_coords_and_axes=None,
+        face_coords_and_axes=None,
         standard_name=None,
         long_name=None,
         var_name=None,
         units=None,
         attributes=None,
-        edge_coords_and_axes=None,
-        face_coords_and_axes=None,
         node_dimension=None,
         edge_dimension=None,
         face_dimension=None,
@@ -935,8 +994,75 @@ class Mesh(CFVariableMixin):
         return result
 
     def __repr__(self):
-        # TBD
-        args = []
+        def to_coord_and_axis(members):
+            def axis(member):
+                return member.split("_")[1]
+
+            result = [
+                f"({coord!s}, {axis(member)!r})"
+                for member, coord in members._asdict().items()
+                if coord is not None
+            ]
+            result = f"[{', '.join(result)}]" if result else None
+            return result
+
+        node_coords_and_axes = to_coord_and_axis(self.node_coords)
+        connectivities = [
+            str(connectivity)
+            for connectivity in self.all_connectivities
+            if connectivity is not None
+        ]
+
+        if len(connectivities) == 1:
+            connectivities = connectivities[0]
+        else:
+            connectivities = f"[{', '.join(connectivities)}]"
+
+        # positional arguments
+        args = [
+            f"topology_dimension={self.topology_dimension!r}",
+            f"node_coords_and_axes={node_coords_and_axes}",
+            f"connectivities={connectivities}",
+        ]
+
+        # optional argument
+        edge_coords_and_axes = to_coord_and_axis(self.edge_coords)
+        if edge_coords_and_axes:
+            args.append(f"edge_coords_and_axes={edge_coords_and_axes}")
+
+        # optional argument
+        if self.topology_dimension > 1:
+            face_coords_and_axes = to_coord_and_axis(self.face_coords)
+            if face_coords_and_axes:
+                args.append(f"face_coords_and_axes={face_coords_and_axes}")
+
+        def kwargs_filter(k, v):
+            result = False
+            if k != "topology_dimension":
+                if not (
+                    self.topology_dimension == 1 and k == "face_dimension"
+                ):
+                    if v is not None:
+                        result = True
+                        if (
+                            not isinstance(v, str)
+                            and isinstance(v, Iterable)
+                            and not v
+                        ):
+                            result = False
+                        elif k == "units" and v == "unknown":
+                            result = False
+            return result
+
+        # optional arguments (metadata)
+        args.extend(
+            [
+                f"{k}={v!r}"
+                for k, v in self.metadata._asdict().items()
+                if kwargs_filter(k, v)
+            ]
+        )
+
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
@@ -944,11 +1070,6 @@ class Mesh(CFVariableMixin):
         self._metadata_manager = metadata_manager
         self._coord_manager = coord_manager
         self._connectivity_manager = connectivity_manager
-
-    def __str__(self):
-        # TBD
-        args = []
-        return f"{self.__class__.__name__}({', '.join(args)})"
 
     def _set_dimension_names(self, node, edge, face, reset=False):
         args = (node, edge, face)
@@ -1335,9 +1456,7 @@ class _Mesh1DCoordinateManager:
         self._members = state
 
     def __str__(self):
-        args = [
-            f"{member}=True" for member, coord in self if coord is not None
-        ]
+        args = [f"{member}" for member, coord in self if coord is not None]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def _remove(self, **kwargs):
@@ -1740,7 +1859,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def __str__(self):
         args = [
-            f"{member}=True"
+            f"{member}"
             for member, connectivity in self
             if connectivity is not None
         ]
