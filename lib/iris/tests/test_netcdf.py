@@ -540,8 +540,9 @@ class TestNetCDFLoad(tests.IrisTest):
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].attributes["STASH"],
-                         iris.fileformats.pp.STASH(1, 2, 3))
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(1, 2, 3)
+        )
 
     def test_ukmo__um_stash_source_priority(self):
         """
@@ -588,8 +589,9 @@ class TestNetCDFLoad(tests.IrisTest):
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].attributes["STASH"],
-                         iris.fileformats.pp.STASH(9, 8, 7))
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(9, 8, 7)
+        )
 
     def test_bad_um_stash_source(self):
         """Test that um_stash_source not in strict MSI form is kept"""
@@ -634,7 +636,9 @@ class TestNetCDFLoad(tests.IrisTest):
             cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
-        self.assertEqual(cubes[0].attributes["um_stash_source"], "10*m01s02i003")
+        self.assertEqual(
+            cubes[0].attributes["um_stash_source"], "10*m01s02i003"
+        )
 
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
