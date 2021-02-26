@@ -28,6 +28,7 @@
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
+.. _scitools-iris: https://pypi.org/project/scitools-iris/
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git

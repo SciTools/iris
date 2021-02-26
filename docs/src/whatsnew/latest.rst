@@ -106,6 +106,9 @@ This document explains the changes made to Iris for this release
    development documentation if being viewed on `Read the Docs`_.
    (:pull:`3999`)
 
+#. `@bjlittle`_ added post-release instructions on how to :ref:`update_pypi`
+   with `scitools-iris`_. (:pull:`4038`)
+
 
 💼 Internal
 ===========
