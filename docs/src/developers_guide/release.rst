@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 .. _iris_development_releases:
 
 Releases
@@ -82,12 +84,57 @@ Once all checks are complete, the release is cut by the creation of a new tag
 in the ``SciTools/iris`` repository.
 
 
-Conda Recipe
-------------
+Update conda-forge
+------------------
 
 Once a release is cut on GitHub, update the Iris conda recipe on the
 `conda-forge iris-feedstock`_ for the release. This will build and publish the
 conda package on the `conda-forge Anaconda channel`_.
+
+
+.. _update_pypi:
+
+Update PyPI
+-----------
+
+Update the `scitools-iris`_ project on PyPI with the latest Iris release.
+
+To do this perform the following steps.
+
+Create a conda environment with the appropriate conda packages to build the
+source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
+
+    > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
+    > . activate iris-pypi
+
+Checkout the lastest Iris ``<release>`` tag::
+
+    > git fetch --tags
+    > git checkout <release>
+
+Build the source distribution and wheel from the Iris root directory::
+
+    > python setup.py sdist bdist_wheel
+
+This ``./dist`` directory should now be populated with the source archive
+``.tar.gz`` file, and built distribution ``.whl`` file.
+
+Sufficient maintainer privileges will be required to upload these artifacts
+to `scitools-iris`_ on PyPI::
+
+    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ ./dist/*
+
+Ensure that the artifacts are successfully uploaded and available on
+`scitools-iris`_ before creating a conda test environment to install Iris
+from PyPI::
+
+    > conda deactivate
+    > conda env create --file ./requrements/ci/iris.yml
+    > . activate iris-dev
+    > conda install -c conda-forge pip
+    > python -m pip install --no-deps scitools-iris
+
+For futher details on how to test Iris, see :ref:`developer_running_tests`.
 
 
 Merge Back
@@ -179,7 +226,6 @@ Post Release Steps
 #. Merge back to ``master``
 
 
-.. _Read The Docs: https://readthedocs.org/projects/scitools-iris/builds/
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
