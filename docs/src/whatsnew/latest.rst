@@ -48,6 +48,10 @@ This document explains the changes made to Iris for this release
    representation of the 64-bit non-cryptographic hash of the object using the
    extremely fast `xxhash`_ hashing algorithm. (:pull:`4020`)
 
+#. `@rcomer`_ implemented a ``__str__`` method for metadata classes, so
+   printing these objects skips metadata elements that are set to None or an
+   empty string or dictionary. (:pull:`4040`)
+
 
 🐛 Bugs Fixed
 =============
