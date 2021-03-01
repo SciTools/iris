@@ -39,10 +39,13 @@ from ..util import guess_coord_axis
 __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
+    "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
+    "Mesh1DNames",
     "Mesh2DConnectivities",
     "Mesh2DCoords",
+    "Mesh2DNames",
     "MeshEdgeCoords",
     "MeshFaceCoords",
     "MeshNodeCoords",
@@ -60,27 +63,44 @@ NP_PRINTOPTIONS_EDGEITEMS = 2
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
-
+#
 # Mesh dimension names namedtuples.
+#
+
+#: Namedtuple for 1D mesh topology NetCDF variable dimension names.
 Mesh1DNames = namedtuple("Mesh1DNames", ["node_dimension", "edge_dimension"])
+#: Namedtuple for 2D mesh topology NetCDF variable dimension names.
 Mesh2DNames = namedtuple(
     "Mesh2DNames", ["node_dimension", "edge_dimension", "face_dimension"]
 )
 
+#
 # Mesh coordinate manager namedtuples.
+#
+
+#: Namedtuple for 1D mesh :class:`~iris.coords.AuxCoord` coordinates.
 Mesh1DCoords = namedtuple(
     "Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"]
 )
+#: Namedtuple for 2D mesh :class:`~iris.coords.AuxCoord` coordinates.
 Mesh2DCoords = namedtuple(
     "Mesh2DCoords",
     ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"],
 )
+#: Namedtuple for ``node`` :class:`~iris.coords.AuxCoord` coordinates.
 MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
+#: Namedtuple for ``edge`` :class:`~iris.coords.AuxCoord` coordinates.
 MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
+#: Namedtuple for ``face`` :class:`~iris.coords.AuxCoord` coordinates.
 MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 
+#
 # Mesh connectivity manager namedtuples.
+#
+
+#: Namedtuple for 1D mesh :class:`Connectivity` instances.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
+#: Namedtuple for 2D mesh :class:`Connectivity` instances.
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
     [
@@ -157,7 +177,7 @@ class Connectivity(_DimensionalMetadata):
         * long_name (str):
             Descriptive name of the connectivity.
         * var_name (str):
-            The netCDF variable name for the connectivity.
+            The NetCDF variable name for the connectivity.
         * units (cf_units.Unit):
             The :class:`~cf_units.Unit` of the connectivity's values.
             Can be a string, which will be converted to a Unit object.
@@ -850,41 +870,24 @@ class MeshMetadata(BaseMetadata):
 
 class Mesh(CFVariableMixin):
     """
+    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
+    1D network, 2D triangular, and 2D flexible mesh topologies.
 
-    .. todo::
+    .. note::
 
-    .. questions::
+        The 3D layered and fully 3D unstructured mesh topologies are not supported
+        at this time.
 
-        - decide on the verbose/succinct version of __str__ vs __repr__
+    .. seealso::
 
-    .. notes::
-
-        - the mesh is location agnostic
-
-        - no need to support volume at mesh level, yet
-
-        - topology_dimension
-            - use for fast equality between Mesh instances
-            - checking connectivity dimensionality, specifically the highest dimensonality of the
-              "geometric element" being added i.e., reference the src_location/tgt_location
-            - used to honour and enforce the minimum UGRID connectivity contract
-
-        - support pickling
-
-        - copy is off the table!!
-
-        - MeshCoord.guess_points()
-        - MeshCoord.to_AuxCoord()
-
-        - don't provide public methods to return the coordinate and connectivity
-          managers
-
-        - validate both managers contents e.g., shape? more...?
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
 
     """
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
+    #: The supported mesh axes.
     AXES = ("x", "y")
+    #: Valid range of values for ``topology_dimension``.
     TOPOLOGY_DIMENSIONS = (1, 2)
 
     def __init__(
@@ -906,12 +909,10 @@ class Mesh(CFVariableMixin):
         """
         .. note::
 
-            :attr:`node_dimension`, :attr:`edge_dimension` and
-            :attr:`face_dimension` are stored to help round-tripping of UGRID
-            files. As such their presence in :class:`Mesh` is not a direct
-            mirror of that written in the UGRID specification, where
-            :attr:`node_dimension` is not mentioned, while
-            :attr:`edge_dimension` is only present for
+            The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
+            :attr:`face_dimension` properties are to preserve the original NetCDF
+            variable dimension names. Note that, only :attr:`edge_dimension` and
+            :attr:`face_dimension` are UGRID attributes, and are only present for
             :attr:`topology_dimension` ``>=2``.
 
         """
@@ -926,7 +927,6 @@ class Mesh(CFVariableMixin):
             raise ValueError(emsg)
         self._metadata_manager.topology_dimension = topology_dimension
 
-        # TBD: these are strings, if None is provided then assign the default string.
         self.node_dimension = node_dimension
         self.edge_dimension = edge_dimension
         self.face_dimension = face_dimension
@@ -1117,11 +1117,46 @@ class Mesh(CFVariableMixin):
         return result
 
     @property
+    def all_connectivities(self):
+        """
+        All the :class:`Connectivity` instances of the :class:`Mesh`.
+
+        """
+        return self._connectivity_manager.all_members
+
+    @property
     def all_coords(self):
+        """
+        All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`.
+
+        """
         return self._coord_manager.all_members
 
     @property
+    def boundary_node_connectivity(self):
+        """
+        The *optional* UGRID ``boundary_node_connectivity`` :class:`Connectivity`
+        of the :class:`Mesh`.
+
+        """
+        return self._connectivity_manager.boundary_node
+
+    @property
+    def edge_coords(self):
+        """
+        The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates
+        of the :class:`Mesh`.
+
+        """
+        return self._coord_manager.edge_coords
+
+    @property
     def edge_dimension(self):
+        """
+        The *optionally required* UGRID NetCDF variable name for the ``edge``
+        dimension.
+
+        """
         return self._metadata_manager.edge_dimension
 
     @edge_dimension.setter
@@ -1133,11 +1168,41 @@ class Mesh(CFVariableMixin):
         self._metadata_manager.edge_dimension = edge_dimension
 
     @property
-    def edge_coords(self):
-        return self._coord_manager.edge_coords
+    def edge_face_connectivity(self):
+        """
+        The *optional* UGRID ``edge_face_connectivity`` :class:`Connectivity`
+        of the :class:`Mesh`.
+
+        """
+        return self._connectivity_manager.edge_face
+
+    @property
+    def edge_node_connectivity(self):
+        """
+        The UGRID ``edge_node_connectivity`` :class:`Connectivity` of the
+        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
+        of ``1``, and *optionally required* for
+        :attr:`Mesh.topology_dimension` ``>=2``.
+
+        """
+        return self._connectivity_manager.edge_node
+
+    @property
+    def face_coords(self):
+        """
+        The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates
+        of the :class:`Mesh`.
+
+        """
+        return self._coord_manager.face_coords
 
     @property
     def face_dimension(self):
+        """
+        The *optionally required* UGRID NetCDF variable name for the ``face``
+        dimension.
+
+        """
         return self._metadata_manager.face_dimension
 
     @face_dimension.setter
@@ -1158,11 +1223,47 @@ class Mesh(CFVariableMixin):
         self._metadata_manager.face_dimension = face_dimension
 
     @property
-    def face_coords(self):
-        return self._coord_manager.face_coords
+    def face_edge_connectivity(self):
+        """
+        The *optional* UGRID ``face_edge_connectivity`` :class:`Connectivity`
+        of the :class:`Mesh`.
+
+        """
+        # optional
+        return self._connectivity_manager.face_edge
+
+    @property
+    def face_face_connectivity(self):
+        """
+        The *optional* UGRID ``face_face_connectivity`` :class:`Connectivity`
+        of the :class:`Mesh`.
+
+        """
+        return self._connectivity_manager.face_face
+
+    @property
+    def face_node_connectivity(self):
+        """
+        The UGRID ``face_node_connectivity`` :class:`Connectivity` of the
+        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
+        of ``2``, and *optionally required* for :attr:`Mesh.topology_dimension`
+        of ``3``.
+
+        """
+        return self._connectivity_manager.face_node
+
+    @property
+    def node_coords(self):
+        """
+        The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates
+        of the :class:`Mesh`.
+
+        """
+        return self._coord_manager.node_coords
 
     @property
     def node_dimension(self):
+        """The NetCDF variable name for the ``node`` dimension."""
         return self._metadata_manager.node_dimension
 
     @node_dimension.setter
@@ -1173,43 +1274,18 @@ class Mesh(CFVariableMixin):
             node_dimension = name
         self._metadata_manager.node_dimension = node_dimension
 
-    @property
-    def node_coords(self):
-        return self._coord_manager.node_coords
+    def add_connectivities(self, *connectivities):
+        """
+        Add one or more :class:`Connectivity` instances to the :class:`Mesh`.
 
-    @property
-    def all_connectivities(self):
-        return self._connectivity_manager.all_members
+        Args:
 
-    @property
-    def face_node_connectivity(self):
-        # required
-        return self._connectivity_manager.face_node
+        * connectivities (iterable of object):
+            A collection of one or more :class:`Connectivity` instances to
+            add to the :class:`Mesh`.
 
-    @property
-    def edge_node_connectivity(self):
-        # optionally required
-        return self._connectivity_manager.edge_node
-
-    @property
-    def face_edge_connectivity(self):
-        # optional
-        return self._connectivity_manager.face_edge
-
-    @property
-    def face_face_connectivity(self):
-        # optional
-        return self._connectivity_manager.face_face
-
-    @property
-    def edge_face_connectivity(self):
-        # optional
-        return self._connectivity_manager.edge_face
-
-    @property
-    def boundary_node_connectivity(self):
-        # optional
-        return self._connectivity_manager.boundary_node
+        """
+        self._connectivity_manager.add(*connectivities)
 
     def add_coords(
         self,
@@ -1220,6 +1296,30 @@ class Mesh(CFVariableMixin):
         face_x=None,
         face_y=None,
     ):
+        """
+        Add one or more :class:`~iris.coords.AuxCoord` coordinates to the :class:`Mesh`.
+
+        Kwargs:
+
+        * node_x (object):
+            The ``x-axis`` like ``node`` :class:`~iris.coords.AuxCoord`.
+
+        * node_y (object):
+            The ``y-axis`` like ``node`` :class:`~iris.coords.AuxCoord`.
+
+        * edge_x (object):
+            The ``x-axis`` like ``edge`` :class:`~iris.coords.AuxCoord`.
+
+        * edge_y (object):
+            The ``y-axis`` like ``edge`` :class:`~iris.coords.AuxCoord`.
+
+        * face_x (object):
+            The ``x-axis`` like ``face`` :class:`~iris.coords.AuxCoord`.
+
+        * face_y (object):
+            The ``y-axis`` like ``face`` :class:`~iris.coords.AuxCoord`.
+
+        """
         # Filter out absent arguments - only expecting face coords sometimes,
         # same will be true of volumes in future.
         kwargs = {
@@ -1234,9 +1334,6 @@ class Mesh(CFVariableMixin):
 
         self._coord_manager.add(**kwargs)
 
-    def add_connectivities(self, *connectivities):
-        self._connectivity_manager.add(*connectivities)
-
     def connectivities(
         self,
         item=None,
@@ -1249,6 +1346,67 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
+        """
+        Return all :class:`Connectivity` instances from the :class:`Mesh` that
+        match the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        .. seealso::
+
+            :meth:`Mesh.connectivity` for matching exactly one connectivity.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a connectivity or metadata instance equal to that of
+              the desired objects e.g., :class:`Connectivity` or
+              :class:`ConnectivityMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the :class:`Connectivity`. If
+            ``None``, does not check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the :class:`Connectivity`. If
+            ``None``, does not check for ``attributes``.
+
+        * cf_role (str):
+            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+
+        * contains_node (bool):
+            Contains the ``node`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        * contains_edge (bool):
+            Contains the ``edge`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        * contains_face (bool):
+            Contains the ``face`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        Returns:
+            A list of :class:`Connectivity` instances from the :class:`Mesh`
+            that matched the given criteria.
+
+        """
         return self._connectivity_manager.filters(
             item=item,
             standard_name=standard_name,
@@ -1273,6 +1431,74 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
+        """
+        Return a single :class:`Connectivity` from the :class:`Mesh` that
+        matches the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        .. note::
+
+            If the given criteria do not return **precisely one**
+            :class:`Connectivity`, then a
+            :class:`~iris.exceptions.ConnectivityNotFoundError` is raised.
+
+        .. seealso::
+
+            :meth:`Mesh.connectivities` for matching zero or more connectivities.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a connectivity or metadata instance equal to that of
+              the desired object e.g., :class:`Connectivity` or
+              :class:`ConnectivityMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the :class:`Connectivity`. If
+            ``None``, does not check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the :class:`Connectivity`. If
+            ``None``, does not check for ``attributes``.
+
+        * cf_role (str):
+            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+
+        * contains_node (bool):
+            Contains the ``node`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        * contains_edge (bool):
+            Contains the ``edge`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        * contains_face (bool):
+            Contains the ``face`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+
+        Returns:
+            The :class:`Connectivity` from the :class:`Mesh` that matched the
+            given criteria.
+
+        """
+
         return self._connectivity_manager.filter(
             item=item,
             standard_name=standard_name,
@@ -1297,6 +1523,71 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
+        """
+        Return a single :class:`~iris.coords.AuxCoord` coordinate from the
+        :class:`Mesh` that matches the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        .. note::
+
+            If the given criteria do not return **precisely one** coordinate,
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
+
+        .. seealso::
+
+            :meth:`Mesh.coords` for matching zero or more coordinates.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of
+              the desired coordinate e.g., :class:`~iris.coords.AuxCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis (str):
+            The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * include_node (bool):
+            Include all ``node`` coordinates in the list of objects to be matched.
+
+        * include_edge (bool):
+            Include all ``edge`` coordinates in the list of objects to be matched.
+
+        * include_face (bool):
+            Include all ``face`` coordinates in the list of objects to be matched.
+
+        Returns:
+            The :class:`~iris.coords.AuxCoord` coordinate from the :class:`Mesh`
+            that matched the given criteria.
+
+        """
         return self._coord_manager.filter(
             item=item,
             standard_name=standard_name,
@@ -1321,6 +1612,66 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
+        """
+        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh` that
+        match the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        .. seealso::
+
+            :meth:`Mesh.coord` for matching exactly one coordinate.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of
+              the desired coordinates e.g., :class:`~iris.coords.AuxCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis (str):
+            The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * include_node (bool):
+            Include all ``node`` coordinates in the list of objects to be matched.
+
+        * include_edge (bool):
+            Include all ``edge`` coordinates in the list of objects to be matched.
+
+        * include_face (bool):
+            Include all ``face`` coordinates in the list of objects to be matched.
+
+        Returns:
+            A list of :class:`~iris.coords.AuxCoord` coordinates from the
+            :class:`Mesh` that matched the given criteria.
+
+        """
         return self._coord_manager.filters(
             item=item,
             standard_name=standard_name,
@@ -1345,6 +1696,66 @@ class Mesh(CFVariableMixin):
         contains_edge=None,
         contains_face=None,
     ):
+        """
+        Remove one or more :class:`Connectivity` from the :class:`Mesh` that
+        match the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a connectivity or metadata instance equal to that of
+              the desired objects e.g., :class:`Connectivity` or
+              :class:`ConnectivityMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the :class:`Connectivity. If
+            ``None``, does not check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the :class:`Connectivity`. If
+            ``None``, does not check for ``attributes``.
+
+        * cf_role (str):
+            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+
+        * contains_node (bool):
+            Contains the ``node`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
+            for potential removal.
+
+        * contains_edge (bool):
+            Contains the ``edge`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
+            for potential removal.
+
+        * contains_face (bool):
+            Contains the ``face`` location as part of the
+            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
+            for potential removal.
+
+        Returns:
+            A list of :class:`Connectivity` instances removed from the :class:`Mesh`
+            that matched the given criteria.
+
+        """
         return self._connectivity_manager.remove(
             item=item,
             standard_name=standard_name,
@@ -1369,6 +1780,65 @@ class Mesh(CFVariableMixin):
         include_edges=None,
         include_faces=None,
     ):
+        """
+        Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`
+        that match the provided criteria.
+
+        Criteria can be either specific properties or other objects with
+        metadata to be matched.
+
+        Kwargs:
+
+        * item (str or object):
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of
+              the desired coordinates e.g., :class:`~iris.coords.AuxCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name (str):
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard_name``.
+
+        * long_name (str):
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name (str):
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes (dict):
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis (str):
+            The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * include_node (bool):
+            Include all ``node`` coordinates in the list of objects to be matched
+            for potential removal.
+
+        * include_edge (bool):
+            Include all ``edge`` coordinates in the list of objects to be matched
+            for potential removal.
+
+        * include_face (bool):
+            Include all ``face`` coordinates in the list of objects to be matched
+            for potential removal.
+
+        Returns:
+            A list of :class:`~iris.coords.AuxCoord` coordinates removed from
+            the :class:`Mesh` that matched the given criteria.
+
+        """
         # Filter out absent arguments - only expecting face coords sometimes,
         # same will be true of volumes in future.
         kwargs = {
@@ -1386,8 +1856,22 @@ class Mesh(CFVariableMixin):
 
         return self._coord_manager.remove(**kwargs)
 
-    def xml_element(self):
-        # TBD
+    def xml_element(self, doc):
+        """
+        Create the :class:`xml.dom.minidom.Element` that describes this
+        :class:`Mesh`.
+
+        Args:
+
+        * doc (object):
+            The parent :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Element` that will describe this
+            :class:`Mesh`, and the dictionary of attributes that require
+            to be added to this element.
+
+        """
         pass
 
     # the MeshCoord will always have bounds, perhaps points. However the MeshCoord.guess_points() may
@@ -1414,17 +1898,66 @@ class Mesh(CFVariableMixin):
     #     # use Connectivity.indices_by_src for fetching indices, passing in the lazy_indices() result as an argument.
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
+        """
+        Reset the name used for the NetCDF variable representing the ``node``,
+        ``edge`` and/or ``face`` dimension to ``None``.
+
+        Kwargs:
+
+        * node (bool):
+            Reset the name of the ``node`` dimension if ``True``. Default
+            is ``False``.
+
+        * edge (bool):
+            Reset the name of the ``edge`` dimension if ``True``. Default
+            is ``False``.
+
+        * face (bool):
+            Reset the name of the ``face`` dimension if ``True``. Default
+            is ``False``.
+
+        """
         return self._set_dimension_names(node, edge, face, reset=True)
 
     def dimension_names(self, node=None, edge=None, face=None):
+        """
+        Assign the name to be used for the NetCDF variable representing
+        the ``node``, ``edge`` and ``face`` dimension.
+
+        The default value of ``None`` will not be assigned to clear the
+        associated ``node``, ``edge`` or ``face``. Instead use
+        :meth:`Mesh.dimension_names_reset`.
+
+        Kwargs:
+
+        * node (str):
+            The name to be used for the NetCDF variable representing the
+            ``node`` dimension.
+
+        * edge (str):
+            The name to be used for the NetCDF variable representing the
+            ``edge`` dimension.
+
+        * face (str):
+            The name to be used for the NetCDF variable representing the
+            ``face`` dimension.
+
+        """
         return self._set_dimension_names(node, edge, face, reset=False)
 
     @property
     def cf_role(self):
+        """The UGRID ``cf_role`` attribute of the :class:`Mesh`."""
         return "mesh_topology"
 
     @property
     def topology_dimension(self):
+        """
+        The UGRID ``topology_dimension`` attribute represents the highest
+        dimensionality of all the geometric elements (node, edge, face) represented
+        within the :class:`Mesh`.
+
+        """
         return self._metadata_manager.topology_dimension
 
 

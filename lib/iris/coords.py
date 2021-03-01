@@ -590,8 +590,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`_DimensionalMetadata`, and the dictionary of attributes
-            that require to be added to this element.
+            :class:`_DimensionalMetadata`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
@@ -2271,8 +2270,7 @@ class Coord(_DimensionalMetadata):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`DimCoord`, and the dictionary of attributes that require
-            to be added to this element.
+            :class:`DimCoord`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
