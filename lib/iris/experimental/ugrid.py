@@ -98,9 +98,9 @@ MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 # Mesh connectivity manager namedtuples.
 #
 
-#: Namedtuple for 1D mesh :class:`Connectivity` coordinates.
+#: Namedtuple for 1D mesh :class:`Connectivity` instances.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
-#: Namedtuple for 2D mesh :class:`Connectivity` coordinates.
+#: Namedtuple for 2D mesh :class:`Connectivity` instances.
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
     [
@@ -1372,7 +1372,7 @@ class Mesh(CFVariableMixin):
               :class:`ConnectivityMetadata`.
 
         * standard_name (str):
-            The CF standard name of the desired :class:`Connectibity`. If
+            The CF standard name of the desired :class:`Connectivity`. If
             ``None``, does not check for ``standard_name``.
 
         * long_name (str):
@@ -1446,7 +1446,7 @@ class Mesh(CFVariableMixin):
 
         .. seealso::
 
-            :meth:`Cube.connectivities` for matching zero or more connectivities.
+            :meth:`Mesh.connectivities` for matching zero or more connectivities.
 
         Kwargs:
 
@@ -1537,7 +1537,7 @@ class Mesh(CFVariableMixin):
 
         .. seealso::
 
-            :meth:`Cube.coords` for matching zero or more coordinates.
+            :meth:`Mesh.coords` for matching zero or more coordinates.
 
         Kwargs:
 
@@ -1713,25 +1713,25 @@ class Mesh(CFVariableMixin):
               :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
               compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-            * a coordinate or metadata instance equal to that of
-              the desired coordinates e.g., :class:`Connectivity` or
+            * a connectivity or metadata instance equal to that of
+              the desired objects e.g., :class:`Connectivity` or
               :class:`ConnectivityMetadata`.
 
         * standard_name (str):
-            The CF standard name of the desired coordinate. If ``None``, does not
-            check for ``standard_name``.
+            The CF standard name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``standard_name``.
 
         * long_name (str):
-            An unconstrained description of the coordinate. If ``None``, does not
-            check for ``long_name``.
+            An unconstrained description of the :class:`Connectivity. If
+            ``None``, does not check for ``long_name``.
 
         * var_name (str):
-            The NetCDF variable name of the desired coordinate. If ``None``, does
-            not check for ``var_name``.
+            The NetCDF variable name of the desired :class:`Connectivity`. If
+            ``None``, does not check for ``var_name``.
 
         * attributes (dict):
-            A dictionary of attributes desired on the coordinates. If ``None``,
-            does not check for ``attributes``.
+            A dictionary of attributes desired on the :class:`Connectivity`. If
+            ``None``, does not check for ``attributes``.
 
         * cf_role (str):
             The UGRID ``cf_role`` of the desired :class:`Connectivity`.
