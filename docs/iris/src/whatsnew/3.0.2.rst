@@ -27,6 +27,8 @@ This document explains the changes made to Iris for this release
 
    💼 **Internal**
 
+   #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`) [``pre-v3.1.0``]
+
    #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
       from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
       [``pre-v3.1.0``]
@@ -547,3 +549,4 @@ This document explains the changes made to Iris for this release
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _stickler-ci: https://stickler-ci.com/
+.. _@jamesp: https://github.com/jamesp
