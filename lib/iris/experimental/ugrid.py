@@ -1119,7 +1119,7 @@ class Mesh(CFVariableMixin):
     @property
     def all_connectivities(self):
         """
-        All the :class:`Connectivity` coordinates of the :class:`Mesh`.
+        All the :class:`Connectivity` instances of the :class:`Mesh`.
 
         """
         return self._connectivity_manager.all_members
@@ -1136,7 +1136,7 @@ class Mesh(CFVariableMixin):
     def boundary_node_connectivity(self):
         """
         The *optional* UGRID ``boundary_node_connectivity`` :class:`Connectivity`
-        coordinate of the :class:`Mesh`.
+        of the :class:`Mesh`.
 
         """
         return self._connectivity_manager.boundary_node
@@ -1171,7 +1171,7 @@ class Mesh(CFVariableMixin):
     def edge_face_connectivity(self):
         """
         The *optional* UGRID ``edge_face_connectivity`` :class:`Connectivity`
-        coordinate of the :class:`Mesh`.
+        of the :class:`Mesh`.
 
         """
         return self._connectivity_manager.edge_face
@@ -1179,9 +1179,9 @@ class Mesh(CFVariableMixin):
     @property
     def edge_node_connectivity(self):
         """
-        The UGRID ``edge_node_connectivity`` :class:`Connectivity` coordinate
-        of the :class:`Mesh`, which is **required** for
-        :attr:`Mesh.topology_dimension` of ``1``, and *optionally required* for
+        The UGRID ``edge_node_connectivity`` :class:`Connectivity` of the
+        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
+        of ``1``, and *optionally required* for
         :attr:`Mesh.topology_dimension` ``>=2``.
 
         """
@@ -1226,7 +1226,7 @@ class Mesh(CFVariableMixin):
     def face_edge_connectivity(self):
         """
         The *optional* UGRID ``face_edge_connectivity`` :class:`Connectivity`
-        coordinate of the :class:`Mesh`.
+        of the :class:`Mesh`.
 
         """
         # optional
@@ -1236,7 +1236,7 @@ class Mesh(CFVariableMixin):
     def face_face_connectivity(self):
         """
         The *optional* UGRID ``face_face_connectivity`` :class:`Connectivity`
-        coordinate of the :class:`Mesh`.
+        of the :class:`Mesh`.
 
         """
         return self._connectivity_manager.face_face
@@ -1244,10 +1244,10 @@ class Mesh(CFVariableMixin):
     @property
     def face_node_connectivity(self):
         """
-        The UGRID ``face_node_connectivity`` :class:`Connectivity` coordinate
-        of the :class:`Mesh`, which is **required** for
-        :attr:`Mesh.topology_dimension` of ``2``, and *optionally required* for
-        :attr:`Mesh.topology_dimension` of ``3``.
+        The UGRID ``face_node_connectivity`` :class:`Connectivity` of the
+        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
+        of ``2``, and *optionally required* for :attr:`Mesh.topology_dimension`
+        of ``3``.
 
         """
         return self._connectivity_manager.face_node
@@ -1276,12 +1276,12 @@ class Mesh(CFVariableMixin):
 
     def add_connectivities(self, *connectivities):
         """
-        Add one or more :class:`Connectivity` coordinates to the :class:`Mesh`.
+        Add one or more :class:`Connectivity` instances to the :class:`Mesh`.
 
         Args:
 
         * connectivities (iterable of object):
-            A collection of one or more :class:`Connectivity` coordinates to
+            A collection of one or more :class:`Connectivity` instances to
             add to the :class:`Mesh`.
 
         """
@@ -1368,7 +1368,7 @@ class Mesh(CFVariableMixin):
               compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * a connectivity or metadata instance equal to that of
-              the desired objectss e.g., :class:`Connectivity` or
+              the desired objects e.g., :class:`Connectivity` or
               :class:`ConnectivityMetadata`.
 
         * standard_name (str):
@@ -1752,7 +1752,7 @@ class Mesh(CFVariableMixin):
             for potential removal.
 
         Returns:
-            A list of :class:`Connectivity` coordinates removed from the :class:`Mesh`
+            A list of :class:`Connectivity` instances removed from the :class:`Mesh`
             that matched the given criteria.
 
         """
