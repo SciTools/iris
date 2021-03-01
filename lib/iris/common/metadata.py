@@ -231,8 +231,9 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         field_strings = []
         for field in self._fields:
             value = getattr(self, field)
-            if value is not None:
-                field_strings.append(f"{field}={value}")
+            if value is None or isinstance(value, (str, dict)) and not value:
+                continue
+            field_strings.append(f"{field}={value}")
 
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
