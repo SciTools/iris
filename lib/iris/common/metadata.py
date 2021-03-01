@@ -1375,27 +1375,27 @@ def metadata_filter(
           against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
         * a coordinate or metadata instance equal to that of
-          the desired coordinates e.g., :class:`~iris.coords.DimCoord`
+          the desired objects e.g., :class:`~iris.coords.DimCoord`
           or :class:`CoordMetadata`.
 
     * standard_name:
-        The CF standard name of the desired coordinate. If ``None``, does not
+        The CF standard name of the desired object. If ``None``, does not
         check for ``standard_name``.
 
     * long_name:
-        An unconstrained description of the coordinate. If ``None``, does not
+        An unconstrained description of the object. If ``None``, does not
         check for ``long_name``.
 
     * var_name:
-        The netCDF variable name of the desired coordinate. If ``None``, does
+        The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
 
     * attributes:
-        A dictionary of attributes desired on the coordinates. If ``None``,
+        A dictionary of attributes desired on the object. If ``None``,
         does not check for ``attributes``.
 
     * axis:
-        The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
+        The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
         ``Y``, ``Z`` and ``T`` (case-insensitive).
 

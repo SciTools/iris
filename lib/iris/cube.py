@@ -848,7 +848,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * long_name
             An unconstrained description of the cube.
         * var_name
-            The netCDF variable name for the cube.
+            The NetCDF variable name for the cube.
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
         * attributes
@@ -905,7 +905,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "long name" for the Cube's phenomenon.
         self.long_name = long_name
 
-        #: The netCDF variable name for the Cube.
+        #: The NetCDF variable name for the Cube.
         self.var_name = var_name
 
         self.cell_methods = cell_methods
@@ -1514,7 +1514,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
         * var_name
-            The netCDF variable name of the desired coordinate factory.
+            The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
         .. note::
@@ -1584,7 +1584,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dim_coords=None,
     ):
         """
-        Return a list of coordinates in this cube fitting the given criteria.
+        Return a list of coordinates from the :class:`Cube` that match the
+        provided criteria.
+
+        .. seealso::
+
+            :meth:`Cube.coord` for matching exactly one coordinate.
 
         Kwargs:
 
@@ -1594,7 +1599,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
               :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
               :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
-              compared against the :class:`~iris.common.mixin.CFVariableMixin.name`.
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
@@ -1609,7 +1614,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             check for ``long_name``.
 
         * var_name:
-            The netCDF variable name of the desired coordinate. If ``None``, does
+            The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
 
         * attributes:
@@ -1641,9 +1646,9 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             that are the cube's auxiliary and derived coordinates. If ``None``,
             returns all coordinates.
 
-        .. seealso:
-
-            The :meth:`Cube.coord` method for matching exactly one coordinate.
+        Returns:
+            A list containing zero or more coordinates matching the provided
+            criteria.
 
         """
         coords_and_factories = []
@@ -1724,7 +1729,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dim_coords=None,
     ):
         """
-        Return a single coordinate given the same arguments as :meth:`Cube.coords`.
+        Return a single coordinate from the :class:`Cube` that matches the
+        provided criteria.
 
         .. note::
 
@@ -1733,7 +1739,65 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. seealso::
 
-            :meth:`Cube.coords()` for full keyword documentation.
+            :meth:`Cube.coords` for matching zero or more coordinates.
+
+        Kwargs:
+
+        * name_or_coord:
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
+            not check for the dimension.
+
+        * dimensions:
+            The exact data dimensions of the desired coordinate. Coordinates
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary and derived coordinates. If ``None``,
+            returns all coordinates.
+
+        Returns:
+            The coordinate that matches the provided criteria.
 
         """
         coords = self.coords(
@@ -1750,23 +1814,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         )
 
         if len(coords) > 1:
-            msg = (
-                "Expected to find exactly 1 coordinate, but found %s. "
-                "They were: %s."
-                % (len(coords), ", ".join(coord.name() for coord in coords))
+            emsg = (
+                f"Expected to find exactly 1 coordinate, but found {len(coords)}. "
+                f"They were: {', '.join(coord.name() for coord in coords)}."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
         elif len(coords) == 0:
             _name = name_or_coord
             if name_or_coord is not None:
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
             bad_name = _name or standard_name or long_name or ""
-            msg = (
-                "Expected to find exactly 1 %s coordinate, but found "
-                "none." % bad_name
+            emsg = (
+                f"Expected to find exactly 1 {bad_name!r} coordinate, "
+                "but found none."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
 
         return coords[0]
 
@@ -2067,7 +2130,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. note::
 
-            Cubes obtained from netCDF, PP, and FieldsFile files will only
+            Cubes obtained from NetCDF, PP, and FieldsFile files will only
             populate this attribute on its first use.
 
             To obtain the shape of the data without causing it to be loaded,
