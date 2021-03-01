@@ -12,7 +12,6 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 
 from abc import ABC, abstractmethod
 from collections import Iterable, namedtuple
-from copy import deepcopy
 from functools import wraps
 import re
 
@@ -52,6 +51,7 @@ __all__ = [
     "MeshNodeCoords",
     "MeshMetadata",
     "MeshCoordMetadata",
+    "MeshCoord",
 ]
 
 
@@ -2720,7 +2720,7 @@ class MeshCoord(AuxCoord):
 
     # Note: effectively this list of valid mesh locations is determined by
     # the Mesh api, but it doesn't expose those choices in a generic form, so
-    # we will just set our own here.
+    # we will just define our own here.
     VALID_MESH_LOCATIONS = ("face", "edge", "node")
 
     def __init__(
@@ -2728,51 +2728,11 @@ class MeshCoord(AuxCoord):
         mesh,
         location,
         axis,
-        # NOTE: can *not* yet actually have no points: --> runtime error, but
-        # implement the correct signature so it does not change later.
-        points=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        units=None,
-        bounds=None,
-        attributes=None,
-        coord_system=None,
-        climatological=False,
     ):
-        # Note: the init is compatible with a standard Coord constructor.
-        # -- that is required for the inherited copy/getitem mechanism and the
-        # Coord.from_coord inter-class conversion method.
-        # But, we have added the 'mesh', 'location', and 'axis' kwargs.
-
         # Setup the metadata.
         self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
 
-        if points is None:
-            # We intend to support this in future, but it will require extra
-            # work to refactor the parent classes.
-            msg = "Cannot yet create a MeshCoord without points."
-            raise ValueError(msg)
-
-        # Call parent constructor to handle the common constructor args.
-        # NOTE: but any attempt to set coord_system or climatological will fail.
-        super().__init__(
-            points,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            units=units,
-            bounds=bounds,
-            attributes=attributes,
-            coord_system=coord_system,
-            climatological=climatological,
-        )
-
         # Validate and record the class-specific constructor args.
-        # We roughly validate them here, but in practice the location/axis must
-        # match the available content in the Mesh object.
-        # That is beyond checking here, but in practice all MeshCoords will be
-        # created by methods of the Mesh itself, which will ensure correctness.
         if not isinstance(mesh, Mesh):
             msg = (
                 "'mesh' must be an iris.experimental.ugrid.Mesh, "
@@ -2784,9 +2744,6 @@ class MeshCoord(AuxCoord):
         self._mesh = mesh
 
         if location not in self.VALID_MESH_LOCATIONS:
-            # Effectively, the possible 'valid' locations are defined by the
-            # support provided in the Mesh api, but it does not declare that
-            # in general terms, so we define our own valid list for those.
             msg = (
                 f"'location' of {location} is not a valid Mesh location', "
                 f"must be one of {self.VALID_MESH_LOCATIONS}."
@@ -2804,6 +2761,28 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
         self._metadata_manager.axis = axis
+
+        points, bounds = self._construct_access_arrays()
+        if points is None:
+            # We intend to support this in future, but it will require extra
+            # work to refactor the parent classes.
+            msg = "Cannot yet create a MeshCoord without points."
+            raise ValueError(msg)
+
+        # Get the 'coord identity' metadata from the relevant node-coordinate.
+        # N.B. mesh.coord returns a dict
+        node_coords = self.mesh.coord(node=True, axis=self.axis)
+        (node_coord,) = list(node_coords.values())
+        # Call parent constructor to handle the common constructor args.
+        super().__init__(
+            points,
+            bounds=bounds,
+            standard_name=node_coord.standard_name,
+            long_name=node_coord.long_name,
+            var_name=None,  # We *don't* "represent" the underlying node var
+            units=node_coord.units,
+            attributes=node_coord.attributes,
+        )
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
@@ -2862,50 +2841,41 @@ class MeshCoord(AuxCoord):
             msg = "Cannot set 'climatological' on a MeshCoord."
             raise ValueError(msg)
 
-    # Override Coord.copy, so that we can potentially support bounds and no
-    # points, and ensure it does not duplicate the Mesh object.
+    # Override Coord.copy, so that we can ensure it does not duplicate the Mesh
+    # object.
+    # FOR NOW: don't allow changing points/bounds at all.
     def copy(self, points=None, bounds=None):
-        """
-        Returns a copy of the MeshCoord.
+        if points is not None or bounds is not None:
+            # Only allowed if both are provided, and match the existing shape.
+            # The values are then not used : It is just to support copy.
+            if (
+                points is None
+                or bounds is None
+                or points.shape != self.shape
+                or bounds.shape != self._bounds_dm.shape
+            ):
+                msg = "Cannot change the content of a MeshCoord."
+                raise ValueError(msg)
 
-        Kwargs:
-
-        * points: A points array for the new coordinate.
-                  This may be a different shape to the points of the coordinate
-                  being copied.
-
-        * bounds: A bounds array for the new coordinate.
-                  Given n bounds for each cell, the shape of the bounds array
-                  should be points.shape + (n,). For example, a 1d coordinate
-                  with 100 points and two bounds per cell would have a bounds
-                  array of shape (100, 2).
-
-        .. note:: If the points argument is specified and bounds are not, the
-                  resulting coordinate will have no bounds.
-                  If the bounds are set and not the points, the
-                  resulting coordinate will have no points.
-                  If neither bounds or points are set, the resulting coordinate
-                  has points and bounds copied from the original.
-
-        .. note:: Bounds and no points is a future feature, not yet actually
-                  supported :  This will raise an error.
-
-        """
-        # Make a new MeshCoord with copied data, except the Mesh which must be
-        # the original.
-        if points is None and bounds is None:
-            points = self.core_points()
-            bounds = self.core_bounds()
-        # Deep copy the metadata
-        # NOTE:  in future may include 'mesh' : then take care NOT to copy it.
-        kwargs = self.metadata._asdict()
-        kwargs = deepcopy(kwargs)
-        # Use the same mesh.
-        kwargs["mesh"] = self.mesh
-        kwargs["points"] = points
-        kwargs["bounds"] = bounds
-        new_coord = MeshCoord(**kwargs)
+        # Make a new MeshCoord with copied args, except for the Mesh which must
+        # be the original.
+        new_coord = MeshCoord(
+            mesh=self.mesh, location=self.location, axis=self.axis
+        )
         return new_coord
+
+    def __deepcopy__(self, memo):
+        """
+        Make this equivalent to "shallow" copy, returning a new MeshCoord based
+        on the same Mesh.
+
+        This is to avoid copying the Mesh, as
+        (a) that is very costly, and
+        (b) (at present) cannot produce a new Mesh that == the original, thus
+            would prevent the new MeshCoord == the original.
+
+        """
+        return self.copy()
 
     # Override _DimensionalMetadata.__eq__, to add 'mesh' comparison into the
     # default implementation (which compares metadata, points and bounds).
@@ -2917,6 +2887,46 @@ class MeshCoord(AuxCoord):
             # Ensures that 'other' is also a MeshCoord
             eq = self.mesh == other.mesh
         return eq
+
+    def _construct_access_arrays(self):
+        """
+        Build lazy points and bounds arrays, providing dynamic access via the
+        Mesh, according to the location and axis.
+
+        Returns:
+        * points, bounds (array or None)
+            lazy arrays which calculate the correct points and bounds from the
+            Mesh data, based on the location and axis.
+            The Mesh coordinates accessed are not identified on construction,
+            but discovered from the Mesh at the time of calculation, so that
+            the result is always based on current content in the Mesh.
+
+        """
+        # TODO: cheat for now : correct calculations, but not dynamic.
+        # TODO: replace wth fully dynamic lazy calcs (slightly more complex).
+        mesh, location, axis = self.mesh, self.location, self.axis
+        # N.B. mesh.coord returns a dict
+        node_coords = self.mesh.coord(node=True, axis=axis)
+        (node_coord,) = list(node_coords.values())
+        if location == "node":
+            points = node_coord.core_points()
+            bounds = None
+        elif location == "edge":
+            # N.B. mesh.coord returns a dict
+            edge_coords = self.mesh.coord(edge=True, axis=self.axis)
+            (edge_coord,) = list(edge_coords.values())
+            points = edge_coord.core_points()
+            inds = mesh.edge_node_connectivity.core_indices()
+            bounds = node_coord.core_points()[inds]
+        elif location == "face":
+            # N.B. mesh.coord returns a dict
+            face_coords = self.mesh.coord(face=True, axis=self.axis)
+            (face_coord,) = list(face_coords.values())
+            points = face_coord.core_points()  # For now, this always exists
+            inds = mesh.face_node_connectivity.core_indices()
+            bounds = node_coord.core_points()[inds]
+
+        return points, bounds
 
 
 class MeshCoordMetadata(BaseMetadata):
