@@ -2694,8 +2694,8 @@ class MeshCoord(AuxCoord):
 
     A MeshCoord also specifies its 'axis' : 'x' or 'y'.  Its values are then,
     accordingly, longitudes or latitudes.  The values are taken from the
-    appropriate element coordinates and connectivities in the Mesh, determined
-    by its 'location' and 'axis'.
+    appropriate coordinates and connectivities in the Mesh, determined by its
+    'location' and 'axis'.
 
     Any cube with data on a mesh will have a MeshCoord for each axis,
     i.e. an 'X' and a 'Y'.
@@ -2710,7 +2710,8 @@ class MeshCoord(AuxCoord):
 
     .. note::
         As described above, it is possible for a MeshCoord to have bounds but
-        no points.  This is not possible for a regular AuxCoord or DimCoord.
+        no points.  This is not possible for a regular
+        :class:`~iris.coords.AuxCoord` or :class:`~iris.coords.DimCoord`.
 
     .. note::
         A MeshCoord can not yet actually be created with bounds but no points.
@@ -2718,9 +2719,9 @@ class MeshCoord(AuxCoord):
 
     """
 
-    # Note: effectively this list of valid mesh locations is determined by
-    # the Mesh api, but it doesn't expose those choices in a generic form, so
-    # we will just define our own here.
+    # Note: the valid mesh locations are effectively part of the Mesh api, but
+    # it doesn't provide them in a simple form, so we define our own here.
+    # TODO: make this a public item of the Mesh class ?
     VALID_MESH_LOCATIONS = ("face", "edge", "node")
 
     def __init__(
@@ -2735,7 +2736,8 @@ class MeshCoord(AuxCoord):
         # Validate and record the class-specific constructor args.
         if not isinstance(mesh, Mesh):
             msg = (
-                "'mesh' must be an iris.experimental.ugrid.Mesh, "
+                "'mesh' must be an "
+                f"{Mesh.__module__}.{Mesh.__name__}, "
                 f"got {mesh}."
             )
             raise ValueError(msg)
@@ -2791,33 +2793,18 @@ class MeshCoord(AuxCoord):
     def mesh(self):
         return self._mesh
 
-    @mesh.setter
-    def mesh(self, value):
-        msg = "Cannot set the 'mesh' of a MeshCoord."
-        raise ValueError(msg)
-
     @property
     def location(self):
         return self._metadata_manager.location
-
-    @location.setter
-    def location(self, value):
-        msg = "Cannot set the 'location' of a MeshCoord."
-        raise ValueError(msg)
 
     @property
     def axis(self):
         return self._metadata_manager.axis
 
-    @axis.setter
-    def axis(self, value):
-        msg = "Cannot set the 'axis' of a MeshCoord."
-        raise ValueError(msg)
-
     # Provide overrides to mimic the Coord-specific properties that are not
-    # supported by MeshCoord, i.e. "coord_sytem" and "climatological".
-    # These mimic the Coord properties, but always return fixed 'null' values,
-    # and cannot be set.
+    # supported by MeshCoord, i.e. "coord_system" and "climatological".
+    # These mimic the Coord properties, but always return fixed 'null' values.
+    # They can be set, to the 'null' value only, for the inherited init code.
 
     @property
     def coord_system(self):

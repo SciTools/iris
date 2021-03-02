@@ -145,19 +145,25 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
-        props = ("mesh", "location", "axis", "coord_system", "climatological")
-        msg = "Cannot set"
-        for prop in props:
-            with self.assertRaisesRegex(ValueError, msg):
+        for prop in ("mesh", "location", "axis"):
+            with self.assertRaisesRegex(AttributeError, "can't set"):
                 setattr(meshcoord, prop, mock.sentinel.odd)
 
     def test_coord_system(self):
-        # The property exists as a 'null' value.
+        # The property exists, =None, can set to None, can not set otherwise.
+        self.assertTrue(hasattr(self.meshcoord, "coord_system"))
         self.assertIsNone(self.meshcoord.coord_system)
+        self.meshcoord.coord_system = None
+        with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
+            self.meshcoord.coord_system = 1
 
-    def test_climatological(self):
-        # The property exists as a 'null' value.
+    def test_set_climatological(self):
+        # The property exists, =False, can set to False, can not set otherwise.
+        self.assertTrue(hasattr(self.meshcoord, "climatological"))
         self.assertFalse(self.meshcoord.climatological)
+        self.meshcoord.climatological = False
+        with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
+            self.meshcoord.climatological = True
 
 
 class Test___eq__(tests.IrisTest):
