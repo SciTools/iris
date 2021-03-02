@@ -2687,7 +2687,7 @@ class MeshCoord(AuxCoord):
     """
     Geographic coordinate values of data on an unstructured mesh.
 
-    A MeshCoord contains a `~iris.experiomental.ugrid.Mesh`.
+    A MeshCoord references a `~iris.experiomental.ugrid.Mesh`.
     When contained in a `~iris.cube.Cube` it connects the cube to the Mesh,
     and records (a) which cube dimension is mapped to the mesh, and (b) on
     which mesh location (e.g. 'face' or 'node') the cube data exists.
@@ -2702,11 +2702,11 @@ class MeshCoord(AuxCoord):
 
     The points and bounds contain coordinate values for the mesh elements,
     which depends on location.
-    For 'node', the ".points" contains node locations.
-    For 'edge', the ".bounds" contains edge endpoints, and the points contain
+    For 'node', the ``.points`` contains node locations.
+    For 'edge', the ``.bounds`` contains edge endpoints, and the ``.points`` contain
     edge locations (typically centres), if the Mesh contains them (optional).
-    For 'face', the bounds contain the face corners, and the points contain the
-    face location (optionally).
+    For 'face', the ``.bounds`` contain the face corners, and the ``.points`` contain the
+    face locations (typically centres), if the Mesh contains them (optional).
 
     .. note::
         As described above, it is possible for a MeshCoord to have bounds but
