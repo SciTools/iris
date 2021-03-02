@@ -853,7 +853,7 @@ class TestMaskedArrays(tests.IrisTest):
 
     def test_incompatible_dimensions(self):
         data3 = ma.MaskedArray(
-            [[3, 3, 3, 4], [2, 2, 2]], mask=[[0, 1, 0, 0], [0, 1, 1]]
+            [[3, 3, 3, 4], [2, 2, 2, 2]], mask=[[0, 1, 0, 0], [0, 1, 1, 1]]
         )
         with self.assertRaises(ValueError):
             # Incompatible dimensions.
