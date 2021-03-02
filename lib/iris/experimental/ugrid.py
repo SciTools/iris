@@ -2773,7 +2773,7 @@ class MeshCoord(AuxCoord):
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
         # N.B. mesh.coord returns a dict
-        node_coords = self.mesh.coord(node=True, axis=self.axis)
+        node_coords = self.mesh.coord(include_nodes=True, axis=self.axis)
         (node_coord,) = list(node_coords.values())
         # Call parent constructor to handle the common constructor args.
         super().__init__(
@@ -2911,21 +2911,21 @@ class MeshCoord(AuxCoord):
         # TODO: replace wth fully dynamic lazy calcs (slightly more complex).
         mesh, location, axis = self.mesh, self.location, self.axis
         # N.B. mesh.coord returns a dict
-        node_coords = self.mesh.coord(node=True, axis=axis)
+        node_coords = self.mesh.coord(include_nodes=True, axis=axis)
         (node_coord,) = list(node_coords.values())
         if location == "node":
             points = node_coord.core_points()
             bounds = None
         elif location == "edge":
             # N.B. mesh.coord returns a dict
-            edge_coords = self.mesh.coord(edge=True, axis=self.axis)
+            edge_coords = self.mesh.coord(include_edges=True, axis=self.axis)
             (edge_coord,) = list(edge_coords.values())
             points = edge_coord.core_points()
             inds = mesh.edge_node_connectivity.core_indices()
             bounds = node_coord.core_points()[inds]
         elif location == "face":
             # N.B. mesh.coord returns a dict
-            face_coords = self.mesh.coord(face=True, axis=self.axis)
+            face_coords = self.mesh.coord(include_faces=True, axis=self.axis)
             (face_coord,) = list(face_coords.values())
             points = face_coord.core_points()  # For now, this always exists
             inds = mesh.face_node_connectivity.core_indices()
