@@ -26,6 +26,7 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.util
+from iris.experimental.ugrid import Connectivity
 
 
 #
@@ -871,6 +872,121 @@ class CFMeasureVariable(CFVariable):
         return result
 
 
+class UGridConnectivityVariable(CFVariable):
+    cf_identities = Connectivity.UGRID_CF_ROLES
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID connectivity variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for connectivity variable references, iterating through
+            # the valid cf roles.
+            for cf_identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, cf_identity, None)
+
+                if nc_var_att is not None:
+                    # UGRID only allows for one of each connectivity cf role.
+                    name = nc_var_att
+                    if name not in ignore:
+                        if name not in variables:
+                            if warn:
+                                message = (
+                                    f"Missing CF-UGRID {name}, referenced by "
+                                    f"netCDF variable {nc_var_name}"
+                                )
+                                warnings.warn(message)
+                        else:
+                            # Restrict to non-string type i.e. not a
+                            # CFLabelVariable.
+                            if not _is_str_dtype(variables[name]):
+                                result[name] = UGridConnectivityVariable(
+                                    name, variables[name]
+                                )
+
+        return result
+
+
+class UGridAuxiliaryCoordinateVariable(CFVariable):
+    cf_identities = (
+        "node_coordinates",
+        "edge_coordinates",
+        "face_coordinates",
+    )
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify any CF-UGRID-relevant auxiliary coordinate variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for UGRID auxiliary coordinate variable references.
+            for cf_identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, cf_identity, None)
+
+                if nc_var_att is not None:
+                    for name in nc_var_att.split():
+                        if name not in ignore:
+                            if name not in variables:
+                                if warn:
+                                    message = (
+                                        f"Missing CF-netCDF auxiliary "
+                                        f"coordinate variable {name}, "
+                                        f"referenced by netCDF variable "
+                                        f"{nc_var_name}"
+                                    )
+                                    warnings.warn(message)
+                            else:
+                                # Restrict to non-string type i.e. not a
+                                # CFLabelVariable.
+                                if not _is_str_dtype(variables[name]):
+                                    result[
+                                        name
+                                    ] = UGridAuxiliaryCoordinateVariable(
+                                        name, variables[name]
+                                    )
+
+        return result
+
+
+class UGridMeshVariable(CFVariable):
+    cf_identity = "mesh"
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID mesh variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for mesh variable references.
+            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+
+            if nc_var_att is not None:
+                # UGRID only allows for 1 mesh per variable.
+                name = nc_var_att
+                if name not in ignore:
+                    if name not in variables:
+                        if warn:
+                            message = (
+                                f"Missing CF-UGRID mesh {name}, referenced "
+                                f"by netCDF variable {nc_var_name}"
+                            )
+                            warnings.warn(message)
+                    else:
+                        # Restrict to non-string type i.e. not a
+                        # CFLabelVariable.
+                        if not _is_str_dtype(variables[name]):
+                            result[name] = UGridMeshVariable(
+                                name, variables[name]
+                            )
+
+        return result
+
+
 ################################################################################
 class CFGroup(MutableMapping):
     """
@@ -949,6 +1065,21 @@ class CFGroup(MutableMapping):
         """Collection of CF-netCDF measure variables."""
         return self._cf_getter(CFMeasureVariable)
 
+    @property
+    def connectivities(self):
+        """Collection of CF-UGRID connectivity variables."""
+        return self._cf_getter(UGridConnectivityVariable)
+
+    @property
+    def ugrid_coords(self):
+        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
+        return self._cf_getter(UGridAuxiliaryCoordinateVariable)
+
+    @property
+    def meshes(self):
+        """Collection of CF-UGRID mesh variables."""
+        return self._cf_getter(UGridMeshVariable)
+
     def keys(self):
         """Return the names of all the CF-netCDF variables in the group."""
         return self._cf_variables.keys()
@@ -1020,6 +1151,8 @@ class CFReader:
             CFGridMappingVariable,
             CFLabelVariable,
             CFMeasureVariable,
+            UGridConnectivityVariable,
+            UGridMeshVariable,
         )
 
         #: Collection of CF-netCDF variables associated with this netCDF file
@@ -1061,14 +1194,21 @@ class CFReader:
         self.cf_group.update(coords)
         coordinate_names = list(self.cf_group.coordinates.keys())
 
+        # Identify CF-UGRID-relevant coordinates next - need to be able to
+        # exclude these from standard auxiliary coordinate identification.
+        ugrid_coords = UGridAuxiliaryCoordinateVariable.identify(
+            self._dataset.variables
+        )
+        self.cf_group.update(ugrid_coords)
+        ugrid_coord_names = list(self.cf_group.ugrid_coords.keys())
+
         # Identify all CF variables EXCEPT for the "special cases".
         for variable_type in self._variable_types:
-            # Prevent grid mapping variables being mis-identified as CF coordinate variables.
-            ignore = (
-                None
-                if issubclass(variable_type, CFGridMappingVariable)
-                else coordinate_names
-            )
+            ignore = ugrid_coord_names
+            if issubclass(variable_type, CFGridMappingVariable):
+                # Prevent grid mapping variables being mis-identified as CF
+                # coordinate variables.
+                ignore += coordinate_names
             self.cf_group.update(
                 variable_type.identify(self._dataset.variables, ignore=ignore)
             )
@@ -1107,6 +1247,9 @@ class CFReader:
             - set(self.cf_group.grid_mappings)
             - set(self.cf_group.labels)
             - set(self.cf_group.cell_measures)
+            - set(self.cf_group.connectivities)
+            - set(self.cf_group.ugrid_coords)
+            - set(self.cf_group.meshes)
         )
 
         for name in data_variable_names:
@@ -1118,17 +1261,27 @@ class CFReader:
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
+            ugrid_names = [
+                list(getattr(self.cf_group, v).keys())
+                for v in (
+                    "connectivities",
+                    "ugrid_coords",
+                    "meshes",
+                )
+            ]
+            # Collapse.
+            ugrid_names = [item for sublist in ugrid_names for item in sublist]
+
             coordinate_names = list(self.cf_group.coordinates.keys())
             cf_group = CFGroup()
 
             # Build CF variable relationships.
             for variable_type in self._variable_types:
-                # Prevent grid mapping variables being mis-identified as
-                # CF coordinate variables.
+                ignore = ugrid_names
                 if issubclass(variable_type, CFGridMappingVariable):
-                    ignore = None
-                else:
-                    ignore = coordinate_names
+                    # Prevent grid mapping variables being mis-identified as
+                    # CF coordinate variables.
+                    ignore += coordinate_names
                 match = variable_type.identify(
                     self._dataset.variables,
                     ignore=ignore,
