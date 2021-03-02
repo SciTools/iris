@@ -2828,24 +2828,44 @@ class MeshCoord(AuxCoord):
             msg = "Cannot set 'climatological' on a MeshCoord."
             raise ValueError(msg)
 
-    # Override Coord.copy, so that we can ensure it does not duplicate the Mesh
-    # object.
-    # FOR NOW: don't allow changing points/bounds at all.
-    def copy(self, points=None, bounds=None):
-        if points is not None or bounds is not None:
-            # Only allowed if both are provided, and match the existing shape.
-            # The values are then not used : It is just to support copy.
-            if (
-                points is None
-                or bounds is None
-                or points.shape != self.shape
-                or bounds.shape != self._bounds_dm.shape
-            ):
-                msg = "Cannot change the content of a MeshCoord."
-                raise ValueError(msg)
+    def __getitem__(self, keys):
+        # Disallow any sub-indexing, permitting *only* "self[:,]".
+        # We *don't* intend here to support indexing as such : the exception is
+        # just sufficient to enable cube slicing, when it does not affect the
+        # mesh dimension.  This works because Cube.__getitem__ passes us keys
+        # "normalised" with iris.util._build_full_slice_given_keys.
+        if keys != (slice(None),):
+            msg = "Cannot index a MeshCoord."
+            raise ValueError(msg)
 
-        # Make a new MeshCoord with copied args, except for the Mesh which must
-        # be the original.
+        # Translate "self[:,]" as "self.copy()".
+        return self.copy()
+
+    def copy(self, points=None, bounds=None):
+        """
+        Make a copy of the MeshCoord.
+
+        Kwargs:
+
+        * points, bounds (array):
+            Provided solely for signature compatibility with other types of
+            :class:`~iris.coords.Coord`.
+            In this case, if either is not 'None', an error is raised.
+
+        """
+        # Override Coord.copy, so that we can ensure it does not duplicate the
+        # Mesh object (via deepcopy).
+        # This avoids copying Meshes.  It is also required to allow a copied
+        # MeshCoord to be == the original, since for now Mesh == is only true
+        # for the same identical object.
+
+        # FOR NOW: also disallow changing points/bounds at all.
+        if points is not None or bounds is not None:
+            msg = "Cannot change the content of a MeshCoord."
+            raise ValueError(msg)
+
+        # Make a new MeshCoord with the same args :  The Mesh is the *same*
+        # as the original (not a copy).
         new_coord = MeshCoord(
             mesh=self.mesh, location=self.location, axis=self.axis
         )
@@ -2856,10 +2876,8 @@ class MeshCoord(AuxCoord):
         Make this equivalent to "shallow" copy, returning a new MeshCoord based
         on the same Mesh.
 
-        This is to avoid copying the Mesh, as
-        (a) that is very costly, and
-        (b) (at present) cannot produce a new Mesh that == the original, thus
-            would prevent the new MeshCoord == the original.
+        Required to prevent cube copying from copying the Mesh, which would
+        prevent "cube.copy() == cube" :  see notes for :meth:`copy`.
 
         """
         return self.copy()

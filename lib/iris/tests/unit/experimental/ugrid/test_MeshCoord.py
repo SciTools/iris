@@ -7,7 +7,6 @@
 Unit tests for the :class:`iris.experimental.ugrid.MeshCoord`.
 
 """
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
@@ -166,8 +165,59 @@ class Test__readonly_properties(tests.IrisTest):
             self.meshcoord.climatological = True
 
 
+class Test__points_and_bounds(tests.IrisTest):
+    # TODO: expand tests for the calculated results, their properties and
+    #  dynamic behaviour, when we implement dynamic calculations.
+    # TODO: test with missing optional mesh elements, i.e. face/edge locations,
+    #  when we support that.
+    def test_node(self):
+        meshcoord = _create_test_meshcoord(location="node")
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertIsNone(meshcoord.core_bounds())
+        self.assertArrayAllClose(
+            meshcoord.points, 1100 + np.arange(_TEST_N_NODES)
+        )
+
+    def test_edge(self):
+        meshcoord = _create_test_meshcoord(location="edge")
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
+        points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
+        self.assertEqual(points.shape, meshcoord.shape)
+        self.assertEqual(bounds.shape, meshcoord.shape + (2,))
+        self.assertArrayAllClose(
+            meshcoord.points, [2100, 2101, 2102, 2103, 2104]
+        )
+        self.assertArrayAllClose(
+            meshcoord.bounds,
+            [
+                (1105, 1106),
+                (1107, 1108),
+                (1109, 1110),
+                (1111, 1112),
+                (1113, 1114),
+            ],
+        )
+
+    def test_face(self):
+        meshcoord = _create_test_meshcoord(location="face")
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
+        points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
+        self.assertEqual(points.shape, meshcoord.shape)
+        self.assertEqual(bounds.shape, meshcoord.shape + (4,))
+        self.assertArrayAllClose(meshcoord.points, [3100, 3101, 3102])
+        self.assertArrayAllClose(
+            meshcoord.bounds,
+            [
+                (1100, 1101, 1102, 1103),
+                (1104, 1105, 1106, 1107),
+                (1108, 1109, 1110, 1111),
+            ],
+        )
+
+
 class Test___eq__(tests.IrisTest):
-    # We must do this test with *actual* Mesh objects.
     def setUp(self):
         self.mesh = _create_test_mesh()
 
@@ -209,44 +259,38 @@ class Test__copy(tests.IrisTest):
         # In this case, they should share *NOT* copy the Mesh object.
         self.assertIs(meshcoord2.mesh, meshcoord.mesh)
 
-    def test_copy__newdata_whole(self):
-        # This is equivalent to a plain copy.
-        # It is required to make [:] the same as copy, so we can slice cubes.
-        meshcoord = _create_test_meshcoord()
-        meshcoord2 = meshcoord.copy(
-            points=np.zeros(meshcoord.shape),
-            bounds=np.zeros(meshcoord._bounds_dm.shape),
-        )
-        self.assertEqual(meshcoord2, meshcoord)
-
-    def test_fail_copy_pointsonly(self):
+    def test_fail_copy_newpoints(self):
         meshcoord = _create_test_meshcoord()
         with self.assertRaisesRegex(ValueError, "Cannot change the content"):
-            meshcoord.copy(points=np.zeros(meshcoord.shape))
+            meshcoord.copy(points=meshcoord.points)
 
-    def test_fail_copy_boundsonly(self):
+    def test_fail_copy_newbounds(self):
         meshcoord = _create_test_meshcoord()
         with self.assertRaisesRegex(ValueError, "Cannot change the content"):
-            meshcoord.copy(bounds=np.zeros(meshcoord._bounds_dm.shape))
-
-    def test_fail_copy_shapechange(self):
-        meshcoord = _create_test_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot change the content"):
-            meshcoord.copy(points=np.zeros((7,)), bounds=np.zeros((7, 4)))
+            meshcoord.copy(bounds=meshcoord.bounds)
 
 
 class Test__getitem__(tests.IrisTest):
-    def test_slice_whole(self):
+    def test_slice_wholeslice_1tuple(self):
+        # The only slicing case that we support, to enable cube slicing.
         meshcoord = _create_test_meshcoord()
-        meshcoord2 = meshcoord[:]
+        meshcoord2 = meshcoord[
+            :,
+        ]
         self.assertIsNot(meshcoord2, meshcoord)
         self.assertEqual(meshcoord2, meshcoord)
         # In this case, we should *NOT* copy the linked Mesh object.
         self.assertIs(meshcoord2.mesh, meshcoord.mesh)
 
+    def test_slice_whole_slice_singlekey(self):
+        # A slice(None) also fails, if not presented in a 1-tuple.
+        meshcoord = _create_test_meshcoord()
+        with self.assertRaisesRegex(ValueError, "Cannot index"):
+            meshcoord[:]
+
     def test_fail_slice_part(self):
         meshcoord = _create_test_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot change the content"):
+        with self.assertRaisesRegex(ValueError, "Cannot index"):
             meshcoord[:1]
 
 
