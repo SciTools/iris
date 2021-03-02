@@ -18,7 +18,8 @@ This document explains the changes made to Iris for this release
 
    🐛 **Bugs Fixed**
 
-   #.
+   #. `@jonseddon`_ handled a malformed ``um_stash_source`` CF variable attribute in
+      a netCDF file rather than raising a ``ValueError``. (:pull:`4035`)
 
    📚 **Documentation**
 
