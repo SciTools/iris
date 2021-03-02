@@ -85,7 +85,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 #
 compute_credits_template: &CREDITS_TEMPLATE
   # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
-  use_compute_credits: $CIRRUS_REPO_FULL_NAME == 'SciTools/iris' && $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_PR_DRAFT == 'false' && $CIRRUS_BASE_BRANCH == 'master' && $CIRRUS_PR != ''
+  use_compute_credits: ${CIRRUS_REPO_FULL_NAME} == "SciTools/iris" && ${CIRRUS_USER_COLLABORATOR} == "true" && ${CIRRUS_PR_DRAFT} == "false" && ${CIRRUS_BASE_BRANCH} == "master" && ${CIRRUS_PR} != ""
 
 
 #
@@ -106,14 +106,14 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 # Linting
 #
 lint_task:
-  only_if: $SKIP_LINT_TASK == ""
+  only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
   name: "${CIRRUS_OS}: flake8 and black"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
+      - echo "${CIRRUS_TASK_NAME} py${PYTHON_VERSION}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
   lint_script:
     - pip list
@@ -127,7 +127,7 @@ lint_task:
 # Testing Minimal (Linux)
 #
 test_minimal_task:
-  only_if: $SKIP_TEST_MINIMAL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
+  only_if: ${SKIP_TEST_MINIMAL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -152,7 +152,7 @@ test_minimal_task:
 # Testing Full (Linux)
 #
 test_full_task:
-  only_if: $SKIP_TEST_FULL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
+  only_if: ${SKIP_TEST_FULL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -179,7 +179,7 @@ test_full_task:
 # Testing Documentation Gallery (Linux)
 #
 gallery_task:
-  only_if: $SKIP_GALLERY_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_GALLERY_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -202,7 +202,7 @@ gallery_task:
 # Testing Documentation (Linux)
 #
 doctest_task:
-  only_if: $SKIP_DOCTEST_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -231,7 +231,7 @@ doctest_task:
 # Testing Documentation Link Check (Linux)
 #
 linkcheck_task:
-  only_if: $SKIP_LINKCHECK_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
