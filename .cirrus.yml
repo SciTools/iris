@@ -52,7 +52,6 @@ env:
 linux_task_template: &LINUX_TASK_TEMPLATE
   auto_cancellation: true
   env:
-    IRIS_REPO_DIR: ${CIRRUS_WORKING_DIR}
     PATH: ${HOME}/miniconda/bin:${PATH}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
   conda_cache:
