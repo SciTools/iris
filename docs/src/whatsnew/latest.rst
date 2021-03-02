@@ -62,6 +62,10 @@ This document explains the changes made to Iris for this release
 #. `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept
    the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
 
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases
+   where one cell's bounds align with the requested maximum and minimum, as
+   reported in :issue:`3391`. (:pull:`4046`)
+
 
 💣 Incompatible Changes
 =======================
