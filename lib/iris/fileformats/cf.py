@@ -889,7 +889,7 @@ class UGridConnectivityVariable(CFVariable):
 
                 if nc_var_att is not None:
                     # UGRID only allows for one of each connectivity cf role.
-                    name = nc_var_att
+                    name = nc_var_att.strip()
                     if name not in ignore:
                         if name not in variables:
                             if warn:
@@ -906,6 +906,34 @@ class UGridConnectivityVariable(CFVariable):
                                     name, variables[name]
                                 )
 
+        return result
+
+    def spans(self, cf_variable):
+        """
+        Determine whether the dimensionality of this variable
+        is a subset of the specified target variable.
+
+        Note that, by default scalar variables always span the
+        dimensionality of the target variable.
+
+        Args:
+
+        * cf_variable:
+            Compare dimensionality with the :class:`CFVariable`.
+
+        Returns:
+            Boolean.
+
+        """
+        # Scalar variables always span the target variable.
+        result = True
+        if self.dimensions:
+            source = self.dimensions
+            target = cf_variable.dimensions
+            # Ignore the bounds extent dimension.
+            result = set(source[:-1]).issubset(target) or set(
+                source[1:]
+            ).issubset(target)
         return result
 
 
@@ -967,7 +995,7 @@ class UGridMeshVariable(CFVariable):
 
             if nc_var_att is not None:
                 # UGRID only allows for 1 mesh per variable.
-                name = nc_var_att
+                name = nc_var_att.strip()
                 if name not in ignore:
                     if name not in variables:
                         if warn:
@@ -1152,6 +1180,7 @@ class CFReader:
             CFLabelVariable,
             CFMeasureVariable,
             UGridConnectivityVariable,
+            UGridAuxiliaryCoordinateVariable,
             UGridMeshVariable,
         )
 
@@ -1194,21 +1223,14 @@ class CFReader:
         self.cf_group.update(coords)
         coordinate_names = list(self.cf_group.coordinates.keys())
 
-        # Identify CF-UGRID-relevant coordinates next - need to be able to
-        # exclude these from standard auxiliary coordinate identification.
-        ugrid_coords = UGridAuxiliaryCoordinateVariable.identify(
-            self._dataset.variables
-        )
-        self.cf_group.update(ugrid_coords)
-        ugrid_coord_names = list(self.cf_group.ugrid_coords.keys())
-
         # Identify all CF variables EXCEPT for the "special cases".
         for variable_type in self._variable_types:
-            ignore = ugrid_coord_names
-            if issubclass(variable_type, CFGridMappingVariable):
-                # Prevent grid mapping variables being mis-identified as CF
-                # coordinate variables.
-                ignore += coordinate_names
+            # Prevent grid mapping variables being mis-identified as CF coordinate variables.
+            ignore = (
+                None
+                if issubclass(variable_type, CFGridMappingVariable)
+                else coordinate_names
+            )
             self.cf_group.update(
                 variable_type.identify(self._dataset.variables, ignore=ignore)
             )
@@ -1261,27 +1283,22 @@ class CFReader:
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
-            ugrid_names = [
-                list(getattr(self.cf_group, v).keys())
-                for v in (
-                    "connectivities",
-                    "ugrid_coords",
-                    "meshes",
-                )
-            ]
-            # Collapse.
-            ugrid_names = [item for sublist in ugrid_names for item in sublist]
-
+            is_mesh_var = isinstance(cf_variable, UGridMeshVariable)
             coordinate_names = list(self.cf_group.coordinates.keys())
+            ugrid_coord_names = list(self.cf_group.ugrid_coords.keys())
             cf_group = CFGroup()
 
             # Build CF variable relationships.
             for variable_type in self._variable_types:
-                ignore = ugrid_names
-                if issubclass(variable_type, CFGridMappingVariable):
-                    # Prevent grid mapping variables being mis-identified as
-                    # CF coordinate variables.
+                ignore = []
+                # Avoid UGridAuxiliaryCoordinateVariables also being
+                # processed as CFAuxiliaryCoordinateVariables.
+                if not is_mesh_var:
+                    ignore += ugrid_coord_names
+                # Prevent grid mapping variables being mis-identified as CF coordinate variables.
+                if not issubclass(variable_type, CFGridMappingVariable):
                     ignore += coordinate_names
+
                 match = variable_type.identify(
                     self._dataset.variables,
                     ignore=ignore,
@@ -1290,7 +1307,8 @@ class CFReader:
                 )
                 # Sanity check dimensionality coverage.
                 for cf_name, cf_var in match.items():
-                    if cf_var.spans(cf_variable):
+                    # No span check is necessary if variable is attached to a mesh.
+                    if is_mesh_var or cf_var.spans(cf_variable):
                         cf_group[cf_name] = self.cf_group[cf_name]
                     else:
                         # Register the ignored variable.
