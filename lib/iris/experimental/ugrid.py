@@ -889,6 +889,8 @@ class Mesh(CFVariableMixin):
     AXES = ("x", "y")
     #: Valid range of values for ``topology_dimension``.
     TOPOLOGY_DIMENSIONS = (1, 2)
+    #: Valid mesh locations.
+    LOCATIONS = ("edge", "node", "face")
 
     def __init__(
         self,
