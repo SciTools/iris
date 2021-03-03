@@ -38,8 +38,10 @@ env:
   NOX_CACHE_BUILD: "0"
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
-  # Pip package to be upgraded/installed.
+  # Pip packages to be upgraded/installed.
   PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
+  # Conda packages to be installed.
+  CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
   IRIS_TEST_DATA_VERSION: "2.0.0"
   # Base directory for the iris-test-data.
@@ -59,6 +61,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
       - echo "${CIRRUS_OS} $(sha256sum miniconda.sh)"
+      - echo "${CONDA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
     populate_script:
       - bash miniconda.sh -b -p ${HOME}/miniconda
@@ -66,7 +69,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
       - conda update --quiet --name base conda
-      - conda install --quiet --name base nox pip
+      - conda install --quiet --name base ${CONDA_CACHE_PACKAGES}
   cartopy_cache:
     folder: ${HOME}/.local/share/cartopy
     fingerprint_script:
