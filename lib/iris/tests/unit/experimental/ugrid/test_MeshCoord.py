@@ -42,8 +42,10 @@ def _create_test_mesh():
     node_x = AuxCoord(
         1100 + np.arange(_TEST_N_NODES),
         standard_name="longitude",
+        units="degrees_east",
         long_name="long-name",
-        var_name="var",
+        var_name="var-name",
+        attributes={"a": 1, "b": "c"},
     )
     node_y = AuxCoord(
         1200 + np.arange(_TEST_N_NODES), standard_name="latitude"
@@ -329,6 +331,129 @@ class Test__getitem__(tests.IrisTest):
         meshcoord = _create_test_meshcoord()
         with self.assertRaisesRegex(ValueError, "Cannot index"):
             meshcoord[:1]
+
+
+class Test__str_repr(tests.IrisTest):
+    def setUp(self):
+        mesh = _create_test_mesh()
+        self.mesh = mesh
+        # Give mesh itself a name: makes a difference between str and repr.
+        self.mesh.rename("test_mesh")
+        self.meshcoord = _create_test_meshcoord(mesh=mesh)
+
+    def _expected_elements_regexp(
+        self,
+        mesh_strstyle=True,
+        standard_name=True,
+        long_name=True,
+        attributes=True,
+    ):
+        regexp = r"^MeshCoord\(mesh="
+        if mesh_strstyle:
+            regexp += r"Mesh\('test_mesh'\)"
+        else:
+            regexp += "<Mesh object at .*>"
+        regexp += ", location='face', axis='x'"
+        if standard_name:
+            regexp += ", standard_name='longitude'"
+        regexp += r", units=Unit\('degrees_east'\)"
+        if long_name:
+            regexp += ", long_name='long-name'"
+        if attributes:
+            regexp += r", attributes={'a': 1, 'b': 'c'}"
+        regexp += r"\)$"
+        return regexp
+
+    def test_repr(self):
+        result = repr(self.meshcoord)
+        re_expected = (
+            r"MeshCoord\(mesh=<Mesh object at .*>"
+            r", location='face', axis='x'"
+            r".*\)"
+        )
+        re_expected = self._expected_elements_regexp(mesh_strstyle=False)
+        self.assertRegex(result, re_expected)
+
+    def test__str__(self):
+        result = str(self.meshcoord)
+        re_expected = (
+            r"MeshCoord\(mesh=Mesh\('test_mesh'\)"
+            r", location='face', axis='x'"
+            r".*\)"
+        )
+        re_expected = self._expected_elements_regexp(mesh_strstyle=True)
+        self.assertRegex(result, re_expected)
+
+    def test_alternative_location_and_axis(self):
+        meshcoord = _create_test_meshcoord(
+            mesh=self.mesh, location="edge", axis="y"
+        )
+        result = str(meshcoord)
+        re_expected = r", location='edge', axis='y'"
+        self.assertRegex(result, re_expected)
+
+    def _check_str_additional(self, standard_name=True, long_name=True):
+        result = str(self.meshcoord)
+        expects = [
+            r"MeshCoord\(mesh=Mesh\('test_mesh'\)",
+            r", location='face', axis='x'",
+        ]
+        if standard_name:
+            expects += [", standard_name='longitude'"]
+        expects += [r", units=Unit\('degrees_east'\)"]
+        if long_name:
+            expects += [", long_name='long-name'"]
+        expects += r"\)"
+        re_expected = "".join(expects)
+        self.assertRegex(result, re_expected)
+
+    # def test_all_additional(self):
+    #     self._check_str_additional()
+
+    def test_str_no_long_name(self):
+        mesh = self.mesh
+        # Remove the long_name of the node coord in the mesh.
+        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord.long_name = None
+        # Make a new meshcoord, based on the modified mesh.
+        meshcoord = _create_test_meshcoord(mesh=self.mesh)
+        result = str(meshcoord)
+        re_expected = self._expected_elements_regexp(long_name=False)
+        self.assertRegex(result, re_expected)
+
+    def test_str_no_standard_name(self):
+        mesh = self.mesh
+        # Remove the standard_name of the node coord in the mesh.
+        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord.standard_name = None
+        node_coord.axis = "x"  # This is required : but it's a kludge !!
+        # Make a new meshcoord, based on the modified mesh.
+        meshcoord = _create_test_meshcoord(mesh=self.mesh)
+        result = str(meshcoord)
+        re_expected = self._expected_elements_regexp(standard_name=False)
+        self.assertRegex(result, re_expected)
+
+    def test_str_no_attributes(self):
+        mesh = self.mesh
+        # Remove the standard_name of the node coord in the mesh.
+        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord.attributes = None
+        # Make a new meshcoord, based on the modified mesh.
+        meshcoord = _create_test_meshcoord(mesh=self.mesh)
+        result = str(meshcoord)
+        re_expected = self._expected_elements_regexp(attributes=False)
+        self.assertRegex(result, re_expected)
+
+    def test_str_empty_attributes(self):
+        mesh = self.mesh
+        # Remove the standard_name of the node coord in the mesh.
+        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord.attributes.clear()
+        # Make a new meshcoord, based on the modified mesh.
+        meshcoord = _create_test_meshcoord(mesh=self.mesh)
+        result = str(meshcoord)
+        re_expected = self._expected_elements_regexp(attributes=False)
+        self.assertRegex(result, re_expected)
 
 
 class Test_cube_containment(tests.IrisTest):
