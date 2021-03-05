@@ -50,8 +50,8 @@ __all__ = [
     "MeshFaceCoords",
     "MeshNodeCoords",
     "MeshMetadata",
-    "MeshCoordMetadata",
     "MeshCoord",
+    "MeshCoordMetadata",
 ]
 
 
@@ -2687,10 +2687,11 @@ class MeshCoord(AuxCoord):
     """
     Geographic coordinate values of data on an unstructured mesh.
 
-    A MeshCoord references a `~iris.experiomental.ugrid.Mesh`.
-    When contained in a `~iris.cube.Cube` it connects the cube to the Mesh,
-    and records (a) which cube dimension is mapped to the mesh, and (b) on
-    which mesh location (e.g. 'face' or 'node') the cube data exists.
+    A MeshCoord references a `~iris.experimental.ugrid.Mesh`.
+    When contained in a `~iris.cube.Cube` it connects the cube to the Mesh.
+    It records (a) which 1-D cube dimension represents the unstructured mesh,
+    and (b) which  mesh 'location' the cube data is mapped to -- i.e. is it
+    data on 'face's, 'edge's or 'node's.
 
     A MeshCoord also specifies its 'axis' : 'x' or 'y'.  Its values are then,
     accordingly, longitudes or latitudes.  The values are taken from the
@@ -2719,11 +2720,6 @@ class MeshCoord(AuxCoord):
 
     """
 
-    # Note: the valid mesh locations are effectively part of the Mesh api, but
-    # it doesn't provide them in a simple form, so we define our own here.
-    # TODO: make this a public item of the Mesh class ?
-    VALID_MESH_LOCATIONS = ("face", "edge", "node")
-
     def __init__(
         self,
         mesh,
@@ -2745,10 +2741,10 @@ class MeshCoord(AuxCoord):
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
 
-        if location not in self.VALID_MESH_LOCATIONS:
+        if location not in Mesh.LOCATIONS:
             msg = (
                 f"'location' of {location} is not a valid Mesh location', "
-                f"must be one of {self.VALID_MESH_LOCATIONS}."
+                f"must be one of {Mesh.LOCATIONS}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.

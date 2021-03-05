@@ -124,7 +124,7 @@ class Test___init__(tests.IrisTest):
             _create_test_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
-        for loc in ("face", "edge", "node"):
+        for loc in Mesh.LOCATIONS:
             meshcoord = _create_test_meshcoord(location=loc)
             self.assertEqual(meshcoord.location, loc)
 
@@ -321,7 +321,6 @@ class Test_cube_containment(tests.IrisTest):
         cube = self.cube
         self.assertIs(cube.coord(standard_name="longitude"), meshcoord)
         self.assertIs(cube.coord(long_name="long-name"), meshcoord)
-        # self.assertIs(cube.coord(var_name="var"), meshcoord)
 
     def test_find_by_axis(self):
         meshcoord = self.meshcoord
