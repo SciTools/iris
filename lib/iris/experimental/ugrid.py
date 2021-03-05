@@ -2890,7 +2890,7 @@ class MeshCoord(AuxCoord):
             eq = self.mesh == other.mesh  # N.B. 'mesh' not in metadata.
             if eq is not NotImplemented and eq:
                 # Compare rest of metadata, but not points/bounds.
-                eq = eq and self.metadata == other.metadata
+                eq = self.metadata == other.metadata
 
         return eq
 
