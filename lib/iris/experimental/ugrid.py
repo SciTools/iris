@@ -947,7 +947,7 @@ class Mesh(CFVariableMixin):
             if result not in self.AXES:
                 emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
                 raise ValueError(emsg)
-            return f"{location}_{axis}"
+            return f"{location}_{result}"
 
         if not isinstance(node_coords_and_axes, Iterable):
             node_coords_and_axes = [node_coords_and_axes]
