@@ -47,4 +47,4 @@
 
 <p align="center">
 See the <a href="https://scitools-iris.readthedocs.io/en/latest/">documentation</a> for the <b>latest development version</b> of Iris.
-</P>
+</p>
