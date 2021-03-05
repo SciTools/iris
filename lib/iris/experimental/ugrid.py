@@ -1889,16 +1889,23 @@ class Mesh(CFVariableMixin):
     # def to_AuxCoords(self, location):
     #     # factory method
     #     # return the lazy AuxCoord(...), AuxCoord(...)
-    #
-    # def to_MeshCoord(self, location, axis):
-    #     # factory method
-    #     # return MeshCoord(..., location=location, axis=axis)
-    #     # use Connectivity.indices_by_src() for fetching indices, passing in the lazy_indices() result as an argument.
-    #
-    # def to_MeshCoords(self, location):
-    #     # factory method
-    #     # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
-    #     # use Connectivity.indices_by_src for fetching indices, passing in the lazy_indices() result as an argument.
+
+    def to_MeshCoord(self, location, axis):
+        # TODO: docstring.
+        # TODO: just immediately automatically generate for all locations
+        #  and cache in [pending] mesh registry?
+        # factory method
+        return MeshCoord(mesh=self, location=location, axis=axis)
+
+    def to_MeshCoords(self, location):
+        # TODO: docstring.
+        # TODO: just immediately automatically generate for all locations
+        #  and cache in [pending] mesh registry?
+        # factory method
+        result = [
+            self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES
+        ]
+        return tuple(result)
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
         """

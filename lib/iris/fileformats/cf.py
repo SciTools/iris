@@ -873,7 +873,9 @@ class CFMeasureVariable(CFVariable):
 
 
 class UGridConnectivityVariable(CFVariable):
-    cf_identities = Connectivity.UGRID_CF_ROLES
+    # TODO: migrate to iris.experimental.ugrid.
+    # TODO: docstring.
+    cf_identity = Connectivity.UGRID_CF_ROLES
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -884,8 +886,8 @@ class UGridConnectivityVariable(CFVariable):
         for nc_var_name, nc_var in target.items():
             # Check for connectivity variable references, iterating through
             # the valid cf roles.
-            for cf_identity in cls.cf_identities:
-                nc_var_att = getattr(nc_var, cf_identity, None)
+            for identity in cls.cf_identity:
+                nc_var_att = getattr(nc_var, identity, None)
 
                 if nc_var_att is not None:
                     # UGRID only allows for one of each connectivity cf role.
@@ -938,7 +940,9 @@ class UGridConnectivityVariable(CFVariable):
 
 
 class UGridAuxiliaryCoordinateVariable(CFVariable):
-    cf_identities = (
+    # TODO: migrate to iris.experimental.ugrid.
+    # TODO: docstring.
+    cf_identity = (
         "node_coordinates",
         "edge_coordinates",
         "face_coordinates",
@@ -952,8 +956,8 @@ class UGridAuxiliaryCoordinateVariable(CFVariable):
         # Identify any CF-UGRID-relevant auxiliary coordinate variables.
         for nc_var_name, nc_var in target.items():
             # Check for UGRID auxiliary coordinate variable references.
-            for cf_identity in cls.cf_identities:
-                nc_var_att = getattr(nc_var, cf_identity, None)
+            for identity in cls.cf_identity:
+                nc_var_att = getattr(nc_var, identity, None)
 
                 if nc_var_att is not None:
                     for name in nc_var_att.split():
@@ -981,6 +985,8 @@ class UGridAuxiliaryCoordinateVariable(CFVariable):
 
 
 class UGridMeshVariable(CFVariable):
+    # TODO: migrate to iris.experimental.ugrid.
+    # TODO: docstring.
     cf_identity = "mesh"
 
     @classmethod
@@ -1094,17 +1100,20 @@ class CFGroup(MutableMapping):
         return self._cf_getter(CFMeasureVariable)
 
     @property
-    def connectivities(self):
+    def _connectivities(self):
+        # TODO: make public API when ugrid moved out of experimental module.
         """Collection of CF-UGRID connectivity variables."""
         return self._cf_getter(UGridConnectivityVariable)
 
     @property
-    def ugrid_coords(self):
+    def _ugrid_coords(self):
+        # TODO: make public API when ugrid moved out of experimental module.
         """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
         return self._cf_getter(UGridAuxiliaryCoordinateVariable)
 
     @property
-    def meshes(self):
+    def _meshes(self):
+        # TODO: make public API when ugrid moved out of experimental module.
         """Collection of CF-UGRID mesh variables."""
         return self._cf_getter(UGridMeshVariable)
 
@@ -1179,6 +1188,7 @@ class CFReader:
             CFGridMappingVariable,
             CFLabelVariable,
             CFMeasureVariable,
+            # TODO: only handle UGRID when called from experimental.ugrid.load().
             UGridConnectivityVariable,
             UGridAuxiliaryCoordinateVariable,
             UGridMeshVariable,
@@ -1269,6 +1279,7 @@ class CFReader:
             - set(self.cf_group.grid_mappings)
             - set(self.cf_group.labels)
             - set(self.cf_group.cell_measures)
+            # TODO: only handle UGRID when called from experimental.ugrid.load().
             - set(self.cf_group.connectivities)
             - set(self.cf_group.ugrid_coords)
             - set(self.cf_group.meshes)

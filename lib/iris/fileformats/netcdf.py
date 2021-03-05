@@ -632,12 +632,19 @@ def _load_cube(engine, cf, cf_var, filename):
     fix_attributes_all_elements("ancillary_variables")
     fix_attributes_all_elements("cell_measures")
 
+    # TODO: implement Mesh and MeshCoord directory for sharing between
+    #  phenomena from a single load call.
+    # Safe to release without being in experimental.ugrid - different behaviour
+    # dictated by presence of meshes. Instead modify cf.CFReader to respond
+    # specially to an alternative experimental.ugrid.load() function.
+    # TODO: create experimental.ugrid.load() tests.
     meshes = getattr(cf_var.cf_group, "meshes", {})
     # Only expect 1 mesh per cf_var.
     meshes_len = len(meshes)
     if meshes_len == 1:
         mesh = _mesh_build_mesh(list(meshes.values())[0], filename)
         assert cf_var.mesh == mesh.var_name
+
         mesh_elements = (
             list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
         )
@@ -646,6 +653,23 @@ def _load_cube(engine, cf, cf_var, filename):
             add_unused_attributes(
                 iris_object, cf.cf_group[iris_object.var_name]
             )
+
+        # Identify the cube's mesh dimension, for attaching MeshCoords.
+        locations_dimensions = {
+            "node": mesh.node_dimension,
+            "edge": mesh.edge_dimension,
+            "face": mesh.face_dimension,
+        }
+        mesh_dim_name = locations_dimensions[cf_var.location]
+        # (Only expecting 1 mesh dimension per cf_var).
+        mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+
+        # Attach MeshCoords.
+        mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+        for coord in mesh_coords:
+            # TODO: cube.add_mesh_coord? Isolate this to experimental.ugrid? How?
+            cube.add_aux_coord(coord, mesh_dim)
+
     elif meshes_len > 1:
         message = (
             f"Expected no more than 1 mesh per phenomenon, got: {meshes_len} ."
@@ -679,6 +703,11 @@ def _load_cube(engine, cf, cf_var, filename):
     _pyke_stats(engine, cf_var.cf_name)
 
     return cube
+
+
+###############################################################################
+# Migrate the section to experimental.ugrid, removing the mesh_ prefix from the
+# function names.
 
 
 def _mesh_get_names(cf_var, attributes):
@@ -838,6 +867,9 @@ def _mesh_build_mesh(mesh_var, file_path):
         coord_and_axis = _mesh_build_aux_coord(coord_var, file_path)
         coord = coord_and_axis[0]
 
+        # TODO: remove this hack pending iris#4053 fixed lazy handling.
+        _ = coord.points
+
         if coord.var_name in mesh_var.node_coordinates.split():
             node_coord_args.append(coord_and_axis)
             node_dimension = coord_var.dimensions[0]
@@ -873,6 +905,9 @@ def _mesh_build_mesh(mesh_var, file_path):
         assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
         connectivity_args.append(connectivity)
 
+        # TODO: remove this hack pending iris#4053 fixed lazy handling.
+        _ = connectivity.indices
+
         # If the mesh_var has not supplied the dimension name, it is safe to
         # fall back on the connectivity's first dimension's name.
         if edge_dimension is None and connectivity.src_location == "edge":
@@ -900,6 +935,10 @@ def _mesh_build_mesh(mesh_var, file_path):
     assert mesh.cf_role == mesh_var.cf_role
 
     return mesh
+
+
+# End of mesh loading functions.
+###############################################################################
 
 
 def _load_aux_factory(engine, cube):
@@ -1680,11 +1719,11 @@ class Saver:
                         or cf_var.standard_name != std_name
                     ):
                         # TODO: We need to resolve this corner-case where
-                        # the dimensionless vertical coordinate containing the
-                        # formula_terms is a dimension coordinate of the
-                        # associated cube and a new alternatively named
-                        # dimensionless vertical coordinate is required with
-                        # new formula_terms and a renamed dimension.
+                        #  the dimensionless vertical coordinate containing
+                        #  the formula_terms is a dimension coordinate of
+                        #  the associated cube and a new alternatively named
+                        #  dimensionless vertical coordinate is required
+                        #  with new formula_terms and a renamed dimension.
                         if cf_name in dimension_names:
                             msg = (
                                 "Unable to create dimensonless vertical "
