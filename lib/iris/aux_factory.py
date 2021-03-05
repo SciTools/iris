@@ -365,6 +365,185 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         return nd_values_by_key
 
 
+class AtmosphereSigmaFactory(AuxCoordFactory):
+    """Defines an atmosphere sigma coordinate factory."""
+
+    def __init__(
+        self, pressure_at_top=None, sigma=None, surface_air_pressure=None
+    ):
+        """Create class instance.
+
+        Creates an atmosphere sigma coordinate factory with the formula:
+
+        p(n, k, j, i) = pressure_at_top + sigma(k) *
+                        (surface_air_pressure(n, j, i) - pressure_at_top)
+
+        """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
+        super().__init__()
+
+        # Check that provided coordinates meet necessary conditions.
+        self._check_dependencies(pressure_at_top, sigma, surface_air_pressure)
+
+        # Initialize instance attributes
+        self.units = pressure_at_top.units
+        self.pressure_at_top = pressure_at_top
+        self.sigma = sigma
+        self.surface_air_pressure = surface_air_pressure
+        self.standard_name = "air_pressure"
+        self.attributes = {"positive": "down"}
+
+    @staticmethod
+    def _check_dependencies(pressure_at_top, sigma, surface_air_pressure):
+        """Check for sufficient coordinates."""
+        if any(
+            [
+                pressure_at_top is None,
+                sigma is None,
+                surface_air_pressure is None,
+            ]
+        ):
+            raise ValueError(
+                "Unable to construct atmosphere sigma coordinate factory due "
+                "to insufficient source coordinates"
+            )
+
+        # Check dimensions
+        if pressure_at_top.shape not in ((), (1,)):
+            raise ValueError(
+                f"Expected scalar 'pressure_at_top' coordinate, got shape "
+                f"{pressure_at_top.shape}"
+            )
+
+        # Check bounds
+        if sigma.nbounds not in (0, 2):
+            raise ValueError(
+                f"Invalid 'sigma' coordinate: must have either 0 or 2 bounds, "
+                f"got {sigma.nbounds:d}"
+            )
+        for coord in (pressure_at_top, surface_air_pressure):
+            if coord.nbounds:
+                msg = (
+                    f"Coordinate '{coord.name()}' has bounds. These will "
+                    "be disregarded"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=2)
+
+        # Check units
+        if sigma.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            sigma.units = cf_units.Unit("1")
+        if not sigma.units.is_dimensionless():
+            raise ValueError(
+                f"Invalid units: 'sigma' must be dimensionless, got "
+                f"'{sigma.units}'"
+            )
+        if pressure_at_top.units != surface_air_pressure.units:
+            raise ValueError(
+                f"Incompatible units: 'pressure_at_top' and "
+                f"'surface_air_pressure' must have the same units, got "
+                f"'{pressure_at_top.units}' and "
+                f"'{surface_air_pressure.units}'"
+            )
+        if not pressure_at_top.units.is_convertible("Pa"):
+            raise ValueError(
+                "Invalid units: 'pressure_at_top' and 'surface_air_pressure' "
+                "must have units of pressure"
+            )
+
+    @property
+    def dependencies(self):
+        """Return dependencies."""
+        dependencies = {
+            "pressure_at_top": self.pressure_at_top,
+            "sigma": self.sigma,
+            "surface_air_pressure": self.surface_air_pressure,
+        }
+        return dependencies
+
+    @staticmethod
+    def _derive(pressure_at_top, sigma, surface_air_pressure):
+        """Derive coordinate."""
+        return pressure_at_top + sigma * (
+            surface_air_pressure - pressure_at_top
+        )
+
+    def make_coord(self, coord_dims_func):
+        """Make new :class:`iris.coords.AuxCoord`."""
+        # Which dimensions are relevant?
+        derived_dims = self.derived_dims(coord_dims_func)
+        dependency_dims = self._dependency_dims(coord_dims_func)
+
+        # Build the points array
+        nd_points_by_key = self._remap(dependency_dims, derived_dims)
+        points = self._derive(
+            nd_points_by_key["pressure_at_top"],
+            nd_points_by_key["sigma"],
+            nd_points_by_key["surface_air_pressure"],
+        )
+
+        # Bounds
+        bounds = None
+        if self.sigma.nbounds:
+            nd_values_by_key = self._remap_with_bounds(
+                dependency_dims, derived_dims
+            )
+            pressure_at_top = nd_values_by_key["pressure_at_top"]
+            sigma = nd_values_by_key["sigma"]
+            surface_air_pressure = nd_values_by_key["surface_air_pressure"]
+            ok_bound_shapes = [(), (1,), (2,)]
+            if sigma.shape[-1:] not in ok_bound_shapes:
+                raise ValueError("Invalid sigma coordinate bounds")
+            if pressure_at_top.shape[-1:] not in [(), (1,)]:
+                warnings.warn(
+                    "Pressure at top coordinate has bounds. These are being "
+                    "disregarded"
+                )
+                pressure_at_top_pts = nd_points_by_key["pressure_at_top"]
+                bds_shape = list(pressure_at_top_pts.shape) + [1]
+                pressure_at_top = pressure_at_top_pts.reshape(bds_shape)
+            if surface_air_pressure.shape[-1:] not in [(), (1,)]:
+                warnings.warn(
+                    "Surface pressure coordinate has bounds. These are being "
+                    "disregarded"
+                )
+                surface_air_pressure_pts = nd_points_by_key[
+                    "surface_air_pressure"
+                ]
+                bds_shape = list(surface_air_pressure_pts.shape) + [1]
+                surface_air_pressure = surface_air_pressure_pts.reshape(
+                    bds_shape
+                )
+            bounds = self._derive(pressure_at_top, sigma, surface_air_pressure)
+
+        # Create coordinate
+        return iris.coords.AuxCoord(
+            points,
+            standard_name=self.standard_name,
+            long_name=self.long_name,
+            var_name=self.var_name,
+            units=self.units,
+            bounds=bounds,
+            attributes=self.attributes,
+            coord_system=self.coord_system,
+        )
+
+    def update(self, old_coord, new_coord=None):
+        """Notify the factory of the removal/replacement of a coordinate."""
+        new_dependencies = self.dependencies
+        for (name, coord) in self.dependencies.items():
+            if old_coord is coord:
+                new_dependencies[name] = new_coord
+                try:
+                    self._check_dependencies(**new_dependencies)
+                except ValueError as exc:
+                    raise ValueError(f"Failed to update dependencies: {exc}")
+                else:
+                    setattr(self, name, new_coord)
+                break
+
+
 class HybridHeightFactory(AuxCoordFactory):
     """
     Defines a hybrid-height coordinate factory with the formula:
