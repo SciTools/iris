@@ -50,6 +50,7 @@ __all__ = [
     "MeshFaceCoords",
     "MeshNodeCoords",
     "MeshMetadata",
+    "MeshCoord",
     "MeshCoordMetadata",
 ]
 
@@ -2680,6 +2681,258 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     @property
     def face_node(self):
         return self._members["face_node_connectivity"]
+
+
+class MeshCoord(AuxCoord):
+    """
+    Geographic coordinate values of data on an unstructured mesh.
+
+    A MeshCoord references a `~iris.experimental.ugrid.Mesh`.
+    When contained in a `~iris.cube.Cube` it connects the cube to the Mesh.
+    It records (a) which 1-D cube dimension represents the unstructured mesh,
+    and (b) which  mesh 'location' the cube data is mapped to -- i.e. is it
+    data on 'face's, 'edge's or 'node's.
+
+    A MeshCoord also specifies its 'axis' : 'x' or 'y'.  Its values are then,
+    accordingly, longitudes or latitudes.  The values are taken from the
+    appropriate coordinates and connectivities in the Mesh, determined by its
+    'location' and 'axis'.
+
+    Any cube with data on a mesh will have a MeshCoord for each axis,
+    i.e. an 'X' and a 'Y'.
+
+    The points and bounds contain coordinate values for the mesh elements,
+    which depends on location.
+    For 'node', the ``.points`` contains node locations.
+    For 'edge', the ``.bounds`` contains edge endpoints, and the ``.points`` contain
+    edge locations (typically centres), if the Mesh contains them (optional).
+    For 'face', the ``.bounds`` contain the face corners, and the ``.points`` contain the
+    face locations (typically centres), if the Mesh contains them (optional).
+
+    .. note::
+        As described above, it is possible for a MeshCoord to have bounds but
+        no points.  This is not possible for a regular
+        :class:`~iris.coords.AuxCoord` or :class:`~iris.coords.DimCoord`.
+
+    .. note::
+        A MeshCoord can not yet actually be created with bounds but no points.
+        This is intended in future, but for now it raises an error.
+
+    """
+
+    def __init__(
+        self,
+        mesh,
+        location,
+        axis,
+    ):
+        # Setup the metadata.
+        self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
+
+        # Validate and record the class-specific constructor args.
+        if not isinstance(mesh, Mesh):
+            msg = (
+                "'mesh' must be an "
+                f"{Mesh.__module__}.{Mesh.__name__}, "
+                f"got {mesh}."
+            )
+            raise TypeError(msg)
+        # Handled as a readonly ".mesh" property.
+        # NOTE: currently *not* included in metadata. In future it might be.
+        self._mesh = mesh
+
+        if location not in Mesh.LOCATIONS:
+            msg = (
+                f"'location' of {location} is not a valid Mesh location', "
+                f"must be one of {Mesh.LOCATIONS}."
+            )
+            raise ValueError(msg)
+        # Held in metadata, readable as self.location, but cannot set it.
+        self._metadata_manager.location = location
+
+        if axis not in Mesh.AXES:
+            # The valid axes are defined by the Mesh class.
+            msg = (
+                f"'axis' of {axis} is not a valid Mesh axis', "
+                f"must be one of {Mesh.AXES}."
+            )
+            raise ValueError(msg)
+        # Held in metadata, readable as self.axis, but cannot set it.
+        self._metadata_manager.axis = axis
+
+        points, bounds = self._construct_access_arrays()
+        if points is None:
+            # TODO: we intend to support this in future, but it will require
+            #  extra work to refactor the parent classes.
+            msg = "Cannot yet create a MeshCoord without points."
+            raise ValueError(msg)
+
+        # Get the 'coord identity' metadata from the relevant node-coordinate.
+        # N.B. mesh.coord returns a dict
+        node_coords = self.mesh.coord(include_nodes=True, axis=self.axis)
+        (node_coord,) = list(node_coords.values())
+        # Call parent constructor to handle the common constructor args.
+        super().__init__(
+            points,
+            bounds=bounds,
+            standard_name=node_coord.standard_name,
+            long_name=node_coord.long_name,
+            var_name=None,  # We *don't* "represent" the underlying node var
+            units=node_coord.units,
+            attributes=node_coord.attributes,
+        )
+
+    # Define accessors for MeshCoord-specific properties mesh/location/axis.
+    # These are all read-only.
+
+    @property
+    def mesh(self):
+        return self._mesh
+
+    @property
+    def location(self):
+        return self._metadata_manager.location
+
+    @property
+    def axis(self):
+        return self._metadata_manager.axis
+
+    # Provide overrides to mimic the Coord-specific properties that are not
+    # supported by MeshCoord, i.e. "coord_system" and "climatological".
+    # These mimic the Coord properties, but always return fixed 'null' values.
+    # They can be set, to the 'null' value only, for the inherited init code.
+
+    @property
+    def coord_system(self):
+        """The coordinate-system of a MeshCoord is always 'None'."""
+        return None
+
+    @coord_system.setter
+    def coord_system(self, value):
+        if value is not None:
+            msg = "Cannot set the coordinate-system of a MeshCoord."
+            raise ValueError(msg)
+
+    @property
+    def climatological(self):
+        """The 'climatological' of a MeshCoord is always 'False'."""
+        return False
+
+    @climatological.setter
+    def climatological(self, value):
+        if value:
+            msg = "Cannot set 'climatological' on a MeshCoord."
+            raise ValueError(msg)
+
+    def __getitem__(self, keys):
+        # Disallow any sub-indexing, permitting *only* "self[:,]".
+        # We *don't* intend here to support indexing as such : the exception is
+        # just sufficient to enable cube slicing, when it does not affect the
+        # mesh dimension.  This works because Cube.__getitem__ passes us keys
+        # "normalised" with iris.util._build_full_slice_given_keys.
+        if keys != (slice(None),):
+            msg = "Cannot index a MeshCoord."
+            raise ValueError(msg)
+
+        # Translate "self[:,]" as "self.copy()".
+        return self.copy()
+
+    def copy(self, points=None, bounds=None):
+        """
+        Make a copy of the MeshCoord.
+
+        Kwargs:
+
+        * points, bounds (array):
+            Provided solely for signature compatibility with other types of
+            :class:`~iris.coords.Coord`.
+            In this case, if either is not 'None', an error is raised.
+
+        """
+        # Override Coord.copy, so that we can ensure it does not duplicate the
+        # Mesh object (via deepcopy).
+        # This avoids copying Meshes.  It is also required to allow a copied
+        # MeshCoord to be == the original, since for now Mesh == is only true
+        # for the same identical object.
+
+        # FOR NOW: also disallow changing points/bounds at all.
+        if points is not None or bounds is not None:
+            msg = "Cannot change the content of a MeshCoord."
+            raise ValueError(msg)
+
+        # Make a new MeshCoord with the same args :  The Mesh is the *same*
+        # as the original (not a copy).
+        new_coord = MeshCoord(
+            mesh=self.mesh, location=self.location, axis=self.axis
+        )
+        return new_coord
+
+    def __deepcopy__(self, memo):
+        """
+        Make this equivalent to "shallow" copy, returning a new MeshCoord based
+        on the same Mesh.
+
+        Required to prevent cube copying from copying the Mesh, which would
+        prevent "cube.copy() == cube" :  see notes for :meth:`copy`.
+
+        """
+        return self.copy()
+
+    # Override _DimensionalMetadata.__eq__, to add 'mesh' comparison into the
+    # default implementation (which compares metadata, points and bounds).
+    # This is needed because 'mesh' is not included in our metadata.
+    def __eq__(self, other):
+        eq = NotImplemented
+        if isinstance(other, MeshCoord):
+            # *Don't* use the parent (_DimensionalMetadata) __eq__, as that
+            # will try to compare points and bounds arrays.
+            # Just compare the mesh, and the (other) metadata.
+            eq = self.mesh == other.mesh  # N.B. 'mesh' not in metadata.
+            if eq is not NotImplemented and eq:
+                # Compare rest of metadata, but not points/bounds.
+                eq = self.metadata == other.metadata
+
+        return eq
+
+    def _construct_access_arrays(self):
+        """
+        Build lazy points and bounds arrays, providing dynamic access via the
+        Mesh, according to the location and axis.
+
+        Returns:
+        * points, bounds (array or None)
+            lazy arrays which calculate the correct points and bounds from the
+            Mesh data, based on the location and axis.
+            The Mesh coordinates accessed are not identified on construction,
+            but discovered from the Mesh at the time of calculation, so that
+            the result is always based on current content in the Mesh.
+
+        """
+        # TODO: cheat for now : correct calculations, but not dynamic.
+        # TODO: replace wth fully dynamic lazy calcs (slightly more complex).
+        mesh, location, axis = self.mesh, self.location, self.axis
+        # N.B. mesh.coord returns a dict
+        node_coords = self.mesh.coord(include_nodes=True, axis=axis)
+        (node_coord,) = list(node_coords.values())
+        if location == "node":
+            points = node_coord.core_points()
+            bounds = None
+        elif location == "edge":
+            # N.B. mesh.coord returns a dict
+            edge_coords = self.mesh.coord(include_edges=True, axis=self.axis)
+            (edge_coord,) = list(edge_coords.values())
+            points = edge_coord.core_points()
+            inds = mesh.edge_node_connectivity.core_indices()
+            bounds = node_coord.core_points()[inds]
+        elif location == "face":
+            # N.B. mesh.coord returns a dict
+            face_coords = self.mesh.coord(include_faces=True, axis=self.axis)
+            (face_coord,) = list(face_coords.values())
+            points = face_coord.core_points()  # For now, this always exists
+            inds = mesh.face_node_connectivity.core_indices()
+            bounds = node_coord.core_points()[inds]
+
+        return points, bounds
 
 
 class MeshCoordMetadata(BaseMetadata):
