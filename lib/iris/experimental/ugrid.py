@@ -2884,20 +2884,13 @@ class MeshCoord(AuxCoord):
     def __eq__(self, other):
         eq = NotImplemented
         if isinstance(other, MeshCoord):
-            # We compare only our defining properties: mesh/location/axis.
-            # This is not in fact *quite* reliable, as although our other
-            # properties all come from the Mesh object, they are copied at
-            # create time and it could in theory have changed since.
-            # TODO: we could close this loophole, either by implementing a
-            # strictly immutable Mesh, or making the MeshCoord derived
-            # properties *dynamically* reflect the Mesh state.
+            # *Don't* use the parent (_DimensionalMetadata) __eq__, as that
+            # will try to compare points and bounds arrays.
+            # Just compare the mesh, and the (other) metadata.
             eq = self.mesh == other.mesh  # N.B. 'mesh' not in metadata.
             if eq is not NotImplemented and eq:
-                eq = (
-                    eq
-                    and self.location == other.location
-                    and self.axis == other.axis
-                )
+                # Compare rest of metadata, but not points/bounds.
+                eq = eq and self.metadata == other.metadata
 
         return eq
 

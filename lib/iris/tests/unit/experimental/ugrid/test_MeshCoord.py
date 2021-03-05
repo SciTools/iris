@@ -15,6 +15,7 @@ import numpy as np
 import unittest.mock as mock
 
 from iris.coords import AuxCoord, Coord
+from iris.common.metadata import BaseMetadata
 from iris.cube import Cube
 from iris.experimental.ugrid import Connectivity, Mesh
 
@@ -176,6 +177,35 @@ class Test__readonly_properties(tests.IrisTest):
         self.meshcoord.climatological = False
         with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
             self.meshcoord.climatological = True
+
+
+class Test__inherited_properties(tests.IrisTest):
+    """
+    Check the settability and effect on equality of the common BaseMetadata
+    properties inherited from Coord : i.e. names/units/attributes.
+
+    Though copied from the mesh at creation, they are also changeable.
+
+    """
+
+    def setUp(self):
+        self.meshcoord = _create_test_meshcoord()
+
+    def test_inherited_properties(self):
+        # Check that these are settable, and affect equality.
+        meshcoord = self.meshcoord
+        # Add an existing attribute, so we can change it.
+        meshcoord.attributes["thing"] = 7
+        for prop in BaseMetadata._fields:
+            meshcoord2 = meshcoord.copy()
+            if "name" in prop:
+                # Use a standard-name, can do for any of them.
+                setattr(meshcoord2, prop, "height")
+            elif prop == "units":
+                meshcoord2.units = "Pa"
+            elif prop == "attributes":
+                meshcoord2.attributes["thing"] = 77
+        self.assertNotEqual(meshcoord2, meshcoord)
 
 
 class Test__points_and_bounds(tests.IrisTest):
