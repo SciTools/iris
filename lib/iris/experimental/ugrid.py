@@ -2736,7 +2736,7 @@ class MeshCoord(AuxCoord):
                 f"{Mesh.__module__}.{Mesh.__name__}, "
                 f"got {mesh}."
             )
-            raise ValueError(msg)
+            raise TypeError(msg)
         # Handled as a readonly ".mesh" property.
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
@@ -2762,8 +2762,8 @@ class MeshCoord(AuxCoord):
 
         points, bounds = self._construct_access_arrays()
         if points is None:
-            # We intend to support this in future, but it will require extra
-            # work to refactor the parent classes.
+            # TODO: we intend to support this in future, but it will require
+            #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
 
@@ -2882,11 +2882,23 @@ class MeshCoord(AuxCoord):
     # default implementation (which compares metadata, points and bounds).
     # This is needed because 'mesh' is not included in our metadata.
     def __eq__(self, other):
-        eq = super().__eq__(other)
-        # warning may return NotImplemented or a numpy boolean.
-        if eq is not NotImplemented and eq:
-            # Ensures that 'other' is also a MeshCoord
-            eq = self.mesh == other.mesh
+        eq = NotImplemented
+        if isinstance(other, MeshCoord):
+            # We compare only our defining properties: mesh/location/axis.
+            # This is not in fact *quite* reliable, as although our other
+            # properties all come from the Mesh object, they are copied at
+            # create time and it could in theory have changed since.
+            # TODO: we could close this loophole, either by implementing a
+            # strictly immutable Mesh, or making the MeshCoord derived
+            # properties *dynamically* reflect the Mesh state.
+            eq = self.mesh == other.mesh  # N.B. 'mesh' not in metadata.
+            if eq is not NotImplemented and eq:
+                eq = (
+                    eq
+                    and self.location == other.location
+                    and self.axis == other.axis
+                )
+
         return eq
 
     def _construct_access_arrays(self):

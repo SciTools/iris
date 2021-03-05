@@ -14,13 +14,16 @@ import iris.tests as tests
 import numpy as np
 import unittest.mock as mock
 
-from iris.cube import Cube
 from iris.coords import AuxCoord, Coord
+from iris.cube import Cube
 from iris.experimental.ugrid import Connectivity, Mesh
 
 from iris.experimental.ugrid import MeshCoord
 
-# Default test object creation controls
+# Default creation controls for creating a test Mesh.
+# Note: we're not creating any kind of sensible 'normal' mesh here, the numbers
+# of nodes/faces/edges are quite arbitrary and the connectivities we generate
+# are pretty random too.
 _TEST_N_NODES = 15
 _TEST_N_FACES = 3
 _TEST_N_EDGES = 5
@@ -43,9 +46,15 @@ def _create_test_mesh():
         1200 + np.arange(_TEST_N_NODES), standard_name="latitude"
     )
 
+    # Define a rather arbitrary edge-nodes connectivity.
+    # Some nodes are left out, because n_edges*2 < n_nodes.
     conns = np.arange(_TEST_N_EDGES * 2, dtype=int)
+    # Missing nodes include #0-5, because we add 5.
     conns = ((conns + 5) % _TEST_N_NODES).reshape((_TEST_N_EDGES, 2))
     edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
+    conns = np.arange(_TEST_N_EDGES * 2, dtype=int)
+
+    # Some numbers for the edge coordinates.
     edge_x = AuxCoord(
         2100 + np.arange(_TEST_N_EDGES), standard_name="longitude"
     )
@@ -53,9 +62,13 @@ def _create_test_mesh():
         2200 + np.arange(_TEST_N_EDGES), standard_name="latitude"
     )
 
+    # Define a rather arbitrary face-nodes connectivity.
+    # Some nodes are left out, because n_faces*n_bounds < n_nodes.
     conns = np.arange(_TEST_N_FACES * _TEST_N_BOUNDS, dtype=int)
     conns = (conns % _TEST_N_NODES).reshape((_TEST_N_FACES, _TEST_N_BOUNDS))
     face_nodes = Connectivity(conns, cf_role="face_node_connectivity")
+
+    # Some numbers for the edge coordinates.
     face_x = AuxCoord(
         3100 + np.arange(_TEST_N_FACES), standard_name="longitude"
     )
@@ -105,7 +118,7 @@ class Test___init__(tests.IrisTest):
     def test_derived_properties(self):
         # Check the derived properties of the meshcoord against the correct
         # underlying mesh coordinate.
-        for axis in ("x", "y"):
+        for axis in Mesh.AXES:
             meshcoord = _create_test_meshcoord(axis=axis)
             # N.B.
             node_x_coords = meshcoord.mesh.coord(include_nodes=True, axis=axis)
@@ -120,7 +133,7 @@ class Test___init__(tests.IrisTest):
                     self.assertEqual(meshval, getattr(node_x_coord, key))
 
     def test_fail_bad_mesh(self):
-        with self.assertRaisesRegex(ValueError, "must be a.*Mesh"):
+        with self.assertRaisesRegex(TypeError, "must be a.*Mesh"):
             _create_test_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
