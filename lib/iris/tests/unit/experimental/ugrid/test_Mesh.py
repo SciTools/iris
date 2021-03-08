@@ -168,11 +168,9 @@ class TestProperties1D(TestMeshCommon):
 
         func = self.mesh.connectivities
         for kwargs in positive_kwargs:
-            self.assertEqual(
-                self.EDGE_NODE, func(**kwargs)["edge_node_connectivity"]
-            )
+            self.assertEqual([self.EDGE_NODE], func(**kwargs))
         for kwargs in negative_kwargs:
-            self.assertNotIn("edge_node_connectivity", func(**kwargs))
+            self.assertEqual([], func(**kwargs))
 
     def test_connectivities_locations(self):
         # topology_dimension-specific results. Method intended to be overridden.
@@ -188,15 +186,14 @@ class TestProperties1D(TestMeshCommon):
             {"contains_edge": False, "contains_node": False},
         )
 
-        expected = {self.EDGE_NODE.cf_role: self.EDGE_NODE}
         func = self.mesh.connectivities
         for kwargs in positive_kwargs:
-            self.assertEqual(expected, func(**kwargs))
+            self.assertEqual([self.EDGE_NODE], func(**kwargs))
         for kwargs in negative_kwargs:
-            self.assertEqual({}, func(**kwargs))
+            self.assertEqual([], func(**kwargs))
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
-            self.assertEqual({}, func(contains_face=True))
+            self.assertEqual([], func(contains_face=True))
             self.assertIn("filter for non-existent", log.output[0])
 
     def test_coord(self):
@@ -231,9 +228,9 @@ class TestProperties1D(TestMeshCommon):
 
         func = self.mesh.coords
         for kwargs in positive_kwargs:
-            self.assertEqual(self.NODE_LON, func(**kwargs)["node_x"])
+            self.assertIn(self.NODE_LON, func(**kwargs))
         for kwargs in negative_kwargs:
-            self.assertNotIn("node_x", func(**kwargs))
+            self.assertNotIn(self.NODE_LON, func(**kwargs))
 
     def test_coords_locations(self):
         # topology_dimension-specific results. Method intended to be overridden.
@@ -264,13 +261,11 @@ class TestProperties1D(TestMeshCommon):
 
         func = self.mesh.coords
         for kwargs, expected in kwargs_expected:
-            expected = {
-                k: all_expected[k] for k in expected if k in all_expected
-            }
+            expected = [all_expected[k] for k in expected if k in all_expected]
             self.assertEqual(expected, func(**kwargs))
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
-            self.assertEqual({}, func(include_faces=True))
+            self.assertEqual([], func(include_faces=True))
             self.assertIn("filter non-existent", log.output[0])
 
     def test_edge_dimension(self):
@@ -472,8 +467,10 @@ class TestProperties2D(TestProperties1D):
         )
         func = self.mesh.connectivities
         for kwargs, expected in kwargs_expected:
-            expected = {c.cf_role: c for c in expected}
-            self.assertEqual(expected, func(**kwargs))
+            result = func(**kwargs)
+            self.assertEqual(len(expected), len(result))
+            for item in expected:
+                self.assertIn(item, result)
 
     def test_coords_locations(self):
         all_expected = {
@@ -518,9 +515,7 @@ class TestProperties2D(TestProperties1D):
 
         func = self.mesh.coords
         for kwargs, expected in kwargs_expected:
-            expected = {
-                k: all_expected[k] for k in expected if k in all_expected
-            }
+            expected = [all_expected[k] for k in expected if k in all_expected]
             self.assertEqual(expected, func(**kwargs))
 
     def test_edge_face(self):
