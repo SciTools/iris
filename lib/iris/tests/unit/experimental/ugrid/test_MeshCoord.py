@@ -18,11 +18,7 @@ import unittest.mock as mock
 from iris.coords import AuxCoord, Coord
 from iris.common.metadata import BaseMetadata
 from iris.cube import Cube
-from iris.experimental.ugrid import (
-    Connectivity,
-    Mesh,
-    _one_meshcoord as one_mesh_coord,
-)
+from iris.experimental.ugrid import Connectivity, Mesh
 
 from iris.experimental.ugrid import MeshCoord
 
@@ -637,8 +633,8 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # Fetch the relevant source objects from the mesh.
         def fetch_sources_from_mesh():
             return (
-                one_mesh_coord(mesh.coord(include_nodes=True, axis="x")),
-                one_mesh_coord(mesh.coord(include_faces=True, axis="x")),
+                mesh.coord(include_nodes=True, axis="x"),
+                mesh.coord(include_faces=True, axis="x"),
                 mesh.face_node_connectivity,
             )
 

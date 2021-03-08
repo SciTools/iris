@@ -2914,10 +2914,9 @@ class MeshCoord(AuxCoord):
         mesh, location, axis = self.mesh, self.location, self.axis
         node_coord = self.mesh.coord(include_nodes=True, axis=axis)
 
-        points_coord = None
-        bounds_connectivity = None
         if location == "node":
             points_coord = node_coord
+            bounds_connectivity = None
         elif location == "edge":
             points_coord = self.mesh.coord(include_edges=True, axis=axis)
             bounds_connectivity = mesh.edge_node_connectivity
