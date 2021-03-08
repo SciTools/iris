@@ -1280,9 +1280,9 @@ class CFReader:
             - set(self.cf_group.labels)
             - set(self.cf_group.cell_measures)
             # TODO: only handle UGRID when called from experimental.ugrid.load().
-            - set(self.cf_group.connectivities)
-            - set(self.cf_group.ugrid_coords)
-            - set(self.cf_group.meshes)
+            - set(self.cf_group._connectivities)
+            - set(self.cf_group._ugrid_coords)
+            - set(self.cf_group._meshes)
         )
 
         for name in data_variable_names:
@@ -1296,7 +1296,7 @@ class CFReader:
         def _build(cf_variable):
             is_mesh_var = isinstance(cf_variable, UGridMeshVariable)
             coordinate_names = list(self.cf_group.coordinates.keys())
-            ugrid_coord_names = list(self.cf_group.ugrid_coords.keys())
+            ugrid_coord_names = list(self.cf_group._ugrid_coords.keys())
             cf_group = CFGroup()
 
             # Build CF variable relationships.

@@ -554,6 +554,22 @@ def _set_attributes(attributes, key, value):
         attributes[str(key)] = value
 
 
+def _add_unused_attributes(iris_object, cf_var):
+    """
+    Populate the attributes of a cf element with the "unused" attributes
+    from the associated CF-netCDF variable. That is, all those that aren't CF
+    reserved terms.
+
+    """
+
+    def attribute_predicate(item):
+        return item[0] not in _CF_ATTRS
+
+    tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
+    for attr_name, attr_value in tmpvar:
+        _set_attributes(iris_object.attributes, attr_name, attr_value)
+
+
 def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
@@ -610,74 +626,20 @@ def _load_cube(engine, cf, cf_var, filename):
     # Run pyke inference engine with forward chaining rules.
     engine.activate(_PYKE_RULE_BASE)
 
-    # Having run the rules, now populate the attributes of all the cf elements with the
-    # "unused" attributes from the associated CF-netCDF variable.
-    # That is, all those that aren't CF reserved terms.
-    def attribute_predicate(item):
-        return item[0] not in _CF_ATTRS
-
-    def add_unused_attributes(iris_object, cf_var):
-        tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
-        for attr_name, attr_value in tmpvar:
-            _set_attributes(iris_object.attributes, attr_name, attr_value)
-
+    # Having run the rules, now add the "unused" attributes to each cf element.
     def fix_attributes_all_elements(role_name):
         elements_and_names = engine.cube_parts.get(role_name, [])
 
         for iris_object, cf_var_name in elements_and_names:
-            add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
+            _add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
 
     # Populate the attributes of all coordinates, cell-measures and ancillary-vars.
     fix_attributes_all_elements("coordinates")
     fix_attributes_all_elements("ancillary_variables")
     fix_attributes_all_elements("cell_measures")
 
-    # TODO: implement Mesh and MeshCoord directory for sharing between
-    #  phenomena from a single load call.
-    # Safe to release without being in experimental.ugrid - different behaviour
-    # dictated by presence of meshes. Instead modify cf.CFReader to respond
-    # specially to an alternative experimental.ugrid.load() function.
-    # TODO: create experimental.ugrid.load() tests.
-    meshes = getattr(cf_var.cf_group, "meshes", {})
-    # Only expect 1 mesh per cf_var.
-    meshes_len = len(meshes)
-    if meshes_len == 1:
-        mesh = _mesh_build_mesh(list(meshes.values())[0], filename)
-        assert cf_var.mesh == mesh.var_name
-
-        mesh_elements = (
-            list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
-        )
-        mesh_elements = filter(None, mesh_elements)
-        for iris_object in mesh_elements:
-            add_unused_attributes(
-                iris_object, cf.cf_group[iris_object.var_name]
-            )
-
-        # Identify the cube's mesh dimension, for attaching MeshCoords.
-        locations_dimensions = {
-            "node": mesh.node_dimension,
-            "edge": mesh.edge_dimension,
-            "face": mesh.face_dimension,
-        }
-        mesh_dim_name = locations_dimensions[cf_var.location]
-        # (Only expecting 1 mesh dimension per cf_var).
-        mesh_dim = cf_var.dimensions.index(mesh_dim_name)
-
-        # Attach MeshCoords.
-        mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
-        for coord in mesh_coords:
-            # TODO: cube.add_mesh_coord? Isolate this to experimental.ugrid? How?
-            cube.add_aux_coord(coord, mesh_dim)
-
-    elif meshes_len > 1:
-        message = (
-            f"Expected no more than 1 mesh per phenomenon, got: {meshes_len} ."
-        )
-        raise ValueError(message)
-
     # Also populate attributes of the top-level cube itself.
-    add_unused_attributes(cube, cf_var)
+    _add_unused_attributes(cube, cf_var)
 
     # Work out reference names for all the coords.
     names = {
@@ -849,7 +811,7 @@ def _mesh_build_connectivity(connectivity_var, file_path, location_dims):
     return connectivity, first_dim_name
 
 
-def _mesh_build_mesh(mesh_var, file_path):
+def _mesh_build_mesh(cf, mesh_var, file_path):
     assert isinstance(mesh_var, iris.fileformats.cf.UGridMeshVariable)
     attributes = {}
     attr_units = _mesh_get_units(mesh_var, attributes)
@@ -863,7 +825,7 @@ def _mesh_build_mesh(mesh_var, file_path):
     node_coord_args = []
     edge_coord_args = []
     face_coord_args = []
-    for coord_var in mesh_var.cf_group.ugrid_coords.values():
+    for coord_var in mesh_var.cf_group._ugrid_coords.values():
         coord_and_axis = _mesh_build_aux_coord(coord_var, file_path)
         coord = coord_and_axis[0]
 
@@ -898,7 +860,7 @@ def _mesh_build_mesh(mesh_var, file_path):
     # Used for detecting transposed connectivities.
     location_dims = (edge_dimension, face_dimension)
     connectivity_args = []
-    for connectivity_var in mesh_var.cf_group.connectivities.values():
+    for connectivity_var in mesh_var.cf_group._connectivities.values():
         connectivity, first_dim_name = _mesh_build_connectivity(
             connectivity_var, file_path, location_dims
         )
@@ -934,7 +896,30 @@ def _mesh_build_mesh(mesh_var, file_path):
     )
     assert mesh.cf_role == mesh_var.cf_role
 
+    mesh_elements = (
+        list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
+    )
+    mesh_elements = filter(None, mesh_elements)
+    for iris_object in mesh_elements:
+        _add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
+
     return mesh
+
+
+def _mesh_build_mesh_coords(mesh, cf_var):
+    """Attach the given mesh to the given cube."""
+    # Identify the cube's mesh dimension, for attaching MeshCoords.
+    locations_dimensions = {
+        "node": mesh.node_dimension,
+        "edge": mesh.edge_dimension,
+        "face": mesh.face_dimension,
+    }
+    mesh_dim_name = locations_dimensions[cf_var.location]
+    # (Only expecting 1 mesh dimension per cf_var).
+    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+
+    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+    return mesh_coords, mesh_dim
 
 
 # End of mesh loading functions.
@@ -1083,12 +1068,30 @@ def load_cubes(filenames, callback=None):
         # Ingest the netCDF file.
         cf = iris.fileformats.cf.CFReader(filename)
 
+        # Mesh instances are shared between file phenomena.
+        # TODO: more sophisticated Mesh sharing between files.
+        # TODO: access persistent Mesh cache?
+        meshes = {
+            name: _mesh_build_mesh(cf, var, filename)
+            for name, var in cf.cf_group._meshes.items()
+        }
+
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
+            # cf_var-specific mesh handling, if a mesh is present.
+            mesh = meshes.get(getattr(cf_var, "mesh", None))
+            mesh_coords, mesh_dim = [], None
+            if mesh is not None:
+                mesh_coords, mesh_dim = _mesh_build_mesh_coords(mesh, cf_var)
+
             cube = _load_cube(engine, cf, cf_var, filename)
+
+            # Attach the mesh (if present) to the cube.
+            for mesh_coord in mesh_coords:
+                cube.add_aux_coord(mesh_coord, mesh_dim)
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
