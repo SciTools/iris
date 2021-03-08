@@ -2935,6 +2935,9 @@ class MeshCoord(AuxCoord):
             indices = bounds_connectivity.core_indices()
             # Normalise indices dimension order to [faces/edges, bounds]
             indices = bounds_connectivity.indices_by_src(indices)
+            # Normalise the start index
+            indices = indices - bounds_connectivity.start_index
+
             node_points = node_coord.core_points()
             lazy = hasattr(indices, "compute") or hasattr(
                 node_points, "compute"
@@ -2945,14 +2948,17 @@ class MeshCoord(AuxCoord):
             # must flatten it and restore the shape later.
             flat_inds = indices.flatten()
             # NOTE: the connectivity array can have masked points, but we can't
-            # effectively index with those.  So we must post-mask the results.
-            # We also mask any places where the index is out of range.
-            missing_inds = array.logical_or(
-                flat_inds < 0,
-                flat_inds >= n_nodes,
-                array.ma.getmaskarray(flat_inds),
+            # effectively index with those.  So use a non-masked index array
+            # with "safe" index values, and post-mask the results.
+            flat_inds_mask = array.ma.getmaskarray(flat_inds)
+            flat_inds_nomask = array.ma.filled(flat_inds, 0)
+            # Note: *also* mask any places where the index is out of range.
+            bad_inds = array.logical_or(
+                flat_inds_nomask < 0, flat_inds_nomask >= n_nodes
             )
-            flat_inds_safe = array.where(missing_inds, 0, flat_inds)
+            # NB "OR" of 3 arrays in 2 steps, as Dask does not provide 'reduce'.
+            missing_inds = array.logical_or(flat_inds_mask, bad_inds)
+            flat_inds_safe = array.where(missing_inds, 0, flat_inds_nomask)
             # Here's the core indexing operation.
             # The comma applies all inds-array values to the *first* dimension.
             bounds = node_points[

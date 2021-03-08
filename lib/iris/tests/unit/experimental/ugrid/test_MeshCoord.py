@@ -439,8 +439,17 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
     def setUp(self):
         self._make_test_meshcoord()
 
-    def _make_test_meshcoord(self, lazy_sources=False):
-        # Construct a miniature face+nodes mesh for testing.
+    def _make_test_meshcoord(
+        self,
+        lazy_sources=False,
+        location="face",
+        inds_start_index=0,
+        inds_src_dim=0,
+    ):
+        # Construct a miniature face-nodes mesh for testing.
+        # NOTE: we will make our connectivity arrays with standard
+        # start_index=0 and src_dim=0 :  We only adjust that (if required) when
+        # creating the actual connectivities.
         face_nodes_array = np.array(
             [
                 [0, 2, 1, 3],
@@ -457,9 +466,17 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         )
         # Connectivity uses *masked* for missing points.
         face_nodes_array = np.ma.masked_less(face_nodes_array, 0)
+
+        # Construct a miniature edge-nodes mesh for testing.
+        edge_nodes_array = np.array([[0, 2], [1, 3], [1, 4], [3, 7]])
+        # Connectivity uses *masked* for missing points.
+        edge_nodes_array = np.ma.masked_less(edge_nodes_array, 0)
+
         n_faces = face_nodes_array.shape[0]
+        n_edges = edge_nodes_array.shape[0]
         n_nodes = int(face_nodes_array.max() + 1)
         face_xs = 500.0 + np.arange(n_faces)
+        edge_xs = 600.0 + np.arange(n_edges)
         node_xs = 100.0 + np.arange(n_nodes)
 
         # Record all these for re-use in tests
@@ -467,7 +484,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         self.n_nodes = n_nodes
         self.face_xs = face_xs
         self.node_xs = node_xs
+        self.edge_xs = edge_xs
         self.face_nodes_array = face_nodes_array
+        self.edge_nodes_array = edge_nodes_array
 
         # convert source data to Dask arrays if asked.
         if lazy_sources:
@@ -477,7 +496,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
 
             node_xs = lazify(node_xs)
             face_xs = lazify(face_xs)
+            edge_xs = lazify(edge_xs)
             face_nodes_array = lazify(face_nodes_array)
+            edge_nodes_array = lazify(edge_nodes_array)
 
         # Build a mesh with this info stored in it.
         co_nodex = AuxCoord(
@@ -486,6 +507,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         co_facex = AuxCoord(
             face_xs, standard_name="longitude", long_name="face_x", units=1
         )
+        co_edgex = AuxCoord(
+            edge_xs, standard_name="longitude", long_name="edge_x", units=1
+        )
         # N.B. the Mesh requires 'Y's as well.
         co_nodey = co_nodex.copy()
         co_nodey.rename("latitude")
@@ -493,23 +517,48 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         co_facey = co_facex.copy()
         co_facey.rename("latitude")
         co_facey.long_name = "face_y"
+        co_edgey = co_edgex.copy()
+        co_edgey.rename("edge_y")
+        co_edgey.long_name = "edge_y"
 
         face_node_conn = Connectivity(
-            face_nodes_array,
+            inds_start_index
+            + (
+                face_nodes_array.transpose()
+                if inds_src_dim == 1
+                else face_nodes_array
+            ),
             cf_role="face_node_connectivity",
             long_name="face_nodes",
+            start_index=inds_start_index,
+            src_dim=inds_src_dim,
+        )
+
+        edge_node_conn = Connectivity(
+            inds_start_index
+            + (
+                edge_nodes_array.transpose()
+                if inds_src_dim == 1
+                else edge_nodes_array
+            ),
+            cf_role="edge_node_connectivity",
+            long_name="edge_nodes",
+            start_index=inds_start_index,
+            src_dim=inds_src_dim,
         )
 
         self.mesh = Mesh(
             topology_dimension=2,
             node_coords_and_axes=[(co_nodex, "x"), (co_nodey, "y")],
-            connectivities=[face_node_conn],
+            connectivities=[face_node_conn, edge_node_conn],
             face_coords_and_axes=[(co_facex, "x"), (co_facey, "y")],
+            edge_coords_and_axes=[(co_edgex, "x"), (co_edgey, "y")],
         )
 
         # Construct a test meshcoord.
-        meshcoord = MeshCoord(mesh=self.mesh, location="face", axis="x")
+        meshcoord = MeshCoord(mesh=self.mesh, location=location, axis="x")
         self.meshcoord = meshcoord
+        return meshcoord
 
     def _check_expected_points_values(self):
         # The points are just the face_x-s
@@ -544,19 +593,40 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
     def test_lazy_points_values(self):
         """Check lazy points calculation on lazy inputs."""
         # Remake the test data with lazy source coords.
-        self._make_test_meshcoord(lazy_sources=True)
-        meshcoord = self.meshcoord
+        meshcoord = self._make_test_meshcoord(lazy_sources=True)
         self.assertTrue(meshcoord.has_lazy_points())
         self.assertTrue(meshcoord.has_lazy_bounds())
         # Check values, as previous.
         self._check_expected_points_values()
 
     def test_lazy_bounds_values(self):
-        self._make_test_meshcoord(lazy_sources=True)
-        meshcoord = self.meshcoord
+        meshcoord = self._make_test_meshcoord(lazy_sources=True)
         self.assertTrue(meshcoord.has_lazy_points())
         self.assertTrue(meshcoord.has_lazy_bounds())
         # Check values, as previous.
+        self._check_expected_bounds_values()
+
+    def test_edge_points(self):
+        meshcoord = self._make_test_meshcoord(location="edge")
+        result = meshcoord.points
+        self.assertArrayAllClose(result, self.edge_xs)
+
+    def test_edge_bounds(self):
+        meshcoord = self._make_test_meshcoord(location="edge")
+        result = meshcoord.bounds
+        # The bounds are selected node_x-s :  all == node_number + 100.0
+        expected = 100.0 + self.edge_nodes_array
+        # NB simpler than faces : no possibility of missing points
+        self.assertArrayAlmostEqual(result, expected)
+
+    def test_bounds_connectivity__src_dim_1(self):
+        # Test with a transposed indices array.
+        self._make_test_meshcoord(inds_src_dim=1)
+        self._check_expected_bounds_values()
+
+    def test_bounds_connectivity__start_index_1(self):
+        # Test 1-based indices.
+        self._make_test_meshcoord(inds_start_index=1)
         self._check_expected_bounds_values()
 
     def test_meshcoord_leaves_originals_lazy(self):
