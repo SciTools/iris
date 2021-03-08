@@ -1082,9 +1082,17 @@ def load_cubes(filenames, callback=None):
         )
         for cf_var in data_variables:
             # cf_var-specific mesh handling, if a mesh is present.
-            mesh = meshes.get(getattr(cf_var, "mesh", None))
+            mesh_name = getattr(cf_var, "mesh", None)
             mesh_coords, mesh_dim = [], None
-            if mesh is not None:
+            if mesh_name is not None:
+                try:
+                    mesh = meshes[mesh_name]
+                except KeyError as error:
+                    message = (
+                        f"File does not contain mesh: '{mesh_name}' - "
+                        f"referenced by variable: '{cf_var.cf_name}' ."
+                    )
+                    raise KeyError(message) from error
                 mesh_coords, mesh_dim = _mesh_build_mesh_coords(mesh, cf_var)
 
             cube = _load_cube(engine, cf, cf_var, filename)
