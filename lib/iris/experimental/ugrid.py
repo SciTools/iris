@@ -2933,6 +2933,8 @@ class MeshCoord(AuxCoord):
             # Bounds are calculated from a connectivity and the node points.
             # Data can be real or lazy, so operations must work in Dask, too.
             indices = bounds_connectivity.core_indices()
+            # Normalise indices dimension order to [faces/edges, bounds]
+            indices = bounds_connectivity.indices_by_src(indices)
             node_points = node_coord.core_points()
             lazy = hasattr(indices, "compute") or hasattr(
                 node_points, "compute"
