@@ -1410,7 +1410,7 @@ class Mesh(CFVariableMixin):
             that matched the given criteria.
 
         """
-        return self._connectivity_manager.filters(
+        result = self._connectivity_manager.filters(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1421,6 +1421,7 @@ class Mesh(CFVariableMixin):
             contains_edge=contains_edge,
             contains_face=contains_face,
         )
+        return list(result.values())
 
     def connectivity(
         self,
@@ -1502,7 +1503,7 @@ class Mesh(CFVariableMixin):
 
         """
 
-        return self._connectivity_manager.filter(
+        result = self._connectivity_manager.filter(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1513,6 +1514,7 @@ class Mesh(CFVariableMixin):
             contains_edge=contains_edge,
             contains_face=contains_face,
         )
+        return list(result.values())[0]
 
     def coord(
         self,
@@ -1591,7 +1593,7 @@ class Mesh(CFVariableMixin):
             that matched the given criteria.
 
         """
-        return self._coord_manager.filter(
+        result = self._coord_manager.filter(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1602,6 +1604,7 @@ class Mesh(CFVariableMixin):
             include_edges=include_edges,
             include_faces=include_faces,
         )
+        return list(result.values())[0]
 
     def coords(
         self,
@@ -1675,7 +1678,7 @@ class Mesh(CFVariableMixin):
             :class:`Mesh` that matched the given criteria.
 
         """
-        return self._coord_manager.filters(
+        result = self._coord_manager.filters(
             item=item,
             standard_name=standard_name,
             long_name=long_name,
@@ -1686,6 +1689,7 @@ class Mesh(CFVariableMixin):
             include_edges=include_edges,
             include_faces=include_faces,
         )
+        return list(result.values())
 
     def remove_connectivities(
         self,
@@ -2769,8 +2773,7 @@ class MeshCoord(AuxCoord):
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
         # N.B. mesh.coord returns a dict
-        node_coords = self.mesh.coord(include_nodes=True, axis=self.axis)
-        (node_coord,) = list(node_coords.values())
+        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
         # Call parent constructor to handle the common constructor args.
         super().__init__(
             points,
@@ -2911,23 +2914,17 @@ class MeshCoord(AuxCoord):
         # TODO: cheat for now : correct calculations, but not dynamic.
         # TODO: replace wth fully dynamic lazy calcs (slightly more complex).
         mesh, location, axis = self.mesh, self.location, self.axis
-        # N.B. mesh.coord returns a dict
-        node_coords = self.mesh.coord(include_nodes=True, axis=axis)
-        (node_coord,) = list(node_coords.values())
+        node_coord = self.mesh.coord(include_nodes=True, axis=axis)
         if location == "node":
             points = node_coord.core_points()
             bounds = None
         elif location == "edge":
-            # N.B. mesh.coord returns a dict
-            edge_coords = self.mesh.coord(include_edges=True, axis=self.axis)
-            (edge_coord,) = list(edge_coords.values())
+            edge_coord = self.mesh.coord(include_edges=True, axis=self.axis)
             points = edge_coord.core_points()
             inds = mesh.edge_node_connectivity.core_indices()
             bounds = node_coord.core_points()[inds]
         elif location == "face":
-            # N.B. mesh.coord returns a dict
-            face_coords = self.mesh.coord(include_faces=True, axis=self.axis)
-            (face_coord,) = list(face_coords.values())
+            face_coord = self.mesh.coord(include_faces=True, axis=self.axis)
             points = face_coord.core_points()  # For now, this always exists
             inds = mesh.face_node_connectivity.core_indices()
             bounds = node_coord.core_points()[inds]

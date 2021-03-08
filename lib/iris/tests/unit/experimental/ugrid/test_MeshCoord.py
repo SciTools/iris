@@ -122,8 +122,7 @@ class Test___init__(tests.IrisTest):
         for axis in Mesh.AXES:
             meshcoord = _create_test_meshcoord(axis=axis)
             # N.B.
-            node_x_coords = meshcoord.mesh.coord(include_nodes=True, axis=axis)
-            (node_x_coord,) = list(node_x_coords.values())
+            node_x_coord = meshcoord.mesh.coord(include_nodes=True, axis=axis)
             for key in node_x_coord.metadata._fields:
                 meshval = getattr(meshcoord, key)
                 if key == "var_name":
