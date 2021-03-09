@@ -2903,7 +2903,7 @@ class MeshCoord(AuxCoord):
         Mesh, according to the location and axis.
 
         Returns:
-        * points, bounds (array or None)
+        * points, bounds (array or None):
             lazy arrays which calculate the correct points and bounds from the
             Mesh data, based on the location and axis.
             The Mesh coordinates accessed are not identified on construction,
@@ -2911,23 +2911,59 @@ class MeshCoord(AuxCoord):
             the result is always based on current content in the Mesh.
 
         """
-        # TODO: cheat for now : correct calculations, but not dynamic.
-        # TODO: replace wth fully dynamic lazy calcs (slightly more complex).
         mesh, location, axis = self.mesh, self.location, self.axis
         node_coord = self.mesh.coord(include_nodes=True, axis=axis)
+
         if location == "node":
-            points = node_coord.core_points()
-            bounds = None
+            points_coord = node_coord
+            bounds_connectivity = None
         elif location == "edge":
-            edge_coord = self.mesh.coord(include_edges=True, axis=self.axis)
-            points = edge_coord.core_points()
-            inds = mesh.edge_node_connectivity.core_indices()
-            bounds = node_coord.core_points()[inds]
+            points_coord = self.mesh.coord(include_edges=True, axis=axis)
+            bounds_connectivity = mesh.edge_node_connectivity
         elif location == "face":
-            face_coord = self.mesh.coord(include_faces=True, axis=self.axis)
-            points = face_coord.core_points()  # For now, this always exists
-            inds = mesh.face_node_connectivity.core_indices()
-            bounds = node_coord.core_points()[inds]
+            points_coord = self.mesh.coord(include_faces=True, axis=axis)
+            bounds_connectivity = mesh.face_node_connectivity
+
+        # The points output is the points of the relevant element-type coord.
+        points = points_coord.core_points()
+        if bounds_connectivity is None:
+            bounds = None
+        else:
+            # Bounds are calculated from a connectivity and the node points.
+            # Data can be real or lazy, so operations must work in Dask, too.
+            indices = bounds_connectivity.core_indices()
+            # Normalise indices dimension order to [faces/edges, bounds]
+            indices = bounds_connectivity.indices_by_src(indices)
+            # Normalise the start index
+            indices = indices - bounds_connectivity.start_index
+
+            node_points = node_coord.core_points()
+            n_nodes = node_points.shape[0]
+            # Choose real/lazy array library, to suit array types.
+            lazy = _lazy.is_lazy_data(indices) or _lazy.is_lazy_data(
+                node_points
+            )
+            al = da if lazy else np
+            # NOTE: Dask cannot index with a multidimensional array, so we
+            # must flatten it and restore the shape later.
+            flat_inds = indices.flatten()
+            # NOTE: the connectivity array can have masked points, but we can't
+            # effectively index with those.  So use a non-masked index array
+            # with "safe" index values, and post-mask the results.
+            flat_inds_nomask = al.ma.filled(flat_inds, -1)
+            # Note: *also* mask any places where the index is out of range.
+            missing_inds = (flat_inds_nomask < 0) | (
+                flat_inds_nomask >= n_nodes
+            )
+            flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
+            # Here's the core indexing operation.
+            # The comma applies all inds-array values to the *first* dimension.
+            bounds = node_points[
+                flat_inds_safe,
+            ]
+            # Fix 'missing' locations, and restore the proper shape.
+            bounds = al.ma.masked_array(bounds, missing_inds)
+            bounds = bounds.reshape(indices.shape)
 
         return points, bounds
 

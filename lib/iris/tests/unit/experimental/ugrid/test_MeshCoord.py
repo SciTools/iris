@@ -11,6 +11,7 @@ Unit tests for the :class:`iris.experimental.ugrid.MeshCoord`.
 # importing anything else.
 import iris.tests as tests
 
+import dask.array as da
 import numpy as np
 import unittest.mock as mock
 
@@ -18,6 +19,7 @@ from iris.coords import AuxCoord, Coord
 from iris.common.metadata import BaseMetadata
 from iris.cube import Cube
 from iris.experimental.ugrid import Connectivity, Mesh
+from iris._lazy_data import is_lazy_data
 
 from iris.experimental.ugrid import MeshCoord
 
@@ -208,13 +210,10 @@ class Test__inherited_properties(tests.IrisTest):
 
 
 class Test__points_and_bounds(tests.IrisTest):
-    # TODO: expand tests for the calculated results, their properties and
-    #  dynamic behaviour, when we implement dynamic calculations.
-    # TODO: test with missing optional mesh elements, i.e. face/edge locations,
-    #  when we support that.
+    # Basic method testing only, for 3 locations with simple array values.
+    # See Test_MeshCoord__dataviews for more detailed checks.
     def test_node(self):
         meshcoord = _create_test_meshcoord(location="node")
-        self.assertFalse(meshcoord.has_lazy_points())
         self.assertIsNone(meshcoord.core_bounds())
         self.assertArrayAllClose(
             meshcoord.points, 1100 + np.arange(_TEST_N_NODES)
@@ -222,8 +221,6 @@ class Test__points_and_bounds(tests.IrisTest):
 
     def test_edge(self):
         meshcoord = _create_test_meshcoord(location="edge")
-        self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_bounds())
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
         self.assertEqual(points.shape, meshcoord.shape)
         self.assertEqual(bounds.shape, meshcoord.shape + (2,))
@@ -243,8 +240,6 @@ class Test__points_and_bounds(tests.IrisTest):
 
     def test_face(self):
         meshcoord = _create_test_meshcoord(location="face")
-        self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_bounds())
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
         self.assertEqual(points.shape, meshcoord.shape)
         self.assertEqual(bounds.shape, meshcoord.shape + (4,))
@@ -429,6 +424,280 @@ class Test_auxcoord_conversion(tests.IrisTest):
         # Also check array content.
         self.assertArrayAllClose(auxcoord.points, meshcoord.points)
         self.assertArrayAllClose(auxcoord.bounds, meshcoord.bounds)
+
+
+class Test_MeshCoord__dataviews(tests.IrisTest):
+    """
+    Fuller testing of points and bounds calculations and behaviour.
+    Including connectivity missing-points (non-square faces).
+
+    """
+
+    def setUp(self):
+        self._make_test_meshcoord()
+
+    def _make_test_meshcoord(
+        self,
+        lazy_sources=False,
+        location="face",
+        inds_start_index=0,
+        inds_src_dim=0,
+        facenodes_changes=None,
+    ):
+        # Construct a miniature face-nodes mesh for testing.
+        # NOTE: we will make our connectivity arrays with standard
+        # start_index=0 and src_dim=0 :  We only adjust that (if required) when
+        # creating the actual connectivities.
+        face_nodes_array = np.array(
+            [
+                [0, 2, 1, 3],
+                [1, 3, 10, 13],
+                [2, 7, 9, 19],
+                [
+                    3,
+                    4,
+                    7,
+                    -1,
+                ],  # This one has a "missing" point (it's a triangle)
+                [8, 1, 7, 2],
+            ]
+        )
+        # Connectivity uses *masked* for missing points.
+        face_nodes_array = np.ma.masked_less(face_nodes_array, 0)
+        if facenodes_changes:
+            facenodes_changes = facenodes_changes.copy()
+            facenodes_changes.pop("n_extra_bad_points")
+            for indices, value in facenodes_changes.items():
+                face_nodes_array[indices] = value
+
+        # Construct a miniature edge-nodes mesh for testing.
+        edge_nodes_array = np.array([[0, 2], [1, 3], [1, 4], [3, 7]])
+        # Connectivity uses *masked* for missing points.
+        edge_nodes_array = np.ma.masked_less(edge_nodes_array, 0)
+
+        n_faces = face_nodes_array.shape[0]
+        n_edges = edge_nodes_array.shape[0]
+        n_nodes = int(face_nodes_array.max() + 1)
+        self.NODECOORDS_BASENUM = 1100.0
+        self.EDGECOORDS_BASENUM = 1200.0
+        self.FACECOORDS_BASENUM = 1300.0
+        node_xs = self.NODECOORDS_BASENUM + np.arange(n_nodes)
+        edge_xs = self.EDGECOORDS_BASENUM + np.arange(n_edges)
+        face_xs = self.FACECOORDS_BASENUM + np.arange(n_faces)
+
+        # Record all these for re-use in tests
+        self.n_faces = n_faces
+        self.n_nodes = n_nodes
+        self.face_xs = face_xs
+        self.node_xs = node_xs
+        self.edge_xs = edge_xs
+        self.face_nodes_array = face_nodes_array
+        self.edge_nodes_array = edge_nodes_array
+
+        # convert source data to Dask arrays if asked.
+        if lazy_sources:
+
+            def lazify(arr):
+                return da.from_array(arr, chunks=-1, meta=np.ndarray)
+
+            node_xs = lazify(node_xs)
+            face_xs = lazify(face_xs)
+            edge_xs = lazify(edge_xs)
+            face_nodes_array = lazify(face_nodes_array)
+            edge_nodes_array = lazify(edge_nodes_array)
+
+        # Build a mesh with this info stored in it.
+        co_nodex = AuxCoord(
+            node_xs, standard_name="longitude", long_name="node_x", units=1
+        )
+        co_facex = AuxCoord(
+            face_xs, standard_name="longitude", long_name="face_x", units=1
+        )
+        co_edgex = AuxCoord(
+            edge_xs, standard_name="longitude", long_name="edge_x", units=1
+        )
+        # N.B. the Mesh requires 'Y's as well.
+        co_nodey = co_nodex.copy()
+        co_nodey.rename("latitude")
+        co_nodey.long_name = "node_y"
+        co_facey = co_facex.copy()
+        co_facey.rename("latitude")
+        co_facey.long_name = "face_y"
+        co_edgey = co_edgex.copy()
+        co_edgey.rename("edge_y")
+        co_edgey.long_name = "edge_y"
+
+        face_node_conn = Connectivity(
+            inds_start_index
+            + (
+                face_nodes_array.transpose()
+                if inds_src_dim == 1
+                else face_nodes_array
+            ),
+            cf_role="face_node_connectivity",
+            long_name="face_nodes",
+            start_index=inds_start_index,
+            src_dim=inds_src_dim,
+        )
+
+        edge_node_conn = Connectivity(
+            inds_start_index
+            + (
+                edge_nodes_array.transpose()
+                if inds_src_dim == 1
+                else edge_nodes_array
+            ),
+            cf_role="edge_node_connectivity",
+            long_name="edge_nodes",
+            start_index=inds_start_index,
+            src_dim=inds_src_dim,
+        )
+
+        self.mesh = Mesh(
+            topology_dimension=2,
+            node_coords_and_axes=[(co_nodex, "x"), (co_nodey, "y")],
+            connectivities=[face_node_conn, edge_node_conn],
+            face_coords_and_axes=[(co_facex, "x"), (co_facey, "y")],
+            edge_coords_and_axes=[(co_edgex, "x"), (co_edgey, "y")],
+        )
+
+        # Construct a test meshcoord.
+        meshcoord = MeshCoord(mesh=self.mesh, location=location, axis="x")
+        self.meshcoord = meshcoord
+        return meshcoord
+
+    def _check_expected_points_values(self):
+        # The points are just the face_x-s
+        meshcoord = self.meshcoord
+        self.assertArrayAllClose(meshcoord.points, self.face_xs)
+
+    def _check_expected_bounds_values(self, facenodes_changes=None):
+        mesh_coord = self.meshcoord
+        # The bounds are selected node_x-s, ==> node_number + coords-offset
+        result = mesh_coord.bounds
+        # N.B. result should be masked where the masked indices are.
+        expected = self.NODECOORDS_BASENUM + self.face_nodes_array
+        if facenodes_changes:
+            # ALSO include any "bad" values in that calculation.
+            bad_values = (self.face_nodes_array < 0) | (
+                self.face_nodes_array >= self.n_nodes
+            )
+            expected[bad_values] = np.ma.masked
+        # Check there are *some* masked points.
+        n_missing_expected = 1
+        if facenodes_changes:
+            n_missing_expected += facenodes_changes["n_extra_bad_points"]
+        self.assertEqual(np.count_nonzero(expected.mask), n_missing_expected)
+        # Check results match, *including* location of masked points.
+        self.assertMaskedArrayAlmostEqual(result, expected)
+
+    def test_points_values(self):
+        """Basic points content check, on real data."""
+        meshcoord = self.meshcoord
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
+        self._check_expected_points_values()
+
+    def test_bounds_values(self):
+        """Basic bounds contents check."""
+        meshcoord = self.meshcoord
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
+        self._check_expected_bounds_values()
+
+    def test_lazy_points_values(self):
+        """Check lazy points calculation on lazy inputs."""
+        # Remake the test data with lazy source coords.
+        meshcoord = self._make_test_meshcoord(lazy_sources=True)
+        self.assertTrue(meshcoord.has_lazy_points())
+        self.assertTrue(meshcoord.has_lazy_bounds())
+        # Check values, as previous.
+        self._check_expected_points_values()
+
+    def test_lazy_bounds_values(self):
+        meshcoord = self._make_test_meshcoord(lazy_sources=True)
+        self.assertTrue(meshcoord.has_lazy_points())
+        self.assertTrue(meshcoord.has_lazy_bounds())
+        # Check values, as previous.
+        self._check_expected_bounds_values()
+
+    def test_edge_points(self):
+        meshcoord = self._make_test_meshcoord(location="edge")
+        result = meshcoord.points
+        self.assertArrayAllClose(result, self.edge_xs)
+
+    def test_edge_bounds(self):
+        meshcoord = self._make_test_meshcoord(location="edge")
+        result = meshcoord.bounds
+        # The bounds are selected node_x-s :  all == node_number + 100.0
+        expected = self.NODECOORDS_BASENUM + self.edge_nodes_array
+        # NB simpler than faces : no possibility of missing points
+        self.assertArrayAlmostEqual(result, expected)
+
+    def test_bounds_connectivity__src_dim_1(self):
+        # Test with a transposed indices array.
+        self._make_test_meshcoord(inds_src_dim=1)
+        self._check_expected_bounds_values()
+
+    def test_bounds_connectivity__start_index_1(self):
+        # Test 1-based indices.
+        self._make_test_meshcoord(inds_start_index=1)
+        self._check_expected_bounds_values()
+
+    def test_meshcoord_leaves_originals_lazy(self):
+        self._make_test_meshcoord(lazy_sources=True)
+        mesh = self.mesh
+        meshcoord = self.meshcoord
+
+        # Fetch the relevant source objects from the mesh.
+        def fetch_sources_from_mesh():
+            return (
+                mesh.coord(include_nodes=True, axis="x"),
+                mesh.coord(include_faces=True, axis="x"),
+                mesh.face_node_connectivity,
+            )
+
+        # Check all the source coords are lazy.
+        for coord in fetch_sources_from_mesh():
+            # Note: not all are actual Coords, so can't use 'has_lazy_points'.
+            self.assertTrue(is_lazy_data(coord._core_values()))
+
+        # Calculate both points + bounds of the meshcoord
+        self.assertTrue(meshcoord.has_lazy_points())
+        self.assertTrue(meshcoord.has_lazy_bounds())
+        meshcoord.points
+        meshcoord.bounds
+        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
+
+        # Check all the source coords are still lazy.
+        for coord in fetch_sources_from_mesh():
+            # Note: not all are actual Coords, so can't use 'has_lazy_points'.
+            self.assertTrue(is_lazy_data(coord._core_values()))
+
+    def _check_bounds_bad_index_values(self, lazy):
+        facenodes_modify = {
+            # nothing wrong with this one
+            (2, 1): 1,
+            # extra missing point, normal "missing" indicator
+            (3, 3): np.ma.masked,
+            # bad index > n_nodes
+            (4, 2): 100,
+            # NOTE: **can't** set an index < 0, as it is rejected by the
+            # Connectivity validity check.
+            # Indicate how many "extra" missing results this should cause.
+            "n_extra_bad_points": 2,
+        }
+        self._make_test_meshcoord(
+            facenodes_changes=facenodes_modify, lazy_sources=lazy
+        )
+        self._check_expected_bounds_values()
+
+    def test_bounds_badvalues__real(self):
+        self._check_bounds_bad_index_values(lazy=False)
+
+    def test_bounds_badvalues__lazy(self):
+        self._check_bounds_bad_index_values(lazy=True)
 
 
 if __name__ == "__main__":
