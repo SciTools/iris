@@ -2772,7 +2772,6 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        # N.B. mesh.coord returns a dict
         node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
         # Call parent constructor to handle the common constructor args.
         super().__init__(
@@ -2896,6 +2895,56 @@ class MeshCoord(AuxCoord):
                 eq = self.metadata == other.metadata
 
         return eq
+
+    def _string_summary(self, repr_style):
+        # Note: bypass the immediate parent here, which is Coord, because we
+        # have no interest in reporting coord_system or climatological, or in
+        # printing out our points/bounds.
+        # We also want to list our defining properties, i.e. mesh/location/axis
+        # *first*, before names/units etc, so different from other Coord types.
+
+        # First construct a shortform text summary to identify the Mesh.
+        # IN 'str-mode', this attempts to use Mesh.name() if it is set,
+        # otherwise uses an object-id style (as also for 'repr-mode').
+        # TODO: use a suitable method provided by Mesh, e.g. something like
+        #  "Mesh.summary(shorten=True)", when it is available.
+        mesh_name = None
+        if not repr_style:
+            mesh_name = self.mesh.name()
+            if mesh_name in (None, "", "unknown"):
+                mesh_name = None
+        if mesh_name:
+            # Use a more human-readable form
+            mesh_string = f"Mesh({mesh_name!r})"
+        else:
+            # Mimic the generic object.__str__ style.
+            mesh_id = id(self.mesh)
+            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
+        result = (
+            f"mesh={mesh_string}"
+            f", location={self.location!r}"
+            f", axis={self.axis!r}"
+        )
+        # Add 'other' metadata that is drawn from the underlying node-coord.
+        # But put these *afterward*, unlike other similar classes.
+        for item in ("standard_name", "units", "long_name", "attributes"):
+            # NOTE: order of these matches Coord.summary, but omit var_name.
+            val = getattr(self, item, None)
+            if item == "attributes":
+                is_blank = len(val) == 0  # an empty dict is as good as none
+            else:
+                is_blank = val is None
+            if not is_blank:
+                result += f", {item}={val!r}"
+
+        result = f"MeshCoord({result})"
+        return result
+
+    def __str__(self):
+        return self._string_summary(repr_style=False)
+
+    def __repr__(self):
+        return self._string_summary(repr_style=True)
 
     def _construct_access_arrays(self):
         """
