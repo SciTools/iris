@@ -2928,7 +2928,7 @@ class MeshCoord(AuxCoord):
         # Add 'other' metadata that is drawn from the underlying node-coord.
         # But put these *afterward*, unlike other similar classes.
         for item in ("standard_name", "units", "long_name", "attributes"):
-            # NOTE: order of these matches Coord.summary, but omit vor_name.
+            # NOTE: order of these matches Coord.summary, but omit var_name.
             val = getattr(self, item, None)
             if item == "attributes":
                 is_blank = len(val) == 0  # an empty dict is as good as none
