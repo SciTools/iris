@@ -441,6 +441,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         location="face",
         inds_start_index=0,
         inds_src_dim=0,
+        facenodes_changes=None,
     ):
         # Construct a miniature face-nodes mesh for testing.
         # NOTE: we will make our connectivity arrays with standard
@@ -462,6 +463,11 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         )
         # Connectivity uses *masked* for missing points.
         face_nodes_array = np.ma.masked_less(face_nodes_array, 0)
+        if facenodes_changes:
+            facenodes_changes = facenodes_changes.copy()
+            facenodes_changes.pop("n_extra_bad_points")
+            for indices, value in facenodes_changes.items():
+                face_nodes_array[indices] = value
 
         # Construct a miniature edge-nodes mesh for testing.
         edge_nodes_array = np.array([[0, 2], [1, 3], [1, 4], [3, 7]])
@@ -561,14 +567,23 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         meshcoord = self.meshcoord
         self.assertArrayAllClose(meshcoord.points, self.face_xs)
 
-    def _check_expected_bounds_values(self):
+    def _check_expected_bounds_values(self, facenodes_changes=None):
         mesh_coord = self.meshcoord
         # The bounds are selected node_x-s :  all == node_number + 100.0
         result = mesh_coord.bounds
         # N.B. result should be masked where the masked indices are.
         expected = 100.0 + self.face_nodes_array
+        if facenodes_changes:
+            # ALSO include any "bad" values in that calculation.
+            bad_values = (self.face_nodes_array < 0) | (
+                self.face_nodes_array >= self.n_nodes
+            )
+            expected[bad_values] = np.ma.masked
         # Check there are *some* masked points.
-        self.assertTrue(np.count_nonzero(expected.mask) > 0)
+        n_missing_expected = 1
+        if facenodes_changes:
+            n_missing_expected += facenodes_changes["n_extra_bad_points"]
+        self.assertEqual(np.count_nonzero(expected.mask), n_missing_expected)
         # Check results match, *including* location of masked points.
         self.assertMaskedArrayAlmostEqual(result, expected)
 
@@ -653,6 +668,30 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # Check all the source coords are still lazy.
         for coord in fetch_sources_from_mesh():
             self.assertTrue(hasattr(coord._core_values(), "compute"))
+
+    def _check_bounds_bad_index_values(self, lazy):
+        facenodes_modify = {
+            # nothing wrong with this one
+            (2, 1): 1,
+            # extra missing point, normal "missing" indicator
+            (3, 3): np.ma.masked,
+            # bad index > n_nodes
+            (4, 2): 100,
+            # NOTE: **can't** set an index < 0, as it is rejected by the
+            # Connectivity validity check.
+            # Indicate how many "extra" missing results this should cause.
+            "n_extra_bad_points": 2,
+        }
+        self._make_test_meshcoord(
+            facenodes_changes=facenodes_modify, lazy_sources=lazy
+        )
+        self._check_expected_bounds_values()
+
+    def test_bounds_badvalues__real(self):
+        self._check_bounds_bad_index_values(lazy=False)
+
+    def test_bounds_badvalues__lazy(self):
+        self._check_bounds_bad_index_values(lazy=True)
 
 
 if __name__ == "__main__":

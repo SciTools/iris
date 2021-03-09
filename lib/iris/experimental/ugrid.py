@@ -2950,14 +2950,11 @@ class MeshCoord(AuxCoord):
             # NOTE: the connectivity array can have masked points, but we can't
             # effectively index with those.  So use a non-masked index array
             # with "safe" index values, and post-mask the results.
-            flat_inds_mask = al.ma.getmaskarray(flat_inds)
-            flat_inds_nomask = al.ma.filled(flat_inds, 0)
+            flat_inds_nomask = al.ma.filled(flat_inds, -1)
             # Note: *also* mask any places where the index is out of range.
-            bad_inds = al.logical_or(
-                flat_inds_nomask < 0, flat_inds_nomask >= n_nodes
+            missing_inds = (flat_inds_nomask < 0) | (
+                flat_inds_nomask >= n_nodes
             )
-            # NB "OR" of 3 arrays in 2 steps, as Dask does not provide 'reduce'.
-            missing_inds = al.logical_or(flat_inds_mask, bad_inds)
             flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
             # Here's the core indexing operation.
             # The comma applies all inds-array values to the *first* dimension.
