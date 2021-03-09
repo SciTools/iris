@@ -19,6 +19,7 @@ from iris.coords import AuxCoord, Coord
 from iris.common.metadata import BaseMetadata
 from iris.cube import Cube
 from iris.experimental.ugrid import Connectivity, Mesh
+from iris._lazy_data import is_lazy_data
 
 from iris.experimental.ugrid import MeshCoord
 
@@ -477,9 +478,12 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         n_faces = face_nodes_array.shape[0]
         n_edges = edge_nodes_array.shape[0]
         n_nodes = int(face_nodes_array.max() + 1)
-        face_xs = 500.0 + np.arange(n_faces)
-        edge_xs = 600.0 + np.arange(n_edges)
-        node_xs = 100.0 + np.arange(n_nodes)
+        self.NODECOORDS_BASENUM = 1100.0
+        self.EDGECOORDS_BASENUM = 1200.0
+        self.FACECOORDS_BASENUM = 1300.0
+        node_xs = self.NODECOORDS_BASENUM + np.arange(n_nodes)
+        edge_xs = self.EDGECOORDS_BASENUM + np.arange(n_edges)
+        face_xs = self.FACECOORDS_BASENUM + np.arange(n_faces)
 
         # Record all these for re-use in tests
         self.n_faces = n_faces
@@ -569,10 +573,10 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
 
     def _check_expected_bounds_values(self, facenodes_changes=None):
         mesh_coord = self.meshcoord
-        # The bounds are selected node_x-s :  all == node_number + 100.0
+        # The bounds are selected node_x-s, ==> node_number + coords-offset
         result = mesh_coord.bounds
         # N.B. result should be masked where the masked indices are.
-        expected = 100.0 + self.face_nodes_array
+        expected = self.NODECOORDS_BASENUM + self.face_nodes_array
         if facenodes_changes:
             # ALSO include any "bad" values in that calculation.
             bad_values = (self.face_nodes_array < 0) | (
@@ -591,7 +595,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         """Basic points content check, on real data."""
         meshcoord = self.meshcoord
         self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_points())
+        self.assertFalse(meshcoord.has_lazy_bounds())
         self._check_expected_points_values()
 
     def test_bounds_values(self):
@@ -626,7 +630,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         meshcoord = self._make_test_meshcoord(location="edge")
         result = meshcoord.bounds
         # The bounds are selected node_x-s :  all == node_number + 100.0
-        expected = 100.0 + self.edge_nodes_array
+        expected = self.NODECOORDS_BASENUM + self.edge_nodes_array
         # NB simpler than faces : no possibility of missing points
         self.assertArrayAlmostEqual(result, expected)
 
@@ -655,7 +659,8 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
 
         # Check all the source coords are lazy.
         for coord in fetch_sources_from_mesh():
-            self.assertTrue(hasattr(coord._core_values(), "compute"))
+            # Note: not all are actual Coords, so can't use 'has_lazy_points'.
+            self.assertTrue(is_lazy_data(coord._core_values()))
 
         # Calculate both points + bounds of the meshcoord
         self.assertTrue(meshcoord.has_lazy_points())
@@ -667,7 +672,8 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
 
         # Check all the source coords are still lazy.
         for coord in fetch_sources_from_mesh():
-            self.assertTrue(hasattr(coord._core_values(), "compute"))
+            # Note: not all are actual Coords, so can't use 'has_lazy_points'.
+            self.assertTrue(is_lazy_data(coord._core_values()))
 
     def _check_bounds_bad_index_values(self, lazy):
         facenodes_modify = {
