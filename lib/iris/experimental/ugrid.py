@@ -12,9 +12,11 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 
 from abc import ABC, abstractmethod
 from collections import Iterable, namedtuple
+from contextlib import contextmanager
 from functools import wraps
 import re
 
+import cf_units
 import dask.array as da
 import numpy as np
 
@@ -29,16 +31,20 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
-from ..common.mixin import CFVariableMixin
+from ..common.mixin import _get_valid_standard_name, CFVariableMixin
 from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ..fileformats import cf, netcdf
+from ..io import run_callback
+from ..std_names import STD_NAMES
 from ..util import guess_coord_axis
 
 
 __all__ = [
     "Connectivity",
     "ConnectivityMetadata",
+    "load_cubes",
     "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
@@ -1892,15 +1898,11 @@ class Mesh(CFVariableMixin):
 
     def to_MeshCoord(self, location, axis):
         # TODO: docstring.
-        # TODO: just immediately automatically generate for all locations
-        #  and cache in [pending] mesh registry?
         # factory method
         return MeshCoord(mesh=self, location=location, axis=axis)
 
     def to_MeshCoords(self, location):
         # TODO: docstring.
-        # TODO: just immediately automatically generate for all locations
-        #  and cache in [pending] mesh registry?
         # factory method
         result = [
             self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES
@@ -3084,3 +3086,496 @@ del (
     _service_collection,
     _method,
 )
+
+###############################################################################
+# LOADING
+
+PARSE_UGRID_ON_LOAD = False
+
+
+@contextmanager
+def parse_ugrid_on_load():
+    global PARSE_UGRID_ON_LOAD
+    PARSE_UGRID_ON_LOAD = True
+    try:
+        yield
+    finally:
+        PARSE_UGRID_ON_LOAD = False
+
+
+############
+# CF Overrides.
+
+
+class CFUGridGroup(cf.CFGroup):
+    @property
+    def connectivities(self):
+        """Collection of CF-UGRID connectivity variables."""
+        return self._cf_getter(CFUGridConnectivityVariable)
+
+    @property
+    def ugrid_coords(self):
+        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
+        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
+
+    @property
+    def meshes(self):
+        """Collection of CF-UGRID mesh variables."""
+        return self._cf_getter(CFUGridMeshVariable)
+
+    @property
+    def non_data_variable_names(self):
+        extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
+        extra_result = set()
+        for variable in extra_variables:
+            extra_result |= set(variable)
+        return super().non_data_variable_names | extra_result
+
+
+class CFUGridReader(cf.CFReader):
+    CFGroup = CFUGridGroup
+
+    @property
+    def _variable_types(self):
+        extra_types = (
+            CFUGridConnectivityVariable,
+            CFUGridAuxiliaryCoordinateVariable,
+            CFUGridMeshVariable,
+        )
+        return super()._variable_types + extra_types
+
+
+class CFUGridConnectivityVariable(cf.CFVariable):
+    # TODO: docstring.
+    cf_identity = Connectivity.UGRID_CF_ROLES
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID connectivity variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for connectivity variable references, iterating through
+            # the valid cf roles.
+            for identity in cls.cf_identity:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    # UGRID only allows for one of each connectivity cf role.
+                    name = nc_var_att.strip()
+                    if name not in ignore:
+                        if name not in variables:
+                            if warn:
+                                message = (
+                                    f"Missing CF-UGRID {name}, referenced by "
+                                    f"netCDF variable {nc_var_name}"
+                                )
+                                logger.debug(message)
+                        else:
+                            # Restrict to non-string type i.e. not a
+                            # CFLabelVariable.
+                            if not cf._is_str_dtype(variables[name]):
+                                result[name] = CFUGridConnectivityVariable(
+                                    name, variables[name]
+                                )
+
+        return result
+
+
+class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
+    # TODO: docstring.
+    cf_identity = (
+        "node_coordinates",
+        "edge_coordinates",
+        "face_coordinates",
+    )
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify any CF-UGRID-relevant auxiliary coordinate variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for UGRID auxiliary coordinate variable references.
+            for identity in cls.cf_identity:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    for name in nc_var_att.split():
+                        if name not in ignore:
+                            if name not in variables:
+                                if warn:
+                                    message = (
+                                        f"Missing CF-netCDF auxiliary "
+                                        f"coordinate variable {name}, "
+                                        f"referenced by netCDF variable "
+                                        f"{nc_var_name}"
+                                    )
+                                    logger.debug(message)
+                            else:
+                                # Restrict to non-string type i.e. not a
+                                # CFLabelVariable.
+                                if not cf._is_str_dtype(variables[name]):
+                                    result[
+                                        name
+                                    ] = CFUGridAuxiliaryCoordinateVariable(
+                                        name, variables[name]
+                                    )
+
+        return result
+
+
+class CFUGridMeshVariable(cf.CFVariable):
+    # TODO: docstring.
+    cf_identity = "mesh"
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID mesh variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for mesh variable references.
+            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+
+            if nc_var_att is not None:
+                # UGRID only allows for 1 mesh per variable.
+                name = nc_var_att.strip()
+                if name not in ignore:
+                    if name not in variables:
+                        if warn:
+                            message = (
+                                f"Missing CF-UGRID mesh {name}, referenced "
+                                f"by netCDF variable {nc_var_name}"
+                            )
+                            logger.debug(message)
+                    else:
+                        # Restrict to non-string type i.e. not a
+                        # CFLabelVariable.
+                        if not cf._is_str_dtype(variables[name]):
+                            result[name] = CFUGridMeshVariable(
+                                name, variables[name]
+                            )
+
+        return result
+
+
+############
+# Object construction.
+
+
+def _get_names(cf_var, attributes):
+    """
+    Determine the standard_name, long_name and var_name attributes.
+
+    TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE _build_mesh().
+
+    todo: use get_names() once re-integrated post-pyke.
+    """
+    standard_name = getattr(cf_var, "standard_name", None)
+    long_name = getattr(cf_var, "long_name", None)
+    cf_name = str(cf_var.cf_name)
+
+    if standard_name is not None:
+        try:
+            standard_name = _get_valid_standard_name(standard_name)
+        except ValueError:
+            if long_name is not None:
+                attributes["invalid_standard_name"] = standard_name
+
+    if standard_name is None and cf_name in STD_NAMES:
+        standard_name = cf_name
+
+    return standard_name, long_name, cf_name
+
+
+def _get_units(cf_var, attributes):
+    """
+    Determine the variable's units.
+
+    TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE _build_mesh().
+
+    todo: use get_attr_units() once re-integrated post-pyke.
+    """
+    attr_units = getattr(cf_var, "units", "?")
+
+    suffixes = ["north", "east"]
+    # Abbreviations.
+    suffixes += [s[0] for s in suffixes]
+    # Spaces.
+    suffixes += [" " + s for s in suffixes] + ["_" + s for s in suffixes]
+    # Plurals.
+    suffixes += ["s" + s for s in suffixes]
+    degrees_units = ["degree"] + ["degree" + s for s in suffixes]
+
+    if attr_units in degrees_units:
+        attr_units = "degrees"
+    try:
+        cf_units.as_unit(attr_units)
+    except ValueError:
+        message = f"Ignoring UGRID variable {cf_var.cf_name} invalid units {attr_units}."
+        logger.debug(message)
+        attributes["invalid_units"] = attr_units
+        attr_units = "?"
+
+    return attr_units
+
+
+def _build_aux_coord(coord_var, file_path):
+    assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
+    attributes = {}
+    attr_units = _get_units(coord_var, attributes)
+    points_data = netcdf._get_cf_var_data(coord_var, file_path)
+
+    # Bounds will not be loaded:
+    # Bounds may be present, but the UGRID conventions state this would
+    # always be duplication of the same info provided by the mandatory
+    # connectivities.
+
+    # Fetch climatological - not allowed for a Mesh, but loading it will
+    # mean an informative error gets raised.
+    climatological = False
+    # TODO: use CF_ATTR_CLIMATOLOGY once re-integrated post-pyke.
+    attr_climatology = getattr(coord_var, "climatology", None)
+    if attr_climatology is not None:
+        climatology_vars = coord_var.cf_group.climatology
+        climatological = attr_climatology in climatology_vars
+
+    standard_name, long_name, var_name = _get_names(coord_var, attributes)
+    coord = AuxCoord(
+        points_data,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        # TODO: coord_system
+        climatological=climatological,
+    )
+
+    axis = guess_coord_axis(coord)
+    if axis is None:
+        if var_name[-2] == "_":
+            # Fall back on UGRID var_name convention.
+            axis = var_name[-1]
+        else:
+            message = f"Cannot guess axis for UGRID coord: {var_name} ."
+            raise ValueError(message)
+
+    return coord, axis
+
+
+def _build_connectivity(connectivity_var, file_path, location_dims):
+    assert isinstance(connectivity_var, CFUGridConnectivityVariable)
+    attributes = {}
+    attr_units = _get_units(connectivity_var, attributes)
+    indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
+
+    cf_role = connectivity_var.cf_role
+    start_index = connectivity_var.start_index
+
+    first_dim_name = connectivity_var.dimensions[0]
+    if first_dim_name in location_dims:
+        src_dim = 0
+    else:
+        src_dim = 1
+
+    standard_name, long_name, var_name = _get_names(
+        connectivity_var, attributes
+    )
+
+    connectivity = Connectivity(
+        indices=indices_data,
+        cf_role=cf_role,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        start_index=start_index,
+        src_dim=src_dim,
+    )
+
+    return connectivity, first_dim_name
+
+
+def _build_mesh(cf, mesh_var, file_path):
+    assert isinstance(mesh_var, CFUGridMeshVariable)
+    attributes = {}
+    attr_units = _get_units(mesh_var, attributes)
+
+    topology_dimension = mesh_var.topology_dimension
+
+    node_dimension = None
+    edge_dimension = getattr(mesh_var, "edge_dimension", None)
+    face_dimension = getattr(mesh_var, "face_dimension", None)
+
+    node_coord_args = []
+    edge_coord_args = []
+    face_coord_args = []
+    for coord_var in mesh_var.cf_group.ugrid_coords.values():
+        coord_and_axis = _build_aux_coord(coord_var, file_path)
+        coord = coord_and_axis[0]
+
+        # TODO: remove this hack pending iris#4053 fixed lazy handling.
+        _ = coord.points
+
+        if coord.var_name in mesh_var.node_coordinates.split():
+            node_coord_args.append(coord_and_axis)
+            node_dimension = coord_var.dimensions[0]
+        elif (
+            coord.var_name in getattr(mesh_var, "edge_coordinates", "").split()
+        ):
+            edge_coord_args.append(coord_and_axis)
+        elif (
+            coord.var_name in getattr(mesh_var, "face_coordinates", "").split()
+        ):
+            face_coord_args.append(coord_and_axis)
+        else:
+            message = (
+                f"Invalid UGRID coord: {coord.var_name} . Must be either a"
+                f"node_, edge_ or face_coordinate."
+            )
+            raise ValueError(message)
+
+    if node_dimension is None:
+        message = (
+            "'node_dimension' could not be identified from mesh node "
+            "coordinates."
+        )
+        raise ValueError(message)
+
+    # Used for detecting transposed connectivities.
+    location_dims = (edge_dimension, face_dimension)
+    connectivity_args = []
+    for connectivity_var in mesh_var.cf_group.connectivities.values():
+        connectivity, first_dim_name = _build_connectivity(
+            connectivity_var, file_path, location_dims
+        )
+        assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
+        connectivity_args.append(connectivity)
+
+        # TODO: remove this hack pending iris#4053 fixed lazy handling.
+        _ = connectivity.indices
+
+        # If the mesh_var has not supplied the dimension name, it is safe to
+        # fall back on the connectivity's first dimension's name.
+        if edge_dimension is None and connectivity.src_location == "edge":
+            edge_dimension = first_dim_name
+        if face_dimension is None and connectivity.src_location == "face":
+            face_dimension = first_dim_name
+
+    standard_name, long_name, var_name = _get_names(mesh_var, attributes)
+
+    mesh = Mesh(
+        topology_dimension=topology_dimension,
+        node_coords_and_axes=node_coord_args,
+        connectivities=connectivity_args,
+        edge_coords_and_axes=edge_coord_args,
+        face_coords_and_axes=face_coord_args,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        node_dimension=node_dimension,
+        edge_dimension=edge_dimension,
+        face_dimension=face_dimension,
+    )
+    assert mesh.cf_role == mesh_var.cf_role
+
+    mesh_elements = (
+        list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
+    )
+    mesh_elements = filter(None, mesh_elements)
+    for iris_object in mesh_elements:
+        netcdf._add_unused_attributes(
+            iris_object, cf.cf_group[iris_object.var_name]
+        )
+
+    return mesh
+
+
+def _build_mesh_coords(mesh, cf_var):
+    # Identify the cube's mesh dimension, for attaching MeshCoords.
+    locations_dimensions = {
+        "node": mesh.node_dimension,
+        "edge": mesh.edge_dimension,
+        "face": mesh.face_dimension,
+    }
+    mesh_dim_name = locations_dimensions[cf_var.location]
+    # (Only expecting 1 mesh dimension per cf_var).
+    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+
+    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+    return mesh_coords, mesh_dim
+
+
+def load_cubes(filenames, callback):
+    # Initialise the pyke inference engine.
+    engine = netcdf._pyke_kb_engine()
+
+    if isinstance(filenames, str):
+        filenames = [filenames]
+
+    for filename in filenames:
+        # Ingest the netCDF file.
+        # cf = iris.fileformats.cf.CFReader(filename)
+        cf = CFUGridReader(filename)
+
+        # Mesh instances are shared between file phenomena.
+        # TODO: more sophisticated Mesh sharing between files.
+        # TODO: access external Mesh cache?
+        mesh_vars = getattr(cf.cf_group, "meshes", {})
+        meshes = {
+            name: _build_mesh(cf, var, filename)
+            for name, var in mesh_vars.items()
+        }
+
+        # Process each CF data variable.
+        data_variables = list(cf.cf_group.data_variables.values()) + list(
+            cf.cf_group.promoted.values()
+        )
+        for cf_var in data_variables:
+            # cf_var-specific mesh handling, if a mesh is present.
+            mesh_name = getattr(cf_var, "mesh", None)
+            mesh_coords, mesh_dim = [], None
+            if mesh_name is not None:
+                try:
+                    mesh = meshes[mesh_name]
+                except KeyError as error:
+                    message = (
+                        f"File does not contain mesh: '{mesh_name}' - "
+                        f"referenced by variable: '{cf_var.cf_name}' ."
+                    )
+                    raise KeyError(message) from error
+                mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
+            cube = netcdf._load_cube(engine, cf, cf_var, filename)
+
+            # Attach the mesh (if present) to the cube.
+            for mesh_coord in mesh_coords:
+                cube.add_aux_coord(mesh_coord, mesh_dim)
+
+            # Process any associated formula terms and attach
+            # the corresponding AuxCoordFactory.
+            try:
+                netcdf._load_aux_factory(engine, cube)
+            except ValueError as e:
+                logger.debug("{}".format(e))
+
+            # Perform any user registered callback function.
+            cube = run_callback(callback, cube, cf_var, filename)
+
+            # Callback mechanism may return None, which must not be yielded
+            if cube is None:
+                continue
+
+            yield cube
+
+
+# END of loading section.
+###############################################################################

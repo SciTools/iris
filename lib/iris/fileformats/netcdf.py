@@ -37,17 +37,14 @@ from iris.aux_factory import (
     OceanSg1Factory,
     OceanSg2Factory,
 )
-from iris.common.mixin import _get_valid_standard_name
 import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.exceptions
-from iris.experimental.ugrid import Connectivity, Mesh
 import iris.fileformats.cf
 import iris.fileformats._pyke_rules
 import iris.io
-from iris.std_names import STD_NAMES
 import iris.util
 from iris._lazy_data import as_lazy_data
 
@@ -587,7 +584,7 @@ def _get_cf_var_data(cf_var, filename):
 
     # Create cube with deferred data, but no metadata
     fill_value = getattr(
-        cf_var,
+        cf_var.cf_data,
         "_FillValue",
         netCDF4.default_fillvals[cf_var.dtype.str[1:]],
     )
@@ -596,7 +593,7 @@ def _get_cf_var_data(cf_var, filename):
     )
     # Get the chunking specified for the variable : this is either a shape, or
     # maybe the string "contiguous".
-    chunks = cf_var.chunking()
+    chunks = cf_var.cf_data.chunking()
     # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
     if chunks == "contiguous":
         chunks = None
@@ -612,7 +609,6 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.reset()
 
     # Initialise pyke engine rule processing hooks.
-    # NOTE: any location coordinates attached to a UGRID cf_var are ignored by engine.
     engine.cf_var = cf_var
     engine.cube = cube
     engine.cube_parts = {}
@@ -665,265 +661,6 @@ def _load_cube(engine, cf, cf_var, filename):
     _pyke_stats(engine, cf_var.cf_name)
 
     return cube
-
-
-###############################################################################
-# Migrate the section to experimental.ugrid, removing the mesh_ prefix from the
-# function names.
-
-
-def _mesh_get_names(cf_var, attributes):
-    """
-    Determine the standard_name, long_name and var_name attributes.
-
-    TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE _mesh_build_mesh().
-
-    todo: use get_names() once re-integrated post-pyke.
-    """
-    standard_name = getattr(cf_var, "standard_name", None)
-    long_name = getattr(cf_var, "long_name", None)
-    cf_name = str(cf_var.cf_name)
-
-    if standard_name is not None:
-        try:
-            standard_name = _get_valid_standard_name(standard_name)
-        except ValueError:
-            if long_name is not None:
-                attributes["invalid_standard_name"] = standard_name
-
-    if standard_name is None and cf_name in STD_NAMES:
-        standard_name = cf_name
-
-    return standard_name, long_name, cf_name
-
-
-def _mesh_get_units(cf_var, attributes):
-    """
-    Determine the variable's units.
-
-    TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE _mesh_build_mesh().
-
-    todo: use get_attr_units() once re-integrated post-pyke.
-    """
-    attr_units = getattr(cf_var, "units", "?")
-
-    suffixes = ["north", "east"]
-    # Abbreviations.
-    suffixes += [s[0] for s in suffixes]
-    # Spaces.
-    suffixes += [" " + s for s in suffixes] + ["_" + s for s in suffixes]
-    # Plurals.
-    suffixes += ["s" + s for s in suffixes]
-    degrees_units = ["degree"] + ["degree" + s for s in suffixes]
-
-    if attr_units in degrees_units:
-        attr_units = "degrees"
-    try:
-        cf_units.as_unit(attr_units)
-    except ValueError:
-        message = f"Ignoring UGRID variable {cf_var.cf_name} invalid units {attr_units}."
-        warnings.warn(message)
-        attributes["invalid_units"] = attr_units
-        attr_units = "?"
-
-    return attr_units
-
-
-def _mesh_build_aux_coord(coord_var, file_path):
-    assert isinstance(
-        coord_var, iris.fileformats.cf.UGridAuxiliaryCoordinateVariable
-    )
-    attributes = {}
-    attr_units = _mesh_get_units(coord_var, attributes)
-    points_data = _get_cf_var_data(coord_var, file_path)
-
-    # Bounds will not be loaded:
-    # Bounds may be present, but the UGRID conventions state this would
-    # always be duplication of the same info provided by the mandatory
-    # connectivities.
-
-    # Fetch climatological - not allowed for a Mesh, but loading it will
-    # mean an informative error gets raised.
-    climatological = False
-    # TODO: use CF_ATTR_CLIMATOLOGY once re-integrated post-pyke.
-    attr_climatology = getattr(coord_var, "climatology", None)
-    if attr_climatology is not None:
-        climatology_vars = coord_var.cf_group.climatology
-        climatological = attr_climatology in climatology_vars
-
-    standard_name, long_name, var_name = _mesh_get_names(coord_var, attributes)
-    coord = iris.coords.AuxCoord(
-        points_data,
-        standard_name=standard_name,
-        long_name=long_name,
-        var_name=var_name,
-        units=attr_units,
-        attributes=attributes,
-        # TODO: coord_system
-        climatological=climatological,
-    )
-
-    axis = iris.util.guess_coord_axis(coord)
-    if axis is None:
-        if var_name[-2] == "_":
-            # Fall back on UGRID var_name convention.
-            axis = var_name[-1]
-        else:
-            message = f"Cannot guess axis for UGRID coord: {var_name} ."
-            raise ValueError(message)
-
-    return coord, axis
-
-
-def _mesh_build_connectivity(connectivity_var, file_path, location_dims):
-    assert isinstance(
-        connectivity_var, iris.fileformats.cf.UGridConnectivityVariable
-    )
-    attributes = {}
-    attr_units = _mesh_get_units(connectivity_var, attributes)
-    indices_data = _get_cf_var_data(connectivity_var, file_path)
-
-    cf_role = connectivity_var.cf_role
-    start_index = connectivity_var.start_index
-
-    first_dim_name = connectivity_var.dimensions[0]
-    if first_dim_name in location_dims:
-        src_dim = 0
-    else:
-        src_dim = 1
-
-    standard_name, long_name, var_name = _mesh_get_names(
-        connectivity_var, attributes
-    )
-
-    connectivity = Connectivity(
-        indices=indices_data,
-        cf_role=cf_role,
-        standard_name=standard_name,
-        long_name=long_name,
-        var_name=var_name,
-        units=attr_units,
-        attributes=attributes,
-        start_index=start_index,
-        src_dim=src_dim,
-    )
-
-    return connectivity, first_dim_name
-
-
-def _mesh_build_mesh(cf, mesh_var, file_path):
-    assert isinstance(mesh_var, iris.fileformats.cf.UGridMeshVariable)
-    attributes = {}
-    attr_units = _mesh_get_units(mesh_var, attributes)
-
-    topology_dimension = mesh_var.topology_dimension
-
-    node_dimension = None
-    edge_dimension = getattr(mesh_var, "edge_dimension", None)
-    face_dimension = getattr(mesh_var, "face_dimension", None)
-
-    node_coord_args = []
-    edge_coord_args = []
-    face_coord_args = []
-    for coord_var in mesh_var.cf_group._ugrid_coords.values():
-        coord_and_axis = _mesh_build_aux_coord(coord_var, file_path)
-        coord = coord_and_axis[0]
-
-        # TODO: remove this hack pending iris#4053 fixed lazy handling.
-        _ = coord.points
-
-        if coord.var_name in mesh_var.node_coordinates.split():
-            node_coord_args.append(coord_and_axis)
-            node_dimension = coord_var.dimensions[0]
-        elif (
-            coord.var_name in getattr(mesh_var, "edge_coordinates", "").split()
-        ):
-            edge_coord_args.append(coord_and_axis)
-        elif (
-            coord.var_name in getattr(mesh_var, "face_coordinates", "").split()
-        ):
-            face_coord_args.append(coord_and_axis)
-        else:
-            message = (
-                f"Invalid UGRID coord: {coord.var_name} . Must be either a"
-                f"node_, edge_ or face_coordinate."
-            )
-            raise ValueError(message)
-
-    if node_dimension is None:
-        message = (
-            "'node_dimension' could not be identified from mesh node "
-            "coordinates."
-        )
-        raise ValueError(message)
-
-    # Used for detecting transposed connectivities.
-    location_dims = (edge_dimension, face_dimension)
-    connectivity_args = []
-    for connectivity_var in mesh_var.cf_group._connectivities.values():
-        connectivity, first_dim_name = _mesh_build_connectivity(
-            connectivity_var, file_path, location_dims
-        )
-        assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
-        connectivity_args.append(connectivity)
-
-        # TODO: remove this hack pending iris#4053 fixed lazy handling.
-        _ = connectivity.indices
-
-        # If the mesh_var has not supplied the dimension name, it is safe to
-        # fall back on the connectivity's first dimension's name.
-        if edge_dimension is None and connectivity.src_location == "edge":
-            edge_dimension = first_dim_name
-        if face_dimension is None and connectivity.src_location == "face":
-            face_dimension = first_dim_name
-
-    standard_name, long_name, var_name = _mesh_get_names(mesh_var, attributes)
-
-    mesh = Mesh(
-        topology_dimension=topology_dimension,
-        node_coords_and_axes=node_coord_args,
-        connectivities=connectivity_args,
-        edge_coords_and_axes=edge_coord_args,
-        face_coords_and_axes=face_coord_args,
-        standard_name=standard_name,
-        long_name=long_name,
-        var_name=var_name,
-        units=attr_units,
-        attributes=attributes,
-        node_dimension=node_dimension,
-        edge_dimension=edge_dimension,
-        face_dimension=face_dimension,
-    )
-    assert mesh.cf_role == mesh_var.cf_role
-
-    mesh_elements = (
-        list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
-    )
-    mesh_elements = filter(None, mesh_elements)
-    for iris_object in mesh_elements:
-        _add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
-
-    return mesh
-
-
-def _mesh_build_mesh_coords(mesh, cf_var):
-    """Attach the given mesh to the given cube."""
-    # Identify the cube's mesh dimension, for attaching MeshCoords.
-    locations_dimensions = {
-        "node": mesh.node_dimension,
-        "edge": mesh.edge_dimension,
-        "face": mesh.face_dimension,
-    }
-    mesh_dim_name = locations_dimensions[cf_var.location]
-    # (Only expecting 1 mesh dimension per cf_var).
-    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
-
-    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
-    return mesh_coords, mesh_dim
-
-
-# End of mesh loading functions.
-###############################################################################
 
 
 def _load_aux_factory(engine, cube):
@@ -1068,38 +805,12 @@ def load_cubes(filenames, callback=None):
         # Ingest the netCDF file.
         cf = iris.fileformats.cf.CFReader(filename)
 
-        # Mesh instances are shared between file phenomena.
-        # TODO: more sophisticated Mesh sharing between files.
-        # TODO: access persistent Mesh cache?
-        meshes = {
-            name: _mesh_build_mesh(cf, var, filename)
-            for name, var in cf.cf_group._meshes.items()
-        }
-
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
-            # cf_var-specific mesh handling, if a mesh is present.
-            mesh_name = getattr(cf_var, "mesh", None)
-            mesh_coords, mesh_dim = [], None
-            if mesh_name is not None:
-                try:
-                    mesh = meshes[mesh_name]
-                except KeyError as error:
-                    message = (
-                        f"File does not contain mesh: '{mesh_name}' - "
-                        f"referenced by variable: '{cf_var.cf_name}' ."
-                    )
-                    raise KeyError(message) from error
-                mesh_coords, mesh_dim = _mesh_build_mesh_coords(mesh, cf_var)
-
             cube = _load_cube(engine, cf, cf_var, filename)
-
-            # Attach the mesh (if present) to the cube.
-            for mesh_coord in mesh_coords:
-                cube.add_aux_coord(mesh_coord, mesh_dim)
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.
