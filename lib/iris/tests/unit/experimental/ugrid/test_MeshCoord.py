@@ -366,21 +366,11 @@ class Test__str_repr(tests.IrisTest):
 
     def test_repr(self):
         result = repr(self.meshcoord)
-        re_expected = (
-            r"MeshCoord\(mesh=<Mesh object at .*>"
-            r", location='face', axis='x'"
-            r".*\)"
-        )
         re_expected = self._expected_elements_regexp(mesh_strstyle=False)
         self.assertRegex(result, re_expected)
 
     def test__str__(self):
         result = str(self.meshcoord)
-        re_expected = (
-            r"MeshCoord\(mesh=Mesh\('test_mesh'\)"
-            r", location='face', axis='x'"
-            r".*\)"
-        )
         re_expected = self._expected_elements_regexp(mesh_strstyle=True)
         self.assertRegex(result, re_expected)
 
@@ -391,24 +381,6 @@ class Test__str_repr(tests.IrisTest):
         result = str(meshcoord)
         re_expected = r", location='edge', axis='y'"
         self.assertRegex(result, re_expected)
-
-    def _check_str_additional(self, standard_name=True, long_name=True):
-        result = str(self.meshcoord)
-        expects = [
-            r"MeshCoord\(mesh=Mesh\('test_mesh'\)",
-            r", location='face', axis='x'",
-        ]
-        if standard_name:
-            expects += [", standard_name='longitude'"]
-        expects += [r", units=Unit\('degrees_east'\)"]
-        if long_name:
-            expects += [", long_name='long-name'"]
-        expects += r"\)"
-        re_expected = "".join(expects)
-        self.assertRegex(result, re_expected)
-
-    # def test_all_additional(self):
-    #     self._check_str_additional()
 
     def test_str_no_long_name(self):
         mesh = self.mesh
@@ -435,7 +407,7 @@ class Test__str_repr(tests.IrisTest):
 
     def test_str_no_attributes(self):
         mesh = self.mesh
-        # Remove the standard_name of the node coord in the mesh.
+        # No attributes on the node coord in the mesh.
         node_coord = mesh.coord(include_nodes=True, axis="x")
         node_coord.attributes = None
         # Make a new meshcoord, based on the modified mesh.
@@ -446,7 +418,7 @@ class Test__str_repr(tests.IrisTest):
 
     def test_str_empty_attributes(self):
         mesh = self.mesh
-        # Remove the standard_name of the node coord in the mesh.
+        # Empty attributes dict on the node coord in the mesh.
         node_coord = mesh.coord(include_nodes=True, axis="x")
         node_coord.attributes.clear()
         # Make a new meshcoord, based on the modified mesh.
