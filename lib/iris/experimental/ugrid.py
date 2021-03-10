@@ -3624,11 +3624,13 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     cf_role = connectivity_var.cf_role
     start_index = connectivity_var.start_index
 
-    first_dim_name = connectivity_var.dimensions[0]
-    if first_dim_name in location_dims:
-        src_dim = 0
-    else:
+    dim_names = connectivity_var.dimensions
+    # Connectivity arrays must have two dimensions.
+    assert len(dim_names) == 2
+    if dim_names[1] in location_dims:
         src_dim = 1
+    else:
+        src_dim = 0
 
     standard_name, long_name, var_name = _get_names(
         connectivity_var, attributes
@@ -3646,7 +3648,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
         src_dim=src_dim,
     )
 
-    return connectivity, first_dim_name
+    return connectivity, dim_names[0]
 
 
 def _build_mesh(cf, mesh_var, file_path):
@@ -3672,9 +3674,6 @@ def _build_mesh(cf, mesh_var, file_path):
     for coord_var in mesh_var.cf_group.ugrid_coords.values():
         coord_and_axis = _build_aux_coord(coord_var, file_path)
         coord = coord_and_axis[0]
-
-        # TODO: remove this hack pending iris#4053 fixed lazy handling.
-        _ = coord.points
 
         if coord.var_name in mesh_var.node_coordinates.split():
             node_coord_args.append(coord_and_axis)
@@ -3711,9 +3710,6 @@ def _build_mesh(cf, mesh_var, file_path):
         )
         assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
         connectivity_args.append(connectivity)
-
-        # TODO: remove this hack pending iris#4053 fixed lazy handling.
-        _ = connectivity.indices
 
         # If the mesh_var has not supplied the dimension name, it is safe to
         # fall back on the connectivity's first dimension's name.
