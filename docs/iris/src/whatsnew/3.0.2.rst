@@ -21,6 +21,10 @@ This document explains the changes made to Iris for this release
    #. `@jonseddon`_ handled a malformed ``um_stash_source`` CF variable attribute in
       a netCDF file rather than raising a ``ValueError``. (:pull:`4035`)
 
+   #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases
+      where one cell's bounds align with the requested maximum and minimum, as
+      reported in :issue:`3391`. (:pull:`4059`)
+
    📚 **Documentation**
 
    #. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
