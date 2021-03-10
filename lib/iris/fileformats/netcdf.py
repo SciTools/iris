@@ -792,7 +792,7 @@ def load_cubes(filenames, callback=None):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
     Returns:
-        Generator of loaded NetCDF :class:`iris.cubes.Cube`.
+        Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
     # Initialise the pyke inference engine.

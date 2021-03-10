@@ -951,7 +951,11 @@ class CFGroup(MutableMapping):
 
     @property
     def non_data_variable_names(self):
-        # TODO: docstring.
+        """
+        :class:`set` of the names of the CF-netCDF variables that are not
+        the data pay-load.
+
+        """
         non_data_variables = (
             self.ancillary_variables,
             self.auxiliary_coordinates,

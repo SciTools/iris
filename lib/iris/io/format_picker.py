@@ -216,12 +216,13 @@ class FormatSpecification:
         """The handler function of this FileFormat. (Read only)"""
         # TODO: Remove alternative UGRID behaviour when experimental.ugrid
         #  gets folded into standard behaviour.
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        from iris.experimental.ugrid import _PARSE_UGRID_ON_LOAD
 
-        if PARSE_UGRID_ON_LOAD is True and self._handler == netcdf_load_cubes:
+        if _PARSE_UGRID_ON_LOAD is True and self._handler == netcdf_load_cubes:
             result = ugrid_load_cubes
         else:
             result = self._handler
+
         return result
 
     def _sort_key(self):
