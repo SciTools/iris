@@ -3355,8 +3355,9 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                         if name not in variables:
                             if warn:
                                 message = (
-                                    f"Missing CF-UGRID {name}, referenced by "
-                                    f"netCDF variable {nc_var_name}"
+                                    f"Missing CF-UGRID connectivity {name}, "
+                                    f"referenced by netCDF variable "
+                                    f"{nc_var_name}"
                                 )
                                 logger.debug(message)
                         else:
