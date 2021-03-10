@@ -551,6 +551,22 @@ def _set_attributes(attributes, key, value):
         attributes[str(key)] = value
 
 
+def _add_unused_attributes(iris_object, cf_var):
+    """
+    Populate the attributes of a cf element with the "unused" attributes
+    from the associated CF-netCDF variable. That is, all those that aren't CF
+    reserved terms.
+
+    """
+
+    def attribute_predicate(item):
+        return item[0] not in _CF_ATTRS
+
+    tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
+    for attr_name, attr_value in tmpvar:
+        _set_attributes(iris_object.attributes, attr_name, attr_value)
+
+
 def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
@@ -606,22 +622,12 @@ def _load_cube(engine, cf, cf_var, filename):
     # Run pyke inference engine with forward chaining rules.
     engine.activate(_PYKE_RULE_BASE)
 
-    # Having run the rules, now populate the attributes of all the cf elements with the
-    # "unused" attributes from the associated CF-netCDF variable.
-    # That is, all those that aren't CF reserved terms.
-    def attribute_predicate(item):
-        return item[0] not in _CF_ATTRS
-
-    def add_unused_attributes(iris_object, cf_var):
-        tmpvar = filter(attribute_predicate, cf_var.cf_attrs_unused())
-        for attr_name, attr_value in tmpvar:
-            _set_attributes(iris_object.attributes, attr_name, attr_value)
-
+    # Having run the rules, now add the "unused" attributes to each cf element.
     def fix_attributes_all_elements(role_name):
         elements_and_names = engine.cube_parts.get(role_name, [])
 
         for iris_object, cf_var_name in elements_and_names:
-            add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
+            _add_unused_attributes(iris_object, cf.cf_group[cf_var_name])
 
     # Populate the attributes of all coordinates, cell-measures and ancillary-vars.
     fix_attributes_all_elements("coordinates")
@@ -629,7 +635,7 @@ def _load_cube(engine, cf, cf_var, filename):
     fix_attributes_all_elements("cell_measures")
 
     # Also populate attributes of the top-level cube itself.
-    add_unused_attributes(cube, cf_var)
+    _add_unused_attributes(cube, cf_var)
 
     # Work out reference names for all the coords.
     names = {
@@ -786,7 +792,7 @@ def load_cubes(filenames, callback=None):
         Function which can be passed on to :func:`iris.io.run_callback`.
 
     Returns:
-        Generator of loaded NetCDF :class:`iris.cubes.Cube`.
+        Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
     # Initialise the pyke inference engine.
@@ -1435,11 +1441,11 @@ class Saver:
                         or cf_var.standard_name != std_name
                     ):
                         # TODO: We need to resolve this corner-case where
-                        # the dimensionless vertical coordinate containing the
-                        # formula_terms is a dimension coordinate of the
-                        # associated cube and a new alternatively named
-                        # dimensionless vertical coordinate is required with
-                        # new formula_terms and a renamed dimension.
+                        #  the dimensionless vertical coordinate containing
+                        #  the formula_terms is a dimension coordinate of
+                        #  the associated cube and a new alternatively named
+                        #  dimensionless vertical coordinate is required
+                        #  with new formula_terms and a renamed dimension.
                         if cf_name in dimension_names:
                             msg = (
                                 "Unable to create dimensonless vertical "
