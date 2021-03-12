@@ -23,6 +23,7 @@
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _nox: https://nox.thea.codes/en/stable/
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
+.. _pre-commit: https://pre-commit.com/
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/

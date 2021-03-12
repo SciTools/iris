@@ -113,6 +113,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added post-release instructions on how to :ref:`update_pypi`
    with `scitools-iris`_. (:pull:`4038`)
 
+#. `@bjlittle`_ added the |pre-commit.ci|_ badge to the `README.md`_.
+   See :ref:`pre_commit_ci` for further details. (:pull:`4061`)
+
 
 💼 Internal
 ===========
@@ -159,6 +162,8 @@ This document explains the changes made to Iris for this release
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
+.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg
+.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
