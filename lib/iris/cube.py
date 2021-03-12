@@ -1919,6 +1919,32 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return result
 
+    def mesh(self):
+        """
+        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        associated with the cube, or None if there is none.
+
+        """
+        result = self.coords(mesh_coords=True)
+        if len(result) == 0:
+            result = None
+        else:
+            result = result[0].mesh
+        return result
+
+    def location(self):
+        """
+        Return the mesh location of the cube, if the cube has an unstructured
+        :class:`~iris.experimental.ugrid.Mesh`, or None if there is none.
+
+        """
+        result = self.coords(mesh_coords=True)
+        if len(result) == 0:
+            result = None
+        else:
+            result = result[0].location
+        return result
+
     def cell_measures(self, name_or_cell_measure=None):
         """
         Return a list of cell measures in this cube fitting the given criteria.

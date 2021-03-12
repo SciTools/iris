@@ -1960,6 +1960,51 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
+def _add_test_meshcube(self, nomesh=False, location="face"):
+    # A common setup action : Create a standard test cube with a variety of
+    # types of coord, and add various objects to the testcase,
+    # i.e. to "self".
+    if nomesh:
+        mesh = None
+        n_faces = 5
+    else:
+        mesh = create_test_mesh()
+        meshx, meshy = (
+            create_test_meshcoord(axis=axis, mesh=mesh, location=location)
+            for axis in ("x", "y")
+        )
+        n_faces = meshx.shape[0]
+
+    mesh_dimco = DimCoord(
+        np.arange(n_faces), long_name="i_mesh_face", units="1"
+    )
+
+    auxco_x = AuxCoord(np.zeros(n_faces), long_name="mesh_face_aux", units="1")
+
+    n_z = 2
+    zco = DimCoord(np.arange(n_z), long_name="level", units=1)
+    cube = Cube(np.zeros((n_z, n_faces)), long_name="mesh_phenom")
+    cube.add_dim_coord(zco, 0)
+    if nomesh:
+        mesh_coords = []
+    else:
+        mesh_coords = [meshx, meshy]
+
+    cube.add_dim_coord(mesh_dimco, 1)
+    for co in mesh_coords + [auxco_x]:
+        cube.add_aux_coord(co, 1)
+
+    self.dimco_z = zco
+    self.dimco_mesh = mesh_dimco
+    if not nomesh:
+        self.meshco_x = meshx
+        self.meshco_y = meshy
+    self.auxco_x = auxco_x
+    self.allcoords = mesh_coords + [zco, mesh_dimco, auxco_x]
+    self.cube = cube
+    self.mesh = mesh
+
+
 class Test_coords__mesh_coords(tests.IrisTest):
     """
     Checking *only* the new "mesh_coords" keyword of the coord/coords methods.
@@ -1971,33 +2016,7 @@ class Test_coords__mesh_coords(tests.IrisTest):
 
     def setUp(self):
         # Create a standard test cube with a variety of types of coord.
-        mesh = create_test_mesh()
-        meshx, meshy = (
-            create_test_meshcoord(axis=axis, mesh=mesh) for axis in ("x", "y")
-        )
-
-        n_faces = meshx.shape[0]
-        mesh_dimco = DimCoord(
-            np.arange(n_faces), long_name="i_mesh_face", units="1"
-        )
-        auxco_x = AuxCoord(
-            np.zeros(n_faces), long_name="mesh_face_aux", units="1"
-        )
-        n_z = 2
-        zco = DimCoord(np.arange(n_z), long_name="level", units=1)
-        cube = Cube(np.zeros((n_z, n_faces)), long_name="mesh_phenom")
-        cube.add_dim_coord(zco, 0)
-        cube.add_dim_coord(mesh_dimco, 1)
-        for co in (meshx, meshy, auxco_x):
-            cube.add_aux_coord(co, 1)
-
-        self.dimco_z = zco
-        self.dimco_mesh = mesh_dimco
-        self.meshco_x = meshx
-        self.meshco_y = meshy
-        self.auxco_x = auxco_x
-        self.allcoords = [meshx, meshy, zco, mesh_dimco, auxco_x]
-        self.cube = cube
+        _add_test_meshcube(self)
 
     def _assert_lists_equal(self, items_a, items_b):
         """
@@ -2047,6 +2066,46 @@ class Test_coords__mesh_coords(tests.IrisTest):
         result = self.cube.coords(dim_coords=False, mesh_coords=True)
         expected = [self.meshco_x, self.meshco_y]
         self._assert_lists_equal(expected, result)
+
+
+class Test_mesh(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_mesh(self):
+        result = self.cube.mesh()
+        self.assertIs(result, self.mesh)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.mesh()
+        self.assertIsNone(result)
+
+
+class Test_location(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.location()
+        self.assertIsNone(result)
+
+    def test_mesh(self):
+        cube = self.cube
+        result = cube.location()
+        self.assertEqual(result, self.meshco_x.location)
+
+    def test_alternate_location(self):
+        # Replace standard setUp cube with an edge-based version.
+        _add_test_meshcube(self, location="edge")
+        cube = self.cube
+        result = cube.location()
+        self.assertEqual(result, "edge")
 
 
 class Test_dtype(tests.IrisTest):
