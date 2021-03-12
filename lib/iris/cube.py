@@ -10,6 +10,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import OrderedDict
+
 from collections.abc import (
     Iterable,
     Container,
@@ -1582,6 +1583,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
         Return a list of coordinates from the :class:`Cube` that match the
@@ -1643,8 +1645,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * dim_coords:
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
-            that are the cube's auxiliary and derived coordinates. If ``None``,
-            returns all coordinates.
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
 
         Returns:
             A list containing zero or more coordinates matching the provided
@@ -1659,6 +1667,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         if dim_coords in [False, None]:
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
+
+        if mesh_coords is not None:
+            # Select on mesh or non-mesh.
+            mesh_coords = bool(mesh_coords)
+            # Use duck typing to avoid importing from iris.experimental.ugrid,
+            # which could be a circular import.
+            if mesh_coords:
+                # *only* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if hasattr(item, "mesh")
+                ]
+            else:
+                # *not* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if not hasattr(item, "mesh")
+                ]
 
         coords_and_factories = metadata_filter(
             coords_and_factories,
@@ -1727,6 +1755,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
         Return a single coordinate from the :class:`Cube` that matches the
@@ -1793,8 +1822,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * dim_coords:
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
-            that are the cube's auxiliary and derived coordinates. If ``None``,
-            returns all coordinates.
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
 
         Returns:
             The coordinate that matches the provided criteria.

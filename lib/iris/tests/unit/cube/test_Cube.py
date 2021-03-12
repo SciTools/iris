@@ -25,6 +25,7 @@ from iris.analysis import WeightedAggregator, Aggregator
 from iris.analysis import MEAN
 from iris.aux_factory import HybridHeightFactory
 from iris.cube import Cube
+from iris.common.metadata import BaseMetadata
 from iris.coords import (
     AuxCoord,
     DimCoord,
@@ -40,6 +41,10 @@ from iris.exceptions import (
 )
 from iris._lazy_data import as_lazy_data
 import iris.tests.stock as stock
+from iris.tests.unit.experimental.ugrid.test_MeshCoord import (
+    _create_test_mesh as create_test_mesh,
+    _create_test_meshcoord as create_test_meshcoord,
+)
 
 
 class Test___init___data(tests.IrisTest):
@@ -1953,6 +1958,95 @@ class Test_copy(tests.IrisTest):
     def test__lazy(self):
         cube = Cube(as_lazy_data(np.array([1, 0])))
         self._check_copy(cube, cube.copy())
+
+
+class Test_coords__mesh_coords(tests.IrisTest):
+    """
+    Checking *only* the new "mesh_coords" keyword of the coord/coords methods.
+
+    This is *not* attached to the existing tests for this area, as they are
+    very old and patchy legacy tests.  See: iris.tests.test_cdm.TestQueryCoord.
+
+    """
+
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        mesh = create_test_mesh()
+        meshx, meshy = (
+            create_test_meshcoord(axis=axis, mesh=mesh) for axis in ("x", "y")
+        )
+
+        n_faces = meshx.shape[0]
+        mesh_dimco = DimCoord(
+            np.arange(n_faces), long_name="i_mesh_face", units="1"
+        )
+        auxco_x = AuxCoord(
+            np.zeros(n_faces), long_name="mesh_face_aux", units="1"
+        )
+        n_z = 2
+        zco = DimCoord(np.arange(n_z), long_name="level", units=1)
+        cube = Cube(np.zeros((n_z, n_faces)), long_name="mesh_phenom")
+        cube.add_dim_coord(zco, 0)
+        cube.add_dim_coord(mesh_dimco, 1)
+        for co in (meshx, meshy, auxco_x):
+            cube.add_aux_coord(co, 1)
+
+        self.dimco_z = zco
+        self.dimco_mesh = mesh_dimco
+        self.meshco_x = meshx
+        self.meshco_y = meshy
+        self.auxco_x = auxco_x
+        self.allcoords = [meshx, meshy, zco, mesh_dimco, auxco_x]
+        self.cube = cube
+
+    def _assert_lists_equal(self, items_a, items_b):
+        """
+        Check that two lists of coords, cubes etc contain the same things.
+        Lists must contain the same items, including any repeats, but can be in
+        a different order.
+
+        """
+        # Compare (and thus sort) by their *common* metadata.
+        def sortkey(item):
+            return BaseMetadata.from_metadata(item.metadata)
+
+        items_a = sorted(items_a, key=sortkey)
+        items_b = sorted(items_b, key=sortkey)
+        self.assertEqual(items_a, items_b)
+
+    def test_coords__all__meshcoords_default(self):
+        # coords() includes mesh-coords along with the others.
+        result = self.cube.coords()
+        expected = self.allcoords
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__all__meshcoords_only(self):
+        # Coords(mesh_coords=True) returns only mesh-coords.
+        result = self.cube.coords(mesh_coords=True)
+        expected = [self.meshco_x, self.meshco_y]
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__all__meshcoords_omitted(self):
+        # Coords(mesh_coords=False) omits the mesh-coords.
+        result = self.cube.coords(mesh_coords=False)
+        expected = set(self.allcoords) - set([self.meshco_x, self.meshco_y])
+        self._assert_lists_equal(expected, result)
+
+    def test_coords__axis__meshcoords(self):
+        # Coord (singular) with axis + mesh_coords=True
+        result = self.cube.coord(axis="x", mesh_coords=True)
+        self.assertIs(result, self.meshco_x)
+
+    def test_coords__dimcoords__meshcoords(self):
+        # dim_coords and mesh_coords should be mutually exclusive.
+        result = self.cube.coords(dim_coords=True, mesh_coords=True)
+        self.assertEqual(result, [])
+
+    def test_coords__nodimcoords__meshcoords(self):
+        # When mesh_coords=True, dim_coords=False should have no effect.
+        result = self.cube.coords(dim_coords=False, mesh_coords=True)
+        expected = [self.meshco_x, self.meshco_y]
+        self._assert_lists_equal(expected, result)
 
 
 class Test_dtype(tests.IrisTest):
