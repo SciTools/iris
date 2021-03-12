@@ -795,6 +795,16 @@ def load_cubes(filenames, callback=None):
         Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
+    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    #  into standard behaviour.
+    # Deferred import to avoid circular imports.
+    from iris.experimental.ugrid import (
+        PARSE_UGRID_ON_LOAD,
+        CFUGridReader,
+        _build_mesh,
+        _build_mesh_coords,
+    )
+
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
@@ -803,14 +813,50 @@ def load_cubes(filenames, callback=None):
 
     for filename in filenames:
         # Ingest the netCDF file.
-        cf = iris.fileformats.cf.CFReader(filename)
+        meshes = {}
+        if PARSE_UGRID_ON_LOAD:
+            cf = CFUGridReader(filename)
+
+            # Mesh instances are shared between file phenomena.
+            # TODO: more sophisticated Mesh sharing between files.
+            # TODO: access external Mesh cache?
+            mesh_vars = cf.cf_group.meshes
+            meshes = {
+                name: _build_mesh(cf, var, filename)
+                for name, var in mesh_vars.items()
+            }
+        else:
+            cf = iris.fileformats.cf.CFReader(filename)
 
         # Process each CF data variable.
         data_variables = list(cf.cf_group.data_variables.values()) + list(
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
+            # cf_var-specific mesh handling, if a mesh is present.
+            # Build the mesh_coords *before* loading the cube - avoids
+            # mesh-related attributes being picked up by
+            # _add_unused_attributes().
+            mesh_name = None
+            if PARSE_UGRID_ON_LOAD:
+                mesh_name = getattr(cf_var, "mesh", None)
+            mesh_coords, mesh_dim = [], None
+            if mesh_name is not None:
+                try:
+                    mesh = meshes[mesh_name]
+                except KeyError as error:
+                    message = (
+                        f"File does not contain mesh: '{mesh_name}' - "
+                        f"referenced by variable: '{cf_var.cf_name}' ."
+                    )
+                    raise KeyError(message) from error
+                mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
             cube = _load_cube(engine, cf, cf_var, filename)
+
+            # Attach the mesh (if present) to the cube.
+            for mesh_coord in mesh_coords:
+                cube.add_aux_coord(mesh_coord, mesh_dim)
 
             # Process any associated formula terms and attach
             # the corresponding AuxCoordFactory.

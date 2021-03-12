@@ -15,8 +15,8 @@ from collections import Iterable, namedtuple
 from contextlib import contextmanager
 from functools import wraps
 import re
+import threading
 
-import cf_units
 import dask.array as da
 import numpy as np
 
@@ -31,20 +31,22 @@ from ..common.metadata import (
     SERVICES_DIFFERENCE,
 )
 from ..common.lenient import _lenient_service as lenient_service
-from ..common.mixin import _get_valid_standard_name, CFVariableMixin
+from ..common.mixin import CFVariableMixin
 from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..fileformats import cf, netcdf
-from ..io import run_callback
-from ..std_names import STD_NAMES
+from ..fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import (
+    get_names,
+    get_attr_units,
+)
 from ..util import guess_coord_axis
 
 
 __all__ = [
+    "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
-    "load_cubes",
     "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
@@ -58,7 +60,8 @@ __all__ = [
     "MeshMetadata",
     "MeshCoord",
     "MeshCoordMetadata",
-    "parse_ugrid_on_load",
+    "ParseUGridOnLoad",
+    "PARSE_UGRID_ON_LOAD",
 ]
 
 
@@ -3208,107 +3211,65 @@ del (
     _method,
 )
 
+
 ###############################################################################
 # LOADING
-_PARSE_UGRID_ON_LOAD = False
 
 
-@contextmanager
-def parse_ugrid_on_load():
-    """
-    Return a context manager that temporarily activates the experimental
-    UGRID-aware version of Iris NetCDF loading.
+class ParseUGridOnLoad(threading.local):
+    def __init__(self):
+        """
+        A flag for dictating whether to use the experimental UGRID-aware
+        version of Iris NetCDF loading. Object is thread-safe.
 
-    Use the standard Iris loading API while within the context manager. If
-    the loaded file(s) include any UGRID content, this will be parsed and
-    attached to the resultant cube(s) accordingly.
+        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+        Use :meth:`context` to temporarily activate.
 
-    For example::
+        .. seealso::
 
-        with parse_ugrid_on_load():
-            my_cube_list = iris.load([my_file_path, my_file_path2],
-                                     constraint=my_constraint,
-                                     callback=my_callback)
+            The UGRID Conventions,
+            https://ugrid-conventions.github.io/ugrid-conventions/
 
-    .. seealso::
+        """
+        self._state = False
 
-        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    def __bool__(self):
+        return self._state
 
-    """
-    global _PARSE_UGRID_ON_LOAD
-    _PARSE_UGRID_ON_LOAD = True
-    try:
-        yield
-    finally:
-        _PARSE_UGRID_ON_LOAD = False
+    @contextmanager
+    def context(self):
+        """
+        Temporarily activate experimental UGRID-aware NetCDF loading.
+
+        Use the standard Iris loading API while within the context manager. If
+        the loaded file(s) include any UGRID content, this will be parsed and
+        attached to the resultant cube(s) accordingly.
+
+        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+
+        For example::
+
+            with PARSE_UGRID_ON_LOAD.context():
+                my_cube_list = iris.load([my_file_path, my_file_path2],
+                                         constraint=my_constraint,
+                                         callback=my_callback)
+
+        """
+        try:
+            self._state = True
+            yield
+        finally:
+            self._state = False
+
+
+#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`ParseUGridOnLoad`.
+PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
 ############
 # CF Overrides.
 # These are not included in __all__ since they are not [currently] needed
 # outside this module.
-
-
-class CFUGridGroup(cf.CFGroup):
-    """
-    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
-    Conventions' variables and netCDF global attributes.
-
-    Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
-    collections for CF-UGRID-specific variable types.
-
-    """
-
-    @property
-    def connectivities(self):
-        """Collection of CF-UGRID connectivity variables."""
-        return self._cf_getter(CFUGridConnectivityVariable)
-
-    @property
-    def ugrid_coords(self):
-        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
-        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
-
-    @property
-    def meshes(self):
-        """Collection of CF-UGRID mesh variables."""
-        return self._cf_getter(CFUGridMeshVariable)
-
-    @property
-    def non_data_variable_names(self):
-        """
-        :class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
-        not the data pay-load.
-
-        """
-        extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
-        extra_result = set()
-        for variable in extra_variables:
-            extra_result |= set(variable)
-        return super().non_data_variable_names | extra_result
-
-
-class CFUGridReader(cf.CFReader):
-    """
-    This class allows the contents of a netCDF file to be interpreted according
-    to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
-
-    Specialisation of :class:`~iris.fileformats.cf.CFReader` that can also
-    handle CF-UGRID-specific variable types.
-
-    """
-
-    CFGroup = CFUGridGroup
-
-    @property
-    def _variable_types(self):
-        """Add the extra UGRID classes to the parent _variable_types list."""
-        extra_types = (
-            CFUGridConnectivityVariable,
-            CFUGridAuxiliaryCoordinateVariable,
-            CFUGridMeshVariable,
-        )
-        return super()._variable_types + extra_types
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):
@@ -3334,7 +3295,8 @@ class CFUGridConnectivityVariable(cf.CFVariable):
 
     """
 
-    cf_identity = Connectivity.UGRID_CF_ROLES
+    cf_identity = NotImplemented
+    cf_identities = Connectivity.UGRID_CF_ROLES
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -3345,7 +3307,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
         for nc_var_name, nc_var in target.items():
             # Check for connectivity variable references, iterating through
             # the valid cf roles.
-            for identity in cls.cf_identity:
+            for identity in cls.cf_identities:
                 nc_var_att = getattr(nc_var, identity, None)
 
                 if nc_var_att is not None:
@@ -3393,12 +3355,13 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
 
     """
 
-    cf_identity = (
+    cf_identity = NotImplemented
+    cf_identities = [
         "node_coordinates",
         "edge_coordinates",
         "face_coordinates",
         "volume_coordinates",
-    )
+    ]
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -3408,7 +3371,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
         # Identify any CF-UGRID-relevant auxiliary coordinate variables.
         for nc_var_name, nc_var in target.items():
             # Check for UGRID auxiliary coordinate variable references.
-            for identity in cls.cf_identity:
+            for identity in cls.cf_identities:
                 nc_var_att = getattr(nc_var, identity, None)
 
                 if nc_var_att is not None:
@@ -3490,71 +3453,66 @@ class CFUGridMeshVariable(cf.CFVariable):
         return result
 
 
+class CFUGridGroup(cf.CFGroup):
+    """
+    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    Conventions' variables and netCDF global attributes.
+
+    Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
+    collections for CF-UGRID-specific variable types.
+
+    """
+
+    @property
+    def connectivities(self):
+        """Collection of CF-UGRID connectivity variables."""
+        return self._cf_getter(CFUGridConnectivityVariable)
+
+    @property
+    def ugrid_coords(self):
+        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
+        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
+
+    @property
+    def meshes(self):
+        """Collection of CF-UGRID mesh variables."""
+        return self._cf_getter(CFUGridMeshVariable)
+
+    @property
+    def non_data_variable_names(self):
+        """
+        :class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
+        not the data pay-load.
+
+        """
+        extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
+        extra_result = set()
+        for variable in extra_variables:
+            extra_result |= set(variable)
+        return super().non_data_variable_names | extra_result
+
+
+class CFUGridReader(cf.CFReader):
+    """
+    This class allows the contents of a netCDF file to be interpreted according
+    to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
+
+    Specialisation of :class:`~iris.fileformats.cf.CFReader` that can also
+    handle CF-UGRID-specific variable types.
+
+    """
+
+    _variable_types = cf.CFReader._variable_types + (
+        CFUGridConnectivityVariable,
+        CFUGridAuxiliaryCoordinateVariable,
+        CFUGridMeshVariable,
+    )
+
+    CFGroup = CFUGridGroup
+
+
 ############
 # Object construction.
-
-
-def _get_names(cf_var, attributes):
-    """
-    Determine the standard_name, long_name and var_name attributes.
-
-    .. warning::
-
-        TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE :func:`_build_mesh`.
-
-    todo: use get_names() once re-integrated post-pyke.
-
-    """
-    standard_name = getattr(cf_var, "standard_name", None)
-    long_name = getattr(cf_var, "long_name", None)
-    cf_name = str(cf_var.cf_name)
-
-    if standard_name is not None:
-        try:
-            standard_name = _get_valid_standard_name(standard_name)
-        except ValueError:
-            if long_name is not None:
-                attributes["invalid_standard_name"] = standard_name
-
-    if standard_name is None and cf_name in STD_NAMES:
-        standard_name = cf_name
-
-    return standard_name, long_name, cf_name
-
-
-def _get_units(cf_var, attributes):
-    """
-    Determine the variable's units.
-
-    .. warning::
-
-        TEMPORARY MEASURE, NOT INTENDED FOR USES OUTSIDE :func:`_build_mesh`.
-
-    todo: use get_attr_units() once re-integrated post-pyke.
-
-    """
-    attr_units = getattr(cf_var, "units", "?")
-
-    suffixes = ["north", "east"]
-    # Abbreviations.
-    suffixes += [s[0] for s in suffixes]
-    # Spaces.
-    suffixes += [" " + s for s in suffixes] + ["_" + s for s in suffixes]
-    # Plurals.
-    suffixes += ["s" + s for s in suffixes]
-    degrees_units = ["degree"] + ["degree" + s for s in suffixes]
-
-    if attr_units in degrees_units:
-        attr_units = "degrees"
-    try:
-        cf_units.as_unit(attr_units)
-    except ValueError:
-        message = f"Ignoring UGRID variable {cf_var.cf_name} invalid units {attr_units}."
-        logger.debug(message)
-        attributes["invalid_units"] = attr_units
-        attr_units = "?"
-
-    return attr_units
 
 
 def _build_aux_coord(coord_var, file_path):
@@ -3567,7 +3525,7 @@ def _build_aux_coord(coord_var, file_path):
     """
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
-    attr_units = _get_units(coord_var, attributes)
+    attr_units = get_attr_units(coord_var, attributes)
     points_data = netcdf._get_cf_var_data(coord_var, file_path)
 
     # Bounds will not be loaded:
@@ -3584,7 +3542,7 @@ def _build_aux_coord(coord_var, file_path):
         climatology_vars = coord_var.cf_group.climatology
         climatological = attr_climatology in climatology_vars
 
-    standard_name, long_name, var_name = _get_names(coord_var, attributes)
+    standard_name, long_name, var_name = get_names(coord_var, None, attributes)
     coord = AuxCoord(
         points_data,
         standard_name=standard_name,
@@ -3619,7 +3577,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     """
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
-    attr_units = _get_units(connectivity_var, attributes)
+    attr_units = get_attr_units(connectivity_var, attributes)
     indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
 
     cf_role = connectivity_var.cf_role
@@ -3633,8 +3591,8 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     else:
         src_dim = 0
 
-    standard_name, long_name, var_name = _get_names(
-        connectivity_var, attributes
+    standard_name, long_name, var_name = get_names(
+        connectivity_var, None, attributes
     )
 
     connectivity = Connectivity(
@@ -3661,7 +3619,7 @@ def _build_mesh(cf, mesh_var, file_path):
     """
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
-    attr_units = _get_units(mesh_var, attributes)
+    attr_units = get_attr_units(mesh_var, attributes)
 
     topology_dimension = mesh_var.topology_dimension
 
@@ -3719,7 +3677,7 @@ def _build_mesh(cf, mesh_var, file_path):
         if face_dimension is None and connectivity.src_location == "face":
             face_dimension = first_dim_name
 
-    standard_name, long_name, var_name = _get_names(mesh_var, attributes)
+    standard_name, long_name, var_name = get_names(mesh_var, None, attributes)
 
     mesh = Mesh(
         topology_dimension=topology_dimension,
@@ -3770,92 +3728,6 @@ def _build_mesh_coords(mesh, cf_var):
 
     mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
     return mesh_coords, mesh_dim
-
-
-def load_cubes(filenames, callback=None):
-    """
-    Loads cubes from a list of NetCDF filenames/URLs.
-
-    An augmented UGRID-aware version of
-    :func:`iris.fileformats.netcdf.load_cubes`, to be be used as an in-place
-    replacement if loading is required to perform the experimental UGRID
-    parsing.
-
-    Args:
-
-    * filenames (string/list):
-        One or more NetCDF filenames/DAP URLs to load from.
-
-    Kwargs:
-
-    * callback (callable function):
-        Function which can be passed on to :func:`iris.io.run_callback`.
-
-    Returns:
-        Generator of loaded NetCDF :class:`iris.cube.Cube`, **including**
-        attached :class:`MeshCoord`'s, if appropriate.
-
-    """
-    # Initialise the pyke inference engine.
-    engine = netcdf._pyke_kb_engine()
-
-    if isinstance(filenames, str):
-        filenames = [filenames]
-
-    for filename in filenames:
-        # Ingest the netCDF file.
-        # cf = iris.fileformats.cf.CFReader(filename)
-        cf = CFUGridReader(filename)
-
-        # Mesh instances are shared between file phenomena.
-        # TODO: more sophisticated Mesh sharing between files.
-        # TODO: access external Mesh cache?
-        mesh_vars = getattr(cf.cf_group, "meshes", {})
-        meshes = {
-            name: _build_mesh(cf, var, filename)
-            for name, var in mesh_vars.items()
-        }
-
-        # Process each CF data variable.
-        data_variables = list(cf.cf_group.data_variables.values()) + list(
-            cf.cf_group.promoted.values()
-        )
-        for cf_var in data_variables:
-            # cf_var-specific mesh handling, if a mesh is present.
-            mesh_name = getattr(cf_var, "mesh", None)
-            mesh_coords, mesh_dim = [], None
-            if mesh_name is not None:
-                try:
-                    mesh = meshes[mesh_name]
-                except KeyError as error:
-                    message = (
-                        f"File does not contain mesh: '{mesh_name}' - "
-                        f"referenced by variable: '{cf_var.cf_name}' ."
-                    )
-                    raise KeyError(message) from error
-                mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
-
-            cube = netcdf._load_cube(engine, cf, cf_var, filename)
-
-            # Attach the mesh (if present) to the cube.
-            for mesh_coord in mesh_coords:
-                cube.add_aux_coord(mesh_coord, mesh_dim)
-
-            # Process any associated formula terms and attach
-            # the corresponding AuxCoordFactory.
-            try:
-                netcdf._load_aux_factory(engine, cube)
-            except ValueError as e:
-                logger.debug("{}".format(e))
-
-            # Perform any user registered callback function.
-            cube = run_callback(callback, cube, cf_var, filename)
-
-            # Callback mechanism may return None, which must not be yielded
-            if cube is None:
-                continue
-
-            yield cube
 
 
 # END of loading section.

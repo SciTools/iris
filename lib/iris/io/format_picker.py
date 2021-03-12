@@ -47,8 +47,6 @@ import struct
 
 
 import iris.io
-from iris.experimental.ugrid import load_cubes as ugrid_load_cubes
-from iris.fileformats.netcdf import load_cubes as netcdf_load_cubes
 
 
 class FormatAgent:
@@ -214,16 +212,7 @@ class FormatSpecification:
     @property
     def handler(self):
         """The handler function of this FileFormat. (Read only)"""
-        # TODO: Remove alternative UGRID behaviour when experimental.ugrid
-        #  gets folded into standard behaviour.
-        from iris.experimental.ugrid import _PARSE_UGRID_ON_LOAD
-
-        if _PARSE_UGRID_ON_LOAD is True and self._handler == netcdf_load_cubes:
-            result = ugrid_load_cubes
-        else:
-            result = self._handler
-
-        return result
+        return self._handler
 
     def _sort_key(self):
         return (-self.priority, self.name, self.file_element)

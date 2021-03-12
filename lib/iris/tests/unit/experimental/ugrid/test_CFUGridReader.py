@@ -43,8 +43,8 @@ def netcdf_ugrid_variable(
     # Fill in all the extra UGRID attributes to prevent problems with getattr
     # and Mock. Any attribute can be replaced in downstream setUp if present.
     ugrid_attrs = (
-        list(CFUGridAuxiliaryCoordinateVariable.cf_identity)
-        + CFUGridConnectivityVariable.cf_identity
+        CFUGridAuxiliaryCoordinateVariable.cf_identities
+        + CFUGridConnectivityVariable.cf_identities
         + [CFUGridMeshVariable.cf_identity]
     )
     for attr in ugrid_attrs:
