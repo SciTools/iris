@@ -16,7 +16,7 @@
 <a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
 <img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
      alt="Documentation Status" /></a>
-<a src="https://results.pre-commit.ci/latest/github/SciTools/iris/master">
+<a href="https://results.pre-commit.ci/latest/github/SciTools/iris/master">
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg"
      alt="pre-commit.ci status" /></a>
 <a href="https://anaconda.org/conda-forge/iris">
