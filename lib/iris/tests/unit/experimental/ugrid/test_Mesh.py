@@ -848,6 +848,37 @@ class TestOperations1D(TestMeshCommon):
         self.mesh.remove_coords(self.EDGE_LON)
         self.assertEqual(None, self.mesh.edge_coords.edge_x)
 
+    def test_to_MeshCoord(self):
+        location = "node"
+        axis = "x"
+        result = self.mesh.to_MeshCoord(location, axis)
+        self.assertIsInstance(result, ugrid.MeshCoord)
+        self.assertEqual(location, result.location)
+        self.assertEqual(axis, result.axis)
+
+    def test_to_MeshCoord_face(self):
+        location = "face"
+        axis = "x"
+        self.assertRaises(
+            CoordinateNotFoundError, self.mesh.to_MeshCoord, location, axis
+        )
+
+    def test_to_MeshCoords(self):
+        location = "node"
+        result = self.mesh.to_MeshCoords(location)
+        self.assertEqual(len(self.mesh.AXES), len(result))
+        for ix, axis in enumerate(self.mesh.AXES):
+            coord = result[ix]
+            self.assertIsInstance(coord, ugrid.MeshCoord)
+            self.assertEqual(location, coord.location)
+            self.assertEqual(axis, coord.axis)
+
+    def test_to_MeshCoords_face(self):
+        location = "face"
+        self.assertRaises(
+            CoordinateNotFoundError, self.mesh.to_MeshCoords, location
+        )
+
 
 class TestOperations2D(TestOperations1D):
     # Additional/specialised tests for topology_dimension=2.
@@ -1003,6 +1034,26 @@ class TestOperations2D(TestOperations1D):
         self.assertEqual(self.FACE_LON, self.mesh.face_coords.face_x)
         self.mesh.remove_coords(include_faces=True)
         self.assertEqual(None, self.mesh.face_coords.face_x)
+
+    def test_to_MeshCoord_face(self):
+        self.mesh.add_coords(face_x=self.FACE_LON)
+        location = "face"
+        axis = "x"
+        result = self.mesh.to_MeshCoord(location, axis)
+        self.assertIsInstance(result, ugrid.MeshCoord)
+        self.assertEqual(location, result.location)
+        self.assertEqual(axis, result.axis)
+
+    def test_to_MeshCoords_face(self):
+        self.mesh.add_coords(face_x=self.FACE_LON, face_y=self.FACE_LAT)
+        location = "face"
+        result = self.mesh.to_MeshCoords(location)
+        self.assertEqual(len(self.mesh.AXES), len(result))
+        for ix, axis in enumerate(self.mesh.AXES):
+            coord = result[ix]
+            self.assertIsInstance(coord, ugrid.MeshCoord)
+            self.assertEqual(location, coord.location)
+            self.assertEqual(axis, coord.axis)
 
 
 class InitValidation(TestMeshCommon):
