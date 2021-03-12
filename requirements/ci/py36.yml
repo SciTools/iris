@@ -28,6 +28,7 @@ dependencies:
   - mo_pack
   - nc-time-axis
   - pandas
+  - pip
   - python-stratify
   - pyugrid
 
