@@ -2896,6 +2896,10 @@ class MeshCoord(AuxCoord):
 
         return eq
 
+    # Exactly as for Coord.__hash__ :  See there for why.
+    def __hash__(self):
+        return hash(id(self))
+
     def _string_summary(self, repr_style):
         # Note: bypass the immediate parent here, which is Coord, because we
         # have no interest in reporting coord_system or climatological, or in
@@ -2927,7 +2931,13 @@ class MeshCoord(AuxCoord):
         )
         # Add 'other' metadata that is drawn from the underlying node-coord.
         # But put these *afterward*, unlike other similar classes.
-        for item in ("standard_name", "units", "long_name", "attributes"):
+        for item in (
+            "shape",
+            "standard_name",
+            "units",
+            "long_name",
+            "attributes",
+        ):
             # NOTE: order of these matches Coord.summary, but omit var_name.
             val = getattr(self, item, None)
             if item == "attributes":

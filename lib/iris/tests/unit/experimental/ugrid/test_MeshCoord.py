@@ -353,7 +353,7 @@ class Test__str_repr(tests.IrisTest):
             regexp += r"Mesh\('test_mesh'\)"
         else:
             regexp += "<Mesh object at .*>"
-        regexp += ", location='face', axis='x'"
+        regexp += r", location='face', axis='x', shape=\(3,\)"
         if standard_name:
             regexp += ", standard_name='longitude'"
         regexp += r", units=Unit\('degrees_east'\)"
