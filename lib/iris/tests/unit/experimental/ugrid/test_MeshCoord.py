@@ -38,48 +38,44 @@ _TEST_BOUNDS = np.arange(_TEST_N_FACES * _TEST_N_BOUNDS)
 _TEST_BOUNDS = _TEST_BOUNDS.reshape((_TEST_N_FACES, _TEST_N_BOUNDS))
 
 
-def _create_test_mesh():
+def _create_test_mesh(n_nodes=None, n_faces=None, n_edges=None):
+    if n_nodes is None:
+        n_nodes = _TEST_N_NODES
+    if n_faces is None:
+        n_faces = _TEST_N_FACES
+    if n_edges is None:
+        n_edges = _TEST_N_EDGES
     node_x = AuxCoord(
-        1100 + np.arange(_TEST_N_NODES),
+        1100 + np.arange(n_nodes),
         standard_name="longitude",
         units="degrees_east",
         long_name="long-name",
         var_name="var-name",
         attributes={"a": 1, "b": "c"},
     )
-    node_y = AuxCoord(
-        1200 + np.arange(_TEST_N_NODES), standard_name="latitude"
-    )
+    node_y = AuxCoord(1200 + np.arange(n_nodes), standard_name="latitude")
 
     # Define a rather arbitrary edge-nodes connectivity.
     # Some nodes are left out, because n_edges*2 < n_nodes.
-    conns = np.arange(_TEST_N_EDGES * 2, dtype=int)
+    conns = np.arange(n_edges * 2, dtype=int)
     # Missing nodes include #0-5, because we add 5.
-    conns = ((conns + 5) % _TEST_N_NODES).reshape((_TEST_N_EDGES, 2))
+    conns = ((conns + 5) % n_nodes).reshape((n_edges, 2))
     edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
-    conns = np.arange(_TEST_N_EDGES * 2, dtype=int)
+    conns = np.arange(n_edges * 2, dtype=int)
 
     # Some numbers for the edge coordinates.
-    edge_x = AuxCoord(
-        2100 + np.arange(_TEST_N_EDGES), standard_name="longitude"
-    )
-    edge_y = AuxCoord(
-        2200 + np.arange(_TEST_N_EDGES), standard_name="latitude"
-    )
+    edge_x = AuxCoord(2100 + np.arange(n_edges), standard_name="longitude")
+    edge_y = AuxCoord(2200 + np.arange(n_edges), standard_name="latitude")
 
     # Define a rather arbitrary face-nodes connectivity.
     # Some nodes are left out, because n_faces*n_bounds < n_nodes.
-    conns = np.arange(_TEST_N_FACES * _TEST_N_BOUNDS, dtype=int)
-    conns = (conns % _TEST_N_NODES).reshape((_TEST_N_FACES, _TEST_N_BOUNDS))
+    conns = np.arange(n_faces * _TEST_N_BOUNDS, dtype=int)
+    conns = (conns % n_nodes).reshape((n_faces, _TEST_N_BOUNDS))
     face_nodes = Connectivity(conns, cf_role="face_node_connectivity")
 
     # Some numbers for the edge coordinates.
-    face_x = AuxCoord(
-        3100 + np.arange(_TEST_N_FACES), standard_name="longitude"
-    )
-    face_y = AuxCoord(
-        3200 + np.arange(_TEST_N_FACES), standard_name="latitude"
-    )
+    face_x = AuxCoord(3100 + np.arange(n_faces), standard_name="longitude")
+    face_y = AuxCoord(3200 + np.arange(n_faces), standard_name="latitude")
 
     mesh = Mesh(
         topology_dimension=2,

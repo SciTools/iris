@@ -1133,6 +1133,25 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
+        if hasattr(coord, "mesh"):
+            existing_meshcoords = self.coords(mesh_coords=True)
+            if len(existing_meshcoords) > 0:
+                co = existing_meshcoords[0]
+                mesh, location = co.mesh, co.location
+                if coord.location != location:
+                    msg = (
+                        f"Location of Meshcoord {coord!r} is "
+                        f"{coord.location!s}, which does not match existing"
+                        f"cube location of {location!s}."
+                    )
+                    raise ValueError(msg)
+                if coord.mesh != mesh:
+                    msg = (
+                        f"Mesh of Meshcoord {coord!r} is "
+                        f"{coord.mesh!r}, which does not match existing"
+                        f"cube mesh of {mesh!r}."
+                    )
+                    raise ValueError(msg)
         self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
