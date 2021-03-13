@@ -1960,7 +1960,7 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
-def _add_test_meshcube(self, nomesh=False, location="face"):
+def _add_test_meshcube(self, nomesh=False, **meshcoord_kwargs):
     # A common setup action : Create a standard test cube with a variety of
     # types of coord, and add various objects to the testcase,
     # i.e. to "self".
@@ -1968,9 +1968,11 @@ def _add_test_meshcube(self, nomesh=False, location="face"):
         mesh = None
         n_faces = 5
     else:
-        mesh = create_test_mesh()
+        mesh = meshcoord_kwargs.pop("mesh", None)
+        if mesh is None:
+            mesh = create_test_mesh()
         meshx, meshy = (
-            create_test_meshcoord(axis=axis, mesh=mesh, location=location)
+            create_test_meshcoord(axis=axis, mesh=mesh, **meshcoord_kwargs)
             for axis in ("x", "y")
         )
         n_faces = meshx.shape[0]
@@ -2106,6 +2108,39 @@ class Test_location(tests.IrisTest):
         cube = self.cube
         result = cube.location()
         self.assertEqual(result, "edge")
+
+
+class Test__eq__mesh(tests.IrisTest):
+    """
+    Check that cubes with meshes support == as expected.
+
+    Note: there is no special code for this in iris.cube.Cube : it is
+    provided by the coord comparisons.
+
+    """
+
+    def setUp(self):
+        # Create a 'standard' test cube.
+        _add_test_meshcube(self)
+
+    def test_copied_cube_match(self):
+        cube = self.cube
+        cube2 = cube.copy()
+        self.assertEqual(cube, cube2)
+
+    def test_same_mesh_match(self):
+        cube1 = self.cube
+        # re-create an identical cube, using the same mesh.
+        _add_test_meshcube(self, mesh=self.mesh)
+        cube2 = self.cube
+        self.assertEqual(cube1, cube2)
+
+    def test_new_mesh_different(self):
+        cube1 = self.cube
+        # re-create an identical cube, using the same mesh.
+        _add_test_meshcube(self)
+        cube2 = self.cube
+        self.assertNotEqual(cube1, cube2)
 
 
 class Test_dtype(tests.IrisTest):
