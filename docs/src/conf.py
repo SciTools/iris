@@ -236,6 +236,7 @@ logo_gen_kwargs = {
     "write_dir": Path("_static"),
     "banner_text": project,
     "banner_width": 588,
+    "banner_version": f"v{version}",
     "rotate": False,
 }
 logo_paths = generate_logo.generate_logo(**logo_gen_kwargs)
