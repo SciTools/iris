@@ -11,7 +11,8 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 """
 
 from abc import ABC, abstractmethod
-from collections import Iterable, namedtuple
+from collections import namedtuple
+from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
 import re

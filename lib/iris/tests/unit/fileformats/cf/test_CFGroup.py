@@ -20,7 +20,7 @@ MagicMock = tests.mock.MagicMock
 
 
 class Tests(tests.IrisTest):
-    # TODO: tests for existing functionality pre 2021-03-11.
+    # TODO: unit tests for existing functionality pre 2021-03-11.
     def setUp(self):
         self.cf_group = CFGroup()
 
