@@ -1960,7 +1960,7 @@ class Test_copy(tests.IrisTest):
         self._check_copy(cube, cube.copy())
 
 
-def _add_test_meshcube(self, nomesh=False, **meshcoord_kwargs):
+def _add_test_meshcube(self, nomesh=False, n_z=2, **meshcoord_kwargs):
     # A common setup action : Create a standard test cube with a variety of
     # types of coord, and add various objects to the testcase,
     # i.e. to "self".
@@ -1983,7 +1983,6 @@ def _add_test_meshcube(self, nomesh=False, **meshcoord_kwargs):
 
     auxco_x = AuxCoord(np.zeros(n_faces), long_name="mesh_face_aux", units="1")
 
-    n_z = 2
     zco = DimCoord(np.arange(n_z), long_name="level", units=1)
     cube = Cube(np.zeros((n_z, n_faces)), long_name="mesh_phenom")
     cube.add_dim_coord(zco, 0)
@@ -2110,6 +2109,32 @@ class Test_location(tests.IrisTest):
         self.assertEqual(result, "edge")
 
 
+class Test_mesh_dim(tests.IrisTest):
+    def setUp(self):
+        # Create a standard test cube with a variety of types of coord.
+        _add_test_meshcube(self)
+
+    def test_no_mesh(self):
+        # Replace standard setUp cube with a no-mesh version.
+        _add_test_meshcube(self, nomesh=True)
+        result = self.cube.mesh_dim()
+        self.assertIsNone(result)
+
+    def test_mesh(self):
+        cube = self.cube
+        result = cube.mesh_dim()
+        self.assertEqual(result, 1)
+
+    def test_alternate(self):
+        # Replace standard setUp cube with an edge-based version.
+        _add_test_meshcube(self, location="edge")
+        cube = self.cube
+        # Transpose the cube : the mesh dim is then 0
+        cube.transpose()
+        result = cube.mesh_dim()
+        self.assertEqual(result, 0)
+
+
 class Test__init__mesh(tests.IrisTest):
     """
     Test that creation with mesh-coords functions, and prevents a cube having
@@ -2185,14 +2210,15 @@ class Test__init__mesh(tests.IrisTest):
         # They should still have the same *shape* (or would fail anyway)
         self.assertEqual(meshco_1.shape, meshco_2.shape)
         n_faces = meshco_1.shape[0]
-        with self.assertRaisesRegex(ValueError, "Location.* does not match"):
+        msg = "does not match existing cube location"
+        with self.assertRaisesRegex(ValueError, msg):
             Cube(
                 np.zeros(n_faces),
                 aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
             )
 
     def test_fail_meshcoords_different_meshes(self):
-        # Same as above, but not sharing the same mesh.
+        # Same as successful 'multi_mesh', but not sharing the same mesh.
         # This one *is* an error.
         # But that could relax in future, if we allow mesh equality testing
         # (i.e. "mesh_a == mesh_b" when not "mesh_a is mesh_b")
@@ -2205,6 +2231,20 @@ class Test__init__mesh(tests.IrisTest):
                 aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
             )
 
+    def test_fail_meshcoords_different_dims(self):
+        # Same as 'test_mesh', but meshcoords on different dimensions.
+        # Replace standard setup with one where n_z == n_faces.
+        n_z, n_faces = 4, 4
+        mesh = create_test_mesh(n_faces=n_faces)
+        meshco_x = create_test_meshcoord(mesh=mesh, axis="x")
+        meshco_y = create_test_meshcoord(mesh=mesh, axis="y")
+        msg = "does not match existing cube mesh dimension"
+        with self.assertRaisesRegex(ValueError, msg):
+            Cube(
+                np.zeros((n_z, n_faces)),
+                aux_coords_and_dims=[(meshco_x, 1), (meshco_y, 0)],
+            )
+
 
 class Test__add_aux_coord__mesh(tests.IrisTest):
     """
@@ -2214,7 +2254,66 @@ class Test__add_aux_coord__mesh(tests.IrisTest):
     """
 
     def setUp(self):
-        self.assertTrue(False)
+        _add_test_meshcube(self)
+        # Remove the existing "meshco_y", so we can add similar ones without
+        # needing to distinguish from the existing.
+        self.cube.remove_coord(self.meshco_y)
+
+    def test_add_compatible(self):
+        cube = self.cube
+        meshco_y = self.meshco_y
+        # Add the y-meshco back into the cube.
+        cube.add_aux_coord(meshco_y, 1)
+        self.assertIn(meshco_y, cube.coords(mesh_coords=True))
+
+    def test_add_multiple(self):
+        # Show that we can add extra mesh coords.
+        cube = self.cube
+        meshco_y = self.meshco_y
+        # Add the y-meshco back into the cube.
+        cube.add_aux_coord(meshco_y, 1)
+        # Make a duplicate y-meshco, renamed so it can add into the cube.
+        new_meshco_y = meshco_y.copy()
+        new_meshco_y.rename("alternative")
+        cube.add_aux_coord(new_meshco_y, 1)
+        self.assertEqual(len(cube.coords(mesh_coords=True)), 3)
+
+    def test_fail_different_mesh(self):
+        # Make a duplicate y-meshco, and rename so it can add into the cube.
+        cube = self.cube
+        # Create 'meshco_y' duplicate, but a new mesh
+        meshco_y = create_test_meshcoord(axis="y")
+        msg = "does not match existing cube mesh"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 1)
+
+    def test_fail_different_location(self):
+        # Make a new mesh with equal n_faces and n_edges
+        mesh = create_test_mesh(n_faces=4, n_edges=4)
+        # Re-make the test objects based on that.
+        _add_test_meshcube(self, mesh=mesh)
+        cube = self.cube
+        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in setUp()
+        # Create a new meshco_y, same mesh but based on edges.
+        meshco_y = create_test_meshcoord(
+            axis="y", mesh=self.mesh, location="edge"
+        )
+        msg = "does not match existing cube location"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 1)
+
+    def test_fail_different_dimension(self):
+        # Re-make the test objects with the non-mesh dim equal in length.
+        n_faces = self.cube.shape[1]
+        _add_test_meshcube(self, n_z=n_faces)
+        cube = self.cube
+        meshco_y = self.meshco_y
+        cube.remove_coord(meshco_y)  # Remove y-coord, as in setUp()
+
+        # Attempt to re-attach the 'y' meshcoord, to a different cube dimension.
+        msg = "does not match existing cube mesh dimension"
+        with self.assertRaisesRegex(ValueError, msg):
+            cube.add_aux_coord(meshco_y, 0)
 
 
 class Test__add_dim_coord__mesh(tests.IrisTest):
