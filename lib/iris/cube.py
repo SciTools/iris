@@ -1970,13 +1970,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
         associated with the cube, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
-        or None if it has none.
+        or ``None`` if it has none.
 
         Returns:
-        * mesh (:class:`iris.experimental.ugrid.Mesh` or None)
+
+        * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
             The mesh of the cube
             :class:`~iris.experimental.ugrid.MeshCoord`\\s,
-            or None.
+            or ``None``.
 
         """
         result = self._a_meshcoord()
@@ -1986,16 +1987,17 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def location(self):
         """
-        Return the "location" of the cube mesh, if the cube has any
+        Return the mesh "location" of the cube data, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
-        or None if it has none.
+        or ``None`` if it has none.
 
         Returns:
-        * location (str or None)
+
+        * location (str or None):
             The mesh location of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
-            one of 'face' / 'edge' / 'node',
-            or None.
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s
+            (i.e. one of 'face' / 'edge' / 'node'),
+            or ``None``.
 
         """
         result = self._a_meshcoord()
@@ -2007,13 +2009,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         Return the cube dimension of the mesh, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
-        or None if it has none.
+        or ``None`` if it has none.
 
         Returns:
-        * mesh_dim (int, or None)
+
+        * mesh_dim (int, or None):
             the cube dimension which the cube
             :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
-            or None.
+            or ``None``.
 
         """
         result = self._a_meshcoord()
