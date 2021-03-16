@@ -41,7 +41,7 @@ env:
   # Pip package to be upgraded/installed.
   PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_REF: "fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30"
+  IRIS_TEST_DATA_REF: "v2.1"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
