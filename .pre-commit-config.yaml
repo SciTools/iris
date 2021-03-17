@@ -24,7 +24,7 @@ repos:
         pass_filenames: false
         args: [--config=./pyproject.toml, .]
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: '3.8.4'
+    rev: '3.9.0'
     hooks:
         # Run flake8.
     -   id: flake8
