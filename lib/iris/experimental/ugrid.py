@@ -3536,6 +3536,8 @@ class CFUGridReader(cf.CFReader):
 
 ############
 # Object construction.
+# Helper functions, supporting netcdf.load_cubes ONLY, expected to
+# altered/moved when pyke is removed.
 
 
 def _build_aux_coord(coord_var, file_path):
