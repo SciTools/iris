@@ -20,7 +20,7 @@ from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 
 def ugrid_load(*args, **kwargs):
-    with PARSE_UGRID_ON_LOAD:
+    with PARSE_UGRID_ON_LOAD.context():
         return load(*args, **kwargs)
 
 
