@@ -100,5 +100,71 @@ class TestBasic(tests.IrisTest):
         )
 
 
-# class TestPseudoLevels(tests.IrisTest):
-#     pass
+class TestPseudoLevels(tests.IrisTest):
+    def test_3D_snow_pseudo_levels(self):
+        # TODO: remove constraint once file no longer has orphan connectivities.
+        snow_layer_temp = NameConstraint(var_name="snow_layer_temp")
+        cube = ugrid_load_cube(
+            tests.get_data_path(
+                [
+                    "NetCDF",
+                    "unstructured_grid",
+                    "lfric_ngvat_3D_snow_pseudo_levels_1t_face_half_levels_main_snow_layer_temp.nc",
+                ]
+            ),
+            constraint=snow_layer_temp,
+        )
+        self.assertCML(
+            cube, ("experimental", "ugrid", "3D_snow_pseudo_levels.cml")
+        )
+
+    def test_3D_soil_pseudo_levels(self):
+        # TODO: remove constraint once file no longer has orphan connectivities.
+        soil_temperature = NameConstraint(var_name="soil_temperature")
+        cube = ugrid_load_cube(
+            tests.get_data_path(
+                [
+                    "NetCDF",
+                    "unstructured_grid",
+                    "lfric_ngvat_3D_soil_pseudo_levels_1t_face_half_levels_main_soil_temperature.nc",
+                ]
+            ),
+            constraint=soil_temperature,
+        )
+        self.assertCML(
+            cube, ("experimental", "ugrid", "3D_soil_pseudo_levels.cml")
+        )
+
+    def test_3D_tile_pseudo_levels(self):
+        # TODO: remove constraint once file no longer has orphan connectivities.
+        sw_up_tile = NameConstraint(var_name="sw_up_tile")
+        cube = ugrid_load_cube(
+            tests.get_data_path(
+                [
+                    "NetCDF",
+                    "unstructured_grid",
+                    "lfric_ngvat_3D_tile_pseudo_levels_1t_face_half_levels_main_sw_up_tile.nc",
+                ]
+            ),
+            constraint=sw_up_tile,
+        )
+        self.assertCML(
+            cube, ("experimental", "ugrid", "3D_tile_pseudo_levels.cml")
+        )
+
+    def test_3D_veg_pseudo_levels(self):
+        # TODO: remove constraint once file no longer has orphan connectivities.
+        snowpack_density = NameConstraint(var_name="snowpack_density")
+        cube = ugrid_load_cube(
+            tests.get_data_path(
+                [
+                    "NetCDF",
+                    "unstructured_grid",
+                    "lfric_ngvat_3D_veg_pseudo_levels_1t_face_half_levels_main_snowpack_density.nc",
+                ]
+            ),
+            constraint=snowpack_density,
+        )
+        self.assertCML(
+            cube, ("experimental", "ugrid", "3D_veg_pseudo_levels.cml")
+        )
