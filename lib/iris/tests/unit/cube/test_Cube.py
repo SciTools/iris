@@ -2051,13 +2051,13 @@ class Test_mesh(tests.IrisTest):
         _add_test_meshcube(self)
 
     def test_mesh(self):
-        result = self.cube.mesh()
+        result = self.cube.mesh
         self.assertIs(result, self.mesh)
 
     def test_no_mesh(self):
         # Replace standard setUp cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
-        result = self.cube.mesh()
+        result = self.cube.mesh
         self.assertIsNone(result)
 
 
@@ -2069,19 +2069,19 @@ class Test_location(tests.IrisTest):
     def test_no_mesh(self):
         # Replace standard setUp cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
-        result = self.cube.location()
+        result = self.cube.location
         self.assertIsNone(result)
 
     def test_mesh(self):
         cube = self.cube
-        result = cube.location()
+        result = cube.location
         self.assertEqual(result, self.meshco_x.location)
 
     def test_alternate_location(self):
         # Replace standard setUp cube with an edge-based version.
         _add_test_meshcube(self, location="edge")
         cube = self.cube
-        result = cube.location()
+        result = cube.location
         self.assertEqual(result, "edge")
 
 
@@ -2138,7 +2138,7 @@ class Test__init__mesh(tests.IrisTest):
             dim_coords_and_dims=[(dimco_z, 0), (dimco_mesh, 1)],
             aux_coords_and_dims=[(meshco, 1)],
         )
-        self.assertEqual(cube.mesh(), meshco.mesh)
+        self.assertEqual(cube.mesh, meshco.mesh)
 
     def test_fail_dim_meshcoord(self):
         # As "test_mesh", but attempt to use the meshcoord as a dim-coord.
@@ -2160,7 +2160,7 @@ class Test__init__mesh(tests.IrisTest):
             np.zeros(n_faces),
             aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
         )
-        self.assertEqual(cube.mesh(), meshco_x.mesh)
+        self.assertEqual(cube.mesh, meshco_x.mesh)
 
     def test_multi_meshcoords_same_axis(self):
         # *Not* an error, as long as the coords are distinguishable.
@@ -2175,7 +2175,7 @@ class Test__init__mesh(tests.IrisTest):
             np.zeros(n_faces),
             aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
         )
-        self.assertEqual(cube.mesh(), meshco_1.mesh)
+        self.assertEqual(cube.mesh, meshco_1.mesh)
 
     def test_fail_meshcoords_different_locations(self):
         # Same as successful 'multi_mesh', but different locations.

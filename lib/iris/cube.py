@@ -1134,7 +1134,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
         if hasattr(coord, "mesh"):
-            mesh = self.mesh()
+            mesh = self.mesh
             if mesh:
                 msg = (
                     "{item} of Meshcoord {coord!r} is "
@@ -1150,7 +1150,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                             ownval=mesh,
                         )
                     )
-                location = self.location()
+                location = self.location
                 if coord.location != location:
                     raise ValueError(
                         msg.format(
@@ -1957,7 +1957,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         return result
 
-    def _a_meshcoord(self):
+    def _any_meshcoord(self):
+        """Return a MeshCoord if there are any, else None."""
         mesh_coords = self.coords(mesh_coords=True)
         if mesh_coords:
             result = mesh_coords[0]
@@ -1965,6 +1966,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             result = None
         return result
 
+    @property
     def mesh(self):
         """
         Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
@@ -1980,11 +1982,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             or ``None``.
 
         """
-        result = self._a_meshcoord()
+        result = self._any_meshcoord()
         if result is not None:
             result = result.mesh
         return result
 
+    @property
     def location(self):
         """
         Return the mesh "location" of the cube data, if the cube has any
@@ -2000,7 +2003,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             or ``None``.
 
         """
-        result = self._a_meshcoord()
+        result = self._any_meshcoord()
         if result is not None:
             result = result.location
         return result
@@ -2019,7 +2022,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             or ``None``.
 
         """
-        result = self._a_meshcoord()
+        result = self._any_meshcoord()
         if result is not None:
             (result,) = self.coord_dims(result)  # result is a 1-tuple
         return result
