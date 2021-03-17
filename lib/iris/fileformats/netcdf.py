@@ -51,6 +51,9 @@ from iris._lazy_data import as_lazy_data
 # Show Pyke inference engine statistics.
 DEBUG = False
 
+# Configure the logger.
+logger = iris.config.get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+
 # Pyke CF related file names.
 _PYKE_RULE_BASE = "fc_rules_cf"
 _PYKE_FACT_BASE = "facts_cf"
@@ -838,18 +841,20 @@ def load_cubes(filenames, callback=None):
             # mesh-related attributes being picked up by
             # _add_unused_attributes().
             mesh_name = None
+            mesh = None
+            mesh_coords, mesh_dim = [], None
             if PARSE_UGRID_ON_LOAD:
                 mesh_name = getattr(cf_var, "mesh", None)
-            mesh_coords, mesh_dim = [], None
             if mesh_name is not None:
                 try:
                     mesh = meshes[mesh_name]
-                except KeyError as error:
+                except KeyError:
                     message = (
                         f"File does not contain mesh: '{mesh_name}' - "
                         f"referenced by variable: '{cf_var.cf_name}' ."
                     )
-                    raise KeyError(message) from error
+                    logger.debug(message)
+            if mesh is not None:
                 mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
 
             cube = _load_cube(engine, cf, cf_var, filename)

@@ -24,7 +24,7 @@ import tempfile
 
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, MeshCoord
-from iris.fileformats.netcdf import load_cubes
+from iris.fileformats.netcdf import load_cubes, logger
 
 
 def setUpModule():
@@ -314,7 +314,6 @@ class TestsMesh(tests.IrisTest):
         _ = list(load_cubes(nc_path))
 
         with PARSE_UGRID_ON_LOAD.context():
-            with self.assertRaisesRegex(
-                KeyError, "File does not contain mesh"
-            ):
+            with self.assertLogs(logger, level="DEBUG") as log:
                 _ = list(load_cubes(nc_path))
+                self.assertIn("File does not contain mesh", log.output[0])
