@@ -1133,6 +1133,44 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
+        if hasattr(coord, "mesh"):
+            mesh = self.mesh
+            if mesh:
+                msg = (
+                    "{item} of Meshcoord {coord!r} is "
+                    "{thisval!r}, which does not match existing "
+                    "cube {item} of {ownval!r}."
+                )
+                if coord.mesh != mesh:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh",
+                            coord=coord,
+                            thisval=coord.mesh,
+                            ownval=mesh,
+                        )
+                    )
+                location = self.location
+                if coord.location != location:
+                    raise ValueError(
+                        msg.format(
+                            item="location",
+                            coord=coord,
+                            thisval=coord.location,
+                            ownval=location,
+                        )
+                    )
+                mesh_dims = (self.mesh_dim(),)
+                if data_dims != mesh_dims:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh dimension",
+                            coord=coord,
+                            thisval=data_dims,
+                            ownval=mesh_dims,
+                        )
+                    )
+
         self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
@@ -1917,6 +1955,76 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         else:
             result = coord_systems.get(spec_name)
 
+        return result
+
+    def _any_meshcoord(self):
+        """Return a MeshCoord if there are any, else None."""
+        mesh_coords = self.coords(mesh_coords=True)
+        if mesh_coords:
+            result = mesh_coords[0]
+        else:
+            result = None
+        return result
+
+    @property
+    def mesh(self):
+        """
+        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        associated with the cube, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
+            The mesh of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.mesh
+        return result
+
+    @property
+    def location(self):
+        """
+        Return the mesh "location" of the cube data, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * location (str or None):
+            The mesh location of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s
+            (i.e. one of 'face' / 'edge' / 'node'),
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.location
+        return result
+
+    def mesh_dim(self):
+        """
+        Return the cube dimension of the mesh, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh_dim (int, or None):
+            the cube dimension which the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            (result,) = self.coord_dims(result)  # result is a 1-tuple
         return result
 
     def cell_measures(self, name_or_cell_measure=None):
