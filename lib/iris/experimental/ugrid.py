@@ -3277,9 +3277,9 @@ class CFUGridConnectivityVariable(cf.CFVariable):
     """
     A CF_UGRID connectivity variable points to an index variable identifying
     for every element (edge/face/volume) the indices of its corner nodes. The
-    connectivity array will thus be a matrix of size n-elements x n-nodes. For
-    the indexing one may use either 0- or 1-based indexing; the convention used
-    should be specified using a ``start_index`` attribute to the index
+    connectivity array will thus be a matrix of size n-elements x n-corners.
+    For the indexing one may use either 0- or 1-based indexing; the convention
+    used should be specified using a ``start_index`` attribute to the index
     variable.
 
     For face elements: the corner nodes should be specified in anticlockwise
