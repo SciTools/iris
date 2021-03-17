@@ -202,6 +202,7 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
+        # Missing warning.
         with self.assertLogs(logger, level="DEBUG") as log:
             result = CFUGridConnectivityVariable.identify(vars_all, warn=False)
             self.assertEqual(0, len(log.output))
@@ -210,6 +211,20 @@ class TestIdentify(tests.IrisTest):
             # Default is warn=True
             result = CFUGridConnectivityVariable.identify(vars_all)
             self.assertIn(
-                f"Missing CF-UGRID connectivity {subject_name}", log.output[0]
+                f"Missing CF-UGRID connectivity variable {subject_name}",
+                log.output[0],
             )
+            self.assertDictEqual({}, result)
+
+        # String variable warning.
+        with self.assertLogs(logger, level="DEBUG") as log:
+            vars_all[subject_name] = netcdf_ugrid_variable(
+                subject_name, "", np.bytes_
+            )
+            result = CFUGridConnectivityVariable.identify(vars_all, warn=False)
+            self.assertDictEqual({}, result)
+
+            # Default is warn=True
+            result = CFUGridConnectivityVariable.identify(vars_all)
+            self.assertIn("is a CF-netCDF label variable", log.output[0])
             self.assertDictEqual({}, result)

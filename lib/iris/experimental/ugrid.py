@@ -3318,8 +3318,8 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                         if name not in variables:
                             if warn:
                                 message = (
-                                    f"Missing CF-UGRID connectivity {name}, "
-                                    f"referenced by netCDF variable "
+                                    f"Missing CF-UGRID connectivity variable "
+                                    f"{name}, referenced by netCDF variable "
                                     f"{nc_var_name}"
                                 )
                                 logger.debug(message)
@@ -3330,6 +3330,13 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 result[name] = CFUGridConnectivityVariable(
                                     name, variables[name]
                                 )
+                            elif warn:
+                                message = (
+                                    f"Ignoring variable {name}, identified "
+                                    f"as a CF-UGRID connectivity - is a "
+                                    f"CF-netCDF label variable."
+                                )
+                                logger.debug(message)
 
         return result
 
@@ -3396,6 +3403,14 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                     ] = CFUGridAuxiliaryCoordinateVariable(
                                         name, variables[name]
                                     )
+                                elif warn:
+                                    message = (
+                                        f"Ignoring variable {name}, "
+                                        f"identified as a CF-netCDF auxiliary "
+                                        f"coordinate - is a CF-netCDF label "
+                                        f"variable."
+                                    )
+                                    logger.debug(message)
 
         return result
 
@@ -3439,8 +3454,8 @@ class CFUGridMeshVariable(cf.CFVariable):
                     if name not in variables:
                         if warn:
                             message = (
-                                f"Missing CF-UGRID mesh {name}, referenced "
-                                f"by netCDF variable {nc_var_name}"
+                                f"Missing CF-UGRID mesh variable {name}, "
+                                f"referenced by netCDF variable {nc_var_name}"
                             )
                             logger.debug(message)
                     else:
@@ -3450,6 +3465,13 @@ class CFUGridMeshVariable(cf.CFVariable):
                             result[name] = CFUGridMeshVariable(
                                 name, variables[name]
                             )
+                        elif warn:
+                            message = (
+                                f"Ignoring variable {name}, identified as a "
+                                f"CF-UGRID mesh - is a CF-netCDF label "
+                                f"variable."
+                            )
+                            logger.debug(message)
 
         return result
 
