@@ -106,6 +106,7 @@ class TestBasic(tests.IrisTest):
         )
 
 
+@tests.skip_data
 class TestMultiplePhenomena(tests.IrisTest):
     def test_multiple_phenomena(self):
         cube_list = ugrid_load(
