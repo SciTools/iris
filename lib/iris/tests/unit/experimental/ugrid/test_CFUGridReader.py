@@ -89,19 +89,17 @@ class Test_build_cf_groups(tests.IrisTest):
             data=cls.data,
         )
         ncattrs = mock.Mock(return_value=[])
-        dataset = mock.Mock(
+        cls.dataset = mock.Mock(
             file_format="NetCDF4", variables=cls.variables, ncattrs=ncattrs
         )
-        with mock.patch("netCDF4.Dataset", return_value=dataset):
-            cf_reader = CFUGridReader("dummy")
-            cls.cf_group = cf_reader.cf_group
 
     def setUp(self):
         # Restrict the CFUGridReader functionality to only performing
         # translations and building first level cf-groups for variables.
-        patcher = mock.patch("iris.experimental.ugrid.CFUGridReader._reset")
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.patch("iris.experimental.ugrid.CFUGridReader._reset")
+        self.patch("netCDF4.Dataset", return_value=self.dataset)
+        cf_reader = CFUGridReader("dummy")
+        self.cf_group = cf_reader.cf_group
 
     def test_inherited(self):
         for expected_var, collection in (
