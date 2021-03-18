@@ -22,7 +22,7 @@ from iris.experimental.ugrid import (
 )
 from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
 
-MagicMock = tests.mock.MagicMock
+from unittest.mock import MagicMock
 
 
 class Tests(tests.IrisTest):

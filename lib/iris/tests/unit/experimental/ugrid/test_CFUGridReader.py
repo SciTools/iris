@@ -27,7 +27,7 @@ from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
 from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 
 
-mock = tests.mock
+from unittest import mock
 
 
 def netcdf_ugrid_variable(

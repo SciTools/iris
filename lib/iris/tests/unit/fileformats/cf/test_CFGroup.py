@@ -16,7 +16,7 @@ from iris.fileformats.cf import (
     CFDataVariable,
 )
 
-MagicMock = tests.mock.MagicMock
+from unittest.mock import MagicMock
 
 
 class Tests(tests.IrisTest):
