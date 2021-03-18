@@ -11,9 +11,12 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
 """
 
 from abc import ABC, abstractmethod
-from collections import Iterable, namedtuple
+from collections import namedtuple
+from collections.abc import Iterable
+from contextlib import contextmanager
 from functools import wraps
 import re
+import threading
 
 import dask.array as da
 import numpy as np
@@ -33,10 +36,16 @@ from ..common.mixin import CFVariableMixin
 from ..config import get_logger
 from ..coords import _DimensionalMetadata, AuxCoord
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ..fileformats import cf, netcdf
+from ..fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import (
+    get_names,
+    get_attr_units,
+)
 from ..util import guess_coord_axis
 
 
 __all__ = [
+    "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
     "Mesh",
@@ -52,6 +61,8 @@ __all__ = [
     "MeshMetadata",
     "MeshCoord",
     "MeshCoordMetadata",
+    "ParseUGridOnLoad",
+    "PARSE_UGRID_ON_LOAD",
 ]
 
 
@@ -947,7 +958,7 @@ class Mesh(CFVariableMixin):
             if result not in self.AXES:
                 emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
                 raise ValueError(emsg)
-            return f"{location}_{axis}"
+            return f"{location}_{result}"
 
         if not isinstance(node_coords_and_axes, Iterable):
             node_coords_and_axes = [node_coords_and_axes]
@@ -1893,16 +1904,57 @@ class Mesh(CFVariableMixin):
     # def to_AuxCoords(self, location):
     #     # factory method
     #     # return the lazy AuxCoord(...), AuxCoord(...)
-    #
-    # def to_MeshCoord(self, location, axis):
-    #     # factory method
-    #     # return MeshCoord(..., location=location, axis=axis)
-    #     # use Connectivity.indices_by_src() for fetching indices, passing in the lazy_indices() result as an argument.
-    #
-    # def to_MeshCoords(self, location):
-    #     # factory method
-    #     # return MeshCoord(..., location=location, axis="x"), MeshCoord(..., location=location, axis="y")
-    #     # use Connectivity.indices_by_src for fetching indices, passing in the lazy_indices() result as an argument.
+
+    def to_MeshCoord(self, location, axis):
+        """
+        Generate a :class:`MeshCoord` that references the current
+        :class:`Mesh`, and passing through the ``location`` and ``axis``
+        arguments.
+
+        .. seealso::
+
+            :meth:`to_MeshCoords` for generating a series of mesh coords.
+
+        Args:
+
+        * location (str)
+            The ``location`` argument for :class:`MeshCoord` instantiation.
+
+        * axis (str)
+            The ``axis`` argument for :class:`MeshCoord` instantiation.
+
+        Returns:
+            A :class:`MeshCoord` referencing the current :class:`Mesh`.
+
+        """
+        return MeshCoord(mesh=self, location=location, axis=axis)
+
+    def to_MeshCoords(self, location):
+        """
+        Generate a tuple of :class:`MeshCoord`'s, each referencing the current
+        :class:`Mesh`, one for each :attr:`AXES` value, passing through the
+        ``location`` argument.
+
+        .. seealso::
+
+            :meth:`to_MeshCoord` for generating a single mesh coord.
+
+        Args:
+
+        * location (str)
+            The ``location`` argument for :class:`MeshCoord` instantiation.
+
+        Returns:
+            tuple of :class:`MeshCoord`'s referencing the current :class:`Mesh`.
+            One for each value in :attr:`AXES`, using the value for the
+            ``axis`` argument.
+
+        """
+        # factory method
+        result = [
+            self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES
+        ]
+        return tuple(result)
 
     def dimension_names_reset(self, node=False, edge=False, face=False):
         """
@@ -3169,3 +3221,549 @@ del (
     _service_collection,
     _method,
 )
+
+
+###############################################################################
+# LOADING
+
+
+class ParseUGridOnLoad(threading.local):
+    def __init__(self):
+        """
+        A flag for dictating whether to use the experimental UGRID-aware
+        version of Iris NetCDF loading. Object is thread-safe.
+
+        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+        Use :meth:`context` to temporarily activate.
+
+        .. seealso::
+
+            The UGRID Conventions,
+            https://ugrid-conventions.github.io/ugrid-conventions/
+
+        """
+        self._state = False
+
+    def __bool__(self):
+        return self._state
+
+    @contextmanager
+    def context(self):
+        """
+        Temporarily activate experimental UGRID-aware NetCDF loading.
+
+        Use the standard Iris loading API while within the context manager. If
+        the loaded file(s) include any UGRID content, this will be parsed and
+        attached to the resultant cube(s) accordingly.
+
+        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+
+        For example::
+
+            with PARSE_UGRID_ON_LOAD.context():
+                my_cube_list = iris.load([my_file_path, my_file_path2],
+                                         constraint=my_constraint,
+                                         callback=my_callback)
+
+        """
+        try:
+            self._state = True
+            yield
+        finally:
+            self._state = False
+
+
+#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`ParseUGridOnLoad`.
+PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
+
+
+############
+# CF Overrides.
+# These are not included in __all__ since they are not [currently] needed
+# outside this module.
+
+
+class CFUGridConnectivityVariable(cf.CFVariable):
+    """
+    A CF_UGRID connectivity variable points to an index variable identifying
+    for every element (edge/face/volume) the indices of its corner nodes. The
+    connectivity array will thus be a matrix of size n-elements x n-corners.
+    For the indexing one may use either 0- or 1-based indexing; the convention
+    used should be specified using a ``start_index`` attribute to the index
+    variable.
+
+    For face elements: the corner nodes should be specified in anticlockwise
+    direction as viewed from above. For volume elements: use the
+    additional attribute ``volume_shape_type`` which points to a flag variable
+    that specifies for every volume its shape.
+
+    Identified by a CF-netCDF variable attribute equal to any one of the values
+    in :attr:`~iris.experimental.ugrid.Connectivity.UGRID_CF_ROLES`.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = NotImplemented
+    cf_identities = Connectivity.UGRID_CF_ROLES
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID connectivity variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for connectivity variable references, iterating through
+            # the valid cf roles.
+            for identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    # UGRID only allows for one of each connectivity cf role.
+                    name = nc_var_att.strip()
+                    if name not in ignore:
+                        if name not in variables:
+                            if warn:
+                                message = (
+                                    f"Missing CF-UGRID connectivity variable "
+                                    f"{name}, referenced by netCDF variable "
+                                    f"{nc_var_name}"
+                                )
+                                logger.debug(message)
+                        else:
+                            # Restrict to non-string type i.e. not a
+                            # CFLabelVariable.
+                            if not cf._is_str_dtype(variables[name]):
+                                result[name] = CFUGridConnectivityVariable(
+                                    name, variables[name]
+                                )
+                            elif warn:
+                                message = (
+                                    f"Ignoring variable {name}, identified "
+                                    f"as a CF-UGRID connectivity - is a "
+                                    f"CF-netCDF label variable."
+                                )
+                                logger.debug(message)
+
+        return result
+
+
+class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
+    """
+    A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
+    coordinate variable representing the element (node/edge/face/volume)
+    locations (latitude, longitude or other spatial coordinates, and optional
+    elevation or other coordinates). These auxiliary coordinate variables will
+    have length n-elements.
+
+    For elements other than nodes, these auxiliary coordinate variables may
+    have in turn a ``bounds`` attribute that specifies the bounding coordinates
+    of the element (thereby duplicating the data in the ``node_coordinates``
+    variables).
+
+    Identified by the CF-netCDF variable attribute
+    'node_'/'edge_'/'face_'/'volume_coordinates'.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = NotImplemented
+    cf_identities = [
+        "node_coordinates",
+        "edge_coordinates",
+        "face_coordinates",
+        "volume_coordinates",
+    ]
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify any CF-UGRID-relevant auxiliary coordinate variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for UGRID auxiliary coordinate variable references.
+            for identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    for name in nc_var_att.split():
+                        if name not in ignore:
+                            if name not in variables:
+                                if warn:
+                                    message = (
+                                        f"Missing CF-netCDF auxiliary "
+                                        f"coordinate variable {name}, "
+                                        f"referenced by netCDF variable "
+                                        f"{nc_var_name}"
+                                    )
+                                    logger.debug(message)
+                            else:
+                                # Restrict to non-string type i.e. not a
+                                # CFLabelVariable.
+                                if not cf._is_str_dtype(variables[name]):
+                                    result[
+                                        name
+                                    ] = CFUGridAuxiliaryCoordinateVariable(
+                                        name, variables[name]
+                                    )
+                                elif warn:
+                                    message = (
+                                        f"Ignoring variable {name}, "
+                                        f"identified as a CF-netCDF auxiliary "
+                                        f"coordinate - is a CF-netCDF label "
+                                        f"variable."
+                                    )
+                                    logger.debug(message)
+
+        return result
+
+
+class CFUGridMeshVariable(cf.CFVariable):
+    """
+    A CF-UGRID mesh variable is a dummy variable for storing topology
+    information as attributes. The mesh variable has the ``cf_role``
+    'mesh_topology'.
+
+    The UGRID conventions describe define the mesh topology as the
+    interconnection of various geometrical elements of the mesh. The pure
+    interconnectivity is independent of georeferencing the individual
+    geometrical elements, but for the practical applications for which the
+    UGRID CF extension is defined, coordinate data will always be added.
+
+    Identified by the CF-netCDF variable attribute 'mesh'.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = "mesh"
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID mesh variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for mesh variable references.
+            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+
+            if nc_var_att is not None:
+                # UGRID only allows for 1 mesh per variable.
+                name = nc_var_att.strip()
+                if name not in ignore:
+                    if name not in variables:
+                        if warn:
+                            message = (
+                                f"Missing CF-UGRID mesh variable {name}, "
+                                f"referenced by netCDF variable {nc_var_name}"
+                            )
+                            logger.debug(message)
+                    else:
+                        # Restrict to non-string type i.e. not a
+                        # CFLabelVariable.
+                        if not cf._is_str_dtype(variables[name]):
+                            result[name] = CFUGridMeshVariable(
+                                name, variables[name]
+                            )
+                        elif warn:
+                            message = (
+                                f"Ignoring variable {name}, identified as a "
+                                f"CF-UGRID mesh - is a CF-netCDF label "
+                                f"variable."
+                            )
+                            logger.debug(message)
+
+        return result
+
+
+class CFUGridGroup(cf.CFGroup):
+    """
+    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
+    Conventions' variables and netCDF global attributes.
+
+    Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
+    collections for CF-UGRID-specific variable types.
+
+    """
+
+    @property
+    def connectivities(self):
+        """Collection of CF-UGRID connectivity variables."""
+        return self._cf_getter(CFUGridConnectivityVariable)
+
+    @property
+    def ugrid_coords(self):
+        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
+        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
+
+    @property
+    def meshes(self):
+        """Collection of CF-UGRID mesh variables."""
+        return self._cf_getter(CFUGridMeshVariable)
+
+    @property
+    def non_data_variable_names(self):
+        """
+        :class:`set` of the names of the CF-netCDF/CF-UGRID variables that are
+        not the data pay-load.
+
+        """
+        extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
+        extra_result = set()
+        for variable in extra_variables:
+            extra_result |= set(variable)
+        return super().non_data_variable_names | extra_result
+
+
+class CFUGridReader(cf.CFReader):
+    """
+    This class allows the contents of a netCDF file to be interpreted according
+    to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
+
+    Specialisation of :class:`~iris.fileformats.cf.CFReader` that can also
+    handle CF-UGRID-specific variable types.
+
+    """
+
+    _variable_types = cf.CFReader._variable_types + (
+        CFUGridConnectivityVariable,
+        CFUGridAuxiliaryCoordinateVariable,
+        CFUGridMeshVariable,
+    )
+
+    CFGroup = CFUGridGroup
+
+
+############
+# Object construction.
+# Helper functions, supporting netcdf.load_cubes ONLY, expected to
+# altered/moved when pyke is removed.
+
+
+def _build_aux_coord(coord_var, file_path):
+    """
+    Construct a :class:`~iris.coords.AuxCoord` from a given
+    :class:`CFUGridAuxiliaryCoordinateVariable`, and guess its mesh axis.
+
+    todo: integrate with standard loading API post-pyke.
+
+    """
+    assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
+    attributes = {}
+    attr_units = get_attr_units(coord_var, attributes)
+    points_data = netcdf._get_cf_var_data(coord_var, file_path)
+
+    # Bounds will not be loaded:
+    # Bounds may be present, but the UGRID conventions state this would
+    # always be duplication of the same info provided by the mandatory
+    # connectivities.
+
+    # Fetch climatological - not allowed for a Mesh, but loading it will
+    # mean an informative error gets raised.
+    climatological = False
+    # TODO: use CF_ATTR_CLIMATOLOGY once re-integrated post-pyke.
+    attr_climatology = getattr(coord_var, "climatology", None)
+    if attr_climatology is not None:
+        climatology_vars = coord_var.cf_group.climatology
+        climatological = attr_climatology in climatology_vars
+
+    standard_name, long_name, var_name = get_names(coord_var, None, attributes)
+    coord = AuxCoord(
+        points_data,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        # TODO: coord_system
+        climatological=climatological,
+    )
+
+    axis = guess_coord_axis(coord)
+    if axis is None:
+        if var_name[-2] == "_":
+            # Fall back on UGRID var_name convention.
+            axis = var_name[-1]
+        else:
+            message = f"Cannot guess axis for UGRID coord: {var_name} ."
+            raise ValueError(message)
+
+    return coord, axis
+
+
+def _build_connectivity(connectivity_var, file_path, location_dims):
+    """
+    Construct a :class:`Connectivity` from a given
+    :class:`CFUGridConnectivityVariable`, and identify the name of its first
+    dimension.
+
+    todo: integrate with standard loading API post-pyke.
+
+    """
+    assert isinstance(connectivity_var, CFUGridConnectivityVariable)
+    attributes = {}
+    attr_units = get_attr_units(connectivity_var, attributes)
+    indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
+
+    cf_role = connectivity_var.cf_role
+    start_index = connectivity_var.start_index
+
+    dim_names = connectivity_var.dimensions
+    # Connectivity arrays must have two dimensions.
+    assert len(dim_names) == 2
+    if dim_names[1] in location_dims:
+        src_dim = 1
+    else:
+        src_dim = 0
+
+    standard_name, long_name, var_name = get_names(
+        connectivity_var, None, attributes
+    )
+
+    connectivity = Connectivity(
+        indices=indices_data,
+        cf_role=cf_role,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        start_index=start_index,
+        src_dim=src_dim,
+    )
+
+    return connectivity, dim_names[0]
+
+
+def _build_mesh(cf, mesh_var, file_path):
+    """
+    Construct a :class:`Mesh` from a given :class:`CFUGridMeshVariable`.
+
+    todo: integrate with standard loading API post-pyke.
+
+    """
+    assert isinstance(mesh_var, CFUGridMeshVariable)
+    attributes = {}
+    attr_units = get_attr_units(mesh_var, attributes)
+
+    topology_dimension = mesh_var.topology_dimension
+
+    node_dimension = None
+    edge_dimension = getattr(mesh_var, "edge_dimension", None)
+    face_dimension = getattr(mesh_var, "face_dimension", None)
+
+    node_coord_args = []
+    edge_coord_args = []
+    face_coord_args = []
+    for coord_var in mesh_var.cf_group.ugrid_coords.values():
+        coord_and_axis = _build_aux_coord(coord_var, file_path)
+        coord = coord_and_axis[0]
+
+        if coord.var_name in mesh_var.node_coordinates.split():
+            node_coord_args.append(coord_and_axis)
+            node_dimension = coord_var.dimensions[0]
+        elif (
+            coord.var_name in getattr(mesh_var, "edge_coordinates", "").split()
+        ):
+            edge_coord_args.append(coord_and_axis)
+        elif (
+            coord.var_name in getattr(mesh_var, "face_coordinates", "").split()
+        ):
+            face_coord_args.append(coord_and_axis)
+        # TODO: support volume_coordinates.
+        else:
+            message = (
+                f"Invalid UGRID coord: {coord.var_name} . Must be either a"
+                f"node_, edge_ or face_coordinate."
+            )
+            raise ValueError(message)
+
+    if node_dimension is None:
+        message = (
+            "'node_dimension' could not be identified from mesh node "
+            "coordinates."
+        )
+        raise ValueError(message)
+
+    # Used for detecting transposed connectivities.
+    location_dims = (edge_dimension, face_dimension)
+    connectivity_args = []
+    for connectivity_var in mesh_var.cf_group.connectivities.values():
+        connectivity, first_dim_name = _build_connectivity(
+            connectivity_var, file_path, location_dims
+        )
+        assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
+        connectivity_args.append(connectivity)
+
+        # If the mesh_var has not supplied the dimension name, it is safe to
+        # fall back on the connectivity's first dimension's name.
+        if edge_dimension is None and connectivity.src_location == "edge":
+            edge_dimension = first_dim_name
+        if face_dimension is None and connectivity.src_location == "face":
+            face_dimension = first_dim_name
+
+    standard_name, long_name, var_name = get_names(mesh_var, None, attributes)
+
+    mesh = Mesh(
+        topology_dimension=topology_dimension,
+        node_coords_and_axes=node_coord_args,
+        connectivities=connectivity_args,
+        edge_coords_and_axes=edge_coord_args,
+        face_coords_and_axes=face_coord_args,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        attributes=attributes,
+        node_dimension=node_dimension,
+        edge_dimension=edge_dimension,
+        face_dimension=face_dimension,
+    )
+    assert mesh.cf_role == mesh_var.cf_role
+
+    mesh_elements = (
+        list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
+    )
+    mesh_elements = filter(None, mesh_elements)
+    for iris_object in mesh_elements:
+        netcdf._add_unused_attributes(
+            iris_object, cf.cf_group[iris_object.var_name]
+        )
+
+    return mesh
+
+
+def _build_mesh_coords(mesh, cf_var):
+    """
+    Construct a tuple of :class:`MeshCoord` using from a given :class:`Mesh`
+    and :class:`~iris.fileformats.cf.CFVariable`.
+
+    todo: integrate with standard loading API post-pyke.
+
+    """
+    # Identify the cube's mesh dimension, for attaching MeshCoords.
+    locations_dimensions = {
+        "node": mesh.node_dimension,
+        "edge": mesh.edge_dimension,
+        "face": mesh.face_dimension,
+    }
+    mesh_dim_name = locations_dimensions[cf_var.location]
+    # (Only expecting 1 mesh dimension per cf_var).
+    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+
+    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+    return mesh_coords, mesh_dim
+
+
+# END of loading section.
+###############################################################################
