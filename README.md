@@ -20,12 +20,6 @@
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg"
      alt="pre-commit.ci status" /></a>
 <a href="https://anaconda.org/conda-forge/iris">
-<img src="https://img.shields.io/conda/dn/conda-forge/iris.svg"
-     alt="conda-forge downloads" /></a>
-<a href="https://github.com/SciTools/iris/graphs/contributors">
-<img src="https://img.shields.io/github/contributors/SciTools/iris.svg"
-     alt="# contributors" /></a>
-<a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/v/conda-forge/iris?color=orange&label=conda-forge%7Ciris"
      alt="conda-forge" /></a>
 <a href="https://pypi.org/project/scitools-iris">
