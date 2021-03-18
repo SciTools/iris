@@ -20,12 +20,6 @@
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg"
      alt="pre-commit.ci status" /></a>
 <a href="https://anaconda.org/conda-forge/iris">
-<img src="https://img.shields.io/conda/dn/conda-forge/iris.svg"
-     alt="conda-forge downloads" /></a>
-<a href="https://github.com/SciTools/iris/graphs/contributors">
-<img src="https://img.shields.io/github/contributors/SciTools/iris.svg"
-     alt="# contributors" /></a>
-<a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/v/conda-forge/iris?color=orange&label=conda-forge%7Ciris"
      alt="conda-forge" /></a>
 <a href="https://pypi.org/project/scitools-iris">
@@ -43,6 +37,9 @@
 <a href="https://github.com/psf/black">
 <img src="https://img.shields.io/badge/code%20style-black-000000.svg"
      alt="black" /></a>
+<a href="https://github.com/SciTools/iris/discussions">
+<img src="https://img.shields.io/badge/github-discussions-yellow?style=social&logo=github&style=plastic"
+     alt="github discussions" /></a>
 <a href="https://twitter.com/scitools_iris">
 <img src="https://img.shields.io/twitter/follow/scitools_iris?color=yellow&label=twitter%7Cscitools_iris&logo=twitter&style=plastic"
      alt="twitter scitools_iris" /></a>
