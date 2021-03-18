@@ -47,134 +47,62 @@ def ugrid_load(uris, constraints=None, callback=None):
 
 @tests.skip_data
 class TestBasic(tests.IrisTest):
-    def test_2D_1t_face_half_levels(self):
+    def common_test(self, load_filename, assert_filename):
         cube_list = ugrid_load(
             tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
-                ]
+                ["NetCDF", "unstructured_grid", load_filename]
             ),
         )
         self.assertEqual(1, len(cube_list))
         cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "2D_1t_face_half_levels.cml")
+        self.assertCML(cube, ["experimental", "ugrid", assert_filename])
+
+    def test_2D_1t_face_half_levels(self):
+        self.common_test(
+            "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
+            "2D_1t_face_half_levels.cml",
         )
 
     def test_3D_1t_face_half_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_1t_half_level_face_grid_derived_theta_in_w3.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_1t_face_half_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_1t_half_level_face_grid_derived_theta_in_w3.nc",
+            "3D_1t_face_half_levels.cml",
         )
 
     def test_3D_1t_face_full_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_1t_full_level_face_grid_main_area_fraction_unit1.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_1t_face_full_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_1t_full_level_face_grid_main_area_fraction_unit1.nc",
+            "3D_1t_face_full_levels.cml",
         )
 
     def test_2D_72t_face_half_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_2D_72t_face_half_levels_main_conv_rain.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "2D_72t_face_half_levels.cml")
+        self.common_test(
+            "lfric_ngvat_2D_72t_face_half_levels_main_conv_rain.nc",
+            "2D_72t_face_half_levels.cml",
         )
 
-
-class TestPseudoLevels(tests.IrisTest):
     def test_3D_snow_pseudo_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_snow_pseudo_levels_1t_face_half_levels_main_snow_layer_temp.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_snow_pseudo_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_snow_pseudo_levels_1t_face_half_levels_main_snow_layer_temp.nc",
+            "3D_snow_pseudo_levels.cml",
         )
 
     def test_3D_soil_pseudo_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_soil_pseudo_levels_1t_face_half_levels_main_soil_temperature.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_soil_pseudo_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_soil_pseudo_levels_1t_face_half_levels_main_soil_temperature.nc",
+            "3D_soil_pseudo_levels.cml",
         )
 
     def test_3D_tile_pseudo_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_tile_pseudo_levels_1t_face_half_levels_main_sw_up_tile.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_tile_pseudo_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_tile_pseudo_levels_1t_face_half_levels_main_sw_up_tile.nc",
+            "3D_tile_pseudo_levels.cml",
         )
 
     def test_3D_veg_pseudo_levels(self):
-        cube_list = ugrid_load(
-            tests.get_data_path(
-                [
-                    "NetCDF",
-                    "unstructured_grid",
-                    "lfric_ngvat_3D_veg_pseudo_levels_1t_face_half_levels_main_snowpack_density.nc",
-                ]
-            ),
-        )
-        self.assertEqual(1, len(cube_list))
-        cube = cube_list[0]
-        self.assertCML(
-            cube, ("experimental", "ugrid", "3D_veg_pseudo_levels.cml")
+        self.common_test(
+            "lfric_ngvat_3D_veg_pseudo_levels_1t_face_half_levels_main_snowpack_density.nc",
+            "3D_veg_pseudo_levels.cml",
         )
 
 
