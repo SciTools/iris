@@ -124,15 +124,12 @@ class Test_build_cf_groups(tests.IrisTest):
         self.assertDictEqual(expected, self.cf_group.meshes)
 
     def test_ugrid_coords(self):
-        expected_data = {
-            "node_x": self.node_x,
-            "node_y": self.node_y,
-            "face_x": self.face_x,
-            "face_y": self.face_y,
-        }
+        names = [
+            f"{loc}_{ax}" for loc in ("node", "face") for ax in ("x", "y")
+        ]
         expected = {
-            name: CFUGridAuxiliaryCoordinateVariable(name, data)
-            for name, data in expected_data.items()
+            name: CFUGridAuxiliaryCoordinateVariable(name, getattr(self, name))
+            for name in names
         }
         self.assertDictEqual(expected, self.cf_group.ugrid_coords)
 
