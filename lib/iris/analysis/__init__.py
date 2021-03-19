@@ -1830,9 +1830,10 @@ This aggregator handles masked data.
 
 PERCENTILE = PercentileAggregator(alphap=1, betap=1)
 """
-An :class:`~iris.analysis.PercentileAggregator` instance that calculates the
+A :class:`~iris.analysis.PercentileAggregator` instance that calculates the
 percentile over a :class:`~iris.cube.Cube`, as computed by
-:func:`scipy.stats.mstats.mquantiles`.
+:func:`scipy.stats.mstats.mquantiles` (default) or :func:`numpy.percentile` (if
+fast_percentile_method is True).
 
 **Required** kwargs associated with the use of this aggregator:
 
@@ -1847,6 +1848,11 @@ Additional kwargs associated with the use of this aggregator:
 * betap (float):
     Plotting positions parameter, see :func:`scipy.stats.mstats.mquantiles`.
     Defaults to 1.
+* fast_percentile_method (boolean):
+    When set to True, uses :func:`numpy.percentile` method as a faster
+    alternative to the :func:`scipy.stats.mstats.mquantiles` method.  alphap and
+    betap are ignored. An exception is raised if the data are masked.
+    Defaults to False.
 
 **For example**:
 
@@ -1854,7 +1860,14 @@ To compute the 10th and 90th percentile over *time*::
 
     result = cube.collapsed('time', iris.analysis.PERCENTILE, percent=[10, 90])
 
-This aggregator handles masked data.
+This aggregator handles masked data and lazy data.
+
+.. note::
+    Performance of this aggregator on lazy data is particularly sensitive to
+    the dask array chunking, so it may be useful to test with various chunk
+    sizes for a given application.  Any chunking along the dimensions to be
+    aggregated is removed by the aggregator prior to calculating the
+    percentiles.
 
 """
 
