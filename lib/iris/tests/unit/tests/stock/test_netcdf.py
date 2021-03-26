@@ -31,7 +31,7 @@ class XIOSFileMixin(tests.IrisTest):
     def create_synthetic_file(self, **create_kwargs):
         # Should be overridden to invoke one of the create_file_ functions.
         # E.g.
-        # return create_file__xios_2d_face_half_levels(
+        # return netcdf.create_file__xios_2d_face_half_levels(
         #     temp_file_dir=self.temp_dir, dataset_name="mesh", **create_kwargs
         # )
         raise NotImplementedError
