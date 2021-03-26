@@ -14,7 +14,7 @@ import tempfile
 
 from iris import load_cube
 from iris.tests.stock import netcdf
-from iris.experimental.ugrid import MeshCoord, PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid import Mesh, MeshCoord, PARSE_UGRID_ON_LOAD
 
 
 class XIOSFileMixin(tests.IrisTest):
@@ -50,7 +50,7 @@ class XIOSFileMixin(tests.IrisTest):
 
         # Also a few checks on the attached mesh-related information.
         last_dim = cube.ndim - 1
-        self.assertTrue(hasattr(cube, "mesh"))
+        self.assertIsInstance(cube.mesh, Mesh)
         self.assertEqual(cube.mesh_dim(), last_dim)
         self.assertEqual(cube.location, location)
         for coord_name in ("longitude", "latitude"):
