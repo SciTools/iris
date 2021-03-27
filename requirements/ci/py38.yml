@@ -22,6 +22,8 @@ dependencies:
   - scipy
 
 # Optional dependencies.
+  - cmocean
+  - colorcet
   - esmpy>=7.0
   - graphviz
   - iris-sample-data
@@ -30,6 +32,8 @@ dependencies:
   - pandas
   - pip
   - python-stratify
+  - pyvista
+  - pyvistaqt
 
 # Test dependencies.
   - asv

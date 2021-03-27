@@ -14,12 +14,18 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Iterable
 from contextlib import contextmanager
-from functools import wraps
+from functools import lru_cache, wraps
 import re
 import threading
 
+import cartopy.io.shapereader as shp
+from cartopy.io.shapereader import Record
+from cf_units import Unit
 import dask.array as da
 import numpy as np
+import pyvista as pv
+from shapely.geometry.multilinestring import MultiLineString
+import vtk
 
 from .. import _lazy_data as _lazy
 from ..common.metadata import (
@@ -71,6 +77,8 @@ NP_PRINTOPTIONS_THRESHOLD = 10
 #: Numpy "edgeitems" printoptions default argument.
 NP_PRINTOPTIONS_EDGEITEMS = 2
 
+# VTK slider widget callback hook
+VTK_SLIDER_CALLBACK = dict()
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
@@ -3766,4 +3774,404 @@ def _build_mesh_coords(mesh, cf_var):
 
 
 # END of loading section.
+###############################################################################
+# PLOTTING
+
+# Default to an s2 unit sphere.
+RADIUS = 0.5
+
+
+def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
+    if plotter is None:
+        plotter = pv.plotter()
+
+    if not kwargs:
+        kwargs = dict(color="black")
+
+    if resolution is not None:
+        geocentric = projection is None
+        coastlines = get_coastlines(resolution, geocentric=geocentric)
+
+        if projection is not None:
+            vtk_projection = vtkPolyDataTransformFilter(projection)
+            coastlines = [
+                vtk_projection.transform(coastline) for coastline in coastlines
+            ]
+
+        for coastline in coastlines:
+            plotter.add_mesh(coastline, **kwargs)
+
+    return plotter
+
+
+@lru_cache
+def get_coastlines(resolution="110m", geocentric=False):
+    radius = RADIUS + RADIUS / 1e4
+
+    # Load in the shapefiles
+    fname = shp.natural_earth(
+        resolution=resolution, category="physical", name="coastline"
+    )
+    reader = shp.Reader(fname)
+
+    dtype = np.float32
+    blocks = pv.MultiBlock()
+    geoms = []
+
+    def to_pyvista_blocks(records):
+        for record in records:
+            if isinstance(record, Record):
+                geometry = record.geometry
+            else:
+                geometry = record
+
+            if isinstance(geometry, MultiLineString):
+                geoms.extend(list(geometry.geoms))
+            else:
+                xy = np.array(geometry.coords[:], dtype=dtype)
+
+                if geocentric:
+                    # calculate 3d xyz coordinates
+                    xr = np.radians(xy[:, 0]).reshape(-1, 1)
+                    yr = np.radians(90 - xy[:, 1]).reshape(-1, 1)
+
+                    x = radius * np.sin(yr) * np.cos(xr)
+                    y = radius * np.sin(yr) * np.sin(xr)
+                    z = radius * np.cos(yr)
+                else:
+                    # otherwise, calculate xy0 coordinates
+                    x = xy[:, 0].reshape(-1, 1)
+                    y = xy[:, 1].reshape(-1, 1)
+                    z = np.zeros_like(x)
+
+                xyz = np.hstack((x, y, z))
+                poly = pv.lines_from_points(xyz, close=False)
+                blocks.append(poly)
+
+    to_pyvista_blocks(reader.records())
+    to_pyvista_blocks(geoms)
+
+    return blocks
+
+
+class vtkPolyDataTransformFilter:
+    """
+    A VTK transformer that can project PyVista objects from lat/lon projection
+    to a given projection. See https://proj.org/operations/projections/,
+    https://vtk.org/doc/nightly/html/classvtkGeoProjection.html
+
+    """
+
+    def __init__(self, projection_specifier=None):
+        """
+        Args:
+        * projection_specifier:
+            The target projection. This may simply be the name of the
+            projection e.g., "moll", "sinu". Alternatively, the a
+            PROJ4 string may be provided e.g., "+proj=moll +lon_0=90"
+
+        """
+        # Set up source and target projection.
+        sourceProjection = vtk.vtkGeoProjection()
+        destinationProjection = vtk.vtkGeoProjection()
+        projection_specifier = projection_specifier.strip()
+        if projection_specifier.startswith("+"):
+            destinationProjection.SetPROJ4String(projection_specifier)
+        else:
+            destinationProjection.SetName(projection_specifier)
+
+        # Set up transform between source and target.
+        transformProjection = vtk.vtkGeoTransform()
+        transformProjection.SetSourceProjection(sourceProjection)
+        transformProjection.SetDestinationProjection(destinationProjection)
+
+        # Set up transform filter.
+        transform_filter = vtk.vtkTransformPolyDataFilter()
+        transform_filter.SetTransform(transformProjection)
+
+        self.transform_filter = transform_filter
+
+    def transform(self, mesh):
+        self.transform_filter.SetInputData(mesh)
+        self.transform_filter.Update()
+        output = self.transform_filter.GetOutput()
+
+        # Wrap output of transform as a PyVista object.
+        return pv.wrap(output)
+
+
+def to_xyz(latitudes, longitudes, vstack=True):
+    latitudes = np.ravel(latitudes)
+    longitudes = np.ravel(longitudes)
+
+    x_rad = np.radians(longitudes)
+    y_rad = np.radians(90.0 - latitudes)
+    x = RADIUS * np.sin(y_rad) * np.cos(x_rad)
+    y = RADIUS * np.sin(y_rad) * np.sin(x_rad)
+    z = RADIUS * np.cos(y_rad)
+    xyz = [x, y, z]
+
+    if vstack:
+        xyz = np.vstack(xyz).T
+
+    return xyz
+
+
+def to_vtk_mesh(cube, projection=None):
+    if not hasattr(cube, "mesh"):
+        emsg = "Require a cube with an unstructured mesh."
+        raise TypeError(emsg)
+
+    if cube.ndim != 1:
+        emsg = "Require a 1D cube with an unstructured mesh."
+        raise ValueError(emsg)
+
+    data = cube.data
+    mask = data.mask
+    data = data.data
+    data[mask] = np.nan
+
+    face_node = cube.mesh.face_node_connectivity
+    indices = face_node.indices - face_node.start_index
+    coord_x, coord_y = cube.mesh.node_coords
+
+    node_x = coord_x.points.data
+    node_y = coord_y.points.data
+
+    if projection is None:
+        xyz = to_xyz(node_y, node_x, vstack=False)
+    else:
+        node_z = np.zeros_like(node_y)
+        node_x[node_x > 180] -= 360
+        no_wrap = node_x[indices].ptp(axis=-1) < 180
+        indices = indices[no_wrap]
+        data = data[no_wrap]
+        xyz = [node_x, node_y, node_z]
+
+    vertices = np.vstack(xyz).T
+
+    N_faces, N_nodes = indices.shape
+    faces = np.hstack(
+        [
+            np.broadcast_to(np.array([N_nodes], np.int8), (N_faces, 1)),
+            indices,
+        ]
+    )
+
+    mesh = pv.PolyData(vertices, faces, n_faces=N_faces)
+    mesh.cell_arrays[cube.location] = data
+
+    if projection is not None:
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+        mesh = vtk_projection.transform(mesh)
+
+    return mesh
+
+
+def plot(
+    cube,
+    projection=None,
+    resolution="110m",
+    threshold=False,
+    invert=False,
+    plotter=None,
+    **kwargs,
+):
+    global VTK_SLIDER_CALLBACK
+
+    if not hasattr(cube, "mesh"):
+        emsg = "Require a cube with an unstructured mesh."
+        raise TypeError(emsg)
+
+    if plotter is None:
+        plotter = pv.Plotter()
+
+    if not kwargs:
+        kwargs = dict(
+            cmap="balance",
+            specular=0.5,
+            show_edges=True,
+            edge_color="black",
+            line_width=0.5,
+            scalar_bar_args=dict(nan_annotation=True),
+        )
+
+    location = cube.location
+
+    if cube.ndim == 1:
+        mesh = to_vtk_mesh(cube, projection=projection)
+    elif cube.ndim == 2:
+        if projection is not None:
+            # TBD
+            emsg = "Require a 1D cube with an unstructured mesh."
+            raise ValueError(emsg)
+
+        coord = cube.coord(axis="x", mesh_coords=True)
+        (udim,) = cube.coord_dims(coord)
+        sdim = 1 - udim
+        scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
+
+        if scoord:
+            sunits = scoord[0].units
+            scoord = scoord[0].points
+        else:
+            sunits = ""
+            scoord = np.arange(cube.shape[sdim])
+
+        slicer = [slice(None)] * cube.ndim
+        slicer[sdim] = 0
+        VTK_SLIDER_CALLBACK["scoord"] = scoord
+        VTK_SLIDER_CALLBACK["sunits"] = sunits
+        VTK_SLIDER_CALLBACK["location"] = location
+        mesh = to_vtk_mesh(cube[tuple(slicer)], projection=projection)
+        data = cube.data
+        mask = data.mask
+        data = data.data
+        data[mask] = np.nan
+
+        for dim in range(cube.shape[sdim]):
+            slicer[sdim] = dim
+            mesh.cell_arrays[f"{location}_{dim}"] = data[tuple(slicer)]
+    else:
+        emsg = (
+            "Require a 1D or 2D cube with an unstructured mesh, "
+            f"got a {cube.ndim}D cube."
+        )
+        raise ValueError(emsg)
+
+    if isinstance(threshold, bool) and threshold:
+        print(mesh)
+        mesh = mesh.threshold(invert=invert)
+        print(mesh)
+    elif not isinstance(threshold, bool):
+        mesh = mesh.threshold(threshold, invert=invert)
+        if isinstance(threshold, (np.ndarray, Iterable)):
+            annotations = {threshold[0]: "Lower", threshold[1]: "Upper"}
+            if "annotations" not in kwargs:
+                kwargs["annotations"] = annotations
+
+    plotter.add_mesh(mesh, scalars=location, **kwargs)
+
+    add_coastlines(
+        resolution=resolution, projection=projection, plotter=plotter
+    )
+
+    if (
+        "scalar_bar_args" not in kwargs
+        or "title" not in kwargs["scalar_bar_args"]
+    ):
+        name = cube.name()
+        name = (
+            " ".join([part.capitalize() for part in name.split("_")])
+            if name
+            else "Unknown"
+        )
+        units = str(cube.units)
+        plotter.scalar_bar.SetTitle(f"{name} / {units}")
+
+    if projection is not None:
+        cpos = [
+            (93959.85410932079, 0.0, 48025410.22774371),
+            (93959.85410932079, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+        ]
+    else:
+        cpos = [
+            (2.714657273413018, 0.0, 0.0),
+            (0.0, 0.0, 0.0),
+            (0.0, 0.0, 1.0),
+        ]
+
+    #
+    # text actor for time
+    #
+    when = None
+    coords = cube.coords("time", dimensions=())
+    if coords:
+        (coord,) = coords
+        when = f"Time@{coord.units.num2date(coord.points[0])}"
+
+    coords = cube.coords("forecast_period", dimensions=())
+    if coords:
+        (coord,) = coords
+        if coord.points[0]:
+            when = f"{when} ({coord.points[0]} {coord.units})"
+
+    if when:
+        plotter.add_text(when, position="upper_left", font_size=8, name="when")
+
+    #
+    # cell picking
+    #
+    units = (
+        "" if cube.units == Unit("1") or cube.units == Unit("") else cube.units
+    )
+
+    def picking_callback(mesh):
+        if mesh:
+            values = mesh.cell_arrays[location]
+            text = ""
+
+            if mesh.n_cells == 1:
+                if not np.isnan(values[0]):
+                    text = f"Cell = {values[0]:.2f}{units}"
+            else:
+                min, max = mesh.get_data_range(
+                    arr_var=location, preference="cell"
+                )
+                text = f"Count: {mesh.n_cells}, Min: {min:.2f}{units}, Max: {max:.2f}{units}, Mean: {np.nanmean(values):.2f}{units}"
+
+            plotter.add_text(
+                text, position="lower_left", font_size=8, name="cell-picking"
+            )
+
+    plotter.enable_cell_picking(
+        through=False, show_message=False, callback=picking_callback
+    )
+
+    #
+    # slider for structured dimension (if available)
+    #
+    if cube.ndim == 2:
+
+        def slider_callback(slider, actor):
+            global VTK_SLIDER_CALLBACK
+
+            slider = int(slider)
+
+            if slider != VTK_SLIDER_CALLBACK["value"]:
+                sunits = VTK_SLIDER_CALLBACK["sunits"]
+                scoord = VTK_SLIDER_CALLBACK["scoord"]
+                location = VTK_SLIDER_CALLBACK["location"]
+                mesh = VTK_SLIDER_CALLBACK["mesh"]
+                if sunits:
+                    stitle = f"{sunits.num2date(scoord[slider])}"
+                    actor.GetSliderRepresentation().SetTitleText(stitle)
+                mesh.cell_arrays[location] = mesh.cell_arrays[
+                    f"{location}_{slider}"
+                ]
+                VTK_SLIDER_CALLBACK["value"] = slider
+
+        value = 0
+        VTK_SLIDER_CALLBACK["value"] = value
+        stitle = f"{sunits.num2date(scoord[value])}" if sunits else ""
+        srange = (0, cube.shape[sdim] - 1)
+        VTK_SLIDER_CALLBACK["mesh"] = mesh
+
+        plotter.add_slider_widget(
+            slider_callback,
+            srange,
+            value=value,
+            title=stitle,
+            pass_widget=True,
+            style="modern",
+            fmt="",
+        )
+
+    plotter.show_axes()
+    plotter.camera_position = cpos
+
+    return plotter
+
+
 ###############################################################################
