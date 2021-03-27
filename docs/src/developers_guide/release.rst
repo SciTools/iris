@@ -119,10 +119,19 @@ Build the source distribution and wheel from the Iris root directory::
 This ``./dist`` directory should now be populated with the source archive
 ``.tar.gz`` file, and built distribution ``.whl`` file.
 
-Sufficient maintainer privileges will be required to upload these artifacts
-to `scitools-iris`_ on PyPI::
+Check that the package description will render properly on PyPI for each
+of the built artifacts::
 
-    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ ./dist/*
+    > python -m twine check dist/*
+
+To list and check the contents of the binary wheel::
+
+    > python -m zipfile --list dist/*.whl
+
+If all seems well, sufficient maintainer privileges will be required to
+upload these artifacts to `scitools-iris`_ on PyPI::
+
+    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ dist/*
 
 Ensure that the artifacts are successfully uploaded and available on
 `scitools-iris`_ before creating a conda test environment to install Iris
