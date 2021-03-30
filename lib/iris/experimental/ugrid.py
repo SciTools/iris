@@ -3922,8 +3922,11 @@ def to_vtk_mesh(cube, projection=None):
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
-    if cube.ndim != 1:
-        emsg = "Require a 1D cube with an unstructured mesh."
+    if cube.ndim not in (1, 2):
+        emsg = (
+            "Require a 1D or 2D cube with an unstructured mesh, "
+            f"got a {cube.ndim}D cube."
+        )
         raise ValueError(emsg)
 
     data = cube.data
@@ -3938,14 +3941,19 @@ def to_vtk_mesh(cube, projection=None):
     node_x = coord_x.points.data
     node_y = coord_y.points.data
 
+    # Determine the unstructured dimension (udim) of the cube.
+    (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
+
     if projection is None:
         xyz = to_xyz(node_y, node_x, vstack=False)
     else:
+        slicer = [slice(None)] * cube.ndim
         node_z = np.zeros_like(node_y)
         node_x[node_x > 180] -= 360
         no_wrap = node_x[indices].ptp(axis=-1) < 180
         indices = indices[no_wrap]
-        data = data[no_wrap]
+        slicer[udim] = no_wrap
+        data = data[tuple(slicer)]
         xyz = [node_x, node_y, node_z]
 
     vertices = np.vstack(xyz).T
@@ -3959,7 +3967,19 @@ def to_vtk_mesh(cube, projection=None):
     )
 
     mesh = pv.PolyData(vertices, faces, n_faces=N_faces)
-    mesh.cell_arrays[cube.location] = data
+
+    if cube.ndim == 1:
+        mesh.cell_arrays[cube.location] = data
+    else:
+        # Determine the structured dimension (sdim) of the cube.
+        sdim = 1 - udim
+
+        for dim in range(cube.shape[sdim] - 1, -1, -1):
+            slicer = [slice(None)] * cube.ndim
+            slicer[sdim] = dim
+            mesh.cell_arrays[f"{cube.location}_{dim}"] = data[tuple(slicer)]
+
+        mesh.cell_arrays[cube.location] = data[tuple(slicer)]
 
     if projection is not None:
         vtk_projection = vtkPolyDataTransformFilter(projection)
@@ -3993,56 +4013,14 @@ def plot(
             show_edges=True,
             edge_color="black",
             line_width=0.5,
-            scalar_bar_args=dict(nan_annotation=True),
+            scalar_bar_args=dict(nan_annotation=True, shadow=True),
         )
 
     location = cube.location
-
-    if cube.ndim == 1:
-        mesh = to_vtk_mesh(cube, projection=projection)
-    elif cube.ndim == 2:
-        if projection is not None:
-            # TBD
-            emsg = "Require a 1D cube with an unstructured mesh."
-            raise ValueError(emsg)
-
-        coord = cube.coord(axis="x", mesh_coords=True)
-        (udim,) = cube.coord_dims(coord)
-        sdim = 1 - udim
-        scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
-
-        if scoord:
-            sunits = scoord[0].units
-            scoord = scoord[0].points
-        else:
-            sunits = ""
-            scoord = np.arange(cube.shape[sdim])
-
-        slicer = [slice(None)] * cube.ndim
-        slicer[sdim] = 0
-        VTK_SLIDER_CALLBACK["scoord"] = scoord
-        VTK_SLIDER_CALLBACK["sunits"] = sunits
-        VTK_SLIDER_CALLBACK["location"] = location
-        mesh = to_vtk_mesh(cube[tuple(slicer)], projection=projection)
-        data = cube.data
-        mask = data.mask
-        data = data.data
-        data[mask] = np.nan
-
-        for dim in range(cube.shape[sdim]):
-            slicer[sdim] = dim
-            mesh.cell_arrays[f"{location}_{dim}"] = data[tuple(slicer)]
-    else:
-        emsg = (
-            "Require a 1D or 2D cube with an unstructured mesh, "
-            f"got a {cube.ndim}D cube."
-        )
-        raise ValueError(emsg)
+    mesh = to_vtk_mesh(cube, projection=projection)
 
     if isinstance(threshold, bool) and threshold:
-        print(mesh)
         mesh = mesh.threshold(invert=invert)
-        print(mesh)
     elif not isinstance(threshold, bool):
         mesh = mesh.threshold(threshold, invert=invert)
         if isinstance(threshold, (np.ndarray, Iterable)):
@@ -4056,16 +4034,22 @@ def plot(
         resolution=resolution, projection=projection, plotter=plotter
     )
 
-    if (
-        "scalar_bar_args" not in kwargs
-        or "title" not in kwargs["scalar_bar_args"]
-    ):
-        name = cube.name()
+    #
+    # scalar bar
+    #
+    def namify(name):
         name = (
             " ".join([part.capitalize() for part in name.split("_")])
             if name
             else "Unknown"
         )
+        return name
+
+    if (
+        "scalar_bar_args" not in kwargs
+        or "title" not in kwargs["scalar_bar_args"]
+    ):
+        name = namify(cube.name())
         units = str(cube.units)
         plotter.scalar_bar.SetTitle(f"{name} / {units}")
 
@@ -4098,7 +4082,9 @@ def plot(
             when = f"{when} ({coord.points[0]} {coord.units})"
 
     if when:
-        plotter.add_text(when, position="upper_left", font_size=8, name="when")
+        plotter.add_text(
+            when, shadow=True, position="upper_left", font_size=8, name="when"
+        )
 
     #
     # cell picking
@@ -4145,18 +4131,34 @@ def plot(
                 location = VTK_SLIDER_CALLBACK["location"]
                 mesh = VTK_SLIDER_CALLBACK["mesh"]
                 if sunits:
-                    stitle = f"{sunits.num2date(scoord[slider])}"
-                    actor.GetSliderRepresentation().SetTitleText(stitle)
+                    slabel = f"{sunits.num2date(scoord[slider])}"
+                    actor.GetSliderRepresentation().SetLabelFormat(slabel)
                 mesh.cell_arrays[location] = mesh.cell_arrays[
                     f"{location}_{slider}"
                 ]
                 VTK_SLIDER_CALLBACK["value"] = slider
 
         value = 0
+        (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
+        sdim = 1 - udim
+        scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
+
+        if scoord:
+            stitle = namify(scoord[0].name())
+            sunits = scoord[0].units
+            scoord = scoord[0].points
+        else:
+            sunits = stitle = ""
+            scoord = np.arange(cube.shape[sdim])
+
         VTK_SLIDER_CALLBACK["value"] = value
-        stitle = f"{sunits.num2date(scoord[value])}" if sunits else ""
-        srange = (0, cube.shape[sdim] - 1)
+        VTK_SLIDER_CALLBACK["sunits"] = sunits
+        VTK_SLIDER_CALLBACK["scoord"] = scoord
+        VTK_SLIDER_CALLBACK["location"] = location
         VTK_SLIDER_CALLBACK["mesh"] = mesh
+
+        slabel = f"{sunits.num2date(scoord[value])}" if sunits else ""
+        srange = (0, cube.shape[sdim] - 1)
 
         plotter.add_slider_widget(
             slider_callback,
@@ -4165,7 +4167,7 @@ def plot(
             title=stitle,
             pass_widget=True,
             style="modern",
-            fmt="",
+            fmt=slabel,
         )
 
     plotter.show_axes()
