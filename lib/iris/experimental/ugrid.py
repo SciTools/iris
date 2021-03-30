@@ -77,7 +77,7 @@ NP_PRINTOPTIONS_THRESHOLD = 10
 #: Numpy "edgeitems" printoptions default argument.
 NP_PRINTOPTIONS_EDGEITEMS = 2
 
-# VTK slider widget callback hook
+# VTK slider widget callback hook that requires global context
 VTK_SLIDER_CALLBACK = dict()
 
 # Configure the logger.
@@ -3777,11 +3777,39 @@ def _build_mesh_coords(mesh, cf_var):
 ###############################################################################
 # PLOTTING
 
-# Default to an s2 unit sphere.
+# default to an s2 unit sphere.
 RADIUS = 0.5
 
 
 def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
+    """
+    Add the specified Natural Earth coastline geometries to a PyVista plotter
+    for rendering.
+
+    Kwargs:
+
+    * resolution (None or str):
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
+        The default is ``110m``.
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the coastlines
+        into a 2D projection coordinate system. If ``None``, the coastline
+        geometries are rendered in on a 3D sphere. The default is ``None``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If ``None``, a plotter object will be created. Default is None.
+
+    * kwargs (dict):
+        Additional ``kwargs`` to be passed to PyVista when creating a coastline
+        :class:`~pyvista.core.pointset.PolyData`.
+
+    Returns:
+        The :class:`~pyvista.plotting.plotting.Plotter`.
+
+    """
     if plotter is None:
         plotter = pv.plotter()
 
@@ -3806,9 +3834,33 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
 
 @lru_cache
 def get_coastlines(resolution="110m", geocentric=False):
+    """
+    Download and return the collection of Natural Earth coastline geometries.
+
+    The geometries will be transformed appropriately for use with a 2D planar
+    projection or a 3D spherical mesh.
+
+    Kwargs:
+
+    * resolution (None or str):
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
+        The default is ``110m``.
+
+    geocentric (bool):
+        Convert the coastline latitude and longitude geometries to geocentric
+        XYZ coordinates.
+
+    Returns:
+        A :class:~pyvista.core.composite.MultiBlock` containing one or more
+        :class:`~pyvista.core.pointset.PolyData` coastline geometries.
+
+    """
+    # add a "fudge-factor" to ensure coastlines overlay the mesh
+    # i.e., a poor mans zorder.
     radius = RADIUS + RADIUS / 1e4
 
-    # Load in the shapefiles
+    # load in the shapefiles
     fname = shp.natural_earth(
         resolution=resolution, category="physical", name="coastline"
     )
@@ -3856,25 +3908,35 @@ def get_coastlines(resolution="110m", geocentric=False):
 
 class vtkPolyDataTransformFilter:
     """
-    A VTK transformer that can project PyVista objects from lat/lon projection
-    to a given projection. See https://proj.org/operations/projections/,
-    https://vtk.org/doc/nightly/html/classvtkGeoProjection.html
+    A VTK transformer that can project PyVista objects from a latitude and
+    longitude projection to a given PROJ4 projection.
+
+    .. seealso::
+
+        * https://proj.org/operations/projections/
+        * https://vtk.org/doc/nightly/html/classvtkGeoProjection.html
 
     """
 
     def __init__(self, projection_specifier=None):
         """
+        Create the VTK transform projection filter.
+
         Args:
+
         * projection_specifier:
             The target projection. This may simply be the name of the
-            projection e.g., "moll", "sinu". Alternatively, the a
-            PROJ4 string may be provided e.g., "+proj=moll +lon_0=90"
+            projection e.g., ``moll``, ``sinu``. Alternatively, a
+            PROJ4 string may be provided e.g., ``+proj=moll +lon_0=90``
+
+        .. note:: Full PROJ4 string support still requires to be implemented.
 
         """
         # Set up source and target projection.
         sourceProjection = vtk.vtkGeoProjection()
         destinationProjection = vtk.vtkGeoProjection()
         projection_specifier = projection_specifier.strip()
+
         if projection_specifier.startswith("+"):
             destinationProjection.SetPROJ4String(projection_specifier)
         else:
@@ -3892,6 +3954,16 @@ class vtkPolyDataTransformFilter:
         self.transform_filter = transform_filter
 
     def transform(self, mesh):
+        """
+        Transform the :class:`~pyvista.core.pointset.PolyData` to the
+        target projection.
+
+        Args:
+
+        * mesh (PolyData):
+            The :class:~pyvista.core.pointset.PolyData` mesh to be transformed.
+
+        """
         self.transform_filter.SetInputData(mesh)
         self.transform_filter.Update()
         output = self.transform_filter.GetOutput()
@@ -3901,6 +3973,27 @@ class vtkPolyDataTransformFilter:
 
 
 def to_xyz(latitudes, longitudes, vstack=True):
+    """
+    Convert latitudes and longitudes to geocentric XYZ values.
+
+    Args:
+
+    * latitudes (float or sequence)
+        The latitude values to be converted.
+
+    * longitudes (float or sequence)
+        The longitude values to be converted.
+
+    Kwargs:
+
+    * vstack (bool):
+        Specify whether the X, Y and Z values are vertically
+        stacked and transposed. Default is ``True``.
+
+    Returns:
+        The converted latitudes and longitudes.
+
+    """
     latitudes = np.ravel(latitudes)
     longitudes = np.ravel(longitudes)
 
@@ -3918,6 +4011,26 @@ def to_xyz(latitudes, longitudes, vstack=True):
 
 
 def to_vtk_mesh(cube, projection=None):
+    """
+    Create the PyVista representation of the unstructured cube mesh.
+
+    Args:
+
+    * cube (Cube):
+        The :class:`~iris.cube.Cube` to be transformed into a
+        :class:`~pyvista.core.pointset.PolyData`.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the
+        unstructured cube mesh is rendered in a 3D. The default is ``None``.
+
+    Returns:
+        The :class:`~pyvista.core.pointset.PolyData`.
+
+    """
     if not hasattr(cube, "mesh"):
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
@@ -3929,27 +4042,36 @@ def to_vtk_mesh(cube, projection=None):
         )
         raise ValueError(emsg)
 
+    # replace any masks with NaNs
     data = cube.data
     mask = data.mask
     data = data.data
     data[mask] = np.nan
 
+    # retrieve the mesh topology and connectivity
     face_node = cube.mesh.face_node_connectivity
     indices = face_node.indices - face_node.start_index
     coord_x, coord_y = cube.mesh.node_coords
 
+    # TBD: consider masked coordinate points
     node_x = coord_x.points.data
     node_y = coord_y.points.data
 
-    # Determine the unstructured dimension (udim) of the cube.
+    # determine the unstructured dimension (udim) of the cube.
     (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
 
     if projection is None:
+        # convert lat/lon to geocentric xyz
         xyz = to_xyz(node_y, node_x, vstack=False)
     else:
+        # convert lat/lon to planar xy0
+        # TBD: deal with mesh splitting for +lon_0
+        # TBD: deal with full PROJ4 string
         slicer = [slice(None)] * cube.ndim
         node_z = np.zeros_like(node_y)
+        # simple approach to [-180..180]
         node_x[node_x > 180] -= 360
+        # remove troublesome cells that span seam
         no_wrap = node_x[indices].ptp(axis=-1) < 180
         indices = indices[no_wrap]
         slicer[udim] = no_wrap
@@ -3958,6 +4080,9 @@ def to_vtk_mesh(cube, projection=None):
 
     vertices = np.vstack(xyz).T
 
+    # create connectivity face serialisation i.e., for each quad-mesh face
+    # we have (4, C1, C2, C3, C4), where 4 is the number of connectivity
+    # indices, followed by the four indices participating in the face.
     N_faces, N_nodes = indices.shape
     faces = np.hstack(
         [
@@ -3966,14 +4091,18 @@ def to_vtk_mesh(cube, projection=None):
         ]
     )
 
+    # create the mesh
     mesh = pv.PolyData(vertices, faces, n_faces=N_faces)
 
+    # add the cube data payload to the mesh as a named "scalar" array
+    # based on the location
     if cube.ndim == 1:
         mesh.cell_arrays[cube.location] = data
     else:
         # Determine the structured dimension (sdim) of the cube.
         sdim = 1 - udim
 
+        # add the cache of structured dimension data slices to the mesh
         for dim in range(cube.shape[sdim] - 1, -1, -1):
             slicer = [slice(None)] * cube.ndim
             slicer[sdim] = dim
@@ -3981,6 +4110,7 @@ def to_vtk_mesh(cube, projection=None):
 
         mesh.cell_arrays[cube.location] = data[tuple(slicer)]
 
+    # perform the PROJ4 projection of the mesh, if appropriate
     if projection is not None:
         vtk_projection = vtkPolyDataTransformFilter(projection)
         mesh = vtk_projection.transform(mesh)
@@ -3997,6 +4127,54 @@ def plot(
     plotter=None,
     **kwargs,
 ):
+    """
+    Plot the cube unstructured mesh using PyVista.
+
+    The cube may be either a 1D or a 2D unstructured mesh. For 2D cubes, a
+    slider widget is rendered for the structured cube dimension to allow
+    visualisation of the unstructured slices.
+
+    Args:
+
+    * cube (Cube):
+        The :class:`~iris.cube.Cube` to be rendered.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    * resolution (None or str):
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
+        The default is ``110m``.
+
+    * threshold (None or float or sequence):
+        Apply a :class:`~pyvista.core.DataSetFilters.threshold`. Single value or
+        (min, max) to be used for the data threshold. If a sequence, then length
+        must be 2. If ``None``, the non-NaN data range will be used to remove any
+        NaN values. Default is ``None``.
+
+    * invert (bool):
+        Invert the nature of the ``threshold``. If ``threshold`` is a single value,
+        then when invert is ``True`` cells are kept when their values are below
+        parameter ``threshold``. When ``invert`` is ``False`` cells are kept when
+        their value is above the ``threshold``. Default is ``False``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If ``None``, a plotter object will be created. Default is None.
+
+    * kwargs (dict):
+        Additional ``kwargs`` to be passed to PyVista when creating
+        :class:`~pyvista.core.pointset.PolyData`.
+
+    Returns:
+        The :class:`~pyvista.plotting.plotting.Plotter`.
+
+    """
     global VTK_SLIDER_CALLBACK
 
     if not hasattr(cube, "mesh"):
@@ -4019,6 +4197,9 @@ def plot(
     location = cube.location
     mesh = to_vtk_mesh(cube, projection=projection)
 
+    #
+    # threshold the mesh, if appropriate
+    #
     if isinstance(threshold, bool) and threshold:
         mesh = mesh.threshold(invert=invert)
     elif not isinstance(threshold, bool):
@@ -4035,7 +4216,7 @@ def plot(
     )
 
     #
-    # scalar bar
+    # scalar bar title
     #
     def namify(name):
         name = (
@@ -4053,13 +4234,18 @@ def plot(
         units = str(cube.units)
         plotter.scalar_bar.SetTitle(f"{name} / {units}")
 
+    #
+    # position the camera on the scene
+    #
     if projection is not None:
+        # planar projection camera position
         cpos = [
-            (93959.85410932079, 0.0, 48025410.22774371),
+            (93959.85410932079, 0.0, 55805210.47284255),
             (93959.85410932079, 0.0, 0.0),
             (0.0, 1.0, 0.0),
         ]
     else:
+        # 3D spherical camera position
         cpos = [
             (2.714657273413018, 0.0, 0.0),
             (0.0, 0.0, 0.0),
@@ -4087,7 +4273,7 @@ def plot(
         )
 
     #
-    # cell picking
+    # configure mesh cell picking
     #
     units = (
         "" if cube.units == Unit("1") or cube.units == Unit("") else cube.units
@@ -4116,7 +4302,7 @@ def plot(
     )
 
     #
-    # slider for structured dimension (if available)
+    # slider for structured dimension, if appropriate
     #
     if cube.ndim == 2:
 
@@ -4125,6 +4311,7 @@ def plot(
 
             slider = int(slider)
 
+            # only update if the slider value is different
             if slider != VTK_SLIDER_CALLBACK["value"]:
                 sunits = VTK_SLIDER_CALLBACK["sunits"]
                 scoord = VTK_SLIDER_CALLBACK["scoord"]
