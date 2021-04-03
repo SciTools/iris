@@ -141,7 +141,10 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
 
     """
     if plotter is None:
-        plotter = pv.plotter()
+        if is_notebook():
+            plotter = pv.PlotterITK()
+        else:
+            plotter = pv.plotter()
 
     if not kwargs:
         kwargs = dict(color="black")
@@ -236,6 +239,25 @@ def get_coastlines(resolution="110m", geocentric=False):
     return blocks
 
 
+def is_notebook():
+    """
+    Determine whether we are executing within an ``IPython`` kernel.
+
+    Returns:
+        Boolean.
+
+    """
+    result = True
+    try:
+        from IPython import get_ipython
+
+        ip = get_ipython()
+        ip.kernel
+    except (AttributeError, ModuleNotFoundError):
+        result = False
+    return result
+
+
 def plot(
     cube,
     projection=None,
@@ -302,9 +324,12 @@ def plot(
         raise TypeError(emsg)
 
     if plotter is None:
-        plotter = pv.Plotter()
+        if is_notebook():
+            plotter = pv.PlotterITK()
+        else:
+            plotter = pv.Plotter()
 
-    if not kwargs:
+    if not is_notebook() and not kwargs:
         kwargs = dict(
             cmap="balance",
             specular=0.5,
@@ -329,34 +354,205 @@ def plot(
             if "annotations" not in kwargs:
                 kwargs["annotations"] = annotations
 
-    # add unique cell index values to each cell
-    mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
+    if not is_notebook():
+        # add unique cell index values to each cell
+        mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
 
     plotter.add_mesh(mesh, scalars=location, **kwargs)
 
-    add_coastlines(
-        resolution=resolution, projection=projection, plotter=plotter
-    )
-
-    #
-    # scalar bar title
-    #
-    def namify(item):
-        name = item.name()
-        name = (
-            " ".join([part.capitalize() for part in name.split("_")])
-            if name
-            else "Unknown"
+    if not is_notebook():
+        add_coastlines(
+            resolution=resolution, projection=projection, plotter=plotter
         )
-        return name
 
-    if (
-        "scalar_bar_args" not in kwargs
-        or "title" not in kwargs["scalar_bar_args"]
-    ):
-        name = namify(cube)
-        units = str(cube.units)
-        plotter.scalar_bar.SetTitle(f"{name} / {units}")
+        #
+        # scalar bar title
+        #
+        def namify(item):
+            name = item.name()
+            name = (
+                " ".join([part.capitalize() for part in name.split("_")])
+                if name
+                else "Unknown"
+            )
+            return name
+
+        if (
+            "scalar_bar_args" not in kwargs
+            or "title" not in kwargs["scalar_bar_args"]
+        ):
+            name = namify(cube)
+            units = str(cube.units)
+            plotter.scalar_bar.SetTitle(f"{name} / {units}")
+
+        #
+        # text actor for time
+        #
+        when = None
+        coords = cube.coords("time", dimensions=())
+        if coords:
+            (coord,) = coords
+            when = f"Time@{coord.units.num2date(coord.points[0])}"
+
+        coords = cube.coords("forecast_period", dimensions=())
+        if coords:
+            (coord,) = coords
+            if coord.points[0]:
+                when = f"{when} ({coord.points[0]} {coord.units})"
+
+        if when:
+            plotter.add_text(
+                when,
+                shadow=True,
+                position="upper_left",
+                font_size=8,
+                name="when",
+            )
+
+        #
+        # configure mesh cell picking
+        #
+        units = (
+            ""
+            if cube.units == Unit("1") or cube.units == Unit("")
+            else cube.units
+        )
+
+        def picking_callback(mesh):
+            global VTK_PICKER_CALLBACK
+
+            if mesh is not None:
+                text = ""
+
+                if hasattr(mesh, "cell_arrays"):
+                    # cache the cell IDs of the cells that have been picked
+                    VTK_PICKER_CALLBACK["cids"] = np.asarray(
+                        mesh.cell_arrays["cids"]
+                    )
+                    # get the location values
+                    values = mesh.cell_arrays[location]
+                else:
+                    # the mesh is the cell values
+                    values = mesh
+
+                if values.size == 1:
+                    if not np.isnan(values[0]):
+                        name = namify(cube)
+                        name = "Cell" if name == "Unknown" else name
+                        text = f"{name} = {values[0]:.2f}{units}"
+                else:
+                    min, max, mean = (
+                        np.nanmin(values),
+                        np.nanmax(values),
+                        np.nanmean(values),
+                    )
+
+                    def textify(arg):
+                        return (
+                            f"{arg}" if np.isnan(arg) else f"{arg:.2f}{units}"
+                        )
+
+                    tmin, tmax, tmean = (
+                        textify(min),
+                        textify(max),
+                        textify(mean),
+                    )
+                    text = f"nCells: {values.size}, Min: {tmin}, Max: {tmax}, Mean: {tmean}"
+
+                if "actor" not in VTK_PICKER_CALLBACK:
+                    VTK_PICKER_CALLBACK["actor"] = plotter.add_text(
+                        text,
+                        position="lower_left",
+                        font_size=10,
+                        shadow=True,
+                        name="cell-picking",
+                    )
+                else:
+                    # lower_left=0, lower_right=1, upper_left=2, upper_right=3,
+                    # lower_edge=4, right_edge=5, left_edge=6, upper_edge=7
+                    # see https://vtk.org/doc/nightly/html/classvtkCornerAnnotation.html
+                    VTK_PICKER_CALLBACK["actor"].SetText(0, text)
+
+        VTK_PICKER_CALLBACK["callback"] = picking_callback
+        plotter.enable_cell_picking(
+            through=False,
+            show_message=False,
+            style="points",
+            render_points_as_spheres=True,
+            line_width=5,
+            callback=picking_callback,
+        )
+
+        #
+        # slider for structured dimension, if appropriate
+        #
+        if cube.ndim == 2:
+
+            def slider_callback(slider, actor):
+                global VTK_SLIDER_CALLBACK
+                global VTK_PICKER_CALLBACK
+
+                slider = int(slider)
+
+                # only update if the slider value is different
+                if slider != VTK_SLIDER_CALLBACK["value"]:
+                    sunits = VTK_SLIDER_CALLBACK["sunits"]
+                    scoord = VTK_SLIDER_CALLBACK["scoord"]
+                    location = VTK_SLIDER_CALLBACK["location"]
+                    smesh = VTK_SLIDER_CALLBACK["mesh"]
+                    if sunits:
+                        slabel = f"{sunits.num2date(scoord[slider])}"
+                        actor.GetSliderRepresentation().SetLabelFormat(slabel)
+                    smesh.cell_arrays[location] = smesh.cell_arrays[
+                        f"{location}_{slider}"
+                    ]
+                    VTK_SLIDER_CALLBACK["value"] = slider
+
+                    # refresh the picker, if available
+                    if "cids" in VTK_PICKER_CALLBACK:
+                        # get the caches cell IDs of the picked cells
+                        cids = VTK_PICKER_CALLBACK["cids"]
+                        # get the associated pick cell values
+                        picked = smesh.cell_arrays[location][cids]
+                        # deal with the single scalar cell case
+                        picked = np.array(picked, ndmin=1)
+                        # emulate a pick event to refresh
+                        VTK_PICKER_CALLBACK["callback"](picked)
+
+            value = 0
+            (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
+            sdim = 1 - udim
+            scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
+
+            if scoord:
+                stitle = namify(scoord[0])
+                sunits = scoord[0].units
+                scoord = scoord[0].points
+            else:
+                sunits = stitle = ""
+                scoord = np.arange(cube.shape[sdim])
+
+            VTK_SLIDER_CALLBACK["value"] = value
+            VTK_SLIDER_CALLBACK["sunits"] = sunits
+            VTK_SLIDER_CALLBACK["scoord"] = scoord
+            VTK_SLIDER_CALLBACK["location"] = location
+            VTK_SLIDER_CALLBACK["mesh"] = mesh
+
+            slabel = f"{sunits.num2date(scoord[value])}" if sunits else ""
+            srange = (0, cube.shape[sdim] - 1)
+
+            plotter.add_slider_widget(
+                slider_callback,
+                srange,
+                value=value,
+                title=stitle,
+                event_type="always",
+                pass_widget=True,
+                style="modern",
+                fmt=slabel,
+            )
+
+        plotter.show_axes()
 
     #
     # position the camera on the scene
@@ -376,162 +572,6 @@ def plot(
             (0.0, 0.0, 1.0),
         ]
 
-    #
-    # text actor for time
-    #
-    when = None
-    coords = cube.coords("time", dimensions=())
-    if coords:
-        (coord,) = coords
-        when = f"Time@{coord.units.num2date(coord.points[0])}"
-
-    coords = cube.coords("forecast_period", dimensions=())
-    if coords:
-        (coord,) = coords
-        if coord.points[0]:
-            when = f"{when} ({coord.points[0]} {coord.units})"
-
-    if when:
-        plotter.add_text(
-            when, shadow=True, position="upper_left", font_size=8, name="when"
-        )
-
-    #
-    # configure mesh cell picking
-    #
-    units = (
-        "" if cube.units == Unit("1") or cube.units == Unit("") else cube.units
-    )
-
-    def picking_callback(mesh):
-        global VTK_PICKER_CALLBACK
-
-        if mesh is not None:
-            text = ""
-
-            if hasattr(mesh, "cell_arrays"):
-                # cache the cell IDs of the cells that have been picked
-                VTK_PICKER_CALLBACK["cids"] = np.asarray(
-                    mesh.cell_arrays["cids"]
-                )
-                # get the location values
-                values = mesh.cell_arrays[location]
-            else:
-                # the mesh is the cell values
-                values = mesh
-
-            if values.size == 1:
-                if not np.isnan(values[0]):
-                    name = namify(cube)
-                    name = "Cell" if name == "Unknown" else name
-                    text = f"{name} = {values[0]:.2f}{units}"
-            else:
-                min, max, mean = (
-                    np.nanmin(values),
-                    np.nanmax(values),
-                    np.nanmean(values),
-                )
-
-                def textify(arg):
-                    return f"{arg}" if np.isnan(arg) else f"{arg:.2f}{units}"
-
-                tmin, tmax, tmean = textify(min), textify(max), textify(mean)
-                text = f"nCells: {values.size}, Min: {tmin}, Max: {tmax}, Mean: {tmean}"
-
-            if "actor" not in VTK_PICKER_CALLBACK:
-                VTK_PICKER_CALLBACK["actor"] = plotter.add_text(
-                    text,
-                    position="lower_left",
-                    font_size=10,
-                    shadow=True,
-                    name="cell-picking",
-                )
-            else:
-                # lower_left=0, lower_right=1, upper_left=2, upper_right=3,
-                # lower_edge=4, right_edge=5, left_edge=6, upper_edge=7
-                # see https://vtk.org/doc/nightly/html/classvtkCornerAnnotation.html
-                VTK_PICKER_CALLBACK["actor"].SetText(0, text)
-
-    VTK_PICKER_CALLBACK["callback"] = picking_callback
-    plotter.enable_cell_picking(
-        through=False,
-        show_message=False,
-        style="points",
-        render_points_as_spheres=True,
-        line_width=5,
-        callback=picking_callback,
-    )
-
-    #
-    # slider for structured dimension, if appropriate
-    #
-    if cube.ndim == 2:
-
-        def slider_callback(slider, actor):
-            global VTK_SLIDER_CALLBACK
-            global VTK_PICKER_CALLBACK
-
-            slider = int(slider)
-
-            # only update if the slider value is different
-            if slider != VTK_SLIDER_CALLBACK["value"]:
-                sunits = VTK_SLIDER_CALLBACK["sunits"]
-                scoord = VTK_SLIDER_CALLBACK["scoord"]
-                location = VTK_SLIDER_CALLBACK["location"]
-                smesh = VTK_SLIDER_CALLBACK["mesh"]
-                if sunits:
-                    slabel = f"{sunits.num2date(scoord[slider])}"
-                    actor.GetSliderRepresentation().SetLabelFormat(slabel)
-                smesh.cell_arrays[location] = smesh.cell_arrays[
-                    f"{location}_{slider}"
-                ]
-                VTK_SLIDER_CALLBACK["value"] = slider
-
-                # refresh the picker, if available
-                if "cids" in VTK_PICKER_CALLBACK:
-                    # get the caches cell IDs of the picked cells
-                    cids = VTK_PICKER_CALLBACK["cids"]
-                    # get the associated pick cell values
-                    picked = smesh.cell_arrays[location][cids]
-                    # deal with the single scalar cell case
-                    picked = np.array(picked, ndmin=1)
-                    # emulate a pick event to refresh
-                    VTK_PICKER_CALLBACK["callback"](picked)
-
-        value = 0
-        (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
-        sdim = 1 - udim
-        scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
-
-        if scoord:
-            stitle = namify(scoord[0])
-            sunits = scoord[0].units
-            scoord = scoord[0].points
-        else:
-            sunits = stitle = ""
-            scoord = np.arange(cube.shape[sdim])
-
-        VTK_SLIDER_CALLBACK["value"] = value
-        VTK_SLIDER_CALLBACK["sunits"] = sunits
-        VTK_SLIDER_CALLBACK["scoord"] = scoord
-        VTK_SLIDER_CALLBACK["location"] = location
-        VTK_SLIDER_CALLBACK["mesh"] = mesh
-
-        slabel = f"{sunits.num2date(scoord[value])}" if sunits else ""
-        srange = (0, cube.shape[sdim] - 1)
-
-        plotter.add_slider_widget(
-            slider_callback,
-            srange,
-            value=value,
-            title=stitle,
-            event_type="always",
-            pass_widget=True,
-            style="modern",
-            fmt=slabel,
-        )
-
-    plotter.show_axes()
     plotter.camera_position = cpos
 
     return plotter
