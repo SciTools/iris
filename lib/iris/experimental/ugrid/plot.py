@@ -5,12 +5,15 @@
 # licensing details.
 
 """
-Plotting support for unstructured meshes with pyvista.
+Plotting support for unstructured meshes using PyVista.
+
+See https://docs.pyvista.org/index.html
 
 """
 
 from collections.abc import Iterable
 from functools import lru_cache
+import warnings
 
 import cartopy.io.shapereader as shp
 from cartopy.io.shapereader import Record
@@ -31,17 +34,63 @@ __all__ = [
     "to_xyz",
 ]
 
-# default to an s2 unit sphere.
+# default to an s2 unit sphere
 RADIUS = 1.0
 
-# VTK cell picker callback hook that requires global context
+# vtk cell picker callback hook that requires global context
 VTK_PICKER_CALLBACK = dict()
 
-# VTK slider widget callback hook that requires global context
+# vtk slider widget callback hook that requires global context
 VTK_SLIDER_CALLBACK = dict()
 
+# vtk text actor position lookup that requires global context
+# see https://vtk.org/doc/nightly/html/classvtkCornerAnnotation.html
+VTK_TEXT_POSITIONS = [
+    "lower_left",
+    "lower_right",
+    "upper_left",
+    "upper_right",
+    "lower_edge",
+    "right_edge",
+    "left_edge",
+    "upper_edge",
+]
+VTK_POSITIONS_LUT = dict(
+    list(zip(VTK_TEXT_POSITIONS, range(len(VTK_TEXT_POSITIONS))))
+)
 
-# Configure the logger.
+# plotting defaults
+rcParams = {
+    "add_coastlines": {
+        "color": "black",
+    },
+    "add_slider_widget": {
+        "style": "modern",
+        "pointa": (0.73, 0.9),
+        "pointb": (0.93, 0.9),
+    },
+    "cell_picking": {
+        "style": "points",
+        "render_points_as_spheres": True,
+        "point_size": 6,
+        "show_message": False,
+        "font_size": 10,
+    },
+    "cell_picking_text": {
+        "position": "lower_left",
+        "font_size": 10,
+        "shadow": True,
+    },
+    "plot": {
+        "cmap": "balance",
+        "scalar_bar_args": {"nan_annotation": True, "shadow": True},
+        "show_edges": False,
+        "edge_color": "black",
+        "specular": 0.5,
+    },
+}
+
+# configure the logger
 logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 
@@ -146,8 +195,11 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
         else:
             plotter = pv.plotter()
 
-    if not kwargs:
-        kwargs = dict(color="black")
+    defaults = rcParams.get("add_coastlines", {})
+
+    for k, v in defaults.items():
+        if k not in kwargs:
+            kwargs[k] = v
 
     if resolution is not None:
         geocentric = projection is None
@@ -160,7 +212,7 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
             ]
 
         for coastline in coastlines:
-            plotter.add_mesh(coastline, **kwargs)
+            plotter.add_mesh(coastline, pickable=False, **kwargs)
 
     return plotter
 
@@ -264,6 +316,8 @@ def plot(
     resolution="110m",
     threshold=False,
     invert=False,
+    location=True,
+    pickable=True,
     plotter=None,
     **kwargs,
 ):
@@ -292,17 +346,24 @@ def plot(
         ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
         The default is ``110m``.
 
-    * threshold (None or float or sequence):
+    * threshold (bool or float or sequence):
         Apply a :class:`~pyvista.core.DataSetFilters.threshold`. Single value or
         (min, max) to be used for the data threshold. If a sequence, then length
-        must be 2. If ``None``, the non-NaN data range will be used to remove any
-        NaN values. Default is ``None``.
+        must be 2. If ``True``, the non-NaN data range will be used to remove any
+        NaN values. Default is ``False``.
 
     * invert (bool):
         Invert the nature of the ``threshold``. If ``threshold`` is a single value,
         then when invert is ``True`` cells are kept when their values are below
         parameter ``threshold``. When ``invert`` is ``False`` cells are kept when
         their value is above the ``threshold``. Default is ``False``.
+
+    * location (bool):
+        Specify whether to add a cell array to the mesh containing the ``location``
+        data associated with the unstructured cube. Default is ``True``.
+
+    * pickable (bool):
+        Specify whether to enable mesh cell picking. Default is ``True``.
 
     * plotter (None or Plotter):
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
@@ -323,44 +384,48 @@ def plot(
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
+    if not location:
+        pickable = location
+
     if plotter is None:
         if is_notebook():
             plotter = pv.PlotterITK()
         else:
             plotter = pv.Plotter()
 
-    if not is_notebook() and not kwargs:
-        kwargs = dict(
-            cmap="balance",
-            specular=0.5,
-            show_edges=False,
-            edge_color="black",
-            line_width=0.5,
-            scalar_bar_args=dict(nan_annotation=True, shadow=True),
-        )
+    if not is_notebook():
+        defaults = rcParams.get("plot", {})
 
-    location = cube.location
-    mesh = to_vtk_mesh(cube, projection=projection)
+        for k, v in defaults.items():
+            if k not in kwargs:
+                kwargs[k] = v
+
+    mesh = to_vtk_mesh(cube, projection=projection, location=location)
 
     #
     # threshold the mesh, if appropriate
     #
     if isinstance(threshold, bool) and threshold:
-        mesh = mesh.threshold(invert=invert)
+        mesh = mesh.threshold(scalars=cube.location, invert=invert)
     elif not isinstance(threshold, bool):
-        mesh = mesh.threshold(threshold, invert=invert)
+        mesh = mesh.threshold(threshold, scalars=cube.location, invert=invert)
         if isinstance(threshold, (np.ndarray, Iterable)):
             annotations = {threshold[0]: "Lower", threshold[1]: "Upper"}
             if "annotations" not in kwargs:
                 kwargs["annotations"] = annotations
 
-    if not is_notebook():
+    if location and pickable and not is_notebook():
         # add unique cell index values to each cell
         mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
 
-    plotter.add_mesh(mesh, scalars=location, **kwargs)
+    if location:
+        plotter.add_mesh(
+            mesh, scalars=cube.location, pickable=pickable, **kwargs
+        )
+    else:
+        plotter.add_mesh(mesh, pickable=pickable, **kwargs)
 
-    if not is_notebook():
+    if location and not is_notebook():
         add_coastlines(
             resolution=resolution, projection=projection, plotter=plotter
         )
@@ -412,76 +477,85 @@ def plot(
         #
         # configure mesh cell picking
         #
-        units = (
-            ""
-            if cube.units == Unit("1") or cube.units == Unit("")
-            else cube.units
-        )
+        if pickable:
+            units = (
+                ""
+                if cube.units == Unit("1") or cube.units == Unit("")
+                else cube.units
+            )
 
-        def picking_callback(mesh):
-            global VTK_PICKER_CALLBACK
+            def picking_callback(mesh):
+                global VTK_PICKER_CALLBACK
+                global rcParams
 
-            if mesh is not None:
-                text = ""
+                if mesh is not None:
+                    text = ""
 
-                if hasattr(mesh, "cell_arrays"):
-                    # cache the cell IDs of the cells that have been picked
-                    VTK_PICKER_CALLBACK["cids"] = np.asarray(
-                        mesh.cell_arrays["cids"]
-                    )
-                    # get the location values
-                    values = mesh.cell_arrays[location]
-                else:
-                    # the mesh is the cell values
-                    values = mesh
-
-                if values.size == 1:
-                    if not np.isnan(values[0]):
-                        name = namify(cube)
-                        name = "Cell" if name == "Unknown" else name
-                        text = f"{name} = {values[0]:.2f}{units}"
-                else:
-                    min, max, mean = (
-                        np.nanmin(values),
-                        np.nanmax(values),
-                        np.nanmean(values),
-                    )
-
-                    def textify(arg):
-                        return (
-                            f"{arg}" if np.isnan(arg) else f"{arg:.2f}{units}"
+                    if hasattr(mesh, "cell_arrays"):
+                        # cache the cell IDs of the cells that have been picked
+                        VTK_PICKER_CALLBACK["cids"] = np.asarray(
+                            mesh.cell_arrays["cids"]
                         )
+                        # get the location values
+                        values = mesh.cell_arrays[
+                            VTK_PICKER_CALLBACK["location"]
+                        ]
+                    else:
+                        # the mesh is the cell values i.e., the slider widget
+                        # is the caller
+                        values = mesh
 
-                    tmin, tmax, tmean = (
-                        textify(min),
-                        textify(max),
-                        textify(mean),
-                    )
-                    text = f"nCells: {values.size}, Min: {tmin}, Max: {tmax}, Mean: {tmean}"
+                    if values.size == 1:
+                        if not np.isnan(values[0]):
+                            name = namify(cube)
+                            name = "Cell" if name == "Unknown" else name
+                            text = f"{name} = {values[0]:.2f}{units}"
+                    else:
+                        with warnings.catch_warnings():
+                            # ignore RuntimeWarning raise by numpy all nan calculations
+                            warnings.simplefilter("ignore")
+                            min, max, mean = (
+                                np.nanmin(values),
+                                np.nanmax(values),
+                                np.nanmean(values),
+                            )
 
-                if "actor" not in VTK_PICKER_CALLBACK:
-                    VTK_PICKER_CALLBACK["actor"] = plotter.add_text(
-                        text,
-                        position="lower_left",
-                        font_size=10,
-                        shadow=True,
-                        name="cell-picking",
-                    )
-                else:
-                    # lower_left=0, lower_right=1, upper_left=2, upper_right=3,
-                    # lower_edge=4, right_edge=5, left_edge=6, upper_edge=7
-                    # see https://vtk.org/doc/nightly/html/classvtkCornerAnnotation.html
-                    VTK_PICKER_CALLBACK["actor"].SetText(0, text)
+                        def textify(arg):
+                            return (
+                                f"{arg}"
+                                if np.isnan(arg)
+                                else f"{arg:.2f}{units}"
+                            )
 
-        VTK_PICKER_CALLBACK["callback"] = picking_callback
-        plotter.enable_cell_picking(
-            through=False,
-            show_message=False,
-            style="points",
-            render_points_as_spheres=True,
-            line_width=5,
-            callback=picking_callback,
-        )
+                        tmin, tmax, tmean = (
+                            textify(min),
+                            textify(max),
+                            textify(mean),
+                        )
+                        text = f"nCells: {values.size}, Min: {tmin}, Max: {tmax}, Mean: {tmean}"
+
+                    defaults = rcParams.get("cell_picking_text", {})
+
+                    if "actor" not in VTK_PICKER_CALLBACK:
+                        VTK_PICKER_CALLBACK["actor"] = plotter.add_text(
+                            text,
+                            name="cell-picking",
+                            **defaults,
+                        )
+                    else:
+                        position = defaults.get("position", "lower_left")
+                        index = VTK_PICKER_CALLBACK["lut"][position]
+                        VTK_PICKER_CALLBACK["actor"].SetText(index, text)
+
+            VTK_PICKER_CALLBACK["location"] = cube.location
+            VTK_PICKER_CALLBACK["lut"] = VTK_POSITIONS_LUT
+            VTK_PICKER_CALLBACK["callback"] = picking_callback
+            defaults = rcParams.get("cell_picking", {})
+            plotter.enable_cell_picking(
+                through=False,
+                callback=picking_callback,
+                **defaults,
+            )
 
         #
         # slider for structured dimension, if appropriate
@@ -535,12 +609,13 @@ def plot(
             VTK_SLIDER_CALLBACK["value"] = value
             VTK_SLIDER_CALLBACK["sunits"] = sunits
             VTK_SLIDER_CALLBACK["scoord"] = scoord
-            VTK_SLIDER_CALLBACK["location"] = location
+            VTK_SLIDER_CALLBACK["location"] = cube.location
             VTK_SLIDER_CALLBACK["mesh"] = mesh
 
             slabel = f"{sunits.num2date(scoord[value])}" if sunits else ""
             srange = (0, cube.shape[sdim] - 1)
 
+            defaults = rcParams.get("add_slider_widget", {})
             plotter.add_slider_widget(
                 slider_callback,
                 srange,
@@ -548,8 +623,8 @@ def plot(
                 title=stitle,
                 event_type="always",
                 pass_widget=True,
-                style="modern",
                 fmt=slabel,
+                **defaults,
             )
 
         plotter.show_axes()
@@ -558,7 +633,7 @@ def plot(
     # position the camera on the scene
     #
     if projection is not None:
-        # planar projection camera position
+        # 2D planar projection camera position
         cpos = [
             (93959.85410932079, 0.0, 55805210.47284255),
             (93959.85410932079, 0.0, 0.0),
@@ -577,7 +652,7 @@ def plot(
     return plotter
 
 
-def to_vtk_mesh(cube, projection=None, cids=False):
+def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     """
     Create the PyVista representation of the unstructured cube mesh.
 
@@ -594,9 +669,14 @@ def to_vtk_mesh(cube, projection=None, cids=False):
         cube mesh into a 2D projection coordinate system. If ``None``, the
         unstructured cube mesh is rendered in a 3D. The default is ``None``.
 
+    * location (bool):
+        Specify whether to add a ``cube.location`` cell array to the mesh
+        containing the ``location`` data associated with the unstructured cube.
+        Default is ``True``.
+
     * cids (bool):
-        Specify whether to add a uniquie cell index value to each cell.
-        Default is ``False``.
+        Specify whether to add a ``cids`` cell array to the mesh containing a
+        unique cell index value to each cell. Default is ``False``.
 
     Returns:
         The :class:`~pyvista.core.pointset.PolyData`.
@@ -632,6 +712,9 @@ def to_vtk_mesh(cube, projection=None, cids=False):
     # determine the unstructured dimension (udim) of the cube.
     udim = cube.mesh_dim()
 
+    # simple approach to [-180..180]
+    node_x[node_x > 180] -= 360
+
     if projection is None:
         # convert lat/lon to geocentric xyz
         xyz = to_xyz(node_y, node_x, vstack=False)
@@ -641,8 +724,6 @@ def to_vtk_mesh(cube, projection=None, cids=False):
         # TBD: deal with full PROJ4 string
         slicer = [slice(None)] * cube.ndim
         node_z = np.zeros_like(node_y)
-        # simple approach to [-180..180]
-        node_x[node_x > 180] -= 360
         # remove troublesome cells that span seam
         no_wrap = node_x[indices].ptp(axis=-1) < 180
         indices = indices[no_wrap]
@@ -667,20 +748,23 @@ def to_vtk_mesh(cube, projection=None, cids=False):
     mesh = pv.PolyData(vertices, faces, n_faces=N_faces)
 
     # add the cube data payload to the mesh as a named "scalar" array
-    # based on the location
-    if cube.ndim == 1:
-        mesh.cell_arrays[cube.location] = data
-    else:
-        # Determine the structured dimension (sdim) of the cube.
-        sdim = 1 - udim
+    # based on the location, if required
+    if location:
+        if cube.ndim == 1:
+            mesh.cell_arrays[cube.location] = data
+        else:
+            # Determine the structured dimension (sdim) of the cube.
+            sdim = 1 - udim
 
-        # add the cache of structured dimension data slices to the mesh
-        for dim in range(cube.shape[sdim] - 1, -1, -1):
-            slicer = [slice(None)] * cube.ndim
-            slicer[sdim] = dim
-            mesh.cell_arrays[f"{cube.location}_{dim}"] = data[tuple(slicer)]
+            # add the cache of structured dimension data slices to the mesh
+            for dim in range(cube.shape[sdim] - 1, -1, -1):
+                slicer = [slice(None)] * cube.ndim
+                slicer[sdim] = dim
+                mesh.cell_arrays[f"{cube.location}_{dim}"] = data[
+                    tuple(slicer)
+                ]
 
-        mesh.cell_arrays[cube.location] = data[tuple(slicer)]
+            mesh.cell_arrays[cube.location] = data[tuple(slicer)]
 
     # add cell index (cids) to each cell, if required
     if cids:
