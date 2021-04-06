@@ -540,6 +540,8 @@ def plot(
                                 np.nanmax(values),
                                 np.nanmean(values),
                             )
+                            nans = np.sum(np.isnan(values))
+                            tnans = f", NaNs: {nans}" if nans else ""
 
                         def textify(arg):
                             return (
@@ -553,7 +555,7 @@ def plot(
                             textify(max),
                             textify(mean),
                         )
-                        text = f"nCells: {values.size}, Min: {tmin}, Max: {tmax}, Mean: {tmean}"
+                        text = f"Min: {tmin}, Max: {tmax}, Mean: {tmean}, nCells: {values.size}{tnans}"
 
                     defaults = rcParams.get("cell_picking_text", {})
 
