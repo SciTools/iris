@@ -689,6 +689,9 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
         The :class:`~pyvista.core.pointset.PolyData`.
 
     """
+    # TBD: deal with generic location of mesh data i.e., support not only face,
+    # but also node and edge.
+
     if not hasattr(cube, "mesh"):
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
@@ -720,6 +723,11 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     udim = cube.mesh_dim()
 
     # simple approach to [-180..180]
+    # TBD: ideally we want meridian mesh ripping and re-joining to deal
+    # correctly with the mesh connectivity and similar functionality
+    # provisioned by iris.analysis.cartography.wrap_lons.
+    # however, we need to be careful of circular imports when the plotting
+    # code is migrated to its own repo e.g., iris-pyvista
     node_x[node_x > 180] -= 360
 
     if projection is None:
