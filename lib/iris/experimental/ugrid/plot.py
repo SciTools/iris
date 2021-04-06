@@ -69,10 +69,14 @@ rcParams = {
         "pointa": (0.73, 0.9),
         "pointb": (0.93, 0.9),
     },
+    "add_title": {
+        "font_size": 12,
+        "shadow": True,
+    },
     "cell_picking": {
         "style": "points",
         "render_points_as_spheres": True,
-        "point_size": 6,
+        "point_size": 5,
         "show_message": False,
         "font_size": 10,
     },
@@ -648,6 +652,9 @@ def plot(
         ]
 
     plotter.camera_position = cpos
+
+    defaults = rcParams.get("add_title", {})
+    plotter.add_title(namify(cube), **defaults)
 
     return plotter
 
