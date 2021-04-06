@@ -89,7 +89,7 @@ rcParams = {
         "scalar_bar_args": {"nan_annotation": True, "shadow": True},
         "show_edges": False,
         "edge_color": "black",
-        "specular": 0.5,
+        "specular": 0,
     },
 }
 
@@ -196,7 +196,7 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
         if is_notebook():
             plotter = pv.PlotterITK()
         else:
-            plotter = pv.plotter()
+            plotter = pv.Plotter()
 
     defaults = rcParams.get("add_coastlines", {})
 
@@ -311,6 +311,31 @@ def is_notebook():
     except (AttributeError, ModuleNotFoundError):
         result = False
     return result
+
+
+def namify(item):
+    """
+    Convenience function that sanitises the name of the provided ``item`` for
+    use as human readable text.
+
+    i.e., replace underscores with spaces, and capitalise.
+
+    Args:
+
+    * name (Coord or Cube):
+        The instance that requires its associated name to be processed.
+
+    Returns:
+        The sanitised name of the instance.
+
+    """
+    name = item.name()
+    name = (
+        " ".join([part.capitalize() for part in name.split("_")])
+        if name
+        else "Unknown"
+    )
+    return name
 
 
 def plot(
@@ -435,16 +460,6 @@ def plot(
 
         #
         # scalar bar title
-        #
-        def namify(item):
-            name = item.name()
-            name = (
-                " ".join([part.capitalize() for part in name.split("_")])
-                if name
-                else "Unknown"
-            )
-            return name
-
         if (
             "scalar_bar_args" not in kwargs
             or "title" not in kwargs["scalar_bar_args"]
@@ -672,8 +687,9 @@ def plot(
 
     plotter.camera_position = cpos
 
-    defaults = rcParams.get("add_title", {})
-    plotter.add_title(namify(cube), **defaults)
+    if location:
+        defaults = rcParams.get("add_title", {})
+        plotter.add_title(namify(cube), **defaults)
 
     return plotter
 
