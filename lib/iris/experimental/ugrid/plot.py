@@ -598,8 +598,7 @@ def plot(
                         VTK_PICKER_CALLBACK["callback"](picked)
 
             value = 0
-            (udim,) = cube.coord_dims(cube.coord(axis="x", mesh_coords=True))
-            sdim = 1 - udim
+            sdim = 1 - cube.mesh_dim()
             scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
 
             if scoord:
