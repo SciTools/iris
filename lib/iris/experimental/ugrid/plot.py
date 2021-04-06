@@ -579,7 +579,10 @@ def plot(
                     location = VTK_SLIDER_CALLBACK["location"]
                     smesh = VTK_SLIDER_CALLBACK["mesh"]
                     if sunits:
-                        slabel = f"{sunits.num2date(scoord[slider])}"
+                        if sunits.is_time_reference():
+                            slabel = f"{sunits.num2date(scoord[slider])}"
+                        else:
+                            slabel = f"{scoord[slider]}{sunits}"
                         actor.GetSliderRepresentation().SetLabelFormat(slabel)
                     smesh.cell_arrays[location] = smesh.cell_arrays[
                         f"{location}_{slider}"
