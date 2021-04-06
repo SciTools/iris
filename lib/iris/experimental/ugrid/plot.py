@@ -17,7 +17,6 @@ import warnings
 
 import cartopy.io.shapereader as shp
 from cartopy.io.shapereader import Record
-from cf_units import Unit
 import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
@@ -461,7 +460,8 @@ def plot(
         coords = cube.coords("time", dimensions=())
         if coords:
             (coord,) = coords
-            when = f"Time@{coord.units.num2date(coord.points[0])}"
+            if coord.units.is_time_reference():
+                when = f"Time@{coord.units.num2date(coord.points[0])}"
 
         coords = cube.coords("forecast_period", dimensions=())
         if coords:
@@ -484,7 +484,9 @@ def plot(
         if pickable:
             units = (
                 ""
-                if cube.units == Unit("1") or cube.units == Unit("")
+                if cube.units.is_unknown()
+                or cube.units.is_no_unit()
+                or cube.units.is_dimensionless()
                 else cube.units
             )
 
@@ -583,7 +585,10 @@ def plot(
                             slabel = f"{sunits.num2date(scoord[slider])}"
                         else:
                             slabel = f"{scoord[slider]}{sunits}"
-                        actor.GetSliderRepresentation().SetLabelFormat(slabel)
+                    else:
+                        slabel = f"{scoord[slider]}"
+
+                    actor.GetSliderRepresentation().SetLabelFormat(slabel)
                     smesh.cell_arrays[location] = smesh.cell_arrays[
                         f"{location}_{slider}"
                     ]
@@ -605,9 +610,15 @@ def plot(
             scoord = cube.coords(dimensions=(sdim,), dim_coords=True)
 
             if scoord:
-                stitle = namify(scoord[0])
-                sunits = scoord[0].units
-                scoord = scoord[0].points
+                scoord = scoord[0]
+                stitle = namify(scoord)
+                nounits = (
+                    scoord.units.is_dimensionless()
+                    or scoord.units.is_no_unit()
+                    or scoord.units.is_dimensionless()
+                )
+                sunits = "" if nounits else scoord.units
+                scoord = scoord.points
             else:
                 sunits = stitle = ""
                 scoord = np.arange(cube.shape[sdim])
@@ -618,7 +629,13 @@ def plot(
             VTK_SLIDER_CALLBACK["location"] = cube.location
             VTK_SLIDER_CALLBACK["mesh"] = mesh
 
-            slabel = f"{sunits.num2date(scoord[value])}" if sunits else ""
+            if sunits:
+                if sunits.is_time_reference():
+                    slabel = f"{sunits.num2date(scoord[value])}"
+                else:
+                    slabel = f"{scoord[value]}{sunits}"
+            else:
+                slabel = f"{scoord[value]}"
             srange = (0, cube.shape[sdim] - 1)
 
             defaults = rcParams.get("add_slider_widget", {})
