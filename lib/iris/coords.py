@@ -809,7 +809,6 @@ class CellMeasure(AncillaryVariable):
         attributes=None,
         measure=None,
     ):
-
         """
         Constructs a single cell measure.
 
@@ -1151,6 +1150,13 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
+
+        if (isinstance(other, list) and len(other) == 1) or (
+            isinstance(other, np.ndarray) and other.shape == (1,)
+        ):
+            other = other[0]
+        if isinstance(other, np.ndarray) and other.shape == ():
+            other = float(other)
         if not (
             isinstance(other, (int, float, np.number, Cell))
             or hasattr(other, "timetuple")
@@ -1315,7 +1321,6 @@ class Coord(_DimensionalMetadata):
         coord_system=None,
         climatological=False,
     ):
-
         """
         Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 
