@@ -210,13 +210,15 @@
     ],
     "iris.tests.test_mapping.TestBoundedCube.test_pcolormesh.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa81e535857e92ca8ec23d21b13ce15e7a811ea5c47e1a5ac17b652d3b05e4f2.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81c17a857e1ea5857e634a7a81cd257e8584da857e3b29817e68f47a81c791.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81c17a857e1ea5857e634a7a81cd257e8584da857e3b29817e68f47a81c791.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81c17a857e1ea5857e734a7a81cd257e8484da857e3b29817a68f47a81c799.png"
     ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_grid.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bf80e2b1c17f1d0ac4f7c8d739a637202749699b6bb3ce3666e4b048944d9d89.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/bf80e2f1c17f1d0ac457c8d619a637213749699b6bb34e3666e4b04e944d9d89.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea05392995bac6d691ce3f21666569d86a96c6360ee195cb91e8ce54953b313b.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea05392995bac6d691ea3f21666569d86a97c6320ee195cb91e8ce559539391b.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea05392995bac6d691ea3f21666569d86a97c6320ee195cb91e8ce559539391b.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa1585e885ea7a1785fa7a157a177a017a1585e817a885ea85e86a1785fa7a17.png"
     ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_outline.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa81857e857e3e80857e7a817a817a817a81817f7a81857e857e857e857e7a81.png",
@@ -226,7 +228,8 @@
     ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_pcolormesh.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bf81e6b1c17e1d4884bfc8df39a43720374969db69b34e26c4e4b0ca904f9d89.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea57396995a8c6d691ea3f25664569d86b16c63686ed958991ea4a549531393b.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea57396995a8c6d691ea3f25664569d86b16c63686ed958991ea4a549531393b.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea57396995a8c6d691ea3e25664569d96b16c63684e9958b91ea4a559431793b.png"
     ],
     "iris.tests.test_mapping.TestLimitedAreaCube.test_scatter.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea053d2e916ac2d9c4d894346b24f3477acf68ad39329ed8c696e136c1ab9a71.png",
@@ -392,7 +395,8 @@
     ],
     "iris.tests.test_plot.TestAttributePositive.test_2d_positive_down.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fb946ba684e194fb901b3a0587641ad03b1ae7674e64c15a5b99c767c47e3a98.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fb946ba484e194dbc01f3665c0e4399a3f0fc2653f90c99e3f613e64c81e3f81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fb946ba484e194dbc01f3665c0e4399a3f0fc2653f90c99e3f613e64c81e3f81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fb966ba6846194dbd01f3665c0e4399a3f1bc2653f90c99e2f613e64c01e3f81.png"
     ],
     "iris.tests.test_plot.TestAttributePositive.test_2d_positive_up.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ee176c7f93e093a0c50f9383815e6e156859e17e6e15e17a9be08e2d851a9b83.png",
@@ -506,7 +510,8 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa816ac1857e853cc17f957ac15f3e849486c8f43e81c13b3f813e91c07e3f46.png"
     ],
     "iris.tests.test_plot.TestMissingCoord.test_no_u.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a954ac17f954a807e3f48951ac07e3e81c0ff7ea16a81c0ff3f81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a954ac17f954a807e3f48951ac07e3e81c0ff7ea16a81c0ff3f81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a954ac17f954ac07e3f44951ac07e3e81c07f7ea16aa1c0ff3e81.png"
     ],
     "iris.tests.test_plot.TestMissingCoord.test_no_u.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea956ab5954a954ac17e954a817f2f60950ac07f3e80c07f7a856aa5c2ff3f80.png"
@@ -585,7 +590,8 @@
     "iris.tests.test_plot.TestPcolormesh.test_ty.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea74c707958b3878958b38f8c7236a557a542c7868d54b877875978abc789722.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea74c707958b387895ab38f8c7236a557a542c7868d54b05787197eabc789722.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea953f83954ac2fc956ac07e956a3509c0de61796ab57a816a854ad16ab590fb.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea953f83954ac2fc956ac07e956a3509c0de61796ab57a816a854ad16ab590fb.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea953f83954ac2bc956ac07e956a3509c0de61796ab57a916a856a916ab590fb.png"
     ],
     "iris.tests.test_plot.TestPcolormesh.test_tz.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e874978b978b6875978b6875978b7854950b78506855787468747ea2687597aa.png",
@@ -597,7 +603,8 @@
     ],
     "iris.tests.test_plot.TestPcolormesh.test_zx.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e85e87a197a1695a97a16d5a97a17d5a97a17806785a7816685a7e86685ad687.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81857e857e6e05857e7a81857e7a81a0577a816a8585fa7a85857e7a81857e.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81857e857e6e05857e7a81857e7a81a0577a816a8585fa7a85857e7a81857e.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa81857e857a7e01857e7a81857e7a81a0577a816a8585fa7a85857e7a85857e.png"
     ],
     "iris.tests.test_plot.TestPcolormesh.test_zy.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/af42c0bdd0ad2f52d0bd3f42d0bd7f02d0bd7f002d527f002f427fa82f42d6a8.png",
@@ -607,7 +614,8 @@
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_tx.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa1594f3858a670c94e37b1cccb13e736a1d84f17a1d94e2c11d938e9463678e.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa1594f3858a670c94e37b1cccb13e736a1d8cf17a1d94e2c11993ae9463678c.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea858782957a703f957a3878957a7a65957e6bc06ae56f806ad50fd06a859c50.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea858782957a703f957a3878957a7a65957e6bc06ae56f806ad50fd06a859c50.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea858782957a703f957a3878957a7a65957a6b806ae56f846ad50fd46a859c50.png"
     ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_ty.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ad5e94a5c3b0c3f096a1695a96a53c1f711b3c0f791b97b46943c3e06c436b5a.png",
@@ -615,7 +623,8 @@
     ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_tz.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/a95e3c1f96a096a5d6a56b40c3f06be2c1c0c3f07c0b3ebe96a13c1e6d5b694a.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fa813e81857e857a857e7a81857e6a85817b00e63eb93e857e81c17e7a81956e.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa813e81857e857a857e7a81857e6a85817b00e63eb93e857e81c17e7a81956e.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa813e81857e857a857e7a81857e6a85817b0aa63e993e857e81c17e7a81956e.png"
     ],
     "iris.tests.test_plot.TestPcolormeshNoBounds.test_yx.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bc7a1c32d3c366cdc785c39986cdc78ec792e7a6960d584939793c3438703873.png",
@@ -669,23 +678,27 @@
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fe8142f5c17ebd2cc16eb548954a9542916a347a915e60bd4afd68793f916296.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853f10956ac5e1957a854e957a203e955e6aa76ae17aa16a856aaf6ab19e12.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853f10956ac5e1957a854e957a203e955e6aa76ae17aa16a856aaf6ab19e12.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853f10957a85e1957a854e957a203e955e6aa76ae17aa16a856a8f6ab1de12.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa8542b7b503b548857abd08857abd09945eed6b91d968c161b972d76aa462b5.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa8542b7b503b548857abd08857abd09945eed6a91d96ac163b972d36aa462b5.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853a85857a857a957a857a957ad05a857b3e946a606b917a816f647a853af4.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853a85857a857a957a857a957ad05a857b3e946a606b917a816f647a853af4.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea853a85957a857a957a857a957ac05ac56b3ac46ae16b817a816f647a853af4.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.2": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/8bf88f457a03b5307e16b561f007b53ed067217ac1786afec0f570bf8178681a.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/8bf98f057a03b5307e16b561f007b53ad067217ac1786afec0f570bf8178685a.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/eafdcec9bc219530b696a56694c2852a95656b7b81986acdc0e516adad186eda.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eafdcec9f4219530b696a56694c3852a95656b7b85986acdc06516adad186e9a.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eafdcec9f4219530b696a56694c3852a95656b7b85986acdc06516adad186e9a.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eafd86c9f8219430fe96a56684c3852e95656b7b85b86acdc0e5162da5186eda.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.3": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/8ffe8f367e05952afe05a50b980ded4bd05d69c2c1fb71c1c06272f4d0a06af4.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/aff24ab7bd05952fbd0f950f914fcd48c47860f3e1b9329094266e345a850f6c.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/aff24ab7fd05952dbd0f950f914fcd40c47868f3e1b9329094266e345a850f6c.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/aff24ab7fd05952dbd0f950f914fcd40c47868f3e1b9329094266e345a850f6c.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/aff21eb6bd04952cbc0f950f914fedc1c0f961f3e1f9329084266e345a850f6c.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.4": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/aa953d0f85fab50fd0f2956a7a1785fafa176877d00f68f1d02c60f2f008d0f0.png",
@@ -693,13 +706,15 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/ebeaa5419e95b5419e97950d6853953ee053617ad05560fad01570fef001dabe.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/ebfaa56f96a1856cd681a56ee8162d52e8467e12c50c7e8095ad7e0095ad03ff.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b5699556854e9456854ed05625f9c0a92bfdc0a90afd81f97e00857e6af6.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b5699556854e9456854ed05625f9d0a92bfdc0a90afd81f97e00855e7ab6.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b5699556854e9456854ed05625f9d0a92bfdc0a90afd81f97e00855e7ab6.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b5299d56854e9156856ed05625fdc0292bfdc0a90afd85b97e00857e6ad6.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_tx.5": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ebfaaf439e87b5019687b5019687b56ac05561fae07103fe6079687a607178f8.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/ebfa2d4b968795059e87970f6854697ae055697ac08561fad041d7aef001d6ae.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/eb7a3e0c978187a4950190bc6856687a607e687bc0fcc1e394acfc0197fc2bfb.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eaf73e0d9503852c950395ac9528c1fad16cc0f2d1ec6af2c0ec6a536a1797f3.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaf73e0d9503852c950395ac9528c1fad16cc0f2d1ec6af2c0ec6a536a1797f3.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaf73e0c9402952c950195acd528c1fac1ecc1f3c1ec63f3c0ec6a536a179ff2.png"
     ],
     "iris.tests.test_plot.TestPlotCoordinatesGiven.test_x.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/aeb8b5095a87cd60386592d9ec97ad6dd23ca4f6d0797827f0096216c1f878e6.png",
@@ -807,7 +822,8 @@
     ],
     "iris.tests.test_plot.TestPlotOtherCoordSystems.test_plot_tmerc.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e63399cd99cd64b29999335965369b262649c98c9b3966c6998d3319ccd69333.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/e665326d999ecc9b3319b3246666cce69b496cccccc9669923193336666699a6.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e665326d999ecc9b3319b3246666cce69b496cccccc9669923193336666699a6.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e665326d999acc9b3319b3246666cce69b496cccccc966996719333666669986.png"
     ],
     "iris.tests.test_plot.TestQuickplotPlot.test_t.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/83ffb5d67fd4e5962211d9c6a443da77d5389c8ed346d923d011d968dc00da48.png",
@@ -834,10 +850,12 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/a3ffc1de7e009c7030019786f438cde3810fd93c9b734a778ce47c9799b02731.png"
     ],
     "iris.tests.test_plot.TestSimple.test_bounds.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a85954a957ac17e954ac17a9c3e956ac07e3e80c07f3e857aa5c27d3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a85954a957ac17e954ac17a9c3e956ac07e3e80c07f3e857aa5c27d3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a85954a957ac17e954ac17a9d22956ac0fe3e81c07f3e857aa5c27d3f80.png"
     ],
     "iris.tests.test_plot.TestSimple.test_points.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e1ca2950bc07e3e80c07f3e807a85c1ff3f81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e1ca2950bc07e3e80c07f3e807a85c1ff3f81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e0da2954bc07e3e81c07f3a806a85c1ff3f81.png"
     ],
     "iris.tests.test_plot.TestSymbols.test_cloud_cover.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/e95a330c96a5ccf2695a330c96a5ccf2695a330c96b5ccf3694a330c96b5ccf3.png",
@@ -848,33 +866,40 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa95350f952ad2f0c1f66ac1c55a4af4e550a52b3e05905e1e419e6f937e3b21.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa95350f952ad3f0c1f66a81e55a4af4e550a52b3e05905e1e419e6f937e1b21.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/be8137f4954ac03fc0ff3e81d03f496a6d00b4af3ea0c07f6fa232c0db7f2d00.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/be813fe0954ac07fc0ff3e81c03fc97a6d0094af3f80c17f36a53240d97f2d82.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be813fe0954ac07fc0ff3e81c03fc97a6d0094af3f80c17f36a53240d97f2d82.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be8137e0954ac05fc0ff3e81c07fc97a6d0094af3fa0c17f36a53244d97e2da0.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contour.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/a3fd956a7a01a5ee321fc96666919b6ec15fdca593600d2586785a259dfa5a01.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/a3fd956a7a01a5ee3217c9e66691996ec15fdca593680d2586785a259dfa5a01.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/a7fd95da7a01654a3217c962e4819a56c96f3c8593624da584da3b658db662db.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/a7fd955a7a016d1a3217c962e4819a56c96f3c859b624d2584de3a6999b662db.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7fd955a7a016d1a3217c962e4819a56c96f3c859b624d2584de3a6999b662db.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a3fd95ea6a11258c3217c966e4019a56c96f3c859b62492584fe7a699db46adb.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contour.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/faa12bc1954ef43fc0bf9f02854a4ee48548c17a5ab5c17e7a0d7875a17e3a81.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802f85c17fc17fc07eb42ac07f3f929130c07e3f80c07f7aa02e85c07f3e81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802f85c17fc17fc07eb42ac07f3f929130c07e3f80c07f7aa02e85c07f3e81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802e85c07fc17fc07eb42ac17f3f829161c06e3f81c07f7ba02e85c07f3e81.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fe812f88957a955a857a9257c17f7aa5c03dc0bf5a85c07e7f402d40a57a3f01.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/be816a95957a957ac0fe1e8bc07f7f806e01c07f3f80c07f3fa23f00c07f3d00.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816a95957a957ac0fe1e8bc07f7f806e01c07f3f80c07f3fa23f00c07f3d00.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816a85957a955ac0ff1e8bc07f7f806e01c07f3f80c07f3fa23f80c07f3d00.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/faa12bc1954ef43fc0bf9f02854a4ee48548c17a5ab5c17e7a0d7875a17e3a81.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802f85c17fc17fc07eb42ac07f3f929130c07e3f80c07f7aa02e85c07f3e81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802f85c17fc17fc07eb42ac07f3f929130c07e3f80c07f7aa02e85c07f3e81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/bf802e85c07fc17fc07eb42ac17f3f829161c06e3f81c07f7ba02e85c07f3e81.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contourf.2": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa852f81955ac532c0bf9e89c57edae69357e13f4ea0c05a3f8561a4935a3e01.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/be816a95907ae508c17e955ac07f3fa0945bc07f3f80c07f3aa36f01c0ff3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816a95907ae508c17e955ac07f3fa0945bc07f3f80c07f3aa36f01c0ff3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816ab5907ae508c17e955ac07f3fa0945ac07f3f80c07f3aa32f81c0ff3f80.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_contourf_nameless.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/faa52ec1955ac536c0bf9e09c57edae69357e13f4e80c0da2f81618493da3f01.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/be816af5907ee508c17e955ac03f3f809419c07f3f80c07f3a8b6f81c0ff3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816af5907ee508c17e955ac03f3f809419c07f3f80c07f3a8b6f81c0ff3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/be816ab5907ee508c17e975ac07f3fa09459c07f3f80c07f3a812f81c0ff3f80.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_map.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ea5e618434ac36e5c1c9369b95b39c38c3a39a4fcee19a6e9b64cb609925cd25.png",
@@ -890,36 +915,45 @@
     ],
     "iris.tests.test_quickplot.TestLabels.test_pcolor.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bb423d4e94a5c6b9c15adaadc1fb6a469c8de43a3e07904e5f016b57984e1ea1.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f2f81c07e3fa12da1c2fe3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f2f81c07e3fa12da1c2fe3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16abfc05ab500956e974ac13f3da0925ac07f3fa1c07e3fa12da1c25e3f80.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_pcolormesh.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bb433d4e94a4c6b9c15adaadc1fb6a469c8de43a3e07904e5f016b57984e1ea1.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f81c07e3fa12da1c27e3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f81c07e3fa12da1c27e3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16abfc05ab500956e974ac13f3da0925ac07f3fa1c07e3fa12da1c25e3f80.png"
     ],
     "iris.tests.test_quickplot.TestLabels.test_pcolormesh_str_symbol.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f80c07e3fa12da1c27f3f80.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16affc05ab500956e974ac53f3d80925ac03f3f80c07e3fa12da1c27f3f80.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eea16abfc05ab500956e974ac13f3da0925ac07f3fa1c07e3fa12da1c25e3f80.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_non_cube_coordinate.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa816a85857a955ae17e957ec57e7a81855fc17e3a81c57e1a813a85c57a1a05.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/fe816a85857a957ac07f957ac07f3e80956ac07f3e80c07f3e813e85c07e3f80.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a956ac17f950a807e3f4c951ac07e3f81c0ff3ea16aa1c0bd3f81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a956ac17f950a807e3f4c951ac07e3f81c0ff3ea16aa1c0bd3f81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ea856a95955a954ac17f950ac07e3f44951ac07e3f81c0ff3ea16aa1c0ff3e81.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.1": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e1ca2950bc07e3e80c07f3e807a85c1ff3f81.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e1ca2950bc07e3e80c07f3e807a85c1ff3f81.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/fa856a85957a957ac17e954ac17e0da2954bc07e3e81c07f3a806a85c1ff3f81.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.2": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eafdeec9f729943032168d66d4cb896e9567497b81304aedc96514ad8d18669a.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eafdeec9f729943032168d66d4cb896e9567497b81304aedc96514ad8d18669a.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaf9a6c9f728943032168d66d4cb8d2e9567497b81304aedc9e51e2d9d186ada.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.3": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/a6fb4b967f00950eb00f9d0f900fcd62dc7868f2c1bb3a909c266e34daa52f6c.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a6fb4b967f00950eb00f9d0f900fcd62dc7868f2c1bb3a909c266e34daa52f6c.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a6fa1e967f00950eb00f9d0f914fcdc2d560c9f3c1fb3a9084266e34daa52f6c.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.4": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b549f756854ea0168d6ed556896dd8e909ed88290afdd9e97e008d6e2296.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b549f756854ea0168d6ed556896dd8e909ed88290afdd9e97e008d6e2296.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eaa9b529f756850ea0169566d1568d6dd86909ed88290afd9ded7e008d666ad6.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_tx.5": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/aad73e0df78085ac840395ac9428d9fad56cd8f2906c48f2d0ec7a536a1737f3.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/aad73e0df78085ac840395ac9428d9fad56cd8f2906c48f2d0ec7a536a1737f3.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/aad73e0cf710952c840195acd528c1e2d1ecc9f3c1ec49f3c1ec6a536a1737f3.png"
     ],
     "iris.tests.test_quickplot.TestQuickplotCoordinatesGiven.test_x.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/a6ffb5097e84cde2224598d1649f8d6cd2388c76d0799867d009da76c9f8d866.png",
