@@ -408,7 +408,7 @@ def plot(
     global VTK_PICKER_CALLBACK
     global VTK_SLIDER_CALLBACK
 
-    if not hasattr(cube, "mesh"):
+    if cube.mesh is not None:
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
@@ -533,8 +533,13 @@ def plot(
                             text = f"{name} = {values[0]:.2f}{units}"
                     else:
                         with warnings.catch_warnings():
-                            # ignore RuntimeWarning raise by numpy all nan calculations
-                            warnings.simplefilter("ignore")
+                            # ignore warnings raise by all nan calculations
+                            message = "All-NaN slice|Mean of empty slice"
+                            warnings.filterwarnings(
+                                "ignore",
+                                message=message,
+                                category=RuntimeWarning,
+                            )
                             min, max, mean = (
                                 np.nanmin(values),
                                 np.nanmax(values),
@@ -729,7 +734,7 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     # TBD: deal with generic location of mesh data i.e., support not only face,
     # but also node and edge.
 
-    if not hasattr(cube, "mesh"):
+    if cube.mesh is not None:
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
