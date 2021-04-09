@@ -48,7 +48,7 @@
 
 <p align="center">
 For documentation see the 
-<a href="https://scitools-iris.readthedocs.io/en/latest/">developer version (latest)
-</a> or the most recent released
+<a href="https://scitools-iris.readthedocs.io/en/latest/">latest</a>  
+developer version or the most recent released
 <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a> version.
 </p>
