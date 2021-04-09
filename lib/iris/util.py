@@ -24,6 +24,9 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data
+from iris.common import SERVICES
+from iris.common.lenient import _lenient_client
+import iris.coords
 import iris.exceptions
 
 
@@ -1754,29 +1757,132 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     return bad_points_boolean
 
 
-def mask_cube(cube, points_to_mask):
+def _unmask_mask(al, points_to_mask):
     """
-    Masks any cells in the data array which correspond to cells marked `True`
-    in the `points_to_mask` array.
+    Returns a plain boolean array based on points_to_mask.  If points_to_mask
+    is a masked array, its masked elements will become False.
 
     Args:
 
-    * cube (`iris.cube.Cube`):
-        A 2-dimensional instance of :class:`iris.cube.Cube`.
+    al (package):
+        either dask.array or numpy.
 
-    * points_to_mask (`numpy.ndarray` of bool):
-        A 2d boolean array of Truth values representing points to mask in the
-        x and y arrays of the cube.
+    points_to_mask (array):
+        Array to be used as a mask in _mask_array.
+
+    """
+    ignore_points = al.ma.getmaskarray(points_to_mask)
+    points_to_mask = al.ma.getdata(points_to_mask)
+    points_to_mask = al.logical_and(
+        points_to_mask, al.logical_not(ignore_points)
+    )
+
+    return points_to_mask
+
+
+def _mask_array(array, points_to_mask, in_place=False):
+    """
+    Apply masking to array where points_to_mask is True/non-zero.  Designed to
+    work with iris.analysis.maths._binary_op_common so array and points_to_mask
+    will be broadcastable to each other.  array and points_to_mask may be numpy
+    or dask types (or one of each).
+
+    If array is lazy then in_place is ignored: _math_op_common will use the
+    returned value regardless of in_place, so we do not need to implement it
+    here.  If in_place is True then array must be a np.ma.MaskedArray or dask
+    array (must be a dask array if points_to_mask is lazy).
+
+    """
+    # Decide which array library to use.
+    if is_lazy_data(points_to_mask) or is_lazy_data(array):
+        al = da
+        if not is_lazy_data(array) and in_place:
+            # Non-lazy array and lazy mask should not come up for in_place
+            # case, due to _binary_op_common handling added at #3790.
+            raise TypeError(
+                "Cannot apply lazy mask in-place to a non-lazy array."
+            )
+        in_place = False
+
+    elif in_place and not isinstance(array, ma.MaskedArray):
+        raise TypeError("Cannot apply a mask in-place to a plain numpy array.")
+    else:
+        al = np
+
+    # Strip any mask off points_to_mask and set those points to False.
+    points_to_mask = _unmask_mask(al, points_to_mask)
+
+    # Get broadcasted views of the arrays.  Note that broadcast_arrays does not
+    # preserve masks, so we need to explicitly handle any exising mask on array.
+    array_mask = al.ma.getmaskarray(array)
+
+    array_data, array_mask, points_to_mask = al.broadcast_arrays(
+        array, array_mask, points_to_mask
+    )
+
+    new_mask = al.logical_or(array_mask, points_to_mask)
+
+    if in_place:
+        array.mask = new_mask
+        return array  # Resolve uses returned value even if working in place.
+    else:
+        # Return a new, independent array.
+        return al.ma.masked_array(array_data.copy(), mask=new_mask)
+
+
+@_lenient_client(services=SERVICES)
+def mask_cube(cube, points_to_mask, in_place=False, dim=None):
+    """
+    Masks any cells in the cube's data array which correspond to cells marked
+    `True` (or non zero) in `points_to_mask`.  `points_to_mask` may be specified as a
+    :class:`numpy.ndarray`, :class:`iris.coords.Coord` or :class:`iris.cube.Cube`,
+    following the same broadcasting approach as cube arithmetic (see :ref:`cube maths`).
+
+    Args:
+
+    * cube (:class:`iris.cube.Cube`):
+        Cube containing data that requires masking.
+
+    * points_to_mask (:class:`numpy.ndarray`, :class:`iris.coords.Coord` or :class:`iris.cube.Cube`):
+        Specifies booleans (or ones and zeros) indicating which points will be masked.
+
+    Kwargs:
+
+    * in_place (boolean):
+        If `True`, masking is applied to the input cube.  Otherwise a copy is masked
+        and returned.  Defaults to `False`.
+
+    * dim (int):
+        If `points_to_mask` is a coord which does not exist on the cube, specify the
+        dimension to which it should be mapped.
 
     Returns:
 
-    * result (`iris.cube.Cube`):
-        A cube whose data array is masked at points specified by input array.
+    * result (:class:`iris.cube.Cube`):
+        A cube whose data array is masked at points specified by `points_to_mask`.
+
+    If either `cube` or `points_to_mask` is lazy, the result will be lazy.
 
     """
-    cube.data = ma.masked_array(cube.data)
-    cube.data[points_to_mask] = ma.masked
-    return cube
+    if in_place and not cube.has_lazy_data():
+        # Ensure cube data is masked type so we can work on it in-place.
+        cube.data = ma.asanyarray(cube.data)
+        mask_array = functools.partial(_mask_array, in_place=True)
+    else:
+        mask_array = _mask_array
+
+    result = iris.analysis.maths._binary_op_common(
+        mask_array,
+        "mask",
+        cube,
+        points_to_mask,
+        cube.units,
+        in_place=in_place,
+        dim=dim,
+    )
+
+    if not in_place:
+        return result
 
 
 def equalise_attributes(cubes):
