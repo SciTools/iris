@@ -313,14 +313,13 @@ def do_package(package_name):
         )
 
         paths.sort()
+        excluded_paths = [item[0] for item in exclude_modules]
 
         # check for any modules to exclude
-        for exclude_module in exclude_modules:
-            if exclude_module[0] in paths:
-                autolog(
-                    "Excluding module in package: {}".format(exclude_module[0])
-                )
-                paths.remove(exclude_module[0])
+        for excluded_path in excluded_paths:
+            if excluded_path in paths:
+                autolog(f"Excluding module in package: {excluded_path!r}")
+                paths.remove(excluded_path)
 
         doc = auto_doc_package(package_path, package, root_package, paths)
 
@@ -341,33 +340,32 @@ def do_package(package_name):
                 with open(out_path, "w") as fh:
                     fh.write(doc)
 
+        excluded_imports = [item[1] for item in exclude_modules]
+
         for import_name, module_path in module_folders.get(package, []):
             # check for any modules to exclude
-            for exclude_module in exclude_modules:
-                if import_name == exclude_module[1]:
-                    autolog(
-                        "Excluding module file: {}".format(exclude_module[1])
-                    )
-                else:
-                    doc = auto_doc_module(
-                        module_path, import_name, root_package
-                    )
-                    out_path = (
-                        out_dir
-                        + import_name.replace(".", os.path.sep)
-                        + ".rst"
-                    )
-                    if not os.path.exists(out_path):
-                        autolog("Creating {} ...".format(out_path))
-                        with open(out_path, "w") as fh:
-                            fh.write(doc)
-                    else:
-                        with open(out_path, "r") as fh:
-                            existing_content = "".join(fh.readlines())
-                        if doc != existing_content:
-                            autolog("Creating {} ...".format(out_path))
-                            with open(out_path, "w") as fh:
-                                fh.write(doc)
+            if import_name in excluded_imports:
+                autolog(f"Excluding module file: {import_name!r}")
+                continue
+            doc = auto_doc_module(
+                module_path, import_name, root_package
+            )
+            out_path = (
+                out_dir
+                + import_name.replace(".", os.path.sep)
+                + ".rst"
+            )
+            if not os.path.exists(out_path):
+                autolog("Creating {} ...".format(out_path))
+                with open(out_path, "w") as fh:
+                    fh.write(doc)
+            else:
+                with open(out_path, "r") as fh:
+                    existing_content = "".join(fh.readlines())
+                if doc != existing_content:
+                    autolog("Creating {} ...".format(out_path))
+                    with open(out_path, "w") as fh:
+                        fh.write(doc)
 
 
 def setup(app):

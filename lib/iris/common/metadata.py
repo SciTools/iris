@@ -241,6 +241,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         return result
 
+    def __str__(self):
+        field_strings = []
+        for field in self._fields:
+            value = getattr(self, field)
+            if value is None or isinstance(value, (str, dict)) and not value:
+                continue
+            field_strings.append(f"{field}={value}")
+
+        return f"{type(self).__name__}({', '.join(field_strings)})"
+
     def _api_common(
         self, other, func_service, func_operation, action, lenient=None
     ):

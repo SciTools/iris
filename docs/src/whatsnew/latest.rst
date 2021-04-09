@@ -48,6 +48,10 @@ This document explains the changes made to Iris for this release
    representation of the 64-bit non-cryptographic hash of the object using the
    extremely fast `xxhash`_ hashing algorithm. (:pull:`4020`)
 
+#. `@rcomer`_ implemented a ``__str__`` method for metadata classes, so
+   printing these objects skips metadata elements that are set to None or an
+   empty string or dictionary. (:pull:`4040`)
+
 
 🐛 Bugs Fixed
 =============
@@ -106,6 +110,12 @@ This document explains the changes made to Iris for this release
    development documentation if being viewed on `Read the Docs`_.
    (:pull:`3999`)
 
+#. `@bjlittle`_ added post-release instructions on how to :ref:`update_pypi`
+   with `scitools-iris`_. (:pull:`4038`)
+
+#. `@bjlittle`_ added the |pre-commit.ci|_ badge to the `README.md`_.
+   See :ref:`pre_commit_ci` for further details. (:pull:`4061`)
+
 
 💼 Internal
 ===========
@@ -134,6 +144,12 @@ This document explains the changes made to Iris for this release
    developers to easily disable `cirrus-ci`_ tasks. See
    :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
 
+#. `@bjlittle`_ and `@jamesp`_ addressed a regression in behaviour when using
+   `conda`_ 4.10.0 within `cirrus-ci`_. (:pull:`4084`)
+
+#. `@bjlittle`_ updated the perceptual imagehash graphical test support for
+   `matplotlib`_ 3.4.1. (:pull:`4087`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -152,6 +168,8 @@ This document explains the changes made to Iris for this release
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
+.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg
+.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/master
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/

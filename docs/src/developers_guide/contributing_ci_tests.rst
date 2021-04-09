@@ -6,21 +6,12 @@ Continuous Integration (CI) Testing
 ===================================
 
 The `Iris`_ GitHub repository is configured to run checks against all its
-branches automatically whenever a pull request is created, updated or merged.
+branches automatically whenever a pull-request is created, updated or merged.
 The checks performed are:
 
-* :ref:`testing_cla`
 * :ref:`testing_cirrus`
-
-
-.. _testing_cla:
-
-SciTools CLA Checker
-********************
-
-A bot which checks that the GitHub author of the pull request has signed the
-**SciTools Contributor's License Agreement (CLA)**.  For more information on
-this please see https://scitools.org.uk/organisation.html#governance.
+* :ref:`testing_cla`
+* :ref:`pre_commit_ci`
 
 
 .. _testing_cirrus:
@@ -44,7 +35,7 @@ refer to the `Cirrus-CI Documentation`_. The tasks performed during CI include:
 * checking all URL references within the code base and documentation are valid
 
 The above `cirrus-ci`_ tasks are run automatically against all `Iris`_ branches
-on GitHub whenever a pull request is submitted, updated or merged. See the
+on GitHub whenever a pull-request is submitted, updated or merged. See the
 `Cirrus-CI Dashboard`_ for details of recent past and active Iris jobs.
 
 .. _skipping Cirrus-CI tasks:
@@ -79,17 +70,41 @@ e.g., to skip the linting task, the following are all equivalent::
 
 
 GitHub Checklist
-****************
+----------------
 
-An example snapshot from a successful GitHub pull request shows all tests
+An example snapshot from a successful GitHub pull-request shows all tests
 passing:
 
 .. image:: ci_checks.png
 
-If any CI tasks fail, then the pull request is unlikely to be merged to the
+If any CI tasks fail, then the pull-request is unlikely to be merged to the
 Iris target branch by a core developer.
+
+
+.. _testing_cla:
+
+SciTools CLA Checker
+********************
+
+A bot which checks that the GitHub author of the pull-request has signed the
+**SciTools Contributor's License Agreement (CLA)**.  For more information on
+this please see https://scitools.org.uk/organisation.html#governance.
+
+
+.. _pre_commit_ci:
+
+pre-commit CI
+*************
+
+A CI service for the `pre-commit`_ framework that checks and auto fixes all
+pull-requests given the `Iris`_ GitHub repository `.pre-commit-config.yaml`_.
+
+See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jobs.
+
 
 
 .. _Cirrus-CI Dashboard: https://cirrus-ci.com/github/SciTools/iris
 .. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
+.. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/master/.pre-commit-config.yaml
+.. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
 
