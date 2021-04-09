@@ -144,6 +144,12 @@ This document explains the changes made to Iris for this release
    developers to easily disable `cirrus-ci`_ tasks. See
    :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
 
+#. `@bjlittle`_ and `@jamesp`_ addressed a regression in behaviour when using
+   `conda`_ 4.10.0 within `cirrus-ci`_. (:pull:`4084`)
+
+#. `@bjlittle`_ updated the perceptual imagehash graphical test support for
+   `matplotlib`_ 3.4.1. (:pull:`4087`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
