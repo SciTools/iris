@@ -65,8 +65,8 @@ rcParams = {
     },
     "add_slider_widget": {
         "style": "modern",
-        "pointa": (0.73, 0.9),
-        "pointb": (0.93, 0.9),
+        "pointa": (0.73, 0.85),
+        "pointb": (0.93, 0.85),
     },
     "add_title": {
         "font_size": 12,
@@ -192,14 +192,14 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
         The :class:`~pyvista.plotting.plotting.Plotter`.
 
     """
+    # use the appropriate pyvista notebook backend
+    notebook = is_notebook()
+    pv.rcParams["use_ipyvtk"] = notebook
+
     if plotter is None:
-        if is_notebook():
-            plotter = pv.PlotterITK()
-        else:
-            plotter = pv.Plotter()
+        plotter = pv.Plotter(notebook=notebook)
 
     defaults = rcParams.get("add_coastlines", {})
-
     for k, v in defaults.items():
         if k not in kwargs:
             kwargs[k] = v
@@ -346,6 +346,7 @@ def plot(
     invert=False,
     location=True,
     pickable=True,
+    cpos=True,
     plotter=None,
     **kwargs,
 ):
@@ -393,6 +394,10 @@ def plot(
     * pickable (bool):
         Specify whether to enable mesh cell picking. Default is ``True``.
 
+    * cpos (bool or sequence):
+        Specify whether to use the default scene camera position, or
+        provide the exact camera position to be applied. Default is ``True``.
+
     * plotter (None or Plotter):
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
         If ``None``, a plotter object will be created. Default is None.
@@ -408,25 +413,24 @@ def plot(
     global VTK_PICKER_CALLBACK
     global VTK_SLIDER_CALLBACK
 
-    if cube.mesh is not None:
+    if cube.mesh is None:
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
     if not location:
         pickable = location
 
+    # use the appropriate pyvista notebook backend
+    notebook = is_notebook()
+    pv.rcParams["use_ipyvtk"] = notebook
+
     if plotter is None:
-        if is_notebook():
-            plotter = pv.PlotterITK()
-        else:
-            plotter = pv.Plotter()
+        plotter = pv.Plotter(notebook=notebook)
 
-    if not is_notebook():
-        defaults = rcParams.get("plot", {})
-
-        for k, v in defaults.items():
-            if k not in kwargs:
-                kwargs[k] = v
+    defaults = rcParams.get("plot", {})
+    for k, v in defaults.items():
+        if k not in kwargs:
+            kwargs[k] = v
 
     mesh = to_vtk_mesh(cube, projection=projection, location=location)
 
@@ -442,7 +446,7 @@ def plot(
             if "annotations" not in kwargs:
                 kwargs["annotations"] = annotations
 
-    if location and pickable and not is_notebook():
+    if location and pickable:
         # add unique cell index values to each cell
         mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
 
@@ -453,7 +457,7 @@ def plot(
     else:
         plotter.add_mesh(mesh, pickable=pickable, **kwargs)
 
-    if location and not is_notebook():
+    if location:
         add_coastlines(
             resolution=resolution, projection=projection, plotter=plotter
         )
@@ -578,6 +582,7 @@ def plot(
             VTK_PICKER_CALLBACK["location"] = cube.location
             VTK_PICKER_CALLBACK["lut"] = VTK_POSITIONS_LUT
             VTK_PICKER_CALLBACK["callback"] = picking_callback
+
             defaults = rcParams.get("cell_picking", {})
             plotter.enable_cell_picking(
                 through=False,
@@ -677,22 +682,26 @@ def plot(
     #
     # position the camera on the scene
     #
-    if projection is not None:
-        # 2D planar projection camera position
-        cpos = [
-            (93959.85410932079, 0.0, 55805210.47284255),
-            (93959.85410932079, 0.0, 0.0),
-            (0.0, 1.0, 0.0),
-        ]
-    else:
-        # 3D spherical camera position
-        cpos = [
-            (5.398270655691156, 0.0, 0.0),
-            (0.0, 0.0, 0.0),
-            (0.0, 0.0, 1.0),
-        ]
+    if isinstance(cpos, bool):
+        if cpos:
+            if projection is not None:
+                # 2D planar projection camera position
+                cpos = [
+                    (93959.85410932079, 0.0, 55805210.47284255),
+                    (93959.85410932079, 0.0, 0.0),
+                    (0.0, 1.0, 0.0),
+                ]
+            else:
+                # 3D spherical camera position
+                cpos = [
+                    (5.398270655691156, 0.0, 0.0),
+                    (0.0, 0.0, 0.0),
+                    (0.0, 0.0, 1.0),
+                ]
 
-    plotter.camera_position = cpos
+            plotter.camera_position = cpos
+    elif cpos:
+        plotter.camera_position = cpos
 
     if location:
         defaults = rcParams.get("add_title", {})
@@ -734,7 +743,7 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     # TBD: deal with generic location of mesh data i.e., support not only face,
     # but also node and edge.
 
-    if cube.mesh is not None:
+    if cube.mesh is None:
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
