@@ -13,13 +13,10 @@
 <a href="https://cirrus-ci.com/github/SciTools/iris">
 <img src="https://api.cirrus-ci.com/github/SciTools/iris.svg?branch=master"
      alt="Cirrus-CI" /></a>
+
 <a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
 <img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
-     alt="Documentation Status (latest dev)" /></a>
-<a href="https://scitools-iris.readthedocs.io/en/latest/?badge=stable">
-<img src="https://readthedocs.org/projects/scitools-iris/badge/?version=stable"
-     alt="Documentation Status (stable)" /></a>
-    
+     alt="Documentation Status" /></a>    
 <a href="https://results.pre-commit.ci/latest/github/SciTools/iris/master">
 <img src="https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg"
      alt="pre-commit.ci status" /></a>
@@ -50,5 +47,8 @@
 </p>
 
 <p align="center">
-See the <a href="https://scitools-iris.readthedocs.io/en/latest/">documentation</a> for the <b>latest development version</b> of Iris.
+For documentation see the 
+<a href="https://scitools-iris.readthedocs.io/en/latest/">developer version (latest)
+</a> or the most recent released
+<a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a> version.
 </p>
