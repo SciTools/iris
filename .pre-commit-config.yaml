@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 'v2.4.0'
+    rev: 'v3.4.0'
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -23,8 +23,8 @@ repos:
         # Force black to run on whole repo, using settings from pyproject.toml
         pass_filenames: false
         args: [--config=./pyproject.toml, .]
--   repo: https://gitlab.com/pycqa/flake8
-    rev: '3.8.3'
+-   repo: https://github.com/PyCQA/flake8
+    rev: '3.9.0'
     hooks:
         # Run flake8.
     -   id: flake8

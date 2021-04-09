@@ -1,3 +1,5 @@
+.. include:: ../common_links.inc
+
 .. _iris_development_releases:
 
 Releases
@@ -82,12 +84,71 @@ Once all checks are complete, the release is cut by the creation of a new tag
 in the ``SciTools/iris`` repository.
 
 
-Conda Recipe
-------------
+Update conda-forge
+------------------
 
 Once a release is cut on GitHub, update the Iris conda recipe on the
 `conda-forge iris-feedstock`_ for the release. This will build and publish the
 conda package on the `conda-forge Anaconda channel`_.
+
+
+.. _update_pypi:
+
+Update PyPI
+-----------
+
+Update the `scitools-iris`_ project on PyPI with the latest Iris release.
+
+To do this perform the following steps.
+
+Create a conda environment with the appropriate conda packages to build the
+source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
+
+    > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
+    > . activate iris-pypi
+
+Checkout the lastest Iris ``<release>`` tag::
+
+    > git fetch --tags
+    > git checkout <release>
+
+Build the source distribution and wheel from the Iris root directory::
+
+    > python setup.py sdist bdist_wheel
+
+This ``./dist`` directory should now be populated with the source archive
+``.tar.gz`` file, and built distribution ``.whl`` file.
+
+Check that the package description will render properly on PyPI for each
+of the built artifacts::
+
+    > python -m twine check dist/*
+
+To list and check the contents of the binary wheel::
+
+    > python -m zipfile --list dist/*.whl
+
+If all seems well, sufficient maintainer privileges will be required to
+upload these artifacts to `scitools-iris`_ on PyPI::
+
+    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ dist/*
+
+Ensure that the artifacts are successfully uploaded and available on
+`scitools-iris`_ before creating a conda test environment to install Iris
+from PyPI::
+
+    > conda deactivate
+    > conda env create --file ./requrements/ci/iris.yml
+    > . activate iris-dev
+    > conda install -c conda-forge pip
+    > python -m pip install --no-deps scitools-iris
+
+For further details on how to test Iris, see :ref:`developer_running_tests`.
+
+.. seealso::
+
+    For further information on packaging and uploading a project to PyPI, please
+    refer to `Generating Distribution Archives`_ and `Packaging Your Project`_.
 
 
 Merge Back
@@ -179,7 +240,6 @@ Post Release Steps
 #. Merge back to ``master``
 
 
-.. _Read The Docs: https://readthedocs.org/projects/scitools-iris/builds/
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
@@ -189,3 +249,5 @@ Post Release Steps
 .. _Active Versions: https://readthedocs.org/projects/scitools-iris/versions/
 .. _Editing v3.0.0rc0: https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
+.. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
+.. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project

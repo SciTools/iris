@@ -38,10 +38,12 @@ env:
   NOX_CACHE_BUILD: "0"
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
-  # Pip package to be upgraded/installed.
+  # Pip packages to be upgraded/installed.
   PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
+  # Conda packages to be installed.
+  CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_REF: "v2.2"
+  IRIS_TEST_DATA_VERSION: "2.2"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
@@ -52,7 +54,6 @@ env:
 linux_task_template: &LINUX_TASK_TEMPLATE
   auto_cancellation: true
   env:
-    IRIS_REPO_DIR: ${CIRRUS_WORKING_DIR}
     PATH: ${HOME}/miniconda/bin:${PATH}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
   conda_cache:
@@ -60,14 +61,17 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
       - echo "${CIRRUS_OS} $(sha256sum miniconda.sh)"
+      - echo "${CONDA_CACHE_PACKAGES}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
+      - uname -r
     populate_script:
+      - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
       - bash miniconda.sh -b -p ${HOME}/miniconda
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
       - conda update --quiet --name base conda
-      - conda install --quiet --name base nox pip
+      - conda install --quiet --name base ${CONDA_CACHE_PACKAGES}
   cartopy_cache:
     folder: ${HOME}/.local/share/cartopy
     fingerprint_script:
@@ -82,24 +86,39 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 
 
 #
-# YAML alias for compute credits
+# YAML alias for compute credits.
 #
 compute_credits_template: &CREDITS_TEMPLATE
   # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
-  use_compute_credits: $CIRRUS_REPO_FULL_NAME == 'SciTools/iris' && $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_PR_DRAFT == 'false' && $CIRRUS_BASE_BRANCH == 'master' && $CIRRUS_PR != ''
+  use_compute_credits: ${CIRRUS_REPO_FULL_NAME} == "SciTools/iris" && ${CIRRUS_USER_COLLABORATOR} == "true" && ${CIRRUS_PR_DRAFT} == "false" && ${CIRRUS_PR} != ""
+
+
+#
+# YAML alias for the iris-test-data cache.
+#
+iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR}
+    fingerprint_script:
+      - echo "iris-test-data v${IRIS_TEST_DATA_VERSION}"
+    populate_script:
+      - wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
+      - unzip -q iris-test-data.zip
+      - mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${IRIS_TEST_DATA_DIR}
+
 
 #
 # Linting
 #
 lint_task:
-  only_if: $SKIP_LINT_TASK == ""
+  only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
   name: "${CIRRUS_OS}: flake8 and black"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
+      - echo "${CIRRUS_TASK_NAME} py${PYTHON_VERSION}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
   lint_script:
     - pip list
@@ -113,7 +132,7 @@ lint_task:
 # Testing Minimal (Linux)
 #
 test_minimal_task:
-  only_if: $SKIP_TEST_MINIMAL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
+  only_if: ${SKIP_TEST_MINIMAL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -129,6 +148,7 @@ test_minimal_task:
     memory: 4G
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
     - nox --session tests -- --verbose
@@ -138,7 +158,7 @@ test_minimal_task:
 # Testing Full (Linux)
 #
 test_full_task:
-  only_if: $SKIP_TEST_FULL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
+  only_if: ${SKIP_TEST_FULL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -152,16 +172,10 @@ test_full_task:
     image: gcc:latest
     cpu: 6
     memory: 8G
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -172,7 +186,7 @@ test_full_task:
 # Testing Documentation Gallery (Linux)
 #
 gallery_task:
-  only_if: $SKIP_GALLERY_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_GALLERY_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -182,16 +196,10 @@ gallery_task:
     image: gcc:latest
     cpu: 2
     memory: 4G
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -202,7 +210,7 @@ gallery_task:
 # Testing Documentation (Linux)
 #
 doctest_task:
-  only_if: $SKIP_DOCTEST_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -215,16 +223,10 @@ doctest_task:
   env:
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  data_cache:
-    folder: ${IRIS_TEST_DATA_DIR}
-    fingerprint_script:
-      - echo "${IRIS_TEST_DATA_REF}"
-    populate_script:
-      - wget --quiet https://github.com/SciTools/iris-test-data/archive/${IRIS_TEST_DATA_REF}.zip -O iris-test-data.zip
-      - unzip -q iris-test-data.zip
-      - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
+  << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
@@ -238,7 +240,7 @@ doctest_task:
 # Testing Documentation Link Check (Linux)
 #
 linkcheck_task:
-  only_if: $SKIP_LINKCHECK_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
@@ -253,6 +255,7 @@ linkcheck_task:
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}

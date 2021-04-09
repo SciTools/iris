@@ -1100,7 +1100,7 @@ class Saver:
             dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
             described below. This provides support for netCDF data packing as
             described in
-            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+            http://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict
@@ -2646,7 +2646,7 @@ def save(
         (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
         below or an iterable of such types, strings, or dicts.
         This provides support for netCDF data packing as described in
-        http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+        http://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with
