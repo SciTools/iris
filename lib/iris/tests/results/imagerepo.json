@@ -23,7 +23,8 @@
     "gallery_tests.test_plot_anomaly_log_colouring.TestAnomalyLogColouring.test_plot_anomaly_log_colouring.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/ec4464e185a39f93931e9b1e91696d2949dde6e63e26a47a5ad391938d9a5a0c.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/ecc164e78e979b19b3789b0885a564a56cc2c65e3ec69469db1bdb9a853c1e24.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ece164e68e979b19b3781b0885a564a56ccac65e3ec69469db1bdb9a853c1e24.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ece164e68e979b19b3781b0885a564a56ccac65e3ec69469db1bdb9a853c1e24.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ece164e796979a1b39781b2881a564a56ccac6da3e87947bcb1bdb9a843c1e24.png"
     ],
     "gallery_tests.test_plot_atlantic_profiles.TestAtlanticProfiles.test_plot_atlantic_profiles.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/9f8260536bd28e1320739437b5f437b0a51d66f4cc5d08fcd00fdb1c93fcb21c.png",
