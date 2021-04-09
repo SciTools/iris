@@ -707,6 +707,13 @@ class CubeList(list):
         """
         _lazy.co_realise_cubes(*self)
 
+    def copy(self):
+        """
+        Return a CubeList when CubeList.copy() is called.
+        """
+        if type(self) == CubeList:
+            return deepcopy(self)
+
 
 def _is_single_item(testee):
     """
