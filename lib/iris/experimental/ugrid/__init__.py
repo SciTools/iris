@@ -21,8 +21,8 @@ import threading
 import dask.array as da
 import numpy as np
 
-from .. import _lazy_data as _lazy
-from ..common.metadata import (
+from ... import _lazy_data as _lazy
+from ...common.metadata import (
     BaseMetadata,
     metadata_filter,
     metadata_manager_factory,
@@ -31,17 +31,17 @@ from ..common.metadata import (
     SERVICES_EQUAL,
     SERVICES_DIFFERENCE,
 )
-from ..common.lenient import _lenient_service as lenient_service
-from ..common.mixin import CFVariableMixin
-from ..config import get_logger
-from ..coords import _DimensionalMetadata, AuxCoord
-from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ..fileformats import cf, netcdf
-from ..fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import (
+from ...common.lenient import _lenient_service as lenient_service
+from ...common.mixin import CFVariableMixin
+from ...config import get_logger
+from ...coords import _DimensionalMetadata, AuxCoord
+from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ...fileformats import cf, netcdf
+from ...fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import (
     get_names,
     get_attr_units,
 )
-from ..util import guess_coord_axis
+from ...util import guess_coord_axis
 
 
 __all__ = [
