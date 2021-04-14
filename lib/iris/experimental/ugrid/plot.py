@@ -86,7 +86,11 @@ rcParams = {
     },
     "plot": {
         "cmap": "balance",
-        "scalar_bar_args": {"nan_annotation": True, "shadow": True},
+        "scalar_bar_args": {
+            "n_colors": 15,
+            "nan_annotation": True,
+            "shadow": True,
+        },
         "show_edges": False,
         "edge_color": "black",
         "specular": 0,
@@ -313,6 +317,109 @@ def is_notebook():
     return result
 
 
+def add_longitude_labels(plotter, projection=None, step=None):
+    if step is None:
+        step = 15
+
+    if projection is None:
+        lons = np.arange(0, 360, step, dtype=float)
+        lons[lons > 180] -= 360
+        lats = np.zeros_like(lons)
+        points = pv.PolyData(to_xyz(lats, lons))
+    else:
+        lons = np.arange(0, 360 + step, step, dtype=float)
+        lons[lons > 180] -= 360
+        lons[-1] = -180
+        lats = np.zeros_like(lons)
+        xyz = np.vstack([lons, lats, np.zeros_like(lons)]).T
+        points = pv.PolyData(xyz)
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+        points = vtk_projection.transform(points)
+
+    labels = []
+    for lon in lons:
+        direction = "°E"
+        if lon < 0:
+            direction = "°W"
+        elif lon == 0:
+            direction = "°"
+        labels.append(f"{int(abs(lon))}{direction}")
+
+    plotter.add_point_labels(
+        points, labels, shape=None, bold=False, shadow=True
+    )
+
+
+def add_latitude_labels(
+    plotter, projection=None, lat_step=None, lon_step=None
+):
+    def labels(lats):
+        labels = []
+        for lat in lats:
+            direction = "°N"
+            if lat < 0:
+                direction = "°S"
+            elif lat == 0:
+                ""
+            labels.append(f"{int(abs(lat))}{direction}")
+        return labels
+
+    if lat_step is None:
+        lat_step = 15
+
+    if lon_step is None:
+        lon_step = 15
+
+    lats = np.arange(0, 180 + lat_step, lat_step, dtype=float)[1:]
+    lats[lats > 90] -= 180
+    lats[-1] = -90
+    lats = sorted(lats)
+    points_labels = []
+    labels_with_poles = labels(lats)
+    labels_without_poles = labels(lats[1:-1])
+
+    if projection is None:
+        lons = np.arange(0, 360, lon_step, dtype=float)
+        lons[lons > 180] -= 360
+
+        def append_points_labels(lats, lon, without_poles=False):
+            points = pv.PolyData(to_xyz(lats, np.ones_like(lats) * lon))
+            labels = (
+                labels_without_poles if without_poles else labels_with_poles
+            )
+            points_labels.append((points, labels))
+
+        for without_poles, lon in enumerate(lons):
+            append_points_labels(lats, lon, without_poles=bool(without_poles))
+            if not without_poles:
+                lats = lats[1:-1]
+    else:
+        lons = np.arange(0, 360 + lon_step, lon_step, dtype=float)
+        lons[lons > 180] -= 360
+        lons[-1] = -180
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+
+        def append_points_labels(lats, lon, without_poles=False):
+            xyz = np.vstack(
+                [np.ones_like(lats) * lon, lats, np.zeros_like(lats)]
+            ).T
+            points = vtk_projection.transform(pv.PolyData(xyz))
+            labels = (
+                labels_without_poles if without_poles else labels_with_poles
+            )
+            points_labels.append((points, labels))
+
+        for without_poles, lon in enumerate(lons):
+            append_points_labels(lats, lon, without_poles=bool(without_poles))
+            if not without_poles:
+                lats = lats[1:-1]
+
+    for points, labels in points_labels:
+        plotter.add_point_labels(
+            points, labels, shape=None, bold=False, shadow=True
+        )
+
+
 def namify(item):
     """
     Convenience function that sanitises the name of the provided ``item`` for
@@ -347,6 +454,8 @@ def plot(
     location=True,
     pickable=True,
     cpos=True,
+    label_lats=None,
+    label_lons=None,
     plotter=None,
     **kwargs,
 ):
@@ -706,6 +815,22 @@ def plot(
     if location:
         defaults = rcParams.get("add_title", {})
         plotter.add_title(namify(cube), **defaults)
+
+    if label_lons is not None:
+        add_longitude_labels(plotter, projection=projection, step=label_lons)
+
+    if label_lats is not None:
+        if isinstance(label_lats, Iterable):
+            lat_step, lon_step = label_lats
+        else:
+            lat_step, lon_step = label_lats, None
+
+        add_latitude_labels(
+            plotter,
+            projection=projection,
+            lat_step=lat_step,
+            lon_step=lon_step,
+        )
 
     return plotter
 
