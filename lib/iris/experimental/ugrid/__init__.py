@@ -3682,7 +3682,7 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"*Assuming* 'topology_dimension'={expected_topology_dimension}"
                 f", from the attached connectivities of the mesh variable "
                 f"{mesh_var.cf_name}.  However, "
-                f"{mesh_var.cf_name}::topology_dimension = {topology_dimension}"
+                f"{mesh_var.cf_name}:topology_dimension = {topology_dimension}"
                 " -- ignoring this as inconsistent."
             )
             warnings.warn(msg)
