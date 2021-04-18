@@ -12,6 +12,7 @@ See https://docs.pyvista.org/index.html
 """
 
 from collections.abc import Iterable
+from copy import deepcopy
 from functools import lru_cache
 import warnings
 
@@ -27,11 +28,24 @@ from ...config import get_logger
 
 __all__ = [
     "add_coastlines",
+    "add_graticule",
     "get_coastlines",
     "plot",
     "to_vtk_mesh",
     "to_xyz",
 ]
+
+# default graticule latitude parallel linspace num
+DEFAULT_LATITUDE_NUM = 360
+
+# default graticule latitude step (degrees)
+DEFAULT_LATITUDE_STEP = 30
+
+# default graticule longitude meridian linspace num
+DEFAULT_LONGITUDE_NUM = 180
+
+# default graticule longitude step (degrees)
+DEFAULT_LONGITUDE_STEP = 30
 
 # default to an s2 unit sphere
 RADIUS = 1.0
@@ -63,6 +77,21 @@ rcParams = {
     "add_coastlines": {
         "color": "black",
     },
+    "add_graticule": {
+        "bold": False,
+        "font_size": 10,
+        "lat_labels": True,
+        "lat_num": DEFAULT_LATITUDE_NUM,
+        "lat_step": DEFAULT_LATITUDE_STEP,
+        "line_color": "white",
+        "line_width": 1,
+        "lon_labels": True,
+        "lon_num": DEFAULT_LONGITUDE_NUM,
+        "lon_step": DEFAULT_LONGITUDE_STEP,
+        "shape": "rounded_rect",
+        "shadow": True,
+        "text_color": "white",
+    },
     "add_slider_widget": {
         "style": "modern",
         "pointa": (0.73, 0.85),
@@ -85,14 +114,19 @@ rcParams = {
         "shadow": True,
     },
     "plot": {
-        "cmap": "balance",
+        "culling": False,
+        "cmap": "thermal",
+        "diffuse": 1.0,
+        "edge_color": "black",
+        "nan_color": "grey",
+        "nan_opacity": 1.0,
         "scalar_bar_args": {
             "n_colors": 15,
             "nan_annotation": True,
             "shadow": True,
         },
         "show_edges": False,
-        "edge_color": "black",
+        "smooth_shading": True,
         "specular": 0,
     },
 }
@@ -317,107 +351,296 @@ def is_notebook():
     return result
 
 
-def add_longitude_labels(plotter, projection=None, step=None):
+def _tidy_graticule_defaults(defaults):
+    for arg in (
+        "lat_labels",
+        "lat_num",
+        "lat_step",
+        "line_width",
+        "line_color",
+        "lon_labels",
+        "lon_num",
+        "lon_step",
+    ):
+        if arg in defaults:
+            defaults.pop(arg)
+    return defaults
+
+
+def add_graticule(
+    projection=None,
+    plotter=None,
+    lat_labels=True,
+    lat_num=None,
+    lat_step=None,
+    lon_labels=True,
+    lon_num=None,
+    lon_step=None,
+):
+    """
+    TBD
+
+    """
+    plotter = add_graticule_longitude(
+        projection=projection,
+        plotter=plotter,
+        labels=lon_labels,
+        num=lon_num,
+        step=lon_step,
+    )
+    plotter = add_graticule_latitude(
+        projection=projection,
+        plotter=plotter,
+        labels=lat_labels,
+        num=lat_num,
+        step=lat_step,
+        lon_step=lon_step,
+    )
+
+    return plotter
+
+
+def add_graticule_longitude(
+    projection=None, plotter=None, labels=True, num=None, step=None
+):
+    """
+    TBD
+
+    """
+    defaults = deepcopy(rcParams.get("add_graticule", {}))
+
+    # add a "fudge-factor" to ensure graticule and labels overlay the mesh
+    # i.e., a poor mans zorder.
+    radius = RADIUS + RADIUS / 1e4
+
+    # use the appropriate pyvista notebook backend
+    notebook = is_notebook()
+    pv.rcParams["use_ipyvtk"] = notebook
+
+    if plotter is None:
+        plotter = pv.Plotter(notebook=notebook)
+
     if step is None:
-        step = 15
+        step = defaults.get("lon_step", DEFAULT_LONGITUDE_STEP)
+
+    if num is None:
+        num = defaults.get("lon_num", DEFAULT_LONGITUDE_NUM)
+
+    line_color = defaults.get("line_color", "white")
+    line_width = defaults.get("line_width", 3)
+
+    _tidy_graticule_defaults(defaults)
+
+    lats = np.linspace(-90, 90, num=num)
 
     if projection is None:
+        # ensure to step from the prime meridian
         lons = np.arange(0, 360, step, dtype=float)
         lons[lons > 180] -= 360
-        lats = np.zeros_like(lons)
-        points = pv.PolyData(to_xyz(lats, lons))
+
+        for lon in lons:
+            xyz = to_xyz(lats, np.ones_like(lats) * lon, radius=radius)
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = pv.PolyData(xyz, lines=connectivity, n_lines=1)
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
     else:
+        # ensure to step from the prime meridian
         lons = np.arange(0, 360 + step, step, dtype=float)
         lons[lons > 180] -= 360
         lons[-1] = -180
-        lats = np.zeros_like(lons)
-        xyz = np.vstack([lons, lats, np.zeros_like(lons)]).T
-        points = pv.PolyData(xyz)
-        vtk_projection = vtkPolyDataTransformFilter(projection)
-        points = vtk_projection.transform(points)
-
-    labels = []
-    for lon in lons:
-        direction = "°E"
-        if lon < 0:
-            direction = "°W"
-        elif lon == 0:
-            direction = "°"
-        labels.append(f"{int(abs(lon))}{direction}")
-
-    plotter.add_point_labels(
-        points, labels, shape=None, bold=False, shadow=True
-    )
-
-
-def add_latitude_labels(
-    plotter, projection=None, lat_step=None, lon_step=None
-):
-    def labels(lats):
-        labels = []
-        for lat in lats:
-            direction = "°N"
-            if lat < 0:
-                direction = "°S"
-            elif lat == 0:
-                ""
-            labels.append(f"{int(abs(lat))}{direction}")
-        return labels
-
-    if lat_step is None:
-        lat_step = 15
-
-    if lon_step is None:
-        lon_step = 15
-
-    lats = np.arange(0, 180 + lat_step, lat_step, dtype=float)[1:]
-    lats[lats > 90] -= 180
-    lats[-1] = -90
-    lats = sorted(lats)
-    points_labels = []
-    labels_with_poles = labels(lats)
-    labels_without_poles = labels(lats[1:-1])
-
-    if projection is None:
-        lons = np.arange(0, 360, lon_step, dtype=float)
-        lons[lons > 180] -= 360
-
-        def append_points_labels(lats, lon, without_poles=False):
-            points = pv.PolyData(to_xyz(lats, np.ones_like(lats) * lon))
-            labels = (
-                labels_without_poles if without_poles else labels_with_poles
-            )
-            points_labels.append((points, labels))
-
-        for without_poles, lon in enumerate(lons):
-            append_points_labels(lats, lon, without_poles=bool(without_poles))
-            if not without_poles:
-                lats = lats[1:-1]
-    else:
-        lons = np.arange(0, 360 + lon_step, lon_step, dtype=float)
-        lons[lons > 180] -= 360
-        lons[-1] = -180
         vtk_projection = vtkPolyDataTransformFilter(projection)
 
-        def append_points_labels(lats, lon, without_poles=False):
+        for lon in lons:
             xyz = np.vstack(
                 [np.ones_like(lats) * lon, lats, np.zeros_like(lats)]
             ).T
-            points = vtk_projection.transform(pv.PolyData(xyz))
-            labels = (
-                labels_without_poles if without_poles else labels_with_poles
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = vtk_projection.transform(
+                pv.PolyData(xyz, lines=connectivity, n_lines=1)
             )
-            points_labels.append((points, labels))
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
 
-        for without_poles, lon in enumerate(lons):
-            append_points_labels(lats, lon, without_poles=bool(without_poles))
-            if not without_poles:
-                lats = lats[1:-1]
+    if labels:
+        if projection is None:
+            lats = np.zeros_like(lons)
+            points = pv.PolyData(to_xyz(lats, lons, radius=radius))
+        else:
+            lats = np.zeros_like(lons)
+            xyz = np.vstack([lons, lats, np.zeros_like(lons)]).T
+            points = vtk_projection.transform(pv.PolyData(xyz))
 
-    for points, labels in points_labels:
+        points_labels = []
+        for lon in lons:
+            direction = "°E"
+            if lon < 0:
+                direction = "°W"
+            elif lon == 0 or abs(lon) == 180:
+                direction = "°"
+            points_labels.append(f"{int(abs(lon))}{direction}")
+
         plotter.add_point_labels(
-            points, labels, shape=None, bold=False, shadow=True
+            points, points_labels, pickable=False, **defaults
         )
+
+    return plotter
+
+
+def add_graticule_latitude(
+    projection=None,
+    plotter=None,
+    labels=True,
+    num=None,
+    step=None,
+    lon_step=None,
+    equator=False,
+):
+    """
+    TODO: deal with lon_0 != 0
+
+    step is from central meridian, and from the equator to poles
+    """
+    defaults = deepcopy(rcParams.get("add_graticule", {}))
+
+    # add a "fudge-factor" to ensure coastlines overlay the mesh
+    # i.e., a poor mans zorder.
+    radius = RADIUS + RADIUS / 1e4
+
+    # use the appropriate pyvista notebook backend
+    notebook = is_notebook()
+    pv.rcParams["use_ipyvtk"] = notebook
+
+    if plotter is None:
+        plotter = pv.Plotter(notebook=notebook)
+
+    if num is None:
+        num = defaults.get("lat_num", DEFAULT_LATITUDE_NUM)
+
+    if step is None:
+        lat_step = defaults.get("lat_step", DEFAULT_LATITUDE_STEP)
+    else:
+        lat_step = step
+
+    if lon_step is None:
+        lon_step = defaults.get("lon_step", DEFAULT_LONGITUDE_STEP)
+
+    line_color = defaults.get("line_color", "white")
+    line_width = defaults.get("line_width", 3)
+
+    _tidy_graticule_defaults(defaults)
+
+    def create_labels(lats, equator):
+        result = []
+        for lat in lats:
+            direction = ""
+            if lat > 0:
+                direction = "°N"
+            elif lat < 0:
+                direction = "°S"
+            elif lat == 0 and equator:
+                direction = "°"
+            value = int(abs(lat)) if direction else ""
+            result.append(f"{value}{direction}")
+        return result
+
+    # ensure to step outwards from the equatorial parallel to the poles
+    n_lats = np.arange(0, 90 + lat_step, lat_step, dtype=float)
+    s_lats = np.arange(0, -90 - lat_step, -lat_step, dtype=float)[::-1][:-1]
+    lats = np.hstack([s_lats, n_lats])
+    points_labels = []
+
+    if labels:
+        labels_with_poles = create_labels(lats, equator)
+        labels_without_poles = create_labels(lats[1:-1], equator)
+
+    if projection is None:
+        lons = np.linspace(-180, 180, num=num)
+
+        for lat in lats:
+            xyz = to_xyz(np.ones_like(lons) * lat, lons, radius=radius)
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = pv.PolyData(xyz, lines=connectivity, n_lines=1)
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
+
+        if labels:
+            # ensure to step from the prime meridian
+            lons = np.arange(0, 360, lon_step, dtype=float)
+            lons[lons > 180] -= 360
+
+            def append_points_labels(lats, lon, without_poles=False):
+                pv_points = pv.PolyData(
+                    to_xyz(lats, np.ones_like(lats) * lon, radius=radius)
+                )
+                lats_labels = (
+                    labels_without_poles
+                    if without_poles
+                    else labels_with_poles
+                )
+                points_labels.append((pv_points, lats_labels))
+
+            for without_poles, lon in enumerate(lons):
+                append_points_labels(
+                    lats, lon, without_poles=bool(without_poles)
+                )
+                if not without_poles:
+                    lats = lats[1:-1]
+    else:
+        lons = np.linspace(-180, 180, num=num)
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+
+        for lat in lats:
+            xyz = np.vstack(
+                [lons, np.ones_like(lons) * lat, np.zeros_like(lons)]
+            ).T
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = vtk_projection.transform(
+                pv.PolyData(xyz, lines=connectivity, n_lines=1)
+            )
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
+
+        if labels:
+            # ensure to step from the prime meridian
+            lons = np.arange(0, 360 + lon_step, lon_step, dtype=float)
+            lons[lons > 180] -= 360
+            lons[-1] = -180
+
+            def append_points_labels(lats, lon, without_poles=False):
+                xyz = np.vstack(
+                    [np.ones_like(lats) * lon, lats, np.zeros_like(lats)]
+                ).T
+                pv_points = vtk_projection.transform(pv.PolyData(xyz))
+                lats_labels = (
+                    labels_without_poles
+                    if without_poles
+                    else labels_with_poles
+                )
+                points_labels.append((pv_points, lats_labels))
+
+            for without_poles, lon in enumerate(lons):
+                append_points_labels(
+                    lats, lon, without_poles=bool(without_poles)
+                )
+                if not without_poles:
+                    lats = lats[1:-1]
+
+    if labels:
+        for points, points_labels in points_labels:
+            plotter.add_point_labels(
+                points, points_labels, pickable=False, **defaults
+            )
+
+    return plotter
 
 
 def namify(item):
@@ -454,8 +677,7 @@ def plot(
     location=True,
     pickable=True,
     cpos=True,
-    label_lats=None,
-    label_lons=None,
+    graticule=False,
     plotter=None,
     **kwargs,
 ):
@@ -506,6 +728,10 @@ def plot(
     * cpos (bool or sequence):
         Specify whether to use the default scene camera position, or
         provide the exact camera position to be applied. Default is ``True``.
+
+    * graticule (bool):
+        Determine whether a labelled graticule of meridian and parallel lines
+        is rendered. Default is ``False``.
 
     * plotter (None or Plotter):
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
@@ -580,31 +806,6 @@ def plot(
             name = namify(cube)
             units = str(cube.units)
             plotter.scalar_bar.SetTitle(f"{name} / {units}")
-
-        #
-        # text actor for time
-        #
-        when = None
-        coords = cube.coords("time", dimensions=())
-        if coords:
-            (coord,) = coords
-            if coord.units.is_time_reference():
-                when = f"Time@{coord.units.num2date(coord.points[0])}"
-
-        coords = cube.coords("forecast_period", dimensions=())
-        if coords:
-            (coord,) = coords
-            if coord.points[0]:
-                when = f"{when} ({coord.points[0]} {coord.units})"
-
-        if when:
-            plotter.add_text(
-                when,
-                shadow=True,
-                position="upper_left",
-                font_size=8,
-                name="when",
-            )
 
         #
         # configure mesh cell picking
@@ -816,21 +1017,8 @@ def plot(
         defaults = rcParams.get("add_title", {})
         plotter.add_title(namify(cube), **defaults)
 
-    if label_lons is not None:
-        add_longitude_labels(plotter, projection=projection, step=label_lons)
-
-    if label_lats is not None:
-        if isinstance(label_lats, Iterable):
-            lat_step, lon_step = label_lats
-        else:
-            lat_step, lon_step = label_lats, None
-
-        add_latitude_labels(
-            plotter,
-            projection=projection,
-            lat_step=lat_step,
-            lon_step=lon_step,
-        )
+    if graticule:
+        add_graticule(projection=projection, plotter=plotter)
 
     return plotter
 
@@ -936,7 +1124,7 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     )
 
     # create the mesh
-    mesh = pv.PolyData(vertices, faces, n_faces=N_faces)
+    mesh = pv.PolyData(vertices, faces=faces, n_faces=N_faces)
 
     # add the cube data payload to the mesh as a named "scalar" array
     # based on the location, if required
@@ -969,7 +1157,7 @@ def to_vtk_mesh(cube, projection=None, location=True, cids=False):
     return mesh
 
 
-def to_xyz(latitudes, longitudes, vstack=True):
+def to_xyz(latitudes, longitudes, radius=None, vstack=True):
     """
     Convert latitudes and longitudes to geocentric XYZ values.
 
@@ -983,6 +1171,9 @@ def to_xyz(latitudes, longitudes, vstack=True):
 
     Kwargs:
 
+    * radius (None or float)
+        The radius of the sphere. Defaults to an s2 unit sphere.
+
     * vstack (bool):
         Specify whether the X, Y and Z values are vertically
         stacked and transposed. Default is ``True``.
@@ -991,14 +1182,17 @@ def to_xyz(latitudes, longitudes, vstack=True):
         The converted latitudes and longitudes.
 
     """
+    if radius is None:
+        radius = RADIUS
+
     latitudes = np.ravel(latitudes)
     longitudes = np.ravel(longitudes)
 
     x_rad = np.radians(longitudes)
     y_rad = np.radians(90.0 - latitudes)
-    x = RADIUS * np.sin(y_rad) * np.cos(x_rad)
-    y = RADIUS * np.sin(y_rad) * np.sin(x_rad)
-    z = RADIUS * np.cos(y_rad)
+    x = radius * np.sin(y_rad) * np.cos(x_rad)
+    y = radius * np.sin(y_rad) * np.sin(x_rad)
+    z = radius * np.cos(y_rad)
     xyz = [x, y, z]
 
     if vstack:
