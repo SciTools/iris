@@ -29,6 +29,8 @@ from ...config import get_logger
 __all__ = [
     "add_coastlines",
     "add_graticule",
+    "add_graticule_latitude",
+    "add_graticule_longitude",
     "get_coastlines",
     "plot",
     "to_vtk_mesh",
@@ -201,6 +203,22 @@ class vtkPolyDataTransformFilter:
         return pv.wrap(output)
 
 
+def _tidy_graticule_defaults(defaults):
+    for arg in (
+        "lat_labels",
+        "lat_num",
+        "lat_step",
+        "line_width",
+        "line_color",
+        "lon_labels",
+        "lon_num",
+        "lon_step",
+    ):
+        if arg in defaults:
+            defaults.pop(arg)
+    return defaults
+
+
 def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
     """
     Add the specified Natural Earth coastline geometries to a PyVista plotter
@@ -258,115 +276,6 @@ def add_coastlines(resolution="110m", projection=None, plotter=None, **kwargs):
     return plotter
 
 
-@lru_cache
-def get_coastlines(resolution="110m", geocentric=False):
-    """
-    Download and return the collection of Natural Earth coastline geometries.
-
-    The geometries will be transformed appropriately for use with a 2D planar
-    projection or a 3D spherical mesh.
-
-    Kwargs:
-
-    * resolution (None or str):
-        The resolution of the Natural Earth coastlines, which may be either
-        ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
-        The default is ``110m``.
-
-    geocentric (bool):
-        Convert the coastline latitude and longitude geometries to geocentric
-        XYZ coordinates.
-
-    Returns:
-        A :class:~pyvista.core.composite.MultiBlock` containing one or more
-        :class:`~pyvista.core.pointset.PolyData` coastline geometries.
-
-    """
-    # add a "fudge-factor" to ensure coastlines overlay the mesh
-    # i.e., a poor mans zorder.
-    radius = RADIUS + RADIUS / 1e4
-
-    # load in the shapefiles
-    fname = shp.natural_earth(
-        resolution=resolution, category="physical", name="coastline"
-    )
-    reader = shp.Reader(fname)
-
-    dtype = np.float32
-    blocks = pv.MultiBlock()
-    geoms = []
-
-    def to_pyvista_blocks(records):
-        for record in records:
-            if isinstance(record, Record):
-                geometry = record.geometry
-            else:
-                geometry = record
-
-            if isinstance(geometry, MultiLineString):
-                geoms.extend(list(geometry.geoms))
-            else:
-                xy = np.array(geometry.coords[:], dtype=dtype)
-
-                if geocentric:
-                    # calculate 3d xyz coordinates
-                    xr = np.radians(xy[:, 0]).reshape(-1, 1)
-                    yr = np.radians(90 - xy[:, 1]).reshape(-1, 1)
-
-                    x = radius * np.sin(yr) * np.cos(xr)
-                    y = radius * np.sin(yr) * np.sin(xr)
-                    z = radius * np.cos(yr)
-                else:
-                    # otherwise, calculate xy0 coordinates
-                    x = xy[:, 0].reshape(-1, 1)
-                    y = xy[:, 1].reshape(-1, 1)
-                    z = np.zeros_like(x)
-
-                xyz = np.hstack((x, y, z))
-                poly = pv.lines_from_points(xyz, close=False)
-                blocks.append(poly)
-
-    to_pyvista_blocks(reader.records())
-    to_pyvista_blocks(geoms)
-
-    return blocks
-
-
-def is_notebook():
-    """
-    Determine whether we are executing within an ``IPython`` kernel.
-
-    Returns:
-        Boolean.
-
-    """
-    result = True
-    try:
-        from IPython import get_ipython
-
-        ip = get_ipython()
-        ip.kernel
-    except (AttributeError, ModuleNotFoundError):
-        result = False
-    return result
-
-
-def _tidy_graticule_defaults(defaults):
-    for arg in (
-        "lat_labels",
-        "lat_num",
-        "lat_step",
-        "line_width",
-        "line_color",
-        "lon_labels",
-        "lon_num",
-        "lon_step",
-    ):
-        if arg in defaults:
-            defaults.pop(arg)
-    return defaults
-
-
 def add_graticule(
     projection=None,
     plotter=None,
@@ -378,7 +287,48 @@ def add_graticule(
     lon_step=None,
 ):
     """
-    TBD
+    Define and add graticule meridian and parallel lines, with optional labels.
+
+    The graticule will be transformed to the specified 2D planar ``projection``
+    or remain as a graticule on a 3D sphere.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If ``None``, a plotter object will be created. Default is ``None``.
+
+    * lat_labels (bool):
+        Specify whether the graticule parallels are labelled. Default is ``True``.
+
+    * lat_num (None or float):
+        Specify the number of points contained within a graticule line of latitude.
+        Default is ``DEFAULT_LATITUDE_NUM``.
+
+    * lat_step (None or float):
+        Specify the increment (in degrees) step size from the equator to the poles,
+        used to determine the graticule lines of latitude. The ``lat_step`` is
+        modulo ``90`` degrees. Default is ``DEFAULT_LATITUDE_STEP``.
+
+    * lon_labels (bool):
+        Specify whether the graticule meridians are labelled. Default is ``True``.
+
+    * lon_num (None or float):
+        Specify the number of points contained within a graticule line of longitude.
+        Default is ``DEFAULT_LONGITUDE_NUM``.
+
+    * lon_step (None or float):
+        Specify the increment (in degrees) step size from the prime meridian eastwards,
+        used to determine the graticule lines of longitude. The ``lon_step`` is
+        modulo ``180`` degrees. Default is ``DEFAULT_LONGITUDE_STEP``.
+
+    Returns:
+        The :class:`~pyvista.plotting.plotting.Plotter`.
 
     """
     plotter = add_graticule_longitude(
@@ -400,97 +350,6 @@ def add_graticule(
     return plotter
 
 
-def add_graticule_longitude(
-    projection=None, plotter=None, labels=True, num=None, step=None
-):
-    """
-    TBD
-
-    """
-    defaults = deepcopy(rcParams.get("add_graticule", {}))
-
-    # add a "fudge-factor" to ensure graticule and labels overlay the mesh
-    # i.e., a poor mans zorder.
-    radius = RADIUS + RADIUS / 1e4
-
-    # use the appropriate pyvista notebook backend
-    notebook = is_notebook()
-    pv.rcParams["use_ipyvtk"] = notebook
-
-    if plotter is None:
-        plotter = pv.Plotter(notebook=notebook)
-
-    if step is None:
-        step = defaults.get("lon_step", DEFAULT_LONGITUDE_STEP)
-
-    if num is None:
-        num = defaults.get("lon_num", DEFAULT_LONGITUDE_NUM)
-
-    line_color = defaults.get("line_color", "white")
-    line_width = defaults.get("line_width", 3)
-
-    _tidy_graticule_defaults(defaults)
-
-    lats = np.linspace(-90, 90, num=num)
-
-    if projection is None:
-        # ensure to step from the prime meridian
-        lons = np.arange(0, 360, step, dtype=float)
-        lons[lons > 180] -= 360
-
-        for lon in lons:
-            xyz = to_xyz(lats, np.ones_like(lats) * lon, radius=radius)
-            connectivity = np.arange(-1, num)
-            connectivity[0] = num
-            line = pv.PolyData(xyz, lines=connectivity, n_lines=1)
-            plotter.add_mesh(
-                line, pickable=False, color=line_color, line_width=line_width
-            )
-    else:
-        # ensure to step from the prime meridian
-        lons = np.arange(0, 360 + step, step, dtype=float)
-        lons[lons > 180] -= 360
-        lons[-1] = -180
-        vtk_projection = vtkPolyDataTransformFilter(projection)
-
-        for lon in lons:
-            xyz = np.vstack(
-                [np.ones_like(lats) * lon, lats, np.zeros_like(lats)]
-            ).T
-            connectivity = np.arange(-1, num)
-            connectivity[0] = num
-            line = vtk_projection.transform(
-                pv.PolyData(xyz, lines=connectivity, n_lines=1)
-            )
-            plotter.add_mesh(
-                line, pickable=False, color=line_color, line_width=line_width
-            )
-
-    if labels:
-        if projection is None:
-            lats = np.zeros_like(lons)
-            points = pv.PolyData(to_xyz(lats, lons, radius=radius))
-        else:
-            lats = np.zeros_like(lons)
-            xyz = np.vstack([lons, lats, np.zeros_like(lons)]).T
-            points = vtk_projection.transform(pv.PolyData(xyz))
-
-        points_labels = []
-        for lon in lons:
-            direction = "°E"
-            if lon < 0:
-                direction = "°W"
-            elif lon == 0 or abs(lon) == 180:
-                direction = "°"
-            points_labels.append(f"{int(abs(lon))}{direction}")
-
-        plotter.add_point_labels(
-            points, points_labels, pickable=False, **defaults
-        )
-
-    return plotter
-
-
 def add_graticule_latitude(
     projection=None,
     plotter=None,
@@ -501,9 +360,49 @@ def add_graticule_latitude(
     equator=False,
 ):
     """
-    TODO: deal with lon_0 != 0
+    Define and add graticule parallel lines, with optional labels.
 
-    step is from central meridian, and from the equator to poles
+    The parallels will be transformed to the specified 2D planar ``projection``
+    or remain as parallels on a 3D sphere.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If ``None``, a plotter object will be created. Default is ``None``.
+
+    * labels (bool):
+        Specify whether the graticule parallels are labelled. Default is ``True``.
+
+    * num (None or float):
+        Specify the number of points contained within a graticule line of latitude.
+        Default is ``DEFAULT_LATITUDE_NUM``.
+
+    * step (None or float):
+        Specify the increment (in degrees) step size from the equator to the poles,
+        used to determine the graticule lines of latitude. The ``step`` is
+        modulo ``90`` degrees. Default is ``DEFAULT_LATITUDE_STEP``.
+
+    * lon_step (None or float):
+        Specify the increment (in degrees) step size from the prime meridian eastwards,
+        used to determine the longitude position of latitude labels. The ``lon_step`` is
+        modulo ``180`` degrees. Default is ``DEFAULT_LONGITUDE_STEP``.
+
+    * equator (bool):
+        Specify whether equatorial labels are to be rendered. Default is ``False``.
+
+    Returns:
+        The :class:`~pyvista.plotting.plotting.Plotter`.
+
+    .. todo::
+
+        Correctly handle graticule parallels for a ``projection`` where ``lon_0 != 0``.
+
     """
     defaults = deepcopy(rcParams.get("add_graticule", {}))
 
@@ -528,6 +427,10 @@ def add_graticule_latitude(
 
     if lon_step is None:
         lon_step = defaults.get("lon_step", DEFAULT_LONGITUDE_STEP)
+
+    # modulo sanity
+    lat_step %= 90
+    lon_step %= 180
 
     line_color = defaults.get("line_color", "white")
     line_width = defaults.get("line_width", 3)
@@ -643,6 +546,222 @@ def add_graticule_latitude(
     return plotter
 
 
+def add_graticule_longitude(
+    projection=None, plotter=None, labels=True, num=None, step=None
+):
+    """
+    Define and add graticule meridian lines, with optional labels.
+
+    The meridians will be transformed to the specified 2D planar ``projection``
+    or remain as meridians on a 3D sphere.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If ``None``, a plotter object will be created. Default is ``None``.
+
+    * labels (bool):
+        Specify whether the graticule meridians are labelled. Default is ``True``.
+
+    * num (None or float):
+        Specify the number of points contained within a graticule line of longitude.
+        Default is ``DEFAULT_LONGITUDE_NUM``.
+
+    * step (None or float):
+        Specify the increment (in degrees) step size from the prime meridian eastwards,
+        used to determine the graticule lines of longitude. The ``step`` is
+        modulo ``180`` degrees. Default is ``DEFAULT_LONGITUDE_STEP``.
+
+    Returns:
+        The :class:`~pyvista.plotting.plotting.Plotter`.
+
+    """
+    defaults = deepcopy(rcParams.get("add_graticule", {}))
+
+    # add a "fudge-factor" to ensure graticule and labels overlay the mesh
+    # i.e., a poor mans zorder.
+    radius = RADIUS + RADIUS / 1e4
+
+    # use the appropriate pyvista notebook backend
+    notebook = is_notebook()
+    pv.rcParams["use_ipyvtk"] = notebook
+
+    if plotter is None:
+        plotter = pv.Plotter(notebook=notebook)
+
+    if step is None:
+        step = defaults.get("lon_step", DEFAULT_LONGITUDE_STEP)
+
+    if num is None:
+        num = defaults.get("lon_num", DEFAULT_LONGITUDE_NUM)
+
+    # modulo sanity
+    step %= 180
+
+    line_color = defaults.get("line_color", "white")
+    line_width = defaults.get("line_width", 3)
+
+    _tidy_graticule_defaults(defaults)
+
+    lats = np.linspace(-90, 90, num=num)
+
+    if projection is None:
+        # ensure to step from the prime meridian
+        lons = np.arange(0, 360, step, dtype=float)
+        lons[lons > 180] -= 360
+
+        for lon in lons:
+            xyz = to_xyz(lats, np.ones_like(lats) * lon, radius=radius)
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = pv.PolyData(xyz, lines=connectivity, n_lines=1)
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
+    else:
+        # ensure to step from the prime meridian
+        lons = np.arange(0, 360 + step, step, dtype=float)
+        lons[lons > 180] -= 360
+        lons[-1] = -180
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+
+        for lon in lons:
+            xyz = np.vstack(
+                [np.ones_like(lats) * lon, lats, np.zeros_like(lats)]
+            ).T
+            connectivity = np.arange(-1, num)
+            connectivity[0] = num
+            line = vtk_projection.transform(
+                pv.PolyData(xyz, lines=connectivity, n_lines=1)
+            )
+            plotter.add_mesh(
+                line, pickable=False, color=line_color, line_width=line_width
+            )
+
+    if labels:
+        if projection is None:
+            lats = np.zeros_like(lons)
+            points = pv.PolyData(to_xyz(lats, lons, radius=radius))
+        else:
+            lats = np.zeros_like(lons)
+            xyz = np.vstack([lons, lats, np.zeros_like(lons)]).T
+            points = vtk_projection.transform(pv.PolyData(xyz))
+
+        points_labels = []
+        for lon in lons:
+            direction = "°E"
+            if lon < 0:
+                direction = "°W"
+            elif lon == 0 or abs(lon) == 180:
+                direction = "°"
+            points_labels.append(f"{int(abs(lon))}{direction}")
+
+        plotter.add_point_labels(
+            points, points_labels, pickable=False, **defaults
+        )
+
+    return plotter
+
+
+@lru_cache
+def get_coastlines(resolution="110m", geocentric=False):
+    """
+    Download and return the collection of Natural Earth coastline geometries.
+
+    The geometries will be transformed appropriately for use with a 2D planar
+    projection or a 3D spherical mesh.
+
+    Kwargs:
+
+    * resolution (None or str):
+        The resolution of the Natural Earth coastlines, which may be either
+        ``110m``, ``50m`` or ``10m``. If ``None``, no coastlines are rendered.
+        The default is ``110m``.
+
+    geocentric (bool):
+        Convert the coastline latitude and longitude geometries to geocentric
+        XYZ coordinates.
+
+    Returns:
+        A :class:~pyvista.core.composite.MultiBlock` containing one or more
+        :class:`~pyvista.core.pointset.PolyData` coastline geometries.
+
+    """
+    # add a "fudge-factor" to ensure coastlines overlay the mesh
+    # i.e., a poor mans zorder.
+    radius = RADIUS + RADIUS / 1e4
+
+    # load in the shapefiles
+    fname = shp.natural_earth(
+        resolution=resolution, category="physical", name="coastline"
+    )
+    reader = shp.Reader(fname)
+
+    dtype = np.float32
+    blocks = pv.MultiBlock()
+    geoms = []
+
+    def to_pyvista_blocks(records):
+        for record in records:
+            if isinstance(record, Record):
+                geometry = record.geometry
+            else:
+                geometry = record
+
+            if isinstance(geometry, MultiLineString):
+                geoms.extend(list(geometry.geoms))
+            else:
+                xy = np.array(geometry.coords[:], dtype=dtype)
+
+                if geocentric:
+                    # calculate 3d xyz coordinates
+                    xr = np.radians(xy[:, 0]).reshape(-1, 1)
+                    yr = np.radians(90 - xy[:, 1]).reshape(-1, 1)
+
+                    x = radius * np.sin(yr) * np.cos(xr)
+                    y = radius * np.sin(yr) * np.sin(xr)
+                    z = radius * np.cos(yr)
+                else:
+                    # otherwise, calculate xy0 coordinates
+                    x = xy[:, 0].reshape(-1, 1)
+                    y = xy[:, 1].reshape(-1, 1)
+                    z = np.zeros_like(x)
+
+                xyz = np.hstack((x, y, z))
+                poly = pv.lines_from_points(xyz, close=False)
+                blocks.append(poly)
+
+    to_pyvista_blocks(reader.records())
+    to_pyvista_blocks(geoms)
+
+    return blocks
+
+
+def is_notebook():
+    """
+    Determine whether we are executing within an ``IPython`` kernel.
+
+    Returns:
+        Boolean.
+
+    """
+    result = True
+    try:
+        from IPython import get_ipython
+
+        ip = get_ipython()
+        ip.kernel
+    except (AttributeError, ModuleNotFoundError):
+        result = False
+    return result
+
+
 def namify(item):
     """
     Convenience function that sanitises the name of the provided ``item`` for
@@ -730,12 +849,12 @@ def plot(
         provide the exact camera position to be applied. Default is ``True``.
 
     * graticule (bool):
-        Determine whether a labelled graticule of meridian and parallel lines
+        Specify whether a labelled graticule of meridian and parallel lines
         is rendered. Default is ``False``.
 
     * plotter (None or Plotter):
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
-        If ``None``, a plotter object will be created. Default is None.
+        If ``None``, a plotter object will be created. Default is ``None``.
 
     * kwargs (dict):
         Additional ``kwargs`` to be passed to PyVista when creating
