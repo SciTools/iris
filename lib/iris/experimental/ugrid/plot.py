@@ -90,7 +90,7 @@ rcParams = {
         "lon_labels": True,
         "lon_num": DEFAULT_LONGITUDE_NUM,
         "lon_step": DEFAULT_LONGITUDE_STEP,
-        "shape": "rounded_rect",
+        "shape": None,
         "shadow": True,
         "text_color": "white",
     },
@@ -117,7 +117,7 @@ rcParams = {
     },
     "plot": {
         "culling": False,
-        "cmap": "thermal",
+        "cmap": "balance",
         "diffuse": 1.0,
         "edge_color": "black",
         "nan_color": "grey",
@@ -128,7 +128,6 @@ rcParams = {
             "shadow": True,
         },
         "show_edges": False,
-        "smooth_shading": True,
         "specular": 0,
     },
 }
@@ -203,7 +202,37 @@ class vtkPolyDataTransformFilter:
         return pv.wrap(output)
 
 
+def _get_clim(cube, mesh):
+    """Calculate the min/max values of the mesh data"""
+    location = cube.location
+
+    if cube.ndim == 1:
+        data = mesh[location]
+    else:
+        sdim = 1 - cube.mesh_dim()
+        n = cube.shape[sdim]
+        data = np.vstack(
+            [mesh.cell_arrays[f"{location}_{i}"] for i in range(n)]
+        )
+
+    # ignore warnings raised by all nan calculations
+    with warnings.catch_warnings():
+        message = "All-NaN slice|Mean of empty slice"
+        warnings.filterwarnings(
+            "ignore",
+            message=message,
+            category=RuntimeWarning,
+        )
+        clim = np.nanmin(data), np.nanmax(data)
+
+    return clim
+
+
 def _tidy_graticule_defaults(defaults):
+    """
+    Purge graticule custom (non-pyvista) kwargs from the defaults ``dict``.
+
+    """
     for arg in (
         "lat_labels",
         "lat_num",
@@ -892,9 +921,18 @@ def plot(
     # threshold the mesh, if appropriate
     #
     if isinstance(threshold, bool) and threshold:
-        mesh = mesh.threshold(scalars=cube.location, invert=invert)
+        mesh = mesh.threshold(
+            scalars=cube.location,
+            invert=invert,
+            preference=to_preference(cube.location),
+        )
     elif not isinstance(threshold, bool):
-        mesh = mesh.threshold(threshold, scalars=cube.location, invert=invert)
+        mesh = mesh.threshold(
+            threshold,
+            scalars=cube.location,
+            invert=invert,
+            preference=to_preference(cube.location),
+        )
         if isinstance(threshold, (np.ndarray, Iterable)):
             annotations = {threshold[0]: "Lower", threshold[1]: "Upper"}
             if "annotations" not in kwargs:
@@ -903,6 +941,9 @@ def plot(
     if location and pickable:
         # add unique cell index values to each cell
         mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
+
+    if "clim" not in kwargs:
+        kwargs["clim"] = _get_clim(cube, mesh)
 
     if location:
         plotter.add_mesh(
@@ -1071,7 +1112,7 @@ def plot(
                 nounits = (
                     scoord.units.is_dimensionless()
                     or scoord.units.is_no_unit()
-                    or scoord.units.is_dimensionless()
+                    or scoord.units.is_unknown()
                 )
                 sunits = "" if nounits else scoord.units
                 scoord = scoord.points
@@ -1140,6 +1181,26 @@ def plot(
         add_graticule(projection=projection, plotter=plotter)
 
     return plotter
+
+
+def to_preference(location):
+    """
+    Translate UGRID location to PyVista ``point`` or ``cell`` mesh preference.
+
+    For example, this can be used as a value to the ``preference`` kwarg to
+    :meth:`~pyvista.core.filters.threshold`.
+
+    Args:
+
+    location (str):
+        The UGRID ``node``, ``edge``, or ``face`` location to be translated.
+
+    Returns:
+        The associated ``point`` or ``cell`` preference.
+
+    """
+    result = "cell" if location == "face" else "point"
+    return result
 
 
 def to_vtk_mesh(cube, projection=None, location=True, cids=False):
