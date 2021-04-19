@@ -161,7 +161,7 @@ class TestTolerantLoading(XIOSFileMixin):
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
-        # Check that the result has top-dim of 2 (not 1).
+        # Check that the result has topology-dimension of 2 (not 1).
         self.assertEqual(cube.mesh.topology_dimension, 2)
 
     def test_mesh_no_topology_dimension(self):
@@ -173,7 +173,7 @@ class TestTolerantLoading(XIOSFileMixin):
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
-        # Check that the result has top-dim of 2 (not 1).
+        # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
 
 

@@ -3658,35 +3658,34 @@ def _build_mesh(cf, mesh_var, file_path):
     attr_units = get_attr_units(mesh_var, attributes)
 
     if hasattr(mesh_var, "volume_node_connectivity"):
-        expected_topology_dimension = 3
+        topology_dimension = 3
     elif hasattr(mesh_var, "face_node_connectivity"):
-        expected_topology_dimension = 2
+        topology_dimension = 2
     elif hasattr(mesh_var, "edge_node_connectivity"):
-        expected_topology_dimension = 1
+        topology_dimension = 1
     else:
         # Nodes only.  We aren't sure yet whether this is a valid option.
-        expected_topology_dimension = 0
+        topology_dimension = 0
 
     if not hasattr(mesh_var, "topology_dimension"):
         msg = (
             f"Mesh variable {mesh_var.cf_name} has no 'topology_dimension'"
-            f" : *Assuming* topology_dimension={expected_topology_dimension}"
+            f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
         warnings.warn(msg)
-        topology_dimension = expected_topology_dimension
     else:
-        topology_dimension = mesh_var.topology_dimension
-        if topology_dimension != expected_topology_dimension:
+        quoted_topology_dimension = mesh_var.topology_dimension
+        if quoted_topology_dimension != topology_dimension:
             msg = (
-                f"*Assuming* 'topology_dimension'={expected_topology_dimension}"
+                f"*Assuming* 'topology_dimension'={topology_dimension}"
                 f", from the attached connectivities of the mesh variable "
                 f"{mesh_var.cf_name}.  However, "
-                f"{mesh_var.cf_name}:topology_dimension = {topology_dimension}"
-                " -- ignoring this as inconsistent."
+                f"{mesh_var.cf_name}:topology_dimension = "
+                f"{quoted_topology_dimension}"
+                " -- ignoring this as it is inconsistent."
             )
             warnings.warn(msg)
-            topology_dimension = expected_topology_dimension
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)
