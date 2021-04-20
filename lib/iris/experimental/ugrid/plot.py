@@ -827,6 +827,7 @@ def plot(
     cpos=True,
     graticule=False,
     plotter=None,
+    return_mesh=False,
     **kwargs,
 ):
     """
@@ -863,7 +864,7 @@ def plot(
     * invert (bool):
         Invert the nature of the ``threshold``. If ``threshold`` is a single value,
         then when invert is ``True`` cells are kept when their values are below
-        parameter ``threshold``. When ``invert`` is ``False`` cells are kept when
+        the ``threshold``. When ``invert`` is ``False``, cells are kept when
         their value is above the ``threshold``. Default is ``False``.
 
     * location (bool):
@@ -885,12 +886,16 @@ def plot(
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
         If ``None``, a plotter object will be created. Default is ``None``.
 
+    * return_mesh (bool):
+        Share the mesh with the caller by returning it. Default is ``False``.
+
     * kwargs (dict):
         Additional ``kwargs`` to be passed to PyVista when creating
         :class:`~pyvista.core.pointset.PolyData`.
 
     Returns:
-        The :class:`~pyvista.plotting.plotting.Plotter`.
+        The :class:`~pyvista.plotting.plotting.Plotter`. Additionally, if
+        requested, the mesh is also returned.
 
     """
     global VTK_PICKER_CALLBACK
@@ -901,7 +906,13 @@ def plot(
         raise TypeError(emsg)
 
     if not location:
-        pickable = location
+        pickable = False
+        # there is not mesh data to render
+        if cube.ndim == 2:
+            sdim = 1 - cube.mesh_dim()
+            slicer = [slice(None), slice(None)]
+            slicer[sdim] = 0
+            cube = cube[tuple(slicer)]
 
     # use the appropriate pyvista notebook backend
     notebook = is_notebook()
@@ -942,7 +953,7 @@ def plot(
         # add unique cell index values to each cell
         mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
 
-    if "clim" not in kwargs:
+    if location and "clim" not in kwargs:
         kwargs["clim"] = _get_clim(cube, mesh)
 
     if location:
@@ -1180,7 +1191,7 @@ def plot(
     if graticule:
         add_graticule(projection=projection, plotter=plotter)
 
-    return plotter
+    return (plotter, mesh) if return_mesh else plotter
 
 
 def to_preference(location):

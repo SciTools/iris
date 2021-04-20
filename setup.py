@@ -279,4 +279,8 @@ setup(
         "docs": pip_requirements("docs"),
         "test": pip_requirements("test"),
     },
+    entry_points="""
+        [console_scripts]
+        iris-pyvista=iris:main
+    """,
 )

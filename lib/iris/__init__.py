@@ -95,6 +95,7 @@ import iris.config
 import iris.cube
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
+from iris.experimental.ugrid import main
 import iris.fileformats
 import iris.io
 
@@ -114,6 +115,7 @@ __all__ = [
     "load_cube",
     "load_cubes",
     "load_raw",
+    "main",
     "save",
     "Constraint",
     "AttributeConstraint",

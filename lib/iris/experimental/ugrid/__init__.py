@@ -18,6 +18,8 @@ from functools import wraps
 import re
 import threading
 
+import click
+from click_default_group import DefaultGroup
 import dask.array as da
 import numpy as np
 
@@ -48,6 +50,7 @@ __all__ = [
     "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
+    "main",
     "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
@@ -3767,3 +3770,293 @@ def _build_mesh_coords(mesh, cf_var):
 
 # END of loading section.
 ###############################################################################
+
+
+def _cli_loader(filename, name):
+    from iris import load
+    from ..ugrid import PARSE_UGRID_ON_LOAD
+
+    constraints = name if name else None
+    with PARSE_UGRID_ON_LOAD.context():
+        cube = load(filename, constraints=constraints)
+    return cube
+
+
+@click.group(cls=DefaultGroup, default="plot", default_if_no_args=True)
+def main():
+    """
+    Render an Iris unstructured cube using PyVista.
+
+    To get help for commands, simply use "iris-pyvista <COMMAND> --help".
+
+    """
+    pass
+
+
+@click.option(
+    "--cube-slice",
+    type=str,
+    help=(
+        "Comma separated slice used to reduce the dimensionality of the "
+        "unstructured cube to either 1D or 2D."
+    ),
+)
+@click.option(
+    "--save",
+    type=click.Path(),
+    help="Save the rendered mesh as VTK format to the specified filename.",
+)
+@click.option(
+    "--off-screen",
+    type=click.Path(),
+    help="Render the scene off-screen and save to the specified filename.",
+)
+@click.option(
+    "--camera-position",
+    type=str,
+    help=(
+        "Set the camera position to either 'xy', 'xz', 'yx', 'yz', 'zx' "
+        "or 'zy'."
+    ),
+)
+@click.option("--show-edges", is_flag=True, help="Render mesh cell edges.")
+@click.option(
+    "-g",
+    "--graticule",
+    is_flag=True,
+    help="Render a labelled graticule of meridian and parallel lines",
+)
+@click.option(
+    "--no-location-data",
+    is_flag=True,
+    help=(
+        "Don't populate the cell array of the PyVista mesh with the location "
+        "data associated with the unstructured cube."
+    ),
+)
+@click.option(
+    "-i",
+    "--invert",
+    is_flag=True,
+    help=(
+        "Invert the nature of the threshold. If threshold is a single value, "
+        "then when invert is 'True' cells are kept when their values are "
+        "below the threshold. When invert is not specified, cells are kept "
+        "when their value is above the threshold."
+    ),
+)
+@click.option(
+    "-t",
+    "--threshold",
+    default=False,
+    show_default=True,
+    help=(
+        "Apply a threshold to the mesh data. Single value or 'min,max' to "
+        "be used for the data threshold. If a sequence, then length must "
+        "be 2. If 'True', the non-NaN data range will be used to remove any "
+        "NaN values."
+    ),
+)
+@click.option(
+    "-r",
+    "--resolution",
+    type=str,
+    help=(
+        "The resolution of the Natural Earth coastlines, which may be "
+        "either '110m', '50m' or '10m'. If unspecified, no coastlines "
+        "are rendered."
+    ),
+)
+@click.option(
+    "-p",
+    "--projection",
+    type=str,
+    help=(
+        "The name of the PROJ4 planar projection used to transform the "
+        "unstructured cube mesh into a 2D projection coordinate system. "
+        "If unspecified, the unstructured cube mesh is rendered on a "
+        "3D sphere."
+    ),
+)
+@click.option(
+    "-n",
+    "--name",
+    type=str,
+    help="Specify the cube name to be applied as a loading constraint.",
+)
+@click.argument("filename", type=click.Path(exists=True, dir_okay=False))
+@main.command("plot")
+def plot(
+    cube_slice,
+    save,
+    off_screen,
+    camera_position,
+    show_edges,
+    graticule,
+    no_location_data,
+    invert,
+    threshold,
+    resolution,
+    projection,
+    name,
+    filename,
+):
+    """
+    Load a 1D or 2D unstructured Iris cube and render using PyVista.
+
+    """
+    import pyvista as pv
+    from .plot import plot as ugrid_plot
+    from .plot import rcParams
+
+    cubes = _cli_loader(filename, name)
+
+    if len(cubes) != 1:
+        print(cubes)
+        return
+
+    (cube,) = cubes
+
+    if cube_slice:
+        parts = cube_slice.split(",")
+        slicer = []
+        for part in parts:
+            try:
+                part = int(part)
+                slicer.append(part)
+            except ValueError:
+                part = part.strip()
+                if part == ":":
+                    slicer.append(slice(None))
+                else:
+                    emsg = (
+                        f'Unsupported cube slice syntax, got "{cube_slice}".'
+                    )
+                    print(emsg)
+                    return
+        cube = cube[tuple(slicer)]
+
+    if threshold:
+        if threshold.lower() in ["true", "yes", "y"]:
+            threshold = True
+        elif threshold.lower() in ["false", "no", "n"]:
+            threshold = False
+        else:
+            try:
+                threshold = float(threshold)
+            except ValueError:
+                values = threshold.split(",")
+                if len(values) != 2:
+                    emsg = f'Invalid threshold specified, got "{threshold}".'
+                    print(emsg)
+                    return
+                try:
+                    threshold = (float(values[0]), float(values[1]))
+                except ValueError:
+                    emsg = (
+                        "Invalid threshold value specified, expected "
+                        f'"<min>,<max>", got "{threshold}".'
+                    )
+                    print(emsg)
+                    return
+
+    if show_edges:
+        rcParams["plot"]["show_edges"] = True
+
+    plotter = pv.Plotter(off_screen=True) if off_screen else pv.Plotter()
+
+    return_mesh = True if save else None
+
+    result = ugrid_plot(
+        cube,
+        projection=projection,
+        resolution=resolution,
+        threshold=threshold,
+        invert=invert,
+        location=not no_location_data,
+        graticule=graticule,
+        plotter=plotter,
+        return_mesh=return_mesh,
+    )
+
+    positions = ["xy", "xz", "yx", "yz", "zx", "zy"]
+    if (
+        camera_position is not None
+        and camera_position.lower() not in positions
+    ):
+        valid = ",".join(positions)
+        emsg = (
+            "Ignoring invalid camera position, expected either "
+            f'({valid}), got "{camera_position}".'
+        )
+        print(emsg)
+        camera_position = None
+
+    if camera_position is None:
+        camera_position = "xy" if projection else "yz"
+
+    if camera_position == "xy":
+        plotter.view_xy()
+    elif camera_position == "xz":
+        plotter.view_xz()
+    elif camera_position == "yx":
+        plotter.view_yx()
+    elif camera_position == "yz":
+        plotter.view_yz()
+    elif camera_position == "zx":
+        plotter.view_zx()
+    else:
+        plotter.view_zy()
+
+    plotter.show_axes()
+    plotter.show(screenshot=off_screen)
+
+    if save:
+        _, mesh = result
+        mesh.save(save)
+
+
+@main.command("show")
+@click.option(
+    "--scalars",
+    type=str,
+    help=("Name of the mesh scalars array for colouring the mesh."),
+)
+@click.option(
+    "--cmap",
+    type=str,
+    help=(
+        "Select the name of the cmocean, colorcet, or matplotlib colormap "
+        "to use when mapping the mesh scalars."
+    ),
+)
+@click.option("--show-edges", is_flag=True, help="Render mesh cell edges.")
+@click.argument("filename", type=click.Path(exists=True, dir_okay=False))
+def show(scalars, cmap, show_edges, filename):
+    """
+    Load and render a VTK file using PyVista.
+
+    """
+    import pyvista as pv
+
+    mesh = pv.read(filename)
+    mesh.plot(show_edges=show_edges, cmap=cmap, scalars=scalars)
+
+
+@main.command("summary")
+@click.argument("filename", type=click.Path(exists=True, dir_okay=False))
+@click.option(
+    "-n",
+    "--name",
+    type=str,
+    help="Cube name to be applied as a loading constraint.",
+)
+def summary(filename, name):
+    """
+    Print a cube summary.
+
+    """
+    cubes = _cli_loader(filename, name)
+    if len(cubes) == 1:
+        cubes = cubes[0]
+    print(cubes)
