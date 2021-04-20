@@ -18,7 +18,7 @@ import iris.tests as tests
 from collections.abc import Iterable
 
 from iris import Constraint, load
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, logger
 
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
@@ -157,10 +157,14 @@ class TestTolerantLoading(XIOSFileMixin):
         # Check that the load generates a suitable warning.
         template = "minimal_bad_topology_dim"
         dim_line = "mesh_var:topology_dimension = 1 ;"  # which is wrong !
-        with self.assertWarnsRegexp("topology_dimension.* ignoring"):
+        with self.assertLogs(logger, level="DEBUG") as log:
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
+        self.assertEqual(len(log.output), 1)
+        re_msg = r"topology_dimension.* ignoring"
+        self.assertRegexpMatches(log.output[0], re_msg)
+
         # Check that the result has topology-dimension of 2 (not 1).
         self.assertEqual(cube.mesh.topology_dimension, 2)
 
@@ -168,11 +172,13 @@ class TestTolerantLoading(XIOSFileMixin):
         # Check that the load generates a suitable warning.
         template = "minimal_bad_topology_dim"
         dim_line = ""  # don't create ANY topology_dimension property
-        re_msg = r"Mesh variable.* has no 'topology_dimension'"
-        with self.assertWarnsRegexp(re_msg):
+        with self.assertLogs(logger, level="DEBUG") as log:
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
+        self.assertEqual(len(log.output), 1)
+        re_msg = r"Mesh variable.* has no 'topology_dimension'"
+        self.assertRegexpMatches(log.output[0], re_msg)
         # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
 

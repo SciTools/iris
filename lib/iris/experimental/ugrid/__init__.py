@@ -17,7 +17,6 @@ from contextlib import contextmanager
 from functools import wraps
 import re
 import threading
-import warnings
 
 import dask.array as da
 import numpy as np
@@ -3673,7 +3672,9 @@ def _build_mesh(cf, mesh_var, file_path):
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
-        warnings.warn(msg)
+        # TODO: reconsider logging level when we have consistent practice.
+        # TODO: logger always requires extras['cls'] : can we fix this?
+        logger.warning(msg, extra=dict(cls=None))
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -3685,7 +3686,9 @@ def _build_mesh(cf, mesh_var, file_path):
                 f"{quoted_topology_dimension}"
                 " -- ignoring this as it is inconsistent."
             )
-            warnings.warn(msg)
+            # TODO: reconsider logging level when we have consistent practice.
+            # TODO: logger always requires extras['cls'] : can we fix this?
+            logger.warning(msg=msg, extra=dict(cls=None))
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)
