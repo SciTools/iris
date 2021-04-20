@@ -229,7 +229,7 @@ Post Release Steps
 #. Review the `Active Versions`_ for the ``scitools-iris`` project on
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
-   see `Editing v3.0.0rc0`_  (must be logged into Read the Docs).
+   see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
 #. Copy ``docs/src/whatsnew/latest.rst.template`` to
    ``docs/src/whatsnew/latest.rst``.  This will reset
    the file with the ``unreleased`` heading and placeholders for the
