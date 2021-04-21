@@ -3656,7 +3656,39 @@ def _build_mesh(cf, mesh_var, file_path):
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
 
-    topology_dimension = mesh_var.topology_dimension
+    if hasattr(mesh_var, "volume_node_connectivity"):
+        topology_dimension = 3
+    elif hasattr(mesh_var, "face_node_connectivity"):
+        topology_dimension = 2
+    elif hasattr(mesh_var, "edge_node_connectivity"):
+        topology_dimension = 1
+    else:
+        # Nodes only.  We aren't sure yet whether this is a valid option.
+        topology_dimension = 0
+
+    if not hasattr(mesh_var, "topology_dimension"):
+        msg = (
+            f"Mesh variable {mesh_var.cf_name} has no 'topology_dimension'"
+            f" : *Assuming* topology_dimension={topology_dimension}"
+            ", consistent with the attached connectivities."
+        )
+        # TODO: reconsider logging level when we have consistent practice.
+        # TODO: logger always requires extras['cls'] : can we fix this?
+        logger.warning(msg, extra=dict(cls=None))
+    else:
+        quoted_topology_dimension = mesh_var.topology_dimension
+        if quoted_topology_dimension != topology_dimension:
+            msg = (
+                f"*Assuming* 'topology_dimension'={topology_dimension}"
+                f", from the attached connectivities of the mesh variable "
+                f"{mesh_var.cf_name}.  However, "
+                f"{mesh_var.cf_name}:topology_dimension = "
+                f"{quoted_topology_dimension}"
+                " -- ignoring this as it is inconsistent."
+            )
+            # TODO: reconsider logging level when we have consistent practice.
+            # TODO: logger always requires extras['cls'] : can we fix this?
+            logger.warning(msg=msg, extra=dict(cls=None))
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)

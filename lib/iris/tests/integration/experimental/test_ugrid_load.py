@@ -18,7 +18,12 @@ import iris.tests as tests
 from collections.abc import Iterable
 
 from iris import Constraint, load
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, logger
+
+from iris.tests.stock.netcdf import (
+    _file_from_cdl_template as create_file_from_cdl_template,
+)
+from iris.tests.unit.tests.stock.test_netcdf import XIOSFileMixin
 
 
 def ugrid_load(uris, constraints=None, callback=None):
@@ -117,3 +122,73 @@ class TestMultiplePhenomena(tests.IrisTest):
         self.assertCML(
             cube_list, ("experimental", "ugrid", "surface_mean.cml")
         )
+
+
+class TestTolerantLoading(XIOSFileMixin):
+    # N.B. using parts of the XIOS-like file integration testing, to make
+    # temporary netcdf files from stored CDL templates.
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()  # create cls.temp_dir = dir for test files
+
+    @classmethod
+    def tearDownClass(cls):
+        super().setUpClass()  # destroy temp dir
+
+    # Create a testfile according to testcase-specific arguments.
+    # NOTE: with this, parent "create_synthetic_test_cube" can load a cube.
+    def create_synthetic_file(self, **create_kwargs):
+        template_name = create_kwargs["template"]  # required kwarg
+        testfile_name = "tmp_netcdf"
+        template_subs = dict(
+            NUM_NODES=7, NUM_FACES=3, DATASET_NAME=testfile_name
+        )
+        kwarg_subs = create_kwargs.get("subs", {})  # optional kwarg
+        template_subs.update(kwarg_subs)
+        filepath = create_file_from_cdl_template(
+            temp_file_dir=self.temp_dir,
+            dataset_name=testfile_name,
+            dataset_type=template_name,
+            template_subs=template_subs,
+        )
+        return str(filepath)  # N.B. Path object not usable in iris.load
+
+    def test_mesh_bad_topology_dimension(self):
+        # Check that the load generates a suitable warning.
+        with self.assertLogs(logger) as log:
+            template = "minimal_bad_topology_dim"
+            dim_line = "mesh_var:topology_dimension = 1 ;"  # which is wrong !
+            cube = self.create_synthetic_test_cube(
+                template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
+            )
+        # Check we got just one message, and its content
+        self.assertEqual(len(log.records), 1)
+        rec = log.records[0]
+        self.assertEqual(rec.levelname, "WARNING")
+        re_msg = r"topology_dimension.* ignoring"
+        self.assertRegex(rec.msg, re_msg)
+
+        # Check that the result has topology-dimension of 2 (not 1).
+        self.assertEqual(cube.mesh.topology_dimension, 2)
+
+    def test_mesh_no_topology_dimension(self):
+        # Check that the load generates a suitable warning.
+        with self.assertLogs(logger) as log:
+            template = "minimal_bad_topology_dim"
+            dim_line = ""  # don't create ANY topology_dimension property
+            cube = self.create_synthetic_test_cube(
+                template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
+            )
+        # Check we got just one message, and its content
+        self.assertEqual(len(log.records), 1)
+        rec = log.records[0]
+        self.assertEqual(rec.levelname, "WARNING")
+        re_msg = r"Mesh variable.* has no 'topology_dimension'"
+        self.assertRegex(rec.msg, re_msg)
+
+        # Check that the result has the correct topology-dimension value.
+        self.assertEqual(cube.mesh.topology_dimension, 2)
+
+
+if __name__ == "__main__":
+    tests.main()
