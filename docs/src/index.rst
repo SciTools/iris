@@ -1,4 +1,4 @@
-.. _iris_docs:
+.. _iris_docs: 
 
 Iris |version|
 ========================
