@@ -155,9 +155,9 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_bad_topology_dimension(self):
         # Check that the load generates a suitable warning.
-        template = "minimal_bad_topology_dim"
-        dim_line = "mesh_var:topology_dimension = 1 ;"  # which is wrong !
-        with self.assertLogs(logger, level="DEBUG") as log:
+        with self.assertLogs(logger) as log:
+            template = "minimal_bad_topology_dim"
+            dim_line = "mesh_var:topology_dimension = 1 ;"  # which is wrong !
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
@@ -173,9 +173,9 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_no_topology_dimension(self):
         # Check that the load generates a suitable warning.
-        template = "minimal_bad_topology_dim"
-        dim_line = ""  # don't create ANY topology_dimension property
-        with self.assertLogs(logger, level="DEBUG") as log:
+        with self.assertLogs(logger) as log:
+            template = "minimal_bad_topology_dim"
+            dim_line = ""  # don't create ANY topology_dimension property
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
