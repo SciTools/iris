@@ -161,9 +161,12 @@ class TestTolerantLoading(XIOSFileMixin):
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
-        self.assertEqual(len(log.output), 1)
+        # Check we got just one message, and its content
+        self.assertEqual(len(log.records), 1)
+        rec = log.records[0]
+        self.assertEqual(rec.levelname, "WARNING")
         re_msg = r"topology_dimension.* ignoring"
-        self.assertRegexpMatches(log.output[0], re_msg)
+        self.assertRegex(rec.msg, re_msg)
 
         # Check that the result has topology-dimension of 2 (not 1).
         self.assertEqual(cube.mesh.topology_dimension, 2)
@@ -176,9 +179,13 @@ class TestTolerantLoading(XIOSFileMixin):
             cube = self.create_synthetic_test_cube(
                 template=template, subs=dict(TOPOLOGY_DIM_DEFINITION=dim_line)
             )
-        self.assertEqual(len(log.output), 1)
+        # Check we got just one message, and its content
+        self.assertEqual(len(log.records), 1)
+        rec = log.records[0]
+        self.assertEqual(rec.levelname, "WARNING")
         re_msg = r"Mesh variable.* has no 'topology_dimension'"
-        self.assertRegexpMatches(log.output[0], re_msg)
+        self.assertRegex(rec.msg, re_msg)
+
         # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
 
