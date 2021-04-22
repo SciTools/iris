@@ -123,6 +123,7 @@ def prepare_venv(session):
             f"--prefix={session.virtualenv.location}",
             f"--file={fname}",
             "--prune",
+            "--verbose",
         )
         session._run(*command, silent=True, external="error")
         cache_venv(session)
