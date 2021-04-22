@@ -196,16 +196,17 @@ class TestIdentify(tests.IrisTest):
         }
 
         # Missing warning.
-        with self.assertLogs(logger, level="DEBUG") as log:
+        with self.assertLogs(logger) as log:
             result = CFUGridMeshVariable.identify(vars_all, warn=False)
-            self.assertEqual(0, len(log.output))
+            self.assertEqual(0, len(log.records))
             self.assertDictEqual({}, result)
 
             # Default is warn=True
             result = CFUGridMeshVariable.identify(vars_all)
-            self.assertIn(
-                f"Missing CF-UGRID mesh variable {subject_name}", log.output[0]
-            )
+            rec = log.records[0]
+            self.assertEqual("WARNING", rec.levelname)
+            re_msg = rf"Missing CF-UGRID mesh variable {subject_name}.*"
+            self.assertRegex(rec.msg, re_msg)
             self.assertDictEqual({}, result)
 
         # String variable warning.

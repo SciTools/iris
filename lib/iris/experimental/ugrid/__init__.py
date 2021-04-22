@@ -1229,7 +1229,7 @@ class Mesh(CFVariableMixin):
                     "Not setting face_dimension (inappropriate for "
                     f"topology_dimension={self.topology_dimension} ."
                 )
-                logger.debug(message)
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
         elif not name or not isinstance(name, str):
             face_dimension = f"Mesh{self.topology_dimension}d_face"
         else:
@@ -3332,7 +3332,11 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                     f"{name}, referenced by netCDF variable "
                                     f"{nc_var_name}"
                                 )
-                                logger.debug(message)
+                                # TODO: reconsider logging level when we
+                                #  have consistent practice.
+                                logger.warning(
+                                    message, extra=dict(cls=cls.__name__)
+                                )
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -3346,7 +3350,9 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                     f"as a CF-UGRID connectivity - is a "
                                     f"CF-netCDF label variable."
                                 )
-                                logger.debug(message)
+                                logger.debug(
+                                    message, extra=dict(cls=cls.__name__)
+                                )
 
         return result
 
@@ -3403,7 +3409,11 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                         f"referenced by netCDF variable "
                                         f"{nc_var_name}"
                                     )
-                                    logger.debug(message)
+                                    # TODO: reconsider logging level when we
+                                    #  have consistent practice.
+                                    logger.warning(
+                                        message, extra=dict(cls=cls.__name__)
+                                    )
                             else:
                                 # Restrict to non-string type i.e. not a
                                 # CFLabelVariable.
@@ -3420,7 +3430,9 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                         f"coordinate - is a CF-netCDF label "
                                         f"variable."
                                     )
-                                    logger.debug(message)
+                                    logger.debug(
+                                        message, extra=dict(cls=cls.__name__)
+                                    )
 
         return result
 
@@ -3467,7 +3479,11 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"Missing CF-UGRID mesh variable {name}, "
                                 f"referenced by netCDF variable {nc_var_name}"
                             )
-                            logger.debug(message)
+                            # TODO: reconsider logging level when we have
+                            #  consistent practice.
+                            logger.warning(
+                                message, extra=dict(cls=cls.__name__)
+                            )
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
@@ -3481,7 +3497,7 @@ class CFUGridMeshVariable(cf.CFVariable):
                                 f"CF-UGRID mesh - is a CF-netCDF label "
                                 f"variable."
                             )
-                            logger.debug(message)
+                            logger.debug(message, extra=dict(cls=cls.__name__))
 
         return result
 
@@ -3673,7 +3689,6 @@ def _build_mesh(cf, mesh_var, file_path):
             ", consistent with the attached connectivities."
         )
         # TODO: reconsider logging level when we have consistent practice.
-        # TODO: logger always requires extras['cls'] : can we fix this?
         logger.warning(msg, extra=dict(cls=None))
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
@@ -3687,7 +3702,6 @@ def _build_mesh(cf, mesh_var, file_path):
                 " -- ignoring this as it is inconsistent."
             )
             # TODO: reconsider logging level when we have consistent practice.
-            # TODO: logger always requires extras['cls'] : can we fix this?
             logger.warning(msg=msg, extra=dict(cls=None))
 
     node_dimension = None
