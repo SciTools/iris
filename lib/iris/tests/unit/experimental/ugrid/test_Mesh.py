@@ -194,7 +194,10 @@ class TestProperties1D(TestMeshCommon):
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.assertEqual([], func(contains_face=True))
-            self.assertIn("filter for non-existent", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r".*filter for non-existent.*"
+            self.assertRegex(rec.msg, re_msg)
 
     def test_coord(self):
         # See Mesh.coords tests for thorough coverage of cases.
@@ -266,7 +269,10 @@ class TestProperties1D(TestMeshCommon):
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.assertEqual([], func(include_faces=True))
-            self.assertIn("filter non-existent", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r".*filter non-existent.*"
+            self.assertRegex(rec.msg, re_msg)
 
     def test_edge_dimension(self):
         self.assertEqual(
@@ -620,7 +626,10 @@ class TestOperations1D(TestMeshCommon):
         face_node = self.FACE_NODE
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.add_connectivities(face_node)
-            self.assertIn("Not adding connectivity", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r"Not adding connectivity.*"
+            self.assertRegex(rec.msg, re_msg)
 
     def test_add_coords(self):
         # ADD coords.
@@ -727,7 +736,10 @@ class TestOperations1D(TestMeshCommon):
 
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.dimension_names("foo", "bar", "baz")
-            self.assertIn("Not setting face_dimension", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r"Not setting face_dimension.*"
+            self.assertRegex(rec.msg, re_msg)
         self.assertEqual(
             ugrid.Mesh1DNames("foo", "bar"), self.mesh.dimension_names()
         )
@@ -748,7 +760,10 @@ class TestOperations1D(TestMeshCommon):
     def test_face_dimension_set(self):
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.face_dimension = "foo"
-            self.assertIn("Not setting face_dimension", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r"Not setting face_dimension.*"
+            self.assertRegex(rec.msg, re_msg)
         self.assertIsNone(self.mesh.face_dimension)
 
     def test_node_dimension_set(self):
@@ -793,14 +808,17 @@ class TestOperations1D(TestMeshCommon):
         for kwargs in positive_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 self.mesh.remove_connectivities(**kwargs)
-                self.assertIn("Ignoring request to remove", log.output[0])
+                rec = log.records[0]
+                self.assertEqual("DEBUG", rec.levelname)
+                re_msg = r"Ignoring request to remove.*"
+                self.assertRegex(rec.msg, re_msg)
             self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
                 ugrid.logger.debug("foo")
                 self.mesh.remove_connectivities(**kwargs)
-                self.assertEqual(1, len(log.output))
+                self.assertEqual(1, len(log.records))
             self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
 
     def test_remove_coords(self):
@@ -828,14 +846,17 @@ class TestOperations1D(TestMeshCommon):
         for kwargs in positive_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 self.mesh.remove_coords(**kwargs)
-                self.assertIn("Ignoring request to remove", log.output[0])
+                rec = log.records[0]
+                self.assertEqual("DEBUG", rec.levelname)
+                re_msg = r"Ignoring request to remove.*"
+                self.assertRegex(rec.msg, re_msg)
             self.assertEqual(self.NODE_LON, self.mesh.node_coords.node_x)
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
                 ugrid.logger.debug("foo")
                 self.mesh.remove_coords(**kwargs)
-                self.assertEqual(1, len(log.output))
+                self.assertEqual(1, len(log.records))
             self.assertEqual(self.NODE_LON, self.mesh.node_coords.node_x)
 
         # Test removal of optional connectivity.
@@ -947,7 +968,10 @@ class TestOperations2D(TestOperations1D):
         )
         with self.assertLogs(ugrid.logger, level="DEBUG") as log:
             self.mesh.add_connectivities(fake_cf_role)
-            self.assertIn("Not adding connectivity", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r"Not adding connectivity.*"
+            self.assertRegex(rec.msg, re_msg)
 
     def test_add_coords_face(self):
         # ADD coords.

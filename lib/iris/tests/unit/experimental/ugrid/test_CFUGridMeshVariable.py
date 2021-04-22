@@ -215,9 +215,13 @@ class TestIdentify(tests.IrisTest):
                 subject_name, "", np.bytes_
             )
             result = CFUGridMeshVariable.identify(vars_all, warn=False)
+            self.assertEqual(0, len(log.records))
             self.assertDictEqual({}, result)
 
             # Default is warn=True
             result = CFUGridMeshVariable.identify(vars_all)
-            self.assertIn("is a CF-netCDF label variable", log.output[0])
+            rec = log.records[0]
+            self.assertEqual("DEBUG", rec.levelname)
+            re_msg = r".*is a CF-netCDF label variable.*"
+            self.assertRegex(rec.msg, re_msg)
             self.assertDictEqual({}, result)
