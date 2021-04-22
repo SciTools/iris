@@ -15,6 +15,7 @@ import ntpath
 exclude_modules = [
     ("experimental/raster", "iris.experimental.raster"),  # gdal conflicts
     ("ugrid/plot", "iris.experimental.ugrid.plot"),       # cirrus-ci container opengl issues
+    ("ugrid/cli", "iris.experimental.ugrid.cli"),         # don't autodoc the cli
 ]
 
 

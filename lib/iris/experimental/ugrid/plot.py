@@ -33,6 +33,7 @@ __all__ = [
     "add_graticule_longitude",
     "get_coastlines",
     "plot",
+    "rcParams",
     "to_vtk_mesh",
     "to_xyz",
 ]
@@ -85,7 +86,7 @@ rcParams = {
         "lat_labels": True,
         "lat_num": DEFAULT_LATITUDE_NUM,
         "lat_step": DEFAULT_LATITUDE_STEP,
-        "line_color": "white",
+        "line_color": "grey",
         "line_width": 1,
         "lon_labels": True,
         "lon_num": DEFAULT_LONGITUDE_NUM,

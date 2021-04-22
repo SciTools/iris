@@ -95,7 +95,7 @@ import iris.config
 import iris.cube
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
-from iris.experimental.ugrid import main
+from iris.experimental.ugrid.cli import main
 import iris.fileformats
 import iris.io
 
