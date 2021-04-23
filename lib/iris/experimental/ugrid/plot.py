@@ -229,6 +229,24 @@ def _get_clim(cube, mesh):
     return clim
 
 
+def _threshold(mesh, location, threshold, invert):
+    """Apply the threshold to the mesh"""
+    if isinstance(threshold, bool) and threshold:
+        mesh = mesh.threshold(
+            scalars=location,
+            invert=invert,
+            preference=to_preference(location),
+        )
+    elif not isinstance(threshold, bool):
+        mesh = mesh.threshold(
+            threshold,
+            scalars=location,
+            invert=invert,
+            preference=to_preference(location),
+        )
+    return mesh
+
+
 def _tidy_graticule_defaults(defaults):
     """
     Purge graticule custom (non-pyvista) kwargs from the defaults ``dict``.
@@ -906,6 +924,10 @@ def plot(
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
+    if threshold is not False:
+        # disable picking when a mesh threshold is to be performed
+        pickable = False
+
     if not location:
         pickable = False
         # there is not mesh data to render
@@ -928,27 +950,19 @@ def plot(
             kwargs[k] = v
 
     mesh = to_vtk_mesh(cube, projection=projection, location=location)
+    original = mesh
 
     #
     # threshold the mesh, if appropriate
     #
-    if isinstance(threshold, bool) and threshold:
-        mesh = mesh.threshold(
-            scalars=cube.location,
-            invert=invert,
-            preference=to_preference(cube.location),
-        )
-    elif not isinstance(threshold, bool):
-        mesh = mesh.threshold(
-            threshold,
-            scalars=cube.location,
-            invert=invert,
-            preference=to_preference(cube.location),
-        )
+    mesh = _threshold(mesh, cube.location, threshold, invert)
+    if not isinstance(threshold, bool):
         if isinstance(threshold, (np.ndarray, Iterable)):
             annotations = {threshold[0]: "Lower", threshold[1]: "Upper"}
-            if "annotations" not in kwargs:
-                kwargs["annotations"] = annotations
+        else:
+            annotations = {threshold: "Threshold"}
+        if "annotations" not in kwargs:
+            kwargs["annotations"] = annotations
 
     if location and pickable:
         # add unique cell index values to each cell
@@ -957,27 +971,27 @@ def plot(
     if location and "clim" not in kwargs:
         kwargs["clim"] = _get_clim(cube, mesh)
 
+    if kwargs.get("show_scalar_bar", True):
+        if "stitle" not in kwargs:
+            name = namify(cube)
+            units = str(cube.units)
+            kwargs["stitle"] = f"{name} / {units}"
+
     if location:
         plotter.add_mesh(
-            mesh, scalars=cube.location, pickable=pickable, **kwargs
+            mesh,
+            name="cube-mesh",
+            scalars=cube.location,
+            pickable=pickable,
+            **kwargs,
         )
     else:
-        plotter.add_mesh(mesh, pickable=pickable, **kwargs)
+        plotter.add_mesh(mesh, name="base-mesh", pickable=pickable, **kwargs)
 
     if location:
         add_coastlines(
             resolution=resolution, projection=projection, plotter=plotter
         )
-
-        #
-        # scalar bar title
-        if (
-            "scalar_bar_args" not in kwargs
-            or "title" not in kwargs["scalar_bar_args"]
-        ):
-            name = namify(cube)
-            units = str(cube.units)
-            plotter.scalar_bar.SetTitle(f"{name} / {units}")
 
         #
         # configure mesh cell picking
@@ -1079,16 +1093,11 @@ def plot(
 
             def slider_callback(slider, actor):
                 global VTK_SLIDER_CALLBACK
-                global VTK_PICKER_CALLBACK
 
                 slider = int(slider)
 
                 # only update if the slider value is different
                 if slider != VTK_SLIDER_CALLBACK["value"]:
-                    sunits = VTK_SLIDER_CALLBACK["sunits"]
-                    scoord = VTK_SLIDER_CALLBACK["scoord"]
-                    location = VTK_SLIDER_CALLBACK["location"]
-                    smesh = VTK_SLIDER_CALLBACK["mesh"]
                     if sunits:
                         if sunits.is_time_reference():
                             slabel = f"{sunits.num2date(scoord[slider])}"
@@ -1098,21 +1107,25 @@ def plot(
                         slabel = f"{scoord[slider]}"
 
                     actor.GetSliderRepresentation().SetLabelFormat(slabel)
-                    smesh.cell_arrays[location] = smesh.cell_arrays[
-                        f"{location}_{slider}"
-                    ]
-                    VTK_SLIDER_CALLBACK["value"] = slider
 
-                    # refresh the picker, if available
-                    if "cids" in VTK_PICKER_CALLBACK:
-                        # get the caches cell IDs of the picked cells
-                        cids = VTK_PICKER_CALLBACK["cids"]
-                        # get the associated pick cell values
-                        picked = smesh.cell_arrays[location][cids]
-                        # deal with the single scalar cell case
-                        picked = np.array(picked, ndmin=1)
-                        # emulate a pick event to refresh
-                        VTK_PICKER_CALLBACK["callback"](picked)
+                    array_name = f"{cube.location}_{slider}"
+                    original.cell_arrays[cube.location] = original.cell_arrays[
+                        array_name
+                    ]
+
+                    smesh = _threshold(
+                        original, cube.location, threshold, invert
+                    )
+                    plotter.add_mesh(
+                        smesh,
+                        name="cube-mesh",
+                        scalars=array_name,
+                        render=False,
+                        pickable=False,
+                        **kwargs,
+                    )
+
+                    VTK_SLIDER_CALLBACK["value"] = slider
 
             value = 0
             sdim = 1 - cube.mesh_dim()
@@ -1133,10 +1146,6 @@ def plot(
                 scoord = np.arange(cube.shape[sdim])
 
             VTK_SLIDER_CALLBACK["value"] = value
-            VTK_SLIDER_CALLBACK["sunits"] = sunits
-            VTK_SLIDER_CALLBACK["scoord"] = scoord
-            VTK_SLIDER_CALLBACK["location"] = cube.location
-            VTK_SLIDER_CALLBACK["mesh"] = mesh
 
             if sunits:
                 if sunits.is_time_reference():
@@ -1158,8 +1167,6 @@ def plot(
                 fmt=slabel,
                 **defaults,
             )
-
-        plotter.show_axes()
 
     #
     # position the camera on the scene
@@ -1191,6 +1198,8 @@ def plot(
 
     if graticule:
         add_graticule(projection=projection, plotter=plotter)
+
+    plotter.show_axes()
 
     return (plotter, mesh) if return_mesh else plotter
 
