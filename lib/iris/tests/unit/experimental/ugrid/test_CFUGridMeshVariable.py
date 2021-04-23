@@ -195,33 +195,36 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
+        def check_log(expected_levelname, log_regex):
+            rec = log.records[-1]
+            self.assertEqual(expected_levelname, rec.levelname)
+            self.assertRegex(rec.msg, log_regex)
+
         # Missing warning.
-        with self.assertLogs(logger) as log:
+        with self.assertLogs(logger, level="DEBUG") as log:
+            log_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
+
             result = CFUGridMeshVariable.identify(vars_all, warn=False)
-            self.assertEqual(0, len(log.records))
+            check_log("DEBUG", log_regex)
             self.assertDictEqual({}, result)
 
             # Default is warn=True
             result = CFUGridMeshVariable.identify(vars_all)
-            rec = log.records[0]
-            self.assertEqual("WARNING", rec.levelname)
-            re_msg = rf"Missing CF-UGRID mesh variable {subject_name}.*"
-            self.assertRegex(rec.msg, re_msg)
+            check_log("WARNING", log_regex)
             self.assertDictEqual({}, result)
 
         # String variable warning.
         with self.assertLogs(logger, level="DEBUG") as log:
+            log_regex = r".*is a CF-netCDF label variable.*"
             vars_all[subject_name] = netcdf_ugrid_variable(
                 subject_name, "", np.bytes_
             )
+
             result = CFUGridMeshVariable.identify(vars_all, warn=False)
-            self.assertEqual(0, len(log.records))
+            check_log("DEBUG", log_regex)
             self.assertDictEqual({}, result)
 
             # Default is warn=True
             result = CFUGridMeshVariable.identify(vars_all)
-            rec = log.records[0]
-            self.assertEqual("DEBUG", rec.levelname)
-            re_msg = r".*is a CF-netCDF label variable.*"
-            self.assertRegex(rec.msg, re_msg)
+            check_log("WARNING", log_regex)
             self.assertDictEqual({}, result)
