@@ -160,6 +160,11 @@ def main():
     ),
 )
 @click.option(
+    "--base",
+    is_flag=True,
+    help="Specify whether to render a base mesh with no associated cell data.",
+)
+@click.option(
     "--cube-slice",
     metavar="<slice>",
     type=str,
@@ -191,14 +196,6 @@ def main():
     metavar="<name>",
     type=str,
     help="Specify the cube name to be applied as a constraint during loading.",
-)
-@click.option(
-    "--no-location-data",
-    is_flag=True,
-    help=(
-        "Don't populate the cell array of the PyVista mesh with the location "
-        "data associated with the unstructured cube."
-    ),
 )
 @click.option(
     "--off-screen",
@@ -265,11 +262,11 @@ def main():
 def plot(
     background_color,
     background_image,
+    base,
     cube_slice,
     graticule,
     invert,
     name,
-    no_location_data,
     off_screen,
     projection,
     resolution,
@@ -320,7 +317,7 @@ def plot(
         resolution=resolution,
         threshold=threshold,
         invert=invert,
-        location=not no_location_data,
+        base=base,
         graticule=graticule,
         plotter=plotter,
         return_mesh=return_mesh,
