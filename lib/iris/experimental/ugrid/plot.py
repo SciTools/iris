@@ -930,9 +930,7 @@ def plot(
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
-    if threshold is not False:
-        # disable picking when a mesh threshold is to be performed
-        pickable = False
+    pickable = isinstance(threshold, bool) and pickable
 
     # use the appropriate pyvista notebook backend
     notebook = is_notebook()
@@ -1100,6 +1098,7 @@ def plot(
 
         def slider_callback(slider, actor):
             global VTK_SLIDER_CALLBACK
+            global VTK_PICKER_CALLBACK
 
             slider = int(slider)
 
@@ -1123,16 +1122,35 @@ def plot(
                 smesh = _threshold(
                     original_mesh, cube.location, threshold, invert
                 )
+
+                smesh.cell_arrays["cids"] = np.arange(
+                    mesh.n_cells, dtype=np.uint32
+                )
+                smesh.set_active_scalars(
+                    cube.location, preference=to_preference(cube.location)
+                )
+
                 plotter.add_mesh(
                     smesh,
                     name=MESH_NAME_CUBE,
                     scalars=array_name,
                     render=False,
-                    pickable=False,
+                    pickable=pickable,
                     **kwargs,
                 )
 
                 VTK_SLIDER_CALLBACK["value"] = slider
+
+                # refresh the picker, if available
+                if pickable and "cids" in VTK_PICKER_CALLBACK:
+                    # get the cached cell IDs of the picked cells
+                    cids = VTK_PICKER_CALLBACK["cids"]
+                    # get the associated pick cell values
+                    picked = smesh.cell_arrays[cube.location][cids]
+                    # deal with the single scalar cell case
+                    picked = np.array(picked, ndmin=1)
+                    # emulate a pick event to refresh
+                    VTK_PICKER_CALLBACK["callback"](picked)
 
         value = 0
         sdim = 1 - cube.mesh_dim()
