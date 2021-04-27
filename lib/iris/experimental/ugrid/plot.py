@@ -1042,6 +1042,10 @@ def plot(
             global VTK_PICKER_CALLBACK
             global rcParams
 
+            defaults = rcParams.get("cell_picking_text", {})
+            position = defaults.get("position", "lower_left")
+            index = VTK_PICKER_CALLBACK["lut"][position]
+
             if mesh is not None:
                 text = ""
 
@@ -1091,18 +1095,19 @@ def plot(
                     )
                     text = f"Min: {tmin}, Max: {tmax}, Mean: {tmean}, nCells: {values.size}{tnans}"
 
-                defaults = rcParams.get("cell_picking_text", {})
-
                 if "actor" not in VTK_PICKER_CALLBACK:
                     VTK_PICKER_CALLBACK["actor"] = plotter.add_text(
                         text,
-                        name="cell-picking",
+                        name="cell-picking-text",
                         **defaults,
                     )
                 else:
-                    position = defaults.get("position", "lower_left")
-                    index = VTK_PICKER_CALLBACK["lut"][position]
                     VTK_PICKER_CALLBACK["actor"].SetText(index, text)
+            else:
+                actor = VTK_PICKER_CALLBACK.get("actor", None)
+                if actor is not None:
+                    # clear the cell picking text
+                    actor.SetText(index, "")
 
         VTK_PICKER_CALLBACK["location"] = cube.location
         VTK_PICKER_CALLBACK["lut"] = VTK_POSITIONS_LUT
