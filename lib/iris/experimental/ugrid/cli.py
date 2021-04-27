@@ -198,6 +198,11 @@ def main():
     help="Specify the cube name to be applied as a constraint during loading.",
 )
 @click.option(
+    "--no-data",
+    is_flag=True,
+    help="Don't render the associated unstructured cube data on the mesh.",
+)
+@click.option(
     "--off-screen",
     metavar="<filename>",
     type=click.Path(),
@@ -278,6 +283,7 @@ def plot(
     graticule,
     invert,
     name,
+    no_data,
     off_screen,
     projection,
     resolution,
@@ -330,6 +336,7 @@ def plot(
         resolution=resolution,
         texture=texture,
         image=texture_image,
+        location=not no_data,
         threshold=threshold,
         invert=invert,
         base=base,

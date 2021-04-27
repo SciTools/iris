@@ -52,8 +52,14 @@ DEFAULT_LONGITUDE_NUM = 180
 # default graticule longitude step (degrees)
 DEFAULT_LONGITUDE_STEP = 30
 
-# name of the associated pyvista mesh of the cube
+# name of the pyvista base mesh
+MESH_NAME_BASE = "mesh-base"
+
+# name of the pyvista cube mesh
 MESH_NAME_CUBE = "mesh-cube"
+
+# name of the pyvista seam mesh
+MESH_NAME_SEAM = "mesh-seam"
 
 # default to an s2 unit sphere
 RADIUS = 1.0
@@ -853,6 +859,7 @@ def plot(
     pickable=True,
     cpos=True,
     graticule=False,
+    location=True,
     texture=False,
     image=None,
     plotter=None,
@@ -911,6 +918,10 @@ def plot(
         Specify whether a labelled graticule of meridian and parallel lines
         is rendered. Default is ``False``.
 
+    * location (bool):
+        Specify whether the associated unstructured cube data is rendered on
+        the mesh. Default is ``True``.
+
     * texture (bool):
         Specify whether to texture map the rendered mesh with a stock image
         of the Earth. Default is ``False``.
@@ -941,7 +952,7 @@ def plot(
         emsg = "Require a cube with an unstructured mesh."
         raise TypeError(emsg)
 
-    pickable = isinstance(threshold, bool) and pickable
+    pickable = pickable and location and isinstance(threshold, bool)
 
     # use the appropriate pyvista notebook backend
     notebook = is_notebook()
@@ -955,10 +966,10 @@ def plot(
         if k not in kwargs:
             kwargs[k] = v
 
-    mesh = to_vtk_mesh(cube, projection=projection)
+    mesh = to_vtk_mesh(cube, projection=projection, location=location)
     original_mesh = mesh
 
-    if base or texture or image:
+    if not location or base or texture or image:
         base_defaults = rcParams.get("base", {})
         texture = texture or bool(image)
         base_mesh = seamster(
@@ -974,8 +985,12 @@ def plot(
         else:
             texture = None
 
+        if not location:
+            base_defaults.update(kwargs)
+
         plotter.add_mesh(
             base_mesh,
+            name=MESH_NAME_BASE,
             pickable=False,
             show_scalar_bar=False,
             texture=texture,
@@ -985,42 +1000,44 @@ def plot(
     #
     # threshold the mesh, if appropriate
     #
-    mesh = _threshold(mesh, cube.location, threshold, invert)
-    if not isinstance(threshold, bool):
-        if isinstance(threshold, (np.ndarray, Iterable)):
-            lower, upper = threshold
-            lsign = "≤" if invert else "≥"
-            usign = "≥" if invert else "≤"
-            annotations = {
-                lower: f"Lower [{lsign}{lower:.1f}]",
-                upper: f"Upper [{usign}{upper:.1f}]",
-            }
-        else:
-            sign = "<" if invert else "≥"
-            annotations = {threshold: f"Threshold [{sign}{threshold:.1f}]"}
-        if "annotations" not in kwargs:
-            kwargs["annotations"] = annotations
+    if location:
+        mesh = _threshold(mesh, cube.location, threshold, invert)
+        if not isinstance(threshold, bool):
+            if isinstance(threshold, (np.ndarray, Iterable)):
+                lower, upper = threshold
+                lsign = "≤" if invert else "≥"
+                usign = "≥" if invert else "≤"
+                annotations = {
+                    lower: f"Lower [{lsign}{lower:.1f}]",
+                    upper: f"Upper [{usign}{upper:.1f}]",
+                }
+            else:
+                sign = "<" if invert else "≥"
+                annotations = {threshold: f"Threshold [{sign}{threshold:.1f}]"}
+            if "annotations" not in kwargs:
+                kwargs["annotations"] = annotations
 
     if pickable:
         # add unique cell index values to each cell
         mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
 
-    if "clim" not in kwargs:
+    if location and "clim" not in kwargs:
         kwargs["clim"] = _get_clim(cube, mesh)
 
-    if kwargs.get("show_scalar_bar", True):
+    if location and kwargs.get("show_scalar_bar", True):
         if "stitle" not in kwargs:
             name = namify(cube)
             units = str(cube.units)
             kwargs["stitle"] = f"{name} / {units}"
 
-    plotter.add_mesh(
-        mesh,
-        name=MESH_NAME_CUBE,
-        scalars=cube.location,
-        pickable=pickable,
-        **kwargs,
-    )
+    if location:
+        plotter.add_mesh(
+            mesh,
+            name=MESH_NAME_CUBE,
+            scalars=cube.location,
+            pickable=pickable,
+            **kwargs,
+        )
 
     add_coastlines(
         resolution=resolution, projection=projection, plotter=plotter
@@ -1123,7 +1140,7 @@ def plot(
     #
     # slider for structured dimension, if appropriate
     #
-    if cube.ndim == 2:
+    if location and cube.ndim == 2:
 
         def slider_callback(slider, actor):
             global VTK_SLIDER_CALLBACK
@@ -1347,14 +1364,19 @@ def seamster(
 
     seam_idxs = np.array(seam_idxs)
     seam_mesh = to_vtk_mesh(
-        cube, projection=projection, seam_idxs=seam_idxs, seam_lons=(180, -180)
+        cube,
+        projection=projection,
+        location=False,
+        seam_idxs=seam_idxs,
+        seam_lons=(180, -180),
     )
 
     if plotter:
-        # render the seam
+        # render the seam mesh as points
         points = centers.points[seam_idxs]
         plotter.add_mesh(
             pv.PolyData(points),
+            name=MESH_NAME_SEAM,
             color="green",
             point_size=4,
             render_points_as_spheres=True,
@@ -1433,7 +1455,12 @@ def to_ll(xyz, radius=None, vstack=True):
 
 
 def to_vtk_mesh(
-    cube, projection=None, cids=False, seam_idxs=None, seam_lons=None
+    cube,
+    projection=None,
+    cids=False,
+    location=True,
+    seam_idxs=None,
+    seam_lons=None,
 ):
     """
     Create the PyVista representation of the unstructured cube mesh.
@@ -1454,6 +1481,10 @@ def to_vtk_mesh(
     * cids (bool):
         Specify whether to add a ``cids`` cell array to the mesh containing a
         unique cell index value to each cell. Default is ``False``.
+
+    * location (bool):
+        Specify whether the associated unstructured cube data is added to the
+        mesh. Default is ``True``.
 
     * seam_idxs (None or sequence):
         The indices of mesh cell that participate in a meridian rip or seam
@@ -1487,11 +1518,12 @@ def to_vtk_mesh(
         raise ValueError(emsg)
 
     # replace any masks with NaNs
-    data = cube.data
-    mask = data.mask
-    data = data.data
-    if np.any(mask):
-        data[mask] = np.nan
+    if location:
+        data = cube.data
+        mask = data.mask
+        data = data.data
+        if np.any(mask):
+            data[mask] = np.nan
 
     # retrieve the mesh topology and connectivity
     face_node = cube.mesh.face_node_connectivity
@@ -1545,8 +1577,9 @@ def to_vtk_mesh(
         # remove troublesome cells that span seam
         no_wrap = node_x[indices].ptp(axis=-1) < 180
         indices = indices[no_wrap]
-        slicer[udim] = no_wrap
-        data = data[tuple(slicer)]
+        if location:
+            slicer[udim] = no_wrap
+            data = data[tuple(slicer)]
         xyz = [node_x, node_y, node_z]
 
     vertices = np.vstack(xyz).T
@@ -1567,19 +1600,22 @@ def to_vtk_mesh(
 
     # add the cube data payload to the mesh as a named "scalar" array
     # based on the location
-    if cube.ndim == 1:
-        mesh.cell_arrays[cube.location] = data
-    else:
-        # Determine the structured dimension (sdim) of the cube.
-        sdim = 1 - udim
+    if location:
+        if cube.ndim == 1:
+            mesh.cell_arrays[cube.location] = data
+        else:
+            # Determine the structured dimension (sdim) of the cube.
+            sdim = 1 - udim
 
-        # add the cache of structured dimension data slices to the mesh
-        for dim in range(cube.shape[sdim] - 1, -1, -1):
-            slicer = [slice(None)] * cube.ndim
-            slicer[sdim] = dim
-            mesh.cell_arrays[f"{cube.location}_{dim}"] = data[tuple(slicer)]
+            # add the cache of structured dimension data slices to the mesh
+            for dim in range(cube.shape[sdim] - 1, -1, -1):
+                slicer = [slice(None)] * cube.ndim
+                slicer[sdim] = dim
+                mesh.cell_arrays[f"{cube.location}_{dim}"] = data[
+                    tuple(slicer)
+                ]
 
-        mesh.cell_arrays[cube.location] = data[tuple(slicer)]
+            mesh.cell_arrays[cube.location] = data[tuple(slicer)]
 
     # add cell index (cids) to each cell, if required
     if cids:
