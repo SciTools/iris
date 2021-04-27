@@ -281,6 +281,8 @@ linkcheck_ignore = [
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "http://matthew-brett.github.com/pydagogue/gh_delete_master.html",
+    "https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/",
 ]
 
 # list of sources to exclude from the build.
