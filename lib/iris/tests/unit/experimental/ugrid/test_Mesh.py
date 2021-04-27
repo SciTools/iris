@@ -816,7 +816,7 @@ class TestOperations1D(TestMeshCommon):
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
-                ugrid.logger.debug("foo")
+                ugrid.logger.debug("foo", extra=dict(cls=None))
                 self.mesh.remove_connectivities(**kwargs)
                 self.assertEqual(1, len(log.records))
             self.assertEqual(self.EDGE_NODE, self.mesh.edge_node_connectivity)
@@ -854,7 +854,7 @@ class TestOperations1D(TestMeshCommon):
         for kwargs in negative_kwargs:
             with self.assertLogs(ugrid.logger, level="DEBUG") as log:
                 # Check that the only debug log is the one we inserted.
-                ugrid.logger.debug("foo")
+                ugrid.logger.debug("foo", extra=dict(cls=None))
                 self.mesh.remove_coords(**kwargs)
                 self.assertEqual(1, len(log.records))
             self.assertEqual(self.NODE_LON, self.mesh.node_coords.node_x)
