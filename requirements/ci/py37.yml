@@ -34,8 +34,8 @@ dependencies:
   - nc-time-axis
   - pandas
   - pip
-  - python-stratify
   - pykdtree
+  - python-stratify
   - pyvista
   - pyvistaqt
 
