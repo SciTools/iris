@@ -966,21 +966,36 @@ def plot(
         if k not in kwargs:
             kwargs[k] = v
 
-    mesh = to_vtk_mesh(cube, projection=projection, location=location)
+    mesh = to_vtk_mesh(cube, location=location)
+
+    if projection:
+        mesh = seamster(cube, mesh, projection=projection)
+        vtk_projection = vtkPolyDataTransformFilter(projection)
+        mesh = vtk_projection.transform(mesh)
+
     original_mesh = mesh
 
     if not location or base or texture or image:
         base_defaults = rcParams.get("base", {})
         texture = texture or bool(image)
-        base_mesh = seamster(
-            cube, mesh, projection, texture=texture, plotter=None
-        )
+
+        if projection:
+            base_mesh = mesh.copy()
+        else:
+            base_mesh = seamster(cube, mesh)
+
+        if texture or image:
+            uv_mapping(base_mesh, projection=projection)
+
+        base_mesh.clear_cell_arrays()
 
         if image:
+            # load the image and create a texture
             texture = pv.read_texture(image)
         elif texture:
             from pyvista import examples
 
+            # load the stock texture map image
             texture = examples.load_globe_texture()
         else:
             texture = None
@@ -1277,12 +1292,49 @@ def plot(
 def seamster(
     cube,
     mesh,
-    projection,
-    rip=-180,
+    projection=None,
     preference=None,
-    texture=False,
     plotter=None,
 ):
+    """
+    Create a discontinuity in the provided mesh connectivity, by creating
+    coincident cell node points at the antimeridian, from the north pole to
+    the south pole.
+
+    Args:
+
+    * cube (Cube):
+        The source cube that created the provided mesh.
+
+    * mesh (PolyData):
+        The PyVista mesh that requires a seam at the antimeridian.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    * preference (None or str):
+        Given two cells either side of the antimeridian, specify a preference
+        of ``east`` or ``west``. Default is ``east``.
+
+    * plotter (None or Plotter):
+        The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
+        If provided, the seam path is rendered on the mesh.
+
+    Returns:
+        The mesh with a seam disconuity at the antimeridian.
+
+    .. seealso::
+
+       https://discourse.paraview.org/t/single-azimuthal-segment-texture-distortion-for-earth-texturemaptosphere/783/5
+
+    """
+    # TODO: make the seam rip generic
+    rip = -180
+
     if preference is None:
         preference = "east"
 
@@ -1353,7 +1405,7 @@ def seamster(
     seam_idxs = [start_idx]
     current_idx = start_idx
     count = 1
-    limit = np.sqrt(cube.shape[cube.mesh_dim()] / 6) * 2
+    limit = int(np.sqrt(cube.shape[cube.mesh_dim()] / 6)) * 2
 
     while True:
         current_idx, ignore_idxs = next_idx(current_idx, ignore_idxs)
@@ -1366,12 +1418,11 @@ def seamster(
     seam_mesh = to_vtk_mesh(
         cube,
         projection=projection,
-        location=False,
         seam_idxs=seam_idxs,
         seam_lons=(180, -180),
     )
 
-    if plotter:
+    if projection is None and plotter:
         # render the seam mesh as points
         points = centers.points[seam_idxs]
         plotter.add_mesh(
@@ -1381,15 +1432,6 @@ def seamster(
             point_size=4,
             render_points_as_spheres=True,
         )
-
-    # add texture map points
-    if texture:
-        seam_mesh.rotate_z(90)
-        points = seam_mesh.points
-        u = 0.5 + np.arctan2(-points[:, 0], points[:, 1]) / (2 * np.pi)
-        v = 0.5 + np.arcsin(points[:, 2]) / np.pi
-        seam_mesh.t_coords = np.vstack([u, v]).T
-        seam_mesh.rotate_z(-90)
 
     return seam_mesh
 
@@ -1457,7 +1499,6 @@ def to_ll(xyz, radius=None, vstack=True):
 def to_vtk_mesh(
     cube,
     projection=None,
-    cids=False,
     location=True,
     seam_idxs=None,
     seam_lons=None,
@@ -1475,12 +1516,8 @@ def to_vtk_mesh(
 
     * projection (None or str):
         The name of the PROJ4 planar projection used to transform the unstructured
-        cube mesh into a 2D projection coordinate system. If ``None``, the
-        unstructured cube mesh is rendered in a 3D. The default is ``None``.
-
-    * cids (bool):
-        Specify whether to add a ``cids`` cell array to the mesh containing a
-        unique cell index value to each cell. Default is ``False``.
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
 
     * location (bool):
         Specify whether the associated unstructured cube data is added to the
@@ -1503,8 +1540,7 @@ def to_vtk_mesh(
         The :class:`~pyvista.core.pointset.PolyData`.
 
     """
-    # TODO: deal with generic location of mesh data i.e., support not only face,
-    # but also node and edge.
+    # TODO: deal with generic location of mesh data i.e., face, node and edge.
 
     if cube.mesh is None:
         emsg = "Require a cube with an unstructured mesh."
@@ -1530,7 +1566,7 @@ def to_vtk_mesh(
     indices = face_node.indices_by_src() - face_node.start_index
     coord_x, coord_y = cube.mesh.node_coords
 
-    # TODO: consider masked coordinate points
+    # TODO: consider how to deal with masked coordinate points
     node_x = coord_x.points.data
     node_y = coord_y.points.data
 
@@ -1570,16 +1606,7 @@ def to_vtk_mesh(
         xyz = to_xyz(node_y, node_x, vstack=False)
     else:
         # convert lat/lon to planar xy0
-        # TODO: deal with mesh splitting for +lon_0
-        # TODO: deal with full PROJ4 string
-        slicer = [slice(None)] * cube.ndim
         node_z = np.zeros_like(node_y)
-        # remove troublesome cells that span seam
-        no_wrap = node_x[indices].ptp(axis=-1) < 180
-        indices = indices[no_wrap]
-        if location:
-            slicer[udim] = no_wrap
-            data = data[tuple(slicer)]
         xyz = [node_x, node_y, node_z]
 
     vertices = np.vstack(xyz).T
@@ -1617,14 +1644,9 @@ def to_vtk_mesh(
 
             mesh.cell_arrays[cube.location] = data[tuple(slicer)]
 
-    # add cell index (cids) to each cell, if required
-    if cids:
-        mesh.cell_arrays["cids"] = np.arange(mesh.n_cells, dtype=np.uint32)
-
-    # perform the PROJ4 projection of the mesh, if appropriate
-    if projection is not None:
-        vtk_projection = vtkPolyDataTransformFilter(projection)
-        mesh = vtk_projection.transform(mesh)
+    # directly supports uv_mapping for projections
+    mesh["lats"] = node_y
+    mesh["lons"] = node_x
 
     return mesh
 
@@ -1673,3 +1695,38 @@ def to_xyz(latitudes, longitudes, radius=None, vstack=True):
         xyz = np.vstack(xyz).T
 
     return xyz
+
+
+def uv_mapping(mesh, projection=None):
+    """
+    Map the mesh cell node points to UV texture coordinates.
+
+    .. seealso::
+
+       https://en.wikipedia.org/wiki/UV_mapping#Finding_UV_on_a_sphere
+
+    Args:
+
+    * mesh (PolyData):
+        The PyVista mesh that requires texture coordinates.
+
+    Kwargs:
+
+    * projection (None or str):
+        The name of the PROJ4 planar projection used to transform the unstructured
+        cube mesh into a 2D projection coordinate system. If ``None``, the unstructured
+        cube mesh is rendered on a 3D sphere. The default is ``None``.
+
+    """
+
+    if projection:
+        u = (mesh["lons"] + 180) / 360
+        v = (mesh["lats"] + 90) / 180
+        mesh.t_coords = np.vstack([u, v]).T
+    else:
+        mesh.rotate_z(90)
+        points = mesh.points
+        u = 0.5 + np.arctan2(-points[:, 0], points[:, 1]) / (2 * np.pi)
+        v = 0.5 + np.arcsin(points[:, 2]) / np.pi
+        mesh.t_coords = np.vstack([u, v]).T
+        mesh.rotate_z(-90)
