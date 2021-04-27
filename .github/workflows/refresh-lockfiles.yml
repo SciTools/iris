@@ -65,12 +65,12 @@ jobs:
           conda install -y -c conda-forge conda-lock
       - name: generate lockfile
         run: |
-          $CONDA/bin/conda-lock lock -p linux-64 -f ci/requirements/py${{matrix.python}}.yml
-          mv conda-linux-64.lock ci/requirements/nox.lock/py${{matrix.python}}-linux-64.lock
+          $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
+          mv conda-linux-64.lock requirements/ci/nox.lock/py${{matrix.python}}-linux-64.lock
       - name: output lockfile
         uses: actions/upload-artifact@v2
         with:
-          path: ci/requirements/nox.lock/py${{matrix.python}}-linux-64.lock
+          path: requirements/ci/nox.lock/py${{matrix.python}}-linux-64.lock
     
   pr:
     runs-on: ubuntu-latest
@@ -82,7 +82,7 @@ jobs:
       - name: get artifacts
         uses: actions/download-artifact@v2
         with:
-          path: ci/requirements/nox.lock
+          path: requirements/ci/nox.lock
       - name: create pr
         run: git status
         
