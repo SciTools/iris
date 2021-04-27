@@ -1,21 +1,27 @@
-# This is a basic workflow to help you get started with Actions
+# This workflow periodically creates new environment lock files based on the newest
+# available dependency pacakges on conda-forge.
+#
+# For environments that have changed, a pull request will be made and submitted
+# to the master branch
 
 name: Refresh Lockfiles
 
-# Controls when the action will run. 
+# Run once a week on a Saturday night 
 on:
-#   schedule:
-#     - cron: 1 0 * * 6
+  schedule:
+    - cron: 1 0 * * 6
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
-  push:
-    branches: [ ci-lock ]
 
 jobs:
+  
   gen_lockfiles:
-    # The type of runner that the job will run on
+    # this is a matrix job: it splits to create new lockfiles for each
+    # of the CI test python versions.
+    # this list below should be changed when covering more python versions
+    # TODO: generate this matrix automatically from the list of available py**.yml files
+    #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
     runs-on: ubuntu-latest
     
     strategy:
@@ -38,6 +44,8 @@ jobs:
           path: py${{matrix.python}}-linux-64.lock
     
   create_pr:
+    # once the matrix job has completed all the lock files will have been uploaded as artifacts.
+    # Download the artifacts, add them to the repo, and create a PR.
     runs-on: ubuntu-latest
     needs: gen_lockfiles
     
@@ -58,7 +66,7 @@ jobs:
         with:
           commit-message: Updated environment lockfiles
           delete-branch: true
-          branch: lockfiles-
+          branch: lockfiles
           branch-suffix: timestamp
           title: Update CI environment lockfiles
           body: |
