@@ -61,11 +61,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: install conda-lock
         run: |
-          source $CONDA/bin/activate
+          source $CONDA/bin/activate base
           conda install -y -c conda-forge conda-lock
       - name: generate lockfile
         run: |
-          conda-lock lock -p linux-64 -f ci/requirements/py${{matrix.python}}.yml
+          $CONDA/bin/conda-lock lock -p linux-64 -f ci/requirements/py${{matrix.python}}.yml
           mv conda-linux-64.lock ci/requirements/nox.lock/py${{matrix.python}}-linux-64.lock
       - name: output lockfile
         uses: actions/upload-artifact@v2
