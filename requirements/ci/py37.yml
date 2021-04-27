@@ -35,6 +35,7 @@ dependencies:
   - pandas
   - pip
   - python-stratify
+  - pykdtree
   - pyvista
   - pyvistaqt
 

@@ -21,6 +21,7 @@ from cartopy.io.shapereader import Record
 import numpy as np
 import pyvista as pv
 from shapely.geometry.multilinestring import MultiLineString
+from pykdtree.kdtree import KDTree
 import vtk
 
 from ...config import get_logger
@@ -34,6 +35,7 @@ __all__ = [
     "get_coastlines",
     "plot",
     "rcParams",
+    "to_ll",
     "to_vtk_mesh",
     "to_xyz",
 ]
@@ -96,7 +98,7 @@ rcParams = {
         "lon_step": DEFAULT_LONGITUDE_STEP,
         "shape": None,
         "shadow": True,
-        "text_color": "white",
+        "text_color": "grey",
     },
     "add_slider_widget": {
         "style": "modern",
@@ -462,7 +464,7 @@ def add_graticule_latitude(
 
     # add a "fudge-factor" to ensure coastlines overlay the mesh
     # i.e., a poor mans zorder.
-    radius = RADIUS + RADIUS / 1e4
+    radius = RADIUS + RADIUS / 1e3
 
     # use the appropriate pyvista notebook backend
     notebook = is_notebook()
@@ -640,7 +642,7 @@ def add_graticule_longitude(
 
     # add a "fudge-factor" to ensure graticule and labels overlay the mesh
     # i.e., a poor mans zorder.
-    radius = RADIUS + RADIUS / 1e4
+    radius = RADIUS + RADIUS / 1e3
 
     # use the appropriate pyvista notebook backend
     notebook = is_notebook()
@@ -851,6 +853,8 @@ def plot(
     pickable=True,
     cpos=True,
     graticule=False,
+    texture=False,
+    image=None,
     plotter=None,
     return_mesh=False,
     **kwargs,
@@ -907,6 +911,13 @@ def plot(
         Specify whether a labelled graticule of meridian and parallel lines
         is rendered. Default is ``False``.
 
+    * texture (bool):
+        Specify whether to texture map the rendered mesh with a stock image
+        of the Earth. Default is ``False``.
+
+    * image (None or Path):
+        Filename of the image to texture map over the rendered mesh.
+
     * plotter (None or Plotter):
         The :class:`~pyvista.plotting.plotting.Plotter` which renders the scene.
         If ``None``, a plotter object will be created. Default is ``None``.
@@ -947,14 +958,27 @@ def plot(
     mesh = to_vtk_mesh(cube, projection=projection)
     original_mesh = mesh
 
-    if base:
-        base_mesh = mesh.copy()
-        base_mesh.clear_arrays()
+    if base or texture or image:
         base_defaults = rcParams.get("base", {})
+        texture = texture or bool(image)
+        base_mesh = seamster(
+            cube, mesh, projection, texture=texture, plotter=None
+        )
+
+        if image:
+            texture = pv.read_texture(image)
+        elif texture:
+            from pyvista import examples
+
+            texture = examples.load_globe_texture()
+        else:
+            texture = None
+
         plotter.add_mesh(
             base_mesh,
             pickable=False,
             show_scalar_bar=False,
+            texture=texture,
             **base_defaults,
         )
 
@@ -965,8 +989,8 @@ def plot(
     if not isinstance(threshold, bool):
         if isinstance(threshold, (np.ndarray, Iterable)):
             lower, upper = threshold
-            lsign = "<" if invert else "≥"
-            usign = ">" if invert else "≤"
+            lsign = "≤" if invert else "≥"
+            usign = "≥" if invert else "≤"
             annotations = {
                 lower: f"Lower [{lsign}{lower:.1f}]",
                 upper: f"Upper [{usign}{upper:.1f}]",
@@ -1124,7 +1148,7 @@ def plot(
                 )
 
                 smesh.cell_arrays["cids"] = np.arange(
-                    mesh.n_cells, dtype=np.uint32
+                    smesh.n_cells, dtype=np.uint32
                 )
                 smesh.set_active_scalars(
                     cube.location, preference=to_preference(cube.location)
@@ -1228,6 +1252,121 @@ def plot(
     return (plotter, mesh) if return_mesh else plotter
 
 
+def seamster(
+    cube,
+    mesh,
+    projection,
+    rip=-180,
+    preference=None,
+    texture=False,
+    plotter=None,
+):
+    if preference is None:
+        preference = "east"
+
+    raw_preference = preference
+    preference = str(preference).lower()
+    if preference not in ["east", "west"]:
+        dmsg = (
+            f'Invalid preference defaulting to "east", got "{raw_preference}".'
+        )
+        logger.debug(dmsg)
+        preference = "east"
+
+    base_mesh = mesh.copy()
+    base_mesh.clear_arrays()
+    centers = base_mesh.cell_centers()
+
+    def find_target_idx(idxs):
+        points = centers.points[idxs]
+        lons = to_ll(points)[:, 1]
+        ripped = rip - lons
+        abs_ripped = np.abs(ripped)
+        min_idx = np.argmin(abs_ripped)
+        where = np.where(abs_ripped == abs_ripped[min_idx])
+        min_idxs = idxs[where]
+        n_idxs = min_idxs.size
+        if n_idxs == 1:
+            (result,) = min_idxs
+        elif n_idxs == 2:
+            lon_right = lons[where][1]
+            idx_left, idx_right = idxs[where]
+            if rip < lon_right:
+                result = idx_right if preference == "east" else idx_left
+            else:
+                result = idx_left if preference == "east" else idx_right
+        else:
+            emsg = (
+                "Expected to make preference between exactly 2 mesh "
+                f"faces, got {n_idxs} faces instead [idxs={min_idxs}]."
+            )
+            raise ValueError(emsg)
+
+        return result
+
+    def get_target_idx(point, neighbours=None):
+        if neighbours is None:
+            neighbours = 4
+        _, idxs = tree.query(point, k=neighbours)
+        tgt_idx = find_target_idx(idxs[0])
+        other_idxs = set(np.ravel(idxs)).difference({tgt_idx})
+        return tgt_idx, other_idxs
+
+    def next_idx(idx_current, ignore_idxs):
+        xyz_current = np.array(centers.points[idx_current], ndmin=2)
+        _, idxs = tree.query(xyz_current, k=9)
+        idxs = idxs[0]
+        search_idxs = set(idxs).difference(ignore_idxs)
+        idx = find_target_idx(np.array(list(search_idxs)))
+        ignore_idxs = ignore_idxs.union(idxs)
+        return idx, ignore_idxs
+
+    tree = KDTree(centers.points.astype(centers.points.dtype))
+
+    npole = to_xyz([90], [0])
+    start_idx, ignore_idxs = get_target_idx(npole)
+    ignore_idxs.add(start_idx)
+
+    # TODO: optimise this hot loop
+    seam_idxs = [start_idx]
+    current_idx = start_idx
+    count = 1
+    limit = np.sqrt(cube.shape[cube.mesh_dim()] / 6) * 2
+
+    while True:
+        current_idx, ignore_idxs = next_idx(current_idx, ignore_idxs)
+        seam_idxs.append(current_idx)
+        count += 1
+        if count >= limit:
+            break
+
+    seam_idxs = np.array(seam_idxs)
+    seam_mesh = to_vtk_mesh(
+        cube, projection=projection, seam_idxs=seam_idxs, seam_lons=(180, -180)
+    )
+
+    if plotter:
+        # render the seam
+        points = centers.points[seam_idxs]
+        plotter.add_mesh(
+            pv.PolyData(points),
+            color="green",
+            point_size=4,
+            render_points_as_spheres=True,
+        )
+
+    # add texture map points
+    if texture:
+        seam_mesh.rotate_z(90)
+        points = seam_mesh.points
+        u = 0.5 + np.arctan2(-points[:, 0], points[:, 1]) / (2 * np.pi)
+        v = 0.5 + np.arcsin(points[:, 2]) / np.pi
+        seam_mesh.t_coords = np.vstack([u, v]).T
+        seam_mesh.rotate_z(-90)
+
+    return seam_mesh
+
+
 def to_preference(location):
     """
     Translate UGRID location to PyVista ``point`` or ``cell`` mesh preference.
@@ -1248,7 +1387,49 @@ def to_preference(location):
     return result
 
 
-def to_vtk_mesh(cube, projection=None, cids=False):
+def to_ll(xyz, radius=None, vstack=True):
+    """
+    Convert geocentric XYZ values to latitudes and longitudes.
+
+    This is the reverse operation of :func:`to_xyz`.
+
+    Args:
+
+    * xyz (tuple of float or sequence)
+        A sequence of one or more (x, y, z) values to be converted to
+        spherical latitude and longitude values.
+
+    Kwargs:
+
+    * radius (None or float)
+        The radius of the sphere. Defaults to an s2 unit sphere.
+
+    * vstack (bool):
+        Specify whether the latitude and longitude values are vertically
+        stacked and transposed. Default is ``True``.
+
+    Returns:
+        The converted XYZ values to latitudes and longitudes (degrees).
+
+    """
+    if radius is None:
+        radius = RADIUS
+
+    xyz = np.array(xyz, ndmin=2)
+    lats = np.degrees(np.arcsin(xyz[:, 2] / radius))
+    lons = np.degrees(np.arctan2(xyz[:, 1], xyz[:, 0]))
+
+    ll = lats, lons
+
+    if vstack:
+        ll = np.vstack([lats, lons]).T
+
+    return ll
+
+
+def to_vtk_mesh(
+    cube, projection=None, cids=False, seam_idxs=None, seam_lons=None
+):
     """
     Create the PyVista representation of the unstructured cube mesh.
 
@@ -1269,11 +1450,24 @@ def to_vtk_mesh(cube, projection=None, cids=False):
         Specify whether to add a ``cids`` cell array to the mesh containing a
         unique cell index value to each cell. Default is ``False``.
 
+    * seam_idxs (None or sequence):
+        The indices of mesh cell that participate in a meridian rip or seam
+        from the north pole to the south pole. The purpose of the seam is to
+        create a discontinuity in the mesh connectivity e.g., for texture mapping
+        or preparing the mesh for a planar projection.
+
+    * seam_lons (None or tuple):
+        A tuple consisting of a longitude pair (degrees). The first is the longitude
+        of mesh cell nodes that form part of the seam, and the second is the
+        replacement longitude that creates the seam e.g., (180, -180) will result
+        in one or more nodes with a longitude equal to ``180`` degrees in a
+        ``seam_idxs`` mesh cell being replaced with a longitude of ``-180`` degrees.
+
     Returns:
         The :class:`~pyvista.core.pointset.PolyData`.
 
     """
-    # TBD: deal with generic location of mesh data i.e., support not only face,
+    # TODO: deal with generic location of mesh data i.e., support not only face,
     # but also node and edge.
 
     if cube.mesh is None:
@@ -1299,7 +1493,7 @@ def to_vtk_mesh(cube, projection=None, cids=False):
     indices = face_node.indices_by_src() - face_node.start_index
     coord_x, coord_y = cube.mesh.node_coords
 
-    # TBD: consider masked coordinate points
+    # TODO: consider masked coordinate points
     node_x = coord_x.points.data
     node_y = coord_y.points.data
 
@@ -1307,20 +1501,40 @@ def to_vtk_mesh(cube, projection=None, cids=False):
     udim = cube.mesh_dim()
 
     # simple approach to [-180..180]
-    # TBD: ideally we want meridian mesh ripping and re-joining to deal
-    # correctly with the mesh connectivity and similar functionality
-    # provisioned by iris.analysis.cartography.wrap_lons.
-    # however, we need to be careful of circular imports when the plotting
-    # code is migrated to its own repo e.g., iris-pyvista
     node_x[node_x > 180] -= 360
+
+    if seam_idxs is not None and seam_lons is not None:
+        src_lon, tgt_lon = seam_lons
+        seam_x, seam_y = [], []
+        # the initial index for new seam lat/lons
+        seam_idx = node_x.size
+
+        for idx in seam_idxs:
+            # get the indices of the nodes defining the idx mesh cell
+            node_idxs = indices[idx]
+            # extract the associated node lat/lons
+            ll = [
+                (node_y[node_idx], node_x[node_idx]) for node_idx in node_idxs
+            ]
+            for i, (lat, lon) in enumerate(ll):
+                if lon == src_lon:
+                    # create the discontinuity in the connectivity
+                    indices[idx][i] = seam_idx
+                    seam_x.append(tgt_lon)
+                    seam_y.append(lat)
+                    seam_idx += 1
+
+        # append the seam lat/lons
+        node_x = np.hstack([node_x, np.array(seam_x)])
+        node_y = np.hstack([node_y, np.array(seam_y)])
 
     if projection is None:
         # convert lat/lon to geocentric xyz
         xyz = to_xyz(node_y, node_x, vstack=False)
     else:
         # convert lat/lon to planar xy0
-        # TBD: deal with mesh splitting for +lon_0
-        # TBD: deal with full PROJ4 string
+        # TODO: deal with mesh splitting for +lon_0
+        # TODO: deal with full PROJ4 string
         slicer = [slice(None)] * cube.ndim
         node_z = np.zeros_like(node_y)
         # remove troublesome cells that span seam
@@ -1377,6 +1591,8 @@ def to_vtk_mesh(cube, projection=None, cids=False):
 def to_xyz(latitudes, longitudes, radius=None, vstack=True):
     """
     Convert latitudes and longitudes to geocentric XYZ values.
+
+    This is the reverse operation of :func:`to_ll`.
 
     Args:
 

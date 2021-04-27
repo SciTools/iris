@@ -235,6 +235,17 @@ def main():
 )
 @click.option("--show-edges", is_flag=True, help="Render mesh cell edges.")
 @click.option(
+    "--texture",
+    is_flag=True,
+    help="Texture map the mesh with a stock map image.",
+)
+@click.option(
+    "--texture-image",
+    metavar="<filename>",
+    type=click.Path(),
+    help="Filename of the image to texture map the mesh.",
+)
+@click.option(
     "-t",
     "--threshold",
     metavar="<value>",
@@ -272,6 +283,8 @@ def plot(
     resolution,
     save,
     show_edges,
+    texture,
+    texture_image,
     threshold,
     view,
     filename,
@@ -315,6 +328,8 @@ def plot(
         cube,
         projection=projection,
         resolution=resolution,
+        texture=texture,
+        image=texture_image,
         threshold=threshold,
         invert=invert,
         base=base,
