@@ -608,10 +608,14 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertTrue(matches, msg)
 
     @contextlib.contextmanager
-    def assertLogs(self, logger=None, level=None):
+    def assertLogs(self, logger=None, level=None, msg_regex=None):
         """
         An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
         which also exercises the logger's message formatting.
+
+        Also adds the ``msg_regex`` kwarg:
+        If used, check that the result is a single message of the specified
+        level, and that it matches this regex.
 
         The inherited version of this method temporarily *replaces* the logger
         in order to capture log records generated within the context.
@@ -631,6 +635,13 @@ class IrisTest_nometa(unittest.TestCase):
         for record in watcher.records:
             for handler in assertlogging_context.logger.handlers:
                 handler.format(record)
+
+        # Check message, if requested.
+        if msg_regex:
+            self.assertEqual(len(watcher.records), 1)
+            rec = watcher.records[0]
+            self.assertEqual(level, rec.levelname)
+            self.assertRegex(rec.msg, msg_regex)
 
     @contextlib.contextmanager
     def assertNoWarningsRegexp(self, expected_regexp=""):

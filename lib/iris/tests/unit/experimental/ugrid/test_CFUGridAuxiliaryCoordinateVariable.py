@@ -213,40 +213,26 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
-        def check_log(expected_levelname, log_regex):
-            rec = log.records[-1]
-            self.assertEqual(expected_levelname, rec.levelname)
-            self.assertRegex(rec.msg, log_regex)
+        # The warn kwarg and expected corresponding log level.
+        warn_and_level = {True: "WARNING", False: "DEBUG"}
 
         # Missing warning.
-        with self.assertLogs(logger, level="DEBUG") as log:
-            log_regex = rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
-
-            result = CFUGridAuxiliaryCoordinateVariable.identify(
-                vars_all, warn=False
-            )
-            check_log("DEBUG", log_regex)
-            self.assertDictEqual({}, result)
-
-            # Default is warn=True
-            result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-            check_log("WARNING", log_regex)
-            self.assertDictEqual({}, result)
+        log_regex = rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                result = CFUGridAuxiliaryCoordinateVariable.identify(
+                    vars_all, warn=warn
+                )
+                self.assertDictEqual({}, result)
 
         # String variable warning.
-        with self.assertLogs(logger, level="DEBUG") as log:
-            log_regex = r".*is a CF-netCDF label variable.*"
-            vars_all[subject_name] = netcdf_ugrid_variable(
-                subject_name, "", np.bytes_
-            )
-
-            result = CFUGridAuxiliaryCoordinateVariable.identify(
-                vars_all, warn=False
-            )
-            check_log("DEBUG", log_regex)
-            self.assertDictEqual({}, result)
-
-            # Default is warn=True
-            result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-            check_log("WARNING", log_regex)
-            self.assertDictEqual({}, result)
+        log_regex = r".*is a CF-netCDF label variable.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                vars_all[subject_name] = netcdf_ugrid_variable(
+                    subject_name, "", np.bytes_
+                )
+                result = CFUGridAuxiliaryCoordinateVariable.identify(
+                    vars_all, warn=warn
+                )
+                self.assertDictEqual({}, result)
