@@ -66,7 +66,7 @@ jobs:
       - name: generate lockfile
         run: |
           $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
-          mv conda-linux-64.lock nox.lock/py${{matrix.python}}-linux-64.lock
+          mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
       - name: output lockfile
         uses: actions/upload-artifact@v2
         with:
