@@ -150,6 +150,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ updated the perceptual imagehash graphical test support for
    `matplotlib`_ 3.4.1. (:pull:`4087`)
 
+#. `@jamesp`_ switched `cirrus-ci`_ testing and `nox`_
+   testing to use `conda-lock`_ files for static test environments. (:pull:`4108`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -175,3 +177,4 @@ This document explains the changes made to Iris for this release
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _xxhash: http://cyan4973.github.io/xxHash/
+.. _conda-lock: https://github.com/conda-incubator/conda-lock
