@@ -1,55 +1,27 @@
-# This is a basic workflow to help you get started with Actions
+# This workflow periodically creates new environment lock files based on the newest
+# available dependency pacakges on conda-forge.
+#
+# For environments that have changed, a pull request will be made and submitted
+# to the master branch
 
 name: Refresh Lockfiles
 
-# Controls when the action will run. 
+
 on:
-#   schedule:
-#     - cron: 1 0 * * 6
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  schedule:
+    # Run once a week on a Saturday night 
+    - cron: 1 0 * * 6
 
 
-
-# # jobs:
-# #   job1:
-# #     runs-on: ubuntu-latest
-# #     outputs:
-# #       matrix: ${{ steps.set-matrix.outputs.matrix }}
-# #     steps:
-# #     - id: set-matrix
-# #       run: echo "::set-output name=matrix::{\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}"
-# #   job2:
-# #     needs: job1
-# #     runs-on: ubuntu-latest
-# #     strategy:
-# #       matrix: ${{fromJson(needs.job1.outputs.matrix)}}
-# #     steps:
-# #     - run: build
-
-# # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-# jobs:
-#   # find the list of python yaml files to lock
-#   gen_matrix:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       matrix: ${{ steps.set-matrix.outputs.matrix }}
-#     steps:
-#       - uses: actions/checkout@v2
-#       - id: set-matrix
-#       - run: echo "::set-output name=matrix::$(python -c \"import glob; print(glob.glob('requirements/ci/py*.yml'))\")"
-  
-#   gen_lockfiles:
-#     needs: [gen_matrix]
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix: ${{fromJson(needs.gen_matrix.outputs.matrix)}}
-#     steps:
-#       - run: echo 
 jobs:
-  build:
-    # The type of runner that the job will run on
+  
+  gen_lockfiles:
+    # this is a matrix job: it splits to create new lockfiles for each
+    # of the CI test python versions.
+    # this list below should be changed when covering more python versions
+    # TODO: generate this matrix automatically from the list of available py**.yml files
+    #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
     runs-on: ubuntu-latest
     
     strategy:
@@ -60,18 +32,42 @@ jobs:
       - uses: actions/checkout@v2
       - name: install conda-lock
         run: |
-        source $CONDA/bin/activate
-        conda install -y -c conda-forge conda-lock
-      - run: echo ${{ matrix.python }}
+          source $CONDA/bin/activate base
+          conda install -y -c conda-forge conda-lock
+      - name: generate lockfile
+        run: |
+          $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
+          mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
+      - name: output lockfile
+        uses: actions/upload-artifact@v2
+        with:
+          path: py${{matrix.python}}-linux-64.lock
+    
+  create_pr:
+    # once the matrix job has completed all the lock files will have been uploaded as artifacts.
+    # Download the artifacts, add them to the repo, and create a PR.
+    runs-on: ubuntu-latest
+    needs: gen_lockfiles
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: get artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+          
+      - name: Update lock files in repo
+        run: | 
+          cp artifacts/artifact/*.lock requirements/ci/nox.lock
+          rm -r artifacts
         
-        
-
-#       # Runs a single command using the runners shell
-#       - name: Run a one-line script
-#         run: echo Hello, world!
-
-#       # Runs a set of commands using the runners shell
-#       - name: Run a multi-line script
-#         run: |
-#           echo Add other actions to build,
-#           echo test, and deploy your project.
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8
+        with:
+          commit-message: Updated environment lockfiles
+          delete-branch: true
+          branch: lockfiles
+          branch-suffix: timestamp
+          title: Update CI environment lockfiles
+          body: |
+            Lockfiles updated to the latest resolvable environment.

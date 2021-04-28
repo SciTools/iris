@@ -81,8 +81,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     folder: ${CIRRUS_WORKING_DIR}/.nox
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${NOX_CACHE_BUILD}"
-      - sha256sum ${CIRRUS_WORKING_DIR}/requirements/ci/py$(echo ${PY_VER} | tr -d ".").yml
+      - echo "${NOX_CACHE_BUILD}"
 
 
 #
