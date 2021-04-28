@@ -1,5 +1,5 @@
 # platform: linux-64
-# env_hash: 25d37d9c9841bf7d79d238578d4063a437222f0b5c8e90ee78623b3e38cf0b0b
+# env_hash: 224a96531ed05f3e0e6c892b0b23906915eb70745ae01149c72d50f0864279fd
 @EXPLICIT
 https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2#d7c89558ba9fa0495403155b64376d81
 https://conda.anaconda.org/conda-forge/linux-64/ca-certificates-2020.12.5-ha878542_0.tar.bz2#7eb5d4ffeee663caa1635cd67071bc1b
@@ -163,7 +163,7 @@ https://conda.anaconda.org/conda-forge/linux-64/importlib-metadata-4.0.1-py38h57
 https://conda.anaconda.org/conda-forge/linux-64/kiwisolver-1.3.1-py38h1fd1430_1.tar.bz2#01488c80daae318ed5c17e7bb12af64e
 https://conda.anaconda.org/conda-forge/linux-64/libnetcdf-4.8.0-mpi_mpich_hf07302c_1.tar.bz2#2df6da2c9d66945c9399ce6e94d1748e
 https://conda.anaconda.org/conda-forge/linux-64/markupsafe-1.1.1-py38h497a2fe_3.tar.bz2#d51cdb48d2792a63174c0ee66a602e7e
-https://conda.anaconda.org/conda-forge/linux-64/mpi4py-3.0.3-py38he865349_5.tar.bz2#102cb42cdcf626ff68a225dbbe4e53df
+https://conda.anaconda.org/conda-forge/linux-64/mpi4py-3.0.3-py38he865349_6.tar.bz2#5de076f835bf7eaeced98104e6f6c5e9
 https://conda.anaconda.org/conda-forge/linux-64/msgpack-python-1.0.2-py38h1fd1430_1.tar.bz2#5854c568e0d341313fb0a6487f1c687e
 https://conda.anaconda.org/conda-forge/linux-64/mypy_extensions-0.4.3-py38h578d9bd_3.tar.bz2#2821575c3884edf40e02cf1966e1c504
 https://conda.anaconda.org/conda-forge/linux-64/numpy-1.20.2-py38h9894fe3_0.tar.bz2#d159afa37685037c73461e8f2fa22e50
@@ -195,7 +195,7 @@ https://conda.anaconda.org/conda-forge/linux-64/pango-1.42.4-h69149e4_5.tar.bz2#
 https://conda.anaconda.org/conda-forge/linux-64/python-stratify-0.1.1-py38h5c078b8_1003.tar.bz2#a15164882b8bb63442970d99d8a94324
 https://conda.anaconda.org/conda-forge/linux-64/pywavelets-1.1.1-py38h5c078b8_3.tar.bz2#dafeef887e68bd18ec84681747ca0fd5
 https://conda.anaconda.org/conda-forge/linux-64/qt-5.12.9-hda022c4_4.tar.bz2#afebab1f5049d66baaaec67d9ce893f0
-https://conda.anaconda.org/conda-forge/linux-64/scipy-1.6.2-py38h7b17777_0.tar.bz2#e0be90ecf33b94ac3f407f1bf3c76de2
+https://conda.anaconda.org/conda-forge/linux-64/scipy-1.6.3-py38h7b17777_0.tar.bz2#8055079ed82e1ada1cc4714c26d04802
 https://conda.anaconda.org/conda-forge/linux-64/setuptools-49.6.0-py38h578d9bd_3.tar.bz2#59c561cd1be0db9cf1c83f7d7cc74f4d
 https://conda.anaconda.org/conda-forge/linux-64/shapely-1.7.1-py38h4fc1155_4.tar.bz2#4f81f5126a2ff5bff8ee84574d82ecac
 https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-napoleon-0.7-py_0.tar.bz2#0bc25ff6f2e34af63ded59692df5f749
@@ -217,7 +217,7 @@ https://conda.anaconda.org/conda-forge/noarch/pygments-2.8.1-pyhd8ed1ab_0.tar.bz
 https://conda.anaconda.org/conda-forge/noarch/pyopenssl-20.0.1-pyhd8ed1ab_0.tar.bz2#92371c25994d0f5d28a01c1fb75ebf86
 https://conda.anaconda.org/conda-forge/linux-64/pyqt-impl-5.12.3-py38h7400c14_7.tar.bz2#8fe28c949b01e3d69c2b357b5abf3916
 https://conda.anaconda.org/conda-forge/linux-64/bokeh-2.1.1-py38h32f6830_0.tar.bz2#896f192315a5a04c878febacd67e64cd
-https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.19.0-py38hc9c980b_0.tar.bz2#8024c0f96cc8337f5148a07d4e1a8e13
+https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.18.0-py38hab71064_13.tar.bz2#85df4e1eaab01229f99b2cc4755f6dac
 https://conda.anaconda.org/conda-forge/linux-64/esmpy-8.1.1-mpi_mpich_py38h7f78e9f_100.tar.bz2#ce0ac0d6f5e6c5e7e0c613b08b3a0960
 https://conda.anaconda.org/conda-forge/linux-64/graphviz-2.47.1-hebd9034_0.tar.bz2#9840ac6c4756d7f4b6035a62aae4d6fb
 https://conda.anaconda.org/conda-forge/noarch/nc-time-axis-1.2.0-py_1.tar.bz2#f3158a5d335f0f44f09cf05d3fb4107e
