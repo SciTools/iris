@@ -1,3 +1,18 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+"""
+A command line utility for generating conda-lock files for the environments
+that nox uses for testing each different supported version of python.
+Typical usage:
+
+    python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+
+
+"""
+
 import argparse
 import os
 import subprocess
