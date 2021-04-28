@@ -79,9 +79,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CARTOPY_CACHE_BUILD}"
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
-    fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
-      - echo "${NOX_CACHE_BUILD}"
+    reupload_on_changes: true
 
 
 #
