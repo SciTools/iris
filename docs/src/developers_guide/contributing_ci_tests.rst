@@ -38,6 +38,36 @@ The above `cirrus-ci`_ tasks are run automatically against all `Iris`_ branches
 on GitHub whenever a pull-request is submitted, updated or merged. See the
 `Cirrus-CI Dashboard`_ for details of recent past and active Iris jobs.
 
+
+.. _cirrus_test_env:
+
+Cirrus CI Test environment
+--------------------------
+
+The test environment on the Cirrus-CI service is determined from the requirement files
+in `requirements/ci/py**.yml`.  These are conda envinroment files that list the entire
+set of build, test and run requirements for iris.
+
+For reproducible test results, these environments are resolved for all their dependencies
+and stored as lock files in `requirements/ci/nox.lock`.  The test environments will not
+resolve the dependencies each time, instead they will use the lock file to reproduce the
+same exact environment each time.
+
+**If you have updated the requirement yaml files with new dependencies, you will need to
+generate new lock files.** To do this, run the command::
+
+   python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+
+or simply::
+
+   make lockfiles
+
+and add the changed lockfiles to your pull request.
+
+New lockfiles are generated automatically each week to ensure that iris continues to be
+tested against the latest available version of its dependencies.
+
+
 .. _skipping Cirrus-CI tasks:
 
 Skipping Cirrus-CI Tasks
