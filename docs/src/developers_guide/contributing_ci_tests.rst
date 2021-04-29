@@ -45,11 +45,11 @@ Cirrus CI Test environment
 --------------------------
 
 The test environment on the Cirrus-CI service is determined from the requirement files
-in `requirements/ci/py**.yml`.  These are conda environment files that list the entire
-set of build, test and run requirements for iris.
+in ``requirements/ci/py**.yml``.  These are conda environment files that list the entire
+set of build, test and run requirements for Iris.
 
 For reproducible test results, these environments are resolved for all their dependencies
-and stored as lock files in `requirements/ci/nox.lock`.  The test environments will not
+and stored as lock files in ``requirements/ci/nox.lock``.  The test environments will not
 resolve the dependencies each time, instead they will use the lock file to reproduce the
 same exact environment each time.
 
@@ -64,7 +64,7 @@ or simply::
 
 and add the changed lockfiles to your pull request.
 
-New lockfiles are generated automatically each week to ensure that iris continues to be
+New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
 
 
@@ -137,4 +137,3 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
 .. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/master/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
-
