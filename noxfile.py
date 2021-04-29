@@ -124,7 +124,7 @@ def prepare_venv(session):
     venv_dir = session.virtualenv.location_name
 
     if not venv_populated(session):
-        # environment has been created but pacakages not yet installed
+        # environment has been created but packages not yet installed
         # populate the environment from the lockfile
         logger.debug(f"Populating conda env at {venv_dir}")
         session.conda_install("--file", str(lockfile))

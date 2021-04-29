@@ -45,7 +45,7 @@ Cirrus CI Test environment
 --------------------------
 
 The test environment on the Cirrus-CI service is determined from the requirement files
-in `requirements/ci/py**.yml`.  These are conda envinroment files that list the entire
+in `requirements/ci/py**.yml`.  These are conda environment files that list the entire
 set of build, test and run requirements for iris.
 
 For reproducible test results, these environments are resolved for all their dependencies

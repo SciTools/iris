@@ -1,5 +1,5 @@
 # This workflow periodically creates new environment lock files based on the newest
-# available dependency pacakges on conda-forge.
+# available dependency packages on conda-forge.
 #
 # For environments that have changed, a pull request will be made and submitted
 # to the master branch
