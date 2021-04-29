@@ -14,7 +14,7 @@ Typical usage:
 """
 
 import argparse
-import os
+from pathlib import Path
 import subprocess
 import sys
 
@@ -38,12 +38,16 @@ args = parser.parse_args()
 
 for infile in args.files:
     print(f"generating lockfile for {infile}", file=sys.stderr)
-    fname = os.path.basename(infile)
+
+    fname = Path(infile).name
     ftype = fname.split('.')[-1]
     if ftype.lower() in ('yaml', 'yml'):
         fname = '.'.join(fname.split('.')[:-1])
     
-    ofile_template = os.path.join(args.output_dir, fname+'-{platform}.lock')
+    # conda-lock --filename-template expects a string with a "...{platform}..."
+    # placeholder in it, so we have to build the .lock filname without
+    # using .format
+    ofile_template = Path(args.output_dir) / (fname+'-{platform}.lock')
     subprocess.call([
         'conda-lock',
         'lock',
