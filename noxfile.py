@@ -62,7 +62,7 @@ def venv_changed(session: nox.sessions.Session) -> bool:
         return False
 
 
-def cache_venv(session: nox.sessions.Session):
+def cache_venv(session: nox.sessions.Session) -> None:
     """
     Cache the nox session environment.
 
@@ -83,7 +83,7 @@ def cache_venv(session: nox.sessions.Session):
         fo.write(hexdigest)
 
 
-def cache_cartopy(session: nox.sessions.Session):
+def cache_cartopy(session: nox.sessions.Session) -> None:
     """
     Determine whether to cache the cartopy natural earth shapefiles.
 
@@ -101,7 +101,7 @@ def cache_cartopy(session: nox.sessions.Session):
         )
 
 
-def prepare_venv(session):
+def prepare_venv(session: nox.sessions.Session) -> None:
     """
     Create and cache the nox session conda environment, and additionally
     provide conda environment package details and info.
@@ -221,7 +221,7 @@ def tests(session: nox.sessions.Session):
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
-def gallery(session):
+def gallery(session: nox.sessions.Session):
     """
     Perform iris gallery doc-tests.
 
@@ -242,7 +242,7 @@ def gallery(session):
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
-def doctest(session):
+def doctest(session: nox.sessions.Session):
     """
     Perform iris doc-tests.
 
@@ -269,7 +269,7 @@ def doctest(session):
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
-def linkcheck(session):
+def linkcheck(session: nox.sessions.Session):
     """
     Perform iris doc link check.
 
