@@ -195,28 +195,22 @@ class TestIdentify(tests.IrisTest):
             "ref_source": ref_source,
         }
 
-        # Missing warning.
-        with self.assertLogs(logger, level="DEBUG") as log:
-            result = CFUGridMeshVariable.identify(vars_all, warn=False)
-            self.assertEqual(0, len(log.output))
-            self.assertDictEqual({}, result)
+        # The warn kwarg and expected corresponding log level.
+        warn_and_level = {True: "WARNING", False: "DEBUG"}
 
-            # Default is warn=True
-            result = CFUGridMeshVariable.identify(vars_all)
-            self.assertIn(
-                f"Missing CF-UGRID mesh variable {subject_name}", log.output[0]
-            )
-            self.assertDictEqual({}, result)
+        # Missing warning.
+        log_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
+                self.assertDictEqual({}, result)
 
         # String variable warning.
-        with self.assertLogs(logger, level="DEBUG") as log:
-            vars_all[subject_name] = netcdf_ugrid_variable(
-                subject_name, "", np.bytes_
-            )
-            result = CFUGridMeshVariable.identify(vars_all, warn=False)
-            self.assertDictEqual({}, result)
-
-            # Default is warn=True
-            result = CFUGridMeshVariable.identify(vars_all)
-            self.assertIn("is a CF-netCDF label variable", log.output[0])
-            self.assertDictEqual({}, result)
+        log_regex = r".*is a CF-netCDF label variable.*"
+        for warn, level in warn_and_level.items():
+            with self.assertLogs(logger, level=level, msg_regex=log_regex):
+                vars_all[subject_name] = netcdf_ugrid_variable(
+                    subject_name, "", np.bytes_
+                )
+                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
+                self.assertDictEqual({}, result)

@@ -15,6 +15,7 @@ from collections import namedtuple
 from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
+import logging
 import re
 import threading
 
@@ -1229,7 +1230,7 @@ class Mesh(CFVariableMixin):
                     "Not setting face_dimension (inappropriate for "
                     f"topology_dimension={self.topology_dimension} ."
                 )
-                logger.debug(message)
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
         elif not name or not isinstance(name, str):
             face_dimension = f"Mesh{self.topology_dimension}d_face"
         else:
@@ -3313,6 +3314,8 @@ class CFUGridConnectivityVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID connectivity variables.
         for nc_var_name, nc_var in target.items():
@@ -3326,13 +3329,16 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                     name = nc_var_att.strip()
                     if name not in ignore:
                         if name not in variables:
-                            if warn:
-                                message = (
-                                    f"Missing CF-UGRID connectivity variable "
-                                    f"{name}, referenced by netCDF variable "
-                                    f"{nc_var_name}"
-                                )
-                                logger.debug(message)
+                            message = (
+                                f"Missing CF-UGRID connectivity variable "
+                                f"{name}, referenced by netCDF variable "
+                                f"{nc_var_name}"
+                            )
+                            logger.log(
+                                level=log_level,
+                                msg=message,
+                                extra=dict(cls=cls.__name__),
+                            )
                         else:
                             # Restrict to non-string type i.e. not a
                             # CFLabelVariable.
@@ -3340,13 +3346,17 @@ class CFUGridConnectivityVariable(cf.CFVariable):
                                 result[name] = CFUGridConnectivityVariable(
                                     name, variables[name]
                                 )
-                            elif warn:
+                            else:
                                 message = (
                                     f"Ignoring variable {name}, identified "
                                     f"as a CF-UGRID connectivity - is a "
                                     f"CF-netCDF label variable."
                                 )
-                                logger.debug(message)
+                                logger.log(
+                                    level=log_level,
+                                    msg=message,
+                                    extra=dict(cls=cls.__name__),
+                                )
 
         return result
 
@@ -3385,6 +3395,8 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify any CF-UGRID-relevant auxiliary coordinate variables.
         for nc_var_name, nc_var in target.items():
@@ -3396,14 +3408,16 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                     for name in nc_var_att.split():
                         if name not in ignore:
                             if name not in variables:
-                                if warn:
-                                    message = (
-                                        f"Missing CF-netCDF auxiliary "
-                                        f"coordinate variable {name}, "
-                                        f"referenced by netCDF variable "
-                                        f"{nc_var_name}"
-                                    )
-                                    logger.debug(message)
+                                message = (
+                                    f"Missing CF-netCDF auxiliary coordinate "
+                                    f"variable {name}, referenced by netCDF "
+                                    f"variable {nc_var_name}"
+                                )
+                                logger.log(
+                                    level=log_level,
+                                    msg=message,
+                                    extra=dict(cls=cls.__name__),
+                                )
                             else:
                                 # Restrict to non-string type i.e. not a
                                 # CFLabelVariable.
@@ -3413,14 +3427,18 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
                                     ] = CFUGridAuxiliaryCoordinateVariable(
                                         name, variables[name]
                                     )
-                                elif warn:
+                                else:
                                     message = (
                                         f"Ignoring variable {name}, "
-                                        f"identified as a CF-netCDF auxiliary "
-                                        f"coordinate - is a CF-netCDF label "
-                                        f"variable."
+                                        f"identified as a CF-netCDF "
+                                        f"auxiliary coordinate - is a "
+                                        f"CF-netCDF label variable."
                                     )
-                                    logger.debug(message)
+                                    logger.log(
+                                        level=log_level,
+                                        msg=message,
+                                        extra=dict(cls=cls.__name__),
+                                    )
 
         return result
 
@@ -3451,6 +3469,8 @@ class CFUGridMeshVariable(cf.CFVariable):
     def identify(cls, variables, ignore=None, target=None, warn=True):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
+        # TODO: reconsider logging level when we have consistent practice.
+        log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID mesh variables.
         for nc_var_name, nc_var in target.items():
@@ -3462,12 +3482,15 @@ class CFUGridMeshVariable(cf.CFVariable):
                 name = nc_var_att.strip()
                 if name not in ignore:
                     if name not in variables:
-                        if warn:
-                            message = (
-                                f"Missing CF-UGRID mesh variable {name}, "
-                                f"referenced by netCDF variable {nc_var_name}"
-                            )
-                            logger.debug(message)
+                        message = (
+                            f"Missing CF-UGRID mesh variable {name}, "
+                            f"referenced by netCDF variable {nc_var_name}"
+                        )
+                        logger.log(
+                            level=log_level,
+                            msg=message,
+                            extra=dict(cls=cls.__name__),
+                        )
                     else:
                         # Restrict to non-string type i.e. not a
                         # CFLabelVariable.
@@ -3475,13 +3498,17 @@ class CFUGridMeshVariable(cf.CFVariable):
                             result[name] = CFUGridMeshVariable(
                                 name, variables[name]
                             )
-                        elif warn:
+                        else:
                             message = (
                                 f"Ignoring variable {name}, identified as a "
                                 f"CF-UGRID mesh - is a CF-netCDF label "
                                 f"variable."
                             )
-                            logger.debug(message)
+                            logger.log(
+                                level=log_level,
+                                msg=message,
+                                extra=dict(cls=cls.__name__),
+                            )
 
         return result
 
@@ -3673,7 +3700,6 @@ def _build_mesh(cf, mesh_var, file_path):
             ", consistent with the attached connectivities."
         )
         # TODO: reconsider logging level when we have consistent practice.
-        # TODO: logger always requires extras['cls'] : can we fix this?
         logger.warning(msg, extra=dict(cls=None))
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
@@ -3687,7 +3713,6 @@ def _build_mesh(cf, mesh_var, file_path):
                 " -- ignoring this as it is inconsistent."
             )
             # TODO: reconsider logging level when we have consistent practice.
-            # TODO: logger always requires extras['cls'] : can we fix this?
             logger.warning(msg=msg, extra=dict(cls=None))
 
     node_dimension = None

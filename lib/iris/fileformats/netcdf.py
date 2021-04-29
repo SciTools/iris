@@ -52,7 +52,7 @@ from iris._lazy_data import as_lazy_data
 DEBUG = False
 
 # Configure the logger.
-logger = iris.config.get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+logger = iris.config.get_logger(__name__)
 
 # Pyke CF related file names.
 _PYKE_RULE_BASE = "fc_rules_cf"

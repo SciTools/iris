@@ -314,6 +314,6 @@ class TestsMesh(tests.IrisTest):
         _ = list(load_cubes(nc_path))
 
         with PARSE_UGRID_ON_LOAD.context():
-            with self.assertLogs(logger, level="DEBUG") as log:
+            log_regex = r"File does not contain mesh.*"
+            with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
                 _ = list(load_cubes(nc_path))
-                self.assertIn("File does not contain mesh", log.output[0])
