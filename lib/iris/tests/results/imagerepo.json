@@ -146,11 +146,11 @@
     ],
     "gallery_tests.test_plot_wind_speed.TestWindSpeed.test_plot_wind_speed.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bcf924fb9306930ce12ccf97c73236b28ecec4cd3e29847b18e639e6c14f1a09.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169306c1ee9e96c29e36739e13c07d3d61c07f39a139a1c07f3f01.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169306c1fe9e96c29e36739e13c06c3d61c07f39a139e1c07f3f01.png"
     ],
     "gallery_tests.test_plot_wind_speed.TestWindSpeed.test_plot_wind_speed.1": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bcf924fb9306930ce12ccf97c73236b28ecec4cc3e29847b38e639e6c14f1a09.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169306c1ee9e86c29e36739e13c07d3d61c07f39a139a1c17f3f01.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169306c1ee9e96c29e36739653c06c3d61c07f3da139e1c07f3f01.png"
     ],
     "iris.tests.experimental.test_animate.IntegrationTest.test_cube_animation.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fe81957ac17e6a85817e6a85857e942a3e81957a7e81917a7a81d95ec17e2ca1.png",
