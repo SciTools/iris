@@ -26,7 +26,6 @@ from iris.common.lenient import _lenient_client
 from iris.config import get_logger
 import iris.coords
 import iris.exceptions
-import iris._lazy_data
 import iris.util
 
 # Configure the logger.
@@ -838,15 +837,6 @@ def _binary_op_common(
             raise TypeError(emsg)
         return data
 
-    force_lazy = force_masked = False
-
-    if iris._lazy_data.is_lazy_data(rhs):
-        force_lazy = True
-    elif in_place and ma.is_masked(rhs):
-        # If lhs is a plain numpy array, we cannot do a straight in-place
-        # operation without stripping the mask from rhs.
-        force_masked = True
-
     result = _math_op_common(
         cube,
         unary_func,
@@ -854,8 +844,6 @@ def _binary_op_common(
         new_dtype=new_dtype,
         in_place=in_place,
         skeleton_cube=skeleton_cube,
-        force_lazy=force_lazy,
-        force_masked=force_masked,
     )
 
     if isinstance(other, Cube):
@@ -944,39 +932,29 @@ def _math_op_common(
     new_dtype=None,
     in_place=False,
     skeleton_cube=False,
-    force_lazy=False,
-    force_masked=False,
 ):
     from iris.cube import Cube
 
     _assert_is_cube(cube)
 
-    data = None
-    if force_lazy or cube.has_lazy_data():
-        data = operation_function(cube.lazy_data())
-    elif force_masked and not isinstance(cube.data, ma.MaskedArray):
-        data = operation_function(ma.array(cube.data))
-    elif not in_place or skeleton_cube:
-        data = operation_function(cube.data)
-
-    if data is None:
-        # in-place, not skeleton_cube, not forcing lazy or masked type.
-        try:
-            operation_function(cube.data, out=cube.data)
-        except TypeError:
-            # Non-ufunc function
-            operation_function(cube.data)
-        new_cube = cube
-
-    elif skeleton_cube:
-        # Simply wrap the resultant data in a cube, as no
-        # cube metadata is required by the caller.
-        new_cube = iris.cube.Cube(data)
-    elif in_place:
-        cube.data = data
+    if in_place and not skeleton_cube:
+        if cube.has_lazy_data():
+            cube.data = operation_function(cube.lazy_data())
+        else:
+            try:
+                operation_function(cube.data, out=cube.data)
+            except TypeError:
+                # Non-ufunc function
+                operation_function(cube.data)
         new_cube = cube
     else:
-        new_cube = cube.copy(data)
+        data = operation_function(cube.core_data())
+        if skeleton_cube:
+            # Simply wrap the resultant data in a cube, as no
+            # cube metadata is required by the caller.
+            new_cube = iris.cube.Cube(data)
+        else:
+            new_cube = cube.copy(data)
 
     # If the result of the operation is scalar and masked, we need to fix-up the dtype.
     if (
