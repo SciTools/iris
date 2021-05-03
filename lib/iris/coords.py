@@ -2334,7 +2334,10 @@ class DimCoord(Coord):
             bounds values will be defined. Defaults to False.
 
         """
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+        start = zeroth + step
+        end = zeroth + (count * step)
+        points = np.linspace(start, end, num=count, dtype=np.float32)
+
         _, regular = iris.util.points_step(points)
         if not regular:
             points = (zeroth + step) + step * np.arange(
