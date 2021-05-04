@@ -71,8 +71,7 @@ jobs:
         with:
           commit-message: Updated environment lockfiles
           delete-branch: true
-          branch: lockfiles
-          branch-suffix: timestamp
+          branch: auto-update-lockfiles
           title: Update CI environment lockfiles
           body: |
             Lockfiles updated to the latest resolvable environment.
