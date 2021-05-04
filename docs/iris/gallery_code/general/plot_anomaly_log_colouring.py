@@ -68,13 +68,13 @@ def main():
     # Create a 'logarithmic' data normalization.
     anom_norm = mcols.SymLogNorm(
         linthresh=minimum_log_level,
-        linscale=1,
+        linscale=0.01,
         vmin=-maximum_scale_level,
         vmax=maximum_scale_level,
     )
     # Setting "linthresh=minimum_log_level" makes its non-logarithmic
     # data range equal to our 'zero band'.
-    # Setting "linscale=1" maps the whole zero band to the middle colour value
+    # Setting "linscale=0.01" maps the whole zero band to the middle colour value
     # (i.e., 0.5), which is the neutral point of a "diverging" style colormap.
 
     # Create an Axes, specifying the map projection.
