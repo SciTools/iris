@@ -1,5 +1,10 @@
 # This workflow periodically creates new environment lock files based on the newest
-# available dependency packages on conda-forge.
+# available packages and dependencies.
+#
+# Environment specifications are given as conda environment.yml files found in
+# `requirements/ci/py**.yml`.  These state the pacakges required, the conda channels
+# that the packages will be pulled from, and any versions of packages that need to be
+# pinned at specific versions.
 #
 # For environments that have changed, a pull request will be made and submitted
 # to the master branch
