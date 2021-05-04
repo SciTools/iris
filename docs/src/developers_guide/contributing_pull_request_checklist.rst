@@ -29,7 +29,7 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check all modified and new source files conform to the required**
    :ref:`code_formatting`.
 
-#. **Check all new dependencies added to the requirements/ci/*.yml files.**  If
+#. **Check all new dependencies added to the ``requirements/ci/*.yml`` files.**  If
    dependencies have been added then new nox testing lockfiles should be generated too,
    see :ref:`cirrus_test_env`.
 
