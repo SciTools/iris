@@ -14,7 +14,6 @@ import ntpath
 # warnings, especially for experimental modules.
 exclude_modules = [
     ("experimental/raster", "iris.experimental.raster"),  # gdal conflicts
-    ("ugrid/plot", "iris.experimental.ugrid.plot"),       # cirrus-ci container opengl issues
 ]
 
 
