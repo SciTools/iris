@@ -229,7 +229,7 @@ Post Release Steps
 #. Review the `Active Versions`_ for the ``scitools-iris`` project on
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
-   see `Editing v3.0.0rc0`_.
+   see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
 #. Copy ``docs/src/whatsnew/latest.rst.template`` to
    ``docs/src/whatsnew/latest.rst``.  This will reset
    the file with the ``unreleased`` heading and placeholders for the
@@ -247,7 +247,7 @@ Post Release Steps
 .. _CFEP-05: https://github.com/conda-forge/cfep/blob/master/cfep-05.md
 .. _conda-forge User Documentation: https://conda-forge.org/docs/user/00_intro.html
 .. _Active Versions: https://readthedocs.org/projects/scitools-iris/versions/
-.. _Editing v3.0.0rc0: https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/
+.. _Editing v3.0.0rc0: https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/edit
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
