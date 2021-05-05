@@ -554,8 +554,8 @@ class TestExponentiate(tests.IrisTest):
 
         e = a ** 0.5
 
-        self.assertArrayAllClose(e.data, a.data ** 0.5)
-        self.assertCML(e, ("analysis", "sqrt.cml"))
+        self.assertArrayEqual(e.data, a.data ** 0.5)
+        self.assertCML(e, ("analysis", "sqrt.cml"), checksum=False)
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
     def test_type_error(self):
