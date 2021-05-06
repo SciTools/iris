@@ -49,6 +49,9 @@ def main():
     u_norm = uwind / windspeed
     v_norm = vwind / windspeed
 
+    # Make a new figure for the normalised plot.
+    plt.figure()
+
     qplt.contourf(windspeed, 20)
     plt.gca().add_feature(lakes)
     iplt.quiver(u_norm, v_norm, pivot="middle")

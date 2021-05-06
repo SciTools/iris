@@ -67,7 +67,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@rcomer`_ updated the "Plotting Wind Direction Using Quiver" Gallery
+   example. (:pull:`4120`)
 
 
 💼 Internal
