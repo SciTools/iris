@@ -116,6 +116,10 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added the |pre-commit.ci|_ badge to the `README.md`_.
    See :ref:`pre_commit_ci` for further details. (:pull:`4061`)
 
+#. `@rcomer`_ tweaked docstring layouts in the :mod:`iris.plot` module, so
+   they render better in the published documentation.  See :issue:`4085`.
+   (:pull:`4100`)
+
 
 💼 Internal
 ===========
