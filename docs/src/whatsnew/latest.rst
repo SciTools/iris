@@ -128,6 +128,10 @@ This document explains the changes made to Iris for this release
    code comments, this was supposedly already the case, but there were several bugs
    and loopholes. (:issue:`1897`, :pull:`4767`)
 
+#. `@rcomer`_ modified cube arithmetic to handle mismatches in the cube's data
+   array type.  This prevents masks being lost in some cases and therefore
+   resolves :issue:`2987`.  (:pull:`3790`)
+
 
 💣 Incompatible Changes
 =======================
