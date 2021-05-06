@@ -3188,7 +3188,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
                 if maximum % modulus not in cells:
-                    # Recalculate the extended minimum.
+                    # Recalculate the extended minimum only if the output bounds
+                    # do not span the requested (minumum, maximum) range.  If
+                    # they do span that range, this adjustment would give unexpected
+                    # results (see #3391).
                     cells_delta = np.diff(coord.bounds[indices])
 
                     # Watch out for ascending/descending bounds.
