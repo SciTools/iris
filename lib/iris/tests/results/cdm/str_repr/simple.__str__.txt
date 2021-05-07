@@ -1,4 +1,4 @@
-thingness                                                                                 (foo: 11)
+thingness / (1)                                                                           (foo: 11)
      Dimension coordinates:
           foo                                                                                 x
      Auxiliary coordinates:
