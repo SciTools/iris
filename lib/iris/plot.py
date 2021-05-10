@@ -1073,6 +1073,15 @@ def contourf(cube, *args, **kwargs):
             # any boundary shift.
             zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
+
+            # Workaround for cartopy#1780.  We do not want contour to modify
+            # extent, so get hold of it and re-apply it after contour call.
+            if axes is None:
+                _axes = plt.gca()
+            else:
+                _axes = axes
+            extent = _axes.get_extent()
+
             contour(
                 cube,
                 levels=levels,
@@ -1082,6 +1091,9 @@ def contourf(cube, *args, **kwargs):
                 coords=coords,
                 axes=axes,
             )
+
+            _axes.set_extent(extent, crs=_axes.projection)
+
             # Restore the current "image" to 'result' rather than the mappable
             # resulting from the additional call to contour().
             if axes:
