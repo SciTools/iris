@@ -1074,17 +1074,16 @@ def contourf(cube, *args, **kwargs):
             zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
 
-            # Workaround for cartopy#1780.  We do not want contour to modify
-            # extent, so get hold of it and re-apply it after contour call.
+            # Workaround for cartopy#1780.  We do not want contour to shrink
+            # extent.
             if axes is None:
                 _axes = plt.gca()
             else:
                 _axes = axes
 
-            if isinstance(_axes, cartopy.mpl.geoaxes.GeoAxes):
-                extent = _axes.get_extent()
-            else:
-                extent = None
+            # Subsequent calls to dataLim.update_from_data_xy should not ignore
+            # current extent.
+            _axes.dataLim.ignore(False)
 
             contour(
                 cube,
@@ -1095,10 +1094,6 @@ def contourf(cube, *args, **kwargs):
                 coords=coords,
                 axes=axes,
             )
-
-            if extent is not None:
-                _axes.set_extent(extent, crs=_axes.projection)
-
             # Restore the current "image" to 'result' rather than the mappable
             # resulting from the additional call to contour().
             if axes:
