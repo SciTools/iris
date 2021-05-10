@@ -1080,7 +1080,11 @@ def contourf(cube, *args, **kwargs):
                 _axes = plt.gca()
             else:
                 _axes = axes
-            extent = _axes.get_extent()
+
+            if isinstance(_axes, cartopy.mpl.geoaxes.GeoAxes):
+                extent = _axes.get_extent()
+            else:
+                extent = None
 
             contour(
                 cube,
@@ -1092,7 +1096,8 @@ def contourf(cube, *args, **kwargs):
                 axes=axes,
             )
 
-            _axes.set_extent(extent, crs=_axes.projection)
+            if extent is not None:
+                _axes.set_extent(extent, crs=_axes.projection)
 
             # Restore the current "image" to 'result' rather than the mappable
             # resulting from the additional call to contour().
