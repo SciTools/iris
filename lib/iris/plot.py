@@ -1087,6 +1087,18 @@ def contourf(cube, *args, **kwargs):
             # any boundary shift.
             zorder = result.collections[0].zorder - 0.1
             axes = kwargs.get("axes", None)
+
+            # Workaround for cartopy#1780.  We do not want contour to shrink
+            # extent.
+            if axes is None:
+                _axes = plt.gca()
+            else:
+                _axes = axes
+
+            # Subsequent calls to dataLim.update_from_data_xy should not ignore
+            # current extent.
+            _axes.dataLim.ignore(False)
+
             contour(
                 cube,
                 levels=levels,
