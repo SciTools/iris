@@ -260,7 +260,8 @@
     "iris.tests.test_mapping.TestLowLevel.test_simple.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/eae0943295154bcc844e6c314fb093ce7bc7c4b3a4307bc4916f3f316ed2b4ce.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/faa0e55c855fdce7857a1ab16a85a50c3ea1e55e856658a5c11837096e8fe17a.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/faa0e55c855fdce7857a1ab16a85a50c36a1e55e854658b5c13837096e8fe17a.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/faa0e55c855fdce7857a1ab16a85a50c36a1e55e854658b5c13837096e8fe17a.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/faa0e558855fd9e7857a1ab16a85a51d36a1e55a854e58a5c13837096e8fe17a.png"
     ],
     "iris.tests.test_mapping.TestMappingSubRegion.test_simple.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bd913e01d07ee07e926e87876f8196c1e0d36967393c1f181e2c3cb8b0f960d7.png",
