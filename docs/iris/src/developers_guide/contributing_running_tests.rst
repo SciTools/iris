@@ -178,6 +178,8 @@ For further `nox`_ command-line options::
 .. note:: `nox`_ will cache its testing environments in the `.nox` root ``iris`` project directory.
 
 
+.. _black: https://black.readthedocs.io/en/stable/
+.. _nox: https://nox.thea.codes/en/latest/
 .. _setuptools: https://setuptools.readthedocs.io/en/latest/
 .. _tox: https://tox.readthedocs.io/en/latest/
 .. _virtualenv: https://virtualenv.pypa.io/en/latest/
