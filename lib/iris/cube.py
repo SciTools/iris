@@ -3185,18 +3185,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     pre_wrap_delta != post_wrap_delta
                 )
 
-                # Recalculate the extended minimum.
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
-                cells_delta = np.diff(coord.bounds[indices])
+                if maximum % modulus not in cells:
+                    # Recalculate the extended minimum only if the output bounds
+                    # do not span the requested (minumum, maximum) range.  If
+                    # they do span that range, this adjustment would give unexpected
+                    # results (see #3391).
+                    cells_delta = np.diff(coord.bounds[indices])
 
-                # Watch out for ascending/descending bounds
-                if cells_delta[0, 0] > 0:
-                    cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                    minimum = np.min(cells[:, 0])
-                else:
-                    cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
-                    minimum = np.min(cells[:, 1])
+                    # Watch out for ascending/descending bounds.
+                    if cells_delta[0, 0] > 0:
+                        cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
+                        minimum = np.min(cells[:, 0])
+                    else:
+                        cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
+                        minimum = np.min(cells[:, 1])
 
             points = wrap_lons(coord.points, minimum, modulus)
 
