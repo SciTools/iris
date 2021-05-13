@@ -46,7 +46,11 @@ def main():
 
     # Set up axes to show the lake
     lakes = cfeat.NaturalEarthFeature(
-        "physical", "lakes", "50m", facecolor="none"
+        "physical",
+        "lakes",
+        "50m",
+        facecolor="none",
+        edgecolor="black",
     )
 
     plt.figure()
