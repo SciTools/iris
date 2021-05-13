@@ -120,6 +120,8 @@ test_minimal_task:
       PY_VER: 3.6
     env:
       PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
   container:
     image: gcc:latest
@@ -143,6 +145,8 @@ test_full_task:
       PY_VER: 3.6
     env:
       PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
   container:
     image: gcc:latest
@@ -172,9 +176,7 @@ gallery_task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.6
-    env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
   container:
     image: gcc:latest
@@ -204,7 +206,7 @@ doctest_task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests"
   container:
     image: gcc:latest
@@ -240,7 +242,7 @@ linkcheck_task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.7
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc link check"
   container:
     image: gcc:latest

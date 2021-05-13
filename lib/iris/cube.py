@@ -225,6 +225,7 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
+
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
         cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -239,6 +240,7 @@ class CubeList(list):
         doc.appendChild(cubes_xml_element)
 
         # return our newly created XML string
+        doc = Cube._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def extract(self, constraints):
@@ -754,6 +756,59 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     #: or lists slice along each dimension independently. This behavior
     #: is similar to Fortran or Matlab, but different than numpy.
     __orthogonal_indexing__ = True
+
+    @classmethod
+    def _sort_xml_attrs(cls, doc):
+        """
+        Takes an xml document and returns a copy with all element
+        attributes sorted in alphabetical order.
+
+        This is a private utility method required by iris to maintain
+        legacy xml behaviour beyond python 3.7.
+
+        Args:
+
+        * doc:
+            The :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Document` with sorted element
+            attributes.
+
+        """
+        from xml.dom.minidom import Document
+
+        def _walk_nodes(node):
+            """Note: _walk_nodes is called recursively on child elements."""
+
+            # we don't want to copy the children here, so take a shallow copy
+            new_node = node.cloneNode(deep=False)
+
+            # Versions of python <3.8 order attributes in alphabetical order.
+            # Python >=3.8 order attributes in insert order.  For consistent behaviour
+            # across both, we'll go with alphabetical order always.
+            # Remove all the attribute nodes, then add back in alphabetical order.
+            attrs = [
+                new_node.getAttributeNode(attr_name).cloneNode(deep=True)
+                for attr_name in sorted(node.attributes.keys())
+            ]
+            for attr in attrs:
+                new_node.removeAttributeNode(attr)
+            for attr in attrs:
+                new_node.setAttributeNode(attr)
+
+            if node.childNodes:
+                children = [_walk_nodes(x) for x in node.childNodes]
+                for c in children:
+                    new_node.appendChild(c)
+
+            return new_node
+
+        nodes = _walk_nodes(doc.documentElement)
+        new_doc = Document()
+        new_doc.appendChild(nodes)
+
+        return new_doc
 
     def __init__(
         self,
@@ -3399,6 +3454,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         doc.appendChild(cube_xml_element)
 
         # Print our newly created XML
+        doc = self._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
