@@ -247,6 +247,7 @@ class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_data
 @tests.skip_plot
 class TestColorbar(tests.IrisTest):
     def test_colorbar_location(self):
