@@ -247,5 +247,23 @@ class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
         self.check_graphic()
 
 
+@tests.skip_plot
+class TestColorbar(tests.IrisTest):
+    def test_colorbar_location(self):
+        theta = _load_theta()
+        theta_slice = next(
+            theta.slices(["model_level_number", "grid_longitude"])
+        )
+
+        fig1 = plt.figure()
+        plt.figure()
+        ax = fig1.add_subplot(1, 1, 1)
+
+        result = qplt.contourf(theta_slice, axes=ax)
+
+        # Colourbar should appear on same figure as ax, i.e. fig1.
+        self.assertIs(result.colorbar.ax.get_figure(), fig1)
+
+
 if __name__ == "__main__":
     tests.main()

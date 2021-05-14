@@ -65,6 +65,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified :func:`~iris.plot.contourf` to skip the special handling for
    antialiasing when data values are too low for it to have an effect.  This caused
    unexpected artifacts in some edge cases, as shown at :issue:`4086`. (:pull:`4150`)
+   
+#. `@rcomer`_ modified :mod:`iris.quickplot` so that, if an axes is supplied, any
+   colourbar will appear below it, fixing :issue:`4126`.  (:pull:`4136`)
 
 
 💣 Incompatible Changes
