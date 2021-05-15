@@ -41,9 +41,9 @@
         <dimCoord id="d70a5be9" long_name="level_height" points="[0, 20, 40, 80]" shape="(4,)" units="Unit('m')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="62e940e0" points="[170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0,
-		177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0,
-		184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0]" shape="(21,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord id="62e940e0" points="[170, 171, 172, 173, 174, 175, 176, 177, 178,
+		179, 180, 181, 182, 183, 184, 185, 186, 187,
+		188, 189, 190]" shape="(21,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
         <auxCoord id="a5c170db" long_name="sigma" points="[1.0, 0.9, 0.8, 0.6]" shape="(4,)" units="Unit('1')" value_type="float64"/>
