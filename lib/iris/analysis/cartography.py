@@ -69,8 +69,9 @@ def wrap_lons(lons, base, period):
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
+    orig_dtype = lons.dtype
     lons = lons.astype(np.float64)
-    return ((lons - base + period * 2) % period) + base
+    return (((lons - base + period * 2) % period) + base).astype(orig_dtype)
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
