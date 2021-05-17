@@ -72,7 +72,7 @@ class Test_co_realise_cubes(tests.IrisTest):
         co_realise_cubes(cube_a, cube_b, cube_c, cube_d, cube_e)
         # Though used more than once, the source data should only get fetched
         # once by dask, when the whole data is accessed.
-        # This also ensures that dask does *not* performs an initial data
+        # This also ensures that dask does *not* perform an initial data
         # access with no data payload to ascertain the metadata associated with
         # the dask.array (this access is specific to dask 2+,
         # see dask.array.utils.meta_from_array).
