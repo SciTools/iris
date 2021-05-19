@@ -41,9 +41,13 @@ from iris._lazy_data import is_lazy_data
 @tests.skip_data
 class TestNetCDFLoad(tests.IrisTest):
     def setUp(self):
+        iris.fileformats.netcdf.DEBUG = True
+        iris.fileformats.netcdf.LOAD_PYKE = False
         self.tmpdir = None
 
     def tearDown(self):
+        iris.fileformats.netcdf.DEBUG = False
+        iris.fileformats.netcdf.LOAD_PYKE = True
         if self.tmpdir is not None:
             shutil.rmtree(self.tmpdir)
 
@@ -127,11 +131,24 @@ class TestNetCDFLoad(tests.IrisTest):
 
     def test_load_rotated_xy_land(self):
         # Test loading single xy rotated pole CF-netCDF file.
+        iris.fileformats.netcdf.LOAD_PYKE = True
+        print("Pyke version:")
         cube = iris.load_cube(
             tests.get_data_path(
                 ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
             )
         )
+        print(cube)
+        iris.fileformats.netcdf.LOAD_PYKE = False
+        print("")
+        print("NON-Pyke version:")
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
+            )
+        )
+        print(cube)
+
         # Make sure the AuxCoords have lazy data.
         self.assertTrue(is_lazy_data(cube.coord("latitude").core_points()))
         self.assertCML(cube, ("netcdf", "netcdf_rotated_xy_land.cml"))
