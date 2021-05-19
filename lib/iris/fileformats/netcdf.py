@@ -381,7 +381,7 @@ class CFNameCoordMap:
         return result
 
 
-def _pyke_kb_engine():
+def _pyke_kb_engine_real():
     """Return the PyKE knowledge engine for CF->cube conversion."""
 
     pyke_dir = os.path.join(os.path.dirname(__file__), "_pyke_rules")
@@ -409,6 +409,21 @@ def _pyke_kb_engine():
     if engine is None:
         engine = knowledge_engine.engine(iris.fileformats._pyke_rules)
 
+    return engine
+
+
+LOAD_PYKE = True
+
+
+def _pyke_kb_engine():
+    """Return a knowledge engine, or replacement object."""
+    if LOAD_PYKE:
+        engine = _pyke_kb_engine_real()
+    else:
+        # Deferred import to avoid circularity.
+        import iris.fileformats._nc_load_rules.engine as nonpyke_engine
+
+        engine = nonpyke_engine.Engine()
     return engine
 
 
@@ -581,6 +596,17 @@ def _get_cf_var_data(cf_var, filename):
     return as_lazy_data(proxy, chunks=chunks)
 
 
+class OrderedAddableList(list):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._n_add = 0
+
+    def add(self, msg):
+        self._n_add += 1
+        n_add = self._n_add
+        self.append(f"#{n_add:03d} : {msg}")
+
+
 def _load_cube(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
@@ -596,7 +622,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = set()
+    engine.rule_triggered = OrderedAddableList()  # set()
     engine.filename = filename
 
     # Assert any case-specific facts.
