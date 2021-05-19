@@ -39,7 +39,7 @@ linted according to our ``.flake8`` configuration file. Note that,
 for each ``.pre-commit-config.yaml`` git hook.
 
 Additionally, you may wish to enable ``black`` for your preferred
-`editor/IDE <https://black.readthedocs.io/en/stable/editor_integration.html#editor-integration>`_.
+`editor/IDE <https://black.readthedocs.io/en/stable/integrations/editors.html#editor-integration>`_.
 
 With the ``pre-commit`` configured, the output of performing a ``git commit``
 will look similar to::

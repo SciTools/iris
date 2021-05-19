@@ -157,6 +157,10 @@ This document explains the changes made to Iris for this release
 #. `@jamesp`_ switched `cirrus-ci`_ testing and `nox`_
    testing to use `conda-lock`_ files for static test environments. (:pull:`4108`)
 
+#. `@bjlittle`_ updated the ``bug-report`` and ``feature-request`` GitHub issue
+   templates to remove an external URL reference that caused un-posted user issue
+   content to be lost in the browser when followed. (:pull:`4147`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
