@@ -66,25 +66,6 @@ class Test__grid_mappings(tests.IrisTest):
                 double phenom(lats, lons) ;
                     phenom:standard_name = "air_temperature" ;
                     phenom:units = "K" ;
-                double lats(lats) ;
-                    lats:axis = "Y" ;
-                    lats:units = "degrees_north" ;
-                    lats:standard_name = "latitude" ;
-                double lons(lons) ;
-                    lons:axis = "X" ;
-                    lons:units = "degrees_east" ;
-                    lons:standard_name = "longitude" ;
-            }
-        """
-        cdl_string = r"""
-            netcdf test {
-            dimensions:
-                lats = 2 ;
-                lons = 3 ;
-            variables:
-                double phenom(lats, lons) ;
-                    phenom:standard_name = "air_temperature" ;
-                    phenom:units = "K" ;
                     phenom:grid_mapping = "grid" ;
                 double lats(lats) ;
                     lats:axis = "Y" ;
