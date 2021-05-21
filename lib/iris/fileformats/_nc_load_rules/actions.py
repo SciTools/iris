@@ -245,22 +245,20 @@ _coordtype_to_gridtype_coordname = {
 def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
-    rule_name = f"fc_build_coordinate_{coord_type}"
+    rule_name = f"fc_build_coordinate_({coord_type})"
     grid_type, coord_name = _coordtype_to_gridtype_coordname[coord_type]
-    succeed = True
     coord_system = None
     if grid_type is not None:
-        if coord_type not in ("latitude", "longitude"):
-            # There needs to be the right sort of coordinate system
-            coord_system = engine.cube_parts.get("coordinate_system")
-            if coord_system is None:
-                succeed = False
-                rule_name += " --FAILED(no coord-system)"
-            # TODO else: we ***asssume*** coord-system is the right type ??
-    if succeed:
-        hh.build_dimension_coordinate(
-            engine, cf_var, coord_name=coord_name, coord_system=coord_system
-        )
+        # If a type is identified with a grid, use the coordinate system
+        # N.B. this requires each grid-type identification to validate the
+        # coord var (e.g. "is_longitude").
+        # Non-conforming lon/lat/projection coords will be classed as
+        # dim-coords by cf.py, but 'action_provides_coordinate' will give them
+        # a coord-type of 'miscellaneous' : hence, they have no coord-system.
+        coord_system = engine.cube_parts.get("coordinate_system")
+    hh.build_dimension_coordinate(
+        engine, cf_var, coord_name=coord_name, coord_system=coord_system
+    )
 
     return rule_name
 
