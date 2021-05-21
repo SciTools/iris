@@ -16,12 +16,15 @@ not :
        engine.cf_var, .cube, .cube_parts, .requires, .rule_triggered, .filename
 
 Our "rules" are just action routines.
-The master 'run_rules' routine decides which to call based on the info recorded
-when processing each cube output.  It does this in a simple explicit way, which
-doesn't use any clever chaining, "trigger conditions" or rules-like behaviour.
+The top-level 'run_actions' routine decides which actions to call, based on the
+info recorded when processing each cube output.  It does this in a simple
+explicit way, which doesn't use any clever chaining, "trigger conditions" or
+other rule-type logic.
 
-FOR NOW: we are still using intermediate facts to carry information between
-rules.
+TODO: remove the use of intermediate "facts" to carry information between
+actions.  This mimics older behaviour, so is still useful while we are still
+comparing behaviour with the old Pyke rules (debugging).  But once that is no
+longer useful, this can be considerably simplified.
 
 """
 
@@ -29,9 +32,9 @@ from . import helpers as hh
 from functools import wraps
 
 
-def convert_rulesfuncname_to_rulename(func_name):
-    # Given the name of a rules-func, return the name of the rule.
-    funcname_prefix = "rule_"
+def convert_actionname_to_rulename(func_name):
+    # Given the name of an action-func, return the name of the rule.
+    funcname_prefix = "action_"
     rulename_prefix = "fc_"  # To match existing behaviours
     rule_name = func_name
     if rule_name.startswith(funcname_prefix):
@@ -42,15 +45,13 @@ def convert_rulesfuncname_to_rulename(func_name):
 
 
 def _default_rulenamesfunc(func_name):
-    # A default function to deduce the rules-name from a rule-func-name.
-    # This (default) one assumes there are *no* additional call fact_arglist,
-    # i.e. the function does *not* take parameters to implement multiple rules.
-    rule_name = convert_rulesfuncname_to_rulename(func_name)
+    # A simple default function to deduce the rules-name from an action-name.
+    rule_name = convert_actionname_to_rulename(func_name)
     return rule_name
 
 
-def rules_function(func):
-    # Wrap a rules function with some standard behaviour.
+def action_function(func):
+    # Wrap an action function with some standard behaviour.
     # Notably : engages with the rules logging process.
     @wraps(func)
     def inner(engine, *args, **kwargs):
@@ -58,9 +59,9 @@ def rules_function(func):
         rule_name = func(engine, *args, **kwargs)
         if rule_name is None:
             # Work out the corresponding rule name, and log it.
-            # Note: a rules returns a name string, which identifies it,
+            # Note: an action returns a name string, which identifies it,
             # but also may vary depending on whether it successfully
-            # triggered, and if so what it mathched.
+            # triggered, and if so what it matched.
             rule_name = _default_rulenamesfunc(func.__name__)
         engine.rule_triggered.add(rule_name)
 
@@ -68,11 +69,16 @@ def rules_function(func):
     return inner
 
 
-@rules_function
-def rule_default(engine):
+@action_function
+def action_default(engine):
     hh.build_cube_metadata(engine)
 
 
+# Lookup table used by 'action_provides_grid_mapping'.
+# Maps each supported CF grid-mapping-name to a pair of handling ("helper")
+# routines:
+#  (@0) a validity-checker (or None)
+#  (@1) a coord-system builder function.
 _grid_types_to_checker_builder = {
     hh.CF_GRID_MAPPING_LAT_LON: (None, hh.build_coordinate_system),
     hh.CF_GRID_MAPPING_ROTATED_LAT_LON: (
@@ -114,8 +120,8 @@ _grid_types_to_checker_builder = {
 }
 
 
-@rules_function
-def rule_provides_grid_mapping(engine, gridmapping_fact):
+@action_function
+def action_provides_grid_mapping(engine, gridmapping_fact):
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
@@ -162,8 +168,8 @@ def rule_provides_grid_mapping(engine, gridmapping_fact):
     return rule_name
 
 
-@rules_function
-def rule_provides_coordinate(engine, dimcoord_fact):
+@action_function
+def action_provides_coordinate(engine, dimcoord_fact):
     (var_name,) = dimcoord_fact
 
     # Identify the coord type
@@ -203,6 +209,14 @@ def rule_provides_coordinate(engine, dimcoord_fact):
     return rule_name
 
 
+# Lookup table used by 'action_build_dimension_coordinate'.
+# Maps each supported coordinate-type name (a rules-internal concept) to a pair
+# of information values :
+#  (@0) the CF grid_mapping_name (or None)
+#       If set, the cube should have a coord-system, which is set on the
+#       resulting coordinate.  If None, the coord has no coord_system.
+#  (@1) an (optional) fixed standard-name for the coordinate, or None
+#       If None, the coordinate name is copied from the source variable
 _coordtype_to_gridtype_coordname = {
     "latitude": ("latitude_longitude", hh.CF_VALUE_STD_NAME_LAT),
     "longitude": ("latitude_longitude", hh.CF_VALUE_STD_NAME_LON),
@@ -222,8 +236,8 @@ _coordtype_to_gridtype_coordname = {
 }
 
 
-@rules_function
-def rule_build_coordinate(engine, providescoord_fact):
+@action_function
+def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_{coord_type}"
@@ -246,8 +260,8 @@ def rule_build_coordinate(engine, providescoord_fact):
     return rule_name
 
 
-@rules_function
-def rule_build_auxiliary_coordinate(engine, auxcoord_fact):
+@action_function
+def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     (var_name,) = auxcoord_fact
     rule_name = "fc_build_auxiliary_coordinate"
 
@@ -277,28 +291,28 @@ def rule_build_auxiliary_coordinate(engine, auxcoord_fact):
     return rule_name
 
 
-def run_rules(engine):
-    # default (all cubes) rule, always runs
-    rule_default(engine)  # This should run the default rules.
+def run_actions(engine):
+    # default (all cubes) action, always runs
+    action_default(engine)  # This should run the default rules.
 
     # deal with grid-mappings
     grid_mapping_facts = engine.fact_list("grid_mapping")
     for grid_mapping_fact in grid_mapping_facts:
-        rule_provides_grid_mapping(engine, grid_mapping_fact)
+        action_provides_grid_mapping(engine, grid_mapping_fact)
 
     # identify + record aka "PROVIDE" specific named coordinates
     # N.B. cf.py id-d these as coords NOT aux-coords (stored separately)
     # TODO: can probably remove this step ??
     dimcoord_facts = engine.fact_list("coordinate")
     for dimcoord_fact in dimcoord_facts:
-        rule_provides_coordinate(engine, dimcoord_fact)
+        action_provides_coordinate(engine, dimcoord_fact)
 
     # build coordinates
     providescoord_facts = engine.fact_list("provides-coordinate-(oftype)")
     for providescoord_fact in providescoord_facts:
-        rule_build_coordinate(engine, providescoord_fact)
+        action_build_dimension_coordinate(engine, providescoord_fact)
 
     # build aux-coords
     auxcoord_facts = engine.fact_list("auxiliary_coordinate")
     for auxcoord_fact in auxcoord_facts:
-        rule_build_auxiliary_coordinate(engine, auxcoord_fact)
+        action_build_auxiliary_coordinate(engine, auxcoord_fact)
