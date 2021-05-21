@@ -628,6 +628,8 @@ class TestSave(tests.IrisTest):
 
 class TestNetCDFSave(tests.IrisTest):
     def setUp(self):
+        iris.fileformats.netcdf.DEBUG = True
+        iris.fileformats.netcdf.LOAD_PYKE = False
         self.cubell = iris.cube.Cube(
             np.arange(4).reshape(2, 2), "air_temperature"
         )
