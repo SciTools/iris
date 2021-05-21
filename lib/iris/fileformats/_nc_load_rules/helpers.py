@@ -1,3 +1,8 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 All the pure-Python 'helper' functions which previously included in the Pyke
 rules database.
@@ -246,7 +251,7 @@ def _get_ellipsoid(cf_grid_var):
 
 
 ################################################################################
-def build_coordinate_system(cf_grid_var):
+def build_coordinate_system(engine, cf_grid_var):
     """Create a coordinate system from the CF-netCDF grid mapping variable."""
     major, minor, inverse_flattening = _get_ellipsoid(cf_grid_var)
 
