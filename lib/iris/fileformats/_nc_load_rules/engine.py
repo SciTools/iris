@@ -1,6 +1,9 @@
 """
-A simple mimic of the Pyke 'knwoledge_engine', for interfacing to the routines
+A simple mimic of the Pyke 'knowledge_engine', for interfacing to the routines
 in 'iris.fileformats.netcdf' with minimal changes to that code.
+
+This allows us to replace the Pyke rules operation with the simpler pure-Python
+translation operations in :mod:`iris.fileformats._nc_load_rules.actions`.
 
 The core of this is the 'Engine' class, which mimics the Pyke engine operations,
 as used by our code to translate each data cube.
@@ -10,7 +13,7 @@ API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
 used in :meth:`iris.fileformats.netcdf.pyke_stats`.
 
 """
-from .rules import run_rules
+from .actions import run_actions
 
 
 class FactList:
@@ -74,7 +77,7 @@ class Engine:
         in :mod:`iris.fileformats.netcdf._nc_load_rules.rules`.
 
         """
-        run_rules(self)
+        run_actions(self)
 
     def print_stats(self):
         """No-op, called by :meth:`iris.fileformats.netcdf.pyke_stats`."""
