@@ -88,11 +88,11 @@ class Test__grid_mappings(tests.IrisTest):
                     phenom:grid_mapping = "grid" ;
                 double lats(lats) ;
                     lats:axis = "Y" ;
-                    lats:units = "degrees" ;
+                    lats:units = "degrees_north" ;
                     lats:standard_name = "latitude" ;
                 double lons(lons) ;
                     lons:axis = "X" ;
-                    lons:units = "degrees_east" ;
+                    lons:units = "degrees" ;  // THIS IS A BUG!
                     lons:standard_name = "longitude" ;
                 int grid ;
                     grid:grid_mapping_name = "latitude_longitude";
@@ -137,25 +137,3 @@ class Test__grid_mappings(tests.IrisTest):
         print("  X cs = ", type(result.coord(axis="x").coord_system))
         print("  Y cs = ", type(result.coord(axis="y").coord_system))
         self._check_result(result, **options)
-
-
-# keep for later ?
-_cdl_string = r"""
-    netcdf test {
-    dimensions:
-        latitude = 2 ;
-        longitude = 3 ;
-        time = 2 ;
-    variables:
-        double phenom(time, latitude) ;
-            phenom:standard_name = "air_temperature" ;
-            phenom:units = "K" ;
-        float time(time) ;
-            time:units = "1" ;
-            time:standard_name = "time" ;
-        double latitude(latitude) ;
-            latitude:axis = "Y" ;
-            latitude:units = "1" ;
-            latitude:standard_name = "latitude" ;
-    }
-"""
