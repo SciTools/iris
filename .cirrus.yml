@@ -19,12 +19,12 @@ container:
 
 env:
   # Skip specific tasks by name. Set to a non-empty string to skip.
-  SKIP_LINT_TASK: ""
+  SKIP_LINT_TASK: "x"
   SKIP_TEST_MINIMAL_TASK: ""
-  SKIP_TEST_FULL_TASK: ""
-  SKIP_GALLERY_TASK: ""
-  SKIP_DOCTEST_TASK: ""
-  SKIP_LINKCHECK_TASK: ""
+  SKIP_TEST_FULL_TASK: "x"
+  SKIP_GALLERY_TASK: "x"
+  SKIP_DOCTEST_TASK: "x"
+  SKIP_LINKCHECK_TASK: "x"
   # Skip task groups by type. Set to a non-empty string to skip.
   SKIP_ALL_TEST_TASKS: ""
   SKIP_ALL_DOC_TASKS: ""
@@ -32,14 +32,6 @@ env:
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
   CARTOPY_CACHE_BUILD: "0"
-  # Increment the build number to force new conda cache upload.
-  CONDA_CACHE_BUILD: "0"
-  # Increment the build number to force new nox cache upload.
-  NOX_CACHE_BUILD: "0"
-  # Increment the build number to force new pip cache upload.
-  PIP_CACHE_BUILD: "0"
-  # Pip package to be upgraded/installed.
-  PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
   # Git commit hash for iris test data.
   IRIS_TEST_DATA_REF: "fffb9b14b9cb472c5eb2ebb7fd19acb7f6414a30"
   # Base directory for the iris-test-data.
@@ -47,38 +39,36 @@ env:
 
 
 #
-# YAML alias for common linux test infra-structure.
+# YAML alias for common linux test infra-structure
 #
 linux_task_template: &LINUX_TASK_TEMPLATE
   auto_cancellation: true
   env:
-    IRIS_REPO_DIR: ${CIRRUS_WORKING_DIR}
-    PATH: ${HOME}/miniconda/bin:${PATH}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
-  conda_cache:
-    folder: ${HOME}/miniconda
-    fingerprint_script:
-      - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-      - echo "${CIRRUS_OS} $(sha256sum miniconda.sh)"
-      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CONDA_CACHE_BUILD}"
-    populate_script:
-      - bash miniconda.sh -b -p ${HOME}/miniconda
-      - conda config --set always_yes yes --set changeps1 no
-      - conda config --set show_channel_urls True
-      - conda config --add channels conda-forge
-      - conda update --quiet --name base conda
-      - conda install --quiet --name base nox pip
   cartopy_cache:
     folder: ${HOME}/.local/share/cartopy
     fingerprint_script:
       - echo "${CIRRUS_OS}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CARTOPY_CACHE_BUILD}"
-  nox_cache:
-    folder: ${CIRRUS_WORKING_DIR}/.nox
-    fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${NOX_CACHE_BUILD}"
-      - sha256sum ${CIRRUS_WORKING_DIR}/requirements/ci/py$(echo ${PY_VER} | tr -d ".").yml
+
+
+#
+# YAML alias for common docker build infra-structure
+#
+docker_template: &DOCKER_TEMPLATE
+  env:
+    DOCKER_USERNAME: "ENCRYPTED\
+                      [a5ba7e105e04f79ce57c408f280d92c8c9c094ca0b1723d2\
+                      3850f8282be48041c0012a8e2efaa6e2f11a297c3bdc0b4a]"
+    DOCKER_PASSWORD: "ENCRYPTED\
+                      [549d20937f4c8862bea2e48312f8a68635474bf5593c959b\
+                      25ae7b6c86dbdcdb4e54045b9e2a3876fc5dde0cc251ad0a]"
+  build_script:
+    - docker image pull bjlittle/cirrus-ci-py${PY_VER}:latest || true
+    - docker build --cache-from bjlittle/cirrus-ci-py${PY_VER}:latest --build-arg PY_VER=${PY_VER} --tag bjlittle/cirrus-ci-py${PY_VER} requirements/ci/nox.lock/.
+    - docker tag bjlittle/cirrus-ci-py${PY_VER} bjlittle/cirrus-ci-py${PY_VER}:${CIRRUS_BUILD_ID}
+    - echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USERNAME} --password-stdin
+    - docker push bjlittle/cirrus-ci-py${PY_VER}
 
 
 #
@@ -88,23 +78,45 @@ compute_credits_template: &CREDITS_TEMPLATE
   # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
   use_compute_credits: $CIRRUS_REPO_FULL_NAME == 'SciTools/iris' && $CIRRUS_USER_COLLABORATOR == 'true' && $CIRRUS_PR_DRAFT == 'false' && $CIRRUS_BASE_BRANCH == 'master' && $CIRRUS_PR != ''
 
+
+#
+# Docker
+#
+docker_builder:
+  alias: builder-py36
+  env:
+    PY_VER: 36
+  name: "${CIRRUS_OS}: py${PY_VER} docker builder"
+  << : *DOCKER_TEMPLATE
+
+
+docker_builder:
+  alias: builder-py37
+  env:
+    PY_VER: 37
+  name: "${CIRRUS_OS}: py${PY_VER} docker builder"
+  << : *DOCKER_TEMPLATE
+
+
+docker_builder:
+  alias: builder-py38
+  env:
+    PY_VER: 38
+  name: "${CIRRUS_OS}: py${PY_VER} docker builder"
+  << : *DOCKER_TEMPLATE
+
+
 #
 # Linting
 #
 lint_task:
-  only_if: $SKIP_LINT_TASK == ""
-  << : *CREDITS_TEMPLATE
-  auto_cancellation: true
   name: "${CIRRUS_OS}: flake8 and black"
-  pip_cache:
-    folder: ~/.cache/pip
-    fingerprint_script:
-      - echo "${CIRRUS_TASK_NAME}"
-      - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
+  only_if: $SKIP_LINT_TASK == ""
+  depends_on:
+    - builder-py38
+  auto_cancellation: true
+  << : *CREDITS_TEMPLATE
   lint_script:
-    - pip list
-    - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
-    - pip list
     - nox --session flake8
     - nox --session black
 
@@ -116,17 +128,31 @@ test_minimal_task:
   only_if: $SKIP_TEST_MINIMAL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
-    env:
-      PY_VER: 3.6
-    env:
-      PY_VER: 3.7
-    env:
-      PY_VER: 3.8
+    - depends_on:
+        builder-py36
+      env:
+        PY_VER: 3.6
+      container:
+        image: scitools/cirrus-ci-py36:latest
+        cpu: 2
+        memory: 4G
+    - depends_on:
+        builder-py37
+      env:
+        PY_VER: 3.7
+      container:
+        image: scitools/cirrus-ci-py37:latest
+        cpu: 2
+        memory: 4G
+    - depends_on:
+        builder-py38
+      env:
+        PY_VER: 3.8
+      container:
+        image: scitools/cirrus-ci-py38:latest
+        cpu: 2
+        memory: 4G
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
-  container:
-    image: gcc:latest
-    cpu: 2
-    memory: 4G
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - echo "[Resources]" > ${SITE_CFG}
@@ -141,17 +167,29 @@ test_full_task:
   only_if: $SKIP_TEST_FULL_TASK == "" && $SKIP_ALL_TEST_TASKS == ""
   << : *CREDITS_TEMPLATE
   matrix:
-    env:
-      PY_VER: 3.6
-    env:
-      PY_VER: 3.7
-    env:
-      PY_VER: 3.8
+    - depends_on:
+        builder-py36
+      env:
+        PY_VER: 3.6
+      container:
+        image: scitools/cirrus-ci-py36:latest
+        cpu: 6
+        memory: 8G
+    - depends_on:
+        builder-py37
+      env:
+        PY_VER: 3.7
+      container:
+        image: scitools/cirrus-ci-py37:latest
+    - depends_on:
+        builder-py38
+      env:
+        PY_VER: 3.8
+      container:
+        image: scitools/cirrus-ci-py38:latest
+        cpu: 6
+        memory: 8G
   name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
-  container:
-    image: gcc:latest
-    cpu: 6
-    memory: 8G
   data_cache:
     folder: ${IRIS_TEST_DATA_DIR}
     fingerprint_script:
@@ -173,15 +211,12 @@ test_full_task:
 #
 gallery_task:
   only_if: $SKIP_GALLERY_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  depends_on:
+    - builder-py38
   << : *CREDITS_TEMPLATE
-  matrix:
-    env:
-      PY_VER: 3.8
+  env:
+    PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
-  container:
-    image: gcc:latest
-    cpu: 2
-    memory: 4G
   data_cache:
     folder: ${IRIS_TEST_DATA_DIR}
     fingerprint_script:
@@ -203,18 +238,14 @@ gallery_task:
 #
 doctest_task:
   only_if: $SKIP_DOCTEST_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  depends_on:
+    - builder-py38
   << : *CREDITS_TEMPLATE
-  matrix:
-    env:
-      PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} doc tests"
-  container:
-    image: gcc:latest
-    cpu: 2
-    memory: 4G
   env:
+    PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
+  name: "${CIRRUS_OS}: py${PY_VER} doc tests"
   data_cache:
     folder: ${IRIS_TEST_DATA_DIR}
     fingerprint_script:
@@ -239,18 +270,14 @@ doctest_task:
 #
 linkcheck_task:
   only_if: $SKIP_LINKCHECK_TASK == "" && $SKIP_ALL_DOC_TASKS == ""
+  depends_on:
+    - builder-py38
   << : *CREDITS_TEMPLATE
-  matrix:
-    env:
-      PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
-  container:
-    image: gcc:latest
-    cpu: 2
-    memory: 4G
   env:
+    PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
+  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - mkdir -p ${MPL_RC_DIR}
