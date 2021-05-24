@@ -44,7 +44,7 @@ This document explains the changes made to Iris for this release
 
    #. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`, to avoid
       the dask 'test access'.  This makes loading of netcdf files with a large number of variables significantly faster.
-      (:pull:`4135`) [``pre-v3.1.0``]
+      (:pull:`4135`)
 
    Note that, the contributions labelled ``pre-v3.1.0`` are part of the forthcoming
    Iris v3.1.0 release, but require to be included in this patch release.
