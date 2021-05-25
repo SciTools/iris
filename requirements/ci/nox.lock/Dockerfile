@@ -28,7 +28,7 @@ COPY ./py${PY_VER}-linux-64.lock ${LOCK_FILE}
 # install the lock packages into the nox workspace and
 # configure the required nox environments
 RUN mkdir -p ${ENV_DIR} \
-  && mamba install --prefix ${ENV_DIR} --file ${LOCK_FILE} \
+  && mamba install --quiet --prefix ${ENV_DIR} --file ${LOCK_FILE} \
   && ln -s ${ENV_DIR} ${NOX_DIR}/gallery \
   && ln -s ${ENV_DIR} ${NOX_DIR}/doctest \
   && ln -s ${ENV_DIR} ${NOX_DIR}/linkcheck \
