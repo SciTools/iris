@@ -50,6 +50,7 @@ def venv_populated(session: nox.sessions.Session) -> bool:
 def venv_changed(session: nox.sessions.Session) -> bool:
     """Returns True if the installed session is different to that specified
     in the lockfile."""
+    changed = False
     cache = session_cachefile(session)
     lockfile = session_lockfile(session)
     if cache.is_file():
@@ -57,9 +58,8 @@ def venv_changed(session: nox.sessions.Session) -> bool:
             expected = hashlib.sha256(fi.read()).hexdigest()
         with open(cache, "r") as fi:
             actual = fi.read()
-        return actual != expected
-    else:
-        return False
+        changed = actual != expected
+    return changed
 
 
 def cache_venv(session: nox.sessions.Session) -> None:
@@ -140,7 +140,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         session.virtualenv.reuse_existing = _re_orig
         cache_venv(session)
 
-    logger.debug(f"Environment {venv_dir} up to date")
+    logger.debug(f"Environment {venv_dir} is up to date")
 
     cache_cartopy(session)
 
@@ -210,7 +210,6 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
-
     session.run(
         "python",
         "-m",
