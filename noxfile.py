@@ -41,7 +41,7 @@ def venv_cached(session):
 
     """
     result = False
-    yml = Path(f"requirements/ci/py{session.python.replace('.', '')}.yml")
+    yml = Path(f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-linux-64.lock")
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / yml.name
     if cache.is_file():
