@@ -155,6 +155,8 @@ test_minimal_task:
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
+    - echo "PWD = <${PWD}>" >&2
+    - ls -l >&2
     - echo "[Resources]" > ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
     - nox --session tests
@@ -200,8 +202,6 @@ test_full_task:
       - mv iris-test-data-$(echo "${IRIS_TEST_DATA_REF}" | sed "s/^v//") ${IRIS_TEST_DATA_DIR}
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - echo ${PWD} >&2
-    - ls -l >&2
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
