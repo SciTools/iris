@@ -155,8 +155,7 @@ test_minimal_task:
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
-    - echo "PWD = <${PWD}>" >&2
-    - ls -l >&2
+    - ln -s /root/scitools/.nox .nox
     - echo "[Resources]" > ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs/iris" >> ${SITE_CFG}
     - nox --session tests
