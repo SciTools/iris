@@ -133,7 +133,7 @@ test_minimal_task:
       env:
         PY_VER: 3.6
       container:
-        image: scitools/cirrus-ci-py36:latest
+        image: bjlittle/cirrus-ci-py36:latest
         cpu: 2
         memory: 4G
     - depends_on:
@@ -141,7 +141,7 @@ test_minimal_task:
       env:
         PY_VER: 3.7
       container:
-        image: scitools/cirrus-ci-py37:latest
+        image: bjlittle/cirrus-ci-py37:latest
         cpu: 2
         memory: 4G
     - depends_on:
@@ -149,7 +149,7 @@ test_minimal_task:
       env:
         PY_VER: 3.8
       container:
-        image: scitools/cirrus-ci-py38:latest
+        image: bjlittle/cirrus-ci-py38:latest
         cpu: 2
         memory: 4G
   name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
@@ -172,7 +172,7 @@ test_full_task:
       env:
         PY_VER: 3.6
       container:
-        image: scitools/cirrus-ci-py36:latest
+        image: bjlittle/cirrus-ci-py36:latest
         cpu: 6
         memory: 8G
     - depends_on:
@@ -180,13 +180,13 @@ test_full_task:
       env:
         PY_VER: 3.7
       container:
-        image: scitools/cirrus-ci-py37:latest
+        image: bjlittle/cirrus-ci-py37:latest
     - depends_on:
         builder-py38
       env:
         PY_VER: 3.8
       container:
-        image: scitools/cirrus-ci-py38:latest
+        image: bjlittle/cirrus-ci-py38:latest
         cpu: 6
         memory: 8G
   name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
