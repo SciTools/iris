@@ -28,7 +28,7 @@ jobs:
   no_clobber:
     runs-on: ubuntu-latest
     # allow users to force a workflow dispatch by setting the clobber=true on a workflow dispatch
-    if: "${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.clobber) }}"
+    # if: "${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.clobber) }}"
     steps:
       # check if the auto-update-lockfiles branch exists.  If it does, and someone other than
       # the lockfile bot has made the head commit, abort the workflow
