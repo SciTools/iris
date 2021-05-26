@@ -28,7 +28,7 @@ jobs:
   no_clobber:
     runs-on: ubuntu-latest
     # allow users to force a workflow dispatch by setting the clobber=true on a workflow dispatch
-    if: ${{ !(github.event_name == "workflow_dispatch" && github.event.inputs.clobber) }}
+    if: "${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.clobber) }}"
     steps:
       # check if the auto-update-lockfiles branch exists.  If it does, and someone other than
       # the lockfile bot has made the head commit, abort the workflow
@@ -36,6 +36,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            console.log(context)
+            if (context.eventName == "workflow_dispatch") {
+              1+1
+            }
             github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"})
             .then(res => {
               const committer = res.data.commit.commit.committer?.name
@@ -52,59 +56,59 @@ jobs:
               }
             })
 
-  gen_lockfiles:
-    # this is a matrix job: it splits to create new lockfiles for each
-    # of the CI test python versions.
-    # this list below should be changed when covering more python versions
-    # TODO: generate this matrix automatically from the list of available py**.yml files
-    #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
-    runs-on: ubuntu-latest
+  # gen_lockfiles:
+  #   # this is a matrix job: it splits to create new lockfiles for each
+  #   # of the CI test python versions.
+  #   # this list below should be changed when covering more python versions
+  #   # TODO: generate this matrix automatically from the list of available py**.yml files
+  #   #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
+  #   runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        python: ['36', '37', '38']
+  #   strategy:
+  #     matrix:
+  #       python: ['36', '37', '38']
     
-    steps:
-      - uses: actions/checkout@v2
-      - name: install conda-lock
-        run: |
-          source $CONDA/bin/activate base
-          conda install -y -c conda-forge conda-lock
-      - name: generate lockfile
-        run: |
-          $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
-          mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
-      - name: output lockfile
-        uses: actions/upload-artifact@v2
-        with:
-          path: py${{matrix.python}}-linux-64.lock
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: install conda-lock
+  #       run: |
+  #         source $CONDA/bin/activate base
+  #         conda install -y -c conda-forge conda-lock
+  #     - name: generate lockfile
+  #       run: |
+  #         $CONDA/bin/conda-lock lock -p linux-64 -f requirements/ci/py${{matrix.python}}.yml
+  #         mv conda-linux-64.lock py${{matrix.python}}-linux-64.lock
+  #     - name: output lockfile
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         path: py${{matrix.python}}-linux-64.lock
     
-  create_pr:
-    # once the matrix job has completed all the lock files will have been uploaded as artifacts.
-    # Download the artifacts, add them to the repo, and create a PR.
-    runs-on: ubuntu-latest
-    needs: gen_lockfiles
+  # create_pr:
+  #   # once the matrix job has completed all the lock files will have been uploaded as artifacts.
+  #   # Download the artifacts, add them to the repo, and create a PR.
+  #   runs-on: ubuntu-latest
+  #   needs: gen_lockfiles
     
-    steps:
-      - uses: actions/checkout@v2
-      - name: get artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: get artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         path: artifacts
           
-      - name: Update lock files in repo
-        run: | 
-          cp artifacts/artifact/*.lock requirements/ci/nox.lock
-          rm -r artifacts
+  #     - name: Update lock files in repo
+  #       run: | 
+  #         cp artifacts/artifact/*.lock requirements/ci/nox.lock
+  #         rm -r artifacts
         
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8
-        with:
-          commit-message: Updated environment lockfiles
-          committer: "Lockfile bot <noreply@github.com>"
-          author: "Lockfile bot <noreply@github.com>"
-          delete-branch: true
-          branch: auto-update-lockfiles
-          title: Update CI environment lockfiles
-          body: |
-            Lockfiles updated to the latest resolvable environment.
+  #     - name: Create Pull Request
+  #       uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8
+  #       with:
+  #         commit-message: Updated environment lockfiles
+  #         committer: "Lockfile bot <noreply@github.com>"
+  #         author: "Lockfile bot <noreply@github.com>"
+  #         delete-branch: true
+  #         branch: auto-update-lockfiles
+  #         title: Update CI environment lockfiles
+  #         body: |
+  #           Lockfiles updated to the latest resolvable environment.
