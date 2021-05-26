@@ -40,17 +40,15 @@ jobs:
             if (context.eventName == "workflow_dispatch") {
               1+1
             }
-            github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"})
-            .then(res => {
-              const committer = res.data.commit.commit.committer?.name
-              if (committer === "Lockfile bot") {
+            github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"}).then(res => {
+              const committer = res.data.commit.commit.committer
+              if (committer && committer.name === "Lockfile bot") {
                 core.info("Bot was last to update. Continue")
               } else {
                 core.error("New commits since bot last ran. Abort!")
                 core.setFailed("Don't clobber commits, aborting workflow.")
               }
-            })
-            .catch(err => {
+            }).catch(err => {
               if (err.status === 404) {
                   core.info("Branch not found, continue")
               }
