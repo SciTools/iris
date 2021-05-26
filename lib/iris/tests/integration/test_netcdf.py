@@ -516,7 +516,7 @@ class TestPackedData(tests.IrisTest):
         self._single_test("i2", "single_packed_signed.cdl")
 
     def test_single_packed_unsigned(self):
-        """Test saving a single CF-netCDF file with packing into unsigned. """
+        """Test saving a single CF-netCDF file with packing into unsigned."""
         self._single_test("u1", "single_packed_unsigned.cdl")
 
     def test_single_packed_manual_scale(self):
