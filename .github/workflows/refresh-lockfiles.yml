@@ -14,6 +14,11 @@ name: Refresh Lockfiles
 
 on:
   workflow_dispatch:
+    inputs:
+      clobber:
+        description: Force the workflow to run, potentially clobbering any commits already made to the branch
+        required: true
+        default: false
   schedule:
     # Run once a week on a Saturday night 
     - cron: 1 0 * * 6
@@ -21,6 +26,31 @@ on:
 
 jobs:
   
+  no_clobber:
+    # check if the auto-update-lockfiles branch exists.  If it does, and someone other than
+    # the lockfile bot has made the head commit, abort the workflow
+    uses: actions/script@v4
+    # allow users to force a workflow dispatch by setting the clobber=true on a workflow dispatch
+    if: ${{ !(github.event_name == "workflow_dispatch" && github.event.inputs.clobber) }}
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      script: |
+        github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"})
+        .then(res => {
+          const committer = res.data.commit.commit.committer?.name
+          if (committer === "Lockfile bot") {
+            core.info("Bot was last to update. Continue")
+          } else {
+            core.error("New commits since bot last ran. Abort!")
+            core.setFailed("Don't clobber commits, aborting workflow.")
+          }
+        })
+        .catch(err => {
+          if (err.status === 404) {
+              core.info("Branch not found, continue")
+          }
+        })
+
   gen_lockfiles:
     # this is a matrix job: it splits to create new lockfiles for each
     # of the CI test python versions.
@@ -70,6 +100,8 @@ jobs:
         uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8
         with:
           commit-message: Updated environment lockfiles
+          committer: "Lockfile bot <noreply@github.com>"
+          author: "Lockfile bot <noreply@github.com>"
           delete-branch: true
           branch: auto-update-lockfiles
           title: Update CI environment lockfiles
