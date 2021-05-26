@@ -263,7 +263,7 @@ setup(
     author="UK Met Office",
     author_email="scitools-iris-dev@googlegroups.com",
     description="A powerful, format-agnostic, community-driven Python "
-    "library for analysing and visualising Earth science data",
+    "package for analysing and visualising Earth science data",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     packages=find_package_tree("lib/iris", "iris"),

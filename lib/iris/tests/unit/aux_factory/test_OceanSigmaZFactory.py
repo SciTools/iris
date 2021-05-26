@@ -138,6 +138,12 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSigmaZFactory(**self.kwargs)
 
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
+        sigma = mock.Mock(units=Unit("unknown"), nbounds=0)
+        self.kwargs["sigma"] = sigma
+        factory = OceanSigmaZFactory(**self.kwargs)
+        self.assertEqual("1", factory.dependencies["sigma"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
@@ -193,22 +199,22 @@ class Test_make_coord(tests.IrisTest):
 
     def setUp(self):
         self.sigma = DimCoord(
-            np.arange(5, dtype=np.float) * 10, long_name="sigma", units="1"
+            np.arange(5, dtype=np.float64) * 10, long_name="sigma", units="1"
         )
         self.eta = AuxCoord(
-            np.arange(4, dtype=np.float).reshape(2, 2),
+            np.arange(4, dtype=np.float64).reshape(2, 2),
             long_name="eta",
             units="m",
         )
         self.depth = AuxCoord(
-            np.arange(4, dtype=np.float).reshape(2, 2) * 10,
+            np.arange(4, dtype=np.float64).reshape(2, 2) * 10,
             long_name="depth",
             units="m",
         )
         self.depth_c = AuxCoord([15], long_name="depth_c", units="m")
         self.nsigma = AuxCoord([3], long_name="nsigma")
         self.zlev = DimCoord(
-            np.arange(5, dtype=np.float) * 10, long_name="zlev", units="m"
+            np.arange(5, dtype=np.float64) * 10, long_name="zlev", units="m"
         )
         self.kwargs = dict(
             sigma=self.sigma,

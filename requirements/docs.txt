@@ -4,6 +4,7 @@ sphinx
 sphinx-copybutton
 sphinx-gallery
 sphinx_rtd_theme
+sphinx-panels
 sphinxcontrib-napoleon
 sphinxcontrib-spelling
 pyenchant

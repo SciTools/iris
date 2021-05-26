@@ -11,6 +11,7 @@ Definitions of derived coordinates.
 from abc import ABCMeta, abstractmethod
 import warnings
 
+import cf_units
 import dask.array as da
 import numpy as np
 
@@ -619,6 +620,10 @@ class HybridPressureFactory(AuxCoordFactory):
             warnings.warn(msg, UserWarning, stacklevel=2)
 
         # Check units.
+        if sigma is not None and sigma.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            sigma.units = cf_units.Unit("1")
+
         if sigma is not None and not sigma.units.is_dimensionless():
             raise ValueError("Invalid units: sigma must be dimensionless.")
         if (
@@ -862,6 +867,10 @@ class OceanSigmaZFactory(AuxCoordFactory):
                 "must have units of distance.".format(zlev.name())
             )
             raise ValueError(msg)
+
+        if sigma is not None and sigma.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            sigma.units = cf_units.Unit("1")
 
         if sigma is not None and not sigma.units.is_dimensionless():
             msg = (
@@ -1127,6 +1136,10 @@ class OceanSigmaFactory(AuxCoordFactory):
                 warnings.warn(msg, UserWarning, stacklevel=2)
 
         # Check units.
+        if sigma is not None and sigma.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            sigma.units = cf_units.Unit("1")
+
         if sigma is not None and not sigma.units.is_dimensionless():
             msg = (
                 "Invalid units: sigma coordinate {!r} "
@@ -1335,6 +1348,10 @@ class OceanSg1Factory(AuxCoordFactory):
         # Check units.
         coords = ((s, "s"), (c, "c"))
         for coord, term in coords:
+            if coord is not None and coord.units.is_unknown():
+                # Be graceful, and promote unknown to dimensionless units.
+                coord.units = cf_units.Unit("1")
+
             if coord is not None and not coord.units.is_dimensionless():
                 msg = (
                     "Invalid units: {} coordinate {!r} "
@@ -1551,6 +1568,10 @@ class OceanSFactory(AuxCoordFactory):
                 raise ValueError(msg)
 
         # Check units.
+        if s is not None and s.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            s.units = cf_units.Unit("1")
+
         if s is not None and not s.units.is_dimensionless():
             msg = (
                 "Invalid units: s coordinate {!r} "
@@ -1776,6 +1797,10 @@ class OceanSg2Factory(AuxCoordFactory):
         # Check units.
         coords = ((s, "s"), (c, "c"))
         for coord, term in coords:
+            if coord is not None and coord.units.is_unknown():
+                # Be graceful, and promote unknown to dimensionless units.
+                coord.units = cf_units.Unit("1")
+
             if coord is not None and not coord.units.is_dimensionless():
                 msg = (
                     "Invalid units: {} coordinate {!r} "

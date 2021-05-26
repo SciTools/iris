@@ -225,6 +225,7 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
+
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
         cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -239,6 +240,7 @@ class CubeList(list):
         doc.appendChild(cubes_xml_element)
 
         # return our newly created XML string
+        doc = Cube._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def extract(self, constraints):
@@ -755,6 +757,59 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     #: is similar to Fortran or Matlab, but different than numpy.
     __orthogonal_indexing__ = True
 
+    @classmethod
+    def _sort_xml_attrs(cls, doc):
+        """
+        Takes an xml document and returns a copy with all element
+        attributes sorted in alphabetical order.
+
+        This is a private utility method required by iris to maintain
+        legacy xml behaviour beyond python 3.7.
+
+        Args:
+
+        * doc:
+            The :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Document` with sorted element
+            attributes.
+
+        """
+        from xml.dom.minidom import Document
+
+        def _walk_nodes(node):
+            """Note: _walk_nodes is called recursively on child elements."""
+
+            # we don't want to copy the children here, so take a shallow copy
+            new_node = node.cloneNode(deep=False)
+
+            # Versions of python <3.8 order attributes in alphabetical order.
+            # Python >=3.8 order attributes in insert order.  For consistent behaviour
+            # across both, we'll go with alphabetical order always.
+            # Remove all the attribute nodes, then add back in alphabetical order.
+            attrs = [
+                new_node.getAttributeNode(attr_name).cloneNode(deep=True)
+                for attr_name in sorted(node.attributes.keys())
+            ]
+            for attr in attrs:
+                new_node.removeAttributeNode(attr)
+            for attr in attrs:
+                new_node.setAttributeNode(attr)
+
+            if node.childNodes:
+                children = [_walk_nodes(x) for x in node.childNodes]
+                for c in children:
+                    new_node.appendChild(c)
+
+            return new_node
+
+        nodes = _walk_nodes(doc.documentElement)
+        new_doc = Document()
+        new_doc.appendChild(nodes)
+
+        return new_doc
+
     def __init__(
         self,
         data,
@@ -981,9 +1036,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
-        .. warning::
-            Calling this method will trigger any deferred loading, causing
-            the cube's data array to be loaded into memory.
+        This operation preserves lazy data.
 
         """
         # If the cube has units convert the data.
@@ -1400,10 +1453,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns a tuple of the data dimensions relevant to the given
         CellMeasure.
 
-        * cell_measure
-            The CellMeasure to look for.
+        * cell_measure (string or CellMeasure)
+            The (name of the) cell measure to look for.
 
         """
+        cell_measure = self.cell_measure(cell_measure)
+
         # Search for existing cell measure (object) on the cube, faster lookup
         # than equality - makes no functional difference.
         matches = [
@@ -1422,10 +1477,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns a tuple of the data dimensions relevant to the given
         AncillaryVariable.
 
-        * ancillary_variable
-            The AncillaryVariable to look for.
+        * ancillary_variable (string or AncillaryVariable)
+            The (name of the) AncillaryVariable to look for.
 
         """
+        ancillary_variable = self.ancillary_variable(ancillary_variable)
+
         # Search for existing ancillary variable (object) on the cube, faster
         # lookup than equality - makes no functional difference.
         matches = [
@@ -2182,23 +2239,20 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         extra = ""
         similar_coords = self.coords(coord.name())
         if len(similar_coords) > 1:
-            # Find all the attribute keys
-            keys = set()
-            for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.keys())
-            # Look for any attributes that vary
+            similar_coords.remove(coord)
+            # Look for any attributes that vary.
             vary = set()
-            attributes = {}
-            for key in keys:
+            for key, value in coord.attributes.items():
                 for similar_coord in similar_coords:
                     if key not in similar_coord.attributes:
                         vary.add(key)
                         break
-                    value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
+                    if not np.array_equal(
+                        similar_coord.attributes[key], value
+                    ):
                         vary.add(key)
                         break
-            keys = sorted(vary & set(coord.attributes.keys()))
+            keys = sorted(vary)
             bits = [
                 "{}={!r}".format(key, coord.attributes[key]) for key in keys
             ]
@@ -2596,9 +2650,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         return summary
 
     def __str__(self):
-        return self.summary()
-
-    def __unicode__(self):
         return self.summary()
 
     def __repr__(self):
@@ -3404,6 +3455,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         doc.appendChild(cube_xml_element)
 
         # Print our newly created XML
+        doc = self._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
@@ -3919,10 +3971,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = list(dims_to_collapse)
+            collapse_axes = list(dims_to_collapse)
+            if len(collapse_axes) == 1:
+                # Replace a "list of 1 axes" with just a number :  This single-axis form is *required* by functions
+                # like da.average (and np.average), if a 1d weights array is specified.
+                collapse_axes = collapse_axes[0]
+
             try:
                 data_result = aggregator.lazy_aggregate(
-                    self.lazy_data(), axis=collapse_axis, **kwargs
+                    self.lazy_data(), axis=collapse_axes, **kwargs
                 )
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as
@@ -3946,8 +4003,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             unrolled_data = np.transpose(self.data, dims).reshape(new_shape)
 
             # Perform the same operation on the weights if applicable
-            if kwargs.get("weights") is not None:
-                weights = kwargs["weights"].view()
+            weights = kwargs.get("weights")
+            if weights is not None and weights.ndim > 1:
+                # Note: *don't* adjust 1d weights arrays, these have a special meaning for statistics functions.
+                weights = weights.view()
                 kwargs["weights"] = np.transpose(weights, dims).reshape(
                     new_shape
                 )

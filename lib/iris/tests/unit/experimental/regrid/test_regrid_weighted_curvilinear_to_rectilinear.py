@@ -37,7 +37,7 @@ class Test(tests.IrisTest):
         # Source cube.
         self.test_src_name = "air_temperature"
         self.test_src_units = "K"
-        self.test_src_data = ma.arange(1, 13, dtype=np.float).reshape(3, 4)
+        self.test_src_data = ma.arange(1, 13, dtype=np.float64).reshape(3, 4)
         self.test_src_attributes = dict(wibble="wobble")
         self.test_scalar_coord = iris.coords.DimCoord(
             [1], long_name="test_scalar_coord"
@@ -135,7 +135,7 @@ class Test(tests.IrisTest):
         )
 
     def _weighted_mean(self, points):
-        points = np.asarray(points, dtype=np.float)
+        points = np.asarray(points, dtype=np.float64)
         weights = points * self.weight_factor
         numerator = denominator = 0
         for point, weight in zip(points, weights):

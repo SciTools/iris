@@ -8,8 +8,7 @@ Module to support the loading of a NetCDF file into an Iris cube.
 
 See also: `netCDF4 python <http://code.google.com/p/netcdf4-python/>`_.
 
-Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions',
-Version 1.4, 27 February 2009.
+Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 """
 
@@ -720,6 +719,9 @@ def _load_aux_factory(engine, cube):
                         warnings.warn(msg)
                     coord_a = coord_from_term("a")
                     if coord_a is not None:
+                        if coord_a.units.is_unknown():
+                            # Be graceful, and promote unknown to dimensionless units.
+                            coord_a.units = "1"
                         delta = coord_a * coord_p0.points[0]
                         delta.units = coord_a.units * coord_p0.units
                         delta.rename("vertical pressure")
@@ -1041,7 +1043,7 @@ class Saver:
             dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
             described below. This provides support for netCDF data packing as
             described in
-            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+            http://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict
@@ -2490,7 +2492,7 @@ def save(
     """
     Save cube(s) to a netCDF file, given the cube and the filename.
 
-    * Iris will write CF 1.5 compliant NetCDF files.
+    * Iris will write CF 1.7 compliant NetCDF files.
     * The attributes dictionaries on each cube in the saved cube list
       will be compared and common attributes saved as NetCDF global
       attributes where appropriate.
@@ -2587,7 +2589,7 @@ def save(
         (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
         below or an iterable of such types, strings, or dicts.
         This provides support for netCDF data packing as described in
-        http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+        http://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with

@@ -696,7 +696,7 @@ class RectilinearRegridder:
 
         if ma.isMaskedArray(src_data):
             data = ma.empty(shape, dtype=dtype)
-            data.mask = np.zeros(data.shape, dtype=np.bool)
+            data.mask = np.zeros(data.shape, dtype=np.bool_)
         else:
             data = np.empty(shape, dtype=dtype)
 

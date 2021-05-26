@@ -752,7 +752,7 @@ def _data_bytes_to_shaped_array(
             # However, we still mask any MDI values in the array (below).
             pass
         else:
-            land_mask = mask.data.astype(np.bool)
+            land_mask = mask.data.astype(np.bool_)
             sea_mask = ~land_mask
             new_data = np.ma.masked_all(land_mask.shape)
             new_data.fill_value = mdi

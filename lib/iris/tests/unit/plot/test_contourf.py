@@ -12,6 +12,8 @@ import iris.tests as tests
 from unittest import mock
 
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import TestGraphicStringCoord, MixinCoords
@@ -73,6 +75,27 @@ class TestCoords(tests.IrisTest, MixinCoords):
             "matplotlib.pyplot.contourf", return_value=mocker
         )
         self.draw_func = iplt.contourf
+
+
+@tests.skip_plot
+class TestAntialias(tests.IrisTest):
+    def test_skip_contour(self):
+        # Contours should not be added if data is all below second level.  See #4086.
+        cube = simple_2d()
+
+        levels = [5, 15, 20, 200]
+        colors = ["b", "r", "y"]
+
+        iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
+
+        ax = plt.gca()
+        # Expect 3 PathCollection objects (one for each colour) and no LineCollection
+        # objects.
+        for collection in ax.collections:
+            self.assertIsInstance(
+                collection, matplotlib.collections.PathCollection
+            )
+        self.assertEqual(len(ax.collections), 3)
 
 
 if __name__ == "__main__":
