@@ -32,25 +32,25 @@ jobs:
     steps:
       # check if the auto-update-lockfiles branch exists.  If it does, and someone other than
       # the lockfile bot has made the head commit, abort the workflow
-      uses: actions/script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"})
-          .then(res => {
-            const committer = res.data.commit.commit.committer?.name
-            if (committer === "Lockfile bot") {
-              core.info("Bot was last to update. Continue")
-            } else {
-              core.error("New commits since bot last ran. Abort!")
-              core.setFailed("Don't clobber commits, aborting workflow.")
-            }
-          })
-          .catch(err => {
-            if (err.status === 404) {
-                core.info("Branch not found, continue")
-            }
-          })
+      - uses: actions/script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"})
+            .then(res => {
+              const committer = res.data.commit.commit.committer?.name
+              if (committer === "Lockfile bot") {
+                core.info("Bot was last to update. Continue")
+              } else {
+                core.error("New commits since bot last ran. Abort!")
+                core.setFailed("Don't clobber commits, aborting workflow.")
+              }
+            })
+            .catch(err => {
+              if (err.status === 404) {
+                  core.info("Branch not found, continue")
+              }
+            })
 
   gen_lockfiles:
     # this is a matrix job: it splits to create new lockfiles for each
