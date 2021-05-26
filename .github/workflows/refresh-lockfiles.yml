@@ -16,8 +16,10 @@ on:
   workflow_dispatch:
     inputs:
       clobber:
-        description: Force the workflow to run, potentially clobbering any commits already made to the branch
-        default: false
+        description: |
+          Force the workflow to run, potentially clobbering any commits already made to the branch. 
+          Enter "yes" or "true" to run.
+        default: "no"
   schedule:
     # Run once a week on a Saturday night 
     - cron: 1 0 * * 6
@@ -36,20 +38,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            if (context.eventName == "workflow_dispatch" && context.payload.inputs.clobber) {
-              core.info("manual override, continuing workflow ")
-              return
+            if (context.eventName == "workflow_dispatch") {
+              const clobber = context.payload.inputs.clobber || "no";
+              if (["yes", "true", "y"].includes(clobber.trim().toLowerCase())) {
+                core.info("Manual override, continuing workflow, potentially overwriting previous commits to auto-update-lockfiles");
+                return
+              }
             }
             github.repos.getBranch({...context.repo, branch: "auto-update-lockfiles"}).then(res => {
-              const committer = res.data.commit.commit.committer
+              const committer = res.data.commit.commit.committer;
               if (committer && committer.name === "Lockfile bot") {
-                core.info("Bot was last to update. Continue")
+                core.info("Lockfile bot was the last to push to auto-update-lockfiles. Continue.");
               } else {
-                core.setFailed("New commits since bot last ran. Abort!")
+                core.setFailed("New commits to auto-update-lockfiles since bot last ran. Abort!");
               }
             }).catch(err => {
               if (err.status === 404) {
-                  core.info("Branch not found, continue")
+                  core.info("auto-update-lockfiles branch not found, continue");
               }
             })
 
@@ -95,7 +100,7 @@ jobs:
           path: artifacts
           
       - name: Update lock files in repo
-        run: | 
+        run: |
           cp artifacts/artifact/*.lock requirements/ci/nox.lock
           rm -r artifacts
         
