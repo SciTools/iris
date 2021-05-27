@@ -173,6 +173,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@akuhnregnier: https://github.com/akuhnregnier
+.. _@Badboy-16: https://github.com/Badboy-16
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
 
