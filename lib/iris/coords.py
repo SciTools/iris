@@ -405,28 +405,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
-        if isinstance(other, _DimensionalMetadata) or not isinstance(
-            other, (int, float, np.number)
-        ):
-
-            def typename(obj):
-                if isinstance(obj, Coord):
-                    result = "Coord"
-                else:
-                    # We don't really expect this, but do something anyway.
-                    result = self.__class__.__name__
-                return result
-
-            emsg = "{selftype} {operator} {othertype}".format(
-                selftype=typename(self),
-                operator=self._MODE_SYMBOL[mode_constant],
-                othertype=typename(other),
+        if isinstance(other, _DimensionalMetadata):
+            emsg = (
+                f"{self.__class__.__name__} "
+                f"{self._MODE_SYMBOL[mode_constant]} "
+                f"{other.__class__.__name__}"
             )
             raise iris.exceptions.NotYetImplementedError(emsg)
 
-        else:
-            # 'Other' is an array type : adjust points, and bounds if any.
-            result = NotImplemented
+        if isinstance(other, (int, float, np.number)):
 
             def op(values):
                 if mode_constant == self._MODE_ADD:
@@ -443,8 +430,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             new_values = op(self._values_dm.core_data())
             result = self.copy(new_values)
+
             if self.has_bounds():
                 result.bounds = op(self._bounds_dm.core_data())
+        else:
+            # must return NotImplemented to ensure invocation of any
+            # associated reflected operator on the "other" operand
+            # see https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
+            result = NotImplemented
 
         return result
 
@@ -463,8 +456,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __truediv__(self, other):
         return self.__binary_operator__(other, self._MODE_DIV)
 
-    def __radd__(self, other):
-        return self + other
+    __radd__ = __add__
 
     def __rsub__(self, other):
         return (-self) + other
@@ -475,8 +467,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __rtruediv__(self, other):
         return self.__binary_operator__(other, self._MODE_RDIV)
 
-    def __rmul__(self, other):
-        return self * other
+    __rmul__ = __mul__
 
     def __neg__(self):
         values = -self._core_values()
