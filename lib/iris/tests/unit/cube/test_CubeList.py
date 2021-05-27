@@ -602,5 +602,14 @@ class TestRealiseData(tests.IrisTest):
         )
 
 
+class Test_CubeList_copy(tests.IrisTest):
+    def setUp(self):
+        self.cube_list = iris.cube.CubeList()
+        self.copied_cube_list = self.cube_list.copy()
+
+    def test_copy(self):
+        self.assertIsInstance(self.copied_cube_list, iris.cube.CubeList)
+
+
 if __name__ == "__main__":
     tests.main()

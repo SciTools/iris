@@ -52,6 +52,9 @@ This document explains the changes made to Iris for this release
    printing these objects skips metadata elements that are set to None or an
    empty string or dictionary. (:pull:`4040`)
 
+#. `@Badboy-16`_ implemented a ``CubeList.copy()`` method to return a
+   ``CubeList`` object instead of a ``list``. (:pull:`4094`)
+
 
 🐛 Bugs Fixed
 =============
@@ -170,6 +173,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@akuhnregnier: https://github.com/akuhnregnier
+.. _@Badboy-16: https://github.com/Badboy-16
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
 
