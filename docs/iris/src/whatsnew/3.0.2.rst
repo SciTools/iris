@@ -53,6 +53,10 @@ This document explains the changes made to Iris for this release
       (:pull:`4135`)
 
    Note that, the above contributions labelled with ``pre-v3.1.0`` are part of the forthcoming
+   #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to PPDataProxy.__getitem__.
+       The check for empty slicings is no longer needed since (:pull:`4135`) was added.
+      (:pull:`4141`)
+
    Iris v3.1.0 release, but require to be included in this patch release.
 
 
