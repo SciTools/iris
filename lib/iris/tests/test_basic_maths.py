@@ -16,8 +16,9 @@ import numpy.ma as ma
 
 import iris
 import iris.analysis.maths
-import iris.coords
-import iris.exceptions
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
+from iris.exceptions import NotYetImplementedError
 import iris.tests.stock
 
 
@@ -112,12 +113,12 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim - 1
         ydim = a.ndim - 2
-        c_x = iris.coords.DimCoord(
+        c_x = DimCoord(
             points=np.arange(a.shape[xdim]),
             long_name="x_coord",
             units=self.cube.units,
         )
-        c_y = iris.coords.AuxCoord(
+        c_y = AuxCoord(
             points=np.arange(a.shape[ydim]),
             long_name="y_coord",
             units=self.cube.units,
@@ -150,12 +151,12 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim - 1
         ydim = a.ndim - 2
-        c_x = iris.coords.DimCoord(
+        c_x = DimCoord(
             points=np.arange(a.shape[xdim]),
             long_name="x_coord",
             units=self.cube.units,
         )
-        c_y = iris.coords.AuxCoord(
+        c_y = AuxCoord(
             points=np.arange(a.shape[ydim]),
             long_name="y_coord",
             units=self.cube.units,
@@ -195,12 +196,12 @@ class TestBasicMaths(tests.IrisTest):
 
         xdim = a.ndim - 1
         ydim = a.ndim - 2
-        c_axis_length_fail = iris.coords.DimCoord(
+        c_axis_length_fail = DimCoord(
             points=np.arange(a.shape[ydim]),
             long_name="x_coord",
             units=self.cube.units,
         )
-        c_unit_fail = iris.coords.AuxCoord(
+        c_unit_fail = AuxCoord(
             points=np.arange(a.shape[xdim]), long_name="x_coord", units="volts"
         )
 
@@ -208,7 +209,7 @@ class TestBasicMaths(tests.IrisTest):
             ValueError, iris.analysis.maths.add, a, c_axis_length_fail
         )
         self.assertRaises(
-            iris.exceptions.NotYetImplementedError,
+            NotYetImplementedError,
             iris.analysis.maths.add,
             a,
             c_unit_fail,
@@ -464,7 +465,7 @@ class TestDivideAndMultiply(tests.IrisTest):
     def test_divide_by_singular_coordinate(self):
         a = self.cube
 
-        coord = iris.coords.DimCoord(points=2, long_name="foo", units="1")
+        coord = DimCoord(points=2, long_name="foo", units="1")
         c = iris.analysis.maths.divide(a, coord)
         self.assertCML(c, ("analysis", "division_by_singular_coord.cml"))
 
@@ -474,7 +475,7 @@ class TestDivideAndMultiply(tests.IrisTest):
     def test_divide_by_different_len_coord(self):
         a = self.cube
 
-        coord = iris.coords.DimCoord(
+        coord = DimCoord(
             points=np.arange(10) * 2 + 5,
             standard_name="longitude",
             units="degrees",
@@ -686,12 +687,12 @@ class TestMathOperations(tests.IrisTest):
         self.data_1u = np.array([[9, 9, 9], [8, 8, 8]], dtype=np.uint64)
         self.data_2u = np.array([[3, 3, 3], [2, 2, 2]], dtype=np.uint64)
 
-        self.cube_1f = iris.cube.Cube(self.data_1f)
-        self.cube_2f = iris.cube.Cube(self.data_2f)
-        self.cube_1i = iris.cube.Cube(self.data_1i)
-        self.cube_2i = iris.cube.Cube(self.data_2i)
-        self.cube_1u = iris.cube.Cube(self.data_1u)
-        self.cube_2u = iris.cube.Cube(self.data_2u)
+        self.cube_1f = Cube(self.data_1f)
+        self.cube_2f = Cube(self.data_2f)
+        self.cube_1i = Cube(self.data_1i)
+        self.cube_2i = Cube(self.data_2i)
+        self.cube_1u = Cube(self.data_1u)
+        self.cube_2u = Cube(self.data_2u)
 
         self.ops = (operator.add, operator.sub, operator.mul, operator.truediv)
         self.iops = (
@@ -700,6 +701,22 @@ class TestMathOperations(tests.IrisTest):
             operator.imul,
             operator.itruediv,
         )
+
+    def common_neg(self, cube, data):
+        result1 = -cube
+        result2 = -data
+        self.assertIsInstance(result1, Cube)
+        self.assertIsNot(result1, cube)
+        self.assertArrayAlmostEqual(result1.data, result2)
+
+    def test_neg_f(self):
+        self.common_neg(self.cube_1f, self.data_1f)
+
+    def test_neg_i(self):
+        self.common_neg(self.cube_1i, self.data_1i)
+
+    def test_neg_u(self):
+        self.common_neg(self.cube_1u, self.data_1u)
 
     def test_operator(self):
         for test_op in self.ops:
@@ -849,7 +866,7 @@ class TestMaskedArrays(tests.IrisTest):
             mask=[[0, 1, 0], [0, 0, 1]],
             dtype=np.float64,
         )
-        self.cube = iris.cube.Cube(self.data)
+        self.cube = Cube(self.data)
 
     def test_incompatible_dimensions(self):
         data3 = ma.MaskedArray(
@@ -863,8 +880,60 @@ class TestMaskedArrays(tests.IrisTest):
         with self.assertRaises(ValueError):
             # This would increase the dimensionality of the cube
             # due to auto-broadcasting.
-            cube_x = iris.cube.Cube(ma.MaskedArray([[9]], mask=[[0]]))
+            cube_x = Cube(ma.MaskedArray([[9]], mask=[[0]]))
             cube_x + ma.MaskedArray([[3, 3, 3, 3]], mask=[[0, 1, 0, 1]])
+
+
+class TestCoordMathOperations(tests.IrisTest):
+    def setUp(self):
+        self.value_cube = 100
+        self.value = 10
+        self.cube = Cube([self.value_cube])
+        self.dim = DimCoord([self.value])
+        self.aux = AuxCoord([self.value])
+        self.i = int(self.value)
+        self.f = float(self.value)
+        self.np_i = np.int32(self.value)
+        self.np_f = np.float32(self.value)
+        self.numbers = (self.i, self.f, self.np_i, self.np_f)
+        self.ops = (operator.add, operator.sub, operator.mul, operator.truediv)
+        self.symbols = ("+", "-", "*", "/")
+
+    def test_coord_op_coord__fail(self):
+        for op, symbol in zip(self.ops, self.symbols):
+            emsg = f"AuxCoord \{symbol} DimCoord"  # noqa: W605
+            with self.assertRaisesRegex(NotYetImplementedError, emsg):
+                _ = op(self.aux, self.dim)
+
+    def test_coord_op_number(self):
+        for op in self.ops:
+            for number in self.numbers:
+                actual = op(self.aux, number)
+                expected = op(self.value, number)
+                self.assertIsInstance(actual, AuxCoord)
+                self.assertEqual(expected, actual.points)
+
+    def test_number_op_coord(self):
+        for op in self.ops:
+            for number in self.numbers:
+                actual = op(number, self.dim)
+                expected = op(number, self.value)
+                self.assertIsInstance(actual, DimCoord)
+                self.assertEqual(expected, actual.points)
+
+    def test_coord_op_cube(self):
+        for op in self.ops:
+            actual = op(self.aux, self.cube)
+            expected = op(self.value, self.value_cube)
+            self.assertIsInstance(actual, Cube)
+            self.assertEqual(expected, actual.data)
+
+    def test_cube_op_coord(self):
+        for op in self.ops:
+            actual = op(self.cube, self.dim)
+            expected = op(self.value_cube, self.value)
+            self.assertIsInstance(actual, Cube)
+            self.assertEqual(actual.data, expected)
 
 
 if __name__ == "__main__":

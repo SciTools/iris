@@ -2655,7 +2655,7 @@ def save(
         local_keys.update(different_value_keys)
 
     def is_valid_packspec(p):
-        """ Only checks that the datatype is valid. """
+        """Only checks that the datatype is valid."""
         if isinstance(p, dict):
             if "dtype" in p:
                 return is_valid_packspec(p["dtype"])
