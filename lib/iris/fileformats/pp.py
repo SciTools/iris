@@ -38,7 +38,6 @@ from iris.fileformats._pp_lbproc_pairs import (  # noqa
 )
 import iris.fileformats.rules
 import iris.coord_systems
-from iris.util import _array_slice_ifempty
 
 try:
     import mo_pack
@@ -594,23 +593,18 @@ class PPDataProxy:
         return len(self.shape)
 
     def __getitem__(self, keys):
-        # Check for 'empty' slicings, in which case don't fetch the data.
-        # Because, since Dask v2, 'dask.array.from_array' performs an empty
-        # slicing and we must not fetch the data at that time.
-        result = _array_slice_ifempty(keys, self.shape, self.dtype)
-        if result is None:
-            with open(self.path, "rb") as pp_file:
-                pp_file.seek(self.offset, os.SEEK_SET)
-                data_bytes = pp_file.read(self.data_len)
-                data = _data_bytes_to_shaped_array(
-                    data_bytes,
-                    self.lbpack,
-                    self.boundary_packing,
-                    self.shape,
-                    self.src_dtype,
-                    self.mdi,
-                )
-            result = data.__getitem__(keys)
+        with open(self.path, "rb") as pp_file:
+            pp_file.seek(self.offset, os.SEEK_SET)
+            data_bytes = pp_file.read(self.data_len)
+            data = _data_bytes_to_shaped_array(
+                data_bytes,
+                self.lbpack,
+                self.boundary_packing,
+                self.shape,
+                self.src_dtype,
+                self.mdi,
+            )
+        result = data.__getitem__(keys)
 
         return np.asanyarray(result, dtype=self.dtype)
 
