@@ -25,6 +25,12 @@ This document explains the changes made to Iris for this release
       where one cell's bounds align with the requested maximum and minimum, as
       reported in :issue:`3391`. (:pull:`4059`)
 
+   #. `@bjlittle`_ resolved a regression in arithmetic behaviour between a coordinate
+      and a cube which resulted in a ``NotYetImplementedError`` being raised, as reported
+      in :issue:`4000`. This fix supports ``+``, ``-``, ``*``, and ``/`` operations
+      between a coordinate and a cube, and for convenience additionally includes
+      :meth:`iris.cube.Cube.__neg__` support. (:pull:`4159`)
+
    📚 **Documentation**
 
    #. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
@@ -46,7 +52,7 @@ This document explains the changes made to Iris for this release
       the dask 'test access'.  This makes loading of netcdf files with a large number of variables significantly faster.
       (:pull:`4135`)
 
-   Note that, the contributions labelled ``pre-v3.1.0`` are part of the forthcoming
+   Note that, the above contributions labelled with ``pre-v3.1.0`` are part of the forthcoming
    Iris v3.1.0 release, but require to be included in this patch release.
 
 
