@@ -1,7 +1,7 @@
 # Test dependencies.
 
 asv
-black==21.5b1
+black==21.5b2
 filelock
 imagehash>=4.0
 nose
