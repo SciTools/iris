@@ -14,7 +14,7 @@ This document explains the changes made to Iris for this release
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
    * We've dropped support for `Python 3.6`_
 

@@ -105,7 +105,7 @@ build_python_version = ".".join([str(i) for i in sys.version_info[:3]])
 
 def _dotv(version):
     result = version
-    match = re.match("^py(\d+)$", version)  # noqa: W605
+    match = re.match(r"^py(\d+)$", version)
     if match:
         digits = match.group(1)
         if len(digits) > 1:
@@ -114,9 +114,10 @@ def _dotv(version):
 
 
 # Automate the discovery of the python versions tested with CI.
-python_support = [
-    fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")
-]
+python_support = sorted(
+    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+)
+
 if not python_support:
     python_support = "unknown Python versions"
 elif len(python_support) == 1:
