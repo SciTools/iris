@@ -1,2 +1,6 @@
 # reference: https://docs.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
 blank_issues_enabled: false
+contact_links:
+  -  name: 💬 Iris GitHub Discussions
+     url: https://github.com/SciTools/iris/discussions
+     about: Engage with the Iris community to discuss your issue
