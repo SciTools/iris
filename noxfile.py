@@ -190,7 +190,7 @@ def black(session: nox.sessions.Session):
 
     """
     # Pip install the session requirements.
-    session.install("black==21.5b2")
+    session.install("black")
     # Execute the black format checker on the package.
     session.run("black", "--check", PACKAGE)
     # Execute the black format checker on this file.

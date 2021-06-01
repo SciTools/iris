@@ -34,7 +34,7 @@ dependencies:
 
 # Test dependencies.
   - asv
-  - black=21.5b2
+  - black
   - filelock
   - flake8
   - imagehash>=4.0
