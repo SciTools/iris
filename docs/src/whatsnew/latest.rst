@@ -12,10 +12,11 @@ This document explains the changes made to Iris for this release
    :title: text-primary text-center font-weight-bold
    :body: bg-light
    :animate: fade-in
+   :open:
 
    The highlights for this major/minor release of Iris include:
 
-   * N/A
+   * We've dropped support for `Python 3.6`_
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -27,8 +28,8 @@ This document explains the changes made to Iris for this release
 #. Congratulations to `@jamesp`_ who recently became an Iris core developer
    after joining the Iris development team at the `Met Office`_. 🎉
 
-#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_ and
-   `@MHBalsmeier`_ all of whom made their first contributions to Iris, which
+#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_, `@MHBalsmeier`_
+   and `@Badboy-16`_ all of whom made their first contributions to Iris, which
    were gratefully received and included in this release. Keep up the awesome
    work! 🍻
 
@@ -168,6 +169,10 @@ This document explains the changes made to Iris for this release
    templates to remove an external URL reference that caused un-posted user issue
    content to be lost in the browser when followed. (:pull:`4147`)
 
+#. `@bjlittle`_ dropped `Python 3.6`_ support, and automated the discovery of
+   supported Python versions tested by `cirrus-ci`_ for documentation.
+   (:pull:`4163`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -191,6 +196,7 @@ This document explains the changes made to Iris for this release
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
+.. _Python 3.6: https://www.python.org/downloads/release/python-360/
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _xxhash: http://cyan4973.github.io/xxHash/
 .. _conda-lock: https://github.com/conda-incubator/conda-lock
