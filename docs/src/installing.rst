@@ -16,8 +16,7 @@ any WSL_ distributions.
 
 .. _WSL: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
-.. note:: Iris is currently supported and tested against Python ``3.6``,
-          ``3.7``, and ``3.8``.
+.. note:: Iris is currently supported and tested against |python_support|.
           
 .. note:: This documentation was built using Python |python_version|.
 
