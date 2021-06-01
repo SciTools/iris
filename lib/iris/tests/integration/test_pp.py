@@ -414,7 +414,7 @@ class TestVertical(tests.IrisTest):
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_once_with(msg)
+        warn.assert_called_with(msg)
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(
