@@ -14,10 +14,10 @@ not :
    "engine.assert_case_specific_fact(name, args)".
 
 2) this is also used to store intermediate info passed between rules, which
-   used to done with a "facts_cf.provides" statement in rule actions.
+   used to be done with a "facts_cf.provides" statement in rule actions.
 
-3) Iris-specific info is stored in our own additional properties stored in
-   extra properties added to the engine object :
+3) Iris-specific info is (still) stored in additional properties created on
+   the engine object :
        engine.cf_var, .cube, .cube_parts, .requires, .rule_triggered, .filename
 
 Our "rules" are just action routines.
@@ -25,6 +25,17 @@ The top-level 'run_actions' routine decides which actions to call, based on the
 info recorded when processing each cube output.  It does this in a simple
 explicit way, which doesn't use any clever chaining, "trigger conditions" or
 other rule-type logic.
+
+Each 'action' function can replace several similar 'rules'.
+E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid+mapping_<X>'.
+To aid debug, each returns a 'rule_name' string, indicating which original rule
+this particular action call is emulating :  In some cases, this may include a
+textual note that this rule 'failed', aka "did not trigger", which would not be
+recorded in the original implementation.
+
+The top-level 'run_actions' ensures that the individual rules actions are
+called, with various arguments, as appropriate to ensure the whole cube is
+built as it was by the original rules implementation.
 
 TODO: remove the use of intermediate "facts" to carry information between
 actions.  This mimics older behaviour, so is still useful while we are still
@@ -268,7 +279,9 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     (var_name,) = auxcoord_fact
     rule_name = "fc_build_auxiliary_coordinate"
 
-    # FOR NOW: attempt to identify type, though it only affects rule-name?
+    # FOR NOW: attempt to identify type
+    # TODO: can maybe eventually remove this, as it only affects rule_name.
+    # (but could possibly retain for future debugging purposes)
     coord_type = ""  # unidentified : can be OK
     if hh.is_time(engine, var_name):
         coord_type = "time"
@@ -300,11 +313,14 @@ def run_actions(engine):
 
     # deal with grid-mappings
     grid_mapping_facts = engine.fact_list("grid_mapping")
+    # For now, there should be at most *one* of these.
+    assert len(grid_mapping_facts) in (0, 1)
     for grid_mapping_fact in grid_mapping_facts:
         action_provides_grid_mapping(engine, grid_mapping_fact)
 
     # identify + record aka "PROVIDE" specific named coordinates
-    # N.B. cf.py id-d these as coords NOT aux-coords (stored separately)
+    # N.B. cf.py has identified that these are dim-coords, NOT aux-coords
+    # (which are recorded separately).
     # TODO: can probably remove this step ??
     dimcoord_facts = engine.fact_list("coordinate")
     for dimcoord_fact in dimcoord_facts:
