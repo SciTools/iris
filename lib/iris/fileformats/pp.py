@@ -32,7 +32,10 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP as lbproc_map  # noqa
+from iris.fileformats._pp_lbproc_pairs import (  # noqa: F401
+    LBPROC_MAP as lbproc_map,
+)
+from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 from iris.fileformats.pp_save_rules import verify
 from iris.util import _array_slice_ifempty
 
