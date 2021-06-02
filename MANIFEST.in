@@ -12,6 +12,8 @@ recursive-include requirements/ci *
 # File required to build docs
 recursive-include docs Makefile *.js *.png *.py *.rst
 prune docs/src/_build
+prune docs/src/generated
+prune docs/gallery_tests
 
 # Files required to build std_names module
 include tools/generate_std_names.py
