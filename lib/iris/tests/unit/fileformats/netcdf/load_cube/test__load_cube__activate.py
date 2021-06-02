@@ -551,6 +551,10 @@ class Test__grid_mapping__pyke_rules(Mixin__grid_mapping, tests.IrisTest):
         super().tearDownClass()
 
 
+from unittest import skip
+
+
+@skip
 class Test__grid_mapping__nonpyke_actions(Mixin__grid_mapping, tests.IrisTest):
     # Run grid-mapping tests with non-Pyke (actions)
     use_pyke = False
