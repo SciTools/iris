@@ -69,7 +69,7 @@ jobs:
     
     strategy:
       matrix:
-        python: ['36', '37', '38']
+        python: ['37', '38']
     
     steps:
       - uses: actions/checkout@v2

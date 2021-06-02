@@ -279,4 +279,5 @@ setup(
         "docs": pip_requirements("docs"),
         "test": pip_requirements("test"),
     },
+    python_requires=">=3.7",
 )
