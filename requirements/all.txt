@@ -1,7 +1,0 @@
-# Optional dependencies.
-
-mo_pack
-nc-time-axis
-pandas
-pyugrid
-stratify
