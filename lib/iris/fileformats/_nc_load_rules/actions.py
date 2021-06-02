@@ -162,7 +162,7 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
     #     succeed = False
     #     rule_name += f' --(FAILED is_grid_mapping)'
     if succeed:
-        if checker is not None and not checker(engine, grid_mapping_type):
+        if checker is not None and not checker(engine, var_name):
             succeed = False
             rule_name += f" --(FAILED check {checker.__name__})"
 
