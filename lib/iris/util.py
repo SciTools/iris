@@ -16,16 +16,14 @@ import os.path
 import sys
 import tempfile
 from abc import ABCMeta, abstractmethod
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterable
 from contextlib import contextmanager
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
-import iris
 import iris.coords
-import iris.cube
 import iris.exceptions
 from iris._deprecation import warn_deprecated
 
@@ -483,15 +481,19 @@ def reverse(cube_or_array, coords_or_dims):
           [15 14 13 12]]]
 
     """
+    from iris.cube import Cube
+
     index = [slice(None, None)] * cube_or_array.ndim
 
-    if isinstance(coords_or_dims, iris.cube.Cube):
+    if isinstance(coords_or_dims, Cube):
         raise TypeError(
             "coords_or_dims must be int, str, coordinate or "
             "sequence of these.  Got cube."
         )
 
-    if iris.cube._is_single_item(coords_or_dims):
+    if isinstance(coords_or_dims, str) or not isinstance(
+        coords_or_dims, Iterable
+    ):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
@@ -1168,6 +1170,8 @@ def new_axis(src_cube, scalar_coord=None):
         (1, 360, 360)
 
     """
+    from iris.cube import Cube
+
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
@@ -1176,13 +1180,13 @@ def new_axis(src_cube, scalar_coord=None):
     # If the source cube is a Masked Constant, it is changed here to a Masked
     # Array to allow the mask to gain an extra dimension with the data.
     if src_cube.has_lazy_data():
-        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+        new_cube = Cube(src_cube.lazy_data()[None])
     else:
         if isinstance(src_cube.data, ma.core.MaskedConstant):
             new_data = ma.array([np.nan], mask=[True])
         else:
             new_data = src_cube.data[None]
-        new_cube = iris.cube.Cube(new_data)
+        new_cube = Cube(new_data)
 
     new_cube.metadata = src_cube.metadata
 
@@ -1243,6 +1247,8 @@ def as_compatible_shape(src_cube, target_cube):
         suitably reshaped to fit.
 
     """
+    from iris.cube import Cube
+
     wmsg = (
         "iris.util.as_compatible_shape has been deprecated and will be "
         "removed, please use iris.common.resolve.Resolve instead."
@@ -1285,7 +1291,7 @@ def as_compatible_shape(src_cube, target_cube):
         new_order = [order.index(i) for i in range(len(order))]
         new_data = np.transpose(new_data, new_order).copy()
 
-    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube = Cube(new_data.reshape(new_shape))
     new_cube.metadata = copy.deepcopy(src_cube.metadata)
 
     # Record a mapping from old coordinate IDs to new coordinates,

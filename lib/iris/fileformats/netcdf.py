@@ -27,11 +27,9 @@ import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
-import iris.analysis
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.cube
 import iris.exceptions
 import iris.fileformats._pyke_rules
 import iris.fileformats.cf
@@ -585,9 +583,11 @@ def _get_cf_var_data(cf_var, filename):
 
 
 def _load_cube(engine, cf, cf_var, filename):
+    from iris.cube import Cube
+
     """Create the cube associated with the CF-netCDF data variable."""
     data = _get_cf_var_data(cf_var, filename)
-    cube = iris.cube.Cube(data)
+    cube = Cube(data)
 
     # Reset the pyke inference engine.
     engine.reset()
@@ -2624,11 +2624,13 @@ def save(
         NetCDF Context manager (:class:`~Saver`).
 
     """
+    from iris.cube import Cube, CubeList
+
     if unlimited_dimensions is None:
         unlimited_dimensions = []
 
-    if isinstance(cube, iris.cube.Cube):
-        cubes = iris.cube.CubeList()
+    if isinstance(cube, Cube):
+        cubes = CubeList()
         cubes.append(cube)
     else:
         cubes = cube
