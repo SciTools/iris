@@ -125,10 +125,12 @@ class Mixin_Test__nc_load_actions:
                 yco_units = latitude_units
 
         elif mapping_name == hh.CF_GRID_MAPPING_ROTATED_LAT_LON:
+            # Rotated lat-lon coordinates.
             xco_name = hh.CF_VALUE_STD_NAME_GRID_LON
             yco_name = hh.CF_VALUE_STD_NAME_GRID_LAT
             xco_units = "degrees"
             yco_units = "degrees"
+
         else:
             # General non-latlon coordinates
             # Exactly which depends on the grid_mapping name.
@@ -153,6 +155,8 @@ class Mixin_Test__nc_load_actions:
                 {g_varname}:{g_mapname} = "{mapping_name}";
                 {g_radius_string}
         """
+
+        # Add a specified scale-factor if keyword is set
         if mapping_scalefactor is not None:
             # Add a specific scale-factor term to the grid mappinf.
             # Non-unity scale not supported for Mercator/Stereographic.
@@ -161,6 +165,54 @@ class Mixin_Test__nc_load_actions:
                 {g_varname}:{sfapo_name} = {mapping_scalefactor} ;
             """
 
+        #
+        # Add various minimal required properties for different grid mappings
+        #
+
+        # Those which require 'latitude of projection origin'
+        if mapping_name in (
+            hh.CF_GRID_MAPPING_TRANSVERSE,
+            hh.CF_GRID_MAPPING_STEREO,
+            hh.CF_GRID_MAPPING_GEOSTATIONARY,
+            hh.CF_GRID_MAPPING_VERTICAL,
+        ):
+            latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
+            g_string += f"""
+                {g_varname}:{latpo_name} = 0.0 ;
+            """
+        # Those which require 'longitude of projection origin'
+        if mapping_name in (
+            hh.CF_GRID_MAPPING_STEREO,
+            hh.CF_GRID_MAPPING_GEOSTATIONARY,
+            hh.CF_GRID_MAPPING_VERTICAL,
+        ):
+            lonpo_name = hh.CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
+            g_string += f"""
+                {g_varname}:{lonpo_name} = 0.0 ;
+            """
+        # Those which require 'longitude of central meridian'
+        if mapping_name in (hh.CF_GRID_MAPPING_TRANSVERSE,):
+            latcm_name = hh.CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
+            g_string += f"""
+                {g_varname}:{latcm_name} = 0.0 ;
+            """
+        # Those which require 'perspective point height'
+        if mapping_name in (
+            hh.CF_GRID_MAPPING_VERTICAL,
+            hh.CF_GRID_MAPPING_GEOSTATIONARY,
+        ):
+            pph_name = hh.CF_ATTR_GRID_PERSPECTIVE_HEIGHT
+            g_string += f"""
+                {g_varname}:{pph_name} = 600000.0 ;
+            """
+        # Those which require 'sweep angle axis'
+        if mapping_name in (hh.CF_GRID_MAPPING_GEOSTATIONARY,):
+            saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
+            g_string += f"""
+                {g_varname}:{saa_name} = "y" ;
+            """
+
+        # Construct the total CDL string
         cdl_string = f"""
             netcdf test {{
             dimensions:
@@ -296,17 +348,21 @@ class Mixin_Test__nc_load_actions:
 
 
 class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
-    # Various tests for translation of grid=mappings
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
+    # Various testcases for translation of grid-mappings
 
     def test_basic_latlon(self):
         # A basic reference example with a lat-long grid.
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_latitude_longitude
+        #     003 : fc_provides_coordinate_latitude
+        #     004 : fc_provides_coordinate_longitude
+        #     005 : fc_build_coordinate_latitude
+        #     006 : fc_build_coordinate_longitude
+        # Notes:
+        #     grid-mapping: regular latlon
+        #     dim-coords: lat+lon
+        #     coords-build: standard latlon coords (with latlon coord-system)
         result = self.run_testcase()
         self.check_result(result)
 
@@ -314,40 +370,137 @@ class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
         # Lat-long with a missing earth-radius causes an error.
         # One of very few cases where activation may encounter an error.
         # N.B. doesn't really test rules-activation, but maybe worth doing.
+        # (no rules trigger)
         with self.assertRaisesRegex(ValueError, "No ellipsoid"):
             self.run_testcase(gridmapvar_missingradius=True)
 
     def test_bad_gridmapping_nameproperty(self):
         # Fix the 'grid' var so it does not register as a grid-mapping.
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_coordinate_latitude
+        #     003 : fc_provides_coordinate_longitude
+        #     004 : fc_build_coordinate_latitude_nocs
+        #     005 : fc_build_coordinate_longitude_nocs
+        # Notes:
+        #     grid-mapping: NONE
+        #     dim-coords: lat+lon
+        #     coords-build: latlon coords NO coord-system
         result = self.run_testcase(gridmapvar_mappropertyname="mappy")
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_gridmapping_varname(self):
         # rename the grid-mapping variable so it is effectively 'missing'.
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_coordinate_latitude
+        #     003 : fc_provides_coordinate_longitude
+        #     004 : fc_build_coordinate_latitude_nocs
+        #     005 : fc_build_coordinate_longitude_nocs
+        # Notes:
+        #     no coord-system
+        #     all the same as test_bad_gridmapping_nameproperty
         with self.assertWarnsRegexp("Missing.*grid mapping variable 'grid'"):
             result = self.run_testcase(gridmapvar_name="grid_2")
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_latlon_unit(self):
         # Check with bad latitude units : 'degrees' in place of 'degrees_north'.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_latitude_longitude
+        #     003 : fc_provides_coordinate_longitude
+        #     004 : fc_build_coordinate_longitude
+        #     005 : fc_default_coordinate
+        # Notes:
+        #     grid-mapping: regular latlon
+        #     dim-coords:
+        #         x is regular longitude dim-coord
+        #         y is 'default' coord ==> builds as an 'extra' dim-coord
+        #     coords-build:
+        #         x(lon) is regular latlon with coord-system
+        #         y(lat) is a dim-coord, but NO coord-system
         result = self.run_testcase(latitude_units="degrees")
         self.check_result(result, latitude_no_cs=True)
 
     def test_mapping_rotated(self):
+        # Test with rotated-latlon grid-mapping
+        # Distinct from both regular-latlon and non-latlon cases, as the
+        # coordinate standard names and units are different.
+        # (run_testcase/_make_testcase_cdl know how to handle that).
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_rotated_latitude_longitude
+        #     003 : fc_provides_coordinate_latitude
+        #     004 : fc_provides_coordinate_longitude
+        #     005 : fc_build_coordinate_latitude_rotated
+        #     006 : fc_build_coordinate_longitude_rotated
+        # Notes:
+        #     grid-mapping: rotated lat-lon
+        #     dim-coords: lat+lon
+        #     coords-build: lat+lon coords ROTATED, with coord-system
+        #         (rotated means different name + units)
         result = self.run_testcase(
             mapping_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON
         )
         self.check_result(result, cube_cstype=ics.RotatedGeogCS)
 
+    #
+    # All non-latlon coordinate systems ...
+    # These all have projection-x/y coordinates with units of metres
+    # They all work the same way, except that Mercator/Stereographic have
+    # parameter checking routines that can fail.
+    # Rules Triggered:
+    #     001 : fc_default
+    #     002 : fc_provides_grid_mapping_<XXX-mapping-name-XXX>
+    #     003 : fc_provides_projection_x_coordinate
+    #     004 : fc_provides_projection_y_coordinate
+    #     005 : fc_build_coordinate_projection_x_<XXX-mapping-name-XXX>
+    #     006 : fc_build_coordinate_projection_y_<XXX-mapping-name-XXX>
+    # Notes:
+    #     grid-mapping: <XXX>
+    #     dim-coords: proj-x and -y
+    #     coords-build: proj-x/-y_<XXX>, with coord-system
+
     def test_mapping_albers(self):
         result = self.run_testcase(mapping_name=hh.CF_GRID_MAPPING_ALBERS)
         self.check_result(result, cube_cstype=ics.AlbersEqualArea)
+
+    def test_mapping_geostationary(self):
+        result = self.run_testcase(
+            mapping_name=hh.CF_GRID_MAPPING_GEOSTATIONARY
+        )
+        self.check_result(result, cube_cstype=ics.Geostationary)
+
+    def test_mapping_lambert_azimuthal(self):
+        result = self.run_testcase(
+            mapping_name=hh.CF_GRID_MAPPING_LAMBERT_AZIMUTHAL
+        )
+        self.check_result(result, cube_cstype=ics.LambertAzimuthalEqualArea)
+
+    def test_mapping_lambert_conformal(self):
+        result = self.run_testcase(
+            mapping_name=hh.CF_GRID_MAPPING_LAMBERT_CONFORMAL
+        )
+        self.check_result(result, cube_cstype=ics.LambertConformal)
 
     def test_mapping_mercator(self):
         result = self.run_testcase(mapping_name=hh.CF_GRID_MAPPING_MERCATOR)
         self.check_result(result, cube_cstype=ics.Mercator)
 
     def test_mapping_mercator__fail_unsupported(self):
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_projection_x_coordinate
+        #     003 : fc_provides_projection_y_coordinate
+        # Notes:
+        #     grid-mapping: NONE
+        #     dim-coords: proj-x and -y
+        #     coords-build: NONE
+        # = NO coord-system
+        # = NO dim-coords built (cube has no coords)
         with self.assertWarnsRegexp("not yet supported for Mercator"):
             # Set a non-unity scale factor, which mercator cannot handle.
             result = self.run_testcase(
@@ -356,9 +509,37 @@ class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
             )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
+    def test_mapping_stereographic(self):
+        result = self.run_testcase(mapping_name=hh.CF_GRID_MAPPING_STEREO)
+        self.check_result(result, cube_cstype=ics.Stereographic)
+
+    def test_mapping_stereographic__fail_unsupported(self):
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_projection_x_coordinate
+        #     003 : fc_provides_projection_y_coordinate
+        # Notes:
+        #     as for 'mercator__fail_unsupported', above
+        #     = NO dim-coords built (cube has no coords)
+        with self.assertWarnsRegexp("not yet supported for stereographic"):
+            # Set a non-unity scale factor, which stereo cannot handle.
+            result = self.run_testcase(
+                mapping_name=hh.CF_GRID_MAPPING_STEREO,
+                mapping_scalefactor=2.0,
+            )
+        self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
+
+    def test_mapping_transverse_mercator(self):
+        result = self.run_testcase(mapping_name=hh.CF_GRID_MAPPING_TRANSVERSE)
+        self.check_result(result, cube_cstype=ics.TransverseMercator)
+
+    def test_mapping_vertical_perspective(self):
+        result = self.run_testcase(mapping_name=hh.CF_GRID_MAPPING_VERTICAL)
+        self.check_result(result, cube_cstype=ics.VerticalPerspective)
+
 
 class Test__grid_mapping__pyke_rules(Mixin__grid_mapping, tests.IrisTest):
-    # Various tests for translation of grid=mappings
+    # Run grid-mapping tests with Pyke (rules)
     use_pyke = True
 
     @classmethod
@@ -371,7 +552,7 @@ class Test__grid_mapping__pyke_rules(Mixin__grid_mapping, tests.IrisTest):
 
 
 class Test__grid_mapping__nonpyke_actions(Mixin__grid_mapping, tests.IrisTest):
-    # Various tests for translation of grid=mappings
+    # Run grid-mapping tests with non-Pyke (actions)
     use_pyke = False
 
     @classmethod
