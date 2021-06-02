@@ -93,7 +93,7 @@ def add_categorised_coord(
 # Private "helper" function
 def _pt_date(coord, time):
     """
-    Return the date of a time-coordinate point.
+    Return the datetime of a time-coordinate point.
 
     Args:
 
@@ -103,14 +103,12 @@ def _pt_date(coord, time):
         value of a coordinate point
 
     Returns:
-        datetime.date
+        cftime.datetime
+
     """
     # NOTE: All of the currently defined categorisation functions are
     # calendar operations on Time coordinates.
-    #  - All these currently depend on Unit::num2date, which is deprecated (!!)
-    #  - We will want to do better, when we sort out our own Calendars.
-    #  - For now, just make sure these all call through this one function.
-    return coord.units.num2date(time)
+    return coord.units.num2date(time, only_use_cftime_datetimes=True)
 
 
 # --------------------------------------------
