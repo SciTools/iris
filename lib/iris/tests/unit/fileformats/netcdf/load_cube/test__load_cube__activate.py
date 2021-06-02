@@ -98,7 +98,6 @@ class Mixin_Test__nc_load_actions:
 
     def _make_testcase_cdl(
         self,
-        cdl_path,
         latitude_units=None,
         gridmapvar_name=None,
         gridmapvar_mappropertyname=None,
@@ -107,7 +106,7 @@ class Mixin_Test__nc_load_actions:
         mapping_scalefactor=None,
     ):
         """
-        Write a testcase example into a CDL file.
+        Create a CDL string for a testcase.
 
         This is the "master" routine for creating all our testcases.
         Kwarg options modify a simple default testcase with a latlon grid.
@@ -259,21 +258,26 @@ class Mixin_Test__nc_load_actions:
             print("File content:")
             print(cdl_string)
             print("------\n")
-        with open(cdl_path, "w") as f_out:
-            f_out.write(cdl_string)
-        return cdl_path
+        return cdl_string
 
-    def _load_cube_from_cdl(self, cdl_path, nc_path):
+    def _load_cube_from_cdl(self, cdl_string, cdl_path, nc_path):
         """
         Load the 'phenom' data variable in a CDL testcase, as a cube.
 
-        Using ncgen and the selected _load_cube call.
+        Using ncgen, CFReader and the _load_cube call.
+        Can use a genuine Pyke engine, or the actions mimic engine,
+        selected by `self.use_pyke`.
 
         """
-        # Create reference netCDF file from reference CDL.
+        # Write the CDL to a file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(cdl_string)
+
+        # Create a netCDF file from the CDL file.
         command = "ncgen -o {} {}".format(nc_path, cdl_path)
         subprocess.check_call(command, shell=True)
 
+        # Simulate the inner part of the file reading process.
         cf = CFReader(nc_path)
         # Grab a data variable : FOR NOW, should be only 1
         cf_var = list(cf.cf_group.data_variables.values())[0]
@@ -290,15 +294,15 @@ class Mixin_Test__nc_load_actions:
 
     def run_testcase(self, **testcase_kwargs):
         """
-        Run a testcase with chosen optionsm returning a test cube.
+        Run a testcase with chosen options, returning a test cube.
 
         The kwargs apply to the '_make_testcase_cdl' method.
 
         """
         cdl_path = str(self.temp_dirpath / "test.cdl")
         nc_path = cdl_path.replace(".cdl", ".nc")
-        self._make_testcase_cdl(cdl_path, **testcase_kwargs)
-        cube = self._load_cube_from_cdl(cdl_path, nc_path)
+        cdl_string = self._make_testcase_cdl(**testcase_kwargs)
+        cube = self._load_cube_from_cdl(cdl_string, cdl_path, nc_path)
         if self.debug:
             print("\nCube:")
             print(cube)
