@@ -108,16 +108,29 @@ class Mixin_Test__nc_load_actions:
     ):
         """
         Write a testcase example into a CDL file.
+
+        This is the "master" routine for creating all our testcases.
+        Kwarg options modify a simple default testcase with a latlon grid.
+        The routine handles the various testcase options and their possible
+        interactions.  This includes knowing what extra changes are required
+        to support different grid-mapping types (for example).
+
         """
-        # Grid-mapping options are standard-latlon, rotated, or non-latlon.
+        # The grid-mapping options are standard-latlon, rotated, or non-latlon.
         # This affects names+units of the X and Y coords.
+        # We don't have an option to *not* include a grid-mapping variable, but
+        # we can mimic a missing grid-mapping by changing the varname from that
+        # which the data-variable refers to, with "gridmapvar_name=xxx".
+        # Likewise, an invalid (unrecognised) grid-mapping can be mimicked by
+        # selecting an unkown 'grid_mapping_name' property, with
+        # "gridmapvar_mappropertyname=xxx".
         if mapping_name is None:
             # Default grid-mapping and coords are standard lat-lon.
             mapping_name = hh.CF_GRID_MAPPING_LAT_LON
             xco_name = hh.CF_VALUE_STD_NAME_LON
             yco_name = hh.CF_VALUE_STD_NAME_LAT
             xco_units = "degrees_east"
-            # Special cases override some of the values.
+            # Special kwarg overrides some of the values.
             if latitude_units is None:
                 yco_units = "degrees_north"
             else:
@@ -140,12 +153,16 @@ class Mixin_Test__nc_load_actions:
             yco_units = "m"
 
         grid_mapping_name = "grid"
+        # Options can override the gridvar name, and its 'grid+mapping_name'
+        # property.
         g_varname = gridmapvar_name
         g_mapname = gridmapvar_mappropertyname
         if g_varname is None:
             g_varname = grid_mapping_name
         if g_mapname is None:
             g_mapname = "grid_mapping_name"
+
+        # Omit the earth radius, if requested.
         if gridmapvar_missingradius:
             g_radius_string = ""
         else:
@@ -156,17 +173,18 @@ class Mixin_Test__nc_load_actions:
                 {g_radius_string}
         """
 
-        # Add a specified scale-factor if keyword is set
+        # Add a specified scale-factor, if requested.
         if mapping_scalefactor is not None:
-            # Add a specific scale-factor term to the grid mappinf.
-            # Non-unity scale not supported for Mercator/Stereographic.
+            # Add a specific scale-factor term to the grid mapping.
+            # (Non-unity scale is not supported for Mercator/Stereographic).
             sfapo_name = hh.CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
             g_string += f"""
                 {g_varname}:{sfapo_name} = {mapping_scalefactor} ;
             """
 
         #
-        # Add various minimal required properties for different grid mappings
+        # Add various additional (minimal) required properties for different
+        # grid mapping types.
         #
 
         # Those which require 'latitude of projection origin'
@@ -390,7 +408,8 @@ class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_gridmapping_varname(self):
-        # rename the grid-mapping variable so it is effectively 'missing'.
+        # rename the grid-mapping variable so it is effectively 'missing'
+        # (I.E. the var named in "data-variable:grid_mapping" does not exist).
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_provides_coordinate_latitude
@@ -421,6 +440,8 @@ class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
         #     coords-build:
         #         x(lon) is regular latlon with coord-system
         #         y(lat) is a dim-coord, but NO coord-system
+        # = "fc_provides_coordinate_latitude" does not trigger, because it is
+        #   not a valid latitude coordinate.
         result = self.run_testcase(latitude_units="degrees")
         self.check_result(result, latitude_no_cs=True)
 
@@ -449,9 +470,13 @@ class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
 
     #
     # All non-latlon coordinate systems ...
-    # These all have projection-x/y coordinates with units of metres
+    # These all have projection-x/y coordinates with units of metres.
     # They all work the same way, except that Mercator/Stereographic have
     # parameter checking routines that can fail.
+    # NOTE: various mapping types *require* certain addtional properties
+    #   - without which an error will occur during translation.
+    #   - run_testcase/_make_testcase_cdl know how to provide these
+    #
     # Rules Triggered:
     #     001 : fc_default
     #     002 : fc_provides_grid_mapping_<XXX-mapping-name-XXX>
