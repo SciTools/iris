@@ -25,7 +25,7 @@ In what follows we'll refer to the upstream iris ``master`` branch, as
 * If you can possibly avoid it, avoid merging trunk or any other branches into
   your feature branch while you are working.
 * If you do find yourself merging from trunk, consider :ref:`rebase-on-trunk`
-* Ask on the `iris mailing list`_ if you get stuck.
+* Ask on the `Iris GitHub Discussions`_ if you get stuck.
 * Ask for code review!
 
 This way of working helps to keep work well organized, with readable history.

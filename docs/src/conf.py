@@ -271,12 +271,8 @@ html_context = {
             "https://github.com/SciTools/iris",
         ),
         (
-            '<i class="fa fa-comments fa-fw"></i> Users Google Group',
-            "https://groups.google.com/forum/#!forum/scitools-iris",
-        ),
-        (
-            '<i class="fa fa-comments fa-fw"></i> Developers Google Group',
-            "https://groups.google.com/forum/#!forum/scitools-iris-dev",
+            '<i class="fa fa-comments fa-fw"></i> GitHub Discussions',
+            "https://github.com/SciTools/iris/discussions",
         ),
         (
             '<i class="fa fa-question fa-fw"></i> StackOverflow for "How Do I?"',
