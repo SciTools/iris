@@ -9,12 +9,12 @@ Provides the infrastructure to support the common metadata API.
 """
 
 
+import re
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from functools import wraps
-import re
 
 import numpy as np
 import numpy.ma as ma
@@ -24,7 +24,6 @@ from ..config import get_logger
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
-
 
 __all__ = [
     "SERVICES_COMBINE",

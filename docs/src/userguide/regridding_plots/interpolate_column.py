@@ -1,8 +1,8 @@
-import iris.quickplot as qplt
-import iris.analysis
 import matplotlib.pyplot as plt
 import numpy as np
 
+import iris.analysis
+import iris.quickplot as qplt
 
 fname = iris.sample_data_path("hybrid_height.nc")
 column = iris.load_cube(fname, "air_potential_temperature")[:, 0, 0]

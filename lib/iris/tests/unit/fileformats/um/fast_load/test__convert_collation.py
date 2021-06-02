@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
@@ -15,15 +15,14 @@ import cf_units
 import cftime
 import numpy as np
 
-from iris.fileformats.um._fast_load import (
-    _convert_collation as convert_collation,
-)
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
 import iris.fileformats.rules
-
+from iris.fileformats.um._fast_load import (
+    _convert_collation as convert_collation,
+)
 
 COORD_SYSTEM = iris.coord_systems.GeogCS(6371229.0)
 LATITUDE = iris.coords.DimCoord(

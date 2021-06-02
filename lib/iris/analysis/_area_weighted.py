@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 import iris.experimental.regrid as eregrid
+from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
 
 
 class AreaWeightedRegridder:

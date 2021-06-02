@@ -8,34 +8,34 @@ Definitions of coordinates and other dimensional metadata.
 
 """
 
-from abc import ABCMeta, abstractmethod
-from collections import namedtuple
-from collections.abc import Iterator
 import copy
-from itertools import chain, zip_longest
 import operator
 import warnings
 import zlib
+from abc import ABCMeta, abstractmethod
+from collections import namedtuple
+from collections.abc import Iterator
+from itertools import chain, zip_longest
 
 import cftime
 import numpy as np
 import numpy.ma as ma
 
-from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris.aux_factory
+import iris.exceptions
+import iris.time
+import iris.util
+from iris._data_manager import DataManager
 from iris.common import (
     AncillaryVariableMetadata,
     BaseMetadata,
-    CFVariableMixin,
     CellMeasureMetadata,
+    CFVariableMixin,
     CoordMetadata,
     DimCoordMetadata,
     metadata_manager_factory,
 )
-import iris.exceptions
-import iris.time
-import iris.util
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):

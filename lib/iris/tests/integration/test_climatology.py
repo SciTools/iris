@@ -7,12 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from os.path import join as path_join, dirname, sep as os_sep
 import shutil
-from subprocess import check_call
 import tempfile
+from os.path import dirname
+from os.path import join as path_join
+from os.path import sep as os_sep
+from subprocess import check_call
 
 import iris
 from iris.tests import stock

@@ -12,17 +12,12 @@ from iris.io.format_picker import (
     FileExtension,
     FormatAgent,
     FormatSpecification,
+    LeadingLine,
     MagicNumber,
     UriProtocol,
-    LeadingLine,
 )
-from . import abf
-from . import um
-from . import name
-from . import netcdf
-from . import nimrod
-from . import pp
 
+from . import abf, name, netcdf, nimrod, pp, um
 
 __all__ = ["FORMAT_AGENT"]
 

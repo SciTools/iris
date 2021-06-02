@@ -21,7 +21,6 @@ graphical test results.
 
 import codecs
 import collections
-from collections.abc import Mapping
 import contextlib
 import datetime
 import difflib
@@ -29,8 +28,8 @@ import filecmp
 import functools
 import gzip
 import inspect
-import json
 import io
+import json
 import math
 import os
 import os.path
@@ -38,20 +37,21 @@ import re
 import shutil
 import subprocess
 import sys
-import unittest
-from unittest import mock
 import threading
+import unittest
 import warnings
 import xml.dom.minidom
 import zlib
+from collections.abc import Mapping
+from unittest import mock
 
 import filelock
 import numpy as np
 import numpy.ma as ma
 import requests
 
-import iris.cube
 import iris.config
+import iris.cube
 import iris.util
 
 # Test for availability of matplotlib.

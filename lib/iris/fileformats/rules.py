@@ -13,10 +13,10 @@ import warnings
 
 import cf_units
 
-from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.analysis import Linear
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
 ReferenceTarget = collections.namedtuple(

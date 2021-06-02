@@ -6,16 +6,15 @@
 
 # import iris.tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+import os
+import subprocess
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
-import os
-import subprocess
 
 import iris
-
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #

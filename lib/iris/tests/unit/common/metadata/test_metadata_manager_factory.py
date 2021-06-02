@@ -10,7 +10,7 @@ Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import pickle
 import unittest.mock as mock
@@ -25,7 +25,6 @@ from iris.common.metadata import (
     CubeMetadata,
     metadata_manager_factory,
 )
-
 
 BASES = [
     AncillaryVariableMetadata,

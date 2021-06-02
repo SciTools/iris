@@ -7,29 +7,31 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+import os.path
+import shutil
+import tempfile
+import warnings
 from contextlib import contextmanager
 from itertools import repeat
-import os.path
 from os.path import join as path_join
-import shutil
 from subprocess import check_call
-import tempfile
 from unittest import mock
-import warnings
 
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
 
 import iris
+import iris.tests.stock as stock
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
-from iris.fileformats.netcdf import Saver
-from iris.fileformats.netcdf import UnknownCellMethodWarning
-import iris.tests.stock as stock
+from iris.fileformats.netcdf import (
+    CF_CONVENTIONS_VERSION,
+    Saver,
+    UnknownCellMethodWarning,
+)
 
 
 @tests.skip_data

@@ -10,11 +10,11 @@ Tests map creation.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+import cartopy.crs as ccrs
 import numpy as np
 import numpy.testing as np_testing
-import cartopy.crs as ccrs
 
 import iris
 import iris.coord_systems
@@ -24,6 +24,7 @@ import iris.tests.stock
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     import iris.plot as iplt
 
 

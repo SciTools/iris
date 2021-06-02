@@ -10,18 +10,19 @@ Unit tests for the :func:`iris.experimental.stratify.relevel` function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from functools import partial
 
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from iris.coords import AuxCoord, DimCoord
 import iris.tests.stock as stock
+from iris.coords import AuxCoord, DimCoord
 
 try:
     import stratify
+
     from iris.experimental.stratify import relevel
 except ImportError:
     stratify = None

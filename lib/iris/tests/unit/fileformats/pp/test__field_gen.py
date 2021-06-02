@@ -7,12 +7,12 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import contextlib
 import io
-from unittest import mock
 import warnings
+from unittest import mock
 
 import numpy as np
 

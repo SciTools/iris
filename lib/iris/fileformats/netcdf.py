@@ -13,40 +13,40 @@ Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 """
 
 import collections
-from itertools import repeat, zip_longest
 import os
 import os.path
 import re
 import string
 import warnings
+from itertools import repeat, zip_longest
 
-import dask.array as da
 import cf_units
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
 import iris.analysis
-from iris.aux_factory import (
-    HybridHeightFactory,
-    HybridPressureFactory,
-    OceanSigmaZFactory,
-    OceanSigmaFactory,
-    OceanSFactory,
-    OceanSg1Factory,
-    OceanSg2Factory,
-)
 import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.exceptions
-import iris.fileformats.cf
 import iris.fileformats._pyke_rules
+import iris.fileformats.cf
 import iris.io
 import iris.util
 from iris._lazy_data import as_lazy_data
+from iris.aux_factory import (
+    HybridHeightFactory,
+    HybridPressureFactory,
+    OceanSFactory,
+    OceanSg1Factory,
+    OceanSg2Factory,
+    OceanSigmaFactory,
+    OceanSigmaZFactory,
+)
 
 # Show Pyke inference engine statistics.
 DEBUG = False

@@ -16,17 +16,16 @@ import warnings
 import cf_units
 import numpy as np
 
-import iris.cube
-import iris.coords
-import iris.coord_systems
 import iris.analysis
 import iris.analysis.maths
+import iris.coord_systems
+import iris.coords
+import iris.cube
 from iris.analysis.cartography import (
     DEFAULT_SPHERICAL_EARTH_RADIUS,
     DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT,
 )
 from iris.util import delta
-
 
 __all__ = ["cube_delta", "differentiate", "curl"]
 

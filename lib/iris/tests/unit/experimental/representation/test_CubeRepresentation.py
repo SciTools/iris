@@ -7,14 +7,13 @@
 
 from html import escape
 
+import iris.tests.stock as stock
+from iris.coords import AncillaryVariable, CellMeasure, CellMethod
+from iris.experimental.representation import CubeRepresentation
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
-
-from iris.coords import CellMethod, CellMeasure, AncillaryVariable
-import iris.tests.stock as stock
-
-from iris.experimental.representation import CubeRepresentation
+import iris.tests as tests  # isort:skip
 
 
 @tests.skip_data

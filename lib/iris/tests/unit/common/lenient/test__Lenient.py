@@ -10,7 +10,7 @@ Unit tests for the :class:`iris.common.lenient._Lenient`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
 

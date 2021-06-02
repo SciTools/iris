@@ -1,13 +1,13 @@
-from contextlib import contextmanager
 import os
-from shutil import copyfile
 import sys
 import textwrap
+from contextlib import contextmanager
+from distutils.util import convert_path
+from shutil import copyfile
 
-from setuptools import setup, Command
-from setuptools.command.develop import develop as develop_cmd
+from setuptools import Command, setup
 from setuptools.command.build_py import build_py
-
+from setuptools.command.develop import develop as develop_cmd
 
 @contextmanager
 def temporary_path(directory):

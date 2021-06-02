@@ -8,13 +8,13 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
-
-from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from scipy.sparse.csr import csr_matrix
+
 import iris.tests.stock as stock
+from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 
 
 class Test(tests.IrisTest):

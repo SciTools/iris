@@ -7,7 +7,7 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
@@ -17,8 +17,8 @@ import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris._data_manager import DataManager
 import iris.tests.stock
+from iris._data_manager import DataManager
 
 
 @tests.skip_data

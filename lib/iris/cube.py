@@ -9,21 +9,21 @@ Classes for representing multi-dimensional data with metadata.
 
 """
 
-from collections import OrderedDict
-from collections.abc import (
-    Iterable,
-    Container,
-    Mapping,
-    MutableMapping,
-    Iterator,
-)
 import copy
-from copy import deepcopy
-from functools import reduce, partial
 import operator
 import warnings
-from xml.dom.minidom import Document
 import zlib
+from collections import OrderedDict
+from collections.abc import (
+    Container,
+    Iterable,
+    Iterator,
+    Mapping,
+    MutableMapping,
+)
+from copy import deepcopy
+from functools import partial, reduce
+from xml.dom.minidom import Document
 
 import dask.array as da
 import numpy as np
@@ -31,13 +31,17 @@ import numpy.ma as ma
 
 import iris._concatenate
 import iris._constraints
-from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
 import iris._merge
 import iris.analysis
-from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
+import iris.coord_systems
+import iris.coords
+import iris.exceptions
+import iris.util
+from iris._data_manager import DataManager
+from iris.analysis.cartography import wrap_lons
 from iris.common import (
     CFVariableMixin,
     CoordMetadata,
@@ -45,11 +49,6 @@ from iris.common import (
     DimCoordMetadata,
     metadata_manager_factory,
 )
-import iris.coord_systems
-import iris.coords
-import iris.exceptions
-import iris.util
-
 
 __all__ = ["Cube", "CubeList"]
 

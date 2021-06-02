@@ -10,7 +10,10 @@ import warnings
 
 import numpy as np
 import numpy.ma as ma
+from scipy.sparse import csc_matrix
+from scipy.sparse import diags as sparse_diags
 
+import iris.cube
 from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
@@ -19,10 +22,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-import iris.cube
 from iris.util import _meshgrid
-
-from scipy.sparse import csc_matrix, diags as sparse_diags
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):

@@ -8,36 +8,32 @@ Provides UK Met Office Post Process (PP) format specific capabilities.
 
 """
 
-from abc import ABCMeta, abstractmethod
 import collections
-from copy import deepcopy
 import operator
 import os
 import re
 import struct
 import warnings
+from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 
 import cf_units
-import numpy as np
-import numpy.ma as ma
 import cftime
-
 import dask
 import dask.array as da
+import numpy as np
+import numpy.ma as ma
 
-from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
+import iris.coord_systems
 import iris.fileformats.pp_load_rules
-from iris.fileformats.pp_save_rules import verify
+import iris.fileformats.rules
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (  # noqa
-    LBPROC_PAIRS,
-    LBPROC_MAP as lbproc_map,
-)
-import iris.fileformats.rules
-import iris.coord_systems
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP as lbproc_map  # noqa
+from iris.fileformats.pp_save_rules import verify
 from iris.util import _array_slice_ifempty
 
 try:

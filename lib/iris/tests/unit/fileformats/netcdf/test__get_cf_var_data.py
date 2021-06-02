@@ -7,15 +7,15 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from dask.array import Array as dask_array
 import numpy as np
+from dask.array import Array as dask_array
 
-from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
+from iris._lazy_data import _optimum_chunksize
 from iris.fileformats.netcdf import _get_cf_var_data
 
 

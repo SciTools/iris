@@ -10,19 +10,20 @@ Test some key usages of :func:`iris.plot.quiver`.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
-
-import numpy as np
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
-from iris.coords import AuxCoord, DimCoord
+import numpy as np
+
 from iris.coord_systems import Mercator
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests.stock import sample_2d_latlons
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     from iris.plot import quiver
 
 

@@ -14,19 +14,17 @@ References:
 
 """
 
-from abc import ABCMeta, abstractmethod
-
-from collections.abc import Iterable, MutableMapping
 import os
 import re
 import warnings
+from abc import ABCMeta, abstractmethod
+from collections.abc import Iterable, MutableMapping
 
 import netCDF4
 import numpy as np
 import numpy.ma as ma
 
 import iris.util
-
 
 #
 # CF parse pattern common to both formula terms and measure CF variables.

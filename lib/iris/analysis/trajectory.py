@@ -17,7 +17,6 @@ from scipy.spatial import cKDTree
 import iris.analysis
 import iris.coord_systems
 import iris.coords
-
 from iris.analysis import Linear
 from iris.analysis._interpolation import snapshot_grid
 from iris.util import _meshgrid

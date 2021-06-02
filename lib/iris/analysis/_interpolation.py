@@ -5,19 +5,18 @@
 # licensing details.
 """A collection of helpers for interpolation."""
 
+import operator
 from collections import namedtuple
 from itertools import product
-import operator
 
-from numpy.lib.stride_tricks import as_strided
 import numpy as np
 import numpy.ma as ma
+from numpy.lib.stride_tricks import as_strided
 
+import iris.util
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from iris.analysis.cartography import wrap_lons as wrap_circular_points
-from iris.coords import DimCoord, AuxCoord
-import iris.util
-
+from iris.coords import AuxCoord, DimCoord
 
 _DEFAULT_DTYPE = np.float16
 

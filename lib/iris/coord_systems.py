@@ -8,11 +8,11 @@ Definitions of coordinate systems.
 
 """
 
-from abc import ABCMeta, abstractmethod
 import warnings
+from abc import ABCMeta, abstractmethod
 
-import numpy as np
 import cartopy.crs as ccrs
+import numpy as np
 
 
 def _arg_default(value, default, cast_as=float):

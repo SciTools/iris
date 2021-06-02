@@ -8,15 +8,14 @@ function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from iris.coords import BOUND_MODE, POINT_MODE
 from iris.tests.stock import (
+    hybrid_height,
     simple_2d,
     simple_2d_w_multidim_coords,
-    hybrid_height,
 )
-
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt

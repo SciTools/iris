@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import iris
 import iris.plot as iplt
 
-
 fname = iris.sample_data_path("air_temp.pp")
 temperature = iris.load_cube(fname)
 

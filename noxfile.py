@@ -12,7 +12,6 @@ from pathlib import Path
 import nox
 from nox.logger import logger
 
-
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
 
@@ -195,6 +194,23 @@ def black(session: nox.sessions.Session):
     session.run("black", "--check", PACKAGE)
     # Execute the black format checker on this file.
     session.run("black", "--check", __file__)
+
+
+@nox.session
+def isort(session: nox.sessions.Session):
+    """
+    Perform isort import checking of iris codebase.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    """
+    # Pip install the session requirements.
+    session.install("isort")
+    # Execute the isort import checker.
+    session.run("isort", "--check", ".")
 
 
 @nox.session(python=PY_VER, venv_backend="conda")

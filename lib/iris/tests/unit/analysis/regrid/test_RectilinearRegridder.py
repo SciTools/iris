@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import dask.array as da
 import numpy as np
@@ -15,11 +15,10 @@ import numpy.ma as ma
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
-from iris.coord_systems import GeogCS, OSGB
+from iris.coord_systems import OSGB, GeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
-
 
 RESULT_DIR = ("analysis", "regrid")
 

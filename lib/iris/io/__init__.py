@@ -8,15 +8,15 @@ Provides an interface to manage URI scheme support in iris.
 
 """
 
-from collections import OrderedDict
+import collections
 import glob
 import os.path
 import re
-import collections
+from collections import OrderedDict
 
-import iris.fileformats
 import iris.cube
 import iris.exceptions
+import iris.fileformats
 
 
 # Saving routines, indexed by file extension.

@@ -11,11 +11,10 @@ Unit tests for :func:`iris.analysis.geometry._extract_relevant_cube_slice`.
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 
-import iris.tests as tests
-import iris.tests.stock as stock
-
+import iris.tests as tests  # isort:skip
 import shapely.geometry
 
+import iris.tests.stock as stock
 from iris.analysis.geometry import _extract_relevant_cube_slice
 
 

@@ -16,26 +16,26 @@ import datetime
 
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes
-from cartopy.geodesic import Geodesic
 import cftime
 import matplotlib.axes
 import matplotlib.collections as mpl_collections
 import matplotlib.dates as mpl_dates
 import matplotlib.pyplot as plt
-from matplotlib.offsetbox import AnchoredText
 import matplotlib.ticker as mpl_ticker
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
+from cartopy.geodesic import Geodesic
+from matplotlib.offsetbox import AnchoredText
 
-import iris.cube
 import iris.analysis.cartography as cartography
-import iris.coords
 import iris.coord_systems
-from iris.exceptions import IrisError
+import iris.coords
+import iris.cube
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
+from iris.exceptions import IrisError
 from iris.util import _meshgrid
 
 # Cynthia Brewer citation text.

@@ -5,8 +5,7 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
-import iris.coords
+import iris.tests as tests  # isort:skip
 
 import os
 import tempfile
@@ -14,6 +13,7 @@ import tempfile
 import netCDF4
 
 import iris
+import iris.coords
 import iris.tests.pp as pp
 import iris.util
 from iris.fileformats.pp import STASH

@@ -6,16 +6,18 @@
 """Unit tests for the :mod:`iris._representation` module."""
 
 import numpy as np
-import iris.tests as tests
+
 import iris._representation
-from iris.cube import Cube
 from iris.coords import (
-    DimCoord,
+    AncillaryVariable,
     AuxCoord,
     CellMeasure,
-    AncillaryVariable,
     CellMethod,
+    DimCoord,
 )
+from iris.cube import Cube
+
+import iris.tests as tests  # isort:skip
 
 
 def example_cube():

@@ -11,12 +11,12 @@ Unit tests for the
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from cf_units import Unit
 import numpy as np
+from cf_units import Unit
 
 from iris.aux_factory import OceanSg1Factory
 from iris.coords import AuxCoord, DimCoord

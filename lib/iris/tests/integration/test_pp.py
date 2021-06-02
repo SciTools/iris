@@ -7,22 +7,23 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-import numpy as np
 import os
 from unittest import mock
 
+import numpy as np
 from cf_units import Unit
+
+import iris.fileformats.pp
+import iris.fileformats.pp_load_rules
+import iris.util
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
-import iris.fileformats.pp
-import iris.fileformats.pp_load_rules
-from iris.fileformats.pp_save_rules import verify
 from iris.exceptions import IgnoreCubeException
 from iris.fileformats.pp import load_pairs_from_fields
-import iris.util
+from iris.fileformats.pp_save_rules import verify
 
 
 class TestVertical(tests.IrisTest):

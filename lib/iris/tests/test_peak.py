@@ -3,12 +3,13 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+import iris.tests as tests  # isort:skip
 
-import iris.analysis
-import iris.tests as tests
-import iris.tests.stock
 import numpy as np
 import numpy.ma as ma
+
+import iris.analysis
+import iris.tests.stock
 
 
 class TestPeakAggregator(tests.IrisTest):

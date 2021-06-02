@@ -10,10 +10,10 @@ Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from itertools import product
 import operator
+from itertools import product
 
 import numpy as np
 

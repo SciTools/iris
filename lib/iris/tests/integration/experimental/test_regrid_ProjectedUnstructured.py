@@ -7,20 +7,20 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
-from cf_units import Unit
 import numpy as np
+from cf_units import Unit
 
 import iris
 import iris.aux_factory
 from iris.coord_systems import GeogCS
-from iris.tests.stock import global_pp
 from iris.experimental.regrid import (
     ProjectedUnstructuredLinear,
     ProjectedUnstructuredNearest,
 )
+from iris.tests.stock import global_pp
 
 
 @tests.skip_data

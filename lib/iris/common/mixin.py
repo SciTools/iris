@@ -13,9 +13,9 @@ from functools import wraps
 
 import cf_units
 
-from .metadata import BaseMetadata
 import iris.std_names
 
+from .metadata import BaseMetadata
 
 __all__ = ["CFVariableMixin"]
 

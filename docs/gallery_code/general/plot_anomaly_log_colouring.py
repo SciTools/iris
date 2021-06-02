@@ -26,8 +26,8 @@ See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 """
 
 import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
+import matplotlib.pyplot as plt
 
 import iris
 import iris.coord_categorisation

@@ -4,17 +4,17 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
+import iris.tests as tests  # isort:skip
 
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from numpy import ma
 
+import iris.tests.stock as stock
 from iris.analysis import MEAN
 from iris.coords import DimCoord
 from iris.cube import Cube
-import iris.tests as tests
-import iris.tests.stock as stock
 
 
 class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):

@@ -10,14 +10,14 @@ Test the cube concatenate mechanism.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
 import iris.cube
-from iris.coords import DimCoord, AuxCoord, CellMeasure, AncillaryVariable
 import iris.tests.stock as stock
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 
 
 def _make_cube(

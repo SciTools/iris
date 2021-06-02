@@ -10,32 +10,32 @@ Test CF-NetCDF file loading and saving.
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os
 import os.path
 import shutil
 import stat
-from subprocess import check_call
 import tempfile
+from subprocess import check_call
 from unittest import mock
 
-from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
+from cf_units import as_unit
 
 import iris
 import iris.analysis.trajectory
+import iris.coord_systems as icoord_systems
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
-from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
-import iris.util
-from iris.coords import AncillaryVariable, CellMeasure
-import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
+import iris.util
 from iris._lazy_data import is_lazy_data
+from iris.coords import AncillaryVariable, CellMeasure
+from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 
 
 @tests.skip_data

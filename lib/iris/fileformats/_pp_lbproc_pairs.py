@@ -6,7 +6,6 @@
 
 import itertools
 
-
 # LBPROC codes and their English equivalents
 LBPROC_PAIRS = (
     (1, "Difference from another experiment"),

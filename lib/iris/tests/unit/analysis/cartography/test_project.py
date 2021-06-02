@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
 import numpy as np
@@ -17,9 +17,7 @@ import iris.coords
 import iris.cube
 import iris.tests
 import iris.tests.stock
-
 from iris.analysis.cartography import project
-
 
 ROBINSON = ccrs.Robinson()
 

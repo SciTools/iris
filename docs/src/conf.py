@@ -22,10 +22,10 @@
 import datetime
 import ntpath
 import os
-from pathlib import Path
 import re
 import sys
 import warnings
+from pathlib import Path
 
 import iris
 

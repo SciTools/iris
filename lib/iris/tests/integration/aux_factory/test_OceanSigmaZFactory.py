@@ -11,15 +11,15 @@ Integratation tests for the
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import itertools
 
 import numpy as np
 
+import iris.util
 from iris._lazy_data import as_lazy_data
 from iris.tests.stock import ocean_sigma_z as stock_sample_osz
-import iris.util
 
 
 class Test_sample(tests.IrisTest):

@@ -31,6 +31,24 @@ exclude = '''
 
 [build-system]
 # Defined by PEP 518
-requires = ["scitools-pyke", "setuptools>=40.8.0", "wheel"]
+requires = [
+  "scitools-pyke",
+  "setuptools>=40.8.0",
+  "wheel",
+]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
+
+[tool.isort]
+line_length = 79
+profile = "black"
+skip = [
+  "_build",
+  "compiled_krb",
+  "fc_rules_cf.krb",
+  "generated",
+  "sphinxext",
+  "tools",
+]
+skip_gitignore = "True"
+verbose = "False"

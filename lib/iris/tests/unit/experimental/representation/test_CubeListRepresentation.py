@@ -7,14 +7,13 @@
 
 from html import escape
 
+import iris.tests.stock as stock
+from iris.cube import CubeList
+from iris.experimental.representation import CubeListRepresentation
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
-
-from iris.cube import CubeList
-import iris.tests.stock as stock
-
-from iris.experimental.representation import CubeListRepresentation
+import iris.tests as tests  # isort:skip
 
 
 @tests.skip_data

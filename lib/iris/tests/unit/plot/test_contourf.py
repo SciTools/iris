@@ -7,16 +7,16 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from iris.tests.stock import simple_2d
-from iris.tests.unit.plot import TestGraphicStringCoord, MixinCoords
+from iris.tests.unit.plot import MixinCoords, TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt

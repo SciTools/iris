@@ -7,16 +7,16 @@
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
-from iris._concatenate import concatenate
-from iris._lazy_data import as_lazy_data
 import iris.coords
 import iris.cube
+from iris._concatenate import concatenate
+from iris._lazy_data import as_lazy_data
 from iris.exceptions import ConcatenateError
 
 

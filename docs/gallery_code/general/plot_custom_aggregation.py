@@ -18,9 +18,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
-from iris.analysis import Aggregator
 import iris.plot as iplt
 import iris.quickplot as qplt
+from iris.analysis import Aggregator
 from iris.util import rolling_window
 
 

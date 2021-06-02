@@ -9,19 +9,18 @@ color map meta-data mappings.
 
 """
 
-from functools import wraps
 import os
 import os.path
 import re
+from functools import wraps
 
 import cf_units
 import matplotlib.cm as mpl_cm
 import matplotlib.colors as mpl_colors
 import numpy as np
 
-import iris.cube
 import iris.config
-
+import iris.cube
 
 # Symmetric normalization function pivot points by SI unit.
 PIVOT_BY_UNIT = {cf_units.Unit("K"): 273.15}
