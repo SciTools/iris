@@ -46,20 +46,44 @@ temporary directory.
 """
 
 
-class Mixin_Test__nc_load_actions(tests.IrisTest):
+class Mixin_Test__nc_load_actions:
     """
-    Class to make testcases for rules or actions code and check results.
+    Class to make testcases for rules or actions code, and check results.
 
-    Defines standard setUp/tearDown-Class to create intermediate files in a
-    temporary directory.
+    Defines standard setUpClass/tearDownClass methods, to create a temporary
+    directory for intermediate files.
+    NOTE: owing to peculiarities of unittest, these must be explicitly called
+    from a setUpClass/tearDownClass within the 'final' inheritor, i.e. the
+    actual Test_XXX class which also inherits unittest.TestCase.
 
-    Testcase manufacture in _make_testcase_file', based on a simple latlon grid
-    example with various kwargs to control variations.
-    Testing in 'test_result', with various kwargs controlling expected results.
+    Testcases are manufactured by the '_make_testcase_cdl' method.
+    These are based on a 'standard simple latlon grid' example.
+    Various kwargs control variations on this.
 
-    Can also switch between testing Pyke and non-Pyke implementations (for now).
+    The 'run_testcase' method takes the '_make_testcase_cdl' kwargs and makes
+    a result cube (by: producing cdl, converting to netcdf, and loading).
+
+    The 'check_result' method performs various checks on the result, with
+    kwargs controlling the expected properties to be tested against.
+    This usage is *also* based on the 'standard simple latlon grid' example,
+    the kwargs specify expected differences from that.
+
+    Can also test with either the Pyke(rules) or non-Pyke (actions)
+    implementations (for now).
 
     """
+
+    #
+    # "global" test settings
+    #
+
+    # whether to test 'rules' or 'actions' implementations
+    # TODO: remove when Pyke is gone
+    use_pyke = True
+
+    # whether to output various debug info
+    # TODO: ?possibly? remove when development is complete
+    debug = False
 
     @classmethod
     def setUpClass(cls):
@@ -72,7 +96,7 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
         # Destroy a temp directory for temp files.
         shutil.rmtree(cls.temp_dirpath)
 
-    def make_testcase_cdl(
+    def _make_testcase_cdl(
         self,
         cdl_path,
         latitude_units=None,
@@ -80,7 +104,7 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
         gridmapvar_mappropertyname=None,
         gridmapvar_missingradius=False,
         mapping_name=None,
-        use_bad_mapping_params=False,
+        mapping_scalefactor=None,
     ):
         """
         Write a testcase example into a CDL file.
@@ -129,20 +153,13 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
                 {g_varname}:{g_mapname} = "{mapping_name}";
                 {g_radius_string}
         """
-        if use_bad_mapping_params:
-            if mapping_name == hh.CF_GRID_MAPPING_MERCATOR:
-                # Mercator mapping with nonzero false-easting is unsupported.
-                g_string += f"""
-                    {g_varname}:{hh.CF_ATTR_GRID_FALSE_EASTING} = 1.0 ;
-                """
-            elif False:
-                pass
-            else:
-                # Key is only valid for specific grid-mappings.
-                assert mapping_name in (
-                    hh.CF_GRID_MAPPING_MERCATOR,
-                    hh.CF_GRID_MAPPING_STEREO,
-                )
+        if mapping_scalefactor is not None:
+            # Add a specific scale-factor term to the grid mappinf.
+            # Non-unity scale not supported for Mercator/Stereographic.
+            sfapo_name = hh.CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
+            g_string += f"""
+                {g_varname}:{sfapo_name} = {mapping_scalefactor} ;
+            """
 
         cdl_string = f"""
             netcdf test {{
@@ -168,22 +185,19 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
                     xco = 100., 110., 120. ;
             }}
         """
-        print("File content:")
-        print(cdl_string)
-        print("------\n")
+        if self.debug:
+            print("File content:")
+            print(cdl_string)
+            print("------\n")
         with open(cdl_path, "w") as f_out:
             f_out.write(cdl_string)
         return cdl_path
 
-    def create_cube_from_cdl(self, cdl_path, nc_path, use_pyke=True):
+    def _load_cube_from_cdl(self, cdl_path, nc_path):
         """
         Load the 'phenom' data variable in a CDL testcase, as a cube.
 
         Using ncgen and the selected _load_cube call.
-
-        FOR NOW: can select whether load uses Pyke (rules) or newer actions
-        code.
-        TODO: remove when Pyke implementation is gone.
 
         """
         # Create reference netCDF file from reference CDL.
@@ -195,12 +209,12 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
         cf_var = list(cf.cf_group.data_variables.values())[0]
         cf_var = cf.cf_group.data_variables["phenom"]
 
-        if use_pyke:
+        if self.use_pyke:
             engine = iris.fileformats.netcdf._pyke_kb_engine_real()
         else:
             engine = iris.fileformats._nc_load_rules.engine.Engine()
 
-        iris.fileformats.netcdf.DEBUG = True
+        iris.fileformats.netcdf.DEBUG = self.debug
         # iris.fileformats.netcdf.LOAD_PYKE = False
         return _load_cube(engine, cf, cf_var, nc_path)
 
@@ -208,16 +222,17 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
         """
         Run a testcase with chosen optionsm returning a test cube.
 
-        The kwargs apply to the 'make_testcase_cdl' method.
+        The kwargs apply to the '_make_testcase_cdl' method.
 
         """
         cdl_path = str(self.temp_dirpath / "test.cdl")
         nc_path = cdl_path.replace(".cdl", ".nc")
-        self.make_testcase_cdl(cdl_path, **testcase_kwargs)
-        cube = self.create_cube_from_cdl(cdl_path, nc_path)
-        print("\nCube:")
-        print(cube)
-        print("")
+        self._make_testcase_cdl(cdl_path, **testcase_kwargs)
+        cube = self._load_cube_from_cdl(cdl_path, nc_path)
+        if self.debug:
+            print("\nCube:")
+            print(cube)
+            print("")
         return cube
 
     def check_result(
@@ -280,7 +295,8 @@ class Mixin_Test__nc_load_actions(tests.IrisTest):
                 self.assertEqual(lat_cs, cube_cs)
 
 
-class Test__grid_mapping(Mixin_Test__nc_load_actions, tests.IrisTest):
+class Mixin__grid_mapping(Mixin_Test__nc_load_actions):
+    # Various tests for translation of grid=mappings
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -297,7 +313,7 @@ class Test__grid_mapping(Mixin_Test__nc_load_actions, tests.IrisTest):
     def test_missing_latlon_radius(self):
         # Lat-long with a missing earth-radius causes an error.
         # One of very few cases where activation may encounter an error.
-        # N.B. doesn't really test rule-activation, but maybe worth doing.
+        # N.B. doesn't really test rules-activation, but maybe worth doing.
         with self.assertRaisesRegex(ValueError, "No ellipsoid"):
             self.run_testcase(gridmapvar_missingradius=True)
 
@@ -333,11 +349,38 @@ class Test__grid_mapping(Mixin_Test__nc_load_actions, tests.IrisTest):
 
     def test_mapping_mercator__fail_unsupported(self):
         with self.assertWarnsRegexp("not yet supported for Mercator"):
+            # Set a non-unity scale factor, which mercator cannot handle.
             result = self.run_testcase(
                 mapping_name=hh.CF_GRID_MAPPING_MERCATOR,
-                use_bad_mapping_params=True,
+                mapping_scalefactor=2.0,
             )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
+
+
+class Test__grid_mapping__pyke_rules(Mixin__grid_mapping, tests.IrisTest):
+    # Various tests for translation of grid=mappings
+    use_pyke = True
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+
+class Test__grid_mapping__nonpyke_actions(Mixin__grid_mapping, tests.IrisTest):
+    # Various tests for translation of grid=mappings
+    use_pyke = False
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
 
 
 if __name__ == "__main__":
