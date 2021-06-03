@@ -14,8 +14,6 @@ import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
 
 import iris.util
-from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.analysis.cartography import wrap_lons as wrap_circular_points
 from iris.coords import AuxCoord, DimCoord
 
 _DEFAULT_DTYPE = np.float16
@@ -268,14 +266,14 @@ class RectilinearInterpolator:
         for circular (1D) coordinates.
 
         """
+        from iris.analysis.cartography import wrap_lons
+
         for (circular, modulus, index, dim, offset) in self._circulars:
             if modulus:
                 # Map all the requested values into the range of the source
                 # data (centred over the centre of the source data to allow
                 # extrapolation where required).
-                points[:, index] = wrap_circular_points(
-                    points[:, index], offset, modulus
-                )
+                points[:, index] = wrap_lons(points[:, index], offset, modulus)
 
             # Also extend data if circular (to match the coord points, which
             # 'setup' already extended).
@@ -324,6 +322,8 @@ class RectilinearInterpolator:
             (i.e. 'interp_points.shape[:-1]').
 
         """
+        from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+
         dtype = self._interpolated_dtype(data.dtype)
         if data.dtype != dtype:
             # Perform dtype promotion.

@@ -29,7 +29,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-import iris._concatenate
 import iris._constraints
 import iris._lazy_data as _lazy
 import iris._merge
@@ -538,13 +537,15 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
+        from iris._concatenate import concatenate
+
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
 
         names = [cube.metadata.name() for cube in self]
         unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(
+            res = concatenate(
                 self,
                 error_on_mismatch=True,
                 check_aux_coords=check_aux_coords,
@@ -672,7 +673,9 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
-        return iris._concatenate.concatenate(
+        from iris._concatenate import concatenate
+
+        return concatenate(
             self,
             check_aux_coords=check_aux_coords,
             check_cell_measures=check_cell_measures,

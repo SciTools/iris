@@ -33,7 +33,6 @@ import iris.coords
 import iris.exceptions
 import iris.fileformats._pyke_rules
 import iris.fileformats.cf
-import iris.io
 import iris.util
 from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
@@ -789,6 +788,8 @@ def load_cubes(filenames, callback=None):
         Generator of loaded NetCDF :class:`iris.cubes.Cube`.
 
     """
+    from iris.io import run_callback
+
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
@@ -814,7 +815,7 @@ def load_cubes(filenames, callback=None):
                 warnings.warn("{}".format(e))
 
             # Perform any user registered callback function.
-            cube = iris.io.run_callback(callback, cube, cf_var, filename)
+            cube = run_callback(callback, cube, cf_var, filename)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:

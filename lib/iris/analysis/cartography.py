@@ -18,7 +18,6 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
-import iris.analysis
 import iris.coord_systems
 import iris.coords
 import iris.exceptions

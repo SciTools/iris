@@ -22,7 +22,6 @@ import numpy as np
 import numpy.ma as ma
 
 import iris._lazy_data as _lazy
-import iris.aux_factory
 import iris.exceptions
 import iris.time
 import iris.util
