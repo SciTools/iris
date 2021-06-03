@@ -107,10 +107,11 @@ source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
     > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
     > . activate iris-pypi
 
-Checkout the lastest Iris ``<release>`` tag::
+Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.
+For example, to checkout tag ``v1.0`` from ``upstream``::
 
-    > git fetch --tags
-    > git checkout <release>
+    > git fetch upstream --tags
+    > git checkout v1.0 
 
 Build the source distribution and wheel from the Iris root directory::
 
@@ -131,7 +132,7 @@ To list and check the contents of the binary wheel::
 If all seems well, sufficient maintainer privileges will be required to
 upload these artifacts to `scitools-iris`_ on PyPI::
 
-    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ dist/*
+    > python -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 Ensure that the artifacts are successfully uploaded and available on
 `scitools-iris`_ before creating a conda test environment to install Iris
