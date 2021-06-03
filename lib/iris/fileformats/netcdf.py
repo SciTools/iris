@@ -38,6 +38,7 @@ from iris.aux_factory import (
     OceanSg2Factory,
 )
 import iris.config
+import iris._constraints
 import iris.coord_systems
 import iris.coords
 import iris.cube
@@ -780,7 +781,33 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def load_cubes(filenames, callback=None):
+def translate_constraints_to_var_callback(constraints):
+    """
+    Translate load constraints into a simple data-var filter function, if possible.
+
+    Returns:
+         * function(cf_var:CFDataVariable): --> bool,
+            or None.
+
+    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+
+    """
+    constraints = iris._constraints.list_of_constraints(constraints)
+    result = None
+    if len(constraints) == 1:
+        (constraint,) = constraints
+        if (
+            isinstance(constraint, iris._constraints.NameConstraint)
+            and constraint.STASH == "none"
+        ):
+            # As long as it doesn't use a STASH match, then we can treat it as
+            # a testing against name properties of cf_var , so we can call its
+            # 'cube+func' passing the cf_var, as if the cf_var were a cube.
+            result = constraint._cube_func
+    return result
+
+
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of NetCDF filenames/URLs.
 
@@ -798,6 +825,9 @@ def load_cubes(filenames, callback=None):
         Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
+    # Create a low-level data-var filter from the original load constraints, if they are suitable.
+    var_callback = translate_constraints_to_var_callback(constraints)
+
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
     #  into standard behaviour.
     # Deferred import to avoid circular imports.
@@ -836,6 +866,10 @@ def load_cubes(filenames, callback=None):
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
+            if var_callback and not var_callback(cf_var):
+                # Deliver only selected results.
+                continue
+
             # cf_var-specific mesh handling, if a mesh is present.
             # Build the mesh_coords *before* loading the cube - avoids
             # mesh-related attributes being picked up by
