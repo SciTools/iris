@@ -5,6 +5,10 @@
 # licensing details.
 """Unit tests for the :mod:`iris._representation` module."""
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 import numpy as np
 
 import iris._representation
@@ -16,8 +20,6 @@ from iris.coords import (
     DimCoord,
 )
 from iris.cube import Cube
-
-import iris.tests as tests  # isort:skip
 
 
 def example_cube():

@@ -3,6 +3,9 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
 import iris.tests as tests  # isort:skip
 
 import numpy as np

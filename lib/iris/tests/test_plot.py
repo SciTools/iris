@@ -4,6 +4,10 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+# import iris tests first so that some things can be initialised before
+# importing anything else
+import iris.tests as tests  # isort:skip
+
 import types
 import warnings
 from functools import wraps
@@ -13,10 +17,6 @@ import numpy as np
 
 import iris
 import iris.coords as coords
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests
 import iris.tests.stock
 
 # Run tests in no graphics mode if matplotlib is not available.

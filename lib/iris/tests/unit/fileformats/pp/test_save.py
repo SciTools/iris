@@ -5,6 +5,10 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from unittest import mock
 
 import cf_units
@@ -15,10 +19,6 @@ import iris.tests.stock as stock
 from iris.coords import CellMethod, DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
 
 
 def _pp_save_ppfield_values(cube):
