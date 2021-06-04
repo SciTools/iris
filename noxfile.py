@@ -232,6 +232,7 @@ def gallery(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("sphinxcontrib-spelling", "pyenchant")
     session.run(
         "python",
         "-m",
@@ -253,6 +254,7 @@ def doctest(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("sphinxcontrib-spelling", "pyenchant")
     session.cd("docs")
     session.run(
         "make",
@@ -280,6 +282,7 @@ def doccheck(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("sphinxcontrib-spelling", "pyenchant")
     session.cd("docs")
     session.run(
         "make",

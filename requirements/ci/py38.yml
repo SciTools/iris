@@ -50,7 +50,3 @@ dependencies:
   - sphinx-gallery
   - sphinx-panels
   - sphinx_rtd_theme
-  - pip
-  - pip:
-    - sphinxcontrib-spelling
-    - pyenchant
