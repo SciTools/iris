@@ -173,6 +173,8 @@ This document explains the changes made to Iris for this release
    supported Python versions tested by `cirrus-ci`_ for documentation.
    (:pull:`4163`)
 
+#. `@bjlittle`_ refactored ``setup.py`` into ``setup.cfg``. (:pull:`4168`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
