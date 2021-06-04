@@ -7,6 +7,6 @@ LABEL author="scitools" \
 #
 # install system-level dependencies
 #
-RUN apt update -y \
-  && apt upgrade -y \
-  && apt install -y enchant
+RUN apt-get update -y \
+  && apt-get upgrade -y \
+  && apt-get install -y enchant-2
