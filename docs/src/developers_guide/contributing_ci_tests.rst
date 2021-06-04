@@ -75,7 +75,7 @@ the PR is merged, to prevent overwriting developer commits.
 The auto-updater can still be invoked manually in this situation by going to the `GitHub Actions`_
 page for the workflow, and manually running using the "Run Workflow" button.  
 By default, this will also not override developer commits.  To force an update, you must 
-confirm "yes" in the "Run Worflow" prompt.
+confirm "yes" in the "Run Workflow" prompt.
 
 
 .. _skipping Cirrus-CI tasks:
