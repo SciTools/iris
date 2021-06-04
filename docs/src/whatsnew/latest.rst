@@ -86,7 +86,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
+   from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
 
 📚 Documentation
