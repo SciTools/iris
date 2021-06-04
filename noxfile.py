@@ -220,9 +220,9 @@ def tests(session: nox.sessions.Session):
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
-def gallery(session: nox.sessions.Session):
+def doctest(session: nox.sessions.Session):
     """
-    Perform iris gallery doc-tests.
+    Perform iris gallery and doc-tests.
 
     Parameters
     ----------
@@ -238,21 +238,6 @@ def gallery(session: nox.sessions.Session):
         "iris.tests.runner",
         "--gallery-tests",
     )
-
-
-@nox.session(python=PY_VER, venv_backend="conda")
-def doctest(session: nox.sessions.Session):
-    """
-    Perform iris doc-tests.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    prepare_venv(session)
-    session.install("--no-deps", "--editable", ".")
     session.cd("docs")
     session.run(
         "make",
