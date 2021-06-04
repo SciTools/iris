@@ -107,7 +107,7 @@ source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
     > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
     > . activate iris-pypi
 
-Checkout the lastest Iris ``<release>`` tag::
+Checkout the latest Iris ``<release>`` tag::
 
     > git fetch --tags
     > git checkout <release>
