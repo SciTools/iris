@@ -189,6 +189,10 @@ gallery_task:
   env:
     PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
+  container:
+    dockerfile: requirements/ci/Dockerfile
+    cpu: 2
+    memory: 4G
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
@@ -210,6 +214,10 @@ doctest_task:
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
   name: "${CIRRUS_OS}: py${PY_VER} doc tests"
+  container:
+    dockerfile: requirements/ci/Dockerfile
+    cpu: 2
+    memory: 4G
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
@@ -234,6 +242,10 @@ doccheck_task:
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
   name: "${CIRRUS_OS}: py${PY_VER} doc check"
+  container:
+    dockerfile: requirements/ci/Dockerfile
+    cpu: 2
+    memory: 4G
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
