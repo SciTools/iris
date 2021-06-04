@@ -22,7 +22,7 @@ env:
   SKIP_TEST_FULL_TASK: ""
   SKIP_GALLERY_TASK: ""
   SKIP_DOCTEST_TASK: ""
-  SKIP_LINKCHECK_TASK: ""
+  SKIP_DOCCHECK_TASK: ""
   # Skip task groups by type. Set to a non-empty string to skip.
   SKIP_ALL_TEST_TASKS: ""
   SKIP_ALL_DOC_TASKS: ""
@@ -224,20 +224,20 @@ doctest_task:
 
 
 #
-# Testing Documentation Link Check (Linux)
+# Checking documentating.  Includes linkcheck and spelling (Linux)
 #
-linkcheck_task:
-  only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
+doccheck_task:
+  only_if: ${SKIP_DOCCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
+  name: "${CIRRUS_OS}: py${PY_VER} doc check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
     - mkdir -p ${MPL_RC_DIR}
     - echo "backend : agg" > ${MPL_RC_FILE}
     - echo "image.cmap : viridis" >> ${MPL_RC_FILE}
-    - nox --session linkcheck -- --verbose
+    - nox --session doccheck -- --verbose

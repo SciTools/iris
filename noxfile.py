@@ -268,9 +268,9 @@ def doctest(session: nox.sessions.Session):
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
-def linkcheck(session: nox.sessions.Session):
+def doccheck(session: nox.sessions.Session):
     """
-    Perform iris doc link check.
+    Perform iris doc check (links and spelling).
 
     Parameters
     ----------
@@ -290,5 +290,10 @@ def linkcheck(session: nox.sessions.Session):
     session.run(
         "make",
         "linkcheck",
+        external=True,
+    )
+    session.run(
+        "make",
+        "spelling",
         external=True,
     )
