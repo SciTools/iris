@@ -2,12 +2,12 @@ import os
 import sys
 import textwrap
 from contextlib import contextmanager
-from distutils.util import convert_path
 from shutil import copyfile
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop as develop_cmd
+
 
 @contextmanager
 def temporary_path(directory):
