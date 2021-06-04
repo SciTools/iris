@@ -175,6 +175,10 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ refactored ``setup.py`` into ``setup.cfg``. (:pull:`4168`)
 
+#. `@bjlittle`_ rationalised the `cirrus-ci`_ tasks by combining the gallery
+   and doc-test tasks, and disabling the minimal tests in favour for the
+   full tests. (:pull:`4179`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
