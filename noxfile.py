@@ -284,17 +284,22 @@ def doccheck(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.install("sphinxcontrib-spelling", "pyenchant")
     session.cd("docs")
-    session.run(
-        "make",
-        "clean",
-        "html",
-        external=True,
-    )
+#    session.run(
+#        "make",
+#        "clean",
+#        "html",
+#        external=True,
+#    )
 #    session.run(
 #        "make",
 #       "linkcheck",
 #        external=True,
 #    )
+    session.run(
+        "python",
+        "-c",
+        "import enchant; print(enchant.list_languages())",
+    )
     session.run(
         "make",
         "spelling",
