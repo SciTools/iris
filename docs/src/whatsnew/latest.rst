@@ -178,6 +178,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ consolidated the ``.flake8`` configuration into ``setup.cfg``.
    (:pull:`4200`)
 
+#. `@bjlittle`_ added support for automated ``import`` linting with `isort`_.
+   (:pull:`4174`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
