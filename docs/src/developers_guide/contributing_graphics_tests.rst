@@ -22,7 +22,7 @@ Challenges
 ==========
 
 Iris uses many dependencies that provide functionality, an example that
-applies here is matplotlib_.  For more information on the dependences, see
+applies here is matplotlib_.  For more information on the dependencies, see
 :ref:`installing_iris`.  When there are updates to the matplotlib_ or a
 dependency of matplotlib, this may result in a change in the rendered graphical
 output.  This means that there may be no changes to Iris_, but due to an

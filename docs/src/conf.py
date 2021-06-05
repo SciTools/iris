@@ -182,12 +182,13 @@ napoleon_custom_sections = None
 # -- spellingextension --------------------------------------------------------
 # See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
 spelling_lang = "en_GB"
+# tokenizer_lang = "en_GB"
 # The lines in this file must only use line feeds (no carriage returns).
 spelling_word_list_filename = ["spelling_allow.txt"]
-spelling_show_suggestions = False
-spelling_show_whole_line = False
-spelling_ignore_importable_modules = True
-spelling_ignore_python_builtins = True
+# spelling_show_suggestions = False
+# spelling_show_whole_line = False
+# spelling_ignore_importable_modules = True
+# spelling_ignore_python_builtins = True
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/

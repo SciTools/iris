@@ -17,11 +17,11 @@ container:
 
 env:
   # Skip specific tasks by name. Set to a non-empty string to skip.
-  SKIP_LINT_TASK: ""
-  SKIP_TEST_MINIMAL_TASK: ""
-  SKIP_TEST_FULL_TASK: ""
-  SKIP_GALLERY_TASK: ""
-  SKIP_DOCTEST_TASK: ""
+  SKIP_LINT_TASK: "Yup"
+  SKIP_TEST_MINIMAL_TASK: "Yup"
+  SKIP_TEST_FULL_TASK: "Yup"
+  SKIP_GALLERY_TASK: "Yup"
+  SKIP_DOCTEST_TASK: "Yup"
   SKIP_DOCCHECK_TASK: ""
   # Skip task groups by type. Set to a non-empty string to skip.
   SKIP_ALL_TEST_TASKS: ""
