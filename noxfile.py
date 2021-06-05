@@ -298,7 +298,7 @@ def doccheck(session: nox.sessions.Session):
     session.run(
         "python",
         "-c",
-        "import enchant; print(enchant.list_languages())",
+        "import enchant; print('-'*30); print(enchant.list_languages()); d = enchant.Dict('en_GB'); print(d.provider.name); print(d.provider.desc); print(d.provider.file); print('-'*30);",
     )
     session.run(
         "make",
