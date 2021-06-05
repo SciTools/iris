@@ -8,8 +8,6 @@ different time dimensions in these files can prevent Iris from concatenating
 them without the intervention shown here.
 """
 
-from __future__ import unicode_literals
-
 import matplotlib.pyplot as plt
 
 import iris
