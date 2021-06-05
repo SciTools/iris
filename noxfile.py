@@ -290,11 +290,11 @@ def doccheck(session: nox.sessions.Session):
         "html",
         external=True,
     )
-    session.run(
-        "make",
-        "linkcheck",
-        external=True,
-    )
+#    session.run(
+#        "make",
+#       "linkcheck",
+#        external=True,
+#    )
     session.run(
         "make",
         "spelling",
