@@ -280,9 +280,10 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     rule_name = "fc_build_auxiliary_coordinate"
 
     # FOR NOW: attempt to identify type
-    # TODO: can maybe eventually remove this, as it only affects rule_name.
+    # TODO: eventually remove much of this, which only affects rule_name.
     # (but could possibly retain for future debugging purposes)
     coord_type = ""  # unidentified : can be OK
+    coord_name = None
     if hh.is_time(engine, var_name):
         coord_type = "time"
     elif hh.is_time_period(engine, var_name):
@@ -291,18 +292,22 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
         coord_type = "longitude"
         if hh.is_rotated_longitude(engine, var_name):
             coord_type += "_rotated"
+            coord_name = hh.CF_VALUE_STD_NAME_GRID_LON
+        else:
+            coord_name = hh.CF_VALUE_STD_NAME_LON
     elif hh.is_latitude(engine, var_name):
         coord_type = "latitude"
         if hh.is_rotated_latitude(engine, var_name):
             coord_type += "_rotated"
+            coord_name = hh.CF_VALUE_STD_NAME_GRID_LAT
+        else:
+            coord_name = hh.CF_VALUE_STD_NAME_LAT
 
     if coord_type:
         rule_name += f"_{coord_type}"
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
-    hh.build_auxiliary_coordinate(
-        engine, cf_var, coord_name=hh.CF_VALUE_STD_NAME_GRID_LON
-    )
+    hh.build_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
 
     return rule_name
 
