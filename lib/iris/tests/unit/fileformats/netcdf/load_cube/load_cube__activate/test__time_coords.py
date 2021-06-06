@@ -12,31 +12,18 @@ Tests for rules activation relating to 'time' and 'time_period' coords.
 """
 import iris.tests as tests
 
+from iris.coords import AuxCoord, DimCoord
+
 
 from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
     Mixin__nc_load_actions,
 )
 
 
-_OPTIONS_TEMPLATE = {
-    "which": "",  # set to "something"
-    "stdname": "_auto_which",  # default = time / time_period
-    "varname": "_as_which",  # default = time / period
-    "dimname": "_as_which",
-    "in_phenomvar_dims": True,
-    "in_phenomvar_coords": False,  # set for an aux-coord
-    "values_all_zero": False,  # set to block CFDimensionVariable identity
-    "units": "_auto_which",  # specific to time/period
-}
-
-
 class Opts:
-    # A dict-like thing initialised from the _OPTIONS settings.
-    # But using '.' access in place of indexing
+    # A dict-like thing which provides '.' access in place of indexing.
     def __init__(self, **kwargs):
-        opts = _OPTIONS_TEMPLATE.copy()
-        opts.update(kwargs)
-        self._opts = opts
+        self._opts = kwargs
 
     def __getattr__(self, item):
         return self._opts[item]
@@ -52,6 +39,19 @@ class Opts:
         self._opts.update(kwargs)
 
 
+# Per-coord options settings for testcase definitions.
+_COORD_OPTIONS_TEMPLATE = {
+    "which": "",  # set to "something"
+    "stdname": "_auto_which",  # default = time / time_period
+    "varname": "_as_which",  # default = time / period
+    "dimname": "_as_which",
+    "in_phenomvar_dims": True,
+    "in_phenomvar_coords": False,  # set for an aux-coord
+    "values_all_zero": False,  # set to block CFDimensionVariable identity
+    "units": "_auto_which",  # specific to time/period
+}
+
+
 class Mixin__timecoords__common(Mixin__nc_load_actions):
     def _make_testcase_cdl(
         self,
@@ -65,11 +65,13 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         opt_t = None
         opt_p = None
         if time_opts is not None:
-            # Replace 'True' with options dict for 'time' options
-            opt_t = Opts(which="time", **time_opts)
+            # Replace 'True' with an options dict for 'time' options
+            opt_t = Opts(**_COORD_OPTIONS_TEMPLATE)
+            opt_t.update(which="time", **time_opts)
         if period_opts is not None:
-            # Replace 'True' with options dict for 'period' options
-            opt_p = Opts(which="period", **period_opts)
+            # Replace 'True' with an options dict for 'period' options
+            opt_p = Opts(**_COORD_OPTIONS_TEMPLATE)
+            opt_p.update(which="period", **period_opts)
 
         # Define the 'standard' dimensions which we will create
         # NB we don't necessarily *use* either of these
@@ -180,16 +182,7 @@ netcdf test {{
             print("")
         return cdl_string
 
-    def check_result(
-        self,
-        cube,
-        time_is="dim",
-        period_is="missing",
-        time_name=None,
-        period_name=None,
-        time_class="_auto",
-        period_class="_auto",
-    ):
+    def check_result(self, cube, time_is="dim", period_is="missing"):
         """
         Check presence of expected dim/aux-coords in the result cube.
 
@@ -205,10 +198,8 @@ netcdf test {{
             raise ValueError(msg.format(name="period_is", opt=period_is))
 
         # Get the facts we want to check
-        if time_name is None:
-            time_name = "time"
-        if period_name is None:
-            period_name = "forecast_period"
+        time_name = "time"
+        period_name = "forecast_period"
         time_dimcos = cube.coords(time_name, dim_coords=True)
         time_auxcos = cube.coords(time_name, dim_coords=False)
         period_dimcos = cube.coords(period_name, dim_coords=True)
@@ -234,6 +225,17 @@ netcdf test {{
             self.assertEqual(len(period_dimcos), 0)
             self.assertEqual(len(period_auxcos), 0)
 
+        # Also check expected built Coord types.
+        if time_is == "dim":
+            self.assertIsInstance(time_dimcos[0], DimCoord)
+        elif time_is == "aux":
+            self.assertIsInstance(time_auxcos[0], AuxCoord)
+
+        if period_is == "dim":
+            self.assertIsInstance(period_dimcos[0], DimCoord)
+        elif period_is == "aux":
+            self.assertIsInstance(period_auxcos[0], AuxCoord)
+
 
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
     # Coordinate tests to be run for both 'time' and 'period' coordinate vars.
@@ -254,7 +256,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # 'time_opts' / 'period_opts' keys accordingly.
         general_opts = {}
         for key, value in list(opts.items()):
-            if key not in _OPTIONS_TEMPLATE.keys():
+            if key not in _COORD_OPTIONS_TEMPLATE.keys():
                 del opts[key]
                 general_opts[key] = value
 
@@ -452,6 +454,25 @@ class Mixin__dualcoord__tests(Mixin__timecoords__common, tests.IrisTest):
         #     005 : fc_build_coordinate_time_period
         result = self.run_testcase(time_opts={}, period_opts={})
         self.check_result(result, time_is="dim", period_is="dim")
+
+    def test_time_dim_period_aux(self):
+        # Test case with both 'time' and 'period' sharing a dim.
+        # Rules Triggered:
+        #     001 : fc_default
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_coordinate_time
+        #     003 : fc_build_auxiliary_coordinate_time_period
+        #     004 : fc_build_coordinate_time
+        result = self.run_testcase(
+            time_opts={},
+            period_opts=dict(
+                dimname="time",
+                in_phenomvar_dims=False,
+                in_phenomvar_coords=True,
+            ),
+        )
+        self.check_result(result, time_is="dim", period_is="aux")
 
 
 if __name__ == "__main__":
