@@ -20,23 +20,14 @@ from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
 )
 
 
-class Opts:
+class Opts(dict):
     # A dict-like thing which provides '.' access in place of indexing.
     def __init__(self, **kwargs):
-        self._opts = kwargs
-
-    def __getattr__(self, item):
-        return self._opts[item]
-
-    def __setattr__(self, key, value):
-        if key == "_opts":
-            # Avoid the infinite loop when setting up "self.opt=opts".
-            super().__setattr__(key, value)
-        else:
-            self._opts[key] = value
-
-    def update(self, **kwargs):
-        self._opts.update(kwargs)
+        # Init like a dict
+        super().__init__(**kwargs)
+        # Alias contents "self['key']",  as properties "self.key"
+        # See: https://stackoverflow.com/a/14620633/2615050
+        self.__dict__ = self
 
 
 # Per-coord options settings for testcase definitions.
