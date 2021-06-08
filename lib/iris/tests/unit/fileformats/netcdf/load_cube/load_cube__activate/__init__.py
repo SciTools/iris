@@ -122,8 +122,12 @@ class Mixin__nc_load_actions:
             engine = iris.fileformats._nc_load_rules.engine.Engine()
 
         iris.fileformats.netcdf.DEBUG = self.debug
-        # iris.fileformats.netcdf.LOAD_PYKE = False
-        return _load_cube(engine, cf, cf_var, nc_path)
+
+        # Call the main translation function-under-test.
+        cube = _load_cube(engine, cf, cf_var, nc_path)
+
+        # Always returns a single cube.
+        return cube
 
     def run_testcase(self, warning=None, **testcase_kwargs):
         """
@@ -134,13 +138,20 @@ class Mixin__nc_load_actions:
         """
         cdl_path = str(self.temp_dirpath / "test.cdl")
         nc_path = cdl_path.replace(".cdl", ".nc")
+
         cdl_string = self._make_testcase_cdl(**testcase_kwargs)
+        if self.debug:
+            print("CDL file content:")
+            print(cdl_string)
+            print("------\n")
+
         if warning is None:
             context = self.assertNoWarningsRegexp()
         else:
             context = self.assertWarnsRegexp(warning)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
+
         if self.debug:
             print("\nCube:")
             print(cube)

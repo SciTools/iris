@@ -166,11 +166,6 @@ netcdf test {{
 {data_string}
 }}
 """
-        if self.debug:
-            print("Testcase CDL string")
-            print(cdl_string)
-            print("----")
-            print("")
         return cdl_string
 
     def check_result(self, cube, time_is="dim", period_is="missing"):
@@ -230,8 +225,6 @@ netcdf test {{
 
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
     # Coordinate tests to be run for both 'time' and 'period' coordinate vars.
-    use_pyke = True
-    debug = False
     # Set (in inheritors) to select time/period testing.
     which = None
 
@@ -402,39 +395,40 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         self.check_result(result, "aux")
 
 
-class Test__time(Mixin__singlecoord__tests, tests.IrisTest):
+class Test__time__withpyke(Mixin__singlecoord__tests, tests.IrisTest):
     # Run 'time' coord tests
     which = "time"
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Test__period(Mixin__singlecoord__tests, tests.IrisTest):
-    # Run 'time_period' coord tests
-    which = "time"
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Mixin__dualcoord__tests(Mixin__timecoords__common, tests.IrisTest):
-    # Coordinate test  for combination of 'time' and 'time_period'.
-    # Not strictly necessary, as handling is independent, but a handy check
-    # on typical usage.
     use_pyke = True
     debug = False
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+
+class Test__period__withpyke(Mixin__singlecoord__tests, tests.IrisTest):
+    # Run 'time_period' coord tests
+    which = "period"
+    use_pyke = True
+    debug = False
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+
+class Mixin__dualcoord__tests(Mixin__timecoords__common):
+    # Coordinate tests for a combination of 'time' and 'time_period'.
+    # Not strictly necessary, as handling is independent, but a handy check
+    # on typical usage.
     def test_time_and_period(self):
         # Test case with both 'time' and 'period', with separate dims.
         # Rules Triggered:
@@ -464,6 +458,19 @@ class Mixin__dualcoord__tests(Mixin__timecoords__common, tests.IrisTest):
             ),
         )
         self.check_result(result, time_is="dim", period_is="aux")
+
+
+class Test__dualcoord_tests__withpyke(Mixin__dualcoord__tests, tests.IrisTest):
+    use_pyke = True
+    debug = False
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
 
 
 if __name__ == "__main__":
