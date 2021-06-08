@@ -126,6 +126,17 @@ class Mixin__nc_load_actions:
         # Call the main translation function-under-test.
         cube = _load_cube(engine, cf, cf_var, nc_path)
 
+        # Record on the cube, which hybrid coord elements were identified
+        # by the rules operation.
+        # Unlike the other translations, _load_cube does *not* convert this
+        # information into actual cube elements.  That is instead done by
+        # `iris.fileformats.netcdf._load_aux_factory`.
+        # For rules testing, it is anyway more convenient to deal with the raw
+        # data, as each factory type has different validity requirements to
+        # build it, and none of that is relevant to the rules operation.
+        cube._formula_type_name = engine.requires.get("formula_type")
+        cube._formula_terms_byname = engine.requires.get("formula_terms")
+
         # Always returns a single cube.
         return cube
 
