@@ -35,6 +35,8 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         yco_name=None,
         xco_units=None,
         yco_units=None,
+        xco_is_dim=True,
+        yco_is_dim=True,
     ):
         """
         Create a CDL string for a testcase.
@@ -91,6 +93,30 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             xco_units = xco_units_default
         if yco_units is None:
             yco_units = yco_units_default
+
+        phenom_auxcoord_names = []
+        if xco_is_dim:
+            # xdim has same name as xco, making xco a dim-coord
+            xdim_name = "xco"
+        else:
+            # use alternate dim-name, and put xco on the 'coords' list
+            xdim_name = "xdim_altname"
+            phenom_auxcoord_names.append("xco")
+        if yco_is_dim:
+            # ydim has same name as yco, making yco a dim-coord
+            ydim_name = "yco"  # This makes the X coord a dim-coord
+        else:
+            # use alternate dim-name, and put yco on the 'coords' list
+            ydim_name = "ydim_altname"  # This makes the X coord a dim-coord
+            phenom_auxcoord_names.append("yco")
+        # Build a 'phenom:coords' string if needed.
+        if phenom_auxcoord_names:
+            phenom_coords_string = " ".join(phenom_auxcoord_names)
+            phenom_coords_string = f"""
+                    phenom:coordinates = "{phenom_coords_string}" ;
+"""
+        else:
+            phenom_coords_string = ""
 
         grid_mapping_name = "grid"
         # Options can override the gridvar name and properties.
@@ -180,18 +206,19 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         cdl_string = f"""
             netcdf test {{
             dimensions:
-                yco = 2 ;
-                xco = 3 ;
+                {ydim_name} = 2 ;
+                {xdim_name} = 3 ;
             variables:
-                double phenom(yco, xco) ;
+                double phenom({ydim_name}, {xdim_name}) ;
                     phenom:standard_name = "air_temperature" ;
                     phenom:units = "K" ;
                     phenom:grid_mapping = "grid" ;
-                double yco(yco) ;
+{phenom_coords_string}
+                double yco({ydim_name}) ;
                     yco:axis = "Y" ;
                     yco:units = "{yco_units}" ;
                     yco:standard_name = "{yco_name}" ;
-                double xco(xco) ;
+                double xco({xdim_name}) ;
                     xco:axis = "X" ;
                     xco:units = "{xco_units}" ;
                     xco:standard_name = "{xco_name}" ;
@@ -211,6 +238,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         cube_no_xycoords=False,
         xco_no_cs=False,  # N.B. no effect if cube_no_cs is True
         yco_no_cs=False,  # N.B. no effect if cube_no_cs is True
+        xco_is_aux=False,
         yco_is_aux=False,
         xco_stdname=True,
         yco_stdname=True,
@@ -225,12 +253,16 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
 
         x_coords = cube.coords(dimensions=(1,))
         y_coords = cube.coords(dimensions=(0,))
+        expected_dim_coords = []
+        expected_aux_coords = []
         if yco_is_aux:
-            expected_dim_coords = x_coords
-            expected_aux_coords = y_coords
+            expected_aux_coords += y_coords
         else:
-            expected_dim_coords = x_coords + y_coords
-            expected_aux_coords = []
+            expected_dim_coords += y_coords
+        if xco_is_aux:
+            expected_aux_coords += x_coords
+        else:
+            expected_dim_coords += x_coords
 
         self.assertEqual(
             set(expected_dim_coords), set(cube.coords(dim_coords=True))
@@ -738,6 +770,88 @@ class Test__grid_mapping__nonpyke_actions(
 ):
     # Run grid-mapping tests with non-Pyke (actions)
     use_pyke = False
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+
+class Mixin__aux_latlons(Mixin__grid_mapping):
+    # Testcases for translating auxiliary latitude+longitude variables
+
+    def test_aux_lon(self):
+        # Change the name of xdim, and put xco on the coords list.
+        #
+        # Rules Triggered:
+        # 	001 : fc_default
+        # 	002 : fc_provides_grid_mapping_latitude_longitude
+        # 	003 : fc_provides_coordinate_latitude
+        # 	004 : fc_build_auxiliary_coordinate_longitude
+        # 	005 : fc_build_coordinate_latitude
+        result = self.run_testcase(xco_is_dim=False)
+        self.check_result(result, xco_is_aux=True, xco_no_cs=True)
+
+    def test_aux_lat(self):
+        # Rules Triggered:
+        # 	001 : fc_default
+        # 	002 : fc_provides_grid_mapping_latitude_longitude
+        # 	003 : fc_provides_coordinate_longitude
+        # 	004 : fc_build_auxiliary_coordinate_latitude
+        # 	005 : fc_build_coordinate_longitude
+        result = self.run_testcase(yco_is_dim=False)
+        self.check_result(result, yco_is_aux=True, yco_no_cs=True)
+
+    def test_aux_lat_and_lon(self):
+        # When *both* are aux, the grid-mapping is discarded.
+        # - as in this case there are then no dim-coords to reference it.
+        #
+        # Rules Triggered:
+        # 	001 : fc_default
+        # 	002 : fc_provides_grid_mapping_latitude_longitude
+        # 	003 : fc_build_auxiliary_coordinate_latitude
+        # 	004 : fc_build_auxiliary_coordinate_longitude
+        result = self.run_testcase(xco_is_dim=False, yco_is_dim=False)
+        self.check_result(
+            result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=True
+        )
+
+    def test_aux_lon_rotated(self):
+        # Same but with rotated-style lat + lon coords.
+        #
+        # Rules Triggered:
+        # 	001 : fc_default
+        # 	002 : fc_provides_grid_mapping_rotated_latitude_longitude
+        # 	003 : fc_provides_coordinate_latitude
+        # 	004 : fc_build_auxiliary_coordinate_longitude_rotated
+        # 	005 : fc_build_coordinate_latitude_rotated
+        result = self.run_testcase(
+            mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON,
+            xco_is_dim=False,
+        )
+        self.check_result(result, xco_is_aux=True, xco_no_cs=True)
+
+    def test_aux_lat_rotated(self):
+        # Rules Triggered:
+        # 	001 : fc_default
+        # 	002 : fc_provides_grid_mapping_rotated_latitude_longitude
+        # 	003 : fc_provides_coordinate_latitude
+        # 	004 : fc_build_auxiliary_coordinate_longitude_rotated
+        # 	005 : fc_build_coordinate_latitude_rotated
+        result = self.run_testcase(
+            mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON,
+            xco_is_dim=False,
+        )
+        self.check_result(result, xco_is_aux=True, xco_no_cs=True)
+
+
+class Test__aux_latlons__pyke_rules(Mixin__aux_latlons, tests.IrisTest):
+    # Run aux-latlons tests with Pyke (rules)
+    use_pyke = True
+    debug = False
 
     @classmethod
     def setUpClass(cls):
