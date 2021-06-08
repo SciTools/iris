@@ -48,8 +48,8 @@ from . import helpers as hh
 from functools import wraps
 
 
-def convert_actionname_to_rulename(func_name):
-    # Given the name of an action-func, return the name of the rule.
+def _default_rulenamesfunc(func_name):
+    # A simple default function to deduce the rules-name from an action-name.
     funcname_prefix = "action_"
     rulename_prefix = "fc_"  # To match existing behaviours
     rule_name = func_name
@@ -57,12 +57,6 @@ def convert_actionname_to_rulename(func_name):
         rule_name = rule_name[len(funcname_prefix) :]
     if not rule_name.startswith(rulename_prefix):
         rule_name = rulename_prefix + rule_name
-    return rule_name
-
-
-def _default_rulenamesfunc(func_name):
-    # A simple default function to deduce the rules-name from an action-name.
-    rule_name = convert_actionname_to_rulename(func_name)
     return rule_name
 
 
