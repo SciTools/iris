@@ -24,7 +24,8 @@ from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate.test__grid
 
 class Test__additional(Mixin__grid_mapping, tests.IrisTest):
     # Run grid-mapping tests with non-Pyke (actions)
-    use_pyke = False
+    use_pyke = True
+    debug = False
 
     @classmethod
     def setUpClass(cls):
@@ -39,11 +40,11 @@ class Test__additional(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_(latitude_longitude)
-        #     003 : fc_provides_coordinate_(latitude)
-        #     004 : fc_provides_coordinate_(longitude)
-        #     005 : fc_build_coordinate_(latitude)
-        #     006 : fc_build_coordinate_(longitude)
+        #     002 : fc_provides_grid_mapping_latitude_longitude
+        #     003 : fc_provides_coordinate_latitude
+        #     004 : fc_provides_coordinate_longitude
+        #     005 : fc_build_coordinate_latitude
+        #     006 : fc_build_coordinate_longitude
         # NOTES:
         #  in terms of rule triggers, this is not distinct from a normal case
         #  - but the latitude is now an aux-coord.
