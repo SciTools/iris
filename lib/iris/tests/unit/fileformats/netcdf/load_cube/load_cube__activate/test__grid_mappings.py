@@ -201,10 +201,6 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                     xco = 100., 110., 120. ;
             }}
         """
-        if self.debug:
-            print("File content:")
-            print(cdl_string)
-            print("------\n")
         return cdl_string
 
     def check_result(
@@ -722,6 +718,7 @@ class Test__grid_mapping__pyke_rules(
 ):
     # Run grid-mapping tests with Pyke (rules)
     use_pyke = True
+    debug = False
 
     @classmethod
     def setUpClass(cls):
