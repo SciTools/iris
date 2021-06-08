@@ -326,9 +326,8 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # ( N.B.#2 Not quite the same for lat/lon coords, where coord-specific
         #   'build' rules always use a fixed standard-name ).
         # Rules Triggered:
-        #     001 : fc_default
-        #     002 : fc_default_coordinate_(provide-phase)
-        #     003 : fc_build_coordinate_(miscellaneous)
+        # 	#001 : fc_default
+        # 	#002 : fc_default_coordinate
         result = self.run_testcase(units="1")
         self.check_result(result, "dim")
 
