@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-All the pure-Python 'helper' functions which previously included in the Pyke
-rules database.
+All the pure-Python 'helper' functions which were previously included in the
+Pyke rules database 'fc_rules_cf.krb'.
 
 Initially these haven't changed.
 The new rules approach is still calling most of them.
