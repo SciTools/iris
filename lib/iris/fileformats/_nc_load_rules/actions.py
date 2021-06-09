@@ -27,7 +27,7 @@ explicit way, which doesn't use any clever chaining, "trigger conditions" or
 other rule-type logic.
 
 Each 'action' function can replace several similar 'rules'.
-E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid+mapping_<X>'.
+E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid_mapping_<X>'.
 To aid debug, each returns a 'rule_name' string, indicating which original rule
 this particular action call is emulating :  In some cases, this may include a
 textual note that this rule 'failed', aka "did not trigger", which would not be
@@ -82,6 +82,7 @@ def action_function(func):
 
 @action_function
 def action_default(engine):
+    """Standard operations for every cube."""
     hh.build_cube_metadata(engine)
 
 
@@ -90,7 +91,7 @@ def action_default(engine):
 # routines:
 #  (@0) a validity-checker (or None)
 #  (@1) a coord-system builder function.
-_grid_types_to_checker_builder = {
+_GRIDTYPE_CHECKER_AND_BUILDER = {
     hh.CF_GRID_MAPPING_LAT_LON: (None, hh.build_coordinate_system),
     hh.CF_GRID_MAPPING_ROTATED_LAT_LON: (
         None,
@@ -133,29 +134,27 @@ _grid_types_to_checker_builder = {
 
 @action_function
 def action_provides_grid_mapping(engine, gridmapping_fact):
+    """Convert a CFGridMappingVariable into a cube coord-system."""
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
     grid_mapping_type = getattr(cf_var, hh.CF_ATTR_GRID_MAPPING_NAME, None)
+
     succeed = True
     if grid_mapping_type is None:
         succeed = False
         rule_name += " --FAILED(no grid-mapping attr)"
     else:
         grid_mapping_type = grid_mapping_type.lower()
+
     if succeed:
-        if grid_mapping_type in _grid_types_to_checker_builder:
-            checker, builder = _grid_types_to_checker_builder[
-                grid_mapping_type
-            ]
+        if grid_mapping_type in _GRIDTYPE_CHECKER_AND_BUILDER:
+            checker, builder = _GRIDTYPE_CHECKER_AND_BUILDER[grid_mapping_type]
             rule_name += f"_({grid_mapping_type})"
         else:
             succeed = False
             rule_name += f" --FAILED(unhandled type {grid_mapping_type})"
-    # We DON'T call this, as we already identified the type in the call.
-    # if succeed and not is_grid_mapping(engine, var_name, grid_mapping_type):
-    #     succeed = False
-    #     rule_name += f' --(FAILED is_grid_mapping)'
+
     if succeed:
         if checker is not None and not checker(engine, var_name):
             succeed = False
@@ -172,6 +171,7 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
                 f" --(FAILED overwrite coord-sytem "
                 f"{old_gridtype} with {grid_mapping_type})"
             )
+
     if succeed:
         engine.cube_parts["coordinate_system"] = coordinate_system
         engine.add_fact("grid-type", (grid_mapping_type,))
@@ -181,6 +181,7 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
 
 @action_function
 def action_provides_coordinate(engine, dimcoord_fact):
+    """Identify the coordinate 'type' of a CFCoordinateVariable."""
     (var_name,) = dimcoord_fact
 
     # Identify the "type" of a coordinate variable
@@ -224,12 +225,12 @@ def action_provides_coordinate(engine, dimcoord_fact):
 # Lookup table used by 'action_build_dimension_coordinate'.
 # Maps each supported coordinate-type name (a rules-internal concept) to a pair
 # of information values :
-#  (@0) the CF grid_mapping_name (or None)
+#  (@0) A grid "type", one of latlon/rotated/projected (or None)
 #       If set, the cube should have a coord-system, which is set on the
 #       resulting coordinate.  If None, the coord has no coord_system.
 #  (@1) an (optional) fixed standard-name for the coordinate, or None
 #       If None, the coordinate name is copied from the source variable
-_coordtype_to_gridtype_coordname = {
+_COORDTYPE_GRIDTYPES_AND_COORDNAMES = {
     "latitude": ("latlon", hh.CF_VALUE_STD_NAME_LAT),
     "longitude": ("latlon", hh.CF_VALUE_STD_NAME_LON),
     "rotated_latitude": (
@@ -250,10 +251,13 @@ _coordtype_to_gridtype_coordname = {
 
 @action_function
 def action_build_dimension_coordinate(engine, providescoord_fact):
+    """Convert a CFCoordinateVariable into a cube dim-coord."""
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    coord_grid_class, coord_name = _coordtype_to_gridtype_coordname[coord_type]
+    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[
+        coord_type
+    ]
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -275,10 +279,11 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             succeed = True
             cs_gridclass = None
         else:
+            # Get a grid-class from the grid-type
+            # i.e. one of latlon/rotated/projected, as for coord_grid_class.
             gridtypes_factlist = engine.fact_list("grid-type")
             (gridtypes_fact,) = gridtypes_factlist  # only 1 fact
             (cs_gridtype,) = gridtypes_fact  # fact contains 1 term
-            # (i.e. one of latlon/rotated/prjected, like coord_grid_class)
             if cs_gridtype == "latitude_longitude":
                 cs_gridclass = "latlon"
             elif cs_gridtype == "rotated_latitude_longitude":
@@ -299,6 +304,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             elif cs_gridclass == "rotated":
                 # We disallow this case
                 succeed = False
+                rule_name += "(FAILED : latlon coord with rotated cs)"
             else:
                 assert cs_gridclass == "projected"
                 # succeed, no error, but discards the coord-system
@@ -307,8 +313,6 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 coord_system = None
                 rule_name += "(no-cs : discarded projected cs)"
         elif coord_grid_class == "rotated":
-            # For rotated, we also accept no coord-system, but do *not* accept
-            # the presence of an unsuitable type.
             if cs_gridclass == "rotated":
                 succeed = True
                 rule_name += "(rotated)"
@@ -316,14 +320,14 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 succeed = True
                 rule_name += "(rotated no-cs)"
             elif cs_gridclass == "latlon":
-                # We allow this, but discard the CS
+                # We disallow this case
                 succeed = False
-                rule_name += "(FAILED rotated with latlon-cs)"
+                rule_name += "(FAILED rotated coord with latlon cs)"
             else:
                 assert cs_gridclass == "projected"
                 succeed = True
                 coord_system = None
-                rule_name += "(rotated : discarded projected cs)"
+                rule_name += "(rotated no-cs : discarded projected cs)"
         elif coord_grid_class == "projected":
             # In this case, can *only* build a coord at all if there is a
             # coord-system of the correct class (i.e. 'projected').
@@ -346,12 +350,12 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
 
 @action_function
 def action_build_auxiliary_coordinate(engine, auxcoord_fact):
+    """Convert a CFAuxiliaryCoordinateVariable into a cube aux-coord."""
     (var_name,) = auxcoord_fact
     rule_name = "fc_build_auxiliary_coordinate"
 
-    # FOR NOW: attempt to identify type
-    # TODO: eventually remove much of this, which only affects rule_name.
-    # (but could possibly retain for future debugging purposes)
+    # Identify any known coord "type" : latitude/longitude/time/time_period
+    # If latitude/longitude, this sets the standard_name of the built AuxCoord
     coord_type = ""  # unidentified : can be OK
     coord_name = None
     if hh.is_time(engine, var_name):
@@ -384,6 +388,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
 
 @action_function
 def action_ukmo_stash(engine):
+    """Convert 'ukmo stash' cf property into a cube attribute."""
     rule_name = "fc_attribute_ukmo__um_stash_source"
     var = engine.cf_var
     attr_name = "ukmo__um_stash_source"
@@ -402,6 +407,7 @@ def action_ukmo_stash(engine):
 
 @action_function
 def action_ukmo_processflags(engine):
+    """Convert 'ukmo process flags' cf property into a cube attribute."""
     rule_name = "fc_attribute_ukmo__process_flags"
     var = engine.cf_var
     attr_name = "ukmo__process_flags"
@@ -418,6 +424,7 @@ def action_ukmo_processflags(engine):
 
 @action_function
 def action_build_cell_measure(engine, cellm_fact):
+    """Convert a CFCellMeasureVariable into a cube cell-measure."""
     (var_name,) = cellm_fact
     var = engine.cf_var.cf_group.cell_measures[var_name]
     hh.build_cell_measures(engine, var)
@@ -425,6 +432,7 @@ def action_build_cell_measure(engine, cellm_fact):
 
 @action_function
 def action_build_ancil_var(engine, ancil_fact):
+    """Convert a CFAncillaryVariable into a cube ancil-var."""
     (var_name,) = ancil_fact
     var = engine.cf_var.cf_group.ancillary_variables[var_name]
     hh.build_ancil_var(engine, var)
@@ -432,6 +440,7 @@ def action_build_ancil_var(engine, ancil_fact):
 
 @action_function
 def action_build_label_coordinate(engine, label_fact):
+    """Convert a CFLabelVariable into a cube string-type aux-coord."""
     (var_name,) = label_fact
     var = engine.cf_var.cf_group.labels[var_name]
     hh.build_auxiliary_coordinate(engine, var)
@@ -467,6 +476,7 @@ def run_actions(engine):
         action_provides_coordinate(engine, dimcoord_fact)
 
     # build (dimension) coordinates
+    # The 'provides' step and the grid-mapping must have already been done.
     providescoord_facts = engine.fact_list("provides-coordinate-(oftype)")
     for providescoord_fact in providescoord_facts:
         action_build_dimension_coordinate(engine, providescoord_fact)
