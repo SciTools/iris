@@ -45,6 +45,7 @@ longer useful, this can be considerably simplified.
 """
 
 from . import helpers as hh
+import iris.fileformats.pp as pp
 from functools import wraps
 
 
@@ -381,7 +382,72 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     return rule_name
 
 
+@action_function
+def action_ukmo_stash(engine):
+    rule_name = "fc_attribute_ukmo__um_stash_source"
+    var = engine.cf_var
+    attr_name = "ukmo__um_stash_source"
+    attr_value = getattr(var, attr_name, None)
+    if attr_value is None:
+        attr_altname = "um_stash_source"  # legacy form
+        attr_value = getattr(var, attr_altname, None)
+    if attr_value is None:
+        rule_name += "(NOT-TRIGGERED)"
+    else:
+        # No helper routine : just do it
+        engine.cube.attributes["STASH"] = pp.STASH.from_msi(attr_value)
+
+    return rule_name
+
+
+@action_function
+def action_ukmo_processflags(engine):
+    rule_name = "fc_attribute_ukmo__process_flags"
+    var = engine.cf_var
+    attr_name = "ukmo__process_flags"
+    attr_value = getattr(var, attr_name, None)
+    if attr_value is None:
+        rule_name += "(NOT-TRIGGERED)"
+    else:
+        # No helper routine : just do it
+        flags = [x.replace("_", " ") for x in attr_value.split(" ")]
+        engine.cube.attributes["ukmo__process_flags"] = tuple(flags)
+
+    return rule_name
+
+
+@action_function
+def action_build_cell_measure(engine, cellm_fact):
+    (var_name,) = cellm_fact
+    var = engine.cf_var.cf_group.cell_measures[var_name]
+    hh.build_cell_measures(engine, var)
+
+
+@action_function
+def action_build_ancil_var(engine, ancil_fact):
+    (var_name,) = ancil_fact
+    var = engine.cf_var.cf_group.ancillary_variables[var_name]
+    hh.build_ancil_var(engine, var)
+
+
+@action_function
+def action_build_label_coordinate(engine, label_fact):
+    (var_name,) = label_fact
+    var = engine.cf_var.cf_group.labels[var_name]
+    hh.build_auxiliary_coordinate(engine, var)
+
+
 def run_actions(engine):
+    """
+    Run all actions for a cube.
+
+    This is the top-level "activation" function which runs all the appropriate
+    rules actions to translate facts and build all the cube elements.
+
+    The specific cube being translated is "engine.cube".
+
+    """
+
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 
@@ -400,7 +466,7 @@ def run_actions(engine):
     for dimcoord_fact in dimcoord_facts:
         action_provides_coordinate(engine, dimcoord_fact)
 
-    # build coordinates
+    # build (dimension) coordinates
     providescoord_facts = engine.fact_list("provides-coordinate-(oftype)")
     for providescoord_fact in providescoord_facts:
         action_build_dimension_coordinate(engine, providescoord_fact)
@@ -409,3 +475,23 @@ def run_actions(engine):
     auxcoord_facts = engine.fact_list("auxiliary_coordinate")
     for auxcoord_fact in auxcoord_facts:
         action_build_auxiliary_coordinate(engine, auxcoord_fact)
+
+    # Detect + process and special 'ukmo' attributes
+    # Run on every cube : they choose themselves whether to trigger.
+    action_ukmo_stash(engine)
+    action_ukmo_processflags(engine)
+
+    # cell measures
+    cellm_facts = engine.fact_list("cell_measure")
+    for cellm_fact in cellm_facts:
+        action_build_cell_measure(engine, cellm_fact)
+
+    # ancillary variables
+    ancil_facts = engine.fact_list("ancillary_variable")
+    for ancil_fact in ancil_facts:
+        action_build_ancil_var(engine, ancil_fact)
+
+    # label coords
+    label_facts = engine.fact_list("label")
+    for label_fact in label_facts:
+        action_build_label_coordinate(engine, label_fact)

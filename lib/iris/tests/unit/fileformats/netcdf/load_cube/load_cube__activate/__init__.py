@@ -157,7 +157,7 @@ class Mixin__nc_load_actions:
         # If requested, directly compare the pyke and non-pyke outputs.
         if self.compare_pyke_nonpyke:
             # Compare the loaded cubes from both engines.
-            print("\nPYKE-NONPYKE COMPARE")
+            # print("\nPYKE-NONPYKE COMPARE")
 
             # First zap cube-data, as masked data does not compare well.
             def unmask_cube(cube):
