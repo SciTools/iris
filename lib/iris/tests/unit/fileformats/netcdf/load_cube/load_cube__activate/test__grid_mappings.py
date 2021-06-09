@@ -100,15 +100,18 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             xdim_name = "xco"
         else:
             # use alternate dim-name, and put xco on the 'coords' list
+            # This makes the X coord an aux-coord
             xdim_name = "xdim_altname"
             phenom_auxcoord_names.append("xco")
         if yco_is_dim:
             # ydim has same name as yco, making yco a dim-coord
-            ydim_name = "yco"  # This makes the X coord a dim-coord
+            ydim_name = "yco"  # This makes the Y coord a dim-coord
         else:
             # use alternate dim-name, and put yco on the 'coords' list
-            ydim_name = "ydim_altname"  # This makes the X coord a dim-coord
+            # This makes the Y coord an aux-coord
+            ydim_name = "ydim_altname"
             phenom_auxcoord_names.append("yco")
+
         # Build a 'phenom:coords' string if needed.
         if phenom_auxcoord_names:
             phenom_coords_string = " ".join(phenom_auxcoord_names)
