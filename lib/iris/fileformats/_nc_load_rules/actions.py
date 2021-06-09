@@ -182,17 +182,18 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
 def action_provides_coordinate(engine, dimcoord_fact):
     (var_name,) = dimcoord_fact
 
-    # Identify the coord type
-    # N.B. *only* to "name" the rule, for debug : no functional need.
+    # Identify the "type" of a coordinate variable
     coord_type = None
-    if hh.is_latitude(engine, var_name):
-        coord_type = "latitude"
-    elif hh.is_longitude(engine, var_name):
-        coord_type = "longitude"
-    elif hh.is_rotated_latitude(engine, var_name):
+    # NOTE: must test for rotated cases *first*, as 'is_longitude' and
+    # 'is_latitude' functions also accept rotated cases.
+    if hh.is_rotated_latitude(engine, var_name):
         coord_type = "rotated_latitude"
     elif hh.is_rotated_longitude(engine, var_name):
         coord_type = "rotated_longitude"
+    elif hh.is_latitude(engine, var_name):
+        coord_type = "latitude"
+    elif hh.is_longitude(engine, var_name):
+        coord_type = "longitude"
     elif hh.is_time(engine, var_name):
         coord_type = "time"
     elif hh.is_time_period(engine, var_name):
@@ -207,7 +208,7 @@ def action_provides_coordinate(engine, dimcoord_fact):
         # N.B. in the original rules, this does *not* trigger separate
         # 'provides' and 'build' phases : there is just a single
         # 'fc_default_coordinate' rule.
-        # Rationalise this for now by making it like the others.
+        # Rationalise this for now by making it more like the others.
         # FOR NOW: ~matching old code, but they could *all* be simplified.
         # TODO: combine 2 operation into 1 for ALL of these.
         coord_type = "miscellaneous"
@@ -228,14 +229,14 @@ def action_provides_coordinate(engine, dimcoord_fact):
 #  (@1) an (optional) fixed standard-name for the coordinate, or None
 #       If None, the coordinate name is copied from the source variable
 _coordtype_to_gridtype_coordname = {
-    "latitude": ("latitude_longitude", hh.CF_VALUE_STD_NAME_LAT),
-    "longitude": ("latitude_longitude", hh.CF_VALUE_STD_NAME_LON),
+    "latitude": ("latlon", hh.CF_VALUE_STD_NAME_LAT),
+    "longitude": ("latlon", hh.CF_VALUE_STD_NAME_LON),
     "rotated_latitude": (
-        "rotated_latitude_longitude",
+        "rotated",
         hh.CF_VALUE_STD_NAME_GRID_LAT,
     ),
     "rotated_longitude": (
-        "rotated_latitude_longitude",
+        "rotated",
         hh.CF_VALUE_STD_NAME_GRID_LON,
     ),
     "projection_x": ("projected", hh.CF_VALUE_STD_NAME_PROJ_X),
@@ -251,20 +252,94 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    grid_type, coord_name = _coordtype_to_gridtype_coordname[coord_type]
-    coord_system = None
-    if grid_type is not None:
-        # If a type is identified with a grid, use the coordinate system
+    coord_grid_class, coord_name = _coordtype_to_gridtype_coordname[coord_type]
+    if coord_grid_class is None:
+        # Coordinates not identified with a specific grid-type class (latlon,
+        # rotated or projected) are always built, but can have no coord-system.
+        coord_system = None  # no coord-system can be used
+        succeed = True
+    else:
+        grid_classes = ("latlon", "rotated", "projected")
+        assert coord_grid_class in grid_classes
+        # If a coord is of a type identified with a grid, we may have a
+        # coordinate system (i.e. a valid grid-mapping).
         # N.B. this requires each grid-type identification to validate the
         # coord var (e.g. "is_longitude").
         # Non-conforming lon/lat/projection coords will be classed as
         # dim-coords by cf.py, but 'action_provides_coordinate' will give them
         # a coord-type of 'miscellaneous' : hence, they have no coord-system.
         coord_system = engine.cube_parts.get("coordinate_system")
-    hh.build_dimension_coordinate(
-        engine, cf_var, coord_name=coord_name, coord_system=coord_system
-    )
+        # Translate the specific grid-mapping type to a grid-class
+        if coord_system is None:
+            succeed = True
+            cs_gridclass = None
+        else:
+            gridtypes_factlist = engine.fact_list("grid-type")
+            (gridtypes_fact,) = gridtypes_factlist  # only 1 fact
+            (cs_gridtype,) = gridtypes_fact  # fact contains 1 term
+            # (i.e. one of latlon/rotated/prjected, like coord_grid_class)
+            if cs_gridtype == "latitude_longitude":
+                cs_gridclass = "latlon"
+            elif cs_gridtype == "rotated_latitude_longitude":
+                cs_gridclass = "rotated"
+            else:
+                # Other specific projections
+                assert cs_gridtype is not None
+                cs_gridclass = "projected"
 
+        assert cs_gridclass in grid_classes + (None,)
+
+        if coord_grid_class == "latlon":
+            if cs_gridclass == "latlon":
+                succeed = True
+            elif cs_gridclass is None:
+                succeed = True
+                rule_name += "(no-cs)"
+            elif cs_gridclass == "rotated":
+                # We disallow this case
+                succeed = False
+            else:
+                assert cs_gridclass == "projected"
+                # succeed, no error, but discards the coord-system
+                # TODO: could issue a warning in this case ?
+                succeed = True
+                coord_system = None
+                rule_name += "(no-cs : discarded projected cs)"
+        elif coord_grid_class == "rotated":
+            # For rotated, we also accept no coord-system, but do *not* accept
+            # the presence of an unsuitable type.
+            if cs_gridclass == "rotated":
+                succeed = True
+                rule_name += "(rotated)"
+            elif cs_gridclass is None:
+                succeed = True
+                rule_name += "(rotated no-cs)"
+            elif cs_gridclass == "latlon":
+                # We allow this, but discard the CS
+                succeed = False
+                rule_name += "(FAILED rotated with latlon-cs)"
+            else:
+                assert cs_gridclass == "projected"
+                succeed = True
+                coord_system = None
+                rule_name += "(rotated : discarded projected cs)"
+        elif coord_grid_class == "projected":
+            # In this case, can *only* build a coord at all if there is a
+            # coord-system of the correct class (i.e. 'projected').
+            succeed = cs_gridclass == "projected"
+            if not succeed:
+                rule_name += "(FAILED projected coord with non-projected cs)"
+        else:
+            msg = (
+                f'Unexpected coord grid-class "{coord_grid_class}" '
+                f"for coord {var_name}."
+            )
+            raise ValueError(msg)
+
+    if succeed:
+        hh.build_dimension_coordinate(
+            engine, cf_var, coord_name=coord_name, coord_system=coord_system
+        )
     return rule_name
 
 
