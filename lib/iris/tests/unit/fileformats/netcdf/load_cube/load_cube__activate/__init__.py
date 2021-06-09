@@ -19,6 +19,8 @@ import shutil
 import subprocess
 import tempfile
 
+import numpy as np
+
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import _load_cube
@@ -82,6 +84,9 @@ class Mixin__nc_load_actions:
     # TODO: ?possibly? remove when development is complete
     debug = False
 
+    # whether to perform action in both ways and compare results.
+    compare_pyke_nonpyke = True
+
     @classmethod
     def setUpClass(cls):
         # # Control which testing method we are applying.
@@ -116,29 +121,88 @@ class Mixin__nc_load_actions:
         cf_var = list(cf.cf_group.data_variables.values())[0]
         cf_var = cf.cf_group.data_variables["phenom"]
 
-        if self.use_pyke:
-            engine = iris.fileformats.netcdf._pyke_kb_engine_real()
-        else:
-            engine = iris.fileformats._nc_load_rules.engine.Engine()
+        do_pyke = self.use_pyke or self.compare_pyke_nonpyke
+        do_nonpyke = not self.use_pyke or self.compare_pyke_nonpyke
+        if do_pyke:
+            pyke_engine = iris.fileformats.netcdf._pyke_kb_engine_real()
+        if do_nonpyke:
+            nonpyke_engine = iris.fileformats._nc_load_rules.engine.Engine()
 
         iris.fileformats.netcdf.DEBUG = self.debug
 
-        # Call the main translation function-under-test.
-        cube = _load_cube(engine, cf, cf_var, nc_path)
+        # Call the main translation function to load a single cube.
+        def load_single_cube(engine):
+            # _load_cube establishes per-cube facts, activates rules and
+            # produces an actual cube.
+            cube = _load_cube(engine, cf, cf_var, nc_path)
 
-        # Record on the cube, which hybrid coord elements were identified
-        # by the rules operation.
-        # Unlike the other translations, _load_cube does *not* convert this
-        # information into actual cube elements.  That is instead done by
-        # `iris.fileformats.netcdf._load_aux_factory`.
-        # For rules testing, it is anyway more convenient to deal with the raw
-        # data, as each factory type has different validity requirements to
-        # build it, and none of that is relevant to the rules operation.
-        cube._formula_type_name = engine.requires.get("formula_type")
-        cube._formula_terms_byname = engine.requires.get("formula_terms")
+            # Also Record, on the cubes, which hybrid coord elements were identified
+            # by the rules operation.
+            # Unlike the other translations, _load_cube does *not* convert this
+            # information into actual cube elements.  That is instead done by
+            # `iris.fileformats.netcdf._load_aux_factory`.
+            # For rules testing, it is anyway more convenient to deal with the raw
+            # data, as each factory type has different validity requirements to
+            # build it, and none of that is relevant to the rules operation.
+            cube._formula_type_name = engine.requires.get("formula_type")
+            cube._formula_terms_byname = engine.requires.get("formula_terms")
+
+            return cube
+
+        if do_pyke:
+            pyke_cube = load_single_cube(pyke_engine)
+        if do_nonpyke:
+            nonpyke_cube = load_single_cube(nonpyke_engine)
+
+        # If requested, directly compare the pyke and non-pyke outputs.
+        if self.compare_pyke_nonpyke:
+            # Compare the loaded cubes from both engines.
+            print("\nPYKE-NONPYKE COMPARE")
+
+            # First zap cube-data, as masked data does not compare well.
+            def unmask_cube(cube):
+                # preserve the original, we're going to realise..
+                cube = cube.copy()
+                if isinstance(cube.data, np.ma.MaskedArray):
+                    cube.data = cube.data.filled(0)
+                return cube
+
+            pyke_cube_copy = unmask_cube(pyke_cube)
+            nonpyke_cube_copy = unmask_cube(nonpyke_cube)
+            if self.debug:
+                if nonpyke_cube_copy != pyke_cube_copy:
+
+                    def show_cube(cube):
+                        result = str(cube)
+                        result += "\n--coords--"
+                        for coord in cube.coords():
+                            result += "\n  " + str(coord)
+                        result += "\n--attributes--"
+                        if not cube.attributes:
+                            result += "\n  (none)"
+                        else:
+                            for key, value in cube.attributes.items():
+                                result += f"\n  {key}: {value}"
+                        return result
+
+                    print("\nPyke/nonpyke mismatch.")
+                    print("Pyke cube:\n----")
+                    print(show_cube(pyke_cube))
+                    print()
+                    print("NONPyke cube:\n----")
+                    print(show_cube(nonpyke_cube))
+                    print("")
+            else:
+                self.assertEqual(pyke_cube_copy, nonpyke_cube_copy)
+
+        # Return the right thing, whether we did 'both' or not
+        if self.use_pyke:
+            result_cube = pyke_cube
+        else:
+            result_cube = nonpyke_cube
 
         # Always returns a single cube.
-        return cube
+        return result_cube
 
     def run_testcase(self, warning=None, **testcase_kwargs):
         """
