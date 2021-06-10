@@ -45,8 +45,11 @@ longer useful, this can be considerably simplified.
 """
 
 from . import helpers as hh
-import iris.fileformats.pp as pp
+
 from functools import wraps
+
+import iris.fileformats.pp as pp
+import iris.fileformats.cf
 
 
 def _default_rulenamesfunc(func_name):
@@ -446,6 +449,46 @@ def action_build_label_coordinate(engine, label_fact):
     hh.build_auxiliary_coordinate(engine, var)
 
 
+@action_function
+def action_formula_type(engine, formula_root_fact):
+    """Register a CFVariable as a formula root."""
+    rule_name = "fc_formula_type"
+    (var_name,) = formula_root_fact
+    cf_var = engine.cf_var.cf_group[var_name]
+    # var.standard_name is a formula type (or we should never get here).
+    formula_type = getattr(cf_var, "standard_name", None)
+    succeed = True
+    if formula_type not in iris.fileformats.cf.reference_terms:
+        succeed = False
+        rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
+    if succeed:
+        # Check we don't already have one.
+        existing_type = engine.requires.get("formula_type")
+        if existing_type:
+            succeed = False
+            rule_name += (
+                f"(FAILED - new formula type ={formula_type!r} "
+                f"collided with existing one ={existing_type!r}.)"
+            )
+    if succeed:
+        rule_name += f"_{formula_type}"
+        # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
+        engine.requires["formula_type"] = formula_type
+
+    return rule_name
+
+
+@action_function
+def action_formula_term(engine, formula_term_fact):
+    """Register a CFVariable as a formula term."""
+    # Must run AFTER formula root identification.
+    (termvar_name, rootvar_name, term_name) = formula_term_fact
+    # The rootname is implicit :  have only one per cube
+    # TODO: change when we adopt cf-1.7 advanced grid-mping syntax
+    engine.requires.setdefault("formula_terms", {})[term_name] = termvar_name
+    rule_name = f"fc_formula_term({term_name})"
+
+
 def run_actions(engine):
     """
     Run all actions for a cube.
@@ -505,3 +548,14 @@ def run_actions(engine):
     label_facts = engine.fact_list("label")
     for label_fact in label_facts:
         action_build_label_coordinate(engine, label_fact)
+
+    # formula root variables
+    formula_root_facts = engine.fact_list("formula_root")
+    for root_fact in formula_root_facts:
+        action_formula_type(engine, root_fact)
+
+    # formula terms
+    # The 'formula_root's must have already been done.
+    formula_term_facts = engine.fact_list("formula_term")
+    for term_fact in formula_term_facts:
+        action_formula_term(engine, term_fact)
