@@ -79,6 +79,8 @@ class Mixin__nc_load_actions:
     # whether to test 'rules' or 'actions' implementations
     # TODO: remove when Pyke is gone
     use_pyke = True
+    use_pyke_override = False
+    debug_confirm_which = True
 
     # whether to output various debug info
     # TODO: ?possibly? remove when development is complete
@@ -121,8 +123,11 @@ class Mixin__nc_load_actions:
         cf_var = list(cf.cf_group.data_variables.values())[0]
         cf_var = cf.cf_group.data_variables["phenom"]
 
-        do_pyke = self.use_pyke or self.compare_pyke_nonpyke
-        do_nonpyke = not self.use_pyke or self.compare_pyke_nonpyke
+        use_pyke = self.use_pyke
+        if self.use_pyke_override is not None:
+            use_pyke = self.use_pyke_override
+        do_pyke = use_pyke or self.compare_pyke_nonpyke
+        do_nonpyke = not use_pyke or self.compare_pyke_nonpyke
         if do_pyke:
             pyke_engine = iris.fileformats.netcdf._pyke_kb_engine_real()
         if do_nonpyke:
@@ -196,9 +201,13 @@ class Mixin__nc_load_actions:
                 self.assertEqual(pyke_cube_copy, nonpyke_cube_copy)
 
         # Return the right thing, whether we did 'both' or not
-        if self.use_pyke:
+        if use_pyke:
+            if self.debug_confirm_which:
+                print("(PYKE_TESTED)")
             result_cube = pyke_cube
         else:
+            if self.debug_confirm_which:
+                print("(NONPYKE_TESTED)")
             result_cube = nonpyke_cube
 
         # Always returns a single cube.

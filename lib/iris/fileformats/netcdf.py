@@ -415,12 +415,13 @@ def _pyke_kb_engine_real():
     return engine
 
 
-LOAD_PYKE = True
+LOAD_PYKE = False
+CHECK_BOTH = True
 
 
-def _pyke_kb_engine():
+def _pyke_kb_engine(use_pyke=True):
     """Return a knowledge engine, or replacement object."""
-    if LOAD_PYKE:
+    if use_pyke:
         engine = _pyke_kb_engine_real()
     else:
         # Deferred import to avoid circularity.
@@ -816,7 +817,10 @@ def load_cubes(filenames, callback=None):
 
     """
     # Initialise the pyke inference engine.
-    engine = _pyke_kb_engine()
+    if LOAD_PYKE or CHECK_BOTH:
+        pyke_engine = _pyke_kb_engine(use_pyke=True)
+    if not LOAD_PYKE or CHECK_BOTH:
+        nonpyke_engine = _pyke_kb_engine(use_pyke=False)
 
     if isinstance(filenames, str):
         filenames = [filenames]
@@ -830,14 +834,59 @@ def load_cubes(filenames, callback=None):
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
-            cube = _load_cube(engine, cf, cf_var, filename)
 
-            # Process any associated formula terms and attach
-            # the corresponding AuxCoordFactory.
-            try:
-                _load_aux_factory(engine, cube)
-            except ValueError as e:
-                warnings.warn("{}".format(e))
+            def one_cube(engine, show_warnings=True):
+                cube = _load_cube(engine, cf, cf_var, filename)
+
+                # Process any associated formula terms and attach
+                # the corresponding AuxCoordFactory.
+                try:
+                    _load_aux_factory(engine, cube)
+                except ValueError as e:
+                    if show_warnings:
+                        warnings.warn("{}".format(e))
+
+                return cube
+
+            if LOAD_PYKE or CHECK_BOTH:
+                # Make pyke cube if needed, show warnings if "primary" cube
+                cube_pyke = one_cube(pyke_engine, show_warnings=LOAD_PYKE)
+            if not LOAD_PYKE or CHECK_BOTH:
+                # Make nonpyke cube if needed, show warnings if "primary" cube
+                cube_nonpyke = one_cube(
+                    nonpyke_engine, show_warnings=not LOAD_PYKE
+                )
+
+            if not LOAD_PYKE or CHECK_BOTH:
+                msgs = []
+                if not LOAD_PYKE:
+                    msgs.append("NONPYKE-LOAD")
+                    warnings.warn("((NONPYKE-LOAD))")
+                if CHECK_BOTH:
+                    msgs.append("PYKE-SAMECHECK")
+                msg = f"(({': '.join(msgs)}))"
+                print(msg)
+
+            if CHECK_BOTH:
+
+                def unmask_cube(cube):
+                    cube = cube.copy()
+                    if isinstance(cube.data, np.ma.MaskedArray):
+                        cube.data = cube.data.filled(0)
+                    return cube
+
+                if unmask_cube(cube_nonpyke) != unmask_cube(cube_pyke):
+                    warnings.warn("PYKE-SAMECHECK : unmasked cubes == failed.")
+                full_test = cube_nonpyke.copy() == cube_pyke.copy()
+                if full_test not in (True, np.ma.masked):
+                    # NOTE: this one can fail: non-bool answer if masked ?
+                    warnings.warn("PYKE-SAMECHECK : copied cubes == failed.")
+
+            # Select "primary" cube to return.
+            if LOAD_PYKE:
+                cube = cube_pyke
+            else:
+                cube = cube_nonpyke
 
             # Perform any user registered callback function.
             cube = iris.io.run_callback(callback, cube, cf_var, filename)
