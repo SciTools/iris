@@ -487,6 +487,7 @@ def action_formula_term(engine, formula_term_fact):
     # TODO: change when we adopt cf-1.7 advanced grid-mping syntax
     engine.requires.setdefault("formula_terms", {})[term_name] = termvar_name
     rule_name = f"fc_formula_term({term_name})"
+    return rule_name
 
 
 def run_actions(engine):
