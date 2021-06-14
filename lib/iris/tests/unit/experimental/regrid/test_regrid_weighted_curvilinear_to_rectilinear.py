@@ -19,10 +19,10 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-import iris.coords
-import iris.cube
 from iris.coord_systems import GeogCS, LambertConformal
+import iris.coords
 from iris.coords import AuxCoord, DimCoord
+import iris.cube
 from iris.experimental.regrid import (
     regrid_weighted_curvilinear_to_rectilinear as regrid,
 )

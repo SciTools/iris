@@ -9,12 +9,12 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import shutil
-import tempfile
 from os.path import dirname
 from os.path import join as path_join
 from os.path import sep as os_sep
+import shutil
 from subprocess import check_call
+import tempfile
 
 import iris
 from iris.tests import stock

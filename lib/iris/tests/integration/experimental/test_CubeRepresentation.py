@@ -13,9 +13,9 @@ from html import escape
 
 import numpy as np
 
-import iris.tests.stock as stock
 from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data

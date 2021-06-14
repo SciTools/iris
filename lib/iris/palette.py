@@ -9,10 +9,10 @@ color map meta-data mappings.
 
 """
 
+from functools import wraps
 import os
 import os.path
 import re
-from functools import wraps
 
 import cf_units
 import matplotlib.cm as mpl_cm

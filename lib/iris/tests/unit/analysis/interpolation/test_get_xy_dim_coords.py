@@ -16,11 +16,11 @@ import copy
 
 import numpy as np
 
+from iris.analysis._interpolation import get_xy_dim_coords
 import iris.coord_systems
 import iris.coords
 import iris.experimental.regrid
 import iris.tests.stock
-from iris.analysis._interpolation import get_xy_dim_coords
 
 
 class TestGetXYCoords(tests.IrisTest):

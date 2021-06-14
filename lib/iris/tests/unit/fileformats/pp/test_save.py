@@ -14,11 +14,11 @@ from unittest import mock
 import cf_units
 import cftime
 
-import iris.fileformats.pp as pp
-import iris.tests.stock as stock
 from iris.coords import CellMethod, DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
+import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
+import iris.tests.stock as stock
 
 
 def _pp_save_ppfield_values(cube):

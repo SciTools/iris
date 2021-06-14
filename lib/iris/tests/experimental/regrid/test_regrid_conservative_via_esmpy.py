@@ -30,8 +30,8 @@ skip_esmf = unittest.skipIf(
 import iris
 import iris.analysis
 import iris.analysis.cartography as i_cartog
-import iris.tests.stock as istk
 from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
+import iris.tests.stock as istk
 
 _PLAIN_GEODETIC_CS = iris.coord_systems.GeogCS(
     i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS

@@ -14,10 +14,10 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from numpy import ma
 
-import iris.tests.stock as stock
 from iris.analysis import MEAN
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.tests.stock as stock
 
 
 class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):

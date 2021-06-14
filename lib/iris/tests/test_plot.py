@@ -8,9 +8,9 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+from functools import wraps
 import types
 import warnings
-from functools import wraps
 
 import cf_units
 import numpy as np

@@ -11,9 +11,9 @@ import iris.tests as tests  # isort:skip
 
 from html import escape
 
-import iris.tests.stock as stock
 from iris.coords import AncillaryVariable, CellMeasure, CellMethod
 from iris.experimental.representation import CubeRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data

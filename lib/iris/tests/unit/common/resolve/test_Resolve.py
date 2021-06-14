@@ -12,13 +12,13 @@ Unit tests for the :class:`iris.common.resolve.Resolve`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import unittest.mock as mock
 from collections import namedtuple
 from copy import deepcopy
+import unittest.mock as mock
 from unittest.mock import sentinel
 
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
 from iris.common.lenient import LENIENT
 from iris.common.metadata import CubeMetadata

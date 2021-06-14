@@ -13,11 +13,11 @@ See also: http://pandas.pydata.org/
 import datetime
 
 import cf_units
+from cf_units import Unit
 import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas
-from cf_units import Unit
 
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20

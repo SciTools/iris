@@ -12,16 +12,16 @@ import iris.tests as tests  # isort:skip
 import collections
 from unittest import mock
 
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
-import iris.coord_systems
-import iris.exceptions
-import iris.tests.stock
 from iris import Constraint
+import iris.coord_systems
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
+import iris.exceptions
 from iris.fileformats.pp import STASH
+import iris.tests.stock
 
 
 class Test_concatenate_cube(tests.IrisTest):

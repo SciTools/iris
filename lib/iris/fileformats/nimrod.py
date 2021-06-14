@@ -13,8 +13,8 @@ import sys
 import numpy as np
 
 import iris
-import iris.fileformats.nimrod_load_rules
 from iris.exceptions import TranslationError
+import iris.fileformats.nimrod_load_rules
 
 # general header (int16) elements 1-31 (Fortran bytes 1-62)
 general_header_int16s = (

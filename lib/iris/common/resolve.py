@@ -11,15 +11,15 @@ auto-transposed, and with the appropriate broadcast shape.
 
 """
 
-import logging
 from collections import namedtuple
 from collections.abc import Iterable
+import logging
 
-import numpy as np
 from dask.array.core import broadcast_shapes
+import numpy as np
 
-from ..config import get_logger
 from . import LENIENT
+from ..config import get_logger
 
 __all__ = ["Resolve"]
 

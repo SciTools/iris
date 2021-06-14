@@ -20,10 +20,10 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.analysis._interpolation
-import iris.tests.stock
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )
+import iris.tests.stock
 
 RESULT_DIR = (
     "experimental",

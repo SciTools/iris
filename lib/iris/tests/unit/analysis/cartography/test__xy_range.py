@@ -12,8 +12,8 @@
 import iris.tests as tests  # isort:skip
 import numpy as np
 
-import iris.tests.stock as stock
 from iris.analysis.cartography import _xy_range
+import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):

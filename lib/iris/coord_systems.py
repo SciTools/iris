@@ -8,8 +8,8 @@ Definitions of coordinate systems.
 
 """
 
-import warnings
 from abc import ABCMeta, abstractmethod
+import warnings
 
 import cartopy.crs as ccrs
 import numpy as np

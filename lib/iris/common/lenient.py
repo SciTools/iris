@@ -8,12 +8,12 @@ Provides the infrastructure to support lenient client/service behaviour.
 
 """
 
-import threading
 from collections.abc import Iterable
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import wraps
 from inspect import getmodule
+import threading
 
 __all__ = [
     "LENIENT",

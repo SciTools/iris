@@ -15,9 +15,9 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 import numpy.ma as ma
 
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.tests.stock as stock
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 
 
 def _make_cube(

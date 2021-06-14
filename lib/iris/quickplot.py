@@ -14,8 +14,8 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 import cf_units
-import matplotlib.pyplot as plt
 from matplotlib import __version__ as _mpl_version
+import matplotlib.pyplot as plt
 from packaging import version
 
 import iris.config

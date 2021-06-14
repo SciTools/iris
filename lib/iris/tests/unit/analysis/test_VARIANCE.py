@@ -14,10 +14,10 @@ from unittest import mock
 import numpy as np
 import numpy.ma as ma
 
-import iris.cube
 from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import VARIANCE
 from iris.coords import DimCoord
+import iris.cube
 
 
 class Test_units_func(tests.IrisTest):

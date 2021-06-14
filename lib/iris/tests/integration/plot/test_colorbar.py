@@ -15,8 +15,8 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-import iris.tests.stock
 from iris.coords import AuxCoord
+import iris.tests.stock
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:

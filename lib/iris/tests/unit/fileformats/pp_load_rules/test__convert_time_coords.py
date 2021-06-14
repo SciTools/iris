@@ -15,9 +15,9 @@ import iris.tests as tests  # isort:skip
 
 import unittest
 
-import numpy as np
 from cf_units import CALENDAR_GREGORIAN, Unit
 from cftime import datetime as nc_datetime
+import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.fileformats.pp import SplittableInt

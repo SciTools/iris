@@ -8,11 +8,11 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
-import os
-import subprocess
 from datetime import datetime
 from fnmatch import fnmatch
 from glob import glob
+import os
+import subprocess
 
 import iris
 

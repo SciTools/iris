@@ -12,9 +12,9 @@ Test plot of time coord with non-gregorian calendar.
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+from cf_units import Unit
 import cftime
 import numpy as np
-from cf_units import Unit
 
 from iris.coords import AuxCoord
 

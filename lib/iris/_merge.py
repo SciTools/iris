@@ -16,10 +16,6 @@ from copy import deepcopy
 
 import numpy as np
 
-import iris.coords
-import iris.cube
-import iris.exceptions
-import iris.util
 from iris._lazy_data import (
     as_concrete_data,
     as_lazy_data,
@@ -27,6 +23,10 @@ from iris._lazy_data import (
     multidim_lazy_stack,
 )
 from iris.common import CoordMetadata, CubeMetadata
+import iris.coords
+import iris.cube
+import iris.exceptions
+import iris.util
 
 
 #

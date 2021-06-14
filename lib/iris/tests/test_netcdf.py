@@ -16,26 +16,26 @@ import os
 import os.path
 import shutil
 import stat
-import tempfile
 from subprocess import check_call
+import tempfile
 from unittest import mock
 
+from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
-from cf_units import as_unit
 
 import iris
+from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
+from iris.coords import AncillaryVariable, CellMeasure
 import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
 import iris.fileformats.netcdf
+from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
 import iris.tests.stock as stock
 import iris.util
-from iris._lazy_data import is_lazy_data
-from iris.coords import AncillaryVariable, CellMeasure
-from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 
 
 @tests.skip_data

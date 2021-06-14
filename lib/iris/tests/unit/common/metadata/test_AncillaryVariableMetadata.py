@@ -12,8 +12,8 @@ Unit tests for the :class:`iris.common.metadata.AncillaryVariableMetadata`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import unittest.mock as mock
 from copy import deepcopy
+import unittest.mock as mock
 from unittest.mock import sentinel
 
 from iris.common.lenient import _LENIENT, _qualname

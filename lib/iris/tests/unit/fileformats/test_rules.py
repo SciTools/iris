@@ -17,7 +17,6 @@ from unittest import mock
 
 import numpy as np
 
-import iris.tests.stock as stock
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import CellMethod
 from iris.cube import Cube
@@ -31,6 +30,7 @@ from iris.fileformats.rules import (
     load_cubes,
     scalar_cell_method,
 )
+import iris.tests.stock as stock
 
 
 class TestConcreteReferenceTarget(tests.IrisTest):

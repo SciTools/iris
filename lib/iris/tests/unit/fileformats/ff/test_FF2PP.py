@@ -15,10 +15,10 @@ from unittest import mock
 
 import numpy as np
 
-import iris.fileformats._ff as ff
-import iris.fileformats.pp as pp
 from iris.exceptions import NotYetImplementedError
+import iris.fileformats._ff as ff
 from iris.fileformats._ff import FF2PP
+import iris.fileformats.pp as pp
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0

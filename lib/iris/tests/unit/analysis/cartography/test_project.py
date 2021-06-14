@@ -12,12 +12,12 @@ import iris.tests as tests  # isort:skip
 import cartopy.crs as ccrs
 import numpy as np
 
+from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests
 import iris.tests.stock
-from iris.analysis.cartography import project
 
 ROBINSON = ccrs.Robinson()
 

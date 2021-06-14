@@ -16,9 +16,9 @@ import cf_units
 import cftime
 import numpy as np
 
-import iris.tests.unit.fileformats
 from iris.fileformats.pp import STASH, PPField3, SplittableInt
 from iris.fileformats.pp_load_rules import convert
+import iris.tests.unit.fileformats
 from iris.util import guess_coord_axis
 
 

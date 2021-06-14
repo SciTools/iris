@@ -9,10 +9,10 @@ Provides an interface to manage URI scheme support in iris.
 """
 
 import collections
+from collections import OrderedDict
 import glob
 import os.path
 import re
-from collections import OrderedDict
 
 import iris.exceptions
 

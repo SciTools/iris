@@ -17,8 +17,8 @@ import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
 
-import iris.coord_systems
 from iris.analysis.cartography import rotate_winds, unrotate_pole
+import iris.coord_systems
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 

@@ -11,8 +11,8 @@ import iris.tests as tests  # isort:skip
 
 import contextlib
 import io
-import warnings
 from unittest import mock
+import warnings
 
 import numpy as np
 

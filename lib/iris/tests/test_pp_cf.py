@@ -14,9 +14,9 @@ import netCDF4
 
 import iris
 import iris.coords
+from iris.fileformats.pp import STASH
 import iris.tests.pp as pp
 import iris.util
-from iris.fileformats.pp import STASH
 
 
 def callback_000003000000_16_202_000128_1860_09_01_00_00_b_pp(

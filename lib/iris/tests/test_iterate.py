@@ -12,11 +12,11 @@ Test the iteration of cubes in step.
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+from functools import reduce
 import itertools
 import operator
 import random
 import warnings
-from functools import reduce
 
 import numpy as np
 

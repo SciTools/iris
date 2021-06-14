@@ -18,9 +18,6 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
-import iris.analysis.cartography
-import iris.coord_systems
-import iris.cube
 from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import (
     get_xy_coords,
@@ -32,6 +29,9 @@ from iris.analysis._regrid import (
     _regrid_weighted_curvilinear_to_rectilinear__perform,
     _regrid_weighted_curvilinear_to_rectilinear__prepare,
 )
+import iris.analysis.cartography
+import iris.coord_systems
+import iris.cube
 from iris.util import _meshgrid
 
 

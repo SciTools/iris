@@ -8,8 +8,8 @@ Provides objects for building up expressions useful for pattern matching.
 
 """
 
-import operator
 from collections.abc import Iterable, Mapping
+import operator
 
 import numpy as np
 

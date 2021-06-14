@@ -18,10 +18,10 @@ import warnings
 import numpy as np
 import shapely.geometry
 
-import iris.tests.stock as stock
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):

@@ -5,16 +5,16 @@
 # licensing details.
 """A collection of helpers for interpolation."""
 
-import operator
 from collections import namedtuple
 from itertools import product
+import operator
 
 import numpy as np
-import numpy.ma as ma
 from numpy.lib.stride_tricks import as_strided
+import numpy.ma as ma
 
-import iris.util
 from iris.coords import AuxCoord, DimCoord
+import iris.util
 
 _DEFAULT_DTYPE = np.float16
 

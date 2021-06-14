@@ -40,10 +40,10 @@ The calling sequence of handler is dependent on the function given in the origin
 
 """
 
+from collections.abc import Callable
 import functools
 import os
 import struct
-from collections.abc import Callable
 
 
 class FormatAgent:

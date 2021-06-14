@@ -1,8 +1,8 @@
+from contextlib import contextmanager
 import os
+from shutil import copyfile
 import sys
 import textwrap
-from contextlib import contextmanager
-from shutil import copyfile
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py

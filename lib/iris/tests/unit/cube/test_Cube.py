@@ -12,18 +12,16 @@ import iris.tests as tests  # isort:skip
 from itertools import permutations
 from unittest import mock
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
-from cf_units import Unit
 
-import iris.analysis
-import iris.aux_factory
-import iris.coords
-import iris.exceptions
-import iris.tests.stock as stock
 from iris._lazy_data import as_lazy_data
+import iris.analysis
 from iris.analysis import MEAN, Aggregator, WeightedAggregator
+import iris.aux_factory
 from iris.aux_factory import HybridHeightFactory
+import iris.coords
 from iris.coords import (
     AncillaryVariable,
     AuxCoord,
@@ -32,12 +30,14 @@ from iris.coords import (
     DimCoord,
 )
 from iris.cube import Cube
+import iris.exceptions
 from iris.exceptions import (
     AncillaryVariableNotFoundError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
     UnitConversionError,
 )
+import iris.tests.stock as stock
 
 
 class Test___init___data(tests.IrisTest):

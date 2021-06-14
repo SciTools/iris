@@ -21,9 +21,9 @@ to the pp "as_pairs" functions.
 
 """
 
+from contextlib import contextmanager
 import os.path
 import threading
-from contextlib import contextmanager
 
 import numpy as np
 

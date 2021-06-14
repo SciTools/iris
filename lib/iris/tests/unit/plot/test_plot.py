@@ -18,8 +18,8 @@ from iris.tests.unit.plot import TestGraphicStringCoord
 if tests.MPL_AVAILABLE:
     import cartopy.crs as ccrs
     import cartopy.mpl.geoaxes
-    import matplotlib.pyplot as plt
     from matplotlib.path import Path
+    import matplotlib.pyplot as plt
 
     import iris.plot as iplt
 

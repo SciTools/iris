@@ -12,8 +12,8 @@ Unit tests for the function :func:`iris.analysis.maths._output_dtype`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import operator
 from itertools import product
+import operator
 
 import numpy as np
 

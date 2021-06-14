@@ -7,10 +7,10 @@
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
-import os
-import unittest
 from copy import deepcopy
+import os
 from types import GeneratorType
+import unittest
 from unittest import mock
 
 import cftime

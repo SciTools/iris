@@ -10,8 +10,8 @@
 import iris.tests as tests  # isort:skip
 
 import collections
-import warnings
 from unittest import mock
+import warnings
 
 import dask.array as da
 import numpy as np

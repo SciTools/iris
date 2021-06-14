@@ -11,9 +11,9 @@ import iris.tests as tests  # isort:skip
 
 from html import escape
 
-import iris.tests.stock as stock
 from iris.cube import CubeList
 from iris.experimental.representation import CubeListRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data

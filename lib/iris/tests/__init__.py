@@ -21,6 +21,7 @@ graphical test results.
 
 import codecs
 import collections
+from collections.abc import Mapping
 import contextlib
 import datetime
 import difflib
@@ -39,11 +40,10 @@ import subprocess
 import sys
 import threading
 import unittest
+from unittest import mock
 import warnings
 import xml.dom.minidom
 import zlib
-from collections.abc import Mapping
-from unittest import mock
 
 import filelock
 import numpy as np
@@ -835,8 +835,8 @@ class IrisTest_nometa(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
-        import imagehash
         from PIL import Image
+        import imagehash
 
         dev_mode = os.environ.get("IRIS_TEST_CREATE_MISSING")
         unique_id = self._unique_id()

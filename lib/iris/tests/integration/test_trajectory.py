@@ -12,10 +12,10 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 import iris
-import iris.tests.stock as istk
 from iris._lazy_data import as_lazy_data
 from iris.analysis.trajectory import Trajectory
 from iris.analysis.trajectory import interpolate as traj_interpolate
+import iris.tests.stock as istk
 
 
 @tests.skip_data

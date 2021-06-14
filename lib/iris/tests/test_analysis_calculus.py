@@ -15,9 +15,9 @@ import iris
 import iris.analysis.calculus
 import iris.coord_systems
 import iris.coords
+from iris.coords import DimCoord
 import iris.cube
 import iris.tests.stock
-from iris.coords import DimCoord
 
 
 class TestCubeDelta(tests.IrisTest):

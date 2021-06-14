@@ -14,8 +14,8 @@ import iris.tests as tests  # isort:skip
 import datetime
 
 import iris
-import iris.tests.stock as stock
 from iris import AttributeConstraint, NameConstraint
+import iris.tests.stock as stock
 
 SN_AIR_POTENTIAL_TEMPERATURE = "air_potential_temperature"
 SN_SPECIFIC_HUMIDITY = "specific_humidity"

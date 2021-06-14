@@ -11,9 +11,9 @@ Test the file saving mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
+from io import StringIO
 import os
 import unittest
-from io import StringIO
 
 import iris
 import iris.cube

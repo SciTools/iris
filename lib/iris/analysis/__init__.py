@@ -46,13 +46,13 @@ import scipy.interpolate
 import scipy.stats.mstats
 
 import iris._lazy_data
-import iris.coords
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     RectilinearInterpolator,
 )
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
+import iris.coords
 from iris.exceptions import LazyAggregatorError
 
 __all__ = (

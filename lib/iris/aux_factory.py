@@ -8,19 +8,19 @@ Definitions of derived coordinates.
 
 """
 
-import warnings
 from abc import ABCMeta, abstractmethod
+import warnings
 
 import cf_units
 import dask.array as da
 import numpy as np
 
-import iris.coords
 from iris.common import (
     CFVariableMixin,
     CoordMetadata,
     metadata_manager_factory,
 )
+import iris.coords
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):

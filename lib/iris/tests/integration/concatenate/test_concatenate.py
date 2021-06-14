@@ -16,10 +16,10 @@ import iris.tests as tests  # isort:skip
 import cf_units
 import numpy as np
 
+from iris._concatenate import concatenate
 import iris.coords
 import iris.cube
 import iris.tests.stock as stock
-from iris._concatenate import concatenate
 from iris.util import unify_time_units
 
 

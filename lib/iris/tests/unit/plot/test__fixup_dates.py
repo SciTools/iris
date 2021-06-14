@@ -11,8 +11,8 @@ import iris.tests as tests  # isort:skip
 
 import datetime
 
-import cftime
 from cf_units import Unit
+import cftime
 
 from iris.coords import AuxCoord
 from iris.plot import _fixup_dates

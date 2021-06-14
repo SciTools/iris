@@ -14,8 +14,8 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-import iris.tests.stock
 from iris.cube import Cube
+import iris.tests.stock
 from iris.util import equalise_attributes
 
 

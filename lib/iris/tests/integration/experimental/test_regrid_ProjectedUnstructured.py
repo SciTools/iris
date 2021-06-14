@@ -10,8 +10,8 @@
 import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
 import iris
 import iris.aux_factory

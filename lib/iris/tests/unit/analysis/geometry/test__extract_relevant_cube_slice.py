@@ -14,8 +14,8 @@ Unit tests for :func:`iris.analysis.geometry._extract_relevant_cube_slice`.
 import iris.tests as tests  # isort:skip
 import shapely.geometry
 
-import iris.tests.stock as stock
 from iris.analysis.geometry import _extract_relevant_cube_slice
+import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):

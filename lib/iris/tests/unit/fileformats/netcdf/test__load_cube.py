@@ -13,8 +13,8 @@ from unittest import mock
 
 import numpy as np
 
-import iris.fileformats.cf
 from iris.coords import DimCoord
+import iris.fileformats.cf
 from iris.fileformats.netcdf import _load_cube
 
 

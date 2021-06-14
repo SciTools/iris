@@ -15,8 +15,8 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
 from iris.aux_factory import OceanSg1Factory
 from iris.coords import AuxCoord, DimCoord

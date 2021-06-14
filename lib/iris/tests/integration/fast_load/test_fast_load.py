@@ -9,15 +9,15 @@
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
+from collections.abc import Iterable
 import shutil
 import tempfile
-from collections.abc import Iterable
 
 import numpy as np
 
 import iris
-import iris.coords
 from iris.coord_systems import GeogCS
+import iris.coords
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube, CubeList
 from iris.exceptions import IgnoreCubeException

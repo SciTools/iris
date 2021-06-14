@@ -8,9 +8,9 @@ Various utilities and numeric transformations relevant to cartography.
 
 """
 
+from collections import namedtuple
 import copy
 import warnings
-from collections import namedtuple
 
 import cartopy.crs as ccrs
 import cartopy.img_transform

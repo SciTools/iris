@@ -13,8 +13,8 @@ Unit tests for the function
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
 from iris.analysis.cartography import gridcell_angles
 from iris.coords import AuxCoord

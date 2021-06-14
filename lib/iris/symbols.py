@@ -11,9 +11,9 @@ Contains symbol definitions for use with :func:`iris.plot.symbols`.
 import itertools
 import math
 
-import numpy as np
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
+import numpy as np
 
 __all__ = ("CLOUD_COVER",)
 

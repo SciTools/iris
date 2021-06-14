@@ -15,9 +15,9 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
-from cf_units import Unit
 
 from iris._lazy_data import as_lazy_data
 from iris.coords import AuxCoord

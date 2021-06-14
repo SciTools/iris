@@ -9,8 +9,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import iris.tests.stock as stock
 from iris.fileformats.pp import save_pairs_from_cube
+import iris.tests.stock as stock
 
 
 class TestSaveFields(tests.IrisTest):

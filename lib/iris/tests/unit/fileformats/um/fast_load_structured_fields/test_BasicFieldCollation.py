@@ -13,11 +13,11 @@ Unit tests for the class
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
-import numpy as np
 from cftime import datetime
+import numpy as np
 
-import iris.fileformats.pp
 from iris._lazy_data import as_lazy_data
+import iris.fileformats.pp
 from iris.fileformats.um._fast_load_structured_fields import (
     BasicFieldCollation,
 )

@@ -5,8 +5,8 @@
 # licensing details.
 
 import iris.tests as tests  # isort:skip
-import numpy as np
 import PIL.Image
+import numpy as np
 
 import iris
 

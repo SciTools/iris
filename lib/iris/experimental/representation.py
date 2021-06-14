@@ -9,8 +9,8 @@ Definitions of how Iris objects should be represented.
 
 """
 
-import re
 from html import escape
+import re
 
 
 class CubeRepresentation:

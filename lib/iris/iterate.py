@@ -8,9 +8,9 @@ Cube functions for iteration in step.
 
 """
 
+from collections.abc import Iterator
 import itertools
 import warnings
-from collections.abc import Iterator
 
 import numpy as np
 

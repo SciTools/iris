@@ -13,12 +13,12 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._data_manager import DataManager
 import iris.aux_factory
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.tests.stock
-from iris._data_manager import DataManager
 
 
 @tests.skip_data

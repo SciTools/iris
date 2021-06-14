@@ -9,17 +9,17 @@ A collection of routines which create standard Cubes for test purposes.
 """
 import iris.tests as tests  # isort:skip
 
-import os.path
 from datetime import datetime
+import os.path
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
-from cf_units import Unit
 
 import iris.aux_factory
+from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
 

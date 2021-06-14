@@ -14,9 +14,9 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
 from cf_units import CALENDAR_360_DAY, Unit
 from cftime import datetime as nc_datetime
+import numpy as np
 
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.pp import SplittableInt

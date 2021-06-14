@@ -13,8 +13,8 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 from scipy.sparse.csr import csr_matrix
 
-import iris.tests.stock as stock
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+import iris.tests.stock as stock
 
 
 class Test(tests.IrisTest):

@@ -14,9 +14,9 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-import iris.tests.stock
 from iris.analysis.trajectory import interpolate
 from iris.coords import AuxCoord, DimCoord
+import iris.tests.stock
 
 
 class TestFailCases(tests.IrisTest):

@@ -17,10 +17,10 @@ import numpy as np
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.pp
+from iris.fileformats.pp import PPField3
 import iris.tests.pp as pp
 import iris.tests.stock as stock
 import iris.util
-from iris.fileformats.pp import PPField3
 
 
 def itab_callback(cube, field, filename):

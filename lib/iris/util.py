@@ -8,6 +8,9 @@ Miscellaneous utility functions.
 
 """
 
+from abc import ABCMeta, abstractmethod
+from collections.abc import Hashable, Iterable
+from contextlib import contextmanager
 import copy
 import functools
 import inspect
@@ -15,17 +18,14 @@ import os
 import os.path
 import sys
 import tempfile
-from abc import ABCMeta, abstractmethod
-from collections.abc import Hashable, Iterable
-from contextlib import contextmanager
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 import iris.coords
 import iris.exceptions
-from iris._deprecation import warn_deprecated
 
 
 def broadcast_to_shape(array, shape, dim_map):

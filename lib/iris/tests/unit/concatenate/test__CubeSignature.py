@@ -9,8 +9,8 @@
 # before importing anything else.
 import iris.tests as tests  # isort:skip
 
-import numpy as np
 from cf_units import Unit
+import numpy as np
 
 from iris._concatenate import _CubeSignature as CubeSignature
 from iris.coords import DimCoord

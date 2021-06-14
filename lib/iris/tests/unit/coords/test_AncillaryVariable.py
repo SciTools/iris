@@ -11,10 +11,10 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
-from cf_units import Unit
 
 from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable

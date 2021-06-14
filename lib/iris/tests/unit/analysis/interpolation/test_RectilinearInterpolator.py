@@ -17,12 +17,12 @@ import datetime
 import numpy as np
 
 import iris
+from iris._lazy_data import as_lazy_data
+from iris.analysis._interpolation import RectilinearInterpolator
 import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.tests.stock as stock
-from iris._lazy_data import as_lazy_data
-from iris.analysis._interpolation import RectilinearInterpolator
 
 LINEAR = "linear"
 NEAREST = "nearest"

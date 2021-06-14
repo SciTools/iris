@@ -15,11 +15,11 @@ from unittest import mock
 
 import numpy as np
 
-import iris.experimental.regrid as eregrid
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.experimental.regrid as eregrid
 
 
 class Test(tests.IrisTest):

@@ -11,9 +11,9 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
 from cf_units import CALENDARS as calendars
 from cf_units import Unit
+import numpy as np
 
 from iris.coord_categorisation import add_categorised_coord, add_day_of_year
 from iris.coords import DimCoord

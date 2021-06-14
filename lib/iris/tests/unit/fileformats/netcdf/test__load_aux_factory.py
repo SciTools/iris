@@ -9,8 +9,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import warnings
 from unittest import mock
+import warnings
 
 import numpy as np
 

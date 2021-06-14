@@ -18,9 +18,9 @@ import warnings
 import matplotlib.pyplot as plt
 
 import iris
+from iris._deprecation import IrisDeprecation
 import iris.plot as iplt
 import iris.quickplot as qplt
-from iris._deprecation import IrisDeprecation
 
 GALLERY_DIRECTORY = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "gallery_code"

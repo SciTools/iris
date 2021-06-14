@@ -10,9 +10,6 @@ import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
 
-import iris.coords
-import iris.cube
-import iris.tests.stock
 from iris.coord_systems import (
     GeogCS,
     LambertConformal,
@@ -20,6 +17,9 @@ from iris.coord_systems import (
     Stereographic,
     TransverseMercator,
 )
+import iris.coords
+import iris.cube
+import iris.tests.stock
 
 
 def osgb():

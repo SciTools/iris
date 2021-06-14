@@ -11,9 +11,9 @@ import iris.tests as tests  # isort:skip
 
 import numpy.ma as ma
 
-import iris.cube
 from iris.analysis import PROPORTION
 from iris.coords import DimCoord
+import iris.cube
 
 
 class Test_units_func(tests.IrisTest):

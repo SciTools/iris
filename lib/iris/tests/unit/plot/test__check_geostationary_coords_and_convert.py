@@ -12,8 +12,8 @@ import iris.tests as tests  # isort:skip
 
 from unittest.mock import Mock
 
-import numpy as np
 from cartopy.crs import Geostationary, NearsidePerspective
+import numpy as np
 
 from iris.plot import _check_geostationary_coords_and_convert
 

@@ -17,7 +17,6 @@ import numpy as np
 from numpy import ma
 
 import iris
-import iris.tests.stock as stock
 from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (
     AlbersEqualArea,
@@ -34,6 +33,7 @@ from iris.coord_systems import (
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver
+import iris.tests.stock as stock
 
 
 class Test_write(tests.IrisTest):

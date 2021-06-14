@@ -92,9 +92,9 @@ import os.path
 import threading
 
 import iris._constraints
+from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
-from iris._deprecation import IrisDeprecation, warn_deprecated
 
 try:
     import iris_sample_data

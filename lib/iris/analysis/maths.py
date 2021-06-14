@@ -8,11 +8,11 @@ Basic mathematical and statistical operations.
 
 """
 
+from functools import lru_cache
 import inspect
 import math
 import operator
 import warnings
-from functools import lru_cache
 
 import cf_units
 import dask.array as da
@@ -20,12 +20,12 @@ import numpy as np
 from numpy import ma
 
 import iris.analysis
-import iris.coords
-import iris.exceptions
-import iris.util
 from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
 from iris.config import get_logger
+import iris.coords
+import iris.exceptions
+import iris.util
 
 # Configure the logger.
 logger = get_logger(__name__)

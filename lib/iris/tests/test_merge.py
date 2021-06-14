@@ -11,19 +11,19 @@ Test the cube merging mechanism.
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
+from collections.abc import Iterable
 import datetime
 import itertools
-from collections.abc import Iterable
 
 import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._lazy_data import as_lazy_data
+from iris.coords import AuxCoord, DimCoord
 import iris.cube
 import iris.exceptions
 import iris.tests.stock
-from iris._lazy_data import as_lazy_data
-from iris.coords import AuxCoord, DimCoord
 
 
 class TestMixin:

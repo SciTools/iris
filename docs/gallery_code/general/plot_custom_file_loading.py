@@ -57,9 +57,9 @@ The cube returned from the load function is then used to produce a plot.
 
 import datetime
 
+from cf_units import CALENDAR_GREGORIAN, Unit
 import matplotlib.pyplot as plt
 import numpy as np
-from cf_units import CALENDAR_GREGORIAN, Unit
 
 import iris
 import iris.coord_systems as icoord_systems

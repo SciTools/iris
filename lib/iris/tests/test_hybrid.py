@@ -17,8 +17,8 @@ import warnings
 import numpy as np
 
 import iris
-import iris.tests.stock
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+import iris.tests.stock
 
 
 @tests.skip_plot

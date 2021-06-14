@@ -14,8 +14,8 @@ import unittest
 import numpy as np
 
 import iris
-import iris.tests.stock as stock
 from iris._lazy_data import as_lazy_data
+import iris.tests.stock as stock
 from iris.util import new_axis
 
 
