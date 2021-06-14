@@ -17,7 +17,7 @@ repos:
         # Don't commit to master branch.
     -   id: no-commit-to-branch
 -   repo: https://github.com/psf/black
-    rev: '21.5b2'
+    rev: '21.6b0'
     hooks:
     -   id: black
         # Force black to run on whole repo, using settings from pyproject.toml
