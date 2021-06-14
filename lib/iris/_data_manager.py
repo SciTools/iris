@@ -14,7 +14,6 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
-from iris.util import array_equal
 
 
 class DataManager:
@@ -91,6 +90,8 @@ class DataManager:
             Boolean.
 
         """
+        from iris.util import array_equal
+
         result = NotImplemented
 
         if isinstance(other, type(self)):
