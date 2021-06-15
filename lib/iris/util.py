@@ -24,7 +24,6 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-import iris.coords
 import iris.exceptions
 
 
@@ -1170,6 +1169,7 @@ def new_axis(src_cube, scalar_coord=None):
         (1, 360, 360)
 
     """
+    from iris.coords import DimCoord
     from iris.cube import Cube
 
     if scalar_coord is not None:
@@ -1192,7 +1192,7 @@ def new_axis(src_cube, scalar_coord=None):
 
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
-            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            dim_coord = DimCoord.from_coord(coord)
             new_cube.add_dim_coord(dim_coord, 0)
         else:
             dims = np.array(src_cube.coord_dims(coord)) + 1
@@ -1604,10 +1604,11 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
                   time                    x      -              -
 
     """
+    from iris.coords import Coord, DimCoord
 
     if isinstance(name_or_coord, str):
         aux_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
@@ -1642,7 +1643,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         raise ValueError(msg)
 
     try:
-        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+        dim_coord = DimCoord.from_coord(aux_coord)
     except ValueError as valerr:
         msg = (
             "Attempt to promote an AuxCoord ({}) fails "
@@ -1713,10 +1714,11 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
                   year                    x      -              -
 
     """
+    from iris.coords import Coord
 
     if isinstance(name_or_coord, str):
         dim_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type
