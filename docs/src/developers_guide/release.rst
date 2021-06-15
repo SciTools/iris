@@ -104,7 +104,7 @@ To do this perform the following steps.
 Create a conda environment with the appropriate conda packages to build the
 source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
 
-    > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
+    > conda create -n iris-pypi -c conda-forge --yes pip python setuptools twine wheel
     > . activate iris-pypi
 
 Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.

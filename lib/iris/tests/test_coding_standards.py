@@ -110,7 +110,6 @@ class TestLicenseHeaders(tests.IrisTest):
             "docs/src/userguide/regridding_plots/*.py",
             "docs/src/_build/*",
             "lib/iris/analysis/_scipy_interpolate.py",
-            "lib/iris/fileformats/_pyke_rules/*",
         )
 
         try:

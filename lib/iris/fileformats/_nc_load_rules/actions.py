@@ -33,10 +33,6 @@ this particular action call is emulating :  In some cases, this may include a
 textual note that this rule 'failed', aka "did not trigger", which would not be
 recorded in the original implementation.
 
-The top-level 'run_actions' ensures that the individual rules actions are
-called, with various arguments, as appropriate to ensure the whole cube is
-built as it was by the original rules implementation.
-
 TODO: remove the use of intermediate "facts" to carry information between
 actions.  This mimics older behaviour, so is still useful while we are still
 comparing behaviour with the old Pyke rules (debugging).  But once that is no

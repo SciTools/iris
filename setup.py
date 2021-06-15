@@ -2,7 +2,6 @@ from contextlib import contextmanager
 import os
 from shutil import copyfile
 import sys
-import textwrap
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
@@ -63,50 +62,6 @@ class CleanSource(BaseCommand):
                         os.remove(compiled_path)
 
 
-def compile_pyke_rules(cmd, directory):
-    # Call out to the python executable to pre-compile the Pyke rules.
-    # Significant effort was put in to trying to get these to compile
-    # within this build process but there was no obvious way of finding
-    # a workaround to the issue presented in
-    # https://github.com/SciTools/iris/issues/2481.
-
-    shelled_code = textwrap.dedent(
-        """\
-
-    import os
-
-    # Monkey patch the load method to avoid "ModuleNotFoundError: No module
-    # named 'iris.fileformats._pyke_rules.compiled_krb'". In this instance
-    # we simply don't want the knowledge engine, so we turn the load method
-    # into a no-op.
-    from pyke.target_pkg import target_pkg
-    target_pkg.load = lambda *args, **kwargs: None
-
-    # Compile the rules by hand, without importing iris. That way we can
-    # avoid the need for all of iris' dependencies being installed.
-    os.chdir(os.path.join('{bld_dir}', 'iris', 'fileformats', '_pyke_rules'))
-
-    # Import pyke *after* changing directory. Without this we get the compiled
-    # rules in the wrong place. Identified in
-    # https://github.com/SciTools/iris/pull/2891#issuecomment-341404187
-    from pyke import knowledge_engine
-    knowledge_engine.engine('')
-
-    """.format(
-            bld_dir=directory
-        )
-    ).split("\n")
-    shelled_code = "; ".join(
-        [
-            line
-            for line in shelled_code
-            if not line.strip().startswith("#") and line.strip()
-        ]
-    )
-    args = [sys.executable, "-c", shelled_code]
-    cmd.spawn(args)
-
-
 def copy_copyright(cmd, directory):
     # Copy the COPYRIGHT information into the package root
     iris_build_dir = os.path.join(directory, "iris")
@@ -154,19 +109,12 @@ def custom_cmd(command_to_override, functions, help_doc=""):
 
 custom_commands = {
     "test": SetupTestRunner,
-    "develop": custom_cmd(develop_cmd, [build_std_names, compile_pyke_rules]),
-    "build_py": custom_cmd(
-        build_py, [build_std_names, compile_pyke_rules, copy_copyright]
-    ),
+    "develop": custom_cmd(develop_cmd, [build_std_names]),
+    "build_py": custom_cmd(build_py, [build_std_names, copy_copyright]),
     "std_names": custom_cmd(
         BaseCommand,
         [build_std_names],
         help_doc="generate CF standard name module",
-    ),
-    "pyke_rules": custom_cmd(
-        BaseCommand,
-        [compile_pyke_rules],
-        help_doc="compile CF-NetCDF loader rules",
     ),
     "clean_source": CleanSource,
 }

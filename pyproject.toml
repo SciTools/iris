@@ -1,7 +1,6 @@
 [build-system]
 # Defined by PEP 518
 requires = [
-  "scitools-pyke",
   "setuptools>=40.8.0",
   "wheel",
 ]
@@ -16,7 +15,6 @@ include = '\.pyi?$'
 extend-exclude = '''
 (
   /(
-    | pyke_rules
     | sphinxext
     | tools
   )/

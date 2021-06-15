@@ -25,7 +25,6 @@ import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
-from pyke import knowledge_engine
 
 from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
@@ -41,16 +40,12 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-import iris.fileformats._pyke_rules
 import iris.fileformats.cf
+import iris.io
 import iris.util
 
-# Show Pyke inference engine statistics.
+# Show actions activation statistics.
 DEBUG = False
-
-# Pyke CF related file names.
-_PYKE_RULE_BASE = "fc_rules_cf"
-_PYKE_FACT_BASE = "facts_cf"
 
 # Standard CML spatio-temporal axis names.
 SPATIO_TEMPORAL_AXES = ["t", "z", "y", "x"]
@@ -381,49 +376,13 @@ class CFNameCoordMap:
         return result
 
 
-def _pyke_kb_engine_real():
-    """Return the PyKE knowledge engine for CF->cube conversion."""
+def _actions_engine():
+    # Return an 'actions engine', which provides a pyke-rules-like interface to
+    # the core cf translation code.
+    # Deferred import to avoid circularity.
+    import iris.fileformats._nc_load_rules.engine as nc_actions_engine
 
-    pyke_dir = os.path.join(os.path.dirname(__file__), "_pyke_rules")
-    compile_dir = os.path.join(pyke_dir, "compiled_krb")
-    engine = None
-
-    if os.path.exists(compile_dir):
-        tmpvar = [
-            os.path.getmtime(os.path.join(compile_dir, fname))
-            for fname in os.listdir(compile_dir)
-            if not fname.startswith("_")
-        ]
-        if tmpvar:
-            oldest_pyke_compile_file = min(tmpvar)
-            rule_age = os.path.getmtime(
-                os.path.join(pyke_dir, _PYKE_RULE_BASE + ".krb")
-            )
-
-            if oldest_pyke_compile_file >= rule_age:
-                # Initialise the pyke inference engine.
-                engine = knowledge_engine.engine(
-                    (None, "iris.fileformats._pyke_rules.compiled_krb")
-                )
-
-    if engine is None:
-        engine = knowledge_engine.engine(iris.fileformats._pyke_rules)
-
-    return engine
-
-
-LOAD_PYKE = True
-
-
-def _pyke_kb_engine():
-    """Return a knowledge engine, or replacement object."""
-    if LOAD_PYKE:
-        engine = _pyke_kb_engine_real()
-    else:
-        # Deferred import to avoid circularity.
-        import iris.fileformats._nc_load_rules.engine as nonpyke_engine
-
-        engine = nonpyke_engine.Engine()
+    engine = nc_actions_engine.Engine()
     return engine
 
 
@@ -470,45 +429,36 @@ class NetCDFDataProxy:
 
 
 def _assert_case_specific_facts(engine, cf, cf_group):
-    # Initialise pyke engine "provides" hooks.
-    # These are used to patch non-processed element attributes after rules activation.
+    # Initialise a data store for built cube elements.
+    # This is used to patch element attributes *not* setup by the actions
+    # process, after the actions code has run.
     engine.cube_parts["coordinates"] = []
     engine.cube_parts["cell_measures"] = []
     engine.cube_parts["ancillary_variables"] = []
 
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "coordinate", (cf_name,)
-        )
+        engine.add_case_specific_fact("coordinate", (cf_name,))
 
     # Assert facts for CF auxiliary coordinates.
     for cf_name in cf_group.auxiliary_coordinates.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "auxiliary_coordinate", (cf_name,)
-        )
+        engine.add_case_specific_fact("auxiliary_coordinate", (cf_name,))
 
     # Assert facts for CF cell measures.
     for cf_name in cf_group.cell_measures.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "cell_measure", (cf_name,)
-        )
+        engine.add_case_specific_fact("cell_measure", (cf_name,))
 
     # Assert facts for CF ancillary variables.
     for cf_name in cf_group.ancillary_variables.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "ancillary_variable", (cf_name,)
-        )
+        engine.add_case_specific_fact("ancillary_variable", (cf_name,))
 
     # Assert facts for CF grid_mappings.
     for cf_name in cf_group.grid_mappings.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "grid_mapping", (cf_name,)
-        )
+        engine.add_case_specific_fact("grid_mapping", (cf_name,))
 
     # Assert facts for CF labels.
     for cf_name in cf_group.labels.keys():
-        engine.add_case_specific_fact(_PYKE_FACT_BASE, "label", (cf_name,))
+        engine.add_case_specific_fact("label", (cf_name,))
 
     # Assert facts for CF formula terms associated with the cf_group
     # of the CF data variable.
@@ -520,35 +470,31 @@ def _assert_case_specific_facts(engine, cf, cf_group):
             if cf_root in cf_group:
                 formula_root.add(cf_root)
                 engine.add_case_specific_fact(
-                    _PYKE_FACT_BASE,
                     "formula_term",
                     (cf_var.cf_name, cf_root, cf_term),
                 )
 
     for cf_root in formula_root:
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "formula_root", (cf_root,)
-        )
+        engine.add_case_specific_fact("formula_root", (cf_root,))
 
 
-def _pyke_stats(engine, cf_name):
-    if DEBUG:
-        print("-" * 80)
-        print("CF Data Variable: %r" % cf_name)
+def _actions_activation_stats(engine, cf_name):
+    print("-" * 80)
+    print("CF Data Variable: %r" % cf_name)
 
-        engine.print_stats()
+    engine.print_stats()
 
-        print("Rules Triggered:")
+    print("Rules Triggered:")
 
-        for rule in sorted(list(engine.rule_triggered)):
-            print("\t%s" % rule)
+    for rule in sorted(list(engine.rule_triggered)):
+        print("\t%s" % rule)
 
-        print("Case Specific Facts:")
-        kb_facts = engine.get_kb(_PYKE_FACT_BASE)
+    print("Case Specific Facts:")
+    kb_facts = engine.get_kb()
 
-        for key in kb_facts.entity_lists.keys():
-            for arg in kb_facts.entity_lists[key].case_specific_facts:
-                print("\t%s%s" % (key, arg))
+    for key in kb_facts.entity_lists.keys():
+        for arg in kb_facts.entity_lists[key].case_specific_facts:
+            print("\t%s%s" % (key, arg))
 
 
 def _set_attributes(attributes, key, value):
@@ -614,10 +560,10 @@ def _load_cube(engine, cf, cf_var, filename):
     data = _get_cf_var_data(cf_var, filename)
     cube = Cube(data)
 
-    # Reset the pyke inference engine.
+    # Reset the actions engine.
     engine.reset()
 
-    # Initialise pyke engine rule processing hooks.
+    # Initialise engine rule processing hooks.
     engine.cf_var = cf_var
     engine.cube = cube
     engine.cube_parts = {}
@@ -625,11 +571,15 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.rule_triggered = OrderedAddableList()  # set()
     engine.filename = filename
 
-    # Assert any case-specific facts.
+    # Assert all the case-specific facts.
+    # This extracts 'facts' specific to this data-variable (aka cube), from
+    # the info supplied in the CFGroup object.
     _assert_case_specific_facts(engine, cf, cf_var.cf_group)
 
-    # Run pyke inference engine with forward chaining rules.
-    engine.activate(_PYKE_RULE_BASE)
+    # Run the actions engine.
+    # This creates various cube elements and attaches them to the cube.
+    # It also records various other info on the engine, to be processed later.
+    engine.activate()
 
     # Having run the rules, now populate the attributes of all the cf elements with the
     # "unused" attributes from the associated CF-netCDF variable.
@@ -676,8 +626,9 @@ def _load_cube(engine, cf, cf_var, filename):
         for method in cube.cell_methods
     ]
 
-    # Show pyke session statistics.
-    _pyke_stats(engine, cf_var.cf_name)
+    if DEBUG:
+        # Show activation statistics for this data-var (i.e. cube).
+        _actions_activation_stats(engine, cf_var.cf_name)
 
     return cube
 
@@ -816,8 +767,8 @@ def load_cubes(filenames, callback=None):
     """
     from iris.io import run_callback
 
-    # Initialise the pyke inference engine.
-    engine = _pyke_kb_engine()
+    # Create an actions engine.
+    engine = _actions_engine()
 
     if isinstance(filenames, str):
         filenames = [filenames]
