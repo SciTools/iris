@@ -131,7 +131,7 @@ class Mixin__nc_load_actions:
         iris.fileformats.netcdf.DEBUG = self.debug
 
         # Call the main translation function to load a single cube.
-        def load_single_cube(engine):
+        def translate_cube(engine):
             # _load_cube establishes per-cube facts, activates rules and
             # produces an actual cube.
             cube = _load_cube(engine, cf, cf_var, nc_path)
@@ -150,18 +150,21 @@ class Mixin__nc_load_actions:
             return cube
 
         if do_pyke:
-            pyke_cube = load_single_cube(pyke_engine)
+            pyke_cube = translate_cube(pyke_engine)
         if do_nonpyke:
-            nonpyke_cube = load_single_cube(nonpyke_engine)
+            nonpyke_cube = translate_cube(nonpyke_engine)
 
         # If requested, directly compare the pyke and non-pyke outputs.
         if self.compare_pyke_nonpyke:
             # Compare the loaded cubes from both engines.
             # print("\nPYKE-NONPYKE COMPARE")
 
-            # First zap cube-data, as masked data does not compare well.
+            # Make a duplicate cube with un-masked cube data, as masked data
+            # does not compare well (i.e. cube1 == cube2 may yield 'masked'
+            # instead of a boolean).
             def unmask_cube(cube):
-                # preserve the original, we're going to realise..
+                # Make a copy, so that we can realise the data without
+                # modifying the original cube.
                 cube = cube.copy()
                 if isinstance(cube.data, np.ma.MaskedArray):
                     cube.data = cube.data.filled(0)

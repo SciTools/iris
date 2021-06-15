@@ -455,7 +455,7 @@ def action_formula_type(engine, formula_root_fact):
     rule_name = "fc_formula_type"
     (var_name,) = formula_root_fact
     cf_var = engine.cf_var.cf_group[var_name]
-    # var.standard_name is a formula type (or we should never get here).
+    # cf_var.standard_name is a formula type (or we should never get here).
     formula_type = getattr(cf_var, "standard_name", None)
     succeed = True
     if formula_type not in iris.fileformats.cf.reference_terms:
@@ -484,7 +484,7 @@ def action_formula_term(engine, formula_term_fact):
     # Must run AFTER formula root identification.
     (termvar_name, rootvar_name, term_name) = formula_term_fact
     # The rootname is implicit :  have only one per cube
-    # TODO: change when we adopt cf-1.7 advanced grid-mping syntax
+    # TODO: change when we adopt cf-1.7 advanced grid-mapping syntax
     engine.requires.setdefault("formula_terms", {})[term_name] = termvar_name
     rule_name = f"fc_formula_term({term_name})"
     return rule_name
