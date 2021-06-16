@@ -224,12 +224,12 @@ class Test___eq__(tests.IrisTest, _Test_operator):
         self.expected_value = EQ_EXPECTATIONS
 
     def test_cftime_equal(self):
-        pdt = PartialDateTime(month=3, microsecond=2)
+        pdt = PartialDateTime(month=3, second=2)
         other = cftime.datetime(year=2013, month=3, day=20, second=2)
         self.assertTrue(pdt == other)
 
     def test_cftime_not_equal(self):
-        pdt = PartialDateTime(month=3, microsecond=2)
+        pdt = PartialDateTime(month=3, second=2)
         other = cftime.datetime(year=2013, month=4, day=20, second=2)
         self.assertFalse(pdt == other)
 
