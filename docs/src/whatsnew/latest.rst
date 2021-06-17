@@ -175,6 +175,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ refactored ``setup.py`` into ``setup.cfg``. (:pull:`4168`)
 
+#. `@bjlittle`_ consolidated the ``.flake8`` configuration into ``setup.cfg``.
+   (:pull:`4200`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
