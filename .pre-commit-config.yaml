@@ -28,4 +28,4 @@ repos:
     hooks:
         # Run flake8.
     -   id: flake8
-        args: [--config=./.flake8]
+        args: [--config=./setup.cfg]
