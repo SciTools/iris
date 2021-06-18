@@ -23,12 +23,11 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-import iris.aux_factory
 from iris.common import (
     AncillaryVariableMetadata,
     BaseMetadata,
-    CFVariableMixin,
     CellMeasureMetadata,
+    CFVariableMixin,
     CoordMetadata,
     DimCoordMetadata,
     metadata_manager_factory,

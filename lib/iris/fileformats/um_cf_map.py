@@ -18,7 +18,6 @@ Provides UM/CF phenomenon translations.
 
 from collections import namedtuple
 
-
 CFName = namedtuple('CFName', 'standard_name long_name units')
 
 

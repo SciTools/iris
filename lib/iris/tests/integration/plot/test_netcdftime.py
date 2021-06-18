@@ -10,14 +10,13 @@ Test plot of time coord with non-gregorian calendar.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+from cf_units import Unit
 import cftime
 import numpy as np
 
 from iris.coords import AuxCoord
-
-from cf_units import Unit
 
 if tests.NC_TIME_AXIS_AVAILABLE:
     from nc_time_axis import CalendarDateTime

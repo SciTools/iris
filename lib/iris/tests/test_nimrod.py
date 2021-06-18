@@ -6,13 +6,13 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 import iris
-import iris.fileformats.nimrod_load_rules as nimrod_load_rules
 from iris.exceptions import TranslationError
+import iris.fileformats.nimrod_load_rules as nimrod_load_rules
 
 
 def mock_nimrod_field():

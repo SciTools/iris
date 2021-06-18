@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from contextlib import contextmanager
 from itertools import repeat
@@ -26,9 +26,11 @@ import numpy.ma as ma
 import iris
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
-from iris.fileformats.netcdf import Saver
-from iris.fileformats.netcdf import UnknownCellMethodWarning
+from iris.fileformats.netcdf import (
+    CF_CONVENTIONS_VERSION,
+    Saver,
+    UnknownCellMethodWarning,
+)
 import iris.tests.stock as stock
 
 

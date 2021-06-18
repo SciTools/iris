@@ -7,14 +7,15 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.tests.stock import simple_3d
-from iris.tests.stock import sample_2d_latlons
-from iris.tests.stock import make_bounds_discontiguous_at_point
-
+from iris.tests.stock import (
+    make_bounds_discontiguous_at_point,
+    sample_2d_latlons,
+    simple_3d,
+)
 from iris.util import find_discontiguities
 
 

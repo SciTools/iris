@@ -7,15 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import numpy as np
 
 import iris.fileformats.pp as pp
-from iris.fileformats.pp import PPField
-from iris.fileformats.pp import SplittableInt
+from iris.fileformats.pp import PPField, SplittableInt
 
 # The PPField class is abstract, so to test we define a minimal,
 # concrete subclass with the `t1` and `t2` properties.

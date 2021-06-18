@@ -116,7 +116,7 @@ lint_task:
     image: python:3.8
     cpu: 2
     memory: 4G
-  name: "${CIRRUS_OS}: flake8 and black"
+  name: "${CIRRUS_OS}: black, flake8 and isort"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
@@ -126,8 +126,9 @@ lint_task:
     - pip list
     - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
     - pip list
-    - nox --session flake8
     - nox --session black
+    - nox --session flake8
+    - nox --session isort
 
 
 #

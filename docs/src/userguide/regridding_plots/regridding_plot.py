@@ -1,6 +1,7 @@
+import matplotlib.pyplot as plt
+
 import iris
 import iris.plot as iplt
-import matplotlib.pyplot as plt
 
 # Load the data.
 global_air_temp = iris.load_cube(iris.sample_data_path("air_temp.pp"))

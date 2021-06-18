@@ -14,7 +14,7 @@ from functools import partial
 import numpy as np
 import stratify
 
-from iris.coords import Coord, AuxCoord, DimCoord
+from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
 
 

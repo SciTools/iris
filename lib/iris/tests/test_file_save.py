@@ -9,18 +9,17 @@ Test the file saving mechanism.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+from io import StringIO
 import os
 import unittest
 
 import iris
 import iris.cube
-import iris.util
-import iris.fileformats.pp as pp
 import iris.fileformats.dot as dot
-
-from io import StringIO
+import iris.fileformats.pp as pp
+import iris.util
 
 # Make a test skip decorator, for when DOT not available
 skip_dotpng = unittest.skipIf(

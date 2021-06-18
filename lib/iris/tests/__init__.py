@@ -29,8 +29,8 @@ import filecmp
 import functools
 import gzip
 import inspect
-import json
 import io
+import json
 import math
 import os
 import os.path
@@ -38,9 +38,9 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import unittest
 from unittest import mock
-import threading
 import warnings
 import xml.dom.minidom
 import zlib
@@ -50,8 +50,8 @@ import numpy as np
 import numpy.ma as ma
 import requests
 
-import iris.cube
 import iris.config
+import iris.cube
 import iris.util
 
 # Test for availability of matplotlib.
@@ -835,8 +835,8 @@ class IrisTest_nometa(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
-        import imagehash
         from PIL import Image
+        import imagehash
 
         dev_mode = os.environ.get("IRIS_TEST_CREATE_MISSING")
         unique_id = self._unique_id()

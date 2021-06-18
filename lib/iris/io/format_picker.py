@@ -46,9 +46,6 @@ import os
 import struct
 
 
-import iris.io
-
-
 class FormatAgent:
     """
     The FormatAgent class is the containing object which is responsible for identifying the format of a given file
@@ -330,4 +327,6 @@ class UriProtocol(FileElement):
         FileElement.__init__(self, requires_fh=False)
 
     def get_element(self, basename, file_handle):
-        return iris.io.decode_uri(basename)[0]
+        from iris.io import decode_uri
+
+        return decode_uri(basename)[0]

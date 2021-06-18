@@ -23,11 +23,10 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS
+from iris.coords import AuxCoord, DimCoord
 import iris.fileformats
 import iris.io.format_picker
-
 
 X_SIZE = 4320
 Y_SIZE = 2160

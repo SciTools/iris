@@ -1,8 +1,7 @@
 import itertools
 
-from scipy.sparse import csr_matrix
 import numpy as np
-
+from scipy.sparse import csr_matrix
 
 # ============================================================================
 # |                        Copyright SciPy                                   |
@@ -12,6 +11,8 @@ import numpy as np
 
 # Source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
 # 9aeaafb32/scipy/interpolate/interpnd.pyx#L167
+
+
 def _ndim_coords_from_arrays(points, ndim=None):
     """
     Convert a tuple of coordinate arrays to a (..., ndim)-shaped array.

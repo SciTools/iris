@@ -10,17 +10,15 @@ Unit tests for the `iris.fileformats.nimrod_load_rules.units` function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
+
 import numpy as np
 
 from iris.cube import Cube
-from iris.fileformats.nimrod_load_rules import (
-    units,
-    NIMROD_DEFAULT,
-)
 from iris.fileformats.nimrod import NimrodField
+from iris.fileformats.nimrod_load_rules import NIMROD_DEFAULT, units
 
 
 class Test(tests.IrisTest):

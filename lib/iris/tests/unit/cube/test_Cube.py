@@ -7,38 +7,36 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from itertools import permutations
 from unittest import mock
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from cf_units import Unit
-
+from iris._lazy_data import as_lazy_data
 import iris.analysis
+from iris.analysis import MEAN, Aggregator, WeightedAggregator
 import iris.aux_factory
-import iris.coords
-import iris.exceptions
-from iris.analysis import WeightedAggregator, Aggregator
-from iris.analysis import MEAN
 from iris.aux_factory import HybridHeightFactory
-from iris.cube import Cube
+import iris.coords
 from iris.coords import (
-    AuxCoord,
-    DimCoord,
-    CellMeasure,
     AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
     CellMethod,
+    DimCoord,
 )
+from iris.cube import Cube
+import iris.exceptions
 from iris.exceptions import (
-    CoordinateNotFoundError,
-    CellMeasureNotFoundError,
     AncillaryVariableNotFoundError,
+    CellMeasureNotFoundError,
+    CoordinateNotFoundError,
     UnitConversionError,
 )
-from iris._lazy_data import as_lazy_data
 import iris.tests.stock as stock
 
 

@@ -10,7 +10,7 @@ Test iris.fileformats.rules.py - metadata translation rules.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import types
 from unittest import mock
@@ -18,6 +18,7 @@ from unittest import mock
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory
+from iris.coords import CellMethod
 from iris.cube import Cube
 from iris.fileformats.rules import (
     ConcreteReferenceTarget,
@@ -29,7 +30,6 @@ from iris.fileformats.rules import (
     load_cubes,
     scalar_cell_method,
 )
-from iris.coords import CellMethod
 import iris.tests.stock as stock
 
 

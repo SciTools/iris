@@ -8,7 +8,7 @@ Test the :func:`iris.experimental.ugrid.ugrid` function.
 
 """
 
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import unittest
 
@@ -23,7 +23,6 @@ skip_pyugrid = unittest.skipIf(
 )
 
 import iris.experimental.ugrid
-
 
 data_path = (
     "NetCDF",

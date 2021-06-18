@@ -7,20 +7,18 @@
 
 import collections
 import datetime
+from operator import itemgetter
 import re
 import warnings
 
 import cf_units
 import numpy as np
 
-from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
+from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
-
-from operator import itemgetter
-
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = "%d/%m/%Y  %H:%M %Z"

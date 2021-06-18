@@ -7,24 +7,25 @@
 A collection of routines which create standard Cubes for test purposes.
 
 """
+import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 import os.path
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from cf_units import Unit
-from iris.cube import Cube
 import iris.aux_factory
+from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import DimCoord, AuxCoord, CellMethod
-import iris.tests as tests
-from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.cube import Cube
+
 from ._stock_2d_latlons import (  # noqa
-    sample_2d_latlons,
     make_bounds_discontiguous_at_point,
+    sample_2d_latlons,
 )
 
 

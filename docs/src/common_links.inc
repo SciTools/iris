@@ -16,6 +16,7 @@
 .. _Iris GitHub: https://github.com/SciTools/iris
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
+.. _isort: https://pycqa.github.io/isort/
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/

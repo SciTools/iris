@@ -11,7 +11,7 @@ Test interaction between :mod:`iris.plot` and
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
@@ -21,11 +21,12 @@ import iris.tests.stock
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     from iris.plot import (
         contour,
         contourf,
-        pcolormesh,
         pcolor,
+        pcolormesh,
         points,
         scatter,
     )

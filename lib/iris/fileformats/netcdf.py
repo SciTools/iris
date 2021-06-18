@@ -20,33 +20,30 @@ import re
 import string
 import warnings
 
-import dask.array as da
 import cf_units
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
 from pyke import knowledge_engine
 
-import iris.analysis
+from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
     HybridHeightFactory,
     HybridPressureFactory,
-    OceanSigmaZFactory,
-    OceanSigmaFactory,
     OceanSFactory,
     OceanSg1Factory,
     OceanSg2Factory,
+    OceanSigmaFactory,
+    OceanSigmaZFactory,
 )
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.cube
 import iris.exceptions
-import iris.fileformats.cf
 import iris.fileformats._pyke_rules
-import iris.io
+import iris.fileformats.cf
 import iris.util
-from iris._lazy_data import as_lazy_data
 
 # Show Pyke inference engine statistics.
 DEBUG = False
@@ -585,9 +582,11 @@ def _get_cf_var_data(cf_var, filename):
 
 
 def _load_cube(engine, cf, cf_var, filename):
+    from iris.cube import Cube
+
     """Create the cube associated with the CF-netCDF data variable."""
     data = _get_cf_var_data(cf_var, filename)
-    cube = iris.cube.Cube(data)
+    cube = Cube(data)
 
     # Reset the pyke inference engine.
     engine.reset()
@@ -789,6 +788,8 @@ def load_cubes(filenames, callback=None):
         Generator of loaded NetCDF :class:`iris.cubes.Cube`.
 
     """
+    from iris.io import run_callback
+
     # Initialise the pyke inference engine.
     engine = _pyke_kb_engine()
 
@@ -814,7 +815,7 @@ def load_cubes(filenames, callback=None):
                 warnings.warn("{}".format(e))
 
             # Perform any user registered callback function.
-            cube = iris.io.run_callback(callback, cube, cf_var, filename)
+            cube = run_callback(callback, cube, cf_var, filename)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:
@@ -2624,11 +2625,13 @@ def save(
         NetCDF Context manager (:class:`~Saver`).
 
     """
+    from iris.cube import Cube, CubeList
+
     if unlimited_dimensions is None:
         unlimited_dimensions = []
 
-    if isinstance(cube, iris.cube.Cube):
-        cubes = iris.cube.CubeList()
+    if isinstance(cube, Cube):
+        cubes = CubeList()
         cubes.append(cube)
     else:
         cubes = cube

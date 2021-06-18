@@ -10,11 +10,11 @@ Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.fileformats.name_loaders import _generate_cubes, NAMECoord
+from iris.fileformats.name_loaders import NAMECoord, _generate_cubes
 
 
 class TestCellMethods(tests.IrisTest):

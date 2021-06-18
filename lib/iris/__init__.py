@@ -91,13 +91,10 @@ import itertools
 import os.path
 import threading
 
-import iris.config
-import iris.cube
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
-import iris.fileformats
+import iris.config
 import iris.io
-
 
 try:
     import iris_sample_data
@@ -266,9 +263,11 @@ def _generate_cubes(uris, callback, constraints):
 
 
 def _load_collection(uris, constraints=None, callback=None):
+    from iris.cube import _CubeFilterCollection
+
     try:
         cubes = _generate_cubes(uris, callback, constraints)
-        result = iris.cube._CubeFilterCollection.from_cubes(cubes, constraints)
+        result = _CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
         raise iris.exceptions.TranslationError(
             "The file appears empty or incomplete: {!r}".format(str(e))

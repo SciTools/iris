@@ -13,11 +13,10 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
 
-from packaging import version
-
 import cf_units
 from matplotlib import __version__ as _mpl_version
 import matplotlib.pyplot as plt
+from packaging import version
 
 import iris.config
 import iris.coords

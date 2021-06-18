@@ -7,22 +7,21 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import iris.tests as tests  # isort:skip
+
 import collections
-
-import iris.tests as tests
-import iris.tests.stock
-
 from unittest import mock
 
 from cf_units import Unit
 import numpy as np
 
 from iris import Constraint
-from iris.cube import Cube, CubeList
-from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube, CubeList
 import iris.exceptions
 from iris.fileformats.pp import STASH
+import iris.tests.stock
 
 
 class Test_concatenate_cube(tests.IrisTest):

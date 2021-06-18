@@ -45,15 +45,15 @@ import numpy.ma as ma
 import scipy.interpolate
 import scipy.stats.mstats
 
+import iris._lazy_data
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import (
     EXTRAPOLATION_MODES,
     RectilinearInterpolator,
 )
-from iris.analysis._regrid import RectilinearRegridder, CurvilinearRegridder
+from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
 from iris.exceptions import LazyAggregatorError
-import iris._lazy_data
 
 __all__ = (
     "COUNT",

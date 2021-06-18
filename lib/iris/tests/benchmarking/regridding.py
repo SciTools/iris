@@ -10,11 +10,11 @@ performance testing. it is expected to be expanded/replaced in future.
 
 """
 
+import iris
+
 # import iris tests first so that some things can be initialised before
 # importing anything else.
 from iris import tests
-
-import iris
 from iris.analysis import AreaWeighted
 
 

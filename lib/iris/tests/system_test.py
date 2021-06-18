@@ -13,12 +13,12 @@ The system tests can be run with ``python setup.py test --system-tests``.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
+import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
 
 import iris
-import iris.tests as tests
 
 
 class SystemInitialTest(tests.IrisTest):

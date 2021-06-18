@@ -10,14 +10,14 @@ Unit tests for the :class:`iris.common.metadata.AncillaryVariableMetadata`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
 
 from iris.common.lenient import _LENIENT, _qualname
-from iris.common.metadata import BaseMetadata, AncillaryVariableMetadata
+from iris.common.metadata import AncillaryVariableMetadata, BaseMetadata
 
 
 class Test(tests.IrisTest):

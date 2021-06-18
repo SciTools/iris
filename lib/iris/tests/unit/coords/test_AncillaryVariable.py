@@ -7,20 +7,19 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris.tests.unit.coords import CoordTestMixin, lazyness_string
-
-from cf_units import Unit
+from iris._lazy_data import as_lazy_data
 from iris.coords import AncillaryVariable
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
+from iris.tests.unit.coords import CoordTestMixin, lazyness_string
 
 
 def data_all_dtypes_and_lazynesses(self):

@@ -4,9 +4,9 @@ from shutil import copyfile
 import sys
 import textwrap
 
-from setuptools import setup, Command
-from setuptools.command.develop import develop as develop_cmd
+from setuptools import Command, setup
 from setuptools.command.build_py import build_py
+from setuptools.command.develop import develop as develop_cmd
 
 
 @contextmanager

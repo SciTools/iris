@@ -15,8 +15,7 @@ import numpy as np
 
 import iris.coords
 import iris.cube
-from iris.util import guess_coord_axis, array_equal
-
+from iris.util import array_equal, guess_coord_axis
 
 #
 # TODO:

@@ -10,9 +10,7 @@ Unit tests for :class:`iris.analysis._area_weighted.AreaWeightedRegridder`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
-import iris.experimental.regrid as eregrid
-
+import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import numpy as np
@@ -21,6 +19,7 @@ from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.experimental.regrid as eregrid
 
 
 class Test(tests.IrisTest):

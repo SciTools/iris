@@ -14,13 +14,7 @@ import math
 import numpy as np
 from scipy.spatial import cKDTree
 
-import iris.analysis
-import iris.coord_systems
 import iris.coords
-
-from iris.analysis import Linear
-from iris.analysis._interpolation import snapshot_grid
-from iris.util import _meshgrid
 
 
 class _Segment:
@@ -223,6 +217,8 @@ def interpolate(cube, sample_points, method=None):
         interpolated_cube = interpolate(cube, sample_points)
 
     """
+    from iris.analysis import Linear
+
     if method not in [None, "linear", "nearest"]:
         raise ValueError("Unhandled interpolation specified : %s" % method)
 
@@ -756,6 +752,9 @@ class UnstructuredNearestNeigbourRegridder:
             have the same units in the source and grid cubes.
 
         """
+        from iris.analysis._interpolation import snapshot_grid
+        from iris.util import _meshgrid
+
         # Make a copy of the source cube, so we can convert coordinate units.
         src_cube = src_cube.copy()
 

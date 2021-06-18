@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import collections
 import contextlib
@@ -17,9 +17,8 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
-import iris.fileformats.pp as pp
 from iris.fileformats._ff import FF2PP
-
+import iris.fileformats.pp as pp
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0
