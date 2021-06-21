@@ -37,7 +37,7 @@ env:
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
   # Pip packages to be upgraded/installed.
-  PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
+  PIP_CACHE_PACKAGES: "nox pip setuptools wheel"
   # Conda packages to be installed.
   CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
@@ -116,7 +116,7 @@ lint_task:
     image: python:3.8
     cpu: 2
     memory: 4G
-  name: "${CIRRUS_OS}: black, flake8 and isort"
+  name: "${CIRRUS_OS}: linting"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
@@ -126,9 +126,7 @@ lint_task:
     - pip list
     - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
     - pip list
-    - nox --session black
-    - nox --session flake8
-    - nox --session isort
+    - nox --session lint
 
 
 #
