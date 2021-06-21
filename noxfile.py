@@ -175,7 +175,7 @@ def flake8(session: nox.sessions.Session):
     # Pip install the session requirements.
     session.install("flake8")
     # Execute the flake8 linter on the package.
-    session.run("flake8", str(PACKAGE))
+    session.run("flake8", PACKAGE)
     # Execute the flake8 linter on root Python files.
     for fname in ROOT_DIR.glob("*.py"):
         session.run("flake8", str(fname))
@@ -195,7 +195,7 @@ def black(session: nox.sessions.Session):
     # Pip install the session requirements.
     session.install("black==21.5b2")
     # Execute the black format checker on the package.
-    session.run("black", "--check", str(PACKAGE))
+    session.run("black", "--check", PACKAGE)
     # Execute the black format checker on root Python files.
     for fname in ROOT_DIR.glob("*.py"):
         session.run("black", "--check", str(fname))
