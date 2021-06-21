@@ -181,6 +181,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added support for automated ``import`` linting with `isort`_.
    (:pull:`4174`)
 
+#. `@bjlittle`_ renamed ``iris/master`` branch to ``iris/main`` and migrated
+   references of ``master`` to ``main`` within codebase. (:pull:`4202`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
