@@ -110,7 +110,7 @@ or ignore the url.
           ``.readthedocs.yml``.
 
 
-.. _conf.py: https://github.com/SciTools/iris/blob/master/docs/src/conf.py
+.. _conf.py: https://github.com/SciTools/iris/blob/main/docs/src/conf.py
 
 
 .. _contributing.documentation.api:

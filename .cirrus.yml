@@ -87,7 +87,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 # YAML alias for compute credits.
 #
 compute_credits_template: &CREDITS_TEMPLATE
-  # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
+  # Only use credits for non-DRAFT pull-requests to SciTools/iris main branch by collaborators
   use_compute_credits: ${CIRRUS_REPO_FULL_NAME} == "SciTools/iris" && ${CIRRUS_USER_COLLABORATOR} == "true" && ${CIRRUS_PR_DRAFT} == "false" && ${CIRRUS_PR} != ""
 
 

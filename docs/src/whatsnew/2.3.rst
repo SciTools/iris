@@ -238,7 +238,7 @@ Documentation
 =============
 
 * Adopted a
-  `new colour logo for Iris <https://github.com/SciTools/iris/blob/master/docs/src/_static/Iris7_1_trim_100.png>`_
+  `new colour logo for Iris <https://github.com/SciTools/iris/blob/main/docs/src/_static/Iris7_1_trim_100.png>`_
 
 * Added a gallery example showing how to concatenate NEMO ocean model data,
   see :ref:`sphx_glr_generated_gallery_oceanography_plot_load_nemo.py`.

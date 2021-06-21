@@ -108,7 +108,7 @@ all the packages from the `testing` and `documentation` sections.
           are supported and tested against by Iris, view the contents of
           the `requirements/ci`_ directory.
 
-.. _requirements/ci: https://github.com/scitools/iris/tree/master/requirements/ci
+.. _requirements/ci: https://github.com/scitools/iris/tree/main/requirements/ci
 
 Finally you need to run the command to configure your shell environment
 to find your local Iris code::

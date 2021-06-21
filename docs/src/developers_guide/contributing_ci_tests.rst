@@ -145,6 +145,6 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
 
 .. _Cirrus-CI Dashboard: https://cirrus-ci.com/github/SciTools/iris
 .. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
-.. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/master/.pre-commit-config.yaml
+.. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
 .. _GitHub Actions: https://github.com/SciTools/iris/actions/workflows/refresh-lockfiles.yml

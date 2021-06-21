@@ -147,7 +147,7 @@ This document explains the changes made to Iris for this release
    environment info. (:pull:`3990`)
 
 #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
-   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+   from collaborators targeting the Iris ``main`` branch. (:pull:`4007`)
 
 #. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
    (:pull:`3997`)
@@ -199,8 +199,8 @@ This document explains the changes made to Iris for this release
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
-.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg
-.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/master
+.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
+.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/main
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
