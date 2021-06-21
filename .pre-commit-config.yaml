@@ -30,8 +30,8 @@ repos:
     -   id: flake8
         args: [--config=./setup.cfg]
 -   repo: https://github.com/pycqa/isort
-    rev: 5.8.0
+    rev: 5.9.1
     hooks:
     -   id: isort
         name: isort
-        args: ["--profile", "black", "--filter-files"]
+        args: ["--filter-files"]
