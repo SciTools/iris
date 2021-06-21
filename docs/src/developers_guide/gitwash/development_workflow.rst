@@ -34,8 +34,8 @@ what you've done, and why you did it.
 
 See `linux git workflow`_ for some explanation.
 
-Consider Deleting Your Master Branch
-====================================
+Consider Deleting Your Main Branch
+==================================
 
 It may sound strange, but deleting your own ``main`` branch can help reduce
 confusion about which branch you are on.  See `deleting master on github`_ for
