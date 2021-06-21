@@ -31,7 +31,7 @@ class TestCubePrintout___str__(tests.IrisTest):
 
 
 def cube_replines(cube, **kwargs):
-    return CubePrinter(CubeSummary(cube)).to_string(**kwargs).split("\n")
+    return CubePrinter(cube).to_string(**kwargs).split("\n")
 
 
 class TestCubePrintout__to_string(tests.IrisTest):
@@ -87,7 +87,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             (
                 "        very_very_very_very_very_long_name "
-                "longish string extends beyond dim columns"
+                ": longish string extends beyond dim columns"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -385,19 +385,21 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        list                        [3]",
-            "        number                      1.2",
-            "        string                      four five in a string",
-            "        z_tupular                   (6, (7, 8))",
+            "        list                        : [3]",
+            "        number                      : 1.2",
+            "        string                      : four five in a string",
+            "        z_tupular                   : (6, (7, 8))",
         ]
         self.assertEqual(rep, expected)
 
     def test_section_cube_attributes__string_extras(self):
         cube = Cube([0], long_name="name", units=1)
+        # Overlong strings are truncated (with iris.util.clip_string).
         long_string = (
             "this is very very very very very very very "
             "very very very very very very very long."
         )
+        # Strings with embedded newlines or quotes are printed in quoted form.
         cube.attributes["escaped"] = "escaped\tstring"
         cube.attributes["long"] = long_string
         cube.attributes["long_multi"] = "multi\nline, " + long_string
@@ -405,20 +407,20 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        escaped                     'escaped\\tstring'",
+            "        escaped                     : 'escaped\\tstring'",
             (
-                "        long                        this is very very very "
+                "        long                        : this is very very very "
                 "very very very very very very very very very very..."
             ),
             (
-                "        long_multi                  'multi\\nline, "
+                "        long_multi                  : 'multi\\nline, "
                 "this is very very very very very very very very very very..."
             ),
         ]
         self.assertEqual(rep, expected)
 
     def test_section_cube_attributes__array(self):
-        # incl a long one
+        # Including  a long one, which gets a truncated representation.
         cube = Cube([0], long_name="name", units=1)
         small_array = np.array([1.2, 3.4])
         large_array = np.arange(36).reshape((18, 2))
@@ -428,9 +430,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        array                       array([1.2, 3.4])",
+            "        array                       : array([1.2, 3.4])",
             (
-                "        bigarray                    array([[ 0, 1], [ 2, 3], "
+                "        bigarray                    : array([[ 0, 1], [ 2, 3], "
                 "[ 4, 5], [ 6, 7], [ 8, 9], [10, 11], [12, 13],..."
             ),
         ]

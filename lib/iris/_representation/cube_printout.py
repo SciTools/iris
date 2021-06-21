@@ -9,6 +9,8 @@ Provides text printouts of Iris cubes.
 """
 from copy import deepcopy
 
+from iris._representation.cube_summary import CubeSummary
+
 
 class Table:
     """
@@ -129,7 +131,7 @@ class Table:
 class CubePrinter:
     """
     An object created from a
-    :class:`iris._representation.cube_summary.CubeSummary`, which provides
+    :class:`iris._representation.cube_or_summary.CubeSummary`, which provides
     text printout of a :class:`iris.cube.Cube`.
 
     TODO: the cube :meth:`iris.cube.Cube.__str__` and
@@ -138,12 +140,30 @@ class CubePrinter:
     produce cube summary strings.
 
     This class has no internal knowledge of :class:`iris.cube.Cube`, but only
-    of :class:`iris._representation.cube_summary.CubeSummary`.
+    of :class:`iris._representation.cube_or_summary.CubeSummary`.
 
     """
 
-    def __init__(self, cube_summary):
+    def __init__(self, cube_or_summary):
+        """
+        An object that provides a printout of a cube.
+
+        Args:
+
+        * cube_or_summary (Cube or CubeSummary):
+            If a cube, first create a CubeSummary from it.
+
+
+        .. note::
+            The CubePrinter is based on a digest of a CubeSummary, but does
+            not reference or store it.
+
+        """
         # Create our internal table from the summary, to produce the printouts.
+        if isinstance(cube_or_summary, CubeSummary):
+            cube_summary = cube_or_summary
+        else:
+            cube_summary = CubeSummary(cube_or_summary)
         self.table = self._ingest_summary(cube_summary)
 
     def _ingest_summary(
@@ -247,7 +267,7 @@ class CubePrinter:
                             add_scalar_row(item_to_extra_indent + item.extra)
                 elif "attribute" in title:
                     for title, value in zip(sect.names, sect.values):
-                        add_scalar_row(title, value)
+                        add_scalar_row(title, ": " + value)
                 elif "scalar cell measure" in title or "cell method" in title:
                     # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:
@@ -276,8 +296,8 @@ class CubePrinter:
             # Extend header column#0 to a given minimum width.
             cols[0] = cols[0].ljust(name_padding)
 
-        # Add parentheses around the dim column texts, unless already present
-        # - e.g. "(scalar cube)".
+        # Add parentheses around the dim column texts.
+        # -- unless already present, e.g. "(scalar cube)".
         if len(cols) > 1 and not cols[1].startswith("("):
             # Add parentheses around the dim columns
             cols[1] = "(" + cols[1]
@@ -325,17 +345,14 @@ class CubePrinter:
         * oneline (bool):
             If set, produce a one-line summary (without any extra spacings).
             Default is False  = produce full (multiline) summary.
-        * max_width (int):
-            If set, override the default maximum output width.
-            Default is None = use the default established at object creation.
+        * name_padding (int):
+            The minimum width for the "name" (#0) column.
+            Used for multiline output only.
 
         Returns:
             result (string)
 
         """
-        # if max_width is None:
-        #     max_width = self.max_width
-
         if oneline:
             result = self._oneline_string()
         else:
@@ -344,5 +361,5 @@ class CubePrinter:
         return result
 
     def __str__(self):
-        """Printout of self is the full multiline string."""
+        """Printout of self, as a full multiline string."""
         return self.to_string()
