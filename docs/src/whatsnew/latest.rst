@@ -129,7 +129,6 @@ This document explains the changes made to Iris for this release
    they render better in the published documentation.  See :issue:`4085`.
    (:pull:`4100`)
 
-
 💼 Internal
 ===========
 
@@ -187,6 +186,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ added the `blacken-docs`_ ``pre-commit`` hook to automate
    ``black`` linting of documentation code blocks. (:pull:`4205`)
+
+#. `@bjlittle`_ consolidated `nox`_ ``black``, ``flake8`` and ``isort`` sessions
+   into one ``lint`` session using ``pre-commit``. (:pull:`4181`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
