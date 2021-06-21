@@ -14,7 +14,7 @@ repos:
     -   id: check-merge-conflict
         # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
     -   id: debug-statements
-        # Don't commit to master branch.
+        # Don't commit to main branch.
     -   id: no-commit-to-branch
 -   repo: https://github.com/psf/black
     rev: '21.6b0'

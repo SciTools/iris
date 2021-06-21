@@ -11,13 +11,13 @@
 
 <p align="center">
 <a href="https://cirrus-ci.com/github/SciTools/iris">
-<img src="https://api.cirrus-ci.com/github/SciTools/iris.svg?branch=master"
+<img src="https://api.cirrus-ci.com/github/SciTools/iris.svg?branch=main"
      alt="Cirrus-CI"></a>
 <a href="https://scitools-iris.readthedocs.io/en/latest/?badge=latest">
 <img src="https://readthedocs.org/projects/scitools-iris/badge/?version=latest"
      alt="Documentation Status"></a>
-<a href="https://results.pre-commit.ci/latest/github/SciTools/iris/master">
-<img src="https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg"
+<a href="https://results.pre-commit.ci/latest/github/SciTools/iris/main">
+<img src="https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg"
      alt="pre-commit.ci status"></a>
 <a href="https://anaconda.org/conda-forge/iris">
 <img src="https://img.shields.io/conda/v/conda-forge/iris?color=orange&label=conda-forge%7Ciris&logo=conda-forge&logoColor=white"
@@ -28,7 +28,7 @@
 <a href="https://github.com/SciTools/iris/releases">
 <img src="https://img.shields.io/github/v/release/scitools/iris"
      alt="latest release"></a>
-<a href="https://github.com/SciTools/iris/commits/master">
+<a href="https://github.com/SciTools/iris/commits/main">
 <img src="https://img.shields.io/github/commits-since/SciTools/iris/latest.svg"
      alt="Commits since last release"></a>
 <a href="https://zenodo.org/badge/latestdoi/5312648">

@@ -19,7 +19,7 @@ information is provided.
 
 A `pull request`_ may also be created by anyone who has become a
 **contributor** to Iris_.  Permissions to merge pull requests to the
-main code base (master) are only given to **core developers** of Iris_, this is
+``main`` branch are only given to **core developers** of Iris_, this is
 to ensure a measure of control.
 
 To get started we suggest reading recent `issues`_ and `pull requests`_

@@ -51,7 +51,7 @@ This consists of:
  * The hashes of known **acceptable** results for each test are stored in a
    lookup dictionary, saved to the repo file
    ``lib/iris/tests/results/imagerepo.json``
-   (`link <https://github.com/SciTools/iris/blob/master/lib/iris/tests/results/imagerepo.json>`_) .
+   (`link <https://github.com/SciTools/iris/blob/main/lib/iris/tests/results/imagerepo.json>`_) .
 
  * An actual reference image for each hash value is stored in a *separate*
    public repository https://github.com/SciTools/test-iris-imagehash.
@@ -163,4 +163,4 @@ To add your changes to Iris, you need to make two pull requests (PR).
   image-listing file in ``test-iris-imagehash``.
 
 
-.. _Iris Cirrus-CI matrix: https://github.com/scitools/iris/blob/master/.cirrus.yml
+.. _Iris Cirrus-CI matrix: https://github.com/scitools/iris/blob/main/.cirrus.yml

@@ -7,7 +7,7 @@
 # pinned at specific versions.
 #
 # For environments that have changed, a pull request will be made and submitted
-# to the master branch
+# to the main branch
 
 name: Refresh Lockfiles
 
