@@ -846,9 +846,9 @@ class Mixin__aux_latlons(Mixin__grid_mapping):
         # 	005 : fc_build_coordinate_latitude_rotated
         result = self.run_testcase(
             mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON,
-            xco_is_dim=False,
+            yco_is_dim=False,
         )
-        self.check_result(result, xco_is_aux=True, xco_no_cs=True)
+        self.check_result(result, yco_is_aux=True, yco_no_cs=True)
 
 
 class Test__aux_latlons__pyke_rules(Mixin__aux_latlons, tests.IrisTest):
