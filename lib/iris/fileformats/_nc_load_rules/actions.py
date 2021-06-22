@@ -339,11 +339,8 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             if not succeed:
                 rule_name += "(FAILED projected coord with non-projected cs)"
         else:
-            msg = (
-                f'Unexpected coord grid-class "{coord_grid_class}" '
-                f"for coord {var_name}."
-            )
-            raise ValueError(msg)
+            # Just FYI : literally not possible, as we already asserted this.
+            assert coord_grid_class in grid_classes
 
     if succeed:
         hh.build_dimension_coordinate(
