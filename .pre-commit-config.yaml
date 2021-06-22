@@ -20,18 +20,18 @@ repos:
     rev: "21.6b0"
     hooks:
     -   id: black
-        # Force black to run on whole repo, using settings from pyproject.toml
         pass_filenames: false
         args: ["--config=./pyproject.toml", "--check", "docs", "lib", "noxfile.py", "setup.py"]
 -   repo: https://github.com/PyCQA/flake8
     rev: "3.9.2"
     hooks:
     -   id: flake8
-        args: ["--config=./setup.cfg"]
+        args: ["--config=./setup.cfg", "docs", "lib", "noxfile.py", "setup.py"]
 -   repo: https://github.com/pycqa/isort
     rev: "5.9.1"
     hooks:
     -   id: isort
+        # Use settings from pyproject.toml
         name: isort
         args: ["--filter-files", "--check"]
 -   repo: https://github.com/asottile/blacken-docs

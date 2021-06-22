@@ -169,7 +169,10 @@ def lint(session: nox.sessions.Session):
     # Pip install the session requirements.
     session.install("pre-commit")
     # Execute the pre-commit linting tasks.
-    session.run("pre-commit", "run", "--all-files")
+    cmd = ["pre-commit", "run", "--all-files"]
+    hooks = ["black", "blacken-docs", "flake8", "isort"]
+    for hook in hooks:
+        session.run(*cmd, hook)
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
