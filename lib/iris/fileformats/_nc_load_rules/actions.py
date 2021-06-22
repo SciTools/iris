@@ -459,12 +459,17 @@ def action_formula_type(engine, formula_root_fact):
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
         if existing_type:
+            # NOTE: in this case, for now, we will accept the last appearing,
+            # which matches the older behaviour.
+            # TODO: this needs resolving, somehow.
             succeed = False
-            rule_name += (
-                f"(FAILED - new formula type ={formula_type!r} "
-                f"collided with existing one ={existing_type!r}.)"
+            msg = (
+                "Omitting factories for some hybrid coordinates, as multiple "
+                "hybrid coordinates on a single variable are not supported: "
+                f"Formula of type ={formula_type!r} "
+                f"overrides another of type ={existing_type!r}.)"
             )
-    if succeed:
+            warnings.warn(msg)
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
         engine.requires["formula_type"] = formula_type
