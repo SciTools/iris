@@ -69,11 +69,13 @@ Within that file the tests might look something like:
         def test_some_general_stuff(self):
             ...
 
+
     # Tests for the Cube.xml() method, focussing on the behaviour of
     # the checksums.
     class Test_xml__checksum(tests.IrisTest):
         def test_checksum_ignores_masked_values(self):
             ...
+
 
     # Tests for the Cube.add_dim_coord() method.
     class Test_add_dim_coord(tests.IrisTest):
@@ -119,6 +121,7 @@ Within that file the tests might look something like:
 
         def test_int16_big_endian(self):
             ...
+
 
     # Tests focussing on the handling of different projections.
     class TestProjection(tests.IrisTest):
