@@ -184,6 +184,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ renamed ``iris/master`` branch to ``iris/main`` and migrated
    references of ``master`` to ``main`` within codebase. (:pull:`4202`)
 
+#. `@bjlittle`_ added the `blacken-docs`_ ``pre-commit`` hook to automate
+   ``black`` linting of documentation code blocks. (:pull:`4205`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -198,6 +201,7 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _blacken-docs: https://github.com/asottile/blacken-docs
 .. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
