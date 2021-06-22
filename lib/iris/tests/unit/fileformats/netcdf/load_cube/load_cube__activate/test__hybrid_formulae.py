@@ -163,7 +163,9 @@ variables:
         # 	005 : fc_formula_terms
         # 	006 : fc_formula_terms
         result = self.run_testcase(
-            formula_root_name="unknown", term_names=["a", "b"]
+            formula_root_name="unknown",
+            term_names=["a", "b"],
+            warning="Ignored formula of unrecognised type: 'unknown'.",
         )
         # Check that it picks up the terms, but *not* the factory root coord,
         # which is simply discarded.

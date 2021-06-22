@@ -47,6 +47,7 @@ longer useful, this can be considerably simplified.
 from . import helpers as hh
 
 from functools import wraps
+import warnings
 
 import iris.fileformats.pp as pp
 import iris.fileformats.cf
@@ -461,6 +462,8 @@ def action_formula_type(engine, formula_root_fact):
     if formula_type not in iris.fileformats.cf.reference_terms:
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
+        msg = f"Ignored formula of unrecognised type: {formula_type!r}."
+        warnings.warn(msg)
     if succeed:
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
