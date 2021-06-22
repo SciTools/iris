@@ -31,9 +31,10 @@ repos:
     rev: "5.9.1"
     hooks:
     -   id: isort
-        # Use settings from pyproject.toml
+        # Align CLI usage with other hooks, rather than use isort "src_paths" option
+        # in the pyproject.toml configuration.
         name: isort
-        args: ["--filter-files", "--check"]
+        args: ["--filter-files", "--check", "docs", "lib", "noxfile.py", "setup.py"]
 -   repo: https://github.com/asottile/blacken-docs
     rev: v1.8.0
     hooks:
