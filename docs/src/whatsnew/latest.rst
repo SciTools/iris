@@ -86,7 +86,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
+   from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
 
 📚 Documentation
@@ -127,7 +128,6 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ tweaked docstring layouts in the :mod:`iris.plot` module, so
    they render better in the published documentation.  See :issue:`4085`.
    (:pull:`4100`)
-
 
 💼 Internal
 ===========
@@ -186,6 +186,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ added the `blacken-docs`_ ``pre-commit`` hook to automate
    ``black`` linting of documentation code blocks. (:pull:`4205`)
+
+#. `@bjlittle`_ consolidated `nox`_ ``black``, ``flake8`` and ``isort`` sessions
+   into one ``lint`` session using ``pre-commit``. (:pull:`4181`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

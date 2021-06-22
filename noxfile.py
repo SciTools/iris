@@ -15,12 +15,6 @@ from nox.logger import logger
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
 
-#: Root directory.
-ROOT_DIR = Path(__file__).resolve().parent
-
-#: Name of the package to test.
-PACKAGE = str(ROOT_DIR / "lib" / "iris")
-
 #: Cirrus-CI environment variable hook.
 PY_VER = os.environ.get("PY_VER", ["3.7", "3.8"])
 
@@ -162,9 +156,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 
 @nox.session
-def flake8(session: nox.sessions.Session):
+def lint(session: nox.sessions.Session):
     """
-    Perform flake8 linting of iris.
+    Perform pre-commit linting of iris codebase.
 
     Parameters
     ----------
@@ -173,54 +167,12 @@ def flake8(session: nox.sessions.Session):
 
     """
     # Pip install the session requirements.
-    session.install("flake8")
-    # Execute the flake8 linter on the package.
-    session.run("flake8", PACKAGE)
-    # Execute the flake8 linter on root Python files.
-    for fname in ROOT_DIR.glob("*.py"):
-        session.run("flake8", str(fname))
-
-
-@nox.session
-def black(session: nox.sessions.Session):
-    """
-    Perform black format checking of iris.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    # Pip install the session requirements.
-    session.install("black==21.5b2")
-    # Execute the black format checker on the package.
-    session.run("black", "--check", PACKAGE)
-    # Execute the black format checker on root Python files.
-    for fname in ROOT_DIR.glob("*.py"):
-        session.run("black", "--check", str(fname))
-
-
-@nox.session
-def isort(session: nox.sessions.Session):
-    """
-    Perform isort import checking of iris codebase.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    # Pip install the session requirements.
-    session.install("isort")
-    # Execute the isort import checker on the package.
-    session.run("isort", "--check", str(PACKAGE))
-    # Execute the isort import checker on the documentation.
-    session.run("isort", "--check", str(ROOT_DIR / "docs"))
-    # Execute the isort import checker on the root Python files.
-    for fname in ROOT_DIR.glob("*.py"):
-        session.run("isort", "--check", str(fname))
+    session.install("pre-commit")
+    # Execute the pre-commit linting tasks.
+    cmd = ["pre-commit", "run", "--all-files"]
+    hooks = ["black", "blacken-docs", "flake8", "isort"]
+    for hook in hooks:
+        session.run(*cmd, hook)
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
