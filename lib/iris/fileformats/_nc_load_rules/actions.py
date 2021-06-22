@@ -166,18 +166,12 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
 
     if succeed:
         coordinate_system = builder(engine, cf_var)
-        # Check there is not an existing one.
-        old_gridtype_fact = engine.fact_list("grid-type")
-        if old_gridtype_fact:
-            (old_gridtype,) = old_gridtype_fact
-            succeed = False
-            rule_name += (
-                f" --(FAILED overwrite coord-sytem "
-                f"{old_gridtype} with {grid_mapping_type})"
-            )
-
-    if succeed:
         engine.cube_parts["coordinate_system"] = coordinate_system
+
+        # Check there is not an existing one.
+        # ATM this is guaranteed by the caller, "run_actions".
+        assert engine.fact_list("grid-type") == []
+
         engine.add_fact("grid-type", (grid_mapping_type,))
 
     return rule_name
