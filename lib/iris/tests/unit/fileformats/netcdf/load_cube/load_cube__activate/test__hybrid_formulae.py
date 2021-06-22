@@ -19,7 +19,9 @@ from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
 
 
 class Mixin__formulae_tests(Mixin__nc_load_actions):
-    def _make_testcase_cdl(self, formula_root_name=None, term_names=None):
+    def _make_testcase_cdl(
+        self, formula_root_name=None, term_names=None, extra_formula_type=None
+    ):
         """Construct a testcase CDL for data with hybrid vertical coords."""
         if formula_root_name is None:
             formula_root_name = "atmosphere_hybrid_height_coordinate"
@@ -29,22 +31,54 @@ class Mixin__formulae_tests(Mixin__nc_load_actions):
                 # unsupported type : just make something up
                 term_names = ["term1"]
 
-        terms_string = ""
-        phenom_coord_names = ["vert"]  # always include the root variable
+        # Arrange to create additional term variables for an 'extra' hybrid
+        # formula, if requested.
+        if extra_formula_type is None:
+            term_names_extra = []
+            phenom_coord_names = ["vert"]  # always include the root variable
+        else:
+            phenom_coord_names = ["vert", "vert_2"]  # two formula coords
+            term_names_extra = hh.CF_COORD_VERTICAL.get(extra_formula_type)
+
+        # Build strings to define term variables.
         formula_term_strings = []
-        for term_name in term_names:
+        extra_formula_term_strings = []
+        terms_string = ""
+        for term_name in term_names + term_names_extra:
             term_varname = "v_" + term_name
+            # Include in the phenom coordinates list.
             phenom_coord_names.append(term_varname)
-            formula_term_strings.append(f"{term_name}: {term_varname}")
+            term_string = f"{term_name}: {term_varname}"
+            if term_name in term_names:
+                # Include in the 'main' terms list.
+                formula_term_strings.append(term_string)
+            else:
+                # Include in the 'extra' terms list.
+                extra_formula_term_strings.append(term_string)
             terms_string += f"""
     double {term_varname}(h) ;
         {term_varname}:long_name = "{term_name}_long_name" ;
         {term_varname}:units = "m" ;
 """
 
-        # remove the extra initial space from the formula terms string
+        # Construct the reference strings.
         phenom_coords_string = " ".join(phenom_coord_names)
         formula_terms_string = " ".join(formula_term_strings)
+        extra_formula_terms_string = " ".join(extra_formula_term_strings)
+
+        # Construct the 'extra' hybrid coord if requested.
+        if extra_formula_type is None:
+            extra_formula_string = ""
+        else:
+            # Create the lines to add an 'extra' formula.
+            # For now, put this on the same dim : makes no difference.
+            extra_formula_string = f"""
+    double vert_2(h) ;
+        vert_2:standard_name = "{extra_formula_type}" ;
+        vert_2:units = "m" ;
+        vert_2:formula_terms = "{extra_formula_terms_string}" ;
+"""
+
         # Create the main result string.
         cdl_str = f"""
 netcdf test {{
@@ -61,6 +95,7 @@ variables:
         vert:units = "m" ;
         vert:formula_terms = "{formula_terms_string}" ;
 {terms_string}
+{extra_formula_string}
 }}
 """
         return cdl_str
@@ -170,6 +205,31 @@ variables:
         # Check that it picks up the terms, but *not* the factory root coord,
         # which is simply discarded.
         self.check_result(result, factory_type=None, formula_terms=["a", "b"])
+
+    def test_two_formulae(self):
+        # Construct an example with TWO hybrid coords.
+        # This is not errored, but we don't correctly support it.
+        #
+        # NOTE: the original Pyke implementation does not detect this problem
+        # By design, the new mechanism does + will raise a warning.
+        warning = (
+            "Omitting factories for some hybrid coordinates.*"
+            "multiple hybrid coordinates.* not supported"
+        )
+
+        extra_type = "ocean_sigma_coordinate"
+        result = self.run_testcase(
+            extra_formula_type=extra_type, warning=warning
+        )
+        # NOTE: FOR NOW, check expected behaviour : only one factory will be
+        # built, but there are coordinates (terms) for both types.
+        # TODO: this is a bug and needs fixing : translation should handle
+        # multiple hybrid coordinates in a sensible way.
+        self.check_result(
+            result,
+            factory_type=extra_type,
+            formula_terms=["a", "b", "depth", "eta", "orog", "sigma"],
+        )
 
 
 # Add in tests methods to exercise each (supported) vertical coordinate type
