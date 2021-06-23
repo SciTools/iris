@@ -37,24 +37,24 @@ For instance, suppose we have a cube:
     >>> cube = iris.load_cube(filename, 'air_potential_temperature')
     >>> print(cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-         Dimension coordinates:
-              time                           x                      -                 -                    -
-              model_level_number             -                      x                 -                    -
-              grid_latitude                  -                      -                 x                    -
-              grid_longitude                 -                      -                 -                    x
-         Auxiliary coordinates:
-              forecast_period                x                      -                 -                    -
-              level_height                   -                      x                 -                    -
-              sigma                          -                      x                 -                    -
-              surface_altitude               -                      -                 x                    x
-         Derived coordinates:
-              altitude                       -                      x                 x                    x
-         Scalar coordinates:
-              forecast_reference_time: 2009-11-19 04:00:00
-         Attributes:
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model
-              um_version: 7.3
+        Dimension coordinates:
+            time                             x                      -                 -                    -
+            model_level_number               -                      x                 -                    -
+            grid_latitude                    -                      -                 x                    -
+            grid_longitude                   -                      -                 -                    x
+        Auxiliary coordinates:
+            forecast_period                  x                      -                 -                    -
+            level_height                     -                      x                 -                    -
+            sigma                            -                      x                 -                    -
+            surface_altitude                 -                      -                 x                    x
+        Derived coordinates:
+            altitude                         -                      x                 x                    x
+        Scalar coordinates:
+            forecast_reference_time     2009-11-19 04:00:00
+        Attributes:
+            STASH                       m01s00i004
+            source                      Data from Met Office Unified Model
+            um_version                  7.3
 
 
 In this case we have a 4 dimensional cube; 
@@ -66,26 +66,26 @@ we can pass the coordinate name and the aggregation definition to the
     >>> vertical_mean = cube.collapsed('model_level_number', iris.analysis.MEAN)
     >>> print(vertical_mean)
     air_potential_temperature / (K)     (time: 3; grid_latitude: 204; grid_longitude: 187)
-         Dimension coordinates:
-              time                           x                 -                    -
-              grid_latitude                  -                 x                    -
-              grid_longitude                 -                 -                    x
-         Auxiliary coordinates:
-              forecast_period                x                 -                    -
-              surface_altitude               -                 x                    x
-         Derived coordinates:
-              altitude                       -                 x                    x
-         Scalar coordinates:
-              forecast_reference_time: 2009-11-19 04:00:00
-              level_height: 696.6666 m, bound=(0.0, 1393.3333) m
-              model_level_number: 10, bound=(1, 19)
-              sigma: 0.92292976, bound=(0.8458596, 1.0)
-         Attributes:
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model
-              um_version: 7.3
-         Cell methods:
-              mean: model_level_number
+        Dimension coordinates:
+            time                             x                 -                    -
+            grid_latitude                    -                 x                    -
+            grid_longitude                   -                 -                    x
+        Auxiliary coordinates:
+            forecast_period                  x                 -                    -
+            surface_altitude                 -                 x                    x
+        Derived coordinates:
+            altitude                         -                 x                    x
+        Scalar coordinates:
+            forecast_reference_time     2009-11-19 04:00:00
+            level_height                696.6666 m, bound=(0.0, 1393.3333) m
+            model_level_number          10, bound=(1, 19)
+            sigma                       0.92292976, bound=(0.8458596, 1.0)
+        Attributes:
+            STASH                       m01s00i004
+            source                      Data from Met Office Unified Model
+            um_version                  7.3
+        Cell methods:
+            mean: model_level_number
 
 
 Similarly other analysis operators such as ``MAX``, ``MIN`` and ``STD_DEV`` 
@@ -124,27 +124,27 @@ These areas can now be passed to the ``collapsed`` method as weights:
 
     >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
     >>> print(new_cube)
-    air_potential_temperature / (K)     (time: 3; model_level_number: 7)
-         Dimension coordinates:
-              time                           x                      -
-              model_level_number             -                      x
-         Auxiliary coordinates:
-              forecast_period                x                      -
-              level_height                   -                      x
-              sigma                          -                      x
-         Derived coordinates:
-              altitude                       -                      x
-         Scalar coordinates:
-              forecast_reference_time: 2009-11-19 04:00:00
-              grid_latitude: 1.5145501 degrees, bound=(0.14430022, 2.8848) degrees
-              grid_longitude: 358.74948 degrees, bound=(357.494, 360.00497) degrees
-              surface_altitude: 399.625 m, bound=(-14.0, 813.25) m
-         Attributes:
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model
-              um_version: 7.3
-         Cell methods:
-              mean: grid_longitude, grid_latitude
+    air_potential_temperature / (K)             (time: 3; model_level_number: 7)
+        Dimension coordinates:
+            time                                     x                      -
+            model_level_number                       -                      x
+        Auxiliary coordinates:
+            forecast_period                          x                      -
+            level_height                             -                      x
+            sigma                                    -                      x
+        Derived coordinates:
+            altitude                                 -                      x
+        Scalar coordinates:
+            forecast_reference_time             2009-11-19 04:00:00
+            grid_latitude                       1.5145501 degrees, bound=(0.14430022, 2.8848) degrees
+            grid_longitude                      358.74948 degrees, bound=(357.494, 360.00497) degrees
+            surface_altitude                    399.625 m, bound=(-14.0, 813.25) m
+        Attributes:
+            STASH                               m01s00i004
+            source                              Data from Met Office Unified Model
+            um_version                          7.3
+        Cell methods:
+            mean: grid_longitude, grid_latitude
 
 Several examples of area averaging exist in the gallery which may be of interest,
 including an example on taking a :ref:`global area-weighted mean
@@ -216,21 +216,21 @@ Printing this cube now shows that two extra coordinates exist on the cube:
 
     >>> print(cube)
     surface_temperature / (K)           (time: 54; latitude: 18; longitude: 432)
-         Dimension coordinates:
-              time                           x             -              -
-              latitude                       -             x              -
-              longitude                      -             -              x
-         Auxiliary coordinates:
-              clim_season                    x             -              -
-              forecast_reference_time        x             -              -
-              season_year                    x             -              -
-         Scalar coordinates:
-              forecast_period: 0 hours
-         Attributes:
-              Conventions: CF-1.5
-              STASH: m01s00i024
-         Cell methods:
-              mean: month, year
+        Dimension coordinates:
+            time                             x             -              -
+            latitude                         -             x              -
+            longitude                        -             -              x
+        Auxiliary coordinates:
+            clim_season                      x             -              -
+            forecast_reference_time          x             -              -
+            season_year                      x             -              -
+        Scalar coordinates:
+            forecast_period             0 hours
+        Attributes:
+            Conventions                 CF-1.5
+            STASH                       m01s00i024
+        Cell methods:
+            mean: month, year
 
 
 These two coordinates can now be used to aggregate by season and climate-year:

@@ -739,21 +739,22 @@ class Cube(CFVariableMixin):
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print(cube)
         air_temperature / (K)               (latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  latitude                           x              -
-                  longitude                          -              x
-             Scalar coordinates:
-                  forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
-                  forecast_reference_time: 1998-03-01 03:00:00
-                  pressure: 1000.0 hPa
-                  time: 1998-12-01 00:00:00, \
-bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-             Attributes:
-                  STASH: m01s16i203
-                  source: Data from Met Office Unified Model
-             Cell methods:
-                  mean within years: time
-                  mean over years: time
+            Dimension coordinates:
+                latitude                             x              -
+                longitude                            -              x
+            Scalar coordinates:
+                forecast_period             \
+6477 hours, bound=(-28083.0, 6477.0) hours
+                forecast_reference_time     1998-03-01 03:00:00
+                pressure                    1000.0 hPa
+                time                        \
+1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
+            Attributes:
+                STASH                       m01s16i203
+                source                      Data from Met Office Unified Model
+            Cell methods:
+                mean within years: time
+                mean over years: time
 
 
     See the :doc:`user guide</userguide/index>` for more information.
@@ -2248,13 +2249,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         versus length and, optionally, a summary of all other components.
 
         Kwargs:
+
         * shorten (bool):
             If set, produce a one-line summary of minimal width, showing only
             the cube name, units and dimensions.
             When not set (default), produces a full multi-line summary string.
         * name_padding (int):
-            Control the minimum width of cube name+units, before the dimension
-            map section.  Only applies when `shorten`=False.
+            Control the *minimum* width of the cube name + units,
+            i.e. the indent of the dimension map section.
 
         """
         from iris._representation.cube_printout import CubePrinter
@@ -3462,20 +3464,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print(new_cube)
             surface_temperature / (K)           (time: 54; latitude: 18)
-                 Dimension coordinates:
-                      time                           x             -
-                      latitude                       -             x
-                 Auxiliary coordinates:
-                      forecast_reference_time        x             -
-                 Scalar coordinates:
-                      forecast_period: 0 hours
-                      longitude: 180.0 degrees, bound=(0.0, 360.0) degrees
-                 Attributes:
-                      Conventions: CF-1.5
-                      STASH: m01s00i024
-                 Cell methods:
-                      mean: month, year
-                      mean: longitude
+                Dimension coordinates:
+                    time                             x             -
+                    latitude                         -             x
+                Auxiliary coordinates:
+                    forecast_reference_time          x             -
+                Scalar coordinates:
+                    forecast_period             0 hours
+                    longitude                   \
+180.0 degrees, bound=(0.0, 360.0) degrees
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
+                Cell methods:
+                    mean: month, year
+                    mean: longitude
 
 
         .. note::
@@ -3691,26 +3694,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> print(new_cube)
             surface_temperature / (K)           \
 (time: 5; latitude: 18; longitude: 432)
-                 Dimension coordinates:
-                      time                      \
-     x            -              -
-                      latitude                  \
-     -            x              -
-                      longitude                 \
-     -            -              x
-                 Auxiliary coordinates:
-                      forecast_reference_time   \
-     x            -              -
-                      year                      \
-     x            -              -
-                 Scalar coordinates:
-                      forecast_period: 0 hours
-                 Attributes:
-                      Conventions: CF-1.5
-                      STASH: m01s00i024
-                 Cell methods:
-                      mean: month, year
-                      mean: year
+                Dimension coordinates:
+                    time                             \
+x            -              -
+                    latitude                         \
+-            x              -
+                    longitude                        \
+-            -              x
+                Auxiliary coordinates:
+                    forecast_reference_time          \
+x            -              -
+                    year                             \
+x            -              -
+                Scalar coordinates:
+                    forecast_period             0 hours
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
+                Cell methods:
+                    mean: month, year
+                    mean: year
 
         """
         groupby_coords = []
@@ -3896,51 +3899,52 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> print(air_press)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
-                 Dimension coordinates:
-                      time                      \
-     x            -               -
-                      latitude                  \
-     -            x               -
-                      longitude                 \
-     -            -               x
-                 Auxiliary coordinates:
-                      forecast_period           \
-     x            -               -
-                 Scalar coordinates:
-                      forecast_reference_time: 2011-07-23 00:00:00
-                      realization: 10
-                 Attributes:
-                      STASH: m01s00i024
-                      source: Data from Met Office Unified Model
-                      um_version: 7.6
-                 Cell methods:
-                      mean: time (1 hour)
+                Dimension coordinates:
+                    time                             \
+x            -               -
+                    latitude                         \
+-            x               -
+                    longitude                        \
+-            -               x
+                Auxiliary coordinates:
+                    forecast_period                  \
+x            -               -
+                Scalar coordinates:
+                    forecast_reference_time     2011-07-23 00:00:00
+                    realization                 10
+                Attributes:
+                    STASH                       m01s00i024
+                    source                      \
+Data from Met Office Unified Model
+                    um_version                  7.6
+                Cell methods:
+                    mean: time (1 hour)
 
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
-                 Dimension coordinates:
-                      time                      \
-     x            -               -
-                      latitude                  \
-     -            x               -
-                      longitude                 \
-     -            -               x
-                 Auxiliary coordinates:
-                      forecast_period           \
-     x            -               -
-                 Scalar coordinates:
-                      forecast_reference_time: 2011-07-23 00:00:00
-                      realization: 10
-                 Attributes:
-                      STASH: m01s00i024
-                      source: Data from Met Office Unified Model
-                      um_version: 7.6
-                 Cell methods:
-                      mean: time (1 hour)
-                      mean: time
-
+                Dimension coordinates:
+                    time                             \
+x            -               -
+                    latitude                         \
+-            x               -
+                    longitude                        \
+-            -               x
+                Auxiliary coordinates:
+                    forecast_period                  \
+x            -               -
+                Scalar coordinates:
+                    forecast_reference_time     2011-07-23 00:00:00
+                    realization                 10
+                Attributes:
+                    STASH                       m01s00i024
+                    source                      \
+Data from Met Office Unified Model
+                    um_version                  7.6
+                Cell methods:
+                    mean: time (1 hour)
+                    mean: time
 
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.

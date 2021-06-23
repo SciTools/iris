@@ -56,16 +56,16 @@ but with the data representing their difference:
 
     >>> print(t_last - t_first)
     unknown / (K)                       (latitude: 37; longitude: 49)
-         Dimension coordinates:
-              latitude                           x              -
-              longitude                          -              x
-         Scalar coordinates:
-              forecast_reference_time: 1859-09-01 06:00:00
-              height: 1.5 m
-         Attributes:
-              Conventions: CF-1.5
-              Model scenario: E1
-              source: Data from Met Office Unified Model 6.05
+        Dimension coordinates:
+            latitude                             x              -
+            longitude                            -              x
+        Scalar coordinates:
+            forecast_reference_time     1859-09-01 06:00:00
+            height                      1.5 m
+        Attributes:
+            Conventions                 CF-1.5
+            Model scenario              E1
+            source                      Data from Met Office Unified Model 6.05
 
 
 .. note::

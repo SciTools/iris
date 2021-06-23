@@ -108,22 +108,22 @@ For example, given the following :class:`~iris.cube.Cube`,
 
     >>> print(cube)
     air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-         Dimension coordinates:
-              time                           x              -              -
-              latitude                       -              x              -
-              longitude                      -              -              x
-         Auxiliary coordinates:
-              forecast_period                x              -              -
-         Scalar coordinates:
-              forecast_reference_time: 1859-09-01 06:00:00
-              height: 1.5 m
-         Attributes:
-              Conventions: CF-1.5
-              Model scenario: A1B
-              STASH: m01s03i236
-              source: Data from Met Office Unified Model 6.05
-         Cell methods:
-              mean: time (6 hour)
+        Dimension coordinates:
+            time                             x              -              -
+            latitude                         -              x              -
+            longitude                        -              -              x
+        Auxiliary coordinates:
+            forecast_period                  x              -              -
+        Scalar coordinates:
+            forecast_reference_time     1859-09-01 06:00:00
+            height                      1.5 m
+        Attributes:
+            Conventions                 CF-1.5
+            Model scenario              A1B
+            STASH                       m01s03i236
+            source                      Data from Met Office Unified Model 6.05
+        Cell methods:
+            mean: time (6 hour)
 
 We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
@@ -263,7 +263,7 @@ using the `namedtuple._asdict`_ method. This can be particularly handy when a
 standard Python built-in container is required to represent your ``metadata``,
 
     >>> metadata._asdict()
-    {'standard_name': 'longitude', 'long_name': None, 'var_name': 'longitude', 'units': Unit('degrees'), 'attributes': {'grinning face': '🙃'}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
+    OrderedDict([('standard_name', 'longitude'), ('long_name', None), ('var_name', 'longitude'), ('units', Unit('degrees')), ('attributes', {'grinning face': '🙃'}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
 
 Using the `namedtuple._replace`_ method allows you to create a new metadata
 class instance, but replacing specified members with **new** associated values,
@@ -943,7 +943,7 @@ such as a `dict`_,
 
     >>> mapping = latitude.metadata._asdict()
     >>> mapping
-    {'standard_name': 'latitude', 'long_name': None, 'var_name': 'latitude', 'units': Unit('degrees'), 'attributes': {}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
+    OrderedDict([('standard_name', 'latitude'), ('long_name', None), ('var_name', 'latitude'), ('units', Unit('degrees')), ('attributes', {}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
     >>> longitude.metadata = mapping
     >>> longitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
