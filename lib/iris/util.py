@@ -1583,25 +1583,41 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.AuxCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+    .. testsetup:: promote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: promote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  year                    x      -              -
-        >>> promote_aux_coord_to_dim_coord(cube, 'year')
-        >>> print cube
-        air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
+                  forecast_period                x              -              -
+                  year                           x              -              -
+        >>> promote_aux_coord_to_dim_coord(cube, "year")
+        >>> print(cube)
+        air_temperature / (K)               (year: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  year                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  year                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  time                    x      -              -
+                  forecast_period                x              -              -
+                  time                           x              -              -
 
     """
     from iris.coords import Coord, DimCoord
@@ -1693,25 +1709,41 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.DimCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+    .. testsetup:: demote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: demote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  year                    x      -              -
-        >>> demote_dim_coord_to_aux_coord(cube, 'time')
-        >>> print cube
-        air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
+                  forecast_period                x              -              -
+                  year                           x              -              -
+        >>> demote_dim_coord_to_aux_coord(cube, "time")
+        >>> print(cube)
+        air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  latitude                      -              x              -
+                  longitude                     -              -              x
              Auxiliary coordinates:
-                  time                    x      -              -
-                  year                    x      -              -
+                  forecast_period               x              -              -
+                  time                          x              -              -
+                  year                          x              -              -
 
     """
     from iris.coords import Coord
