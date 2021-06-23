@@ -549,6 +549,12 @@ def _get_cf_var_data(cf_var, filename):
 
 
 class OrderedAddableList(list):
+    # Used purely in actions debugging, to accumulate a record of which actions
+    # were activated.
+    # It replaces a set, so as to record the ordering of operations, with
+    # possible repeats, and it also numbers the entries.
+    # Actions routines invoke the 'add' method, which thus effectively converts
+    # a set.add into a list.append.
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._n_add = 0

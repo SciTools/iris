@@ -68,7 +68,7 @@ class Engine:
     Provides just enough API so that the existing code in
     :mod:`iris.fileformats.netcdf` can interface with our new rules functions.
 
-    A list of possible fact-arglists is store, for each of a set of fact-names
+    A list of possible fact-arglists is stored, for each of a set of fact-names
     (which are strings).
     Each fact-argslist is represented by a tuple of values
     -- at present, in practice, those are all strings too.
@@ -88,7 +88,7 @@ class Engine:
         Run all the translation rules to produce a single output cube.
 
         This implicitly references the output variable for this operation,
-        set by engine.cf_var (the variable name).
+        set by engine.cf_var (a CFDataVariable).
 
         The rules operation itself is coded elsewhere,
         in :mod:`iris.fileformats.netcdf._nc_load_rules.actions`.

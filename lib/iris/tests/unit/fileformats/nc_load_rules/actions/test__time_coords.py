@@ -54,11 +54,11 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         opt_t = None
         opt_p = None
         if time_opts is not None:
-            # Replace 'True' with an options dict for 'time' options
+            # Convert a non-null kwarg into an options dict for 'time' options
             opt_t = Opts(**_COORD_OPTIONS_TEMPLATE)
             opt_t.update(which="time", **time_opts)
         if period_opts is not None:
-            # Replace 'True' with an options dict for 'period' options
+            # Convert a non-null kwarg into an options dict for 'period' options
             opt_p = Opts(**_COORD_OPTIONS_TEMPLATE)
             opt_p.update(which="period", **period_opts)
 

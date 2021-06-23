@@ -7,8 +7,10 @@
 All the pure-Python 'helper' functions which were previously included in the
 Pyke rules database 'fc_rules_cf.krb'.
 
-Initially these haven't changed.
-The new rules approach is still calling most of them.
+The 'action' routines now call these, as the rules used to do.
+They have not changed, **except** that the 'build_coordinate_system' routine
+acquired an extra initial 'engine' argument, purely for consistency with other
+build routines, and which it does not use.
 
 """
 

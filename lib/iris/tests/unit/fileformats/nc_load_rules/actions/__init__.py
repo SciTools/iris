@@ -49,25 +49,18 @@ class Mixin__nc_load_actions:
     actual Test_XXX class which also inherits unittest.TestCase.
 
     Testcases are manufactured by the '_make_testcase_cdl' method.
-    These are based on a 'standard simple latlon grid' example.
-    Various kwargs control variations on this.
-
     The 'run_testcase' method takes the '_make_testcase_cdl' kwargs and makes
-    a result cube (by: producing cdl, converting to netcdf, and loading).
-
-    The 'check_result' method performs various checks on the result, with
-    kwargs controlling the expected properties to be tested against.
-    This usage is *also* based on the 'standard simple latlon grid' example,
-    the kwargs specify expected differences from that.
-
-    Can also test with either the Pyke(rules) or non-Pyke (actions)
-    implementations (for now).
+    a result cube (by: producing cdl, converting to netcdf, and loading the
+    'phenom' variable only).
+    Likewise, a generalised 'check_result' method will be used to perform result
+    checking.
+    Both '_make_testcase_cdl' and 'check_result' are not defined here :  They
+    are to be variously implemented by the inheritors.
 
     """
 
     # "global" test setting : whether to output various debug info
-    # TODO: ?possibly? remove when development is complete
-    debug = False
+    debug = True
 
     # whether to perform action in both ways and compare results.
     @classmethod
@@ -98,8 +91,7 @@ class Mixin__nc_load_actions:
 
         # Simulate the inner part of the file reading process.
         cf = CFReader(nc_path)
-        # Grab a data variable : FOR NOW, should be only 1
-        cf_var = list(cf.cf_group.data_variables.values())[0]
+        # Grab a data variable : FOR NOW always grab the 'phenom' variable.
         cf_var = cf.cf_group.data_variables["phenom"]
 
         engine = iris.fileformats.netcdf._actions_engine()
