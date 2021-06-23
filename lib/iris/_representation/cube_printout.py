@@ -316,14 +316,14 @@ class CubePrinter:
 
         return table
 
-    def _oneline_string(self):
+    def _oneline_string(self, name_padding):
         """Produce a one-line summary string."""
         # Copy existing content -- just the header line.
         table = Table(rows=[self.table.rows[0]])
         # Note: by excluding other columns, we get a minimum-width result.
 
         # Add standard decorations.
-        table = self._decorated_table(table, name_padding=0)
+        table = self._decorated_table(table, name_padding=name_padding)
 
         # Format (with no extra spacing) --> one-line result
         (oneline_result,) = table.formatted_as_strings()
@@ -343,18 +343,17 @@ class CubePrinter:
 
         Args:
         * oneline (bool):
-            If set, produce a one-line summary (without any extra spacings).
-            Default is False  = produce full (multiline) summary.
+            If set, produce a one-line summary.
+            Default is False = produce full (multiline) summary.
         * name_padding (int):
             The minimum width for the "name" (#0) column.
-            Used for multiline output only.
 
         Returns:
             result (string)
 
         """
         if oneline:
-            result = self._oneline_string()
+            result = self._oneline_string(name_padding)
         else:
             result = self._multiline_summary(name_padding)
 

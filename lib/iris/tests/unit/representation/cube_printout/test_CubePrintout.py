@@ -37,18 +37,71 @@ class TestCubePrintout__to_string(tests.IrisTest):
     def test_empty(self):
         cube = Cube([0])
         rep = cube_replines(cube)
-        self.assertEqual(rep, ["unknown / (unknown)                 (-- : 1)"])
+        expect = ["unknown / (unknown)                 (-- : 1)"]
+        self.assertEqual(expect, rep)
+
+    def test_shortform__default(self):
+        cube = Cube([0])
+        expect = ["unknown / (unknown)                 (-- : 1)"]
+        # In this case, default one-line is the same.
         rep = cube_replines(cube, oneline=True)
-        self.assertEqual(rep, ["unknown / (unknown) (-- : 1)"])
+        self.assertEqual(expect, rep)
+
+    def test_shortform__compressed(self):
+        cube = Cube([0])
+        rep = cube_replines(cube, oneline=True, name_padding=0)
+        expect = ["unknown / (unknown) (-- : 1)"]
+        self.assertEqual(rep, expect)
+
+    def _sample_wide_cube(self):
+        cube = Cube([0, 1])
+        cube.add_aux_coord(
+            AuxCoord(
+                [0, 1],
+                long_name='long long long long long long long long name'
+            ),
+            0
+        )
+        return cube
+
+    def test_wide_cube(self):
+        # For comparison with the shortform and padding-controlled cases.
+        cube = self._sample_wide_cube()
+        rep = cube_replines(cube)
+        expect_full = [
+            'unknown / (unknown)                                  (-- : 2)',
+            '    Auxiliary coordinates:',
+            '        long long long long long long long long name     x'
+        ]
+        self.assertEqual(expect_full, rep)
+
+    def test_shortform__wide__default(self):
+        cube = self._sample_wide_cube()
+        rep = cube_replines(cube, oneline=True)
+        # *default* one-line is shorter than full header, but not minimal.
+        expect = ["unknown / (unknown)                 (-- : 2)"]
+        self.assertEqual(rep, expect)
+
+    def test_shortform__wide__compressed(self):
+        cube = self._sample_wide_cube()
+        rep = cube_replines(cube, oneline=True, name_padding=0)
+        expect = ["unknown / (unknown) (-- : 2)"]
+        self.assertEqual(rep, expect)
+
+    def test_shortform__wide__intermediate(self):
+        cube = self._sample_wide_cube()
+        rep = cube_replines(cube, oneline=True, name_padding=25)
+        expect = ['unknown / (unknown)       (-- : 2)']
+        self.assertEqual(expect, rep)
 
     def test_scalar_cube_summaries(self):
         cube = Cube(0)
+        expect = ["unknown / (unknown)                 (scalar cube)"]
         rep = cube_replines(cube)
-        self.assertEqual(
-            rep, ["unknown / (unknown)                 (scalar cube)"]
-        )
+        self.assertEqual(expect, rep)
+        # Shortform is the same.
         rep = cube_replines(cube, oneline=True)
-        self.assertEqual(rep, ["unknown / (unknown) (scalar cube)"])
+        self.assertEqual(expect, rep)
 
     def test_name_padding(self):
         cube = Cube([1, 2], long_name="cube_accel", units="ms-2")
@@ -71,9 +124,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Auxiliary coordinates:",
             "        very_very_very_very_very_long_coord_name     x",
         ]
-        self.assertEqual(rep, expected)
+        self.assertEqual(expected, rep)
         rep = cube_replines(cube, oneline=True)
-        self.assertEqual(rep, ["short / (1) (-- : 1)"])
+        # Note: the default short-form is short-ER, but not minimal.
+        short_expected = ["short / (1)                         (-- : 1)"]
+        self.assertEqual(short_expected, rep)
 
     def test_columns_long_attribute(self):
         cube = Cube([0], long_name="short", units=1)
@@ -86,7 +141,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             (
                 "        very_very_very_very_very_long_name "
-                ": longish string extends beyond dim columns"
+                "longish string extends beyond dim columns"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -119,9 +174,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "        co1                             x",
             "            a=2",
             "    Scalar coordinates:",
-            "        co2                         : 0",
+            "        co2                         0",
             "            b=12",
-            "        co2                         : 1",
+            "        co2                         1",
             "            b=11",
         ]
         self.assertEqual(rep, expected)
@@ -142,9 +197,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (scalar cube)",
             "    Scalar coordinates:",
-            "        co1                         : 1.2",
+            "        co1                         1.2",
             "            arr=array([0, 1, 2])",
-            "        co1                         : 3.4",
+            "        co1                         3.4",
             "            arr=array([10, 11, 12])",
         ]
         self.assertEqual(rep, expected)
@@ -168,11 +223,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Scalar coordinates:",
             (
                 "        co                                                 "
-                "                                 : 1"
+                "                                 1"
             ),
             (
                 "        co                                                 "
-                "                                 : 2"
+                "                                 2"
             ),
             (
                 "            a=array([[[11., 12., 13., 14.], [15., 16., 17.,"
@@ -193,8 +248,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (scalar cube)",
             "    Scalar coordinates:",
-            "        co                          : 1",
-            "        co                          : 2",
+            "        co                          1",
+            "        co                          2",
             "            note='string content'",
         ]
         self.assertEqual(rep, expected)
@@ -213,8 +268,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                               (scalar cube)",
             "    Scalar coordinates:",
-            "        co                               : 1",
-            "        co                               : 2",
+            "        co                               1",
+            "        co                               2",
             "            note='line 1\\nline 2\\tends.'",
         ]
         self.assertEqual(rep, expected)
@@ -238,11 +293,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Scalar coordinates:",
             (
                 "        co                                    "
-                "                                           : 1"
+                "                                           1"
             ),
             (
                 "        co                                    "
-                "                                           : 2"
+                "                                           2"
             ),
             (
                 "            note='this is very very very very "
@@ -317,8 +372,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Scalar coordinates:",
-            "        bounded                     : 0, bound=(0, 7)",
-            "        unbounded                   : 0.0",
+            "        bounded                     0, bound=(0, 7)",
+            "        unbounded                   0.0",
         ]
         self.assertEqual(rep, expected)
 
@@ -340,9 +395,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Scalar coordinates:",
-            "        text                        : string-value",
+            "        text                        string-value",
             (
-                "        very_long_string            : A string value which is "
+                "        very_long_string            A string value which is "
                 "very very very very very very very very very very..."
             ),
         ]
@@ -384,10 +439,10 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        list                        : [3]",
-            "        number                      : 1.2",
-            "        string                      : four five in a string",
-            "        z_tupular                   : (6, (7, 8))",
+            "        list                        [3]",
+            "        number                      1.2",
+            "        string                      four five in a string",
+            "        z_tupular                   (6, (7, 8))",
         ]
         self.assertEqual(rep, expected)
 
@@ -406,13 +461,13 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        escaped                     : 'escaped\\tstring'",
+            "        escaped                     'escaped\\tstring'",
             (
-                "        long                        : this is very very very "
+                "        long                        this is very very very "
                 "very very very very very very very very very very..."
             ),
             (
-                "        long_multi                  : 'multi\\nline, "
+                "        long_multi                  'multi\\nline, "
                 "this is very very very very very very very very very very..."
             ),
         ]
@@ -429,9 +484,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Attributes:",
-            "        array                       : array([1.2, 3.4])",
+            "        array                       array([1.2, 3.4])",
             (
-                "        bigarray                    : array([[ 0, 1], [ 2, 3], "
+                "        bigarray                    array([[ 0, 1], [ 2, 3], "
                 "[ 4, 5], [ 6, 7], [ 8, 9], [10, 11], [12, 13],..."
             ),
         ]
