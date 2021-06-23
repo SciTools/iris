@@ -1,11 +1,11 @@
 air_temperature / (K)               (scalar cube)
-     Scalar coordinates:
-          forecast_period: 6477.0 hours
-          forecast_reference_time: 1998-03-06 03:00:00
-          latitude: 89.999985 degrees
-          longitude: 0.0 degrees
-          pressure: 1000.0 hPa
-          time: 1998-12-01 00:00:00
-     Attributes:
-          STASH: m01s16i203
-          source: Data from Met Office Unified Model
+    Scalar coordinates:
+        forecast_period             6477.0 hours
+        forecast_reference_time     1998-03-06 03:00:00
+        latitude                    89.999985 degrees
+        longitude                   0.0 degrees
+        pressure                    1000.0 hPa
+        time                        1998-12-01 00:00:00
+    Attributes:
+        STASH                       m01s16i203
+        source                      Data from Met Office Unified Model
