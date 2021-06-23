@@ -579,10 +579,10 @@ class Test_summary(tests.IrisTest):
         cube.add_ancillary_variable(av, 0)
         expected_summary = (
             "unknown / (unknown)                 (-- : 2; -- : 3)\n"
-            "     Ancillary variables:\n"
-            "          status_flag                   x       -"
+            "    Ancillary variables:\n"
+            "        status_flag                     x       -"
         )
-        self.assertEqual(cube.summary(), expected_summary)
+        self.assertEqual(expected_summary, cube.summary())
 
     def test_similar_coords(self):
         coord1 = AuxCoord(

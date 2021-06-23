@@ -354,14 +354,6 @@ class Test__make_content(tests.IrisTest):
         for heading in not_included:
             self.assertNotIn(heading, self.result)
 
-    def test_handle_newline(self):
-        cube = self.cube
-        cube.attributes["lines"] = "first\nsecond"
-        representer = CubeRepresentation(cube)
-        representer._get_bits(representer._get_lines())
-        result = representer._make_content()
-        self.assertIn("first<br>second", result)
-
 
 @tests.skip_data
 class Test_repr_html(tests.IrisTest):
