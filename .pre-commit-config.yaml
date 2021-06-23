@@ -1,8 +1,18 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+files: |
+    (?x)(
+        noxfile\.py|
+        setup\.py|
+        docs\/.+\.py|
+        lib\/.+\.py
+    )
+minimum_pre_commit_version: 1.21.0
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.0.1"
+    rev: v4.0.1
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -16,27 +26,31 @@ repos:
     -   id: debug-statements
         # Don't commit to main branch.
     -   id: no-commit-to-branch
+
 -   repo: https://github.com/psf/black
-    rev: "21.6b0"
+    rev: 21.6b0
     hooks:
     -   id: black
         pass_filenames: false
-        args: ["--config=./pyproject.toml", "--check", "docs", "lib", "noxfile.py", "setup.py"]
+        args: [--config=./pyproject.toml, --check, .]
+
 -   repo: https://github.com/PyCQA/flake8
-    rev: "3.9.2"
+    rev: 3.9.2
     hooks:
     -   id: flake8
-        args: ["--config=./setup.cfg", "docs", "lib", "noxfile.py", "setup.py"]
+        types: [file, python]
+        args: [--config=./setup.cfg]
+
 -   repo: https://github.com/pycqa/isort
-    rev: "5.9.1"
+    rev: 5.9.1
     hooks:
     -   id: isort
-        # Align CLI usage with other hooks, rather than use isort "src_paths" option
-        # in the pyproject.toml configuration.
-        name: isort
-        args: ["--filter-files", "--check", "docs", "lib", "noxfile.py", "setup.py"]
+        types: [file, python]
+        args: [--filter-files, --check]
+
 -   repo: https://github.com/asottile/blacken-docs
     rev: v1.8.0
     hooks:
     -   id: blacken-docs
+        types: [file, rst]
         additional_dependencies: [black==21.6b0]

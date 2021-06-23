@@ -26,14 +26,25 @@ class TestStandardNames(tests.IrisTest):
 
         # Check for some known standard names
         valid_nameset = set(["air_density", "northward_wind", "wind_speed"])
-        self.assertTrue(valid_nameset.issubset(keyset), "Known standard name missing from STD_NAMES")
+        self.assertTrue(
+            valid_nameset.issubset(keyset),
+            "Known standard name missing from STD_NAMES",
+        )
 
         # Check for some invalid standard names
-        invalid_nameset = set(["invalid_air_density", "invalid_northward_wind",
-                               "invalid_wind_speed",
-                               "stratiform_snowfall_rate"])
-        self.assertSetEqual(invalid_nameset - keyset, invalid_nameset,
-                            "\nInvalid standard name(s) present in STD_NAMES")
+        invalid_nameset = set(
+            [
+                "invalid_air_density",
+                "invalid_northward_wind",
+                "invalid_wind_speed",
+                "stratiform_snowfall_rate",
+            ]
+        )
+        self.assertSetEqual(
+            invalid_nameset - keyset,
+            invalid_nameset,
+            "\nInvalid standard name(s) present in STD_NAMES",
+        )
 
 
 if __name__ == "__main__":

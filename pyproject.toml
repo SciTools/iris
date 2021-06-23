@@ -13,33 +13,17 @@ build-backend = "setuptools.build_meta"
 line-length = 79
 target-version = ['py37', 'py38']
 include = '\.pyi?$'
-exclude = '''
-
+extend-exclude = '''
 (
   /(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | compiled_krb
-    | dist
-    | etc
-    | iris_image_test_output
+    | pyke_rules
     | sphinxext
     | tools
   )/
-  | gitwash_dumper.py
-  | _ff_cross_references.py  # auto-generated files
-  | std_names.py
+  | _ff_cross_references.py
   | um_cf_map.py
 )
 '''
-
 
 [tool.isort]
 force_sort_within_sections = "True"
@@ -55,10 +39,4 @@ extend_skip = [
   "tools",
 ]
 skip_gitignore = "True"
-src_paths = [
-  "docs",
-  "lib",
-  "noxfile.py",
-  "setup.py",
-]
 verbose = "False"
