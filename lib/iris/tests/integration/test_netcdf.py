@@ -306,7 +306,7 @@ class TestCellMeasures(tests.IrisTest):
                 "        cell_area                             -         -    "
                 "    x         x"
             ),
-            printed
+            printed,
         )
 
 

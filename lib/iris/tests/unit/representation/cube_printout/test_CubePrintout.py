@@ -58,9 +58,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         cube.add_aux_coord(
             AuxCoord(
                 [0, 1],
-                long_name='long long long long long long long long name'
+                long_name="long long long long long long long long name",
             ),
-            0
+            0,
         )
         return cube
 
@@ -69,9 +69,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
         cube = self._sample_wide_cube()
         rep = cube_replines(cube)
         expect_full = [
-            'unknown / (unknown)                                  (-- : 2)',
-            '    Auxiliary coordinates:',
-            '        long long long long long long long long name     x'
+            "unknown / (unknown)                                  (-- : 2)",
+            "    Auxiliary coordinates:",
+            "        long long long long long long long long name     x",
         ]
         self.assertEqual(expect_full, rep)
 
@@ -91,7 +91,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
     def test_shortform__wide__intermediate(self):
         cube = self._sample_wide_cube()
         rep = cube_replines(cube, oneline=True, name_padding=25)
-        expect = ['unknown / (unknown)       (-- : 2)']
+        expect = ["unknown / (unknown)       (-- : 2)"]
         self.assertEqual(expect, rep)
 
     def test_scalar_cube_summaries(self):
