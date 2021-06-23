@@ -462,19 +462,25 @@ def _assert_case_specific_facts(engine, cf, cf_group):
 
     # Assert facts for CF formula terms associated with the cf_group
     # of the CF data variable.
-    formula_root = set()
+
+    # Collect varnames of formula-root variables as we go.
+    # NOTE: use dictionary keys as an 'OrderedDict'
+    #   - see: https://stackoverflow.com/a/53657523/2615050
+    # This is to ensure that we can handle the resulting facts in a definite
+    # order, as using a 'set' led to indeterminate results.
+    formula_root = {}
     for cf_var in cf.cf_group.formula_terms.values():
         for cf_root, cf_term in cf_var.cf_terms_by_root.items():
             # Only assert this fact if the formula root variable is
             # defined in the CF group of the CF data variable.
             if cf_root in cf_group:
-                formula_root.add(cf_root)
+                formula_root[cf_root] = True
                 engine.add_case_specific_fact(
                     "formula_term",
                     (cf_var.cf_name, cf_root, cf_term),
                 )
 
-    for cf_root in formula_root:
+    for cf_root in formula_root.keys():
         engine.add_case_specific_fact("formula_root", (cf_root,))
 
 
