@@ -20,19 +20,18 @@ import numpy.ma as ma
 
 import iris.aux_factory
 from iris.common.mixin import _get_valid_standard_name
-import iris.coords
 import iris.coord_systems
+import iris.coords
+import iris.exceptions
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import (
+    UnknownCellMethodWarning,
     _get_cf_var_data,
     parse_cell_methods,
-    UnknownCellMethodWarning,
 )
-import iris.exceptions
 import iris.std_names
 import iris.util
-
 
 #
 # UD Units Constants (based on Unidata udunits.dat definition file)

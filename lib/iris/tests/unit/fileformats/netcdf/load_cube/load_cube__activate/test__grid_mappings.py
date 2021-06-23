@@ -10,11 +10,9 @@ Unit tests for the engine.activate() call within the
 Here, *specifically* testcases relating to grid-mappings and dim-coords.
 
 """
-import iris.tests as tests
-
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
-
+import iris.tests as tests
 from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
     Mixin__nc_load_actions,
 )
