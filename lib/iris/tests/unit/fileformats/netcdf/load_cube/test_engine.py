@@ -9,11 +9,10 @@ Unit tests for the :mod:`iris.fileformats._nc_load_rules.engine` module.
 TODO: relocate under iris/tests/unit/fileformats/nc_load_rules
 
 """
-import iris.tests as tests
-
 from unittest import mock
 
 from iris.fileformats._nc_load_rules.engine import Engine, FactEntity
+import iris.tests as tests
 
 
 class Test_Engine(tests.IrisTest):

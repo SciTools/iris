@@ -14,11 +14,9 @@ Tests for rules activation relating to some isolated aspects :
     * ancillary variables
 
 """
-import iris.tests as tests
-
-from iris.coords import AuxCoord, CellMeasure, AncillaryVariable
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure
 from iris.fileformats.pp import STASH
-
+import iris.tests as tests
 from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
     Mixin__nc_load_actions,
 )

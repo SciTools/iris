@@ -21,10 +21,10 @@ import tempfile
 
 import numpy as np
 
+import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import _load_cube
-import iris.fileformats._nc_load_rules.engine
 
 """
 Notes on testing method.

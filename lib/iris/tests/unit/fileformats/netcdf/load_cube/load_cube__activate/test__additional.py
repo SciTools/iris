@@ -15,8 +15,6 @@ Both of those supply an "engine" with an "activate" method
 
 """
 import iris.tests as tests
-
-
 from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate.test__grid_mappings import (
     Mixin__grid_mapping,
 )

@@ -10,11 +10,8 @@ Unit tests for the engine.activate() call within the
 Tests for rules activation relating to 'time' and 'time_period' coords.
 
 """
-import iris.tests as tests
-
 from iris.coords import AuxCoord, DimCoord
-
-
+import iris.tests as tests
 from iris.tests.unit.fileformats.netcdf.load_cube.load_cube__activate import (
     Mixin__nc_load_actions,
 )

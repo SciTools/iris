@@ -44,13 +44,13 @@ longer useful, this can be considerably simplified.
 
 """
 
-from . import helpers as hh
-
 from functools import wraps
 import warnings
 
-import iris.fileformats.pp as pp
 import iris.fileformats.cf
+import iris.fileformats.pp as pp
+
+from . import helpers as hh
 
 
 def _default_rulenamesfunc(func_name):
