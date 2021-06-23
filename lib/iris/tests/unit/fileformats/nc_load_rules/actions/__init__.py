@@ -60,7 +60,7 @@ class Mixin__nc_load_actions:
     """
 
     # "global" test setting : whether to output various debug info
-    debug = True
+    debug = False
 
     # whether to perform action in both ways and compare results.
     @classmethod
@@ -97,7 +97,8 @@ class Mixin__nc_load_actions:
         engine = iris.fileformats.netcdf._actions_engine()
 
         # If debug enabled, switch on the activation summary debug output.
-        iris.fileformats.netcdf.DEBUG = self.debug
+        # Use 'patch' so it is restored after the test.
+        self.patch("iris.fileformats.netcdf.DEBUG", self.debug)
 
         # Call the main translation function to load a single cube.
         # _load_cube establishes per-cube facts, activates rules and
