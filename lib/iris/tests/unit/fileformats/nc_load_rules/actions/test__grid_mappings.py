@@ -343,11 +343,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # A basic reference example with a lat-long grid.
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_latitude_longitude
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
-        #     005 : fc_build_coordinate_latitude
-        #     006 : fc_build_coordinate_longitude
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
         # Notes:
         #     grid-mapping: regular latlon
         #     dim-coords: lat+lon
@@ -367,10 +367,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # Fix the 'grid' var so it does not register as a grid-mapping.
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_latitude
-        #     003 : fc_provides_coordinate_longitude
-        #     004 : fc_build_coordinate_latitude_nocs
-        #     005 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_grid_mapping --FAILED(no grid-mapping attr)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)(no-cs)
+        #     006 : fc_build_coordinate_(longitude)(no-cs)
         # Notes:
         #     grid-mapping: NONE
         #     dim-coords: lat+lon
@@ -383,10 +384,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # (I.E. the var named in "data-variable:grid_mapping" does not exist).
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_latitude
-        #     003 : fc_provides_coordinate_longitude
-        #     004 : fc_build_coordinate_latitude_nocs
-        #     005 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_coordinate_(latitude)
+        #     003 : fc_provides_coordinate_(longitude)
+        #     004 : fc_build_coordinate_(latitude)(no-cs)
+        #     005 : fc_build_coordinate_(longitude)(no-cs)
         # Notes:
         #     no coord-system
         #     all the same as test_bad_gridmapping_nameproperty
@@ -399,10 +400,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_latitude_longitude
-        #     003 : fc_provides_coordinate_longitude
-        #     004 : fc_build_coordinate_longitude
-        #     005 : fc_default_coordinate
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_default_coordinate_(provide-phase)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(miscellaneous)
+        #     006 : fc_build_coordinate_(longitude)
         # Notes:
         #     grid-mapping: regular latlon
         #     dim-coords:
@@ -424,11 +426,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_rotated_latitude_longitude
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
-        #     005 : fc_build_coordinate_latitude_rotated
-        #     006 : fc_build_coordinate_longitude_rotated
+        #     002 : fc_provides_grid_mapping_(rotated_latitude_longitude)
+        #     003 : fc_provides_coordinate_(rotated_latitude)
+        #     004 : fc_provides_coordinate_(rotated_longitude)
+        #     005 : fc_build_coordinate_(rotated_latitude)(rotated)
+        #     006 : fc_build_coordinate_(rotated_longitude)(rotated)
         # Notes:
         #     grid-mapping: rotated lat-lon
         #     dim-coords: lat+lon
@@ -450,11 +452,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     #
     # Rules Triggered:
     #     001 : fc_default
-    #     002 : fc_provides_grid_mapping_<XXX-mapping-name-XXX>
-    #     003 : fc_provides_projection_x_coordinate
-    #     004 : fc_provides_projection_y_coordinate
-    #     005 : fc_build_coordinate_projection_x_<XXX-mapping-name-XXX>
-    #     006 : fc_build_coordinate_projection_y_<XXX-mapping-name-XXX>
+    #     002 : fc_provides_grid_mapping_(<XXX-mapping-name-XXX>)
+    #     003 : fc_provides_coordinate_(projection_y)
+    #     004 : fc_provides_coordinate_(projection_x)
+    #     005 : fc_build_coordinate_(projection_y)
+    #     006 : fc_build_coordinate_(projection_x)
     # Notes:
     #     grid-mapping: <XXX>
     #     dim-coords: proj-x and -y
@@ -491,8 +493,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping_mercator__fail_unsupported(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_projection_x_coordinate
-        #     003 : fc_provides_projection_y_coordinate
+        #     002 : fc_provides_grid_mapping_(mercator) --(FAILED check has_supported_mercator_parameters)
+        #     003 : fc_provides_coordinate_(projection_y)
+        #     004 : fc_provides_coordinate_(projection_x)
+        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
+        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # Notes:
         #     grid-mapping: NONE
         #     dim-coords: proj-x and -y
@@ -515,8 +520,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping_stereographic__fail_unsupported(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_projection_x_coordinate
-        #     003 : fc_provides_projection_y_coordinate
+        #     002 : fc_provides_grid_mapping_(stereographic) --(FAILED check has_supported_stereographic_parameters)
+        #     003 : fc_provides_coordinate_(projection_y)
+        #     004 : fc_provides_coordinate_(projection_x)
+        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
+        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # Notes:
         #     as for 'mercator__fail_unsupported', above
         #     = NO dim-coords built (cube has no coords)
@@ -547,8 +555,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_projection_x_coordinate
-        #     003 : fc_provides_projection_y_coordinate
+        #     002 : fc_provides_grid_mapping --FAILED(unhandled type azimuthal_equidistant)
+        #     003 : fc_provides_coordinate_(projection_y)
+        #     004 : fc_provides_coordinate_(projection_x)
+        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
+        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # NOTES:
         #   - there is no warning for this.
         # TODO: perhaps there should be ?
@@ -562,8 +573,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_projection_x_coordinate
-        #     003 : fc_provides_projection_y_coordinate
+        #     002 : fc_provides_grid_mapping --FAILED(unhandled type unknown)
+        #     003 : fc_provides_coordinate_(projection_y)
+        #     004 : fc_provides_coordinate_(projection_x)
+        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
+        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # NOTES:
         #   - there is no warning for this.
         # TODO: perhaps there should be ?
@@ -580,9 +594,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__latlon_coords_rotated_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_rotated_latitude_longitude
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
+        #     002 : fc_provides_grid_mapping_(rotated_latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)(FAILED : latlon coord with rotated cs)
+        #     006 : fc_build_coordinate_(longitude)(FAILED : latlon coord with rotated cs)
         # NOTES:
         #   no build_coord triggers, as it requires the correct mapping type
         #   so no dim-coords at all in this case
@@ -598,11 +614,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__latlon_coords_nonll_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_albers_equal_area
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
-        #     005 : fc_build_coordinate_latitude_nocs
-        #     006 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_grid_mapping_(albers_conical_equal_area)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)(no-cs : discarded projected cs)
+        #     006 : fc_build_coordinate_(longitude)(no-cs : discarded projected cs)
         # NOTES:
         #   build_coord_XXX_cs triggers, requires NO latlon/rotated mapping
         #   - but a non-ll mapping is 'ok'.
@@ -619,10 +635,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__latlon_coords_missing_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_latitude
-        #     003 : fc_provides_coordinate_longitude
-        #     004 : fc_build_coordinate_latitude_nocs
-        #     005 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_coordinate_(latitude)
+        #     003 : fc_provides_coordinate_(longitude)
+        #     004 : fc_build_coordinate_(latitude)(no-cs)
+        #     005 : fc_build_coordinate_(longitude)(no-cs)
         # NOTES:
         #  same as nonll, except *NO* grid-mapping is detected,
         #  - which makes no practical difference
@@ -640,9 +656,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__rotated_coords_latlon_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_latitude_longitude
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(rotated_latitude)
+        #     004 : fc_provides_coordinate_(rotated_longitude)
+        #     005 : fc_build_coordinate_(rotated_latitude)(FAILED rotated coord with latlon cs)
+        #     006 : fc_build_coordinate_(rotated_longitude)(FAILED rotated coord with latlon cs)
         # NOTES:
         #   no build_coord triggers : requires NO latlon/rotated mapping
         #   hence no coords at all
@@ -657,11 +675,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__rotated_coords_nonll_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_albers_equal_area
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
-        #     005 : fc_build_coordinate_latitude_nocs
-        #     006 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_grid_mapping_(albers_conical_equal_area)
+        #     003 : fc_provides_coordinate_(rotated_latitude)
+        #     004 : fc_provides_coordinate_(rotated_longitude)
+        #     005 : fc_build_coordinate_(rotated_latitude)(rotated no-cs : discarded projected cs)
+        #     006 : fc_build_coordinate_(rotated_longitude)(rotated no-cs : discarded projected cs)
         # NOTES:
         #  this is different from the previous
         #  build_coord.._nocs triggers : requires NO latlon/rotated mapping
@@ -679,10 +697,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__rotated_coords_missing_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_latitude
-        #     003 : fc_provides_coordinate_longitude
-        #     004 : fc_build_coordinate_latitude_nocs
-        #     005 : fc_build_coordinate_longitude_nocs
+        #     002 : fc_provides_coordinate_(rotated_latitude)
+        #     003 : fc_provides_coordinate_(rotated_longitude)
+        #     004 : fc_build_coordinate_(rotated_latitude)(rotated no-cs)
+        #     005 : fc_build_coordinate_(rotated_longitude)(rotated no-cs)
         # NOTES:
         #  as previous, but no grid-mapping (which makes no difference)
         warning = "Missing.*grid mapping variable 'grid'"
@@ -699,9 +717,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__nonll_coords_latlon_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_latitude_longitude
-        #     003 : fc_default_coordinate
-        #     004 : fc_default_coordinate
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_default_coordinate_(provide-phase)
+        #     004 : fc_default_coordinate_(provide-phase)
+        #     005 : fc_build_coordinate_(miscellaneous)
+        #     006 : fc_build_coordinate_(miscellaneous)
         # NOTES:
         #  dim-coords built as "defaults" : dim-coords, but NO standard name
         result = self.run_testcase(
@@ -717,9 +737,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__nonll_coords_rotated_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_rotated_latitude_longitude
-        #     003 : fc_default_coordinate
-        #     004 : fc_default_coordinate
+        #     002 : fc_provides_grid_mapping_(rotated_latitude_longitude)
+        #     003 : fc_default_coordinate_(provide-phase)
+        #     004 : fc_default_coordinate_(provide-phase)
+        #     005 : fc_build_coordinate_(miscellaneous)
+        #     006 : fc_build_coordinate_(miscellaneous)
         # NOTES:
         #  same as previous __mismatch__nonll_
         result = self.run_testcase(
@@ -736,8 +758,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     def test_mapping__mismatch__nonll_coords_missing_system(self):
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_default_coordinate
-        #     003 : fc_default_coordinate
+        #     002 : fc_default_coordinate_(provide-phase)
+        #     003 : fc_default_coordinate_(provide-phase)
+        #     004 : fc_build_coordinate_(miscellaneous)
+        #     005 : fc_build_coordinate_(miscellaneous)
         # NOTES:
         #  effectively, just like previous 2 __mismatch__nonll_
         warning = "Missing.*grid mapping variable 'grid'"
@@ -768,21 +792,21 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         # Change the name of xdim, and put xco on the coords list.
         #
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_provides_grid_mapping_latitude_longitude
-        # 	003 : fc_provides_coordinate_latitude
-        # 	004 : fc_build_auxiliary_coordinate_longitude
-        # 	005 : fc_build_coordinate_latitude
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_build_coordinate_(latitude)
+        #     005 : fc_build_auxiliary_coordinate_longitude
         result = self.run_testcase(xco_is_dim=False)
         self.check_result(result, xco_is_aux=True, xco_no_cs=True)
 
     def test_aux_lat(self):
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_provides_grid_mapping_latitude_longitude
-        # 	003 : fc_provides_coordinate_longitude
-        # 	004 : fc_build_auxiliary_coordinate_latitude
-        # 	005 : fc_build_coordinate_longitude
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(longitude)
+        #     004 : fc_build_coordinate_(longitude)
+        #     005 : fc_build_auxiliary_coordinate_latitude
         result = self.run_testcase(yco_is_dim=False)
         self.check_result(result, yco_is_aux=True, yco_no_cs=True)
 
@@ -791,10 +815,10 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         # - as in this case there are then no dim-coords to reference it.
         #
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_provides_grid_mapping_latitude_longitude
-        # 	003 : fc_build_auxiliary_coordinate_latitude
-        # 	004 : fc_build_auxiliary_coordinate_longitude
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_build_auxiliary_coordinate_longitude
+        #     004 : fc_build_auxiliary_coordinate_latitude
         result = self.run_testcase(xco_is_dim=False, yco_is_dim=False)
         self.check_result(
             result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=True
@@ -804,11 +828,11 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         # Same but with rotated-style lat + lon coords.
         #
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_provides_grid_mapping_rotated_latitude_longitude
-        # 	003 : fc_provides_coordinate_latitude
-        # 	004 : fc_build_auxiliary_coordinate_longitude_rotated
-        # 	005 : fc_build_coordinate_latitude_rotated
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(rotated_latitude_longitude)
+        #     003 : fc_provides_coordinate_(rotated_latitude)
+        #     004 : fc_build_coordinate_(rotated_latitude)(rotated)
+        #     005 : fc_build_auxiliary_coordinate_longitude_rotated
         result = self.run_testcase(
             mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON,
             xco_is_dim=False,
@@ -817,11 +841,11 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
 
     def test_aux_lat_rotated(self):
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_provides_grid_mapping_rotated_latitude_longitude
-        # 	003 : fc_provides_coordinate_latitude
-        # 	004 : fc_build_auxiliary_coordinate_longitude_rotated
-        # 	005 : fc_build_coordinate_latitude_rotated
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(rotated_latitude_longitude)
+        #     003 : fc_provides_coordinate_(rotated_longitude)
+        #     004 : fc_build_coordinate_(rotated_longitude)(rotated)
+        #     005 : fc_build_auxiliary_coordinate_latitude_rotated
         result = self.run_testcase(
             mapping_type_name=hh.CF_GRID_MAPPING_ROTATED_LAT_LON,
             yco_is_dim=False,
@@ -843,11 +867,11 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_grid_mapping_latitude_longitude
-        #     003 : fc_provides_coordinate_latitude
-        #     004 : fc_provides_coordinate_longitude
-        #     005 : fc_build_coordinate_latitude
-        #     006 : fc_build_coordinate_longitude
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
         # NOTES:
         #  in terms of rule triggers, this is not distinct from a normal case
         #  - but the latitude is now an aux-coord.

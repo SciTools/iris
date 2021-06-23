@@ -151,12 +151,10 @@ variables:
         #     003 : fc_build_auxiliary_coordinate
         #     004 : fc_build_auxiliary_coordinate
         #     005 : fc_build_auxiliary_coordinate
-        #     006 : fc_build_auxiliary_coordinate
-        #     007 : fc_formula_type_atmosphere_hybrid_sigma_pressure_coordinate
-        #     008 : fc_formula_terms
-        #     009 : fc_formula_terms
-        #     010 : fc_formula_terms
-        #     011 : fc_formula_terms
+        #     008 : fc_formula_type_atmosphere_hybrid_height_coordinate
+        #     009 : fc_formula_term(a)
+        #     010 : fc_formula_term(b)
+        #     011 : fc_formula_term(orog)
         result = self.run_testcase()
         self.check_result(result)
 
@@ -169,9 +167,9 @@ variables:
         #     002 : fc_build_auxiliary_coordinate
         #     003 : fc_build_auxiliary_coordinate
         #     004 : fc_build_auxiliary_coordinate
-        #     005 : fc_formula_type_atmosphere_hybrid_height_coordinate
-        #     006 : fc_formula_terms
-        #     007 : fc_formula_terms
+        #     007 : fc_formula_type_atmosphere_hybrid_height_coordinate
+        #     008 : fc_formula_term(a)
+        #     009 : fc_formula_term(b)
         result = self.run_testcase(
             term_names=["a", "b"]  # missing the 'orog' term
         )
@@ -199,12 +197,13 @@ variables:
         # Set the root variable name to something NOT a recognised hybrid type.
         #
         # Rules Triggered:
-        # 	001 : fc_default
-        # 	002 : fc_build_auxiliary_coordinate
-        # 	003 : fc_build_auxiliary_coordinate
-        # 	004 : fc_build_auxiliary_coordinate
-        # 	005 : fc_formula_terms
-        # 	006 : fc_formula_terms
+        #     001 : fc_default
+        #     002 : fc_build_auxiliary_coordinate
+        #     003 : fc_build_auxiliary_coordinate
+        #     004 : fc_build_auxiliary_coordinate
+        #     007 : fc_formula_type(FAILED - unrecognised formula type = 'unknown')
+        #     008 : fc_formula_term(a)
+        #     009 : fc_formula_term(b)
         result = self.run_testcase(
             formula_root_name="unknown",
             term_names=["a", "b"],

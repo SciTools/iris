@@ -286,8 +286,8 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_time
-        #     003 : fc_build_coordinate_time
+        #     002 : fc_provides_coordinate_(time[[_period]])
+        #     003 : fc_build_coordinate_(time[[_period]])
         result = self.run_testcase()
         self.check_result(result, "dim")
 
@@ -296,8 +296,8 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # Strictly wrong but a common error in datafiles : must tolerate.
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_time
-        #     003 : fc_build_coordinate_time
+        #     002 : fc_provides_coordinate_(time[[_period]])
+        #     003 : fc_build_coordinate_(time[[_period]])
         result = self.run_testcase(in_phenomvar_coords=True)
         self.check_result(result, "dim")
 
@@ -308,8 +308,8 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # ( Done by  the build_coord routine, so not really a rules issue).
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_time
-        #     003 : fc_build_coordinate_time
+        #     002 : fc_provides_coordinate_(time[[_period]])
+        #     003 : fc_build_coordinate_(time[[_period]])
         msg = "Failed to create.* dimension coordinate"
         result = self.run_testcase(values_all_zero=True, warning=msg)
         self.check_result(result, "aux")
@@ -324,8 +324,9 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # ( N.B.#2 Not quite the same for lat/lon coords, where coord-specific
         #   'build' rules always use a fixed standard-name ).
         # Rules Triggered:
-        # 	#001 : fc_default
-        # 	#002 : fc_default_coordinate
+        #     001 : fc_default
+        #     002 : fc_default_coordinate_(provide-phase)
+        #     003 : fc_build_coordinate_(miscellaneous)
         result = self.run_testcase(units="1")
         self.check_result(result, "dim")
 
@@ -336,7 +337,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # For a valid case, we must *also* have a ref in phenom:coordinates
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_build_auxiliary_coordinate_time
+        #     002 : fc_build_auxiliary_coordinate_time[[_period]]
         result = self.run_testcase(
             coord_dim_name="dim_renamed",
             dimname="dim_renamed",
@@ -434,22 +435,20 @@ class Test__dualcoord(Mixin__timecoords__common, tests.IrisTest):
         # Test case with both 'time' and 'period', with separate dims.
         # Rules Triggered:
         #     001 : fc_default
-        #     002 : fc_provides_coordinate_time
-        #     003 : fc_provides_coordinate_time_period
-        #     004 : fc_build_coordinate_time
-        #     005 : fc_build_coordinate_time_period
+        #     002 : fc_provides_coordinate_(time)
+        #     003 : fc_provides_coordinate_(time_period)
+        #     004 : fc_build_coordinate_(time)
+        #     005 : fc_build_coordinate_(time_period)
         result = self.run_testcase(time_opts={}, period_opts={})
         self.check_result(result, time_is="dim", period_is="dim")
 
     def test_time_dim_period_aux(self):
         # Test case with both 'time' and 'period' sharing a dim.
-        # Rules Triggered:
+        #     Rules Triggered:
         #     001 : fc_default
-        # Rules Triggered:
-        #     001 : fc_default
-        #     002 : fc_provides_coordinate_time
-        #     003 : fc_build_auxiliary_coordinate_time_period
-        #     004 : fc_build_coordinate_time
+        #     002 : fc_provides_coordinate_(time)
+        #     003 : fc_build_coordinate_(time)
+        #     004 : fc_build_auxiliary_coordinate_time_period
         result = self.run_testcase(
             time_opts={},
             period_opts=dict(
