@@ -4,9 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.Table`."""
-import iris.tests as tests
-
 from iris._representation.cube_printout import Table
+import iris.tests as tests
 
 
 class TestTable(tests.IrisTest):

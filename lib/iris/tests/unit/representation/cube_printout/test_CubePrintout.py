@@ -4,21 +4,20 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.CubePrintout`."""
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.cube import Cube
+from iris._representation.cube_printout import CubePrinter
+from iris._representation.cube_summary import CubeSummary
 from iris.coords import (
-    AuxCoord,
-    DimCoord,
     AncillaryVariable,
+    AuxCoord,
     CellMeasure,
     CellMethod,
+    DimCoord,
 )
-from iris._representation.cube_summary import CubeSummary
-
-from iris._representation.cube_printout import CubePrinter
+from iris.cube import Cube
 
 
 class TestCubePrintout___str__(tests.IrisTest):
