@@ -28,7 +28,7 @@ class Test_sample(tests.IrisTest):
         # Snapshot result, printed with ...
         #     >>> np.set_printoptions(linewidth=180,
         #            formatter={'float':lambda x:'{:-09.3f}'.format(x)})
-        #     >>> print repr(coord.points)
+        #     >>> print(repr(coord.points))
         self.basic_derived_result = np.array(
             [
                 [

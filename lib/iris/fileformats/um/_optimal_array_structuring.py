@@ -97,11 +97,11 @@ def optimal_array_structure(ordering_elements, actual_values_elements=None):
         >>> dims_shape, dim_names, arrays_and_dims = \
         ...      optdims.optimal_array_structure(elements_structure,
         ...                                      elements_values)
-        >>> print dims_shape
+        >>> print(dims_shape)
         (2, 3)
-        >>> print dim_names
+        >>> print(dim_names)
         set(['a', 'b'])
-        >>> print arrays_and_dims
+        >>> print(arrays_and_dims)
         {'a': (array([10, 12]), (0,)), 'c': (array([[9, 3, 5],
                [2, 7, 1]]), (0, 1)), 'b': (array([15, 16, 17]), (1,))}
 
