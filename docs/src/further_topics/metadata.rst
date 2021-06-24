@@ -263,7 +263,7 @@ using the `namedtuple._asdict`_ method. This can be particularly handy when a
 standard Python built-in container is required to represent your ``metadata``,
 
     >>> metadata._asdict()
-    OrderedDict([('standard_name', 'longitude'), ('long_name', None), ('var_name', 'longitude'), ('units', Unit('degrees')), ('attributes', {'grinning face': '🙃'}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    {'standard_name': 'longitude', 'long_name': None, 'var_name': 'longitude', 'units': Unit('degrees'), 'attributes': {'grinning face': '🙃'}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
 
 Using the `namedtuple._replace`_ method allows you to create a new metadata
 class instance, but replacing specified members with **new** associated values,
@@ -943,7 +943,7 @@ such as a `dict`_,
 
     >>> mapping = latitude.metadata._asdict()
     >>> mapping
-    OrderedDict([('standard_name', 'latitude'), ('long_name', None), ('var_name', 'latitude'), ('units', Unit('degrees')), ('attributes', {}), ('coord_system', GeogCS(6371229.0)), ('climatological', False), ('circular', False)])
+    {'standard_name': 'latitude', 'long_name': None, 'var_name': 'latitude', 'units': Unit('degrees'), 'attributes': {}, 'coord_system': GeogCS(6371229.0), 'climatological': False, 'circular': False}
     >>> longitude.metadata = mapping
     >>> longitude.metadata
     DimCoordMetadata(standard_name='latitude', long_name=None, var_name='latitude', units=Unit('degrees'), attributes={}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
