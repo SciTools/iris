@@ -15,8 +15,15 @@ from nox.logger import logger
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
 
+#: Python versions we can run sessions under
+_PY_VERSIONS_ALL = ["3.7", "3.8"]
+_PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
+
+#: One specific python version for docs builds
+_PY_VERSION_DOCSBUILD = _PY_VERSION_LATEST
+
 #: Cirrus-CI environment variable hook.
-PY_VER = os.environ.get("PY_VER", ["3.7", "3.8"])
+PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
@@ -197,7 +204,7 @@ def tests(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def doctest(session: nox.sessions.Session):
     """
     Perform iris doctests and gallery.
@@ -231,7 +238,7 @@ def doctest(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def linkcheck(session: nox.sessions.Session):
     """
     Perform iris doc link check.
