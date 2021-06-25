@@ -2433,7 +2433,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     delta = max_line_offset - min_alignment + 5
                     cube_header = "%-*s (%s)" % (
                         int(name_padding + delta),
-                        self.name() or "unknown",
+                        nameunit,
                         dimension_header,
                     )
                     alignment += delta
@@ -2490,7 +2490,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             # Calculate the maximum line offset.
             max_line_offset = 0
-            for coord in all_coords:
+            for coord in (
+                list(all_coords)
+                + self.ancillary_variables()
+                + self.cell_measures()
+            ):
                 max_line_offset = max(
                     max_line_offset,
                     len(

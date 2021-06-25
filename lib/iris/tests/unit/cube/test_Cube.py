@@ -594,6 +594,58 @@ class Test_summary(tests.IrisTest):
             self.cube.add_aux_coord(coord)
         self.assertIn("baz", self.cube.summary())
 
+    def test_long_components(self):
+        # Check that components with long names 'stretch' the printout correctly.
+        cube = Cube(np.zeros((20, 20, 20)), units=1)
+        dimco = DimCoord(np.arange(20), long_name="dimco")
+        auxco = AuxCoord(np.zeros(20), long_name="auxco")
+        ancil = AncillaryVariable(np.zeros(20), long_name="ancil")
+        cellm = CellMeasure(np.zeros(20), long_name="cellm")
+        cube.add_dim_coord(dimco, 0)
+        cube.add_aux_coord(auxco, 0)
+        cube.add_cell_measure(cellm, 1)
+        cube.add_ancillary_variable(ancil, 2)
+
+        original_summary = cube.summary()
+        long_name = "long_name______________________________________"
+        for component in (dimco, auxco, ancil, cellm):
+            # For each (type of) component, set a long name so the header columns get shifted.
+            old_name = component.name()
+            component.rename(long_name)
+            new_summary = cube.summary()
+            component.rename(
+                old_name
+            )  # Put each back the way it was afterwards
+
+            # Check that the resulting 'stretched' output has dimension columns aligned correctly.
+            lines = new_summary.split("\n")
+            header = lines[0]
+            colon_inds = [
+                i_char for i_char, char in enumerate(header) if char == ":"
+            ]
+            for line in lines[1:]:
+                # Replace all '-' with 'x' to make checking easier, and add a final buffer space.
+                line = line.replace("-", "x") + " "
+                if " x " in line:
+                    # For lines with any columns : check that columns are where expected
+                    for col_ind in colon_inds:
+                        # Chop out chars before+after each expected column.
+                        self.assertEqual(
+                            line[col_ind - 1 : col_ind + 2], " x "
+                        )
+
+            # Finally also: compare old with new, but replacing new name and ignoring spacing differences
+            def collapse_space(string):
+                # Replace all multiple spaces with a single space.
+                while "  " in string:
+                    string = string.replace("  ", " ")
+                return string
+
+            self.assertEqual(
+                collapse_space(new_summary).replace(long_name, old_name),
+                collapse_space(original_summary),
+            )
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
