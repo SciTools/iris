@@ -464,7 +464,7 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     # of the CF data variable.
 
     # Collect varnames of formula-root variables as we go.
-    # NOTE: use dictionary keys as an 'OrderedDict'
+    # NOTE: use dictionary keys as an 'OrderedSet'
     #   - see: https://stackoverflow.com/a/53657523/2615050
     # This is to ensure that we can handle the resulting facts in a definite
     # order, as using a 'set' led to indeterminate results.

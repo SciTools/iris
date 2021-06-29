@@ -62,10 +62,8 @@ class Mixin__nc_load_actions:
     # "global" test setting : whether to output various debug info
     debug = False
 
-    # whether to perform action in both ways and compare results.
     @classmethod
     def setUpClass(cls):
-        # # Control which testing method we are applying.
         # Create a temp directory for temp files.
         cls.temp_dirpath = Path(tempfile.mkdtemp())
 
