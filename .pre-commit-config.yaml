@@ -49,7 +49,7 @@ repos:
         args: [--filter-files, --check]
 
 -   repo: https://github.com/asottile/blacken-docs
-    rev: v1.8.0
+    rev: v1.10.0
     hooks:
     -   id: blacken-docs
         types: [file, rst]
