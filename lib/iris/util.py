@@ -1540,23 +1540,23 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
         >>> print(cube)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  year                           x              -              -
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
         >>> promote_aux_coord_to_dim_coord(cube, "year")
         >>> print(cube)
         air_temperature / (K)               (year: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  year                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  time                           x              -              -
+            Dimension coordinates:
+                year                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                time                             x              -              -
 
     """
     from iris.coords import Coord, DimCoord
@@ -1666,23 +1666,23 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
         >>> print(cube)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  year                           x              -              -
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
         >>> demote_dim_coord_to_aux_coord(cube, "time")
         >>> print(cube)
         air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  latitude                      -              x              -
-                  longitude                     -              -              x
-             Auxiliary coordinates:
-                  forecast_period               x              -              -
-                  time                          x              -              -
-                  year                          x              -              -
+            Dimension coordinates:
+                latitude                        -              x              -
+                longitude                       -              -              x
+            Auxiliary coordinates:
+                forecast_period                 x              -              -
+                time                            x              -              -
+                year                            x              -              -
 
     """
     from iris.coords import Coord
