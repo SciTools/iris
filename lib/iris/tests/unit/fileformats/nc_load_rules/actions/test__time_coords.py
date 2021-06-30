@@ -294,6 +294,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
     def test_dimension_in_phenom_coords(self):
         # Dimension coord also present in phenom:coords.
         # Strictly wrong but a common error in datafiles : must tolerate.
+        #
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_provides_coordinate_(time[[_period]])
@@ -306,6 +307,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # The rule has a special way of treating it as an aux coord
         # -- even though it doesn't appear in the phenom coords.
         # ( Done by  the build_coord routine, so not really a rules issue).
+        #
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_provides_coordinate_(time[[_period]])
@@ -320,9 +322,10 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # 'is_period' test, so the 'provides_coord' rule fails to trigger.
         # So it is built as a 'miscellaneous' dim-coord.
         # N.B. this makes *no* practical difference, because a 'misc' dim
-        # coord is still a dim coord (albeit with bad units).
+        # coord is still a dim coord (albeit one with bad units).
         # ( N.B.#2 Not quite the same for lat/lon coords, where coord-specific
         #   'build' rules always use a fixed standard-name ).
+        #
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_default_coordinate_(provide-phase)
@@ -335,6 +338,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # For this, rename both DIMENSIONS, so that the generated coords are
         # not actually CF coordinates.
         # For a valid case, we must *also* have a ref in phenom:coordinates
+        #
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_build_auxiliary_coordinate_time[[_period]]
@@ -349,6 +353,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         # time/period is installed as an auxiliary coord,
         # but we DIDN'T list it in phenom:coords  -- otherwise as previous.
         # Should have no result at all.
+        #
         # Rules Triggered:
         #     001 : fc_default
         result = self.run_testcase(
@@ -359,31 +364,17 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         self.check_result(result, "missing")
 
     def test_aux_fails_typeident(self):
-        # The coord variable is identified as a CFAuxiliaryCoordinate by cf.py,
-        # but having the wrong units causes it to fail the 'is_time' or
-        # 'is_period' test, so the 'provides_coord' rule fails to trigger.
+        # We provide a non-dimension coord variable, identified as a
+        # CFAuxiliaryCoordinate by cf.py, but we also give it the wrong units,
+        # which causes it to fail both 'is_time' and 'is_period' tests, so the
+        # 'provides_coord' rule fails to trigger.
+        # As in 'test_dim_fails_typeident', the coord is built as a
+        # 'miscellaneous' rather than a specific coord type (recognised from its
+        # name), but this makes absolutely no practical difference.
+        #
         # Rules Triggered:
         #     001 : fc_default
         #     002 : fc_build_auxiliary_coordinate
-        # Again, though it builds as a 'miscellaneous' rather than a recognised
-        # specific coord type, it makes no practical difference.
-        result = self.run_testcase(
-            coord_dim_name="dim_renamed",
-            dimname="dim_renamed",
-            in_phenomvar_coords=True,
-            units="1",
-        )
-        self.check_result(result, "aux")
-
-    def test_aux_no_coordsref(self):
-        # The coord variable is identified as a CFAuxiliaryCoordinate by cf.py,
-        # but having the wrong units causes it to fail the 'is_time' or
-        # 'is_period' test.
-        # Rules Triggered:
-        #     001 : fc_default
-        #     002 : fc_build_auxiliary_coordinate
-        # Again, though it builds as a 'miscellaneous' rather than a reocgnised
-        # specific coord type, it makes no practical difference.
         result = self.run_testcase(
             coord_dim_name="dim_renamed",
             dimname="dim_renamed",

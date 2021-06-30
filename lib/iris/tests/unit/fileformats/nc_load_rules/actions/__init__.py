@@ -26,8 +26,8 @@ Notes on testing method.
 IN cf : "def _load_cube(engine, cf, cf_var, filename)"
 WHERE:
   - engine is a :class:`iris.fileformats._nc_load_rules.engine.Engine`
-  - cf is a CFReader
-  - cf_var is a CFDAtaVariable
+  - cf is a :class:`iris.fileformats.cf.CFReader`
+  - cf_var is a :class:`iris.fileformats.cf.CFDataVariable`
 
 As it's hard to construct a suitable CFReader from scratch, it would seem
 simpler (for now) to use an ACTUAL FILE.

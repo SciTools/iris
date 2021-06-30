@@ -580,7 +580,7 @@ def _load_cube(engine, cf, cf_var, filename):
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = OrderedAddableList()  # set()
+    engine.rule_triggered = OrderedAddableList()
     engine.filename = filename
 
     # Assert all the case-specific facts.
