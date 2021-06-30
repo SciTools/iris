@@ -30,8 +30,6 @@ line_length = 79
 profile = "black"
 extend_skip = [
   "_build",
-  "compiled_krb",
-  "fc_rules_cf.krb",
   "generated",
   "sphinxext",
   "tools",
