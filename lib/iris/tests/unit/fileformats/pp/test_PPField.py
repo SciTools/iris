@@ -76,6 +76,9 @@ class TestPPField(PPField):
     def t2(self):
         return None
 
+    def t2_zero(self):
+        pass
+
 
 class Test_save(tests.IrisTest):
     def test_float64(self):

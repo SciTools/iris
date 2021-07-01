@@ -5,7 +5,6 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-import cftime
 import cf_units
 
 # Import iris.tests first so that some things can be initialised before
@@ -240,14 +239,13 @@ class TestTimeMean(tests.IrisTest):
 
     def test_t2_no_time_mean(self):
         cube = _get_single_time_cube(set_time_mean=False)
-        expected = cftime.datetime(0, 0, 0)
 
         with mock.patch(
             "iris.fileformats.pp.PPField3", autospec=True
         ) as pp_field:
             verify(cube, pp_field)
-        actual = pp_field.t2
-        self.assertEqual(expected, actual)
+
+        self.assertEqual(pp_field.t2_zero.call_count, 1)
 
     def test_lbft_no_forecast_time(self):
         # Different pattern here: checking that lbft hasn't been changed from

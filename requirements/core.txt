@@ -1,8 +1,8 @@
 # Core dependencies.
 
 cartopy>=0.18
-cf-units>=2
-cftime<1.3.0
+cf-units
+cftime>=1.5
 dask[array]>=2
 matplotlib
 netcdf4

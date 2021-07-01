@@ -921,6 +921,10 @@ class PPField(metaclass=ABCMeta):
     def t2(self):
         pass
 
+    @abstractmethod
+    def t2_zero(self):
+        pass
+
     def __repr__(self):
         """Return a string representation of the PP field."""
 
@@ -1476,8 +1480,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            lbmon, lbdat = self.lbmon, self.lbdat
+            if lbmon == 0 and lbdat == 0:
+                lbmon = lbdat = 1
             self._t1 = cftime.datetime(
-                self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin
+                self.lbyr,
+                lbmon,
+                lbdat,
+                self.lbhr,
+                self.lbmin,
+                calendar=self.calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1489,6 +1503,14 @@ class PPField2(PPField):
         self.lbhr = dt.hour
         self.lbmin = dt.minute
         self.lbday = int(dt.strftime("%j"))
+        if self.lbyr == 0:
+            if self.lbmon == 0 and self.lbdat == 0:
+                self.lbmon = self.lbdat = 1
+            elif self.lbmon == 0 or self.lbdat == 0:
+                emsg = (
+                    f"Invalid {self.__class__.__name__} t1 date {dt} provided"
+                )
+                raise ValueError(emsg)
         if hasattr(self, "_t1"):
             delattr(self, "_t1")
 
@@ -1500,8 +1522,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            lbmond, lbdatd = self.lbmond, self.lbdatd
+            if lbmond == 0 and lbdatd == 0:
+                lbmond = lbdatd = 1
             self._t2 = cftime.datetime(
-                self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind
+                self.lbyrd,
+                lbmond,
+                lbdatd,
+                self.lbhrd,
+                self.lbmind,
+                calendar=self.calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 
@@ -1513,8 +1545,33 @@ class PPField2(PPField):
         self.lbhrd = dt.hour
         self.lbmind = dt.minute
         self.lbdayd = int(dt.strftime("%j"))
+        if self.lbyrd == 0:
+            if self.lbmond == 0 and self.lbdatd == 0:
+                self.lbmond = self.lbdatd = 1
+            elif self.lbmond == 0 or self.lbdatd == 0:
+                emsg = (
+                    f"Invalid {self.__class__.__name__} t2 date {dt} provided"
+                )
+                raise ValueError(emsg)
         if hasattr(self, "_t2"):
             delattr(self, "_t2")
+
+    @property
+    def t2_zero(self):
+        """
+        Initialise the associated ``t2`` field properties to zero.
+
+        It is not possible to do this though the setter property as true zero
+        dates are not valid :func:`datetime.datetime` or :func`cftime.datetime`
+        dates.
+
+        """
+        self.lbyrd = 0
+        self.lbmond = 0
+        self.lbdatd = 0
+        self.lbhrd = 0
+        self.lbmind = 0
+        self.lbdayd = 0
 
 
 class PPField3(PPField):
@@ -1537,13 +1594,19 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            lbmon, lbdat = self.lbmon, self.lbdat
+            if lbmon == 0 and lbdat == 0:
+                lbmon = lbdat = 1
             self._t1 = cftime.datetime(
                 self.lbyr,
-                self.lbmon,
-                self.lbdat,
+                lbmon,
+                lbdat,
                 self.lbhr,
                 self.lbmin,
                 self.lbsec,
+                calendar=self.calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1555,6 +1618,14 @@ class PPField3(PPField):
         self.lbhr = dt.hour
         self.lbmin = dt.minute
         self.lbsec = dt.second
+        if self.lbyr == 0:
+            if self.lbmon == 0 and self.lbdat == 0:
+                self.lbmon = self.lbdat = 1
+            elif self.lbmon == 0 or self.lbdat == 0:
+                emsg = (
+                    f"Invalid {self.__class__.__name__} t1 date {dt} provided"
+                )
+                raise ValueError(emsg)
         if hasattr(self, "_t1"):
             delattr(self, "_t1")
 
@@ -1566,13 +1637,19 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            lbmond, lbdatd = self.lbmond, self.lbdatd
+            if lbmond == 0 and lbdatd == 0:
+                lbmond = lbdatd = 1
             self._t2 = cftime.datetime(
                 self.lbyrd,
-                self.lbmond,
-                self.lbdatd,
+                lbmond,
+                lbdatd,
                 self.lbhrd,
                 self.lbmind,
                 self.lbsecd,
+                calendar=self.calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 
@@ -1584,8 +1661,32 @@ class PPField3(PPField):
         self.lbhrd = dt.hour
         self.lbmind = dt.minute
         self.lbsecd = dt.second
+        if self.lbyrd == 0:
+            if self.lbmond == 0 and self.lbdatd == 0:
+                self.lbmond = self.lbdatd = 1
+            elif self.lbmond == 0 or self.lbdatd == 0:
+                emsg = (
+                    f"Invalid {self.__class__.__name__} t1 date {dt} provided"
+                )
+                raise ValueError(emsg)
         if hasattr(self, "_t2"):
             delattr(self, "_t2")
+
+    def t2_zero(self):
+        """
+        Initialise the associated ``t2`` field properties to zero.
+
+        It is not possible to do this though the setter property as true zero
+        dates are not valid :func:`datetime.datetime` or :func`cftime.datetime`
+        dates.
+
+        """
+        self.lbyrd = 0
+        self.lbmond = 0
+        self.lbdatd = 0
+        self.lbhrd = 0
+        self.lbmind = 0
+        self.lbsecd = 0
 
 
 PP_CLASSES = {2: PPField2, 3: PPField3}
