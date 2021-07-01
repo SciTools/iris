@@ -365,12 +365,16 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
 
     def test_aux_fails_typeident(self):
         # We provide a non-dimension coord variable, identified as a
-        # CFAuxiliaryCoordinate by cf.py, but we also give it the wrong units,
-        # which causes it to fail both 'is_time' and 'is_period' tests, so the
-        # 'provides_coord' rule fails to trigger.
-        # As in 'test_dim_fails_typeident', the coord is built as a
-        # 'miscellaneous' rather than a specific coord type (recognised from its
-        # name), but this makes absolutely no practical difference.
+        # CFAuxiliaryCoordinate by cf.py, but we also give it "wrong" units,
+        # unsuitable for a time or period coord.
+        # Because it fails both 'is_time' and 'is_period' tests, it then does
+        # not trigger 'fc_build_auxiliary_coordinate_time[[_period]]'.
+        # As in the above testcase 'test_dim_fails_typeident', the routine
+        # 'action_build_auxiliary_coordinate' therefore builds this as a
+        # 'miscellaneous' rather than a specific coord type (time or period).
+        # However, also as in that other case, this makes absolutely no
+        # practical difference -- unlike for latitude or longitutude coords,
+        # where it may affect the standard-name.
         #
         # Rules Triggered:
         #     001 : fc_default
