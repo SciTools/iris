@@ -607,6 +607,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
     #     TODO: it's not clear why this needs to behave differently from case
     #     (3.) : possibly, these two should be made consistent.
     #
+    # TODO: *all* these 'mismatch' cases should probably generate warnings,
+    # except for plain-latlon coords with no grid-mapping.
+    # At present, we _only_ warn when an expected grid-mapping is absent.
+    #
 
     def test_mapping__mismatch__latlon_coords_rotated_system(self):
         # Rules Triggered:
@@ -694,7 +698,6 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     006 : fc_build_coordinate_(rotated_longitude)(rotated no-cs : discarded projected cs)
         # Notes:
         #     * coords built : rotated-lat + lon, with no coord-system (see above)
-        # TODO: should this change ??
         result = self.run_testcase(
             mapping_type_name=hh.CF_GRID_MAPPING_ALBERS,
             xco_name="grid_longitude",

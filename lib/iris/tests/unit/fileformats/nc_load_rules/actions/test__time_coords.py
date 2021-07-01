@@ -317,14 +317,17 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         self.check_result(result, "aux")
 
     def test_dim_fails_typeident(self):
-        # The coord variable is identified as a CFDimensionCoordinate by cf.py,
-        # but having the wrong units causes it to fail the 'is_time' or
-        # 'is_period' test, so the 'provides_coord' rule fails to trigger.
-        # So it is built as a 'miscellaneous' dim-coord.
+        # Provide a coord variable, identified as a CFDimensionCoordinate by
+        # cf.py, but with the "wrong" units for a time or period coord.
+        # This causes it to fail both 'is_time' and 'is_period' tests and so,
+        # within the 'action_provides_coordinate' routine, does not trigger as
+        # a 'provides_coord_(time[[_period]])' rule, but instead as a
+        # 'default_coordinate_(provide-phase)'.
+        # As a result, it is built as a 'miscellaneous' dim-coord.
         # N.B. this makes *no* practical difference, because a 'misc' dim
-        # coord is still a dim coord (albeit one with bad units).
-        # ( N.B.#2 Not quite the same for lat/lon coords, where coord-specific
-        #   'build' rules always use a fixed standard-name ).
+        # coord is still a dim coord (albeit one with incorrect units).
+        # N.B.#2 that is different from lat/lon coords, where the coord-specific
+        # 'build' rules have the extra effect of setting a fixed standard-name.
         #
         # Rules Triggered:
         #     001 : fc_default
