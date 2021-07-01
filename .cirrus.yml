@@ -153,7 +153,7 @@ test_task:
 
 
 #
-# Documentation Gallery and Testing (Linux)
+# Documentation Testing and Gallery (Linux)
 #
 doctest_task:
   only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
@@ -162,7 +162,7 @@ doctest_task:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} gallery and doctests"
+  name: "${CIRRUS_OS}: py${PY_VER} doctests and gallery"
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
