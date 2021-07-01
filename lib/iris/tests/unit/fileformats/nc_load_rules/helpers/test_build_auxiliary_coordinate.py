@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.build_auxilliary_coordinate`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+build_auxilliary_coordinate`.
 
 """
 
@@ -18,52 +18,55 @@ from unittest import mock
 import numpy as np
 
 from iris.coords import AuxCoord
+from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    build_auxiliary_coordinate
 
-
-# from iris.tests.unit.fileformats.pyke_rules.compiled_krb\
-#     .fc_rules_cf_fc.test_build_dimension_coordinate import RulesTestMixin
 
 class TestBoundsVertexDim(tests.IrisTest):
     # Lookup for various tests (which change the dimension order).
     dim_names_lens = {
-        'foo': 2, 'bar': 3, 'nv': 4,
+        "foo": 2,
+        "bar": 3,
+        "nv": 4,
         # 'x' and 'y' used as aliases for 'foo' and 'bar'
-        'x': 2, 'y': 3}
+        "x": 2,
+        "y": 3,
+    }
 
     def setUp(self):
         # Create coordinate cf variables and pyke engine.
-        dimension_names = ('foo', 'bar')
+        dimension_names = ("foo", "bar")
         points, cf_data = self._make_array_and_cf_data(dimension_names)
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=dimension_names,
-            cf_name='wibble',
+            cf_name="wibble",
             cf_data=cf_data,
             standard_name=None,
-            long_name='wibble',
-            units='m',
+            long_name="wibble",
+            units="m",
             shape=points.shape,
             dtype=points.dtype,
-            __getitem__=lambda self, key: points[key])
+            __getitem__=lambda self, key: points[key],
+        )
 
         expected_bounds, _ = self._make_array_and_cf_data(
-            dimension_names=('foo', 'bar', 'nv'))
+            dimension_names=("foo", "bar", "nv")
+        )
         self.expected_coord = AuxCoord(
             self.cf_coord_var[:],
             long_name=self.cf_coord_var.long_name,
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
-            bounds=expected_bounds)
+            bounds=expected_bounds,
+        )
 
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=('foo', 'bar'),
-                             cf_data=cf_data),
-            filename='DUMMY',
-            cube_parts=dict(coordinates=[]))
+            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
 
         # Patch the deferred loading that prevents attempted file access.
         # This assumes that self.cf_bounds_var is defined in the test case.
@@ -73,8 +76,10 @@ class TestBoundsVertexDim(tests.IrisTest):
                     return var[keys]
             raise RuntimeError()
 
-        self.patch('iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
-                   new=patched__getitem__)
+        self.patch(
+            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            new=patched__getitem__,
+        )
 
         # Patch the helper function that retrieves the bounds cf variable,
         # and a False flag for climatological.
@@ -83,14 +88,14 @@ class TestBoundsVertexDim(tests.IrisTest):
             # Return the 'cf_bounds_var' created by the current test.
             return (self.cf_bounds_var, False)
 
-        self.patch('iris.fileformats._pyke_rules.compiled_krb.'
-                   'fc_rules_cf_fc.get_cf_bounds_var',
-                   new=_get_per_test_bounds_var)
+        self.patch(
+            "iris.fileformats._nc_load_rules.helpers.get_cf_bounds_var",
+            new=_get_per_test_bounds_var,
+        )
 
     @classmethod
     def _make_array_and_cf_data(cls, dimension_names):
-        shape = tuple(cls.dim_names_lens[name]
-                      for name in dimension_names)
+        shape = tuple(cls.dim_names_lens[name] for name in dimension_names)
         cf_data = mock.MagicMock(_FillValue=None, spec=[])
         cf_data.chunking = mock.MagicMock(return_value=shape)
         return np.zeros(shape), cf_data
@@ -101,43 +106,45 @@ class TestBoundsVertexDim(tests.IrisTest):
         cf_bounds_var = mock.Mock(
             spec=CFVariable,
             dimensions=dimension_names,
-            cf_name='wibble_bnds',
+            cf_name="wibble_bnds",
             cf_data=cf_data,
             shape=bounds.shape,
             dtype=bounds.dtype,
-            __getitem__=lambda self, key: bounds[key])
+            __getitem__=lambda self, key: bounds[key],
+        )
 
         return bounds, cf_bounds_var
 
     def _check_case(self, dimension_names):
         bounds, self.cf_bounds_var = self._make_cf_bounds_var(
-            dimension_names=dimension_names)
+            dimension_names=dimension_names
+        )
 
         # Asserts must lie within context manager because of deferred loading.
         build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
         self.engine.cube.add_aux_coord.assert_called_with(
-            self.expected_coord, [0, 1])
+            self.expected_coord, [0, 1]
+        )
 
         # Test that engine.cube_parts container is correctly populated.
         expected_list = [(self.expected_coord, self.cf_coord_var.cf_name)]
-        self.assertEqual(self.engine.cube_parts['coordinates'],
-                         expected_list)
+        self.assertEqual(self.engine.cube_parts["coordinates"], expected_list)
 
     def test_fastest_varying_vertex_dim(self):
         # The usual order.
-        self._check_case(dimension_names=('foo', 'bar', 'nv'))
+        self._check_case(dimension_names=("foo", "bar", "nv"))
 
     def test_slowest_varying_vertex_dim(self):
         # Bounds in the first (slowest varying) dimension.
-        self._check_case(dimension_names=('nv', 'foo', 'bar'))
+        self._check_case(dimension_names=("nv", "foo", "bar"))
 
     def test_fastest_with_different_dim_names(self):
         # Despite the dimension names ('x', and 'y') differing from the coord's
         # which are 'foo' and 'bar' (as permitted by the cf spec),
         # this should still work because the vertex dim is the fastest varying.
-        self._check_case(dimension_names=('x', 'y', 'nv'))
+        self._check_case(dimension_names=("x", "y", "nv"))
 
 
 class TestDtype(tests.IrisTest):
@@ -149,21 +156,23 @@ class TestDtype(tests.IrisTest):
 
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
-            dimensions=('foo', 'bar'),
-            cf_name='wibble',
+            dimensions=("foo", "bar"),
+            cf_name="wibble",
             cf_data=cf_data,
             standard_name=None,
-            long_name='wibble',
-            units='m',
+            long_name="wibble",
+            units="m",
             shape=points.shape,
             dtype=points.dtype,
-            __getitem__=lambda self, key: points[key])
+            __getitem__=lambda self, key: points[key],
+        )
 
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=('foo', 'bar')),
-            filename='DUMMY',
-            cube_parts=dict(coordinates=[]))
+            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
 
         def patched__getitem__(proxy_self, keys):
             if proxy_self.variable_name == self.cf_coord_var.cf_name:
@@ -171,8 +180,9 @@ class TestDtype(tests.IrisTest):
             raise RuntimeError()
 
         self.deferred_load_patch = mock.patch(
-            'iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
-            new=patched__getitem__)
+            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            new=patched__getitem__,
+        )
 
     def test_scale_factor_add_offset_int(self):
         self.cf_coord_var.scale_factor = 3
@@ -181,26 +191,26 @@ class TestDtype(tests.IrisTest):
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.cube_parts['coordinates'][0]
-        self.assertEqual(coord.dtype.kind, 'i')
+        coord, _ = self.engine.cube_parts["coordinates"][0]
+        self.assertEqual(coord.dtype.kind, "i")
 
     def test_scale_factor_float(self):
-        self.cf_coord_var.scale_factor = 3.
+        self.cf_coord_var.scale_factor = 3.0
 
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.cube_parts['coordinates'][0]
-        self.assertEqual(coord.dtype.kind, 'f')
+        coord, _ = self.engine.cube_parts["coordinates"][0]
+        self.assertEqual(coord.dtype.kind, "f")
 
     def test_add_offset_float(self):
-        self.cf_coord_var.add_offset = 5.
+        self.cf_coord_var.add_offset = 5.0
 
         with self.deferred_load_patch:
             build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
-        coord, _ = self.engine.cube_parts['coordinates'][0]
-        self.assertEqual(coord.dtype.kind, 'f')
+        coord, _ = self.engine.cube_parts["coordinates"][0]
+        self.assertEqual(coord.dtype.kind, "f")
 
 
 class TestCoordConstruction(tests.IrisTest):
@@ -208,35 +218,40 @@ class TestCoordConstruction(tests.IrisTest):
         # Create dummy pyke engine.
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=('foo', 'bar')),
-            filename='DUMMY',
-            cube_parts=dict(coordinates=[]))
+            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
 
         points = np.arange(6)
         self.cf_coord_var = mock.Mock(
-            dimensions=('foo',),
+            dimensions=("foo",),
             scale_factor=1,
             add_offset=0,
-            cf_name='wibble',
-            cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
+            cf_name="wibble",
+            cf_data=mock.MagicMock(
+                chunking=mock.Mock(return_value=None), spec=[]
+            ),
             standard_name=None,
-            long_name='wibble',
-            units='days since 1970-01-01',
+            long_name="wibble",
+            units="days since 1970-01-01",
             calendar=None,
             shape=points.shape,
             dtype=points.dtype,
-            __getitem__=lambda self, key: points[key])
+            __getitem__=lambda self, key: points[key],
+        )
 
         bounds = np.arange(12).reshape(6, 2)
         self.cf_bounds_var = mock.Mock(
-            dimensions=('x', 'nv'),
+            dimensions=("x", "nv"),
             scale_factor=1,
             add_offset=0,
-            cf_name='wibble_bnds',
+            cf_name="wibble_bnds",
             cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None)),
             shape=bounds.shape,
             dtype=bounds.dtype,
-            __getitem__=lambda self, key: bounds[key])
+            __getitem__=lambda self, key: bounds[key],
+        )
         self.bounds = bounds
 
         # Create patch for deferred loading that prevents attempted
@@ -248,8 +263,10 @@ class TestCoordConstruction(tests.IrisTest):
                     return var[keys]
             raise RuntimeError()
 
-        self.patch('iris.fileformats.netcdf.NetCDFDataProxy.__getitem__',
-                   new=patched__getitem__)
+        self.patch(
+            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            new=patched__getitem__,
+        )
 
         # Patch the helper function that retrieves the bounds cf variable.
         # This avoids the need for setting up further mocking of cf objects.
@@ -258,9 +275,10 @@ class TestCoordConstruction(tests.IrisTest):
         def get_cf_bounds_var(coord_var):
             return self.cf_bounds_var, self.use_climatology_bounds
 
-        self.patch('iris.fileformats._pyke_rules.compiled_krb.'
-                   'fc_rules_cf_fc.get_cf_bounds_var',
-                   new=get_cf_bounds_var)
+        self.patch(
+            "iris.fileformats._nc_load_rules.helpers.get_cf_bounds_var",
+            new=get_cf_bounds_var,
+        )
 
     def check_case_aux_coord_construction(self, climatology=False):
         # Test a generic auxiliary coordinate, with or without
@@ -273,13 +291,13 @@ class TestCoordConstruction(tests.IrisTest):
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
             bounds=self.bounds,
-            climatological=climatology)
+            climatological=climatology,
+        )
 
         build_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
-        self.engine.cube.add_aux_coord.assert_called_with(
-            expected_coord, [0])
+        self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
 
     def test_aux_coord_construction(self):
         self.check_case_aux_coord_construction(climatology=False)
@@ -288,5 +306,5 @@ class TestCoordConstruction(tests.IrisTest):
         self.check_case_aux_coord_construction(climatology=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

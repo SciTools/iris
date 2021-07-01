@@ -1,7 +1,6 @@
 [build-system]
 # Defined by PEP 518
 requires = [
-  "scitools-pyke",
   "setuptools>=40.8.0",
   "wheel",
 ]
@@ -16,7 +15,6 @@ include = '\.pyi?$'
 extend-exclude = '''
 (
   /(
-    | pyke_rules
     | sphinxext
     | tools
   )/
@@ -32,8 +30,6 @@ line_length = 79
 profile = "black"
 extend_skip = [
   "_build",
-  "compiled_krb",
-  "fc_rules_cf.krb",
   "generated",
   "sphinxext",
   "tools",

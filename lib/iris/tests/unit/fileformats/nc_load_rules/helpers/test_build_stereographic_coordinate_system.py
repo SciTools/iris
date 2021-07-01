@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.build_sterographic_coordinate_system`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+build_sterographic_coordinate_system`.
 
 """
 
@@ -17,8 +17,9 @@ from unittest import mock
 
 import iris
 from iris.coord_systems import Stereographic
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    build_stereographic_coordinate_system
+from iris.fileformats._nc_load_rules.helpers import (
+    build_stereographic_coordinate_system,
+)
 
 
 class TestBuildStereographicCoordinateSystem(tests.IrisTest):
@@ -31,21 +32,23 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             false_easting=test_easting,
             false_northing=test_northing,
             scale_factor_at_projection_origin=1,
-            semi_major_axis=6377563.396)
+            semi_major_axis=6377563.396,
+        )
 
         if inverse_flattening:
-            gridvar_props['inverse_flattening'] = 299.3249646
+            gridvar_props["inverse_flattening"] = 299.3249646
             expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396,
-                inverse_flattening=299.3249646)
+                6377563.396, inverse_flattening=299.3249646
+            )
         else:
-            gridvar_props['semi_minor_axis'] = 6356256.909
+            gridvar_props["semi_minor_axis"] = 6356256.909
             expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396, 6356256.909)
+                6377563.396, 6356256.909
+            )
 
         if no_offsets:
-            del gridvar_props['false_easting']
-            del gridvar_props['false_northing']
+            del gridvar_props["false_easting"]
+            del gridvar_props["false_northing"]
             test_easting = 0
             test_northing = 0
 
@@ -58,7 +61,8 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             central_lon=cf_grid_var.longitude_of_projection_origin,
             false_easting=test_easting,
             false_northing=test_northing,
-            ellipsoid=expected_ellipsoid)
+            ellipsoid=expected_ellipsoid,
+        )
 
         self.assertEqual(cs, expected)
 

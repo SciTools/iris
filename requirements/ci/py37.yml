@@ -8,7 +8,6 @@ dependencies:
 
 # Setup dependencies.
   - setuptools>=40.8.0
-  - pyke
 
 # Core dependencies.
   - cartopy>=0.18

@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.build_albers_equal_area_coordinate_system`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+build_lambert_conformal_coordinate_system`.
 
 """
 
@@ -16,22 +16,23 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import iris
-from iris.coord_systems import AlbersEqualArea
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    build_albers_equal_area_coordinate_system
+from iris.coord_systems import LambertConformal
+from iris.fileformats._nc_load_rules.helpers import (
+    build_lambert_conformal_coordinate_system,
+)
 
 
-class TestBuildAlbersEqualAreaCoordinateSystem(tests.IrisTest):
+class TestBuildLambertConformalCoordinateSystem(tests.IrisTest):
     def _test(self, inverse_flattening=False, no_optionals=False):
         if no_optionals:
-            # Most properties are optional for this system.
+            # Most properties are optional in this case.
             gridvar_props = {}
             # Setup all the expected default values
-            test_lat = 0
-            test_lon = 0
+            test_lat = 39
+            test_lon = -96
             test_easting = 0
             test_northing = 0
-            test_parallels = (20, 50)
+            test_parallels = (33, 45)
         else:
             # Choose test values and setup corresponding named properties.
             test_lat = -35
@@ -44,31 +45,34 @@ class TestBuildAlbersEqualAreaCoordinateSystem(tests.IrisTest):
                 longitude_of_central_meridian=test_lon,
                 false_easting=test_easting,
                 false_northing=test_northing,
-                standard_parallel=test_parallels)
+                standard_parallel=test_parallels,
+            )
 
         # Add ellipsoid args.
-        gridvar_props['semi_major_axis'] = 6377563.396
+        gridvar_props["semi_major_axis"] = 6377563.396
         if inverse_flattening:
-            gridvar_props['inverse_flattening'] = 299.3249646
+            gridvar_props["inverse_flattening"] = 299.3249646
             expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396,
-                inverse_flattening=299.3249646)
+                6377563.396, inverse_flattening=299.3249646
+            )
         else:
-            gridvar_props['semi_minor_axis'] = 6356256.909
+            gridvar_props["semi_minor_axis"] = 6356256.909
             expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396, 6356256.909)
+                6377563.396, 6356256.909
+            )
 
         cf_grid_var = mock.Mock(spec=[], **gridvar_props)
 
-        cs = build_albers_equal_area_coordinate_system(None, cf_grid_var)
+        cs = build_lambert_conformal_coordinate_system(None, cf_grid_var)
 
-        expected = AlbersEqualArea(
-            latitude_of_projection_origin=test_lat,
-            longitude_of_central_meridian=test_lon,
+        expected = LambertConformal(
+            central_lat=test_lat,
+            central_lon=test_lon,
             false_easting=test_easting,
             false_northing=test_northing,
-            standard_parallels=test_parallels,
-            ellipsoid=expected_ellipsoid)
+            secant_latitudes=test_parallels,
+            ellipsoid=expected_ellipsoid,
+        )
 
         self.assertEqual(cs, expected)
 

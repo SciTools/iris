@@ -4,21 +4,21 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.has_supported_stereographic_parameters`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+has_supported_stereographic_parameters`.
 
 """
 
+from unittest import mock
 import warnings
+
+from iris.fileformats._nc_load_rules.helpers import (
+    has_supported_stereographic_parameters,
+)
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    has_supported_stereographic_parameters
 
 
 def _engine(cf_grid_var, cf_name):
@@ -29,7 +29,7 @@ def _engine(cf_grid_var, cf_name):
 
 class TestHasSupportedStereographicParameters(tests.IrisTest):
     def test_valid(self):
-        cf_name = 'stereographic'
+        cf_name = "stereographic"
         cf_grid_var = mock.Mock(
             spec=[],
             latitude_of_projection_origin=0,
@@ -38,7 +38,8 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
             false_northing=200,
             scale_factor_at_projection_origin=1,
             semi_major_axis=6377563.396,
-            semi_minor_axis=6356256.909)
+            semi_minor_axis=6356256.909,
+        )
         engine = _engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_stereographic_parameters(engine, cf_name)
@@ -48,7 +49,7 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
     def test_invalid_scale_factor(self):
         # Iris does not yet support scale factors other than one for
         # stereographic projections
-        cf_name = 'stereographic'
+        cf_name = "stereographic"
         cf_grid_var = mock.Mock(
             spec=[],
             latitude_of_projection_origin=0,
@@ -57,7 +58,8 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
             false_northing=200,
             scale_factor_at_projection_origin=0.9,
             semi_major_axis=6377563.396,
-            semi_minor_axis=6356256.909)
+            semi_minor_axis=6356256.909,
+        )
         engine = _engine(cf_grid_var, cf_name)
 
         with warnings.catch_warnings(record=True) as warns:
@@ -66,7 +68,7 @@ class TestHasSupportedStereographicParameters(tests.IrisTest):
 
         self.assertFalse(is_valid)
         self.assertEqual(len(warns), 1)
-        self.assertRegex(str(warns[0]), 'Scale factor')
+        self.assertRegex(str(warns[0]), "Scale factor")
 
 
 if __name__ == "__main__":

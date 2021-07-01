@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.build_cube_metadata`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+get_attr_units`.
 
 """
 
@@ -17,8 +17,7 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    get_attr_units
+from iris.fileformats._nc_load_rules.helpers import get_attr_units
 
 
 class TestGetAttrUnits(tests.IrisTest):
@@ -30,22 +29,23 @@ class TestGetAttrUnits(tests.IrisTest):
         cf_group = mock.Mock(global_attributes=global_attributes)
 
         cf_var = mock.MagicMock(
-            cf_name='sound_frequency',
+            cf_name="sound_frequency",
             cf_data=mock.Mock(spec=[]),
             standard_name=None,
             long_name=None,
-            units=u'\u266b',
+            units="\u266b",
             dtype=np.float64,
             cell_methods=None,
-            cf_group=cf_group)
+            cf_group=cf_group,
+        )
         return cf_var
 
     def test_unicode_character(self):
         attributes = {}
-        expected_attributes = {'invalid_units': u'\u266b'}
+        expected_attributes = {"invalid_units": "\u266b"}
         cf_var = self._make_cf_var()
         attr_units = get_attr_units(cf_var, attributes)
-        self.assertEqual(attr_units, '?')
+        self.assertEqual(attr_units, "?")
         self.assertEqual(attributes, expected_attributes)
 
 

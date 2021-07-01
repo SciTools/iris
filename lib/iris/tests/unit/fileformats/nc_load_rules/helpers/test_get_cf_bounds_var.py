@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Test function :func:`iris.fileformats._pyke_rules.compiled_krb.\
-fc_rules_cf_fc.get_cf_bounds_var`.
+Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+get_cf_bounds_var`.
 
 """
 
@@ -15,8 +15,11 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc import \
-    get_cf_bounds_var, CF_ATTR_BOUNDS, CF_ATTR_CLIMATOLOGY
+from iris.fileformats._nc_load_rules.helpers import (
+    CF_ATTR_BOUNDS,
+    CF_ATTR_CLIMATOLOGY,
+    get_cf_bounds_var,
+)
 
 
 class TestGetCFBoundsVar(tests.IrisTest):
@@ -25,7 +28,7 @@ class TestGetCFBoundsVar(tests.IrisTest):
     def _generic_test(self, test_climatological_bounds=False):
         cf_coord_var = mock.MagicMock()
 
-        cf_group_dict = {'TEST': mock.sentinel.bounds_var}
+        cf_group_dict = {"TEST": mock.sentinel.bounds_var}
         if test_climatological_bounds:
             cf_coord_var.cf_group.climatology = cf_group_dict
             test_attr = CF_ATTR_CLIMATOLOGY
@@ -34,7 +37,7 @@ class TestGetCFBoundsVar(tests.IrisTest):
             test_attr = CF_ATTR_BOUNDS
 
         for attr in (CF_ATTR_BOUNDS, CF_ATTR_CLIMATOLOGY):
-            attr_val = 'TEST' if attr == test_attr else None
+            attr_val = "TEST" if attr == test_attr else None
             setattr(cf_coord_var, attr, attr_val)
 
         bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
@@ -48,5 +51,5 @@ class TestGetCFBoundsVar(tests.IrisTest):
         self._generic_test(test_climatological_bounds=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tests.main()

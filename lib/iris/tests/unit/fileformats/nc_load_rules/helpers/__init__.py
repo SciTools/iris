@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :mod:`iris.fileformats._pyke_rules.compiled_krb` module.
+Unit tests for the module
+:mod:`iris.fileformats.netcdf._nc_load_rules.helpers` .
 
 """
