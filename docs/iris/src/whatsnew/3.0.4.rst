@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.0.4 (?? ??August 2021)
-*************************
+v3.0.4 (22 July 2021)
+*********************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -23,6 +23,16 @@ This document explains the changes made to Iris for this release
       whereas previously printing these cases caused an Exception.
       Secondly, cube units are now always printed, whereas previously they were missed out any time that the
       "dimensions map" was widened to accomodate long coordinate names. (:pull:`4233`)
+
+   �~_~R� **Internal**
+
+   #. `@bjlittle`_ Unpinned the `cftime`_ package dependency within Iris in order
+      to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
+      (:pull:`4222`)
+
+   Note that, we are forced to drop support for ``Python 3.6`` in this patch due to
+   the Iris third-party package dependencies required by (:pull:`4222`).
+
 
 .. dropdown:: :opticon:`alert` v3.0.3 Patches
    :container: + shadow
@@ -600,3 +610,6 @@ This document explains the changes made to Iris for this release
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _stickler-ci: https://stickler-ci.com/
 .. _@jamesp: https://github.com/jamesp
+.. _cftime: https://github.com/Unidata/cftime
+.. _cf-units: https://github.com/SciTools/cf-units
+.. _nc-time-axis: https://github.com/SciTools/nc-time-axis
