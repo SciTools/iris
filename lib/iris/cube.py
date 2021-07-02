@@ -3180,16 +3180,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
             close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
-            if not close_enough:
-                split_cell_indices, _ = np.where(
-                    pre_wrap_delta != post_wrap_delta
-                )
-
+            split_cell_indices, _ = np.where(
+                ~np.isclose(pre_wrap_delta, post_wrap_delta)
+            )
+            if split_cell_indices.size:
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
                 if maximum % modulus not in cells:
                     # Recalculate the extended minimum only if the output bounds
-                    # do not span the requested (minumum, maximum) range.  If
+                    # do not span the requested (minimum, maximum) range.  If
                     # they do span that range, this adjustment would give unexpected
                     # results (see #3391).
                     cells_delta = np.diff(coord.bounds[indices])
