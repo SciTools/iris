@@ -3179,7 +3179,6 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # and call the new bounds = the new points + the difference.
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
-            close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
             split_cell_indices, _ = np.where(
                 ~np.isclose(pre_wrap_delta, post_wrap_delta)
             )
