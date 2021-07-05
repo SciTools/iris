@@ -190,6 +190,13 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ consolidated `nox`_ ``black``, ``flake8`` and ``isort`` sessions
    into one ``lint`` session using ``pre-commit``. (:pull:`4181`)
 
+#. `@bjlittle`_ streamlined the `cirrus-ci`_ testing by removing the ``minimal``
+   tests, which are a subset of the ``full`` tests. (:pull:`4218`)
+
+#. `@bjlittle`_ consolidated the `cirrus-ci`_ documentation ``doctest`` and
+   ``gallery`` tasks into a single task and associated `nox`_ session.
+   (:pull:`4219`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:

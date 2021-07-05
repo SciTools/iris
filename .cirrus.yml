@@ -19,7 +19,6 @@ env:
   # Skip specific tasks by name. Set to a non-empty string to skip.
   SKIP_LINT_TASK: ""
   SKIP_TEST_TASK: ""
-  SKIP_GALLERY_TASK: ""
   SKIP_DOCTEST_TASK: ""
   SKIP_LINKCHECK_TASK: ""
   # Skip task groups by type. Set to a non-empty string to skip.
@@ -154,26 +153,7 @@ test_task:
 
 
 #
-# Testing Documentation Gallery (Linux)
-#
-gallery_task:
-  only_if: ${SKIP_GALLERY_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
-  << : *CREDITS_TEMPLATE
-  env:
-    PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
-  << : *IRIS_TEST_DATA_TEMPLATE
-  << : *LINUX_TASK_TEMPLATE
-  tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
-    - echo "[Resources]" > ${SITE_CFG}
-    - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
-    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session gallery -- --verbose
-
-
-#
-# Testing Documentation (Linux)
+# Documentation Testing and Gallery (Linux)
 #
 doctest_task:
   only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
@@ -182,7 +162,7 @@ doctest_task:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} doc tests"
+  name: "${CIRRUS_OS}: py${PY_VER} doctests and gallery"
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
@@ -197,7 +177,7 @@ doctest_task:
 
 
 #
-# Testing Documentation Link Check (Linux)
+# Documentation Link Check (Linux)
 #
 linkcheck_task:
   only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
@@ -206,7 +186,7 @@ linkcheck_task:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
+  name: "${CIRRUS_OS}: py${PY_VER} link check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
