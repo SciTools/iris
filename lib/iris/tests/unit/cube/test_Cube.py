@@ -1814,8 +1814,16 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         # modulus wrapping
         cube = create_cube(28.5, 68.5, bounds=True)
         result = cube.intersection(longitude=(27.74, 68.61))
-        self.assertAlmostEqual(result.coord("longitude").points[0], 28.5)
-        self.assertAlmostEqual(result.coord("longitude").points[-1], 67.5)
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], 28.5)
+        self.assertAlmostEqual(result_lons.points[-1], 67.5)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([28.0, 29.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([67.0, 68.0], dtype=dtype)
+        )
 
     def test_numerical_tolerance_wrapped(self):
         # test the tolerance on the coordinate value causes modulus wrapping
@@ -1825,8 +1833,16 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         lons.points = lons.points / 10
         lons.bounds = lons.bounds / 10
         result = cube.intersection(longitude=(-60, 60))
-        self.assertAlmostEqual(result.coord("longitude").points[0], -60.05)
-        self.assertAlmostEqual(result.coord("longitude").points[-1], 60.05)
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], -60.05)
+        self.assertAlmostEqual(result_lons.points[-1], 60.05)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([-60.1, -60.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
+        )
 
 
 def unrolled_cube():
