@@ -3643,7 +3643,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
 
     cf_role = connectivity_var.cf_role
-    start_index = connectivity_var.start_index
+    start_index = getattr(connectivity_var, 'start_index', None)
 
     dim_names = connectivity_var.dimensions
     # Connectivity arrays must have two dimensions.
