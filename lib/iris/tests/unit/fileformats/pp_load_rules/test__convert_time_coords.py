@@ -47,7 +47,9 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
     def _check_timepoint(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=0, ic=1)
         t1 = nc_datetime(1970, 1, 1, hour=6, minute=0, second=0)
-        t2 = nc_datetime(0, 1, 1, has_year_zero=True)  # not used in result
+        t2 = nc_datetime(
+            0, 0, 0, calendar=None, has_year_zero=True
+        )  # not used in result
         lbft = None  # unused
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
@@ -314,8 +316,8 @@ class TestLBTIMx2x_ZeroYear(TestField):
 class TestLBTIMxxx_Unhandled(TestField):
     def test_unrecognised(self):
         lbtim = _lbtim(ib=4, ic=1)
-        t1 = nc_datetime(0, 1, 1, has_year_zero=True)
-        t2 = nc_datetime(0, 1, 1, has_year_zero=True)
+        t1 = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
+        t2 = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
         lbft = None
         lbcode = _lbcode(0)
         coords_and_dims = _convert_time_coords(

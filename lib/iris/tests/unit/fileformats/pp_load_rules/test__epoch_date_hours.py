@@ -52,11 +52,9 @@ class TestEpochHours__gregorian(tests.IrisTest):
         self.assertEqual(result, -17268720.0)
 
     def test_ymd_0_0_0(self):
-        emsg = "invalid month"
-        with self.assertRaisesRegex(ValueError, emsg):
-            _ = nc_datetime(
-                0, 0, 0, calendar=self.calendar, has_year_zero=True
-            )
+        test_date = nc_datetime(0, 0, 0, calendar=None)
+        result = epoch_hours_call(self.hrs_unit, test_date)
+        self.assertEqual(result, -17269488.0)
 
     def test_ymd_0_preserves_timeofday(self):
         hrs, mins, secs, usecs = (7, 13, 24, 335772)
@@ -65,13 +63,13 @@ class TestEpochHours__gregorian(tests.IrisTest):
         )
         test_date = nc_datetime(
             0,
-            1,
-            1,
+            0,
+            0,
             hour=hrs,
             minute=mins,
             second=secs,
             microsecond=usecs,
-            calendar=self.calendar,
+            calendar=None,
             has_year_zero=True,
         )
         result = epoch_hours_call(self.hrs_unit, test_date)
@@ -79,7 +77,7 @@ class TestEpochHours__gregorian(tests.IrisTest):
         # in such a large number of hours -- even 0.1 seconds is too fine.
         absolute_tolerance = 0.5 / 3600
         self.assertArrayAllClose(
-            result, -17268720.0 + hours_in_day, rtol=0, atol=absolute_tolerance
+            result, -17269488.0 + hours_in_day, rtol=0, atol=absolute_tolerance
         )
 
 
@@ -106,11 +104,9 @@ class TestEpochHours__360day(tests.IrisTest):
         self.assertEqual(result, -17020800.0)
 
     def test_ymd_0_0_0(self):
-        emsg = "invalid month"
-        with self.assertRaisesRegex(ValueError, emsg):
-            _ = nc_datetime(
-                0, 0, 0, calendar=self.calendar, has_year_zero=True
-            )
+        test_date = nc_datetime(0, 0, 0, calendar=None)
+        result = epoch_hours_call(self.hrs_unit, test_date)
+        self.assertEqual(result, -17021544.0)
 
 
 class TestEpochHours__365day(tests.IrisTest):
@@ -136,9 +132,9 @@ class TestEpochHours__365day(tests.IrisTest):
         self.assertEqual(result, -17257200.0)
 
     def test_ymd_0_0_0(self):
-        emsg = "invalid month"
-        with self.assertRaisesRegex(ValueError, emsg):
-            _ = nc_datetime(0, 0, 0, calendar=self.calendar)
+        test_date = nc_datetime(0, 0, 0, calendar=None)
+        result = epoch_hours_call(self.hrs_unit, test_date)
+        self.assertEqual(result, -17257968.0)
 
 
 class TestEpochHours__invalid_calendar(tests.IrisTest):
