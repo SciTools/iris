@@ -13,7 +13,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from functools import wraps
+from functools import lru_cache, wraps
 import re
 
 import numpy as np
@@ -1338,31 +1338,8 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-_FACTORY_CACHE = {}
-
-
-def metadata_manager_factory(cls, **kwargs):
-    """
-    A class instance factory function responsible for manufacturing
-    metadata instances dynamically at runtime.
-
-    The factory instances returned by the factory are capable of managing
-    their metadata state, which can be proxied by the owning container.
-
-    Args:
-
-    * cls:
-        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-        the metadata to be managed.
-
-    Kwargs:
-
-    * kwargs:
-        Initial values for the manufactured metadata instance. Unspecified
-        fields will default to a value of 'None'.
-
-    """
-
+@lru_cache
+def _factory_cache(cls, **kwargs):
     def __init__(self, cls, **kwargs):
         # Restrict to only dealing with appropriate metadata classes.
         if not issubclass(cls, BaseMetadata):
@@ -1471,10 +1448,33 @@ def metadata_manager_factory(cls, **kwargs):
     if cls is CubeMetadata:
         namespace["_names"] = cls._names
 
-    # Dynamically create the class
-    Metadata = _FACTORY_CACHE.setdefault(
-        str(cls), type(name, bases, namespace)
-    )
+    return type(name, bases, namespace)
+
+
+def metadata_manager_factory(cls, **kwargs):
+    """
+    A class instance factory function responsible for manufacturing
+    metadata instances dynamically at runtime.
+
+    The factory instances returned by the factory are capable of managing
+    their metadata state, which can be proxied by the owning container.
+
+    Args:
+
+    * cls:
+        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
+        the metadata to be managed.
+
+    Kwargs:
+
+    * kwargs:
+        Initial values for the manufactured metadata instance. Unspecified
+        fields will default to a value of 'None'.
+
+    """
+
+    # Dynamically create the class at runtime or get a cached version of it
+    Metadata = _factory_cache(cls, **kwargs)
 
     # Now manufacture an instance of that class.
     metadata = Metadata(cls, **kwargs)
