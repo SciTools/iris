@@ -106,7 +106,7 @@ except ImportError:
 
 
 # Iris revision.
-__version__ = "3.0.2"
+__version__ = "3.0.3"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
