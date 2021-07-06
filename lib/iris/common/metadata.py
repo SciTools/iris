@@ -1341,16 +1341,11 @@ class DimCoordMetadata(CoordMetadata):
 @lru_cache(maxsize=None)
 def _factory_cache(cls):
     def __init__(self, cls, **kwargs):
-        # Restrict to only dealing with appropriate metadata classes.
-        if not issubclass(cls, BaseMetadata):
-            emsg = "Require a subclass of {!r}, got {!r}."
-            raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
         # Initialise the metadata class fields in the instance.
-        for field in self.fields:
+        for field in cls._fields:
             setattr(self, field, None)
 
         # Populate with provided kwargs, which have already been verified
