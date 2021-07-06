@@ -1440,7 +1440,10 @@ def _factory_cache(cls):
     if cls is CubeMetadata:
         namespace["_names"] = cls._names
 
-    return type(name, bases, namespace)
+    # Dynamically create the metadata manager class.
+    MetadataManager = type(name, bases, namespace)
+
+    return MetadataManager
 
 
 def metadata_manager_factory(cls, **kwargs):
@@ -1463,6 +1466,9 @@ def metadata_manager_factory(cls, **kwargs):
         Initial values for the manufactured metadata instance. Unspecified
         fields will default to a value of 'None'.
 
+    Returns:
+        A manager instance for the provided metadata ``cls``.
+
     """
     # Check whether kwargs have valid fields for the specified metadata.
     if kwargs:
@@ -1472,13 +1478,14 @@ def metadata_manager_factory(cls, **kwargs):
             emsg = "Invalid {!r} field parameters, got {}."
             raise ValueError(emsg.format(cls.__name__, bad))
 
-    # Dynamically create the class at runtime or get a cached version of it
-    Metadata = _factory_cache(cls)
+    # Dynamically create the metadata manager class at runtime or get a cached
+    # version of it.
+    MetadataManager = _factory_cache(cls)
 
-    # Now manufacture an instance of that class.
-    metadata = Metadata(cls, **kwargs)
+    # Now manufacture an instance of the metadata manager class.
+    manager = MetadataManager(cls, **kwargs)
 
-    return metadata
+    return manager
 
 
 #: Convenience collection of lenient metadata combine services.
