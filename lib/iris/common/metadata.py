@@ -13,7 +13,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from functools import lru_cache, wraps
+from functools import wraps
 import re
 
 import numpy as np
@@ -1338,7 +1338,9 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-@lru_cache
+_FACTORY_CACHE = {}
+
+
 def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
@@ -1469,8 +1471,11 @@ def metadata_manager_factory(cls, **kwargs):
     if cls is CubeMetadata:
         namespace["_names"] = cls._names
 
-    # Dynamically create the class.
-    Metadata = type(name, bases, namespace)
+    # Dynamically create the class
+    Metadata = _FACTORY_CACHE.setdefault(
+        str(cls), type(name, bases, namespace)
+    )
+
     # Now manufacture an instance of that class.
     metadata = Metadata(cls, **kwargs)
 
