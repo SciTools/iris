@@ -37,6 +37,12 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
+#. `@bjlittle`_, `@ppmo`_ and `@trexfeathers`_ added support for unstructured
+   meshes, as described be UGRID. This involved adding a data model (:pull:`3968`
+   :pull:`4014` :pull:`4036` :pull:`4053`) and API (:pull:`4063` :pull:`4064`),
+   and supporting representation (:pull:`4033` :pull:`4054`) and loading
+   (:pull:`4058` :pull:`4074`) of data on meshes.
+
 #. `@pelson`_ and `@trexfeathers`_ enhanced :meth:`iris.plot.plot` and
    :meth:`iris.quickplot.plot` to automatically place the cube on the x axis if
    the primary coordinate being plotted against is a vertical coordinate. E.g.
