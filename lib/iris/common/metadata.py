@@ -1338,7 +1338,7 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-@lru_cache
+@lru_cache(maxsize=None)
 def _factory_cache(cls):
     def __init__(self, cls, **kwargs):
         # Restrict to only dealing with appropriate metadata classes.
