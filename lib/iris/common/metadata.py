@@ -13,7 +13,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from functools import wraps
+from functools import lru_cache, wraps
 import re
 
 import numpy as np
@@ -1338,6 +1338,7 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
+@lru_cache
 def metadata_manager_factory(cls, **kwargs):
     """
     A class instance factory function responsible for manufacturing
