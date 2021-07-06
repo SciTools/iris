@@ -1339,7 +1339,7 @@ class DimCoordMetadata(CoordMetadata):
 
 
 @lru_cache
-def _factory_cache(cls, **kwargs):
+def _factory_cache(cls):
     def __init__(self, cls, **kwargs):
         # Restrict to only dealing with appropriate metadata classes.
         if not issubclass(cls, BaseMetadata):
@@ -1418,14 +1418,6 @@ def _factory_cache(cls, **kwargs):
         emsg = "Require a subclass of {!r}, got {!r}."
         raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
-    # Check whether kwargs have valid fields for the specified metadata.
-    if kwargs:
-        extra = [field for field in kwargs.keys() if field not in cls._fields]
-        if extra:
-            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
-            emsg = "Invalid {!r} field parameters, got {}."
-            raise ValueError(emsg.format(cls.__name__, bad))
-
     # Define the name, (inheritance) bases and namespace of the dynamic class.
     name = "MetadataManager"
     bases = ()
@@ -1472,9 +1464,16 @@ def metadata_manager_factory(cls, **kwargs):
         fields will default to a value of 'None'.
 
     """
+    # Check whether kwargs have valid fields for the specified metadata.
+    if kwargs:
+        extra = [field for field in kwargs.keys() if field not in cls._fields]
+        if extra:
+            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
+            emsg = "Invalid {!r} field parameters, got {}."
+            raise ValueError(emsg.format(cls.__name__, bad))
 
     # Dynamically create the class at runtime or get a cached version of it
-    Metadata = _factory_cache(cls, **kwargs)
+    Metadata = _factory_cache(cls)
 
     # Now manufacture an instance of that class.
     metadata = Metadata(cls, **kwargs)

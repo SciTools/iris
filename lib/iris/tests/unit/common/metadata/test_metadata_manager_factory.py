@@ -167,8 +167,8 @@ class Test_instance__pickle(tests.IrisTest):
             self.units,
             self.attributes,
         )
-        self.kwargs = dict(zip(BaseMetadata._fields, values))
-        self.metadata = metadata_manager_factory(BaseMetadata, **self.kwargs)
+        kwargs = dict(zip(BaseMetadata._fields, values))
+        self.metadata = metadata_manager_factory(BaseMetadata, **kwargs)
 
     def test_pickle(self):
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
