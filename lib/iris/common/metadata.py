@@ -1344,6 +1344,9 @@ def _factory_cache(cls):
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
+        # Proxy for self.cls._fields
+        self._fields = cls._fields
+
         # Initialise the metadata class fields in the instance.
         for field in cls._fields:
             setattr(self, field, None)
@@ -1364,7 +1367,7 @@ def _factory_cache(cls):
 
     def __getstate__(self):
         """Return the instance state to be pickled."""
-        return {field: getattr(self, field) for field in self.fields}
+        return {field: getattr(self, field) for field in self._fields}
 
     def __ne__(self, other):
         match = self.__eq__(other)
@@ -1387,7 +1390,7 @@ def _factory_cache(cls):
         args = ", ".join(
             [
                 "{}={!r}".format(field, getattr(self, field))
-                for field in self.fields
+                for field in self._fields
             ]
         )
         return "{}({})".format(self.__class__.__name__, args)
@@ -1401,11 +1404,11 @@ def _factory_cache(cls):
     def fields(self):
         """Return the name of the metadata members."""
         # Proxy for built-in namedtuple._fields property.
-        return self.cls._fields
+        return self._fields
 
     @property
     def values(self):
-        fields = {field: getattr(self, field) for field in self.fields}
+        fields = {field: getattr(self, field) for field in self._fields}
         return self.cls(**fields)
 
     # Restrict factory to appropriate metadata classes only.
