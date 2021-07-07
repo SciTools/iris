@@ -1344,10 +1344,12 @@ def _factory_cache(cls):
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
-        # Proxy for self.cls._fields
+        # Proxy for self.cls._fields for later internal use, as this
+        # saves on indirect property lookup via self.cls
         self._fields = cls._fields
 
         # Initialise the metadata class fields in the instance.
+        # Use cls directly here since it's available.
         for field in cls._fields:
             setattr(self, field, None)
 
@@ -1411,12 +1413,7 @@ def _factory_cache(cls):
         fields = {field: getattr(self, field) for field in self._fields}
         return self.cls(**fields)
 
-    # Restrict factory to appropriate metadata classes only.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
-    # Define the name, (inheritance) bases and namespace of the dynamic class.
+    # Define the name, (inheritance) bases, and namespace of the dynamic class.
     name = "MetadataManager"
     bases = ()
     namespace = {

@@ -36,14 +36,6 @@ BASES = [
 
 
 class Test_factory(tests.IrisTest):
-    def test__subclass_invalid(self):
-        class Other:
-            pass
-
-        emsg = "Require a subclass of 'BaseMetadata'"
-        with self.assertRaisesRegex(TypeError, emsg):
-            _ = metadata_manager_factory(Other)
-
     def test__kwargs_invalid(self):
         emsg = "Invalid 'BaseMetadata' field parameters, got 'wibble'."
         with self.assertRaisesRegex(ValueError, emsg):
