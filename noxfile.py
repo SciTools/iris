@@ -186,9 +186,12 @@ def lint(session: nox.sessions.Session):
 
     # Ensure black and isort only perform a status check
     # with a custom pre-commit configuration.
+    hooks = []
     for entry in config["repos"]:
-        package = Path(urlsplit(unquote(entry["repo"])).path).name
-        if package in ["black", "isort"]:
+        hook = Path(urlsplit(unquote(entry["repo"])).path).name
+        hooks.append(hook)
+        if hook in ["black", "isort"]:
+            # Enforce a "--check" for the hook.
             entry["hooks"][0]["args"].insert(0, "--check")
 
     with NamedTemporaryFile(mode="w+t", delete=False) as temp:
@@ -197,9 +200,9 @@ def lint(session: nox.sessions.Session):
     # Execute the pre-commit linting tasks with the custom
     # pre-commit configuration.
     cmd = ["pre-commit", "run", "--all-files", f"--config={temp.name}"]
-    hooks = ["black", "blacken-docs", "flake8", "isort"]
     for hook in hooks:
-        session.run(*cmd, hook)
+        if hook != "pre-commit-hooks":
+            session.run(*cmd, hook)
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
