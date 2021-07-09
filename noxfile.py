@@ -8,7 +8,6 @@ For further details, see https://nox.thea.codes/en/stable/#
 import hashlib
 import os
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
 
 import nox
 from nox.logger import logger
@@ -183,16 +182,15 @@ def lint(session: nox.sessions.Session):
     with open(".pre-commit-config.yaml", "r") as fi:
         config = yaml.load(fi, Loader=yaml.FullLoader)
 
-    # Enumerate the pre-commit hooks.
+    # Enumerate singleton pre-commit hooks.
     hooks = [
-        Path(urlsplit(unquote(entry["repo"])).path).name
+        entry["hooks"][0]["id"]
         for entry in config["repos"]
+        if len(entry["hooks"]) == 1
     ]
 
     # Execute the pre-commit linting hooks.
-    for hook in hooks:
-        if hook != "pre-commit-hooks":
-            session.run("pre-commit", "run", "--all-files", hook)
+    [session.run("pre-commit", "run", "--all-files", hook) for hook in hooks]
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
