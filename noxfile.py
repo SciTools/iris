@@ -8,7 +8,6 @@ For further details, see https://nox.thea.codes/en/stable/#
 import hashlib
 import os
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from urllib.parse import unquote, urlsplit
 
 import nox
@@ -184,25 +183,16 @@ def lint(session: nox.sessions.Session):
     with open(".pre-commit-config.yaml", "r") as fi:
         config = yaml.load(fi, Loader=yaml.FullLoader)
 
-    # Ensure black and isort only perform a status check
-    # with a custom pre-commit configuration.
-    hooks = []
-    for entry in config["repos"]:
-        hook = Path(urlsplit(unquote(entry["repo"])).path).name
-        hooks.append(hook)
-        if hook in ["black", "isort"]:
-            # Enforce a "--check" for the hook.
-            entry["hooks"][0]["args"].insert(0, "--check")
+    # Enumerate the pre-commit hooks.
+    hooks = [
+        Path(urlsplit(unquote(entry["repo"])).path).name
+        for entry in config["repos"]
+    ]
 
-    with NamedTemporaryFile(mode="w+t", delete=False) as temp:
-        yaml.dump(config, temp)
-
-    # Execute the pre-commit linting tasks with the custom
-    # pre-commit configuration.
-    cmd = ["pre-commit", "run", "--all-files", f"--config={temp.name}"]
+    # Execute the pre-commit linting hooks.
     for hook in hooks:
         if hook != "pre-commit-hooks":
-            session.run(*cmd, hook)
+            session.run("pre-commit", "run", "--all-files", hook)
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
