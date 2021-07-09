@@ -38,10 +38,24 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@bjlittle`_, `@ppmo`_ and `@trexfeathers`_ added support for unstructured
-   meshes, as described be UGRID. This involved adding a data model (:pull:`3968`
-   :pull:`4014` :pull:`4036` :pull:`4053`) and API (:pull:`4063` :pull:`4064`),
-   and supporting representation (:pull:`4033` :pull:`4054`) and loading
-   (:pull:`4058` :pull:`4074`) of data on meshes.
+   meshes, as described be UGRID. This involved adding a data model (:pull:`3968`,
+   :pull:`4014`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`, :pull:`4064`),
+   and supporting representation (:pull:`4033`, :pull:`4054`) and loading
+   (:pull:`4058`, :pull:`4074`) of data on meshes.
+   Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
+   objects introduced are :class:`iris.experimental.ugrid.Mesh`,
+   :class:`iris.experimental.ugrid.MeshCoord` and
+   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`.
+   A :class:`iris.experimental.ugrid.Mesh` contains a full description of a UGRID
+   type mesh. A :class:`iris.experimental.ugrid.MeshCoord` is a coordinate that
+   references and represents a :class:`iris.experimental.ugrid.Mesh`, it connects
+   a :class:`iris.experimental.ugrid.Mesh` to a cube. Cubes are also given the
+   property :property:`iris.cube.Cube.mesh` which returns a
+   :class:`iris.experimental.ugrid.Mesh` if one is attached to the cube via a
+   :class:`iris.experimental.ugrid.MeshCoord`. Finally, the context manager
+   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` provides a way to load
+   UGRID files so that cubes can be returned with a
+   :class:`iris.experimental.ugrid.Mesh` attached.
 
 #. `@pelson`_ and `@trexfeathers`_ enhanced :meth:`iris.plot.plot` and
    :meth:`iris.quickplot.plot` to automatically place the cube on the x axis if
