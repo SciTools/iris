@@ -163,9 +163,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 
 @nox.session
-def lint(session: nox.sessions.Session):
+def precommit(session: nox.sessions.Session):
     """
-    Perform pre-commit linting of iris codebase.
+    Perform pre-commit hooks of iris codebase.
 
     Parameters
     ----------

@@ -105,7 +105,7 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 #
 # Linting
 #
-lint_task:
+precommit_task:
   only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
@@ -113,17 +113,17 @@ lint_task:
     image: python:3.8
     cpu: 2
     memory: 4G
-  name: "${CIRRUS_OS}: linting"
+  name: "${CIRRUS_OS}: pre-commit hooks"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME} py${PYTHON_VERSION}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
-  lint_script:
+  precommit_script:
     - pip list
     - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
     - pip list
-    - nox --session lint
+    - nox --session precommit
 
 
 #
