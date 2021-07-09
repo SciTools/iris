@@ -182,15 +182,19 @@ def lint(session: nox.sessions.Session):
     with open(".pre-commit-config.yaml", "r") as fi:
         config = yaml.load(fi, Loader=yaml.FullLoader)
 
-    # Enumerate singleton pre-commit hooks.
-    hooks = [
+    # Enumerate the ids of pre-commit hooks we want to run.
+    # We're only capturing the hook id of pre-commit repos with *one*
+    # registered hook. This is a simple approach to filtering out
+    # the "https://github.com/pre-commit/pre-commit-hooks" hooks,
+    # all of which we don't want to run within nox.
+    ids = [
         entry["hooks"][0]["id"]
         for entry in config["repos"]
         if len(entry["hooks"]) == 1
     ]
 
     # Execute the pre-commit linting hooks.
-    [session.run("pre-commit", "run", "--all-files", hook) for hook in hooks]
+    [session.run("pre-commit", "run", "--all-files", id) for id in ids]
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
