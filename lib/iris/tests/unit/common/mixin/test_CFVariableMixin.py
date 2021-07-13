@@ -141,7 +141,7 @@ class Test__metadata_setter(tests.IrisTest):
     def setUp(self):
         class Metadata:
             def __init__(self):
-                self.cls = BaseMetadata
+                self.metadata_class = BaseMetadata
                 self.fields = BaseMetadata._fields
                 self.standard_name = mock.sentinel.standard_name
                 self.long_name = mock.sentinel.long_name
