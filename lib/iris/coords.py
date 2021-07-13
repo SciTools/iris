@@ -23,14 +23,13 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-from iris.common import (
-    AncillaryVariableMetadata,
-    BaseMetadata,
-    CellMeasureMetadata,
-    CFVariableMixin,
-    CoordMetadata,
-    DimCoordMetadata,
-    metadata_manager_factory,
+from iris.common import CFVariableMixin
+from iris.common.metadata import (
+    AncillaryVariableMetadataManager,
+    BaseMetadataManager,
+    CellMeasureMetadataManager,
+    CoordMetadataManager,
+    DimCoordMetadataManager,
 )
 import iris.exceptions
 import iris.time
@@ -98,7 +97,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = metadata_manager_factory(BaseMetadata)
+            self._metadata_manager = BaseMetadataManager()
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -727,9 +726,7 @@ class AncillaryVariable(_DimensionalMetadata):
         """
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = metadata_manager_factory(
-                AncillaryVariableMetadata
-            )
+            self._metadata_manager = AncillaryVariableMetadataManager()
 
         super().__init__(
             values=data,
@@ -839,7 +836,7 @@ class CellMeasure(AncillaryVariable):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = metadata_manager_factory(CellMeasureMetadata)
+        self._metadata_manager = CellMeasureMetadataManager()
 
         super().__init__(
             data=data,
@@ -1363,7 +1360,7 @@ class Coord(_DimensionalMetadata):
         """
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
-            self._metadata_manager = metadata_manager_factory(CoordMetadata)
+            self._metadata_manager = CoordMetadataManager()
 
         super().__init__(
             values=points,
@@ -2429,7 +2426,7 @@ class DimCoord(Coord):
 
         """
         # Configure the metadata manager.
-        self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
+        self._metadata_manager = DimCoordMetadataManager()
 
         super().__init__(
             points,
@@ -2784,7 +2781,7 @@ class CellMethod(iris.util._OrderedHashable):
                 "'method' must be a string - got a '%s'" % type(method)
             )
 
-        default_name = BaseMetadata.DEFAULT_NAME
+        default_name = BaseMetadataManager.DEFAULT_NAME
         _coords = []
 
         if coords is None:
@@ -2792,12 +2789,12 @@ class CellMethod(iris.util._OrderedHashable):
         elif isinstance(coords, Coord):
             _coords.append(coords.name(token=True))
         elif isinstance(coords, str):
-            _coords.append(BaseMetadata.token(coords) or default_name)
+            _coords.append(BaseMetadataManager.token(coords) or default_name)
         else:
             normalise = (
                 lambda coord: coord.name(token=True)
                 if isinstance(coord, Coord)
-                else BaseMetadata.token(coord) or default_name
+                else BaseMetadataManager.token(coord) or default_name
             )
             _coords.extend([normalise(coord) for coord in coords])
 

@@ -36,8 +36,13 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
+    "AncillaryVariableMetadataManager",
+    "BaseMetadataManager",
+    "CellMeasureMetadataManager",
+    "CoordMetadataManager",
+    "CubeMetadataManager",
+    "DimCoordMetadataManager",
     "hexdigest",
-    "metadata_manager_factory",
 ]
 
 
@@ -1338,43 +1343,58 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_manager_factory(cls, **kwargs):
+def make_metadata_manager_class(cls, **kwargs):
     """
-    A class instance factory function responsible for manufacturing
-    metadata instances dynamically at runtime.
+    A factory function which creates a metadata "manager" class to handle
+    a given type of metadata (a subclass of BaseMetadata).
 
-    The factory instances returned by the factory are capable of managing
-    their metadata state, which can be proxied by the owning container.
+    This makes it easy for 'container' objects (subclasses of CFVariableMixin)
+    to proxy their metadata properties (i.e. every named metadata field, such
+    as 'standard_name' is also made a property of the container object).
+
+    Each container contains a manager whose fields hold the metadata values.
+    Thus, neither the container nor its manager stores an *actual* metadata
+    (cls) object :  Instead, if an actual metadata object (namedtuple) is
+    wanted, one is created by 'manager.values()'.
 
     Args:
 
     * cls:
         A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-        the metadata to be managed.
+        the type of metadata objects to be managed.
 
-    Kwargs:
-
-    * kwargs:
-        Initial values for the manufactured metadata instance. Unspecified
-        fields will default to a value of 'None'.
+    Returns:
+        A new manager class, for representing metadata of type 'cls'.
 
     """
+    # Restrict to only dealing with appropriate metadata classes.
+    if not issubclass(cls, BaseMetadata):
+        emsg = "Require a subclass of {!r}, got {!r}."
+        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
-    def __init__(self, cls, **kwargs):
-        # Restrict to only dealing with appropriate metadata classes.
-        if not issubclass(cls, BaseMetadata):
-            emsg = "Require a subclass of {!r}, got {!r}."
-            raise TypeError(emsg.format(BaseMetadata.__name__, cls))
+    def __init__(self, **kwargs):
+        # Get handled metadata type (a class property)
+        cls = self.cls
 
-        #: The metadata class to be manufactured by this factory.
-        self.cls = cls
+        # Make a local copy of self.cls._fields, just because it is quicker to
+        # access than via the property self.fields --> self.cls._fields.
+        self._fields = cls._fields
 
-        # Initialise the metadata class fields in the instance.
-        for field in self.fields:
+        # Check that kwargs has only valid fields for the specified metadata.
+        if kwargs:
+            extra = [
+                field for field in kwargs.keys() if field not in self._fields
+            ]
+            if extra:
+                bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
+                emsg = "Invalid {!r} field parameters, got {}."
+                raise ValueError(emsg.format(cls.__name__, bad))
+
+        # Create all the metadata fields in the manager instance.
+        for field in self._fields:
             setattr(self, field, None)
 
-        # Populate with provided kwargs, which have already been verified
-        # by the factory.
+        # Populate with the provided kwargs.
         for field, value in kwargs.items():
             setattr(self, field, value)
 
@@ -1387,26 +1407,12 @@ def metadata_manager_factory(cls, **kwargs):
 
         return match
 
-    def __getstate__(self):
-        """Return the instance state to be pickled."""
-        return {field: getattr(self, field) for field in self.fields}
-
     def __ne__(self, other):
         match = self.__eq__(other)
         if match is not NotImplemented:
             match = not match
 
         return match
-
-    def __reduce__(self):
-        """
-        Dynamically created classes at runtime cannot be pickled, due to not
-        being defined at the top level of a module. As a result, we require to
-        use the __reduce__ interface to allow 'pickle' to recreate this class
-        instance, and dump and load instance state successfully.
-
-        """
-        return metadata_manager_factory, (self.cls,), self.__getstate__()
 
     def __repr__(self):
         args = ", ".join(
@@ -1417,34 +1423,17 @@ def metadata_manager_factory(cls, **kwargs):
         )
         return "{}({})".format(self.__class__.__name__, args)
 
-    def __setstate__(self, state):
-        """Set the instance state when unpickling."""
-        for field, value in state.items():
-            setattr(self, field, value)
-
     @property
     def fields(self):
-        """Return the name of the metadata members."""
-        # Proxy for built-in namedtuple._fields property.
-        return self.cls._fields
+        """Return the names of all the metadata members."""
+        # Proxy for the built-in namedtuple._fields property.
+        return self._fields
 
     @property
     def values(self):
-        fields = {field: getattr(self, field) for field in self.fields}
+        """Return a new metadata instance (i.e. a namedtuple)."""
+        fields = {field: getattr(self, field) for field in self._fields}
         return self.cls(**fields)
-
-    # Restrict factory to appropriate metadata classes only.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
-    # Check whether kwargs have valid fields for the specified metadata.
-    if kwargs:
-        extra = [field for field in kwargs.keys() if field not in cls._fields]
-        if extra:
-            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
-            emsg = "Invalid {!r} field parameters, got {}."
-            raise ValueError(emsg.format(cls.__name__, bad))
 
     # Define the name, (inheritance) bases and namespace of the dynamic class.
     name = "MetadataManager"
@@ -1453,11 +1442,9 @@ def metadata_manager_factory(cls, **kwargs):
         "DEFAULT_NAME": cls.DEFAULT_NAME,
         "__init__": __init__,
         "__eq__": __eq__,
-        "__getstate__": __getstate__,
         "__ne__": __ne__,
-        "__reduce__": __reduce__,
         "__repr__": __repr__,
-        "__setstate__": __setstate__,
+        "cls": cls,
         "fields": fields,
         "name": cls.name,
         "token": cls.token,
@@ -1469,11 +1456,20 @@ def metadata_manager_factory(cls, **kwargs):
         namespace["_names"] = cls._names
 
     # Dynamically create the class.
-    Metadata = type(name, bases, namespace)
-    # Now manufacture an instance of that class.
-    metadata = Metadata(cls, **kwargs)
+    ManagerClass = type(name, bases, namespace)
 
-    return metadata
+    return ManagerClass
+
+
+# Create a specific Manager class for each type of metadata.
+BaseMetadataManager = make_metadata_manager_class(BaseMetadata)
+AncillaryVariableMetadataManager = make_metadata_manager_class(
+    AncillaryVariableMetadata
+)
+CellMeasureMetadataManager = make_metadata_manager_class(CellMeasureMetadata)
+CubeMetadataManager = make_metadata_manager_class(CubeMetadata)
+CoordMetadataManager = make_metadata_manager_class(CoordMetadata)
+DimCoordMetadataManager = make_metadata_manager_class(DimCoordMetadata)
 
 
 #: Convenience collection of lenient metadata combine services.

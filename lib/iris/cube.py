@@ -37,13 +37,8 @@ import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.common import (
-    CFVariableMixin,
-    CoordMetadata,
-    CubeMetadata,
-    DimCoordMetadata,
-    metadata_manager_factory,
-)
+from iris.common import CFVariableMixin, CoordMetadata, DimCoordMetadata
+from iris.common.metadata import CubeMetadataManager
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -902,7 +897,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             raise TypeError("Invalid data type: {!r}.".format(data))
 
         # Configure the metadata manager.
-        self._metadata_manager = metadata_manager_factory(CubeMetadata)
+        self._metadata_manager = CubeMetadataManager()
 
         # Initialise the cube data manager.
         self._data_manager = DataManager(data)
@@ -1908,7 +1903,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             (which itself defaults to `unknown`) as defined in
             :class:`iris.common.CFVariableMixin`.
 
-            (b) a cell_measure instance with metadata equal to that of
+            (b) a cell_measure instance with metada equal to that of
             the desired cell_measures.
 
         See also :meth:`Cube.cell_measure()<iris.cube.Cube.cell_measure>`.
