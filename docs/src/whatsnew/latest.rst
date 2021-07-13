@@ -129,6 +129,11 @@ This document explains the changes made to Iris for this release
    they render better in the published documentation.  See :issue:`4085`.
    (:pull:`4100`)
 
+#. `@tkknight`_ documented the ``--force`` command line option when creating
+   a conda development environment. See :ref:`installing_from_source`.
+   (:pull:`????`)
+
+
 💼 Internal
 ===========
 

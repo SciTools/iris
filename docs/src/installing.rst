@@ -17,7 +17,7 @@ any WSL_ distributions.
 .. _WSL: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
 .. note:: Iris is currently supported and tested against |python_support|.
-          
+
 .. note:: This documentation was built using Python |python_version|.
 
 
@@ -92,8 +92,13 @@ Once conda is installed, you can install Iris using conda and then activate
 it.  The example commands below assume you are in the root directory of your
 local copy of Iris::
 
-  conda env create --file=requirements/ci/iris.yml
+  conda env create --force --file=requirements/ci/iris.yml
   conda activate iris-dev
+
+The ``--force`` option is used when creating the environment, this is optional
+and will force the any existing ``iris-dev`` conda environment to be deleted
+first if present.  This is useful when rebuilding your environment due to a
+change in requirements.
 
 The ``requirements/ci/iris.yml`` file defines the Iris development conda
 environment *name* and all the relevant *top level* `conda-forge` package
