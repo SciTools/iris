@@ -1343,7 +1343,7 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def make_metadata_manager_class(cls, **kwargs):
+def make_metadata_manager_class(cls):
     """
     A factory function which creates a metadata "manager" class to handle
     a given type of metadata (a subclass of BaseMetadata).
@@ -1372,7 +1372,7 @@ def make_metadata_manager_class(cls, **kwargs):
         emsg = "Require a subclass of {!r}, got {!r}."
         raise TypeError(emsg.format(BaseMetadata.__name__, cls))
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         # Get handled metadata type (a class property)
         cls = self.cls
 
@@ -1380,23 +1380,11 @@ def make_metadata_manager_class(cls, **kwargs):
         # access than via the property self.fields --> self.cls._fields.
         self._fields = cls._fields
 
-        # Check that kwargs has only valid fields for the specified metadata.
-        if kwargs:
-            extra = [
-                field for field in kwargs.keys() if field not in self._fields
-            ]
-            if extra:
-                bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
-                emsg = "Invalid {!r} field parameters, got {}."
-                raise ValueError(emsg.format(cls.__name__, bad))
-
-        # Create all the metadata fields in the manager instance.
+        # Populate all the metadata fields with blanks.
+        # N.B. in the container constructors, the init values are then written
+        # into the container properties.
         for field in self._fields:
             setattr(self, field, None)
-
-        # Populate with the provided kwargs.
-        for field, value in kwargs.items():
-            setattr(self, field, value)
 
     def __eq__(self, other):
         if not hasattr(other, "cls"):
@@ -1436,7 +1424,7 @@ def make_metadata_manager_class(cls, **kwargs):
         return self.cls(**fields)
 
     # Define the name, (inheritance) bases and namespace of the dynamic class.
-    name = "MetadataManager"
+    name = cls.__name__ + "Manager"
     bases = ()
     namespace = {
         "DEFAULT_NAME": cls.DEFAULT_NAME,
