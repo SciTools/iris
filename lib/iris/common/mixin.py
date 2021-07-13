@@ -202,7 +202,7 @@ class CFVariableMixin:
 
     @metadata.setter
     def metadata(self, metadata):
-        cls = self._metadata_manager.cls
+        cls = self._metadata_manager.metadata_class
         fields = self._metadata_manager.fields
         arg = metadata
 

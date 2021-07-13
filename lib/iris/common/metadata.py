@@ -1343,53 +1343,43 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def make_metadata_manager_class(cls):
+# Create a specific Manager class for each type of metadata.
+
+# A common manager baseclass (abstract).
+class MetadataManager:
     """
-    A factory function which creates a metadata "manager" class to handle
-    a given type of metadata (a subclass of BaseMetadata).
+    This class mirrors the fields of a specific metadata type and provides some
+    additional common properties and methods.
 
-    This makes it easy for 'container' objects (subclasses of CFVariableMixin)
-    to proxy their metadata properties (i.e. every named metadata field, such
-    as 'standard_name' is also made a property of the container object).
+    A specific metadata type is defined by the inheritor.  It must always be a
+    subclass of BaseMetadata.  (The 'manager_class' decorator checks it).
 
-    Each container contains a manager whose fields hold the metadata values.
-    Thus, neither the container nor its manager stores an *actual* metadata
-    (cls) object :  Instead, if an actual metadata object (namedtuple) is
-    wanted, one is created by 'manager.values()'.
-
-    Args:
-
-    * cls:
-        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-        the type of metadata objects to be managed.
-
-    Returns:
-        A new manager class, for representing metadata of type 'cls'.
+    An actual metadata object is not stored, but can be generated using the
+    'values' method.
 
     """
-    # Restrict to only dealing with appropriate metadata classes.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
+
+    #: the type (class) of metadata which this manager handles.
+    metadata_class = None
 
     def __init__(self):
-        # Get handled metadata type (a class property)
-        cls = self.cls
+        # Get handled metadata type (a class property).
+        cls = self.metadata_class
 
-        # Make a local copy of self.cls._fields, just because it is quicker to
-        # access than via the property self.fields --> self.cls._fields.
+        # Make a local copy of self.metadata_class._fields, just because it is
+        # quicker to fetch than self.fields --> self.metadata_class._fields.
         self._fields = cls._fields
 
-        # Populate all the metadata fields with blanks.
-        # N.B. in the container constructors, the init values are then written
-        # into the container properties.
+        # Create all the metadata fields, initially empty.
+        # N.B. in the container-class constructor, init values are then written
+        # via the container properties.
         for field in self._fields:
             setattr(self, field, None)
 
     def __eq__(self, other):
-        if not hasattr(other, "cls"):
+        if not hasattr(other, "metadata_class"):
             return NotImplemented
-        match = self.cls is other.cls
+        match = self.metadata_class is other.metadata_class
         if match:
             match = self.values == other.values
 
@@ -1421,43 +1411,68 @@ def make_metadata_manager_class(cls):
     def values(self):
         """Return a new metadata instance (i.e. a namedtuple)."""
         fields = {field: getattr(self, field) for field in self._fields}
-        return self.cls(**fields)
-
-    # Define the name, (inheritance) bases and namespace of the dynamic class.
-    name = cls.__name__ + "Manager"
-    bases = ()
-    namespace = {
-        "DEFAULT_NAME": cls.DEFAULT_NAME,
-        "__init__": __init__,
-        "__eq__": __eq__,
-        "__ne__": __ne__,
-        "__repr__": __repr__,
-        "cls": cls,
-        "fields": fields,
-        "name": cls.name,
-        "token": cls.token,
-        "values": values,
-    }
-
-    # Account for additional "CubeMetadata" specialised class behaviour.
-    if cls is CubeMetadata:
-        namespace["_names"] = cls._names
-
-    # Dynamically create the class.
-    ManagerClass = type(name, bases, namespace)
-
-    return ManagerClass
+        return self.metadata_class(**fields)
 
 
-# Create a specific Manager class for each type of metadata.
-BaseMetadataManager = make_metadata_manager_class(BaseMetadata)
-AncillaryVariableMetadataManager = make_metadata_manager_class(
-    AncillaryVariableMetadata
-)
-CellMeasureMetadataManager = make_metadata_manager_class(CellMeasureMetadata)
-CubeMetadataManager = make_metadata_manager_class(CubeMetadata)
-CoordMetadataManager = make_metadata_manager_class(CoordMetadata)
-DimCoordMetadataManager = make_metadata_manager_class(DimCoordMetadata)
+# A decorator to configure a MetadataManager class to its metadata type.
+def manager_class(cls):
+    # This adds some extra class-level properties which proxy those of the
+    # indicated metadata class (some of which are instance methods).
+    # There is a special case for CubeMetadata.
+    #
+    # Adding these class properties saves time over creating instance
+    # properties in every each manager object.
+    # We *could* use a metaclass for this, but we don't actually need that, and
+    # a decorator is a simpler solution.
+
+    #: The specific Metadata type, from the class definition.
+    metadata_cls = cls.metadata_class
+
+    # Restrict to only dealing with appropriate metadata classes.
+    if not metadata_cls or not issubclass(metadata_cls, BaseMetadata):
+        emsg = "Require a subclass of {!r}, got {!r}."
+        raise TypeError(emsg.format(BaseMetadata.__name__, metadata_cls))
+
+    # Add the additional proxy properties, copied from the Metadata class.
+    cls_proxy_names = ["name", "DEFAULT_NAME", "token"]
+    if metadata_cls is CubeMetadata:
+        # A special case (extra property) for this one.
+        cls_proxy_names.append("_names")
+    for name in cls_proxy_names:
+        value = getattr(metadata_cls, name)
+        setattr(cls, name, value)
+
+    return cls
+
+
+@manager_class
+class BaseMetadataManager(MetadataManager):
+    metadata_class = BaseMetadata
+
+
+@manager_class
+class AncillaryVariableMetadataManager(MetadataManager):
+    metadata_class = AncillaryVariableMetadata
+
+
+@manager_class
+class CellMeasureMetadataManager(MetadataManager):
+    metadata_class = CellMeasureMetadata
+
+
+@manager_class
+class CubeMetadataManager(MetadataManager):
+    metadata_class = CubeMetadata
+
+
+@manager_class
+class CoordMetadataManager(MetadataManager):
+    metadata_class = CoordMetadata
+
+
+@manager_class
+class DimCoordMetadataManager(MetadataManager):
+    metadata_class = DimCoordMetadata
 
 
 #: Convenience collection of lenient metadata combine services.

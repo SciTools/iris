@@ -4,7 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`.
+Unit tests for the :func:`iris.common.metadata.MetadataManager` and its
+subclasses..
 
 """
 
@@ -19,31 +20,48 @@ from cf_units import Unit
 
 from iris.common.metadata import (
     AncillaryVariableMetadata,
+    AncillaryVariableMetadataManager,
     BaseMetadata,
     BaseMetadataManager,
     CellMeasureMetadata,
+    CellMeasureMetadataManager,
     CoordMetadata,
+    CoordMetadataManager,
     CubeMetadata,
-    make_metadata_manager_class,
+    CubeMetadataManager,
+    MetadataManager,
+    manager_class,
 )
 
-BASES = [
-    AncillaryVariableMetadata,
-    BaseMetadata,
-    CellMeasureMetadata,
-    CoordMetadata,
-    CubeMetadata,
-]
+METADATA_MANAGERS_AND_CLASSES = {
+    AncillaryVariableMetadata: AncillaryVariableMetadataManager,
+    BaseMetadata: BaseMetadataManager,
+    CellMeasureMetadata: CellMeasureMetadataManager,
+    CoordMetadata: CoordMetadataManager,
+    CubeMetadata: CubeMetadataManager,
+}
+BASES = METADATA_MANAGERS_AND_CLASSES.keys()
 
 
-class Test_factory(tests.IrisTest):
-    def test__subclass_invalid(self):
-        class Other:
-            pass
-
-        emsg = "Require a subclass of 'BaseMetadata'"
+class Test_manager_subclassing(tests.IrisTest):
+    def test__metadata_class_missing(self):
+        emsg = "Require a subclass of 'BaseMetadata', got None"
         with self.assertRaisesRegex(TypeError, emsg):
-            _ = make_metadata_manager_class(Other)
+
+            @manager_class
+            class MyMetadata(MetadataManager):
+                pass  # Did not define a metadata class
+
+    def test__metadata_class_invalid(self):
+        emsg = (
+            "Require a subclass of 'BaseMetadata', "
+            "got <class 'cf_units.Unit'>"
+        )
+        with self.assertRaisesRegex(TypeError, emsg):
+
+            @manager_class
+            class MyMetadata(MetadataManager):
+                metadata_class = Unit
 
 
 class Test_instance(tests.IrisTest):
@@ -57,38 +75,40 @@ class Test_instance(tests.IrisTest):
             "__eq__",
             "__ne__",
             "__repr__",
-            "cls",
+            "metadata_class",
             "fields",
             "name",
             "token",
             "values",
         ]
         for base in self.bases:
-            manager_cls = make_metadata_manager_class(base)
+            manager_cls = METADATA_MANAGERS_AND_CLASSES[base]
             for name in namespace:
-                self.assertTrue(hasattr(manager_cls, name))
-            if base is CubeMetadata:
+                self.assertTrue(
+                    hasattr(manager_cls, name), (manager_cls, name)
+                )
+            if manager_cls is CubeMetadataManager:
                 self.assertTrue(hasattr(manager_cls, "_names"))
-            self.assertIs(manager_cls.cls, base)
+            self.assertIs(manager_cls.metadata_class, base)
 
 
 class Test_instance___eq__(tests.IrisTest):
     def setUp(self):
-        self.manager = make_metadata_manager_class(BaseMetadata)()
+        self.manager = BaseMetadataManager()
 
     def test__not_implemented(self):
         self.assertNotEqual(self.manager, 1)
 
     def test__not_is_cls(self):
         base = BaseMetadata
-        other = make_metadata_manager_class(base)()
-        self.assertIs(other.cls, base)
-        other.cls = CoordMetadata
+        other = BaseMetadataManager()
+        self.assertIs(other.metadata_class, base)
+        other.metadata_class = CoordMetadata
         self.assertNotEqual(self.manager, other)
 
     def test__not_values(self):
         standard_name = mock.sentinel.standard_name
-        other = make_metadata_manager_class(BaseMetadata)()
+        other = BaseMetadataManager()
         other.standard_name = standard_name
         self.assertEqual(other.standard_name, standard_name)
         self.assertIsNone(other.long_name)
@@ -98,15 +118,15 @@ class Test_instance___eq__(tests.IrisTest):
         self.assertNotEqual(self.manager, other)
 
     def test__same_default(self):
-        other = make_metadata_manager_class(BaseMetadata)()
+        other = BaseMetadataManager()
         self.assertEqual(self.manager, other)
 
     def test__same(self):
         kwargs = dict(
             standard_name=1, long_name=2, var_name=3, units=4, attributes=5
         )
-        this = make_metadata_manager_class(BaseMetadata)()
-        other = make_metadata_manager_class(BaseMetadata)()
+        this = BaseMetadataManager()
+        other = BaseMetadataManager()
         for key, val in kwargs.items():
             for manager in (this, other):
                 setattr(manager, key, val)
@@ -116,7 +136,7 @@ class Test_instance___eq__(tests.IrisTest):
 
 class Test_instance____repr__(tests.IrisTest):
     def setUp(self):
-        self.manager = make_metadata_manager_class(BaseMetadata)()
+        self.manager = BaseMetadataManager()
 
     def test(self):
         standard_name = mock.sentinel.standard_name
@@ -152,10 +172,9 @@ class Test_instance__pickle(tests.IrisTest):
             self.attributes,
         )
         self.kwargs = dict(zip(BaseMetadata._fields, values))
-        # NOTE: for pickle we now need an actual reference class
-        # So we can't pickle something "instantly made up", it needs to be
-        # available as a property of a module.
-        # self.manager = make_metadata_manager_class(BaseMetadata)()
+        # NOTE: for pickle we now need an actual reference class:  As we can't
+        # pickle something "instantly made up", it wants to be a property of a
+        # module somewhere.
         self.manager = BaseMetadataManager()
         for key, val in self.kwargs.items():
             setattr(self.manager, key, val)
@@ -177,10 +196,10 @@ class Test_instance__fields(tests.IrisTest):
     def test(self):
         for base in self.bases:
             fields = base._fields
-            metadata = make_metadata_manager_class(base)()
-            self.assertEqual(metadata.fields, fields)
+            manager = METADATA_MANAGERS_AND_CLASSES[base]()
+            self.assertEqual(manager.fields, fields)
             for field in fields:
-                hasattr(metadata, field)
+                hasattr(manager, field)
 
 
 class Test_instance__values(tests.IrisTest):
@@ -189,7 +208,7 @@ class Test_instance__values(tests.IrisTest):
 
     def test(self):
         for base in self.bases:
-            metadata = make_metadata_manager_class(base)()
+            metadata = METADATA_MANAGERS_AND_CLASSES[base]()
             result = metadata.values
             self.assertIsInstance(result, base)
             self.assertEqual(result._fields, base._fields)
