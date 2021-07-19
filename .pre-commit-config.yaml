@@ -28,7 +28,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/psf/black
-    rev: 21.6b0
+    rev: 21.7b0
     hooks:
     -   id: black
         pass_filenames: false
