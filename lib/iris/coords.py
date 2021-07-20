@@ -2440,7 +2440,9 @@ class Coord(_DimensionalMetadata):
         if self.has_bounds():
             # make bounds ranges complete+separate, so point is in at least one
             increasing = self.bounds[0, 1] > self.bounds[0, 0]
-            bounds = bounds.copy()
+            # identify data type that bounds and point can safely cast to
+            dtype = np.result_type(bounds, np.min_scalar_type(point))
+            bounds = bounds.astype(dtype)
             # sort the bounds cells by their centre values
             sort_inds = np.argsort(np.mean(bounds, axis=1))
             bounds = bounds[sort_inds]
