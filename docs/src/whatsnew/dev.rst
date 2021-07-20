@@ -54,6 +54,10 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ ensured that a :class:`matplotlib.axes.Axes`'s position is preserved
    when Iris replaces it with a :class:`cartopy.mpl.geoaxes.GeoAxes`, fixing
    :issue:`1157`.  (:pull:`4273`)
+   
+#. `@rcomer`_ fixed :meth:`~iris.coords.Coord.nearest_neighbour_index` for edge
+   cases where the requested point is float and the coordinate has integer
+   bounds, reported at :issue:`2969`. (:pull:`4245`)
 
 
 💣 Incompatible Changes
