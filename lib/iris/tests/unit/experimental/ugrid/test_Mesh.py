@@ -5,15 +5,15 @@
 # licensing details.
 """Unit tests for the :class:`iris.experimental.ugrid.Mesh` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 import numpy as np
 
 from iris.coords import AuxCoord
 from iris.exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from iris.experimental import ugrid
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 
 class TestMeshCommon(tests.IrisTest):

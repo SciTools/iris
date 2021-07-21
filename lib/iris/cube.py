@@ -10,12 +10,7 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import OrderedDict
-from collections.abc import (
-    Container,
-    Iterable,
-    Iterator,
-    MutableMapping,
-)
+from collections.abc import Container, Iterable, Iterator, MutableMapping
 import copy
 from copy import deepcopy
 from functools import partial, reduce
@@ -36,11 +31,7 @@ import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.common import (
-    CFVariableMixin,
-    CubeMetadata,
-    metadata_manager_factory,
-)
+from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
 from iris.common.metadata import metadata_filter
 import iris.coord_systems
 import iris.coords

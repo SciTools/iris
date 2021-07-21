@@ -8,10 +8,6 @@ Unit tests for the :class:`iris.experimental.ugrid.MeshMetadata`.
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 from copy import deepcopy
 import unittest.mock as mock
 from unittest.mock import sentinel
@@ -19,6 +15,10 @@ from unittest.mock import sentinel
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata
 from iris.experimental.ugrid import MeshMetadata
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 
 class Test(tests.IrisTest):

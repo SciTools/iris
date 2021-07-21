@@ -7,23 +7,22 @@
 Unit tests for the :class:`iris.experimental.ugrid.MeshCoord`.
 
 """
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
-import unittest.mock as mock
 
-from iris.coords import AuxCoord, Coord
-from iris.common.metadata import BaseMetadata
-from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh
 from iris._lazy_data import is_lazy_data
+from iris.common.metadata import BaseMetadata
+from iris.coords import AuxCoord, Coord
+from iris.cube import Cube
+from iris.experimental.ugrid import Connectivity, Mesh, MeshCoord
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
-
-from iris.experimental.ugrid import MeshCoord
 
 
 class Test___init__(tests.IrisTest):

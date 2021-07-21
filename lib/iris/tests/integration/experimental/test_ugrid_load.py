@@ -11,15 +11,14 @@ todo: fold these tests into netcdf tests when experimental.ugrid is folded into
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 from collections.abc import Iterable
 
 from iris import Constraint, load
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, logger
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )

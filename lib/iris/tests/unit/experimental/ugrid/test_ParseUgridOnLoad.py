@@ -9,11 +9,11 @@ Unit tests for the :class:`iris.experimental.ugrid.ParseUgridOnLoad` class.
 todo: remove this module when experimental.ugrid is folded into standard behaviour.
 
 """
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, ParseUGridOnLoad
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests
-
-from iris.experimental.ugrid import ParseUGridOnLoad, PARSE_UGRID_ON_LOAD
 
 
 class TestClass(tests.IrisTest):

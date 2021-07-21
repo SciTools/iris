@@ -8,10 +8,6 @@ Unit tests for the :func:`iris.common.metadata_filter`.
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 import numpy as np
 
 from iris.common.metadata import (
@@ -20,6 +16,10 @@ from iris.common.metadata import (
     metadata_filter,
 )
 from iris.coords import AuxCoord
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 Mock = tests.mock.Mock
 

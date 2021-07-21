@@ -30,8 +30,6 @@ import iris.coord_systems as icoord_systems
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 import iris.std_names
-import iris.util
-
 import iris.tests.stock as stock
 import iris.util
 
