@@ -166,7 +166,7 @@ class Test_aggregate(tests.IrisTest):
         ) as mock_method:
             result = self.TEST.aggregate(data, axis, mdtol=mdtol)
 
-        self.assertIs(result, mock_return.copy())
+        self.assertIs(result, mock_return)
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_returning_scalar_mdtol(self):
