@@ -5,16 +5,15 @@
 # licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
 
-from html import escape
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.coords import CellMethod, CellMeasure, AncillaryVariable
-import iris.tests.stock as stock
+from html import escape
 
+from iris.coords import AncillaryVariable, CellMeasure, CellMethod
 from iris.experimental.representation import CubeRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data

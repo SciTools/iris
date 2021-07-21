@@ -57,17 +57,16 @@ The cube returned from the load function is then used to produce a plot.
 
 import datetime
 
-from cf_units import Unit, CALENDAR_GREGORIAN
+from cf_units import CALENDAR_GREGORIAN, Unit
 import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
-import iris.coords as icoords
 import iris.coord_systems as icoord_systems
+import iris.coords as icoords
 import iris.fileformats
 import iris.io.format_picker as format_picker
 import iris.plot as iplt
-
 
 UTC_format = "%H%M%Z %d/%m/%Y"
 

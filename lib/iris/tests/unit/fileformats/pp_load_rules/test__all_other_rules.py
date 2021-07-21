@@ -10,19 +10,18 @@ Unit tests for the `iris.fileformats.pp_load_rules._all_other_rules` function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
-from cf_units import Unit, CALENDAR_360_DAY
+from cf_units import CALENDAR_360_DAY, Unit
 from cftime import datetime as nc_datetime
+import numpy as np
 
-from iris.fileformats.pp_load_rules import _all_other_rules
+from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.pp import SplittableInt
-from iris.coords import CellMethod, DimCoord, AuxCoord
+from iris.fileformats.pp_load_rules import _all_other_rules
 from iris.tests.unit.fileformats import TestField
-
 
 # iris.fileformats.pp_load_rules._all_other_rules() returns a tuple of
 # of various metadata. This constant is the index into this

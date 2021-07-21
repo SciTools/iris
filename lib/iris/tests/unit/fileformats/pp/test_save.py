@@ -5,16 +5,16 @@
 # licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-import cftime
-import cf_units
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.coords import DimCoord, CellMethod
+import cf_units
+import cftime
+
+from iris.coords import CellMethod, DimCoord
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify

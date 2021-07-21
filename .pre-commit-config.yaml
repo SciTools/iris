@@ -1,8 +1,18 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+files: |
+    (?x)(
+        noxfile\.py|
+        setup\.py|
+        docs\/.+\.py|
+        lib\/.+\.py
+    )
+minimum_pre_commit_version: 1.21.0
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 'v3.4.0'
+    rev: v4.0.1
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -14,18 +24,33 @@ repos:
     -   id: check-merge-conflict
         # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
     -   id: debug-statements
-        # Don't commit to master branch.
+        # Don't commit to main branch.
     -   id: no-commit-to-branch
+
 -   repo: https://github.com/psf/black
-    rev: '20.8b1'
+    rev: 21.7b0
     hooks:
     -   id: black
-        # Force black to run on whole repo, using settings from pyproject.toml
         pass_filenames: false
         args: [--config=./pyproject.toml, .]
+
 -   repo: https://github.com/PyCQA/flake8
-    rev: '3.9.0'
+    rev: 3.9.2
     hooks:
-        # Run flake8.
     -   id: flake8
-        args: [--config=./.flake8]
+        types: [file, python]
+        args: [--config=./setup.cfg]
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.9.2
+    hooks:
+    -   id: isort
+        types: [file, python]
+        args: [--filter-files]
+
+-   repo: https://github.com/asottile/blacken-docs
+    rev: v1.10.0
+    hooks:
+    -   id: blacken-docs
+        types: [file, rst]
+        additional_dependencies: [black==21.6b0]

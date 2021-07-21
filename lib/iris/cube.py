@@ -10,16 +10,15 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import OrderedDict
-
 from collections.abc import (
-    Iterable,
     Container,
-    MutableMapping,
+    Iterable,
     Iterator,
+    MutableMapping,
 )
 import copy
 from copy import deepcopy
-from functools import reduce, partial
+from functools import partial, reduce
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -29,7 +28,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -48,7 +46,6 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
-
 
 __all__ = ["Cube", "CubeList"]
 
@@ -538,13 +535,15 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
+        from iris._concatenate import concatenate
+
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
 
         names = [cube.metadata.name() for cube in self]
         unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(
+            res = concatenate(
                 self,
                 error_on_mismatch=True,
                 check_aux_coords=check_aux_coords,
@@ -672,7 +671,9 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
-        return iris._concatenate.concatenate(
+        from iris._concatenate import concatenate
+
+        return concatenate(
             self,
             check_aux_coords=check_aux_coords,
             check_cell_measures=check_cell_measures,
@@ -705,6 +706,13 @@ class CubeList(list):
 
         """
         _lazy.co_realise_cubes(*self)
+
+    def copy(self):
+        """
+        Return a CubeList when CubeList.copy() is called.
+        """
+        if type(self) == CubeList:
+            return deepcopy(self)
 
 
 def _is_single_item(testee):
@@ -2566,7 +2574,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                     delta = max_line_offset - min_alignment + 5
                     cube_header = "%-*s (%s)" % (
                         int(name_padding + delta),
-                        self.name() or "unknown",
+                        nameunit,
                         dimension_header,
                     )
                     alignment += delta
@@ -2623,7 +2631,11 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             # Calculate the maximum line offset.
             max_line_offset = 0
-            for coord in all_coords:
+            for coord in (
+                list(all_coords)
+                + self.ancillary_variables()
+                + self.cell_measures()
+            ):
                 max_line_offset = max(
                     max_line_offset,
                     len(

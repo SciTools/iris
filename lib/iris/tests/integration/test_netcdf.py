@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from contextlib import contextmanager
 from itertools import repeat
@@ -26,9 +26,11 @@ import numpy.ma as ma
 import iris
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
-from iris.fileformats.netcdf import Saver
-from iris.fileformats.netcdf import UnknownCellMethodWarning
+from iris.fileformats.netcdf import (
+    CF_CONVENTIONS_VERSION,
+    Saver,
+    UnknownCellMethodWarning,
+)
 import iris.tests.stock as stock
 
 
@@ -516,7 +518,7 @@ class TestPackedData(tests.IrisTest):
         self._single_test("i2", "single_packed_signed.cdl")
 
     def test_single_packed_unsigned(self):
-        """Test saving a single CF-netCDF file with packing into unsigned. """
+        """Test saving a single CF-netCDF file with packing into unsigned."""
         self._single_test("u1", "single_packed_unsigned.cdl")
 
     def test_single_packed_manual_scale(self):

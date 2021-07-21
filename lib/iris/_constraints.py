@@ -13,7 +13,6 @@ import operator
 
 import numpy as np
 
-import iris.coords
 import iris.exceptions
 
 
@@ -247,6 +246,8 @@ class _CoordConstraint:
         match the constraint.
 
         """
+        from iris.coords import Cell, DimCoord
+
         # Cater for scalar cubes by setting the dimensionality to 1
         # when cube.ndim is 0.
         cube_cim = _ColumnIndexManager(cube.ndim or 1)
@@ -264,7 +265,7 @@ class _CoordConstraint:
         if callable(self._coord_thing):
             call_func = self._coord_thing
         elif isinstance(self._coord_thing, Iterable) and not isinstance(
-            self._coord_thing, (str, iris.coords.Cell)
+            self._coord_thing, (str, Cell)
         ):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
@@ -283,9 +284,9 @@ class _CoordConstraint:
             def call_func(c):
                 return c == self._coord_thing
 
-            try_quick = isinstance(
-                coord, iris.coords.DimCoord
-            ) and not isinstance(self._coord_thing, iris.coords.Cell)
+            try_quick = isinstance(coord, DimCoord) and not isinstance(
+                self._coord_thing, Cell
+            )
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:

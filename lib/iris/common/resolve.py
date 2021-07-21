@@ -18,9 +18,8 @@ import logging
 from dask.array.core import broadcast_shapes
 import numpy as np
 
-from ..config import get_logger
 from . import LENIENT
-
+from ..config import get_logger
 
 __all__ = ["Resolve"]
 

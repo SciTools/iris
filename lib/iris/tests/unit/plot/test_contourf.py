@@ -7,14 +7,16 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 
 from iris.tests.stock import simple_2d
-from iris.tests.unit.plot import TestGraphicStringCoord, MixinCoords
+from iris.tests.unit.plot import MixinCoords, TestGraphicStringCoord
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt
@@ -73,6 +75,27 @@ class TestCoords(tests.IrisTest, MixinCoords):
             "matplotlib.pyplot.contourf", return_value=mocker
         )
         self.draw_func = iplt.contourf
+
+
+@tests.skip_plot
+class TestAntialias(tests.IrisTest):
+    def test_skip_contour(self):
+        # Contours should not be added if data is all below second level.  See #4086.
+        cube = simple_2d()
+
+        levels = [5, 15, 20, 200]
+        colors = ["b", "r", "y"]
+
+        iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
+
+        ax = plt.gca()
+        # Expect 3 PathCollection objects (one for each colour) and no LineCollection
+        # objects.
+        for collection in ax.collections:
+            self.assertIsInstance(
+                collection, matplotlib.collections.PathCollection
+            )
+        self.assertEqual(len(ax.collections), 3)
 
 
 if __name__ == "__main__":

@@ -9,14 +9,14 @@ Tests the high-level plotting interface.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
-import iris.tests.test_plot as test_plot
-
+import iris.tests as tests  # isort:skip
 import iris
+import iris.tests.test_plot as test_plot
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     import iris.plot as iplt
     import iris.quickplot as qplt
 

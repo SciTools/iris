@@ -10,7 +10,7 @@ Test area weighted regridding.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 import random
@@ -19,10 +19,10 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
+import iris.analysis._interpolation
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )
-import iris.analysis._interpolation
 import iris.tests.stock
 
 RESULT_DIR = (

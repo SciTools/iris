@@ -1,4 +1,0 @@
-# Dependencies necessary to run setup.py of iris
-# ----------------------------------------------
-
-setuptools>=40.8.0

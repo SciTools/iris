@@ -6,7 +6,7 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from functools import wraps
 import types
@@ -22,6 +22,7 @@ import iris.tests.stock
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     import iris.plot as iplt
     import iris.quickplot as qplt
     import iris.symbols

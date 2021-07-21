@@ -13,18 +13,17 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
+from iris.coords import DimCoord
 from iris.tests.unit.coords import (
     CoordTestMixin,
-    lazyness_string,
     coords_all_dtypes_and_lazynesses,
+    lazyness_string,
 )
-
-from iris.coords import DimCoord
 
 
 class DimCoordTestMixin(CoordTestMixin):

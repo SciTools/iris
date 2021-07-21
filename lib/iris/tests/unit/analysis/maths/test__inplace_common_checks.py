@@ -10,12 +10,12 @@ Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.cube import Cube
 import numpy as np
 
 from iris.analysis.maths import _inplace_common_checks
+from iris.cube import Cube
 
 
 class Test(tests.IrisTest):

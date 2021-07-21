@@ -30,9 +30,9 @@ and the keyword argument `saver` is not required.
 
     .. code-block:: python
 
-        cube = iris.load_cube('somefile.nc')
+        cube = iris.load_cube("somefile.nc")
         # The next line causes data loss in 'somefile.nc' and the cube.
-        iris.save(cube, 'somefile.nc')
+        iris.save(cube, "somefile.nc")
 
     In general, overwriting a file which is the source for any lazily loaded
     data can result in corruption. Users should proceed with caution when

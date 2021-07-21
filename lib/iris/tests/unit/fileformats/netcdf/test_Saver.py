@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from contextlib import contextmanager
 from unittest import mock
@@ -19,16 +19,16 @@ from numpy import ma
 import iris
 from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (
+    AlbersEqualArea,
     GeogCS,
-    TransverseMercator,
-    RotatedGeogCS,
+    Geostationary,
+    LambertAzimuthalEqualArea,
     LambertConformal,
     Mercator,
+    RotatedGeogCS,
     Stereographic,
-    LambertAzimuthalEqualArea,
-    AlbersEqualArea,
+    TransverseMercator,
     VerticalPerspective,
-    Geostationary,
 )
 from iris.coords import DimCoord
 from iris.cube import Cube

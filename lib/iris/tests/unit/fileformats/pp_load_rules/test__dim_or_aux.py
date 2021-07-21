@@ -7,9 +7,9 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.fileformats.pp_load_rules import _dim_or_aux
 
 

@@ -25,7 +25,7 @@ number of releases, is in :ref:`iris_development_deprecations`.
 Release Branch
 --------------
 
-Once the features intended for the release are on ``master``, a release branch
+Once the features intended for the release are on ``main``, a release branch
 should be created, in the ``SciTools/iris`` repository.  This will have the name:
 
     :literal:`v{major release number}.{minor release number}.x`
@@ -104,13 +104,14 @@ To do this perform the following steps.
 Create a conda environment with the appropriate conda packages to build the
 source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
 
-    > conda create -n iris-pypi -c conda-forge --yes pip pyke python setuptools twine wheel
+    > conda create -n iris-pypi -c conda-forge --yes pip python setuptools twine wheel
     > . activate iris-pypi
 
-Checkout the lastest Iris ``<release>`` tag::
+Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.
+For example, to checkout tag ``v1.0`` from ``upstream``::
 
-    > git fetch --tags
-    > git checkout <release>
+    > git fetch upstream --tags
+    > git checkout v1.0 
 
 Build the source distribution and wheel from the Iris root directory::
 
@@ -131,7 +132,7 @@ To list and check the contents of the binary wheel::
 If all seems well, sufficient maintainer privileges will be required to
 upload these artifacts to `scitools-iris`_ on PyPI::
 
-    > python -m twine upload --repository-url https://upload.pypi.org/legecy/ dist/*
+    > python -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 Ensure that the artifacts are successfully uploaded and available on
 `scitools-iris`_ before creating a conda test environment to install Iris
@@ -155,13 +156,13 @@ Merge Back
 ----------
 
 After the release is cut, the changes from the release branch should be merged
-back onto the ``SciTools/iris`` ``master`` branch.
+back onto the ``SciTools/iris`` ``main`` branch.
 
-To achieve this, first cut a local branch from the latest ``master`` branch,
+To achieve this, first cut a local branch from the latest ``main`` branch,
 and `git merge` the :literal:`.x` release branch into it. Ensure that the
 ``iris.__version__``, ``docs/src/whatsnew/index.rst`` and ``docs/src/whatsnew/latest.rst``
 are correct, before committing these changes and then proposing a pull-request
-on the ``master`` branch of ``SciTools/iris``.
+on the ``main`` branch of ``SciTools/iris``.
 
 
 Point Releases
@@ -176,7 +177,7 @@ New features shall not be included in a point release, these are for bug fixes.
 
 A point release does not require a release candidate, but the rest of the
 release process is to be followed, including the merge back of changes into
-``master``.
+``main``.
 
 
 .. _iris_development_releases_steps:
@@ -222,14 +223,14 @@ Post Release Steps
 ~~~~~~~~~~~~~~~~~~
 
 #. Check the documentation has built on `Read The Docs`_.  The build is
-   triggered by any commit to ``master``.  Additionally check that the versions
+   triggered by any commit to ``main``.  Additionally check that the versions
    available in the pop out menu in the bottom left corner include the new
    release version.  If it is not present you will need to configure the
    versions available in the **admin** dashboard in `Read The Docs`_.
 #. Review the `Active Versions`_ for the ``scitools-iris`` project on
    `Read The Docs`_ to ensure that the appropriate versions are ``Active``
    and/or ``Hidden``. To do this ``Edit`` the appropriate version e.g.,
-   see `Editing v3.0.0rc0`_.
+   see `Editing v3.0.0rc0`_ (must be logged into Read the Docs).
 #. Copy ``docs/src/whatsnew/latest.rst.template`` to
    ``docs/src/whatsnew/latest.rst``.  This will reset
    the file with the ``unreleased`` heading and placeholders for the
@@ -237,7 +238,7 @@ Post Release Steps
 #. Add back in the reference to ``latest.rst`` to the ``whatsnew`` index
    ``docs/src/whatsnew/index.rst``
 #. Update ``iris.__init__.py`` version string to show as ``1.10.dev0``
-#. Merge back to ``master``
+#. Merge back to ``main``
 
 
 .. _SciTools/iris: https://github.com/SciTools/iris
@@ -247,7 +248,7 @@ Post Release Steps
 .. _CFEP-05: https://github.com/conda-forge/cfep/blob/master/cfep-05.md
 .. _conda-forge User Documentation: https://conda-forge.org/docs/user/00_intro.html
 .. _Active Versions: https://readthedocs.org/projects/scitools-iris/versions/
-.. _Editing v3.0.0rc0: https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/
+.. _Editing v3.0.0rc0: https://readthedocs.org/dashboard/scitools-iris/version/v3.0.0rc0/edit
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project

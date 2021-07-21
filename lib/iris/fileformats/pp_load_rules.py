@@ -8,25 +8,25 @@
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
+import calendar
+
 import cf_units
 import numpy as np
-import calendar
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
     ConversionMetadata,
     Factory,
     Reference,
     ReferenceTarget,
 )
-from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.um_cf_map import (
     LBFC_TO_CF,
     STASH_TO_CF,
     STASHCODE_IMPLIED_HEIGHTS,
 )
-
 
 ###############################################################################
 #

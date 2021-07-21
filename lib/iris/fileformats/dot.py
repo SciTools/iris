@@ -14,7 +14,6 @@ import subprocess
 import iris
 import iris.util
 
-
 _GRAPH_INDENT = " " * 4
 _SUBGRAPH_INDENT = " " * 8
 

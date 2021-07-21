@@ -10,7 +10,7 @@ Test CF-NetCDF file loading and saving.
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os
 import os.path
@@ -24,15 +24,16 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
-import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
+import iris.coord_systems as icoord_systems
+from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 import iris.std_names
 import iris.util
-import iris.coords
-import iris.coord_systems as icoord_systems
+
 import iris.tests.stock as stock
-from iris._lazy_data import is_lazy_data
+import iris.util
 
 
 @tests.skip_data
@@ -323,13 +324,19 @@ class TestNetCDFCRS(tests.IrisTest):
         minor = 63567523
         self.grid.semi_major_axis = major
         self.grid.semi_minor_axis = minor
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(major, minor))
 
     def test_lat_lon_earth_radius(self):
         earth_radius = 63700000
         self.grid.earth_radius = earth_radius
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
 
 

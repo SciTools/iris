@@ -6,15 +6,15 @@
 """Provides NIMROD file format capabilities."""
 
 import glob
-import numpy as np
 import os
 import struct
 import sys
 
+import numpy as np
+
 import iris
 from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules
-
 
 # general header (int16) elements 1-31 (Fortran bytes 1-62)
 general_header_int16s = (

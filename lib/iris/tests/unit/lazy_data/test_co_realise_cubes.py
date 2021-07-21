@@ -7,14 +7,12 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
+from iris._lazy_data import as_lazy_data, co_realise_cubes
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
-
-from iris._lazy_data import co_realise_cubes
 
 
 class ArrayAccessCounter:

@@ -8,8 +8,8 @@ Provides objects describing cube summaries.
 """
 import re
 
-import iris.util
 from iris.common.metadata import hexdigest
+import iris.util
 
 
 class DimensionHeader:

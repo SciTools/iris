@@ -15,13 +15,13 @@ Specifically, this module tests the following functions:
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
-from iris.exceptions import CoordinateNotRegularError, CoordinateMultiDimError
-from iris.util import is_regular, regular_step, points_step
+from iris.exceptions import CoordinateMultiDimError, CoordinateNotRegularError
+from iris.util import is_regular, points_step, regular_step
 
 
 class Test_is_regular(tests.IrisTest):

@@ -10,13 +10,14 @@ Test set up of limited area map extents which bridge the date line.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import iris
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     from iris.plot import pcolormesh
 
 

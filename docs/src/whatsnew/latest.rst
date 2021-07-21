@@ -12,10 +12,11 @@ This document explains the changes made to Iris for this release
    :title: text-primary text-center font-weight-bold
    :body: bg-light
    :animate: fade-in
+   :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
-   * N/A
+   * We've dropped support for `Python 3.6`_
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -27,8 +28,8 @@ This document explains the changes made to Iris for this release
 #. Congratulations to `@jamesp`_ who recently became an Iris core developer
    after joining the Iris development team at the `Met Office`_. 🎉
 
-#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_ and
-   `@MHBalsmeier`_ all of whom made their first contributions to Iris, which
+#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_, `@MHBalsmeier`_
+   and `@Badboy-16`_ all of whom made their first contributions to Iris, which
    were gratefully received and included in this release. Keep up the awesome
    work! 🍻
 
@@ -52,6 +53,9 @@ This document explains the changes made to Iris for this release
    printing these objects skips metadata elements that are set to None or an
    empty string or dictionary. (:pull:`4040`)
 
+#. `@Badboy-16`_ implemented a ``CubeList.copy()`` method to return a
+   ``CubeList`` object instead of a ``list``. (:pull:`4094`)
+
 
 🐛 Bugs Fixed
 =============
@@ -61,6 +65,10 @@ This document explains the changes made to Iris for this release
 
 #. `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept
    the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
+
+#. `@rcomer`_ modified :func:`~iris.plot.contourf` to skip the special handling for
+   antialiasing when data values are too low for it to have an effect.  This caused
+   unexpected artifacts in some edge cases, as shown at :issue:`4086`. (:pull:`4150`)
 
 
 💣 Incompatible Changes
@@ -78,7 +86,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
+   from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
 
 📚 Documentation
@@ -116,6 +125,14 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added the |pre-commit.ci|_ badge to the `README.md`_.
    See :ref:`pre_commit_ci` for further details. (:pull:`4061`)
 
+#. `@rcomer`_ tweaked docstring layouts in the :mod:`iris.plot` module, so
+   they render better in the published documentation.  See :issue:`4085`.
+   (:pull:`4100`)
+
+#. `@tkknight`_ documented the ``--force`` command line option when creating
+   a conda development environment. See :ref:`installing_from_source`.
+   (:pull:`4240`)
+
 
 💼 Internal
 ===========
@@ -135,7 +152,7 @@ This document explains the changes made to Iris for this release
    environment info. (:pull:`3990`)
 
 #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
-   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+   from collaborators targeting the Iris ``main`` branch. (:pull:`4007`)
 
 #. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
    (:pull:`3997`)
@@ -150,12 +167,47 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ updated the perceptual imagehash graphical test support for
    `matplotlib`_ 3.4.1. (:pull:`4087`)
 
+#. `@jamesp`_ switched `cirrus-ci`_ testing and `nox`_
+   testing to use `conda-lock`_ files for static test environments. (:pull:`4108`)
+
+#. `@bjlittle`_ updated the ``bug-report`` and ``feature-request`` GitHub issue
+   templates to remove an external URL reference that caused un-posted user issue
+   content to be lost in the browser when followed. (:pull:`4147`)
+
+#. `@bjlittle`_ dropped `Python 3.6`_ support, and automated the discovery of
+   supported Python versions tested by `cirrus-ci`_ for documentation.
+   (:pull:`4163`)
+
+#. `@bjlittle`_ refactored ``setup.py`` into ``setup.cfg``. (:pull:`4168`)
+
+#. `@bjlittle`_ consolidated the ``.flake8`` configuration into ``setup.cfg``.
+   (:pull:`4200`)
+
+#. `@bjlittle`_ added support for automated ``import`` linting with `isort`_.
+   (:pull:`4174`)
+
+#. `@bjlittle`_ renamed ``iris/master`` branch to ``iris/main`` and migrated
+   references of ``master`` to ``main`` within codebase. (:pull:`4202`)
+
+#. `@bjlittle`_ added the `blacken-docs`_ ``pre-commit`` hook to automate
+   ``black`` linting of documentation code blocks. (:pull:`4205`)
+
+#. `@bjlittle`_ consolidated `nox`_ ``black``, ``flake8`` and ``isort`` sessions
+   into one ``lint`` session using ``pre-commit``. (:pull:`4181`)
+
+#. `@bjlittle`_ streamlined the `cirrus-ci`_ testing by removing the ``minimal``
+   tests, which are a subset of the ``full`` tests. (:pull:`4218`)
+
+#. `@bjlittle`_ consolidated the `cirrus-ci`_ documentation ``doctest`` and
+   ``gallery`` tasks into a single task and associated `nox`_ session.
+   (:pull:`4219`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@akuhnregnier: https://github.com/akuhnregnier
+.. _@Badboy-16: https://github.com/Badboy-16
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
 
@@ -164,14 +216,17 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _blacken-docs: https://github.com/asottile/blacken-docs
 .. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
-.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/master.svg
-.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/master
+.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
+.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/main
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
+.. _Python 3.6: https://www.python.org/downloads/release/python-360/
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _xxhash: http://cyan4973.github.io/xxHash/
+.. _conda-lock: https://github.com/conda-incubator/conda-lock

@@ -5,7 +5,7 @@
 # licensing details.
 """Unit tests for the :mod:`iris.fileformats` package."""
 
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 
 class TestField(tests.IrisTest):

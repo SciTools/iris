@@ -5,9 +5,9 @@
 # licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
-import warnings
 import re
 import string
+import warnings
 
 import cf_units
 import cftime
@@ -16,8 +16,7 @@ import numpy as np
 import iris
 import iris.coord_systems
 from iris.coords import DimCoord
-from iris.exceptions import TranslationError, CoordinateNotFoundError
-
+from iris.exceptions import CoordinateNotFoundError, TranslationError
 
 __all__ = ["run"]
 

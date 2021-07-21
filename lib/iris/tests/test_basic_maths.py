@@ -5,10 +5,10 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-import operator
 import math
+import operator
 
 import cf_units
 import numpy as np
@@ -554,8 +554,8 @@ class TestExponentiate(tests.IrisTest):
 
         e = a ** 0.5
 
-        self.assertArrayEqual(e.data, a.data ** 0.5)
-        self.assertCML(e, ("analysis", "sqrt.cml"))
+        self.assertArrayAllClose(e.data, a.data ** 0.5)
+        self.assertCML(e, ("analysis", "sqrt.cml"), checksum=False)
         self.assertRaises(ValueError, iris.analysis.maths.exponentiate, a, 0.3)
 
     def test_type_error(self):

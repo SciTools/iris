@@ -13,7 +13,6 @@ Relates grid code and field code to the stash code.
 
 from collections import namedtuple
 
-
 Stash = namedtuple('Stash', 'grid_code field_code pseudo_level_type')
 
 

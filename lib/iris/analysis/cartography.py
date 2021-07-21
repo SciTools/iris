@@ -12,17 +12,17 @@ from collections import namedtuple
 import copy
 import warnings
 
+import cartopy.crs as ccrs
+import cartopy.img_transform
 import cf_units
 import numpy as np
 import numpy.ma as ma
 
-import cartopy.img_transform
-import cartopy.crs as ccrs
-import iris.analysis
-import iris.coords
 import iris.coord_systems
+import iris.coords
 import iris.exceptions
 from iris.util import _meshgrid
+
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.

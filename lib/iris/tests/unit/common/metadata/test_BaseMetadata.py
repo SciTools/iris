@@ -10,14 +10,14 @@ Unit tests for the :class:`iris.common.metadata.BaseMetadata`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections import OrderedDict
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-import numpy.ma as ma
 import numpy as np
+import numpy.ma as ma
 
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata

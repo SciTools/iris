@@ -8,8 +8,8 @@ Miscellaneous utility functions.
 
 """
 
-from collections.abc import Hashable
 from abc import ABCMeta, abstractmethod
+from collections.abc import Hashable, Iterable
 from contextlib import contextmanager
 import copy
 import functools
@@ -23,11 +23,8 @@ import cf_units
 import numpy as np
 import numpy.ma as ma
 
-import iris
 from iris._deprecation import warn_deprecated
-import iris.coords
 import iris.exceptions
-import iris.cube
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -483,15 +480,19 @@ def reverse(cube_or_array, coords_or_dims):
           [15 14 13 12]]]
 
     """
+    from iris.cube import Cube
+
     index = [slice(None, None)] * cube_or_array.ndim
 
-    if isinstance(coords_or_dims, iris.cube.Cube):
+    if isinstance(coords_or_dims, Cube):
         raise TypeError(
             "coords_or_dims must be int, str, coordinate or "
             "sequence of these.  Got cube."
         )
 
-    if iris.cube._is_single_item(coords_or_dims):
+    if isinstance(coords_or_dims, str) or not isinstance(
+        coords_or_dims, Iterable
+    ):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
@@ -1168,6 +1169,9 @@ def new_axis(src_cube, scalar_coord=None):
         (1, 360, 360)
 
     """
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
@@ -1176,19 +1180,19 @@ def new_axis(src_cube, scalar_coord=None):
     # If the source cube is a Masked Constant, it is changed here to a Masked
     # Array to allow the mask to gain an extra dimension with the data.
     if src_cube.has_lazy_data():
-        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+        new_cube = Cube(src_cube.lazy_data()[None])
     else:
         if isinstance(src_cube.data, ma.core.MaskedConstant):
             new_data = ma.array([np.nan], mask=[True])
         else:
             new_data = src_cube.data[None]
-        new_cube = iris.cube.Cube(new_data)
+        new_cube = Cube(new_data)
 
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
-            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            dim_coord = DimCoord.from_coord(coord)
             new_cube.add_dim_coord(dim_coord, 0)
         else:
             dims = np.array(src_cube.coord_dims(coord)) + 1
@@ -1243,6 +1247,8 @@ def as_compatible_shape(src_cube, target_cube):
         suitably reshaped to fit.
 
     """
+    from iris.cube import Cube
+
     wmsg = (
         "iris.util.as_compatible_shape has been deprecated and will be "
         "removed, please use iris.common.resolve.Resolve instead."
@@ -1285,7 +1291,7 @@ def as_compatible_shape(src_cube, target_cube):
         new_order = [order.index(i) for i in range(len(order))]
         new_data = np.transpose(new_data, new_order).copy()
 
-    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube = Cube(new_data.reshape(new_shape))
     new_cube.metadata = copy.deepcopy(src_cube.metadata)
 
     # Record a mapping from old coordinate IDs to new coordinates,
@@ -1577,31 +1583,48 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.AuxCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+    .. testsetup:: promote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: promote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  year                    x      -              -
-        >>> promote_aux_coord_to_dim_coord(cube, 'year')
-        >>> print cube
-        air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
+                  forecast_period                x              -              -
+                  year                           x              -              -
+        >>> promote_aux_coord_to_dim_coord(cube, "year")
+        >>> print(cube)
+        air_temperature / (K)               (year: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  year                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  year                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  time                    x      -              -
+                  forecast_period                x              -              -
+                  time                           x              -              -
 
     """
+    from iris.coords import Coord, DimCoord
 
     if isinstance(name_or_coord, str):
         aux_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
@@ -1636,7 +1659,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         raise ValueError(msg)
 
     try:
-        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+        dim_coord = DimCoord.from_coord(aux_coord)
     except ValueError as valerr:
         msg = (
             "Attempt to promote an AuxCoord ({}) fails "
@@ -1686,31 +1709,48 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.DimCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
+    .. testsetup:: demote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: demote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  time                           x              -              -
+                  latitude                       -              x              -
+                  longitude                      -              -              x
              Auxiliary coordinates:
-                  year                    x      -              -
-        >>> demote_dim_coord_to_aux_coord(cube, 'time')
-        >>> print cube
-        air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
+                  forecast_period                x              -              -
+                  year                           x              -              -
+        >>> demote_dim_coord_to_aux_coord(cube, "time")
+        >>> print(cube)
+        air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
              Dimension coordinates:
-                  latitude                -      x              -
-                  longitude               -      -              x
+                  latitude                      -              x              -
+                  longitude                     -              -              x
              Auxiliary coordinates:
-                  time                    x      -              -
-                  year                    x      -              -
+                  forecast_period               x              -              -
+                  time                          x              -              -
+                  year                          x              -              -
 
     """
+    from iris.coords import Coord
 
     if isinstance(name_or_coord, str):
         dim_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type

@@ -18,26 +18,25 @@ import struct
 import warnings
 
 import cf_units
-import numpy as np
-import numpy.ma as ma
 import cftime
-
 import dask
 import dask.array as da
+import numpy as np
+import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 import iris.config
-import iris.fileformats.pp_load_rules
-from iris.fileformats.pp_save_rules import verify
+import iris.coord_systems
 
 # NOTE: this is for backwards-compatitibility *ONLY*
 # We could simply remove it for v2.0 ?
-from iris.fileformats._pp_lbproc_pairs import (  # noqa
-    LBPROC_PAIRS,
+from iris.fileformats._pp_lbproc_pairs import (  # noqa: F401
     LBPROC_MAP as lbproc_map,
 )
+from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
+import iris.fileformats.pp_load_rules
+from iris.fileformats.pp_save_rules import verify
 import iris.fileformats.rules
-import iris.coord_systems
 from iris.util import _array_slice_ifempty
 
 try:

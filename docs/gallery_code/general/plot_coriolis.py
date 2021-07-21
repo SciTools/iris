@@ -12,7 +12,6 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 import iris
 from iris.coord_systems import GeogCS
 import iris.plot as iplt

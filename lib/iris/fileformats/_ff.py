@@ -15,8 +15,8 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-from . import pp
 
+from . import pp
 
 IMDI = -32768
 

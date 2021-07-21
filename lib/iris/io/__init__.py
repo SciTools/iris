@@ -8,14 +8,12 @@ Provides an interface to manage URI scheme support in iris.
 
 """
 
+import collections
 from collections import OrderedDict
 import glob
 import os.path
 import re
-import collections
 
-import iris.fileformats
-import iris.cube
 import iris.exceptions
 
 
@@ -61,6 +59,8 @@ def run_callback(callback, cube, field, filename):
         the caller of this function should handle this case.
 
     """
+    from iris.cube import Cube
+
     if callback is None:
         return cube
 
@@ -74,7 +74,7 @@ def run_callback(callback, cube, field, filename):
     else:
         if result is None:
             result = cube
-        elif not isinstance(result, iris.cube.Cube):
+        elif not isinstance(result, Cube):
             raise TypeError(
                 "Callback function returned an " "unhandled data type."
             )
@@ -184,13 +184,15 @@ def load_files(filenames, callback, constraints=None):
         intended interface for loading is :func:`iris.load`.
 
     """
+    from iris.fileformats import FORMAT_AGENT
+
     all_file_paths = expand_filespecs(filenames)
 
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
     for fn in all_file_paths:
         with open(fn, "rb") as fh:
-            handling_format_spec = iris.fileformats.FORMAT_AGENT.get_spec(
+            handling_format_spec = FORMAT_AGENT.get_spec(
                 os.path.basename(fn), fh
             )
             handler_map[handling_format_spec].append(fn)
@@ -238,18 +240,18 @@ def _dot_save(cube, target):
     # A simple wrapper for `iris.fileformats.dot.save` which allows the
     # saver to be registered without triggering the import of
     # `iris.fileformats.dot`.
-    import iris.fileformats.dot
+    from iris.fileformats.dot import save
 
-    return iris.fileformats.dot.save(cube, target)
+    return save(cube, target)
 
 
 def _dot_save_png(cube, target, **kwargs):
     # A simple wrapper for `iris.fileformats.dot.save_png` which allows the
     # saver to be registered without triggering the import of
     # `iris.fileformats.dot`.
-    import iris.fileformats.dot
+    from iris.fileformats.dot import save_png
 
-    return iris.fileformats.dot.save_png(cube, target, **kwargs)
+    return save_png(cube, target, **kwargs)
 
 
 def _grib_save(cube, target, append=False, **kwargs):
@@ -267,13 +269,13 @@ def _grib_save(cube, target, append=False, **kwargs):
 
 
 def _check_init_savers():
-    # TODO: Raise a ticket to resolve the cyclic import error that requires
-    # us to initialise this on first use. Probably merge io and fileformats.
+    from iris.fileformats import netcdf, pp
+
     if "pp" not in _savers:
         _savers.update(
             {
-                "pp": iris.fileformats.pp.save,
-                "nc": iris.fileformats.netcdf.save,
+                "pp": pp.save,
+                "nc": netcdf.save,
                 "dot": _dot_save,
                 "dotpng": _dot_save_png,
                 "grib2": _grib_save,
@@ -400,15 +402,17 @@ def save(source, target, saver=None, **kwargs):
 
        .. code-block:: python
 
-          cube = iris.load_cube('somefile.nc')
+          cube = iris.load_cube("somefile.nc")
           # The next line causes data loss in 'somefile.nc' and the cube.
-          iris.save(cube, 'somefile.nc')
+          iris.save(cube, "somefile.nc")
 
        In general, overwriting a file which is the source for any lazily loaded
        data can result in corruption. Users should proceed with caution when
        attempting to overwrite an existing file.
 
     """
+    from iris.cube import Cube, CubeList
+
     # Determine format from filename
     if isinstance(target, str) and saver is None:
         saver = find_saver(target)
@@ -420,13 +424,13 @@ def save(source, target, saver=None, **kwargs):
         raise ValueError("Cannot save; no saver")
 
     # Single cube?
-    if isinstance(source, iris.cube.Cube):
+    if isinstance(source, Cube):
         saver(source, target, **kwargs)
 
     # CubeList or sequence of cubes?
-    elif isinstance(source, iris.cube.CubeList) or (
+    elif isinstance(source, CubeList) or (
         isinstance(source, (list, tuple))
-        and all([isinstance(i, iris.cube.Cube) for i in source])
+        and all([isinstance(i, Cube) for i in source])
     ):
         # Only allow cubelist saving for those fileformats that are capable.
         if "iris.fileformats.netcdf" not in saver.__module__:

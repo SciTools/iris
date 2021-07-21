@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
@@ -16,7 +16,7 @@ import dask.config
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, _optimum_chunksize
+from iris._lazy_data import _optimum_chunksize, as_lazy_data
 
 
 class Test_as_lazy_data(tests.IrisTest):

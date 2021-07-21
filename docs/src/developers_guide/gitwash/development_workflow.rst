@@ -11,10 +11,10 @@ git by following :ref:`configure-git`.  Now you are ready for some real work.
 Workflow Summary
 ================
 
-In what follows we'll refer to the upstream iris ``master`` branch, as
+In what follows we'll refer to the upstream iris ``main`` branch, as
 "trunk".
 
-* Don't use your ``master`` (that is on your fork) branch for anything.
+* Don't use your ``main`` (that is on your fork) branch for anything.
   Consider deleting it.
 * When you are starting a new set of changes, fetch any changes from trunk,
   and start a new *feature branch* from that.
@@ -25,7 +25,7 @@ In what follows we'll refer to the upstream iris ``master`` branch, as
 * If you can possibly avoid it, avoid merging trunk or any other branches into
   your feature branch while you are working.
 * If you do find yourself merging from trunk, consider :ref:`rebase-on-trunk`
-* Ask on the `iris mailing list`_ if you get stuck.
+* Ask on the `Iris GitHub Discussions`_ if you get stuck.
 * Ask for code review!
 
 This way of working helps to keep work well organized, with readable history.
@@ -34,10 +34,10 @@ what you've done, and why you did it.
 
 See `linux git workflow`_ for some explanation.
 
-Consider Deleting Your Master Branch
-====================================
+Consider Deleting Your Main Branch
+==================================
 
-It may sound strange, but deleting your own ``master`` branch can help reduce
+It may sound strange, but deleting your own ``main`` branch can help reduce
 confusion about which branch you are on.  See `deleting master on github`_ for
 details.
 
@@ -54,8 +54,8 @@ From time to time you should fetch the upstream (trunk) changes from github::
 
 This will pull down any commits you don't have, and set the remote branches to
 point to the right commit.  For example, 'trunk' is the branch referred to by
-(remote/branchname) ``upstream/master`` - and if there have been commits since
-you last checked, ``upstream/master`` will change after you do the fetch.
+(remote/branchname) ``upstream/main`` - and if there have been commits since
+you last checked, ``upstream/main`` will change after you do the fetch.
 
 .. _make-feature-branch:
 
@@ -78,7 +78,7 @@ what the changes in the branch are for.  For example ``add-ability-to-fly``, or
     # Update the mirror of trunk
     git fetch upstream
     # Make new feature branch starting at current trunk
-    git branch my-new-feature upstream/master
+    git branch my-new-feature upstream/main
     git checkout my-new-feature
 
 Generally, you will want to keep your feature branches on your public github_
@@ -183,7 +183,7 @@ Delete a Branch on Github
 
 ::
 
-   git checkout master
+   git checkout main
    # delete branch locally
    git branch -D my-unwanted-branch
    # delete branch on github
@@ -223,7 +223,7 @@ Your collaborators can then commit directly into that repo with the
 usual::
 
      git commit -am 'ENH - much better code'
-     git push origin master # pushes directly into your repo
+     git push origin main  # pushes directly into your repo
 
 Explore Your Repository
 -----------------------

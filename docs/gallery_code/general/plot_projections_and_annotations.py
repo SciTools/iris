@@ -21,7 +21,6 @@ import numpy as np
 import iris
 import iris.plot as iplt
 
-
 # Define a Cartopy 'ordinary' lat-lon coordinate reference system.
 crs_latlon = ccrs.PlateCarree()
 

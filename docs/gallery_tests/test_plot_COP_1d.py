@@ -10,8 +10,8 @@ import iris.tests as tests
 
 from .gallerytest_util import (
     add_gallery_to_path,
-    show_replaced_by_check_graphic,
     fail_any_deprecation_warnings,
+    show_replaced_by_check_graphic,
 )
 
 

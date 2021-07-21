@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
+
 import iris
 import iris.quickplot as qplt
-
 
 # Load the data for a single value of model level number.
 fname = iris.sample_data_path("hybrid_height.nc")

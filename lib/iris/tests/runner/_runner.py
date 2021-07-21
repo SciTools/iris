@@ -117,7 +117,7 @@ class TestRunner:
         if self.gallery_tests:
             import iris.config
 
-            default_doc_path = os.path.join(sys.path[0], "docs", "iris")
+            default_doc_path = os.path.join(sys.path[0], "docs")
             doc_path = iris.config.get_option(
                 "Resources", "doc_dir", default=default_doc_path
             )

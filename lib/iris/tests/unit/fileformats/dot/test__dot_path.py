@@ -7,13 +7,13 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os.path
 import subprocess
 from unittest import mock
 
-from iris.fileformats.dot import _dot_path, _DOT_EXECUTABLE_PATH
+from iris.fileformats.dot import _DOT_EXECUTABLE_PATH, _dot_path
 
 
 class Test(tests.IrisTest):

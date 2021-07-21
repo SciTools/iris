@@ -11,7 +11,7 @@ Test function
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 
@@ -19,15 +19,14 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris.coord_systems import GeogCS, LambertConformal
 import iris.coords
 from iris.coords import AuxCoord, DimCoord
-from iris.coord_systems import GeogCS, LambertConformal
-from iris.fileformats.pp import EARTH_RADIUS
 import iris.cube
 from iris.experimental.regrid import (
     regrid_weighted_curvilinear_to_rectilinear as regrid,
 )
-
+from iris.fileformats.pp import EARTH_RADIUS
 
 PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 

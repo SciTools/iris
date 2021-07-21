@@ -11,7 +11,7 @@ Integratation tests for the
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import itertools
 
@@ -28,7 +28,7 @@ class Test_sample(tests.IrisTest):
         # Snapshot result, printed with ...
         #     >>> np.set_printoptions(linewidth=180,
         #            formatter={'float':lambda x:'{:-09.3f}'.format(x)})
-        #     >>> print repr(coord.points)
+        #     >>> print(repr(coord.points))
         self.basic_derived_result = np.array(
             [
                 [

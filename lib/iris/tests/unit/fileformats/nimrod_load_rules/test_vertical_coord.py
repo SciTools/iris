@@ -11,16 +11,16 @@ function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
+from iris.fileformats.nimrod import NimrodField
 from iris.fileformats.nimrod_load_rules import (
-    vertical_coord,
     NIMROD_DEFAULT,
     TranslationWarning,
+    vertical_coord,
 )
-from iris.fileformats.nimrod import NimrodField
 
 
 class Test(tests.IrisTest):
