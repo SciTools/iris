@@ -42,6 +42,10 @@ This document explains the changes made to Iris for this release
    :func:`iris.plot.plot` no longer defaults to placing a "Y" coordinate (e.g.
    latitude) on the y-axis of the plot. (:issue:`4493`, :pull:`4601`)
 
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.aggregated_by` with `mdtol` for 1D
+   cubes where an aggregated section is entirely masked, reported at
+   :issue:`3190`.  (:pull:`4246`)
+
 
 💣 Incompatible Changes
 =======================
