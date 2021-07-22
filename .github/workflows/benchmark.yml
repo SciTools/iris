@@ -22,11 +22,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # This is too complicated.  Just do the slow thing for now
-      # and checkout with depth=0.
+      # fetch the target branch from origin too (just the head)
+      # and check it out into a local branch
       - run: |
-          # fetch the target branch from origin too (just the head)
-          # and check it out into a local branch
           git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
           git checkout -b ${{ github.base_ref }}
           git fetch --no-tags --depth=1 origin ${{ github.head_ref }}
@@ -45,12 +43,12 @@ jobs:
           asv run ${{ github.base_ref }}  -s 1 -b import_iris
           # run asv on the head of this PR
           asv run ${{ github.head_ref }}  -s 1 -b import_iris
-          asv publish
+          asv compare ${{ github.base_ref }} ${{ github.head_ref }} > .asv/compare.log
+          asv compare --only-changed ${{ github.base_ref }} ${{ github.head_ref }}
 
       - name: Archive asv results
         uses: actions/upload-artifact@v2
         with:
           name: asv-report
           path: |
-            benchmarks/.asv/html
             benchmarks/.asv/results
