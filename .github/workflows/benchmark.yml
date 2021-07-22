@@ -25,6 +25,7 @@ jobs:
       - name: Setup asv
         run: |
           pip install asv
+          cd benchmarks
           asv machine --yes --machine gh-actions
 
       - name: Run benchmarks on source and target
