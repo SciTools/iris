@@ -43,11 +43,13 @@ jobs:
         run: |
           cd benchmarks
           # run asv benchmarks on the target
-          asv run ${{ github.base_ref }}  -s 1 -b import_iris
+          export BASE=origin/${{ github.base_ref }}
+          export HEAD=origin/${{ github.head_ref }}
+          asv run $BASE -s 1 -b import_iris
           # run asv on the head of this PR
-          asv run ${{ github.head_ref }}  -s 1 -b import_iris
-          asv compare ${{ github.base_ref }} ${{ github.head_ref }} > .asv/compare.log
-          asv compare --only-changed ${{ github.base_ref }} ${{ github.head_ref }}
+          asv run $HEAD -s 1 -b import_iris
+          asv compare $BASE $HEAD > .asv/compare.log
+          asv compare --only-changed $BASE $HEAD
 
       - name: Archive asv results
         uses: actions/upload-artifact@v2
@@ -55,4 +57,4 @@ jobs:
           name: asv-report
           path: |
             benchmarks/.asv/results
-            benchmarks/.asv/
+            benchmarks/.asv/compare.log
