@@ -5,18 +5,18 @@
 # licensing details.
 """Unit tests for the :class:`iris.fileformats.cf.CFGroup` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from unittest.mock import MagicMock
 
 from iris.fileformats.cf import (
-    CFGroup,
     CFAuxiliaryCoordinateVariable,
     CFCoordinateVariable,
     CFDataVariable,
+    CFGroup,
 )
 
-from unittest.mock import MagicMock
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 
 class Tests(tests.IrisTest):

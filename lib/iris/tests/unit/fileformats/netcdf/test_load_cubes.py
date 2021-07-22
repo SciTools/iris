@@ -11,20 +11,21 @@ todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
-from cf_units import as_unit
-import numpy as np
 from pathlib import Path
 from shutil import rmtree
 from subprocess import check_call
 import tempfile
 
+from cf_units import as_unit
+import numpy as np
+
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, MeshCoord
 from iris.fileformats.netcdf import load_cubes, logger
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 
 def setUpModule():

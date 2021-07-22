@@ -41,8 +41,8 @@ from iris.exceptions import (
 import iris.tests.stock as stock
 from iris.tests.stock.mesh import (
     sample_mesh,
-    sample_meshcoord,
     sample_mesh_cube,
+    sample_meshcoord,
 )
 
 

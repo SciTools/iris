@@ -27,7 +27,6 @@ import iris
 from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
-from iris.coords import AncillaryVariable
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 import iris.std_names

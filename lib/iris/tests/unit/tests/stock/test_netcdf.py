@@ -5,16 +5,16 @@
 # licensing details.
 """Unit tests for the :mod:`iris.tests.stock.netcdf` module."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 import shutil
 import tempfile
 
 from iris import load_cube
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, Mesh, MeshCoord
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 from iris.tests.stock import netcdf
-from iris.experimental.ugrid import Mesh, MeshCoord, PARSE_UGRID_ON_LOAD
 
 
 class XIOSFileMixin(tests.IrisTest):

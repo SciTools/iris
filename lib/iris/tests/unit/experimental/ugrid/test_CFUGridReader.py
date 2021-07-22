@@ -10,24 +10,23 @@ todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from unittest import mock
 
 import numpy as np
 
 from iris.experimental.ugrid import (
-    CFUGridGroup,
-    CFUGridReader,
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
+    CFUGridGroup,
     CFUGridMeshVariable,
+    CFUGridReader,
 )
 from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
-
-
-from unittest import mock
 
 
 def netcdf_ugrid_variable(
