@@ -21,6 +21,12 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - run: |
+          # fetch the target branch from origin too (just the head)
+          # and check it out into a local branch
+          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          git checkout -b ${{ github.base_ref }}
+          git checkout ${{ github.head_ref }}
 
       - name: Setup asv
         run: |
@@ -32,7 +38,6 @@ jobs:
         run: |
           cd benchmarks
           # run asv benchmarks on the target
-          git fetch origin ${{ github.base_ref }}
           asv run ${{ github.base_ref }}  -s 1 -b import_iris
           # run asv on the head of this PR
           asv run ${{ github.head_ref }}  -s 1 -b import_iris
