@@ -1,0 +1,17 @@
+// See https://asv.readthedocs.io/en/stable/asv.conf.json.html for
+// details on what can be included in this file.
+{
+    "version": 1,
+    "project": "scitools-iris",
+    "project_url": "https://github.com/SciTools/iris",
+    "repo": "..",
+    "environment_type": "conda-lock",
+    "show_commit_url": "http://github.com/scitools/iris/commit/",
+
+    "benchmark_dir": "./benchmarks",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+    "plugins": [".conda_lock_plugin"],
+    "conda_lockfile": "../requirements/ci/nox.lock/py38-linux-64.lock"
+}
