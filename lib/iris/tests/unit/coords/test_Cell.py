@@ -112,6 +112,7 @@ class Test___common_cmp__(tests.IrisTest):
         self.assertGreaterEqual(np.array([1.3]), cell)
         self.assertLessEqual(np.array([1.3]), cell)
 
+
 class Test___eq__(tests.IrisTest):
     def test_datetimelike(self):
         # Check that cell equality works with objects with a "timetuple".
