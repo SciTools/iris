@@ -32,7 +32,7 @@ jobs:
         run: |
           cd benchmarks
           # run asv benchmarks on the target
-          git fetch ${{ github.base_ref }}
+          git fetch origin ${{ github.base_ref }}
           asv run ${{ github.base_ref }}  -s 1 -b import_iris
           # run asv on the head of this PR
           asv run ${{ github.head_ref }}  -s 1 -b import_iris
