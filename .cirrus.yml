@@ -108,7 +108,7 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 #
 # Linting
 #
-lint_task:
+task:
   only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
@@ -133,12 +133,10 @@ lint_task:
 #
 # Testing Minimal (Linux)
 #
-test_minimal_task:
+task:
   only_if: ${SKIP_TEST_MINIMAL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
-    env:
-      PY_VER: 3.6
     env:
       PY_VER: 3.7
     env:
@@ -155,12 +153,10 @@ test_minimal_task:
 #
 # Testing Full (Linux)
 #
-test_full_task:
+task:
   only_if: ${SKIP_TEST_FULL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
   << : *CREDITS_TEMPLATE
   matrix:
-    env:
-      PY_VER: 3.6
     env:
       PY_VER: 3.7
     env:
@@ -183,7 +179,7 @@ test_full_task:
 #
 # Testing Documentation Gallery (Linux)
 #
-gallery_task:
+task:
   only_if: ${SKIP_GALLERY_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
@@ -202,7 +198,7 @@ gallery_task:
 #
 # Testing Documentation (Linux)
 #
-doctest_task:
+task:
   only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
@@ -226,7 +222,7 @@ doctest_task:
 #
 # Testing Documentation Link Check (Linux)
 #
-linkcheck_task:
+task:
   only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:

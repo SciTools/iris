@@ -240,7 +240,7 @@ class TestTimeMean(tests.IrisTest):
 
     def test_t2_no_time_mean(self):
         cube = _get_single_time_cube(set_time_mean=False)
-        expected = cftime.datetime(0, 0, 0)
+        expected = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
         with mock.patch(
             "iris.fileformats.pp.PPField3", autospec=True

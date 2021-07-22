@@ -1476,8 +1476,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            calendar = (
+                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
+            )
             self._t1 = cftime.datetime(
-                self.lbyr, self.lbmon, self.lbdat, self.lbhr, self.lbmin
+                self.lbyr,
+                self.lbmon,
+                self.lbdat,
+                self.lbhr,
+                self.lbmin,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1500,8 +1510,18 @@ class PPField2(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            calendar = (
+                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
+            )
             self._t2 = cftime.datetime(
-                self.lbyrd, self.lbmond, self.lbdatd, self.lbhrd, self.lbmind
+                self.lbyrd,
+                self.lbmond,
+                self.lbdatd,
+                self.lbhrd,
+                self.lbmind,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 
@@ -1537,6 +1557,10 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t1"):
+            has_year_zero = self.lbyr == 0
+            calendar = (
+                None if self.lbmon == 0 or self.lbdat == 0 else self.calendar
+            )
             self._t1 = cftime.datetime(
                 self.lbyr,
                 self.lbmon,
@@ -1544,6 +1568,8 @@ class PPField3(PPField):
                 self.lbhr,
                 self.lbmin,
                 self.lbsec,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t1
 
@@ -1566,6 +1592,10 @@ class PPField3(PPField):
 
         """
         if not hasattr(self, "_t2"):
+            has_year_zero = self.lbyrd == 0
+            calendar = (
+                None if self.lbmond == 0 or self.lbdatd == 0 else self.calendar
+            )
             self._t2 = cftime.datetime(
                 self.lbyrd,
                 self.lbmond,
@@ -1573,6 +1603,8 @@ class PPField3(PPField):
                 self.lbhrd,
                 self.lbmind,
                 self.lbsecd,
+                calendar=calendar,
+                has_year_zero=has_year_zero,
             )
         return self._t2
 
