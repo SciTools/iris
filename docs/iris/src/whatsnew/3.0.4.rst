@@ -31,6 +31,10 @@ This document explains the changes made to Iris for this release
       to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
       (:pull:`4222`)
 
+   #. `@rcomer`_ modified test modules so they run consistently under ``pytest`` and
+      ``nose``, and also fixed some minor issues with :class:`~iris.time.PartialDateTime`.
+      (:pull:`4249`)
+
    Note that, we are forced to drop support for ``Python 3.6`` in this patch due to
    the third-party package dependencies required by (:pull:`4222`).
 
