@@ -42,14 +42,14 @@ jobs:
       - name: Run benchmarks on source and target
         run: |
           cd benchmarks
-          # run asv benchmarks on the target
           export BASE=origin/${{ github.base_ref }}
           export HEAD=origin/${{ github.head_ref }}
-          asv run $BASE -s 1
+          # run asv benchmarks on the target
+          # -s 1 ensures only one "step" (the tip of the branch) is run
+          asv run $BASE -s 1 -b cube.Cube
           # run asv on the head of this PR
-          asv run $HEAD -s 1
-          asv compare $BASE $HEAD > .asv/compare.log
-          asv compare --only-changed $BASE $HEAD
+          asv run $HEAD -s 1 -b cube.Cube
+          asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
         uses: actions/upload-artifact@v2
@@ -57,16 +57,14 @@ jobs:
           name: asv-report
           path: |
             benchmarks/.asv/results
-            benchmarks/.asv/compare.log
+            benchmarks/.asv/compare.txt
 
-      - name: Fail if changes
+      - name: Fail if performance degraded
         run: |
-          export BASE=origin/${{ github.base_ref }}
-          export HEAD=origin/${{ github.head_ref }}
-          asv compare -s $BASE $HEAD > compare.txt
-          cat compare.txt
-          if grep -q "Benchmarks that have got worse" compare.txt; then
-            echo "Performance degradation.  See action artifact for full results."
+          cd benchmarks
+          cat .asv/compare.txt
+          if grep -q "Benchmarks that have got worse" .asv/compare.txt; then
+            echo "::error Performance degradation.  See action artifact for full results."
             exit 1
           fi
 
