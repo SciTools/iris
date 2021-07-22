@@ -22,16 +22,17 @@ This document explains the changes made to Iris for this release
       Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
       whereas previously printing these cases caused an Exception.
       Secondly, cube units are now always printed, whereas previously they were missed out any time that the
-      "dimensions map" was widened to accomodate long coordinate names. (:pull:`4233`)
+      "dimensions map" was widened to accomodate long coordinate names.
+      (:pull:`4233`)(:pull:`4238`)
 
-   �~_~R� **Internal**
+   💼 **Internal**
 
    #. `@bjlittle`_ Unpinned the `cftime`_ package dependency within Iris in order
       to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
       (:pull:`4222`)
 
    Note that, we are forced to drop support for ``Python 3.6`` in this patch due to
-   the Iris third-party package dependencies required by (:pull:`4222`).
+   the third-party package dependencies required by (:pull:`4222`).
 
 
 .. dropdown:: :opticon:`alert` v3.0.3 Patches
