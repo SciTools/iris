@@ -105,7 +105,7 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 #
 # Linting
 #
-precommit_task:
+task:
   only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
@@ -129,7 +129,7 @@ precommit_task:
 #
 # Testing (Linux)
 #
-test_task:
+task:
   only_if: ${SKIP_TEST_TASK} == ""
   << : *CREDITS_TEMPLATE
   matrix:
@@ -155,7 +155,7 @@ test_task:
 #
 # Documentation Testing and Gallery (Linux)
 #
-doctest_task:
+task:
   only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
@@ -179,7 +179,7 @@ doctest_task:
 #
 # Documentation Link Check (Linux)
 #
-linkcheck_task:
+task:
   only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
