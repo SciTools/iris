@@ -102,6 +102,15 @@ class Test___common_cmp__(tests.IrisTest):
         self.assertGreaterEqual(np.array(1.3), cell)
         self.assertLessEqual(np.array(1.3), cell)
 
+    def test_len_1_numpy_array(self):
+        # Check that cell comparison works with numpy arrays of len=1
+
+        cell = Cell(1.3)
+
+        self.assertGreater(np.array([1.5]), cell)
+        self.assertLess(np.array([1.1]), cell)
+        self.assertGreaterEqual(np.array([1.3]), cell)
+        self.assertLessEqual(np.array([1.3]), cell)
 
 class Test___eq__(tests.IrisTest):
     def test_datetimelike(self):
