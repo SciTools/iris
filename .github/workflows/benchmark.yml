@@ -24,7 +24,8 @@ jobs:
 
       # fetch the target branch from origin too (just the head)
       # and check it out into a local branch
-      - run: |
+      - name: Checkout PR and target branch
+        run: |
           git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
           git checkout -b ${{ github.base_ref }}
           git fetch --no-tags --depth=1 origin ${{ github.head_ref }}
