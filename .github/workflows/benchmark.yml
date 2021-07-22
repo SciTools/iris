@@ -45,9 +45,9 @@ jobs:
           # run asv benchmarks on the target
           export BASE=origin/${{ github.base_ref }}
           export HEAD=origin/${{ github.head_ref }}
-          asv run $BASE -s 1 -b import_iris
+          asv run $BASE -s 1
           # run asv on the head of this PR
-          asv run $HEAD -s 1 -b import_iris
+          asv run $HEAD -s 1
           asv compare $BASE $HEAD > .asv/compare.log
           asv compare --only-changed $BASE $HEAD
 
@@ -58,3 +58,15 @@ jobs:
           path: |
             benchmarks/.asv/results
             benchmarks/.asv/compare.log
+
+      - name: Fail if changes
+        run: |
+          export BASE=origin/${{ github.base_ref }}
+          export HEAD=origin/${{ github.head_ref }}
+          asv compare -s $BASE $HEAD > compare.txt
+          cat compare.txt
+          if grep -q "Benchmarks that have got worse" compare.txt; then
+            echo "Performance degradation.  See action artifact for full results."
+            exit 1
+          fi
+
