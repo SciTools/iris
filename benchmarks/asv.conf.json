@@ -1,5 +1,3 @@
-// See https://asv.readthedocs.io/en/stable/asv.conf.json.html for
-// details on what can be included in this file.
 {
     "version": 1,
     "project": "scitools-iris",
@@ -13,5 +11,7 @@
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
     "plugins": [".conda_lock_plugin"],
-    "conda_lockfile": "../requirements/ci/nox.lock/py38-linux-64.lock"
+    // this is not an asv standard config entry, just for our plugin
+    // path to lockfile, relative to project base
+    "conda_lockfile": "requirements/ci/nox.lock/py38-linux-64.lock"
 }

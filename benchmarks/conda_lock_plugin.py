@@ -19,11 +19,18 @@ class CondaLock(Conda):
     """
     tool_name = "conda-lock"
 
+    def __init__(self, conf, python, requirements):
+        self._lockfile_path = conf.conda_lockfile
+        super().__init__(conf, python, requirements)
+
     def _uninstall_project(self):
         if self._get_installed_commit_hash():
             # we can only run the uninstall command if an environment has already
             # been made before, otherwise there is no python to use to uninstall
             return super()._uninstall_project()
+            # TODO: we probably want to conda uninstall all the packages too
+            #       something like:
+            #       conda list | sed /^#/d | cut -f 1 -d " " | xargs conda uninstall
 
     def _setup(self):
         # create the shell of a conda environment, that includes no packages
@@ -32,7 +39,7 @@ class CondaLock(Conda):
 
     def _build_project(self, repo, commit_hash, build_dir):
         # at "build" time, we build the environment from the provided lockfile
-        self.run_executable(_find_conda(), ["install", "-y", "-p", self._path, "--file", f"{build_dir}/requirements/ci/nox.lock/py38-linux-64.lock"])
+        self.run_executable(_find_conda(), ["install", "-y", "-p", self._path, "--file", f"{build_dir}/{self._lockfile_path}"])
         # this is set to warning as the asv.commands.run._do_build function
         # explicitly raises the log level to WARN, and I want to see the environment being updated
         # in the stdout log.
