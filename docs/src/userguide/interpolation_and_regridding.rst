@@ -74,12 +74,12 @@ Let's take the air temperature cube we've seen previously:
             forecast_reference_time     1998-03-01 03:00:00
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-        Attributes:
-            STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
         Cell methods:
             mean within years: time
             mean over years: time
+        Attributes:
+            STASH                       m01s16i203
+            source                      Data from Met Office Unified Model
 
 We can interpolate specific values from the coordinates of the cube:
 
@@ -93,12 +93,12 @@ We can interpolate specific values from the coordinates of the cube:
             longitude                   0 degrees
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-        Attributes:
-            STASH                       m01s16i203
-            source                      Data from Met Office Unified Model
         Cell methods:
             mean within years: time
             mean over years: time
+        Attributes:
+            STASH                       m01s16i203
+            source                      Data from Met Office Unified Model
 
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.

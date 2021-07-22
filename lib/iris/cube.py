@@ -749,12 +749,12 @@ class Cube(CFVariableMixin):
                 pressure                    1000.0 hPa
                 time                        \
 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-            Attributes:
-                STASH                       m01s16i203
-                source                      Data from Met Office Unified Model
             Cell methods:
                 mean within years: time
                 mean over years: time
+            Attributes:
+                STASH                       m01s16i203
+                source                      Data from Met Office Unified Model
 
 
     See the :doc:`user guide</userguide/index>` for more information.
@@ -3473,12 +3473,12 @@ class Cube(CFVariableMixin):
                     forecast_period             0 hours
                     longitude                   \
 180.0 degrees, bound=(0.0, 360.0) degrees
-                Attributes:
-                    Conventions                 CF-1.5
-                    STASH                       m01s00i024
                 Cell methods:
                     mean: month, year
                     mean: longitude
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
 
 
         .. note::
@@ -3708,12 +3708,12 @@ x            -              -
 x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
-                Attributes:
-                    Conventions                 CF-1.5
-                    STASH                       m01s00i024
                 Cell methods:
                     mean: month, year
                     mean: year
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
 
         """
         groupby_coords = []
@@ -3912,13 +3912,13 @@ x            -               -
                 Scalar coordinates:
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
+                Cell methods:
+                    mean: time (1 hour)
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
 Data from Met Office Unified Model
                     um_version                  7.6
-                Cell methods:
-                    mean: time (1 hour)
 
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
@@ -3937,14 +3937,14 @@ x            -               -
                 Scalar coordinates:
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
+                Cell methods:
+                    mean: time (1 hour)
+                    mean: time
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
 Data from Met Office Unified Model
                     um_version                  7.6
-                Cell methods:
-                    mean: time (1 hour)
-                    mean: time
 
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.
