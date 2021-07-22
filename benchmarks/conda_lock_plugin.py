@@ -27,10 +27,10 @@ class CondaLock(Conda):
         if self._get_installed_commit_hash():
             # we can only run the uninstall command if an environment has already
             # been made before, otherwise there is no python to use to uninstall
-            return super()._uninstall_project()
+            super()._uninstall_project()
             # TODO: we probably want to conda uninstall all the packages too
             #       something like:
-            #       conda list | sed /^#/d | cut -f 1 -d " " | xargs conda uninstall
+            #       conda list --no-pip | sed /^#/d | cut -f 1 -d " " | xargs conda uninstall
 
     def _setup(self):
         # create the shell of a conda environment, that includes no packages
@@ -45,9 +45,4 @@ class CondaLock(Conda):
         # in the stdout log.
         log.warning(f"Environment {self.name} updated to spec at {commit_hash[:8]}")
         log.debug(self.run_executable(_find_conda(), ["list", "-p", self._path]))
-        # self._build_command = ""
-        # return super()._build_project(repo, commit_hash, build_dir)
-
-    def _install_project(self, repo, commit_hash, build_dir):
-        self._install_command = "pip install --no-deps --editable {build_dir}"
-        return super()._install_project(repo, commit_hash, build_dir)
+        return super()._build_project(repo, commit_hash, build_dir)
