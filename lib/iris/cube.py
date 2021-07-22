@@ -14,7 +14,6 @@ from collections.abc import (
     Container,
     Iterable,
     Iterator,
-    Mapping,
     MutableMapping,
 )
 import copy
@@ -39,11 +38,10 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.common import (
     CFVariableMixin,
-    CoordMetadata,
     CubeMetadata,
-    DimCoordMetadata,
     metadata_manager_factory,
 )
+from iris.common.metadata import metadata_filter
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -859,7 +857,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * long_name
             An unconstrained description of the cube.
         * var_name
-            The netCDF variable name for the cube.
+            The NetCDF variable name for the cube.
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
         * attributes
@@ -916,7 +914,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "long name" for the Cube's phenomenon.
         self.long_name = long_name
 
-        #: The netCDF variable name for the Cube.
+        #: The NetCDF variable name for the Cube.
         self.var_name = var_name
 
         self.cell_methods = cell_methods
@@ -1143,6 +1141,44 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
+        if hasattr(coord, "mesh"):
+            mesh = self.mesh
+            if mesh:
+                msg = (
+                    "{item} of Meshcoord {coord!r} is "
+                    "{thisval!r}, which does not match existing "
+                    "cube {item} of {ownval!r}."
+                )
+                if coord.mesh != mesh:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh",
+                            coord=coord,
+                            thisval=coord.mesh,
+                            ownval=mesh,
+                        )
+                    )
+                location = self.location
+                if coord.location != location:
+                    raise ValueError(
+                        msg.format(
+                            item="location",
+                            coord=coord,
+                            thisval=coord.location,
+                            ownval=location,
+                        )
+                    )
+                mesh_dims = (self.mesh_dim(),)
+                if data_dims != mesh_dims:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh dimension",
+                            coord=coord,
+                            thisval=data_dims,
+                            ownval=mesh_dims,
+                        )
+                    )
+
         self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
@@ -1525,7 +1561,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
         * var_name
-            The netCDF variable name of the desired coordinate factory.
+            The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
         .. note::
@@ -1593,69 +1629,82 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
-        Return a list of coordinates in this cube fitting the given criteria.
+        Return a list of coordinates from the :class:`Cube` that match the
+        provided criteria.
+
+        .. seealso::
+
+            :meth:`Cube.coord` for matching exactly one coordinate.
 
         Kwargs:
 
-        * name_or_coord
-            Either
+        * name_or_coord:
+            Either,
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-            (b) a coordinate instance with metadata equal to that of
-            the desired coordinates. Accepts either a
-            :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-            :class:`iris.aux_factory.AuxCoordFactory`,
-            :class:`iris.common.CoordMetadata` or
-            :class:`iris.common.DimCoordMetadata`.
-        * standard_name
-            The CF standard name of the desired coordinate. If None, does not
-            check for standard name.
-        * long_name
-            An unconstrained description of the coordinate. If None, does not
-            check for long_name.
-        * var_name
-            The netCDF variable name of the desired coordinate. If None, does
-            not check for var_name.
-        * attributes
-            A dictionary of attributes desired on the coordinates. If None,
-            does not check for attributes.
-        * axis
-            The desired coordinate axis, see
-            :func:`iris.util.guess_coord_axis`. If None, does not check for
-            axis. Accepts the values 'X', 'Y', 'Z' and 'T' (case-insensitive).
-        * contains_dimension
-            The desired coordinate contains the data dimension. If None, does
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        * dimensions
-            The exact data dimensions of the desired coordinate. Coordinates
-            with no data dimension can be found with an empty tuple or list
-            (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
-        * coord_system
-            Whether the desired coordinates have coordinate systems equal to
-            the given coordinate system. If None, no check is done.
-        * dim_coords
-            Set to True to only return coordinates that are the cube's
-            dimension coordinates. Set to False to only return coordinates
-            that are the cube's auxiliary and derived coordinates. If None,
-            returns all coordinates.
 
-        See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
+        * dimensions:
+            The exact data dimensions of the desired coordinate. Coordinates
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
+
+        Returns:
+            A list containing zero or more coordinates matching the provided
+            criteria.
 
         """
-        name = None
-        coord = None
-
-        if isinstance(name_or_coord, str):
-            name = name_or_coord
-        else:
-            coord = name_or_coord
-
         coords_and_factories = []
 
         if dim_coords in [True, None]:
@@ -1665,82 +1714,41 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
 
-        if name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.name() == name
-            ]
+        if mesh_coords is not None:
+            # Select on mesh or non-mesh.
+            mesh_coords = bool(mesh_coords)
+            # Use duck typing to avoid importing from iris.experimental.ugrid,
+            # which could be a circular import.
+            if mesh_coords:
+                # *only* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if hasattr(item, "mesh")
+                ]
+            else:
+                # *not* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if not hasattr(item, "mesh")
+                ]
 
-        if standard_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.standard_name == standard_name
-            ]
-
-        if long_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.long_name == long_name
-            ]
-
-        if var_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.var_name == var_name
-            ]
-
-        if axis is not None:
-            axis = axis.upper()
-            guess_axis = iris.util.guess_coord_axis
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if guess_axis(coord_) == axis
-            ]
-
-        if attributes is not None:
-            if not isinstance(attributes, Mapping):
-                msg = (
-                    "The attributes keyword was expecting a dictionary "
-                    "type, but got a %s instead." % type(attributes)
-                )
-                raise ValueError(msg)
-
-            def attr_filter(coord_):
-                return all(
-                    k in coord_.attributes and coord_.attributes[k] == v
-                    for k, v in attributes.items()
-                )
-
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if attr_filter(coord_)
-            ]
+        coords_and_factories = metadata_filter(
+            coords_and_factories,
+            item=name_or_coord,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+        )
 
         if coord_system is not None:
             coords_and_factories = [
                 coord_
                 for coord_ in coords_and_factories
                 if coord_.coord_system == coord_system
-            ]
-
-        if coord is not None:
-            if hasattr(coord, "__class__") and coord.__class__ in (
-                CoordMetadata,
-                DimCoordMetadata,
-            ):
-                target_metadata = coord
-            else:
-                target_metadata = coord.metadata
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.metadata == target_metadata
             ]
 
         if contains_dimension is not None:
@@ -1793,20 +1801,84 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
-        Return a single coord given the same arguments as :meth:`Cube.coords`.
+        Return a single coordinate from the :class:`Cube` that matches the
+        provided criteria.
 
         .. note::
 
-            If the arguments given do not result in precisely 1 coordinate
-            being matched, an :class:`iris.exceptions.CoordinateNotFoundError`
-            is raised.
+            If the arguments given do not result in **precisely one** coordinate,
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
 
         .. seealso::
 
-            :meth:`Cube.coords()<iris.cube.Cube.coords>` for full keyword
-            documentation.
+            :meth:`Cube.coords` for matching zero or more coordinates.
+
+        Kwargs:
+
+        * name_or_coord:
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
+            not check for the dimension.
+
+        * dimensions:
+            The exact data dimensions of the desired coordinate. Coordinates
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
+
+        Returns:
+            The coordinate that matches the provided criteria.
 
         """
         coords = self.coords(
@@ -1823,23 +1895,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         )
 
         if len(coords) > 1:
-            msg = (
-                "Expected to find exactly 1 coordinate, but found %s. "
-                "They were: %s."
-                % (len(coords), ", ".join(coord.name() for coord in coords))
+            emsg = (
+                f"Expected to find exactly 1 coordinate, but found {len(coords)}. "
+                f"They were: {', '.join(coord.name() for coord in coords)}."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
         elif len(coords) == 0:
             _name = name_or_coord
             if name_or_coord is not None:
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
             bad_name = _name or standard_name or long_name or ""
-            msg = (
-                "Expected to find exactly 1 %s coordinate, but found "
-                "none." % bad_name
+            emsg = (
+                f"Expected to find exactly 1 {bad_name!r} coordinate, "
+                "but found none."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
 
         return coords[0]
 
@@ -1892,6 +1963,76 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         else:
             result = coord_systems.get(spec_name)
 
+        return result
+
+    def _any_meshcoord(self):
+        """Return a MeshCoord if there are any, else None."""
+        mesh_coords = self.coords(mesh_coords=True)
+        if mesh_coords:
+            result = mesh_coords[0]
+        else:
+            result = None
+        return result
+
+    @property
+    def mesh(self):
+        """
+        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        associated with the cube, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
+            The mesh of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.mesh
+        return result
+
+    @property
+    def location(self):
+        """
+        Return the mesh "location" of the cube data, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * location (str or None):
+            The mesh location of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s
+            (i.e. one of 'face' / 'edge' / 'node'),
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.location
+        return result
+
+    def mesh_dim(self):
+        """
+        Return the cube dimension of the mesh, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh_dim (int, or None):
+            the cube dimension which the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            (result,) = self.coord_dims(result)  # result is a 1-tuple
         return result
 
     def cell_measures(self, name_or_cell_measure=None):
@@ -2140,7 +2281,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. note::
 
-            Cubes obtained from netCDF, PP, and FieldsFile files will only
+            Cubes obtained from NetCDF, PP, and FieldsFile files will only
             populate this attribute on its first use.
 
             To obtain the shape of the data without causing it to be loaded,
