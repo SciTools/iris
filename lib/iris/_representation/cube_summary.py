@@ -311,7 +311,7 @@ class CubeSummary:
             "Scalar cell measures:",
             scalar_cell_measures,
         )
-        add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
         add_scalar_section(
             CellMethodSection, "Cell methods:", cube.cell_methods
         )
+        add_scalar_section(AttributeSection, "Attributes:", cube.attributes)

@@ -72,8 +72,8 @@ class Test_CubeSummary(tests.IrisTest):
         expected_scalar_sections = [
             "Scalar coordinates:",
             "Scalar cell measures:",
-            "Attributes:",
             "Cell methods:",
+            "Attributes:",
         ]
 
         self.assertEqual(
