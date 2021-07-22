@@ -159,7 +159,7 @@ class PartialDateTime:
             except AttributeError:
                 result = other.__eq__(self)
                 if result is NotImplemented:
-                    # Equaliy is undefined between these objects.  We don't
+                    # Equality is undefined between these objects.  We don't
                     # want Python to fall back to the default `object`
                     # behaviour (which compares using object IDs), so we raise
                     # an exception here instead.
