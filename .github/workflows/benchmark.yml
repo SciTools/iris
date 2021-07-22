@@ -21,15 +21,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+          depth: 0
 
-      # fetch the target branch from origin too (just the head)
-      # and check it out into a local branch
-      - name: Checkout PR and target branch
-        run: |
-          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
-          git checkout -b ${{ github.base_ref }}
-          git fetch --no-tags --depth=1 origin ${{ github.head_ref }}
-          git checkout -b ${{ github.head_ref }}
+      # This is too complicated to get working for now.
+      #
+      # # fetch the target branch from origin too (just the head)
+      # # and check it out into a local branch
+      # - name: Checkout PR and target branch
+      #   run: |
+      #     git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+      #     git fetch --no-tags --depth=1 origin ${{ github.head_ref }}
 
       - name: Setup asv
         run: |
@@ -53,3 +55,4 @@ jobs:
           name: asv-report
           path: |
             benchmarks/.asv/results
+            benchmarks/.asv/
