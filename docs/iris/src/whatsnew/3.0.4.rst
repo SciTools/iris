@@ -18,10 +18,11 @@ This document explains the changes made to Iris for this release
 
    🐛 **Bugs Fixed**
 
-   #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
-      :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
-      is no longer needed since (:pull:`4135`) was added. (:pull:`4141`)
-
+   #. `@pp-mo`_ fixed 2 bugs in cube printout:
+      Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
+      whereas previously printing these cases caused an Exception.
+      Secondly, cube units are now always printed, whereas previously they were missed out any time that the
+      "dimensions map" was widened to accomodate long coordinate names. (:pull:`4233`)
 
 .. dropdown:: :opticon:`alert` v3.0.3 Patches
    :container: + shadow
@@ -81,6 +82,10 @@ This document explains the changes made to Iris for this release
    #. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
       to avoid the dask 'test access'. This makes loading of netcdf files with a
       large number of variables significantly faster. (:pull:`4135`)
+
+   #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
+      :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
+      is no longer needed since (:pull:`4135`) was added. (:pull:`4141`)
 
    Note that, the above contributions labelled with ``pre-v3.1.0`` are part of the forthcoming
    Iris v3.1.0 release, but require to be included in this patch release.
