@@ -10,8 +10,8 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     env:
-      BASE: ${{ github.event.pull_request.base.sha }}
-      HEAD: ${{ github.event.pull_request.head.sha }}
+      BASE: ${{ github.event.pull_request.base.ref }}
+      HEAD: $GITHUB_SHA
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -22,7 +22,6 @@ jobs:
       - name: Checkout PR and target branch
         run: |
           git fetch --no-tags --depth=1 origin $BASE
-          git fetch --no-tags --depth=1 origin $HEAD
 
       - name: Setup asv
         run: |
