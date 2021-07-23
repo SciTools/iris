@@ -21,17 +21,14 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
-      # This is too complicated to get working for now.
-      #
-      # # fetch the target branch from origin too (just the head)
-      # # and check it out into a local branch
-      # - name: Checkout PR and target branch
-      #   run: |
-      #     git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
-      #     git fetch --no-tags --depth=1 origin ${{ github.head_ref }}
+      - run: git status
+
+      # fetch the target branch from origin too (just the head)
+      # and check it out into a local branch
+      - name: Checkout PR and target branch
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
 
       - name: Setup asv
         run: |
@@ -43,7 +40,7 @@ jobs:
         run: |
           cd benchmarks
           export BASE=origin/${{ github.base_ref }}
-          export HEAD=origin/${{ github.head_ref }}
+          export HEAD=${{ github.head_ref }}
           asv continuous $BASE $HEAD
 
       - name: Write a compare file to the output folder
@@ -51,7 +48,7 @@ jobs:
         run: |
           cd benchmarks
           export BASE=origin/${{ github.base_ref }}
-          export HEAD=origin/${{ github.head_ref }}
+          export HEAD=${{ github.head_ref }}
           asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
