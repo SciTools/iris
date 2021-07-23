@@ -10,7 +10,7 @@ class CondaLock(Conda):
     """
     Create the environment based on a **version-controlled** lockfile.
 
-    Creating the environment instance is deferred until ``install_project`` time,
+    Creating the environment instance is deferred until ``build_project`` time,
     when the commit hash etc is known and we can access the lock file.
     The environment is then overwritten by the specification provided at the
     ``config.conda_lockfile`` path.  ``conda.conda_lockfile`` must point to
