@@ -44,27 +44,19 @@ jobs:
           cd benchmarks
           export BASE=origin/${{ github.base_ref }}
           export HEAD=origin/${{ github.head_ref }}
-          # run asv benchmarks on the target
-          # -s 1 ensures only one "step" (the tip of the branch) is run
-          asv run $BASE -s 1
-          # run asv on the head of this PR
-          asv run $HEAD -s 1
+          asv continuous $BASE $HEAD
+
+      - name: Write stats to archive on failure
+        if: ${{ failure() }}
+        run: |
+          cd benchmarks
           asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: asv-report
           path: |
             benchmarks/.asv/results
             benchmarks/.asv/compare.txt
-
-      - name: Fail if performance degraded
-        run: |
-          cd benchmarks
-          cat .asv/compare.txt
-          if grep -q "Benchmarks that have got worse" .asv/compare.txt; then
-            echo "::error::Performance degradation.  See action artifact for full results."
-            exit 1
-          fi
-
