@@ -16,12 +16,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # fetch the target branch from origin too (just the head)
-      # and check it out into a local branch
-      - name: Checkout PR and target branch
-        run: |
-          git fetch --no-tags --depth=1 origin $BASE
+        with:
+          fetch-depth: 0
 
       - name: Setup asv
         run: |
