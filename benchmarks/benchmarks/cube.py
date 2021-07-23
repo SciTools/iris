@@ -82,18 +82,17 @@ class Cube:
 class AuxCoord(ComponentCommon):
     def setup(self):
         self.coord_name = "test"
-        coord_bounds = np.array(
-            [data_1d - 1, data_1d + 1]).transpose()
-        aux_coord = coords.AuxCoord(long_name=self.coord_name,
-                                    points=data_1d,
-                                    bounds=coord_bounds,
-                                    units="days since 1970-01-01",
-                                    climatological=True)
+        coord_bounds = np.array([data_1d - 1, data_1d + 1]).transpose()
+        aux_coord = coords.AuxCoord(
+            long_name=self.coord_name,
+            points=data_1d,
+            bounds=coord_bounds,
+            units="days since 1970-01-01",
+            climatological=True,
+        )
 
         # Variables needed by the ComponentCommon base class.
-        self.cube_kwargs = {
-            "aux_coords_and_dims": [(aux_coord, 0)]
-        }
+        self.cube_kwargs = {"aux_coords_and_dims": [(aux_coord, 0)]}
         self.add_method = cube.Cube.add_aux_coord
         self.add_args = (aux_coord, (0))
 
@@ -114,14 +113,17 @@ class AuxFactory(ComponentCommon):
         # Variables needed by the ComponentCommon base class.
         self.cube_kwargs = {
             "aux_coords_and_dims": [(coord, 0)],
-            "aux_factories": [self.hybrid_factory]
+            "aux_factories": [self.hybrid_factory],
         }
 
         self.setup_common()
 
         # Variables needed by the overridden time_add benchmark in this subclass.
         cube_w_coord = self.cube.copy()
-        [cube_w_coord.remove_aux_factory(i) for i in cube_w_coord.aux_factories]
+        [
+            cube_w_coord.remove_aux_factory(i)
+            for i in cube_w_coord.aux_factories
+        ]
         self.cube_w_coord = cube_w_coord
 
     def time_add(self):
@@ -135,9 +137,7 @@ class CellMeasure(ComponentCommon):
         cell_measure = coords.CellMeasure(data_1d)
 
         # Variables needed by the ComponentCommon base class.
-        self.cube_kwargs = {
-            "cell_measures_and_dims": [(cell_measure, 0)]
-        }
+        self.cube_kwargs = {"cell_measures_and_dims": [(cell_measure, 0)]}
         self.add_method = cube.Cube.add_cell_measure
         self.add_args = (cell_measure, 0)
 
@@ -149,9 +149,7 @@ class CellMethod(ComponentCommon):
         cell_method = coords.CellMethod("test")
 
         # Variables needed by the ComponentCommon base class.
-        self.cube_kwargs = {
-            "cell_methods": [cell_method]
-        }
+        self.cube_kwargs = {"cell_methods": [cell_method]}
         self.add_method = cube.Cube.add_cell_method
         self.add_args = [cell_method]
 

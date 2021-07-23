@@ -8,7 +8,15 @@ metadata_manager_factory benchmark tests.
 
 """
 
-from iris.common import metadata_manager_factory, AncillaryVariableMetadata, BaseMetadata, CellMeasureMetadata, CoordMetadata, CubeMetadata, DimCoordMetadata
+from iris.common import (
+    metadata_manager_factory,
+    AncillaryVariableMetadata,
+    BaseMetadata,
+    CellMeasureMetadata,
+    CoordMetadata,
+    CubeMetadata,
+    DimCoordMetadata,
+)
 
 
 class MetadataManagerFactory__create:
@@ -77,4 +85,3 @@ class MetadataManagerFactory:
 
     def time_DimCoordMetadata_values(self):
         self.dim.values
-

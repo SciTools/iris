@@ -36,6 +36,7 @@ class CoordCommon:
     Should only be instantiated within subclasses, but cannot enforce this
     since ASV cannot handle classes that include abstract methods.
     """
+
     def setup(self):
         """Prevent ASV instantiating (must therefore override setup() in any subclasses.)"""
         raise NotImplementedError
@@ -57,14 +58,13 @@ class CoordCommon:
 class DimCoord(CoordCommon):
     def setup(self):
         point_values = np.arange(ARTIFICIAL_DIM_SIZE)
-        bounds = np.array(
-            [point_values - 1, point_values + 1]).transpose()
+        bounds = np.array([point_values - 1, point_values + 1]).transpose()
 
         self.create_kwargs = {
             "points": point_values,
             "bounds": bounds,
             "units": "days since 1970-01-01",
-            "climatological": True
+            "climatological": True,
         }
 
         self.setup_common()
@@ -78,14 +78,13 @@ class DimCoord(CoordCommon):
 
 class AuxCoord(CoordCommon):
     def setup(self):
-        bounds = np.array(
-            [data_1d - 1, data_1d + 1]).transpose()
+        bounds = np.array([data_1d - 1, data_1d + 1]).transpose()
 
         self.create_kwargs = {
             "points": data_1d,
             "bounds": bounds,
             "units": "days since 1970-01-01",
-            "climatological": True
+            "climatological": True,
         }
 
         self.setup_common()

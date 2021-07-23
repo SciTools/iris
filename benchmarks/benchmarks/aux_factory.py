@@ -29,6 +29,7 @@ class FactoryCommon:
     Should only be instantiated within subclasses, but cannot enforce this
     since ASV cannot handle classes that include abstract methods.
     """
+
     def setup(self):
         """Prevent ASV instantiating (must therefore override setup() in any subclasses.)"""
         raise NotImplementedError

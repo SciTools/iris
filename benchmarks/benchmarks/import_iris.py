@@ -221,7 +221,7 @@ class Iris:
     def time_util(self):
         import iris.util
 
-# third-party imports
+    # third-party imports
 
     def time_third_party_cartopy(self):
         import cartopy

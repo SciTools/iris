@@ -15,6 +15,7 @@ from iris import coords, cube, plot
 
 matplotlib.use("agg")
 
+
 class AuxSort:
     def setup(self):
         # Manufacture data from which contours can be derived.

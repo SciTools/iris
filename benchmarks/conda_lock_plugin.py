@@ -6,6 +6,7 @@ for environment management.
 from asv.console import log
 from asv.plugins.conda import Conda, _find_conda
 
+
 class CondaLock(Conda):
     """
     Create the environment based on a **version-controlled** lockfile.
@@ -17,6 +18,7 @@ class CondaLock(Conda):
     an @EXPLICIT conda manifest, e.g. the output of either the ``conda-lock`` tool,
     or ``conda list --explicit``.
     """
+
     tool_name = "conda-lock"
 
     def __init__(self, conf, python, requirements):
@@ -35,14 +37,30 @@ class CondaLock(Conda):
     def _setup(self):
         # create the shell of a conda environment, that includes no packages
         log.info("Creating conda environment for {0}".format(self.name))
-        self.run_executable(_find_conda(), ['create', "-y", '-p', self._path, '--force'])
+        self.run_executable(
+            _find_conda(), ["create", "-y", "-p", self._path, "--force"]
+        )
 
     def _build_project(self, repo, commit_hash, build_dir):
         # at "build" time, we build the environment from the provided lockfile
-        self.run_executable(_find_conda(), ["install", "-y", "-p", self._path, "--file", f"{build_dir}/{self._lockfile_path}"])
+        self.run_executable(
+            _find_conda(),
+            [
+                "install",
+                "-y",
+                "-p",
+                self._path,
+                "--file",
+                f"{build_dir}/{self._lockfile_path}",
+            ],
+        )
         # this is set to warning as the asv.commands.run._do_build function
         # explicitly raises the log level to WARN, and I want to see the environment being updated
         # in the stdout log.
-        log.info(f"Environment {self.name} updated to spec at {commit_hash[:8]}")
-        log.debug(self.run_executable(_find_conda(), ["list", "-p", self._path]))
+        log.info(
+            f"Environment {self.name} updated to spec at {commit_hash[:8]}"
+        )
+        log.debug(
+            self.run_executable(_find_conda(), ["list", "-p", self._path])
+        )
         return super()._build_project(repo, commit_hash, build_dir)
