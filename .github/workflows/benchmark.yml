@@ -46,8 +46,8 @@ jobs:
           export HEAD=origin/${{ github.head_ref }}
           asv continuous $BASE $HEAD
 
-      - name: Write stats to archive on failure
-        if: ${{ failure() }}
+      - name: Write a compare file to the output folder
+        if: ${{ always() }}
         run: |
           cd benchmarks
           export BASE=origin/${{ github.base_ref }}
@@ -55,7 +55,7 @@ jobs:
           asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
-        if: ${{ failure() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: asv-report
