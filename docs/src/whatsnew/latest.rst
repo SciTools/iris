@@ -205,6 +205,9 @@ This document explains the changes made to Iris for this release
    ``gallery`` tasks into a single task and associated `nox`_ session.
    (:pull:`4219`)
 
+#. `@jamesp`_ and `@trexfeathers`_ implmented a benchmarking CI check
+   using `asv`_. (:pull:`4253`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -233,3 +236,4 @@ This document explains the changes made to Iris for this release
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _xxhash: http://cyan4973.github.io/xxHash/
 .. _conda-lock: https://github.com/conda-incubator/conda-lock
+.. _asv: https://asv.readthedocs.io/en/stable/

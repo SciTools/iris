@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: benchmark-check
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  pull_request:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Checkout the branches
+        run: |
+          git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          git branch _base FETCH_HEAD
+          git fetch --depth=1 origin ${{ github.ref }}
+          git branch _head FETCH_HEAD
+
+      - name: Setup asv
+        run: |
+          pip install asv
+          cd benchmarks
+          asv machine --yes
+
+      - name: Run benchmarks on source and target
+        run: |
+          cd benchmarks
+          asv continuous --factor 1.2 _base _head
+
+      - name: Write a compare file to the output folder
+        if: ${{ always() }}
+        run: |
+          cd benchmarks
+          asv compare -s _base _head > .asv/compare.txt
+
+      - name: Archive asv results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: asv-report
+          path: |
+            benchmarks/.asv/results
+            benchmarks/.asv/compare.txt

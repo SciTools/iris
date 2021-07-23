@@ -1,0 +1,17 @@
+{
+    "version": 1,
+    "project": "scitools-iris",
+    "project_url": "https://github.com/SciTools/iris",
+    "repo": "..",
+    "environment_type": "conda-lock",
+    "show_commit_url": "http://github.com/scitools/iris/commit/",
+
+    "benchmark_dir": "./benchmarks",
+    "env_dir": ".asv/env",
+    "results_dir": ".asv/results",
+    "html_dir": ".asv/html",
+    "plugins": [".conda_lock_plugin"],
+    // this is not an asv standard config entry, just for our plugin
+    // path to lockfile, relative to project base
+    "conda_lockfile": "requirements/ci/nox.lock/py38-linux-64.lock"
+}

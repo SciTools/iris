@@ -17,6 +17,7 @@ extend-exclude = '''
   /(
     | sphinxext
     | tools
+    | benchmarks\/\.asv.*
   )/
   | _ff_cross_references.py
   | um_cf_map.py
