@@ -32,13 +32,13 @@ jobs:
       - name: Run benchmarks on source and target
         run: |
           cd benchmarks
-          asv continuous $BASE $HEAD
+          asv continuous origin/$BASE $HEAD
 
       - name: Write a compare file to the output folder
         if: ${{ always() }}
         run: |
           cd benchmarks
-          asv compare -s $BASE $HEAD > .asv/compare.txt
+          asv compare -s origin/$BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
         if: ${{ always() }}
