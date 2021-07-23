@@ -96,7 +96,7 @@ local copy of Iris::
   conda activate iris-dev
 
 The ``--force`` option is used when creating the environment, this is optional
-and will force the any existing ``iris-dev`` conda environment to be deleted
+and will force that any existing ``iris-dev`` conda environment to be deleted
 first if present.  This is useful when rebuilding your environment due to a
 change in requirements.
 
