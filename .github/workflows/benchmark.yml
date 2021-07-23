@@ -22,6 +22,7 @@ jobs:
       - name: Checkout PR and target branch
         run: |
           git fetch --no-tags --depth=1 origin $BASE
+          git fetch --no-tags --depth=1 origin $HEAD
 
       - name: Setup asv
         run: |
