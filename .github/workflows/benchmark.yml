@@ -16,8 +16,10 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+
+      - run: |
+          git fetch --depth=2 origin $BASE
+          git fetch --depth=2 origin $HEAD
 
       - name: Setup asv
         run: |
