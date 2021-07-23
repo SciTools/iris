@@ -60,6 +60,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
+#. `@gcaria`_ fixed :class:`~iris.coords.Cell` comparison with
+   0-dimensional arrays and 1-dimensional arrays with len=1. (:pull:`4083`)
+
 #. `@gcaria`_ fixed :meth:`~iris.cube.Cube.cell_measure_dims` to also accept the
    string name of a :class:`~iris.coords.CellMeasure`. (:pull:`3931`)
 
