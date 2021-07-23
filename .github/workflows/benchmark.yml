@@ -14,12 +14,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - run: |
+      - name: Checkout the branches
+        run: |
           git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
           git branch _base FETCH_HEAD
           git fetch --depth=1 origin ${{ github.ref }}
           git branch _head FETCH_HEAD
-
 
       - name: Setup asv
         run: |
