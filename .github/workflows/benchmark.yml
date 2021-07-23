@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install asv
           cd benchmarks
-          asv machine --yes --machine gh-actions
+          asv machine --yes
 
       - name: Run benchmarks on source and target
         run: |
@@ -50,6 +50,8 @@ jobs:
         if: ${{ failure() }}
         run: |
           cd benchmarks
+          export BASE=origin/${{ github.base_ref }}
+          export HEAD=origin/${{ github.head_ref }}
           asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
