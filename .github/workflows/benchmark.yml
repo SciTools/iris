@@ -9,17 +9,17 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    env:
-      BASE: ${{ github.event.pull_request.base.ref }}
-      HEAD: ${{ github.ref }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - run: |
-          git fetch --depth=2 origin $BASE
-          git fetch --depth=2 origin $HEAD
+          git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          git branch _base FETCH_HEAD
+          git fetch --depth=1 origin ${{ github.ref }}
+          git branch _head FETCH_HEAD
+
 
       - name: Setup asv
         run: |
@@ -30,13 +30,13 @@ jobs:
       - name: Run benchmarks on source and target
         run: |
           cd benchmarks
-          asv continuous origin/$BASE $HEAD
+          asv continuous _base _head
 
       - name: Write a compare file to the output folder
         if: ${{ always() }}
         run: |
           cd benchmarks
-          asv compare -s origin/$BASE $HEAD > .asv/compare.txt
+          asv compare -s _base _head > .asv/compare.txt
 
       - name: Archive asv results
         if: ${{ always() }}
