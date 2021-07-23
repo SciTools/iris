@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE: ${{ github.event.pull_request.base.ref }}
-      HEAD: ${{ github.sha }}
+      HEAD: ${{ github.ref }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
