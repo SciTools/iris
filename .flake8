@@ -34,7 +34,7 @@ exclude =
     tools/*,
     # benchmarks do lots of seemingly unintuitive (to flake) things like
     # importing libraries but never using them
-    benchmarks/benchmarks/*
+    benchmarks/*,
     #
     # ignore auto-generated files
     #

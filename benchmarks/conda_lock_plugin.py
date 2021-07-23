@@ -54,9 +54,6 @@ class CondaLock(Conda):
                 f"{build_dir}/{self._lockfile_path}",
             ],
         )
-        # this is set to warning as the asv.commands.run._do_build function
-        # explicitly raises the log level to WARN, and I want to see the environment being updated
-        # in the stdout log.
         log.info(
             f"Environment {self.name} updated to spec at {commit_hash[:8]}"
         )
