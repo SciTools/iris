@@ -75,7 +75,7 @@ command::
 This procedure was tested on a Ubuntu 20.04 system on the
 27th of January, 2021.
 Be aware that through updates of the involved Debian and/or Python packages,
-dependency conflicts might arise or the procedure might have to modified.
+dependency conflicts might arise or the procedure might have to be modified.
 
 .. _installing_from_source:
 
