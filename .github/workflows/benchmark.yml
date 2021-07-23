@@ -2,33 +2,26 @@
 
 name: benchmark-check
 
-# Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   pull_request:
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  benchmark:
     runs-on: ubuntu-latest
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      - run: git status
 
       # fetch the target branch from origin too (just the head)
       # and check it out into a local branch
       - name: Checkout PR and target branch
         run: |
-          git fetch --no-tags --depth=1 origin ${{ github.base_ref }}
+          git fetch --no-tags --depth=1 origin $BASE
 
       - name: Setup asv
         run: |
@@ -39,16 +32,12 @@ jobs:
       - name: Run benchmarks on source and target
         run: |
           cd benchmarks
-          export BASE=origin/${{ github.base_ref }}
-          export HEAD=${{ github.head_ref }}
           asv continuous $BASE $HEAD
 
       - name: Write a compare file to the output folder
         if: ${{ always() }}
         run: |
           cd benchmarks
-          export BASE=origin/${{ github.base_ref }}
-          export HEAD=${{ github.head_ref }}
           asv compare -s $BASE $HEAD > .asv/compare.txt
 
       - name: Archive asv results
