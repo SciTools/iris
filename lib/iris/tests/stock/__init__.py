@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-A collection of routines which create standard Cubes for test purposes.
+A collection of routines which create standard Cubes/files for test purposes.
 
 """
 import iris.tests as tests  # isort:skip

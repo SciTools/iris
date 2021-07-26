@@ -173,7 +173,9 @@ class Test_cube(tests.IrisTest):
             cube1_reverse_spanning.coord("spanning").points,
         )
 
-        msg = "Expected to find exactly 1 latitude coordinate, but found none."
+        msg = (
+            "Expected to find exactly 1 'latitude' coordinate, but found none."
+        )
         with self.assertRaisesRegex(
             iris.exceptions.CoordinateNotFoundError, msg
         ):
