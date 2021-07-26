@@ -63,7 +63,7 @@ Consider executing::
 
 before and after installation of Debian packages.
 
-The rest can be done with pip. Begin with numpy::
+The rest can be done with pip::
 
   pip3 install scitools-iris
 
