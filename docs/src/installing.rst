@@ -70,10 +70,10 @@ The rest can be done with pip. Begin with numpy::
 Finally, Iris and its Python dependencies can be installed with the following
 command::
 
-  pip3 install setuptools cftime==1.2.1 cf-units scitools-iris
+  pip3 install setuptools cftime cf-units scitools-iris
 
 This procedure was tested on a Ubuntu 20.04 system on the
-27th of January, 2021.
+25th of July, 2021.
 Be aware that through updates of the involved Debian and/or Python packages,
 dependency conflicts might arise or the procedure might have to be modified.
 
