@@ -52,29 +52,17 @@ this section are valid for Debian-based Linux distributions (Debian, Ubuntu,
 Kubuntu, etc.).
 
 Iris and its dependencies need some shared libraries in order to work properly.
-These can be installed
-with apt::
+These can be installed with apt::
 
   sudo apt-get install python3-pip python3-tk libudunits2-dev libproj-dev proj-bin libgeos-dev libcunit1-dev
 
-Consider executing::
+The rest can be done with pip::
 
-  sudo apt-get update
-
-before and after installation of Debian packages.
-
-The rest can be done with pip. Begin with numpy::
-
-  pip3 install numpy
-
-Finally, Iris and its Python dependencies can be installed with the following
-command::
-
-  pip3 install setuptools cftime==1.2.1 cf-units scitools-iris
+  pip3 install scitools-iris
 
 This procedure was tested on a Ubuntu 20.04 system on the
-27th of January, 2021.
-Be aware that through updates of the involved Debian and/or Python packages,
+26th of July, 2021.
+Be aware that through updates of the involved Debian packages,
 dependency conflicts might arise or the procedure might have to be modified.
 
 .. _installing_from_source:
