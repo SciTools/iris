@@ -135,6 +135,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ documented the ``--force`` command line option when creating
    a conda development environment. See :ref:`installing_from_source`.
    (:pull:`4240`)
+   
+#. `@MHBalsmeier`_ updated and simplified non-conda installation on Debian-based distros.
+   (:pull:`4260`)
 
 
 💼 Internal
