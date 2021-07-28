@@ -3281,7 +3281,7 @@ class ParseUGridOnLoad(threading.local):
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
-def meshes_from_cf(cf_reader):
+def _meshes_from_cf(cf_reader):
     # TODO: docstring
 
     # Mesh instances are shared between file phenomena.
@@ -3363,7 +3363,7 @@ def load_meshes(uris, var_name=None):
 
     result = {}
     for source in valid_sources:
-        meshes_dict = meshes_from_cf(CFUGridReader(source))
+        meshes_dict = _meshes_from_cf(CFUGridReader(source))
         meshes = meshes_dict.values()
         if var_name is not None:
             meshes = filter(lambda m: m.var_name == var_name, meshes)

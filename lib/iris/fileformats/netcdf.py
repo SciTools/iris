@@ -793,7 +793,7 @@ def load_cubes(filenames, callback=None):
         PARSE_UGRID_ON_LOAD,
         CFUGridReader,
         _build_mesh_coords,
-        meshes_from_cf,
+        _meshes_from_cf,
     )
     from iris.io import run_callback
 
@@ -808,7 +808,7 @@ def load_cubes(filenames, callback=None):
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
             cf = CFUGridReader(filename)
-            meshes = meshes_from_cf(cf)
+            meshes = _meshes_from_cf(cf)
         else:
             cf = iris.fileformats.cf.CFReader(filename)
 
