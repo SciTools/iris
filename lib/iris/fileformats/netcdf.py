@@ -792,8 +792,8 @@ def load_cubes(filenames, callback=None):
     from iris.experimental.ugrid import (
         PARSE_UGRID_ON_LOAD,
         CFUGridReader,
-        _build_mesh,
         _build_mesh_coords,
+        meshes_from_cf,
     )
     from iris.io import run_callback
 
@@ -808,15 +808,7 @@ def load_cubes(filenames, callback=None):
         meshes = {}
         if PARSE_UGRID_ON_LOAD:
             cf = CFUGridReader(filename)
-
-            # Mesh instances are shared between file phenomena.
-            # TODO: more sophisticated Mesh sharing between files.
-            # TODO: access external Mesh cache?
-            mesh_vars = cf.cf_group.meshes
-            meshes = {
-                name: _build_mesh(cf, var, filename)
-                for name, var in mesh_vars.items()
-            }
+            meshes = meshes_from_cf(cf)
         else:
             cf = iris.fileformats.cf.CFReader(filename)
 

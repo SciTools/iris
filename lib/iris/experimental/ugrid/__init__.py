@@ -15,7 +15,9 @@ from collections import namedtuple
 from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
+from itertools import groupby
 import logging
+from pathlib import Path
 import re
 import threading
 
@@ -36,9 +38,14 @@ from ...common.metadata import (
 from ...common.mixin import CFVariableMixin
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
-from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ...exceptions import (
+    ConnectivityNotFoundError,
+    ConstraintMismatchError,
+    CoordinateNotFoundError,
+)
 from ...fileformats import cf, netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
+from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
 
 __all__ = [
@@ -3274,6 +3281,98 @@ class ParseUGridOnLoad(threading.local):
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
+def meshes_from_cf(cf_reader):
+    # TODO: docstring
+
+    # Mesh instances are shared between file phenomena.
+    # TODO: more sophisticated Mesh sharing between files.
+    # TODO: access external Mesh cache?
+    mesh_vars = cf_reader.cf_group.meshes
+    meshes = {
+        name: _build_mesh(cf_reader, var, cf_reader.filename)
+        for name, var in mesh_vars.items()
+    }
+    return meshes
+
+
+def load_mesh(uris, var_name=None):
+    # TODO: docstring
+    meshes_result = load_meshes(uris, var_name)
+    result = [mesh for file in meshes_result.values() for mesh in file]
+    mesh_count = len(result)
+    if mesh_count != 1:
+        message = (
+            f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
+        )
+        raise ConstraintMismatchError(message)
+    return result[0]
+
+
+def load_meshes(uris, var_name=None):
+    # TODO: docstring
+    # No constraints or callbacks supported - these assume they are operating
+    #  on a Cube.
+
+    from iris.fileformats import FORMAT_AGENT
+
+    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    #  into standard behaviour.
+
+    if not PARSE_UGRID_ON_LOAD:
+        # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
+        #  an invisible assumption.
+        message = (
+            f"PARSE_UGRID_ON_LOAD is {bool(PARSE_UGRID_ON_LOAD)}. Must be "
+            f"True to enable mesh loading."
+        )
+        raise ValueError(message)
+
+    if isinstance(uris, str):
+        uris = [uris]
+
+    # Group collections of uris by their iris handler
+    # Create list of tuples relating schemes to part names.
+    uri_tuples = sorted(decode_uri(uri) for uri in uris)
+
+    valid_sources = []
+    for scheme, groups in groupby(uri_tuples, key=lambda x: x[0]):
+        # Call each scheme handler with the appropriate URIs
+        if scheme == "file":
+            filenames = [x[1] for x in groups]
+            sources = expand_filespecs(filenames)
+        elif scheme in ["http", "https"]:
+            sources = [":".join(x) for x in groups]
+        else:
+            message = f"Iris cannot handle the URI scheme: {scheme}"
+            raise ValueError(message)
+
+        for source in sources:
+            if scheme == "file":
+                with open(source, "rb") as fh:
+                    handling_format_spec = FORMAT_AGENT.get_spec(
+                        Path(source).name, fh
+                    )
+            else:
+                handling_format_spec = FORMAT_AGENT.get_spec(source, None)
+
+            if handling_format_spec.handler == netcdf.load_cubes:
+                valid_sources.append(source)
+            else:
+                message = f"Ignoring non-NetCDF file: {source}"
+                logger.info(msg=message, extra=dict(cls=None))
+
+    result = {}
+    for source in valid_sources:
+        meshes_dict = meshes_from_cf(CFUGridReader(source))
+        meshes = meshes_dict.values()
+        if var_name is not None:
+            meshes = filter(lambda m: m.var_name == var_name, meshes)
+        if meshes:
+            result[source] = list(meshes)
+
+    return result
+
+
 ############
 # CF Overrides.
 # These are not included in __all__ since they are not [currently] needed
@@ -3469,7 +3568,17 @@ class CFUGridMeshVariable(cf.CFVariable):
         log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID mesh variables.
+        all_vars = target == variables
         for nc_var_name, nc_var in target.items():
+            if all_vars:
+                # SPECIAL BEHAVIOUR FOR MESH VARIABLES.
+                # We are looking for all mesh variables. Check if THIS variable
+                #  is a mesh using its own attributes.
+                if getattr(nc_var, "cf_role", "") == "mesh_topology":
+                    result[nc_var_name] = CFUGridMeshVariable(
+                        nc_var_name, nc_var
+                    )
+
             # Check for mesh variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
