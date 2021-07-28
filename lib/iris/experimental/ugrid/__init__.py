@@ -52,6 +52,8 @@ __all__ = [
     "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
+    "load_mesh",
+    "load_meshes",
     "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
@@ -3364,11 +3366,11 @@ def load_meshes(uris, var_name=None):
     result = {}
     for source in valid_sources:
         meshes_dict = _meshes_from_cf(CFUGridReader(source))
-        meshes = meshes_dict.values()
+        meshes = list(meshes_dict.values())
         if var_name is not None:
-            meshes = filter(lambda m: m.var_name == var_name, meshes)
+            meshes = list(filter(lambda m: m.var_name == var_name, meshes))
         if meshes:
-            result[source] = list(meshes)
+            result[source] = meshes
 
     return result
 

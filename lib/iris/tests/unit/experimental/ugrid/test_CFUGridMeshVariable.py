@@ -31,6 +31,22 @@ class TestIdentify(tests.IrisTest):
     def setUp(self):
         self.cf_identity = "mesh"
 
+    def test_cf_role(self):
+        match_name = "match"
+        match = named_variable(match_name)
+        setattr(match, "cf_role", "mesh_topology")
+
+        not_match_name = f"not_{match_name}"
+        not_match = named_variable(not_match_name)
+        setattr(not_match, "cf_role", "foo")
+
+        vars_all = {match_name: match, not_match_name: not_match}
+
+        # ONLY expecting match, excluding not_match.
+        expected = {match_name: CFUGridMeshVariable(match_name, match)}
+        result = CFUGridMeshVariable.identify(vars_all)
+        self.assertDictEqual(expected, result)
+
     def test_cf_identity(self):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
@@ -45,6 +61,31 @@ class TestIdentify(tests.IrisTest):
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {
             subject_name: CFUGridMeshVariable(subject_name, ref_subject)
+        }
+        result = CFUGridMeshVariable.identify(vars_all)
+        self.assertDictEqual(expected, result)
+
+    def test_cf_role_and_identity(self):
+        role_match_name = "match"
+        role_match = named_variable(role_match_name)
+        setattr(role_match, "cf_role", "mesh_topology")
+
+        subject_name = "ref_subject"
+        ref_subject = named_variable(subject_name)
+        ref_source = named_variable("ref_source")
+        setattr(ref_source, self.cf_identity, subject_name)
+
+        vars_all = {
+            role_match_name: role_match,
+            subject_name: ref_subject,
+            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_source": ref_source,
+        }
+
+        # Expecting role_match and ref_subject but excluding other variables.
+        expected = {
+            role_match_name: CFUGridMeshVariable(role_match_name, role_match),
+            subject_name: CFUGridMeshVariable(subject_name, ref_subject),
         }
         result = CFUGridMeshVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
