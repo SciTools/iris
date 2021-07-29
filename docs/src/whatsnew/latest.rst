@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@bjlittle`_, `@ppmo`_ and `@trexfeathers`_ added support for unstructured
+#. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
    meshes, as described be UGRID. This involved adding a data model (:pull:`3968`,
    :pull:`4014`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`, :pull:`4064`),
    and supporting representation (:pull:`4033`, :pull:`4054`) and loading
@@ -50,7 +50,7 @@ This document explains the changes made to Iris for this release
    type mesh. A :class:`iris.experimental.ugrid.MeshCoord` is a coordinate that
    references and represents a :class:`iris.experimental.ugrid.Mesh`, it connects
    a :class:`iris.experimental.ugrid.Mesh` to a cube. Cubes are also given the
-   property :property:`iris.cube.Cube.mesh` which returns a
+   property :method property:`iris.cube.Cube.mesh` which returns a
    :class:`iris.experimental.ugrid.Mesh` if one is attached to the cube via a
    :class:`iris.experimental.ugrid.MeshCoord`. Finally, the context manager
    :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` provides a way to load
