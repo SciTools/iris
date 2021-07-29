@@ -1069,7 +1069,7 @@ class CFReader:
 
     @property
     def filename(self):
-        # TODO: docstring
+        """The file that the CFReader is reading."""
         return self._filename
 
     def __repr__(self):

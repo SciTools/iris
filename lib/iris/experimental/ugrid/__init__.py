@@ -3284,8 +3284,12 @@ PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
 def _meshes_from_cf(cf_reader):
-    # TODO: docstring
+    """
+    Common behaviour for extracting meshes from a CFReader.
 
+    Simple now, but expected to increase in complexity as Mesh sharing develops.
+
+    """
     # Mesh instances are shared between file phenomena.
     # TODO: more sophisticated Mesh sharing between files.
     # TODO: access external Mesh cache?
@@ -3298,7 +3302,23 @@ def _meshes_from_cf(cf_reader):
 
 
 def load_mesh(uris, var_name=None):
-    # TODO: docstring
+    """
+    Create a single :class:`Mesh` object from one or more NetCDF files.
+
+    Raises an error if more/less than one :class:`Mesh` is found.
+
+    Parameters
+    ----------
+    uris : str or iterable of str
+        One or more filenames/URI's. Any URI's must support OpenDAP.
+    var_name : str, optional
+        Only return a :class:`Mesh` if its var_name matches this value.
+
+    Returns
+    -------
+    :class:`Mesh`
+
+    """
     meshes_result = load_meshes(uris, var_name)
     result = [mesh for file in meshes_result.values() for mesh in file]
     mesh_count = len(result)
@@ -3311,7 +3331,23 @@ def load_mesh(uris, var_name=None):
 
 
 def load_meshes(uris, var_name=None):
-    # TODO: docstring
+    """
+    Create :class:`Mesh` objects from one or more NetCDF files.
+
+    Parameters
+    ----------
+    uris : str or iterable of str
+        One or more filenames/URI's. Any URI's must support OpenDAP.
+    var_name : str, optional
+        Only return a :class:`Mesh` if its var_name matches this value.
+
+    Returns
+    -------
+    dict
+        A dictionary of file paths/URL's and lists of the :class:`Mesh`es
+        returned from each.
+
+    """
     # No constraints or callbacks supported - these assume they are operating
     #  on a Cube.
 
