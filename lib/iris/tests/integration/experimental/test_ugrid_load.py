@@ -14,7 +14,12 @@ todo: fold these tests into netcdf tests when experimental.ugrid is folded into
 from collections.abc import Iterable
 
 from iris import Constraint, load
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, logger
+from iris.experimental.ugrid import (
+    PARSE_UGRID_ON_LOAD,
+    Mesh,
+    load_mesh,
+    logger,
+)
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -177,6 +182,22 @@ class TestTolerantLoading(XIOSFileMixin):
 
         # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
+
+
+@tests.skip_data
+class Test_load_mesh(tests.IrisTest):
+    def test_load_mesh(self):
+        file_path = tests.get_data_path(
+            [
+                "NetCDF",
+                "unstructured_grid",
+                "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
+            ]
+        )
+        with PARSE_UGRID_ON_LOAD.context():
+            mesh = load_mesh(file_path)
+        # Can't use a CML test as this isn't supported for non-Cubes.
+        self.assertIsInstance(mesh, Mesh)
 
 
 if __name__ == "__main__":
