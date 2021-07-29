@@ -16,6 +16,8 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
+   * We've added support for UGRID meshes which can now be loaded and attached
+     to a cube.
    * We've dropped support for `Python 3.6`_
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
