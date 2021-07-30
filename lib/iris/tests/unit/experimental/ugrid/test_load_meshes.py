@@ -212,7 +212,7 @@ class TestsHttp(tests.IrisTest):
         with PARSE_UGRID_ON_LOAD.context():
             _ = load_meshes([url, glob])
         file_uris = [
-            call.args[0] for call in self.format_agent_mock.call_args_list
+            call[0][0] for call in self.format_agent_mock.call_args_list
         ]
         for source in (url, Path(file).name):
             self.assertIn(source, file_uris)
