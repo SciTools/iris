@@ -3335,7 +3335,7 @@ def load_meshes(uris, var_name=None):
     uris : str or iterable of str
         One or more filenames/URI's. Any URI's must support OpenDAP.
     var_name : str, optional
-        Only return a :class:`Mesh` if its var_name matches this value.
+        Only return :class:`Mesh`es that have var_names matching this value.
 
     Returns
     -------
