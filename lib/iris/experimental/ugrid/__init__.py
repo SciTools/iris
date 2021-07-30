@@ -3825,6 +3825,21 @@ def _build_mesh(cf, mesh_var, file_path):
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
 
+    cf_role_message = None
+    if not hasattr(mesh_var, "cf_role"):
+        cf_role_message = f"{mesh_var.cf_name} has no cf_role attribute."
+        cf_role = "mesh_topology"
+    else:
+        cf_role = getattr(mesh_var, "cf_role")
+    if cf_role != "mesh_topology":
+        cf_role_message = (
+            f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
+        )
+    if cf_role_message:
+        cf_role_message += " Correcting to 'mesh_topology'."
+        # TODO: reconsider logging level when we have consistent practice.
+        logger.warning(cf_role_message, extra=dict(cls=None))
+
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
     elif hasattr(mesh_var, "face_node_connectivity"):
@@ -3928,7 +3943,6 @@ def _build_mesh(cf, mesh_var, file_path):
         edge_dimension=edge_dimension,
         face_dimension=face_dimension,
     )
-    assert mesh.cf_role == mesh_var.cf_role
 
     mesh_elements = (
         list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]

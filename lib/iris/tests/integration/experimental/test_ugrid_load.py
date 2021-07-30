@@ -183,6 +183,26 @@ class TestTolerantLoading(XIOSFileMixin):
         # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
 
+    def test_mesh_bad_cf_role(self):
+        # Check that the load generates a suitable warning.
+        log_regex = r"inappropriate cf_role"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
+            template = "minimal_bad_mesh_cf_role"
+            dim_line = 'mesh_var:cf_role = "foo" ;'
+            _ = self.create_synthetic_test_cube(
+                template=template, subs=dict(CF_ROLE_DEFINITION=dim_line)
+            )
+
+    def test_mesh_no_cf_role(self):
+        # Check that the load generates a suitable warning.
+        log_regex = r"no cf_role attribute"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
+            template = "minimal_bad_mesh_cf_role"
+            dim_line = ""
+            _ = self.create_synthetic_test_cube(
+                template=template, subs=dict(CF_ROLE_DEFINITION=dim_line)
+            )
+
 
 @tests.skip_data
 class Test_load_mesh(tests.IrisTest):
