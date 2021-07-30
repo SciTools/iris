@@ -16,6 +16,7 @@ from pathlib import Path
 from shutil import rmtree
 from subprocess import check_call
 import tempfile
+from unittest import mock
 from uuid import uuid4
 
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_meshes, logger
@@ -43,7 +44,7 @@ def cdl_to_nc(cdl):
     return str(nc_path)
 
 
-class Tests(tests.IrisTest):
+class TestsBasic(tests.IrisTest):
     def setUp(self):
         self.ref_cdl = """
             netcdf mesh_test {
@@ -177,31 +178,6 @@ class Tests(tests.IrisTest):
             with PARSE_UGRID_ON_LOAD.context():
                 _ = load_meshes("foo://bar")
 
-    def test_http(self):
-        # Are we OK to rely on a 3rd party URL?
-        #  Should we instead be hosting a UGRID file over OpenDAP for testing?
-        #  Fairly slow.
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(
-                "http://amb6400b.stccmop.org:8080/thredds/dodsC/model_data/forecast"
-            )
-
-        files = list(meshes.keys())
-        self.assertEqual(1, len(files))
-        file_meshes = meshes[files[0]]
-        self.assertEqual(1, len(file_meshes))
-        mesh = file_meshes[0]
-        self.assertEqual("Mesh", mesh.var_name)
-
-    def test_mixed_sources(self):
-        URL = "http://amb6400b.stccmop.org:8080/thredds/dodsC/model_data/forecast"
-        file = cdl_to_nc(self.ref_cdl)
-        glob = f"{TMP_DIR}/*.nc"
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes([URL, glob])
-        for source in (URL, file):
-            self.assertIn(source, meshes)
-
     @tests.skip_data
     def test_non_nc(self):
         log_regex = r"Ignoring non-NetCDF file:.*"
@@ -211,3 +187,32 @@ class Tests(tests.IrisTest):
                     tests.get_data_path(["PP", "simple_pp", "global.pp"])
                 )
         self.assertDictEqual({}, meshes)
+
+
+class TestsHttp(tests.IrisTest):
+    # Tests of HTTP (OpenDAP) loading need mocking since we can't have tests
+    #  that rely on 3rd party servers.
+    def setUp(self):
+        patcher = mock.patch("iris.fileformats.FORMAT_AGENT.get_spec")
+        self.addCleanup(patcher.stop)
+        self.format_agent_mock = patcher.start()
+
+    def test_http(self):
+        url = "http://foo"
+        with PARSE_UGRID_ON_LOAD.context():
+            _ = load_meshes(url)
+        self.format_agent_mock.assert_called_with(url, None)
+
+    def test_mixed_sources(self):
+        url = "http://foo"
+        file = TMP_DIR / f"{uuid4()}.nc"
+        file.touch()
+        glob = f"{TMP_DIR}/*.nc"
+
+        with PARSE_UGRID_ON_LOAD.context():
+            _ = load_meshes([url, glob])
+        file_uris = [
+            call.args[0] for call in self.format_agent_mock.call_args_list
+        ]
+        for source in (url, Path(file).name):
+            self.assertIn(source, file_uris)

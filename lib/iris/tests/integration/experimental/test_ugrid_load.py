@@ -11,6 +11,10 @@ todo: fold these tests into netcdf tests when experimental.ugrid is folded into
 
 """
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from collections.abc import Iterable
 
 from iris import Constraint, load
@@ -20,10 +24,6 @@ from iris.experimental.ugrid import (
     load_mesh,
     logger,
 )
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
@@ -186,18 +186,23 @@ class TestTolerantLoading(XIOSFileMixin):
 
 @tests.skip_data
 class Test_load_mesh(tests.IrisTest):
-    def test_load_mesh(self):
-        file_path = tests.get_data_path(
-            [
-                "NetCDF",
-                "unstructured_grid",
-                "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
-            ]
-        )
+    def common_test(self, file_name, mesh_var_name):
         with PARSE_UGRID_ON_LOAD.context():
-            mesh = load_mesh(file_path)
-        # Can't use a CML test as this isn't supported for non-Cubes.
+            mesh = load_mesh(
+                tests.get_data_path(["NetCDF", "unstructured_grid", file_name])
+            )
+        # NOTE: cannot use CML tests as this isn't supported for non-Cubes.
         self.assertIsInstance(mesh, Mesh)
+        self.assertEqual(mesh.var_name, mesh_var_name)
+
+    def test_full_file(self):
+        self.common_test(
+            "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
+            "Mesh2d_half_levels",
+        )
+
+    def test_mesh_file(self):
+        self.common_test("mesh_C12.nc", "dynamics")
 
 
 if __name__ == "__main__":

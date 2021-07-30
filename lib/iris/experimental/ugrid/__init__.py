@@ -3348,13 +3348,12 @@ def load_meshes(uris, var_name=None):
         returned from each.
 
     """
+    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    #  into standard behaviour.
     # No constraints or callbacks supported - these assume they are operating
     #  on a Cube.
 
     from iris.fileformats import FORMAT_AGENT
-
-    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
-    #  into standard behaviour.
 
     if not PARSE_UGRID_ON_LOAD:
         # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
