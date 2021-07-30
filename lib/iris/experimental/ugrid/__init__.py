@@ -3335,12 +3335,12 @@ def load_meshes(uris, var_name=None):
     uris : str or iterable of str
         One or more filenames/URI's. Any URI's must support OpenDAP.
     var_name : str, optional
-        Only return :class:`Mesh`es that have var_names matching this value.
+        Only return :class:`Mesh`'s that have var_names matching this value.
 
     Returns
     -------
     dict
-        A dictionary of file paths/URL's and lists of the :class:`Mesh`es
+        A dictionary of file paths/URL's and lists of the :class:`Mesh`'s
         returned from each.
 
     """
