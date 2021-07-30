@@ -14,7 +14,6 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from iris.exceptions import ConstraintMismatchError
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 
@@ -45,9 +44,7 @@ class Tests(tests.IrisTest):
         # Override the load_meshes_mock return values to provoke errors.
         def common(ret_val):
             self.load_meshes_mock.return_value = ret_val
-            with self.assertRaisesRegex(
-                ConstraintMismatchError, "Expecting 1 mesh.*"
-            ):
+            with self.assertRaisesRegex(ValueError, "Expecting 1 mesh.*"):
                 with PARSE_UGRID_ON_LOAD.context():
                     _ = load_mesh([])
 
