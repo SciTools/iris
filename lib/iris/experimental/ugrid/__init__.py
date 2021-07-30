@@ -38,11 +38,7 @@ from ...common.metadata import (
 from ...common.mixin import CFVariableMixin
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
-from ...exceptions import (
-    ConnectivityNotFoundError,
-    ConstraintMismatchError,
-    CoordinateNotFoundError,
-)
+from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...fileformats import cf, netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...io import decode_uri, expand_filespecs
@@ -3326,7 +3322,7 @@ def load_mesh(uris, var_name=None):
         message = (
             f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
         )
-        raise ConstraintMismatchError(message)
+        raise ValueError(message)
     return result[0]
 
 
