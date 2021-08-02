@@ -79,6 +79,9 @@ class TestCoords(tests.IrisTest, MixinCoords):
 
 @tests.skip_plot
 class TestAntialias(tests.IrisTest):
+    def setUp(self):
+        self.fig = plt.figure()
+
     def test_skip_contour(self):
         # Contours should not be added if data is all below second level.  See #4086.
         cube = simple_2d()
@@ -96,6 +99,26 @@ class TestAntialias(tests.IrisTest):
                 collection, matplotlib.collections.PathCollection
             )
         self.assertEqual(len(ax.collections), 3)
+
+    def test_apply_contour_nans(self):
+        # Presence of nans should not prevent contours being added.
+        cube = simple_2d()
+        cube.data = cube.data.astype(np.float_)
+        cube.data[0, 0] = np.nan
+
+        levels = [2, 4, 6, 8]
+        colors = ["b", "r", "y"]
+
+        iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
+
+        ax = plt.gca()
+        # If contour has been called, last collection will be a LineCollection.
+        self.assertIsInstance(
+            ax.collections[-1], matplotlib.collections.LineCollection
+        )
+
+    def tearDown(self):
+        plt.close(self.fig)
 
 
 if __name__ == "__main__":
