@@ -1082,7 +1082,7 @@ def contourf(cube, *args, **kwargs):
             colors = colors[:-1]
         else:
             colors = colors[:-1]
-        if len(levels) > 0 and cube.data.max() > levels[0]:
+        if len(levels) > 0 and np.nanmax(cube.data) > levels[0]:
             # Draw the lines just *below* the polygons to ensure we minimise
             # any boundary shift.
             zorder = result.collections[0].zorder - 0.1

@@ -73,6 +73,8 @@ This document explains the changes made to Iris for this release
    antialiasing when data values are too low for it to have an effect.  This caused
    unexpected artifacts in some edge cases, as shown at :issue:`4086`. (:pull:`4150`)
 
+#. `@MHBalsmeier`_ modified :func:`~iris.plot.contourf` to generalize :pull:`4150`
+   for the cases where NaN values occur in the plot array (:pull:`4263`)
 
 💣 Incompatible Changes
 =======================
