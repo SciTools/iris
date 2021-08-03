@@ -40,7 +40,7 @@ need the Iris sample data. This can also be installed using conda::
   conda install -c conda-forge iris-sample-data
 
 Further documentation on using conda and the features it provides can be found
-at https://conda.io/en/latest/index.html.
+at https://docs.conda.io/projects/conda/en/latest/index.html.
 
 .. _installing_from_source_without_conda:
 
