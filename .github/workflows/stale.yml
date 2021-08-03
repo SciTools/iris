@@ -12,14 +12,14 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
           # Idle number of days before marking issues/prs stale.
-          days-before-stale: 1000
+          days-before-stale: 500
 
           # Idle number of days before closing stale issues/prs.
           days-before-close: 28
 
           # Comment on the staled issues.
           stale-issue-message: |
-            In order to maintain a backlog of relevant issues, we automatically label them as stale after 1,000 days of inactivity.
+            In order to maintain a backlog of relevant issues, we automatically label them as stale after 500 days of inactivity.
 
             If this issue is still important to you, then please comment on this issue or remove the stale label.
 
@@ -27,7 +27,7 @@ jobs:
 
           # Comment on the staled prs.
           stale-pr-message: | 
-            In order to maintain a backlog of relevant PRs, we automatically label them as stale after 1,000 days of inactivity.
+            In order to maintain a backlog of relevant PRs, we automatically label them as stale after 500 days of inactivity.
 
             If this PR is still important to you, then please comment on this PR or remove the stale label.
 
@@ -57,11 +57,11 @@ jobs:
 
           # Labels on issues exempted from stale.
           exempt-issue-labels: |
-            "Status: Blocked,Status: Decision Required,Status: Needs Info,Status: Stalled,Peloton 🚴‍️"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍️"
 
           # Labels on prs exempted from stale.
           exempt-pr-labels: |
-            "Status: Blocked,Status: Decision Required,Status: Needs Info,Status: Stalled,Peloton 🚴‍"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍"
 
           # Remove stale label from issues/prs on updates/comments.
           remove-stale-when-updated: true
