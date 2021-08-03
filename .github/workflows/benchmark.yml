@@ -30,7 +30,7 @@ jobs:
       - name: Run benchmarks on source and target
         run: |
           cd benchmarks
-          asv continuous --factor 1.2 _base _head
+          asv continuous --factor 1.5 _base _head
 
       - name: Write a compare file to the output folder
         if: ${{ always() }}
