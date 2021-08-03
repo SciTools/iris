@@ -40,7 +40,7 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
-   meshes, as described be UGRID. This involved adding a data model (:pull:`3968`,
+   meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
    :pull:`4014`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`, :pull:`4064`),
    and supporting representation (:pull:`4033`, :pull:`4054`) and loading
    (:pull:`4058`, :pull:`4074`) of data on meshes.
@@ -49,15 +49,15 @@ This document explains the changes made to Iris for this release
    :class:`iris.experimental.ugrid.MeshCoord` and
    :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`.
    A :class:`iris.experimental.ugrid.Mesh` contains a full description of a UGRID
-   type mesh. A :class:`iris.experimental.ugrid.MeshCoord` is a coordinate that
-   references and represents a :class:`iris.experimental.ugrid.Mesh`, it connects
-   a :class:`iris.experimental.ugrid.Mesh` to a cube. Cubes are also given the
-   property :method property:`iris.cube.Cube.mesh` which returns a
-   :class:`iris.experimental.ugrid.Mesh` if one is attached to the cube via a
-   :class:`iris.experimental.ugrid.MeshCoord`. Finally, the context manager
-   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` provides a way to load
-   UGRID files so that cubes can be returned with a
-   :class:`iris.experimental.ugrid.Mesh` attached.
+   type mesh. :class:`~iris.experimental.ugrid.MeshCoord`\ s are coordinates that
+   reference and represent a :class:`~iris.experimental.ugrid.Mesh` for use
+   on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
+   property :attr:`~iris.cube.Cube.mesh` which returns a
+   :class:`~iris.experimental.ugrid.Mesh` if one is attached to the
+   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.MeshCoord`.
+   Finally, the context manager :obj:`~iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`
+   provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
+   returned with a :class:`~iris.experimental.ugrid.Mesh` attached.
 
 #. `@pelson`_ and `@trexfeathers`_ enhanced :meth:`iris.plot.plot` and
    :meth:`iris.quickplot.plot` to automatically place the cube on the x axis if
@@ -264,3 +264,4 @@ This document explains the changes made to Iris for this release
 .. _xxhash: http://cyan4973.github.io/xxHash/
 .. _conda-lock: https://github.com/conda-incubator/conda-lock
 .. _asv: https://asv.readthedocs.io/en/stable/
+.. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
