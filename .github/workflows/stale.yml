@@ -1,3 +1,5 @@
+# See https://github.com/actions/stale
+
 name: Stale issues and pull-requests
 on:
   schedule:
@@ -57,14 +59,20 @@ jobs:
 
           # Labels on issues exempted from stale.
           exempt-issue-labels: |
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍️"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️"
 
           # Labels on prs exempted from stale.
           exempt-pr-labels: |
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️"
+
+          # Max number of operations per run.
+          operations-per-run: 30
 
           # Remove stale label from issues/prs on updates/comments.
           remove-stale-when-updated: true
+
+          # Order to get issues/PRs.
+          ascending: true
 
           # Exempt all issues/prs with milestones from stale.
           exempt-all-milestones: true
