@@ -13,7 +13,7 @@ import ntpath
 # list of tuples for modules to exclude.  Useful if the documentation throws
 # warnings, especially for experimental modules.
 exclude_modules = [
-    ("experimental/raster", "iris.experimental.raster")  # gdal conflicts
+    ("experimental/raster", "iris.experimental.raster"),  # gdal conflicts
 ]
 
 
