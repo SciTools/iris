@@ -16,7 +16,7 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've added support for UGRID meshes which can now be loaded and attached
+   * We've added support for `UGRID`_ meshes which can now be loaded and attached
      to a cube.
    * We've dropped support for `Python 3.6`_
 
@@ -43,7 +43,7 @@ This document explains the changes made to Iris for this release
    meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
    :pull:`4014`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`, :pull:`4064`),
    and supporting representation (:pull:`4033`, :pull:`4054`) and loading
-   (:pull:`4058`, :pull:`4074`) of data on meshes.
+   (:pull:`4058`) of data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
    objects introduced are :class:`iris.experimental.ugrid.Mesh`,
    :class:`iris.experimental.ugrid.MeshCoord` and
