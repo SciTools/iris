@@ -28,7 +28,7 @@ def main():
     uwind.convert_units("knot")
     vwind.convert_units("knot")
 
-    # To illustrate the full range of barbs scale the wind speed up to pretend
+    # To illustrate the full range of barbs, scale the wind speed up to pretend
     # that a storm is passing over
     magnitude = (uwind ** 2 + vwind ** 2) ** 0.5
     magnitude.convert_units("knot")
@@ -54,7 +54,7 @@ def main():
     # of the plot if left
     iplt.barbs(uwind[1:-1, 1:-1], vwind[1:-1, 1:-1], pivot="middle", length=6)
 
-    plt.title("Wind speed over Lake Victoria\nduring a simulated storm")
+    plt.title("Wind speed during a simulated storm")
     qplt.show()
 
 

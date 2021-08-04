@@ -144,7 +144,8 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa8172c6857ecd38cb3392ce36c564311931d85ec64e9787719a39993c316e66.png"
     ],
     "gallery_tests.test_plot_wind_barbs.TestWindBarbs.test_wind_barbs.0": [
-        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169316c1fe9e96c29e36739e13c07c3d61c07f39a13921c07f3e21.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169316c1fe9e96c29e36739e13c07c3d61c07f39a13921c07f3e21.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e161e996169316c1fe9e96c29e36739e13c07c3d61c07f39813929c07f3f01.png"
     ],
     "gallery_tests.test_plot_wind_speed.TestWindSpeed.test_plot_wind_speed.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bcf924fb9306930ce12ccf97c73236b28ecec4cd3e29847b18e639e6c14f1a09.png",
