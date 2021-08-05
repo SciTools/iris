@@ -1437,7 +1437,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
         To transform wind values between coordinate systems, use
-        :func:`iris.analysis.cartography.rotate_vectors`.
+        :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
         :meth:`cartopy.crs.CRS.transform_points`.
@@ -1485,7 +1485,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
         To transform wind values between coordinate systems, use
-        :func:`iris.analysis.cartography.rotate_vectors`.
+        :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
         :meth:`cartopy.crs.CRS.transform_points`.
