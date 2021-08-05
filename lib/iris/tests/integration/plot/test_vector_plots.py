@@ -215,7 +215,7 @@ class TestBarbs(MixinVectorPlotCases, tests.GraphicsTest):
         scale_factor = 30
         u_cube.data *= scale_factor
         v_cube.data *= scale_factor
-        return  u_cube, v_cube
+        return u_cube, v_cube
 
     def plot_function_to_test(self):
         return barbs
