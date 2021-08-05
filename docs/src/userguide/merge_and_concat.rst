@@ -378,7 +378,7 @@ If this consistency is not maintained then the
 seemingly arbitrary manner.
 
 The methods :meth:`~iris.cube.CubeList.merge_cube` and
-:meth:`~iris.cube.CubeList.concatenate_cube` 
+:meth:`~iris.cube.CubeList.concatenate_cube`
 were introduced to Iris to help you locate differences in input cubes
 that prevent the input cubes merging or concatenating.
 Nevertheless, certain difficulties with using
@@ -473,7 +473,7 @@ This is shown in the example below::
 
 **Merging Duplicate Cubes**
 
-The Iris load process does not merge duplicate cubes (two or more identical cubes in
+The Iris merge process does not merge duplicate cubes (two or more identical cubes in
 the input cubes) by default.
 This behaviour can be changed by setting the ``unique`` keyword argument
 to :meth:`~iris.cube.CubeList.merge` to ``False``.
