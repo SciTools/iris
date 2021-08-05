@@ -176,9 +176,8 @@ class CubePrinter:
         item_indent = sect_indent + " " * self.N_INDENT_ITEM
         item_to_extra_indent = " " * self.N_INDENT_EXTRA
         extra_indent = item_indent + item_to_extra_indent
-        summ = cube_summary
 
-        fullheader = summ.header
+        fullheader = cube_summary.header
         nameunits_string = fullheader.nameunit
         dimheader = fullheader.dimension_header
         cube_is_scalar = dimheader.scalar
@@ -227,7 +226,7 @@ class CubePrinter:
         add_row(column_header_texts)
 
         # Add rows from all the vector sections
-        for sect in summ.vector_sections.values():
+        for sect in cube_summary.vector_sections.values():
             if sect.contents:
                 sect_name = sect.title
                 column_texts = [sect_indent + sect_name]
@@ -245,7 +244,7 @@ class CubePrinter:
                         add_row(column_texts)
 
         # Similar for scalar sections
-        for sect in summ.scalar_sections.values():
+        for sect in cube_summary.scalar_sections.values():
             if sect.contents:
                 # Add a row for the "section title" text.
                 sect_name = sect.title
