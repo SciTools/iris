@@ -31,6 +31,8 @@ class Test_replace_axes_with_cartopy_axes(tests.IrisTest):
         # result should be the same as an axes created directly with the projection.
         expected = plt.axes(position, projection=projection)
 
+        # get_position returns mpl.transforms.Bbox object, for which equality does
+        # not appear to be implemented.  Compare the bounds (tuple) instead.
         self.assertEqual(
             expected.get_position().bounds, result.get_position().bounds
         )
