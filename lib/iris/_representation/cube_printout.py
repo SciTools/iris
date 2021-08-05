@@ -144,6 +144,10 @@ class CubePrinter:
 
     """
 
+    N_INDENT_SECTION = 4
+    N_INDENT_ITEM = 4
+    N_INDENT_EXTRA = 4
+
     def __init__(self, cube_or_summary):
         """
         An object that provides a printout of a cube.
@@ -166,17 +170,11 @@ class CubePrinter:
             cube_summary = CubeSummary(cube_or_summary)
         self.table = self._ingest_summary(cube_summary)
 
-    def _ingest_summary(
-        self,
-        cube_summary,
-        n_indent_section=4,
-        n_indent_item=4,
-        n_indent_extra=4,
-    ):
+    def _ingest_summary(self, cube_summary):
         """Make a table of strings representing the cube-summary."""
-        sect_indent = " " * n_indent_section
-        item_indent = sect_indent + " " * n_indent_item
-        item_to_extra_indent = " " * n_indent_extra
+        sect_indent = " " * self.N_INDENT_SECTION
+        item_indent = sect_indent + " " * self.N_INDENT_ITEM
+        item_to_extra_indent = " " * self.N_INDENT_EXTRA
         extra_indent = item_indent + item_to_extra_indent
         summ = cube_summary
 
