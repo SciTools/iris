@@ -9,10 +9,6 @@ Unit tests for the
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
-
 from unittest import mock
 
 from cf_units import Unit
@@ -20,6 +16,10 @@ import numpy as np
 
 from iris.aux_factory import AtmosphereSigmaFactory
 from iris.coords import AuxCoord, DimCoord
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests
 
 
 class Test___init__(tests.IrisTest):
