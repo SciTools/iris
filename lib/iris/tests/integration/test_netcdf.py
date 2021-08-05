@@ -61,6 +61,8 @@ class TestAtmosphereSigma(tests.IrisTest):
             self.assertCDL(filename)
 
     def test_save_load_loop(self):
+        # Ensure that the AtmosphereSigmaFactory is automatically loaded
+        # when loading the file.
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename)
             cube = iris.load_cube(filename, "air_potential_temperature")
