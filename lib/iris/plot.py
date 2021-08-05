@@ -1420,12 +1420,13 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
 
 def barbs(u_cube, v_cube, *args, **kwargs):
     """
-    Draws a barb plot from two vector component cubes.
+    Draws a barb plot from two vector component cubes. Triangles, full-lines
+    and half-lines represent increments of 50, 10 and 5 respectively.
 
     Args:
 
     * u_cube, v_cube : (:class:`~iris.cube.Cube`)
-        u and v vector components.  Must have same shape and units of knot.
+        u and v vector components.  Must have same shape and units.
         If the cubes have geographic coordinates, the values are treated as
         true distance differentials, e.g. windspeeds, and *not* map coordinate
         vectors.  The components are aligned with the North and East of the
