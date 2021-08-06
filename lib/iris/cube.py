@@ -750,8 +750,8 @@ class Cube(CFVariableMixin):
                 time                        \
 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Cell methods:
-                mean within years: time
-                mean over years: time
+                mean within years           time
+                mean over years             time
             Attributes:
                 STASH                       m01s16i203
                 source                      Data from Met Office Unified Model
@@ -3474,8 +3474,8 @@ class Cube(CFVariableMixin):
                     longitude                   \
 180.0 degrees, bound=(0.0, 360.0) degrees
                 Cell methods:
-                    mean: month, year
-                    mean: longitude
+                    mean                        month, year
+                    mean                        longitude
                 Attributes:
                     Conventions                 CF-1.5
                     STASH                       m01s00i024
@@ -3709,8 +3709,8 @@ x            -              -
                 Scalar coordinates:
                     forecast_period             0 hours
                 Cell methods:
-                    mean: month, year
-                    mean: year
+                    mean                        month, year
+                    mean                        year
                 Attributes:
                     Conventions                 CF-1.5
                     STASH                       m01s00i024
@@ -3913,7 +3913,7 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean: time (1 hour)
+                    mean                        time (1 hour)
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
@@ -3938,8 +3938,8 @@ x            -               -
                     forecast_reference_time     2011-07-23 00:00:00
                     realization                 10
                 Cell methods:
-                    mean: time (1 hour)
-                    mean: time
+                    mean                        time (1 hour)
+                    mean                        time
                 Attributes:
                     STASH                       m01s00i024
                     source                      \

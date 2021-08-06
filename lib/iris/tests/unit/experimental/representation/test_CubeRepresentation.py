@@ -197,8 +197,11 @@ class Test__get_bits(tests.IrisTest):
     def test_headings__cellmethods(self):
         contents = self.representer.str_headings["Cell methods:"]
         content_str = ",".join(content for content in contents)
-        for cell_method in self.cube.cell_methods:
-            self.assertIn(str(cell_method), content_str)
+        for method in self.cube.cell_methods:
+            name = method.method
+            value = str(method)[len(name + ": ") :]
+            self.assertIn(name, content_str)
+            self.assertIn(value, content_str)
 
 
 @tests.skip_data

@@ -75,8 +75,8 @@ Let's take the air temperature cube we've seen previously:
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Cell methods:
-            mean within years: time
-            mean over years: time
+            mean within years           time
+            mean over years             time
         Attributes:
             STASH                       m01s16i203
             source                      Data from Met Office Unified Model
@@ -94,8 +94,8 @@ We can interpolate specific values from the coordinates of the cube:
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Cell methods:
-            mean within years: time
-            mean over years: time
+            mean within years           time
+            mean over years             time
         Attributes:
             STASH                       m01s16i203
             source                      Data from Met Office Unified Model
@@ -237,12 +237,12 @@ For example::
 Regridding
 ----------
 
-Regridding is conceptually a very similar process to interpolation in Iris. 
+Regridding is conceptually a very similar process to interpolation in Iris.
 The primary difference is that interpolation is based on sample points, while
 regridding is based on the **horizontal** grid of *another cube*.
 
 Regridding a cube is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method.
-This method expects two arguments: 
+This method expects two arguments:
 
  #. *another cube* that defines the target grid onto which the cube should be regridded, and
  #. the regridding scheme to use.

@@ -118,7 +118,7 @@ For example, given the following :class:`~iris.cube.Cube`,
             forecast_reference_time     1859-09-01 06:00:00
             height                      1.5 m
         Cell methods:
-            mean: time (6 hour)
+            mean                        time (6 hour)
         Attributes:
             Conventions                 CF-1.5
             Model scenario              A1B
