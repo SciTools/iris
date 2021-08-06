@@ -191,7 +191,9 @@ def as_lazy_data(data, chunks=None, asarray=False):
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
     if not is_lazy_data(data):
-        data = da.from_array(data, chunks=chunks, asarray=asarray)
+        data = da.from_array(
+            data, chunks=chunks, asarray=asarray, meta=np.ndarray
+        )
     return data
 
 

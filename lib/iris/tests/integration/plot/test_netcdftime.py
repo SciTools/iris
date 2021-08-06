@@ -44,6 +44,7 @@ class Test(tests.GraphicsTest):
                 atime.hour,
                 atime.minute,
                 atime.second,
+                calendar=calendar,
             )
             for atime in times
         ]
