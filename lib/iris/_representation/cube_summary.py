@@ -235,7 +235,6 @@ class CellMethodSection(Section):
 class CubeSummary:
     """
     This class provides a structure for output representations of an Iris cube.
-    TODO: use to produce the printout of :meth:`iris.cube.Cube.__str__`.
 
     """
 
