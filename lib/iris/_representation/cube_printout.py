@@ -134,11 +134,6 @@ class CubePrinter:
     :class:`iris._representation.CubeSummary`, which provides
     text printout of a :class:`iris.cube.Cube`.
 
-    TODO: the cube :meth:`iris.cube.Cube.__str__` and
-     :meth:`iris.cube.Cube.__repr__`  methods, and
-     :meth:`iris.cube.Cube.summary` with 'oneline=True', should use this to
-     produce cube summary strings.
-
     This class has no internal knowledge of :class:`iris.cube.Cube`, but only
     of :class:`iris._representation.CubeSummary`.
 
