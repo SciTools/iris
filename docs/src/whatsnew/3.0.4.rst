@@ -1,10 +1,109 @@
 .. include:: ../common_links.inc
 
-v3.0.1 (27 Jan 2021)
-********************
+v3.0.4 (22 July 2021)
+*********************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
+
+
+.. dropdown:: :opticon:`alert` v3.0.4 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+   :open:
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@pp-mo`_ fixed 2 bugs in cube printout:
+      Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
+      whereas previously printing these cases caused an Exception.
+      Secondly, cube units are now always printed, whereas previously they were missed out any time that the
+      "dimensions map" was widened to accomodate long coordinate names.
+      (:pull:`4233`)(:pull:`4238`)
+
+   💼 **Internal**
+
+   #. `@bjlittle`_ Unpinned the `cftime`_ package dependency within Iris in order
+      to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
+      (:pull:`4222`)
+
+   #. `@rcomer`_ modified test modules so they run consistently under ``pytest`` and
+      ``nose``, and also fixed some minor issues with :class:`~iris.time.PartialDateTime`.
+      (:pull:`4249`)
+
+   Note that, we are forced to drop support for ``Python 3.6`` in this patch due to
+   the third-party package dependencies required by (:pull:`4222`).
+
+
+.. dropdown:: :opticon:`alert` v3.0.3 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@lbdreyer`_ modified :meth:`~iris.cube.Cube.intersection` to use a tolerant 
+      equality check, when looking for cells that straddle the wrapping point.
+      (:pull:`4220`)
+
+
+.. dropdown:: :opticon:`alert` v3.0.2 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@jonseddon`_ handled a malformed ``um_stash_source`` CF variable attribute in
+      a netCDF file rather than raising a ``ValueError``. (:pull:`4035`)
+
+   #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases
+      where one cell's bounds align with the requested maximum and minimum, as
+      reported in :issue:`3391`. (:pull:`4059`)
+
+   #. `@bjlittle`_ resolved a regression in arithmetic behaviour between a coordinate
+      and a cube which resulted in a ``NotYetImplementedError`` being raised, as reported
+      in :issue:`4000`. This fix supports ``+``, ``-``, ``*``, and ``/`` operations
+      between a coordinate and a cube, and for convenience additionally includes
+      :meth:`iris.cube.Cube.__neg__` support. (:pull:`4159`)
+
+   📚 **Documentation**
+
+   #. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
+      to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`) [``pre-v3.1.0``]
+
+   💼 **Internal**
+
+   #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`) [``pre-v3.1.0``]
+
+   #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+      from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+      [``pre-v3.1.0``]
+
+   #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+      developers to easily disable `cirrus-ci`_ tasks. See
+      :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`) [``pre-v3.1.0``]
+
+   #. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
+      to avoid the dask 'test access'. This makes loading of netcdf files with a
+      large number of variables significantly faster. (:pull:`4135`)
+
+   #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
+      :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
+      is no longer needed since (:pull:`4135`) was added. (:pull:`4141`)
+
+   Note that, the above contributions labelled with ``pre-v3.1.0`` are part of the forthcoming
+   Iris v3.1.0 release, but require to be included in this patch release.
 
 
 .. dropdown:: :opticon:`alert` v3.0.1 Patches
@@ -12,7 +111,6 @@ This document explains the changes made to Iris for this release
    :title: text-primary text-center font-weight-bold
    :body: bg-light
    :animate: fade-in
-   :open:
 
    The patches included in this release include:
 
@@ -42,15 +140,15 @@ This document explains the changes made to Iris for this release
    * :ref:`Cube arithmetic <cube maths>` has been significantly improved with
      regards to extended broadcasting, auto-transposition and a more lenient
      behaviour towards handling metadata and coordinates,
-   * Our :ref:`documentation <whatsnew 3.0.1 docs>` has been refreshed,
+   * Our :ref:`documentation <whatsnew 3.0.4 docs>` has been refreshed,
      restructured, revitalised and rehosted on `readthedocs`_,
    * It's now easier than ever to :ref:`install Iris <installing_iris>`
      as a user or a developer, and the newly revamped developers guide walks
      you though how you can :ref:`get involved <development_where_to_start>`
      and contribute to Iris,
    * Also, this is a major release of Iris, so please be aware of the
-     :ref:`incompatible changes <whatsnew 3.0.1 changes>` and
-     :ref:`deprecations <whatsnew 3.0.1 deprecations>`.
+     :ref:`incompatible changes <whatsnew 3.0.4 changes>` and
+     :ref:`deprecations <whatsnew 3.0.4 deprecations>`.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -196,7 +294,7 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ fixed a bug whereby numpy array type attributes on a cube's
    coordinates could prevent printing it.  See :issue:`3921`.  (:pull:`3922`)
 
-.. _whatsnew 3.0.1 changes:
+.. _whatsnew 3.0.4 changes:
 
 💣 Incompatible Changes
 =======================
@@ -259,7 +357,7 @@ This document explains the changes made to Iris for this release
    exception was raised. (:pull:`3785`)
 
 
-.. _whatsnew 3.0.1 deprecations:
+.. _whatsnew 3.0.4 deprecations:
 
 🔥 Deprecations
 ===============
@@ -308,7 +406,7 @@ This document explains the changes made to Iris for this release
    dependency group. We no longer consider it to be an extension. (:pull:`3762`)
 
 
-.. _whatsnew 3.0.1 docs:
+.. _whatsnew 3.0.4 docs:
 
 📚 Documentation
 ================
@@ -516,3 +614,7 @@ This document explains the changes made to Iris for this release
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _stickler-ci: https://stickler-ci.com/
+.. _@jamesp: https://github.com/jamesp
+.. _cftime: https://github.com/Unidata/cftime
+.. _cf-units: https://github.com/SciTools/cf-units
+.. _nc-time-axis: https://github.com/SciTools/nc-time-axis

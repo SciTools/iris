@@ -3193,24 +3193,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # and call the new bounds = the new points + the difference.
             pre_wrap_delta = np.diff(coord.bounds[inside_indices])
             post_wrap_delta = np.diff(bounds[inside_indices])
-            close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
-            if not close_enough:
-                split_cell_indices, _ = np.where(
-                    pre_wrap_delta != post_wrap_delta
-                )
-
-                # Recalculate the extended minimum.
+            split_cell_indices, _ = np.where(
+                ~np.isclose(pre_wrap_delta, post_wrap_delta)
+            )
+            if split_cell_indices.size:
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
-                cells_delta = np.diff(coord.bounds[indices])
+                if maximum % modulus not in cells:
+                    # Recalculate the extended minimum only if the output bounds
+                    # do not span the requested (minimum, maximum) range.  If
+                    # they do span that range, this adjustment would give unexpected
+                    # results (see #3391).
+                    cells_delta = np.diff(coord.bounds[indices])
 
-                # Watch out for ascending/descending bounds
-                if cells_delta[0, 0] > 0:
-                    cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                    minimum = np.min(cells[:, 0])
-                else:
-                    cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
-                    minimum = np.min(cells[:, 1])
+                    # Watch out for ascending/descending bounds.
+                    if cells_delta[0, 0] > 0:
+                        cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
+                        minimum = np.min(cells[:, 0])
+                    else:
+                        cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
+                        minimum = np.min(cells[:, 1])
 
             points = wrap_lons(coord.points, minimum, modulus)
 
@@ -3764,37 +3766,49 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __hash__(self):
         return hash(id(self))
 
-    def __add__(self, other):
-        return iris.analysis.maths.add(self, other)
+    __add__ = iris.analysis.maths.add
 
     def __iadd__(self, other):
         return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
-    def __sub__(self, other):
-        return iris.analysis.maths.subtract(self, other)
+    __sub__ = iris.analysis.maths.subtract
 
     def __isub__(self, other):
         return iris.analysis.maths.subtract(self, other, in_place=True)
 
+    def __rsub__(self, other):
+        return (-self) + other
+
     __mul__ = iris.analysis.maths.multiply
-    __rmul__ = iris.analysis.maths.multiply
 
     def __imul__(self, other):
         return iris.analysis.maths.multiply(self, other, in_place=True)
+
+    __rmul__ = __mul__
 
     __div__ = iris.analysis.maths.divide
 
     def __idiv__(self, other):
         return iris.analysis.maths.divide(self, other, in_place=True)
 
-    __truediv__ = iris.analysis.maths.divide
+    def __rdiv__(self, other):
+        data = 1 / self.core_data()
+        reciprocal = self.copy(data=data)
+        return iris.analysis.maths.multiply(reciprocal, other)
 
-    def __itruediv__(self, other):
-        return iris.analysis.maths.divide(self, other, in_place=True)
+    __truediv__ = __div__
+
+    __itruediv__ = __idiv__
+
+    __rtruediv__ = __rdiv__
 
     __pow__ = iris.analysis.maths.exponentiate
+
+    def __neg__(self):
+        return self.copy(data=-self.core_data())
+
     # END OPERATOR OVERLOADS
 
     def collapsed(self, coords, aggregator, **kwargs):

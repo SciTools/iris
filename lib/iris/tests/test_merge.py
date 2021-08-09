@@ -26,7 +26,7 @@ import iris.exceptions
 import iris.tests.stock
 
 
-class TestMixin:
+class MergeMixin:
     """
     Mix-in class for attributes & utilities common to these test cases.
 
@@ -56,7 +56,7 @@ class TestMixin:
 
 
 @tests.skip_data
-class TestSingleCube(tests.IrisTest, TestMixin):
+class TestSingleCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(("PP", "globClim1", "theta.pp"))
         self._num_cubes = 1
@@ -64,7 +64,7 @@ class TestSingleCube(tests.IrisTest, TestMixin):
 
 
 @tests.skip_data
-class TestMultiCube(tests.IrisTest, TestMixin):
+class TestMultiCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(
             ("PP", "globClim1", "dec_subset.pp")

@@ -499,6 +499,146 @@ class TestNetCDFLoad(tests.IrisTest):
             cubes[0].cell_measure("areas").units, as_unit("unknown")
         )
 
+    def test_um_stash_source(self):
+        """Test that um_stash_source is converted into a STASH code"""
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(1, 2, 3)
+        )
+
+    def test_ukmo__um_stash_source_priority(self):
+        """
+        Test that ukmo__um_stash_source is converted into a STASH code with a
+        higher priority than um_stash_source.
+        """
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
+                    qqv:ukmo__um_stash_source = "m09s08i007" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(9, 8, 7)
+        )
+
+    def test_bad_um_stash_source(self):
+        """Test that um_stash_source not in strict MSI form is kept"""
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "10*m01s02i003" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
+        self.assertEqual(
+            cubes[0].attributes["um_stash_source"], "10*m01s02i003"
+        )
+
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
         cube0, cube1 = sorted(

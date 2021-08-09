@@ -154,9 +154,11 @@ class TestPPField_GlobalTemperature(IrisPPTest):
         self.assertEqual(self.r[0].lbtim.ic, 2)
 
     def test_t1_t2_access(self):
+        field = self.r[0]
+        calander = "360_day"
         self.assertEqual(
-            self.r[0].t1.timetuple(),
-            cftime.datetime(1994, 12, 1, 0, 0).timetuple(),
+            field.t1.timetuple(),
+            cftime.datetime(1994, 12, 1, 0, 0, calendar=calander).timetuple(),
         )
 
     def test_save_single(self):
