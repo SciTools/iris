@@ -76,6 +76,19 @@ This document explains the changes made to Iris for this release
 #. `@MHBalsmeier`_ modified :func:`~iris.plot.contourf` to generalize :pull:`4150`
    for the cases where NaN values occur in the plot array (:pull:`4263`)
 
+🚀 Performance Enhancements
+===========================
+
+#. `@bjlittle`_ added support for automated ``import`` linting with `isort`_, which
+   also includes significant speed-ups for Iris imports. (:pull:`4174`)
+
+#. `@bjlittle`_ Optimised the creation of dynamic metadata manager classes within the
+   :func:`~iris.common.metadata.metadata_manager_factory`, resulting in a significant
+   speed-up in the creation of Iris :class:`~iris.coords.AncillaryVariable`,
+   :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure`, and
+   :class:`~iris.cube.Cube` instances. (:pull:`4227`)
+
+
 💣 Incompatible Changes
 =======================
 
@@ -190,9 +203,6 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ consolidated the ``.flake8`` configuration into ``setup.cfg``.
    (:pull:`4200`)
-
-#. `@bjlittle`_ added support for automated ``import`` linting with `isort`_.
-   (:pull:`4174`)
 
 #. `@bjlittle`_ renamed ``iris/master`` branch to ``iris/main`` and migrated
    references of ``master`` to ``main`` within codebase. (:pull:`4202`)

@@ -36,14 +36,6 @@ BASES = [
 
 
 class Test_factory(tests.IrisTest):
-    def test__subclass_invalid(self):
-        class Other:
-            pass
-
-        emsg = "Require a subclass of 'BaseMetadata'"
-        with self.assertRaisesRegex(TypeError, emsg):
-            _ = metadata_manager_factory(Other)
-
     def test__kwargs_invalid(self):
         emsg = "Invalid 'BaseMetadata' field parameters, got 'wibble'."
         with self.assertRaisesRegex(ValueError, emsg):
@@ -167,8 +159,8 @@ class Test_instance__pickle(tests.IrisTest):
             self.units,
             self.attributes,
         )
-        self.kwargs = dict(zip(BaseMetadata._fields, values))
-        self.metadata = metadata_manager_factory(BaseMetadata, **self.kwargs)
+        kwargs = dict(zip(BaseMetadata._fields, values))
+        self.metadata = metadata_manager_factory(BaseMetadata, **kwargs)
 
     def test_pickle(self):
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):
