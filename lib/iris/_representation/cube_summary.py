@@ -218,7 +218,6 @@ class AttributeSection(Section):
 class CellMethodSection(Section):
     def __init__(self, title, cell_methods):
         self.title = title
-        # self.contents = [str(cm) for cm in cell_methods]
         self.names = []
         self.values = []
         self.contents = []
