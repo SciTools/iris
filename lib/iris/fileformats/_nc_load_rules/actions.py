@@ -43,10 +43,14 @@ longer useful, this can be considerably simplified.
 from functools import wraps
 import warnings
 
+from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
 from . import helpers as hh
+
+# Configure the logger.
+logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 def _default_rulenamesfunc(func_name):
@@ -397,9 +401,9 @@ def action_ukmo_stash(engine):
             engine.cube.attributes[attr_name] = attr_value
             msg = (
                 "Unable to set attribute STASH as not a valid MSI "
-                f'string "mXXsXXiXXX", got {attr_value}'
+                f'string "mXXsXXiXXX", got "{attr_value}"'
             )
-            warnings.warn(msg)
+            logger.debug(msg)
         else:
             engine.cube.attributes["STASH"] = stash_code
 

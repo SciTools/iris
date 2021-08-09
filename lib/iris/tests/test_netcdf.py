@@ -632,8 +632,7 @@ class TestNetCDFLoad(tests.IrisTest):
         command = "ncgen -o {} {}".format(nc_path, cdl_path)
         check_call(command, shell=True)
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        with self.assertWarns(UserWarning):
-            cubes = list(nc_load_cubes(nc_path))
+        cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
         self.assertEqual(
