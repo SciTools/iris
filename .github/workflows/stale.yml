@@ -66,7 +66,7 @@ jobs:
             "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️"
 
           # Max number of operations per run.
-          operations-per-run: 30
+          operations-per-run: 300
 
           # Remove stale label from issues/prs on updates/comments.
           remove-stale-when-updated: true
