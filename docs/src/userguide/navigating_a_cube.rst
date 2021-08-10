@@ -25,17 +25,17 @@ We have already seen a basic string representation of a cube when printing:
     >>> cube = iris.load_cube(filename)
     >>> print(cube)
     air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
-         Dimension coordinates:
-              grid_latitude                           x                   -
-              grid_longitude                          -                   x
-         Scalar coordinates:
-              forecast_period: 0.0 hours
-              forecast_reference_time: 2006-06-15 00:00:00
-              time: 2006-06-15 00:00:00
-         Attributes:
-              Conventions: CF-1.5
-              STASH: m01s16i222
-              source: Data from Met Office Unified Model 6.01
+        Dimension coordinates:
+            grid_latitude                             x                   -
+            grid_longitude                            -                   x
+        Scalar coordinates:
+            forecast_period             0.0 hours
+            forecast_reference_time     2006-06-15 00:00:00
+            time                        2006-06-15 00:00:00
+        Attributes:
+            Conventions                 CF-1.5
+            STASH                       m01s16i222
+            source                      Data from Met Office Unified Model 6.01
 
 
 This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
@@ -160,18 +160,18 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
     >>> cube.add_aux_coord(new_coord)
     >>> print(cube)
     air_pressure_at_sea_level / (Pa)    (grid_latitude: 22; grid_longitude: 36)
-         Dimension coordinates:
-              grid_latitude                           x                   -
-              grid_longitude                          -                   x
-         Scalar coordinates:
-              forecast_period: 0.0 hours
-              forecast_reference_time: 2006-06-15 00:00:00
-              my_custom_coordinate: 1
-              time: 2006-06-15 00:00:00
-         Attributes:
-              Conventions: CF-1.5
-              STASH: m01s16i222
-              source: Data from Met Office Unified Model 6.01
+        Dimension coordinates:
+            grid_latitude                             x                   -
+            grid_longitude                            -                   x
+        Scalar coordinates:
+            forecast_period             0.0 hours
+            forecast_reference_time     2006-06-15 00:00:00
+            my_custom_coordinate        1
+            time                        2006-06-15 00:00:00
+        Attributes:
+            Conventions                 CF-1.5
+            STASH                       m01s16i222
+            source                      Data from Met Office Unified Model 6.01
 
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.

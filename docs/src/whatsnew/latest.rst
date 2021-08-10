@@ -56,6 +56,12 @@ This document explains the changes made to Iris for this release
 #. `@Badboy-16`_ implemented a ``CubeList.copy()`` method to return a
    ``CubeList`` object instead of a ``list``. (:pull:`4094`)
 
+#. `@pp-mo`_ and `@trexfeathers`_ reformatted :meth:`iris.cube.Cube.summary`,
+   (which is used for ``print(Cube)``); putting
+   :attr:`~iris.cube.Cube.cell_methods` before
+   :attr:`~iris.cube.Cube.attributes`, and improving spacing throughout.
+   (:pull:`4206`)
+
 
 🐛 Bugs Fixed
 =============
@@ -220,8 +226,13 @@ This document explains the changes made to Iris for this release
    ``gallery`` tasks into a single task and associated `nox`_ session.
    (:pull:`4219`)
 
-#. `@jamesp`_ and `@trexfeathers`_ implmented a benchmarking CI check
+#. `@jamesp`_ and `@trexfeathers`_ implemented a benchmarking CI check
    using `asv`_. (:pull:`4253`)
+
+#. `@pp-mo`_ refactored almost all of :meth:`iris.cube.Cube.summary` into the
+   new private module: :mod:`iris._representation`; rewritten with a more
+   modular approach, resulting in more readable and extensible code.
+   (:pull:`4206`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

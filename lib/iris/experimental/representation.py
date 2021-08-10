@@ -93,8 +93,8 @@ class CubeRepresentation:
             "Ancillary variables:": None,
             "Scalar coordinates:": None,
             "Scalar cell measures:": None,
-            "Attributes:": None,
             "Cell methods:": None,
+            "Attributes:": None,
         }
         self.dim_desc_coords = [
             "Dimension coordinates:",
