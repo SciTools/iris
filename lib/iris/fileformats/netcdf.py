@@ -771,6 +771,7 @@ def translate_constraints_to_var_callback(constraints):
 
     """
     import iris._constraints
+
     constraints = iris._constraints.list_of_constraints(constraints)
     result = None
     if len(constraints) == 1:
@@ -787,7 +788,7 @@ def translate_constraints_to_var_callback(constraints):
                 for name in constraint._names:
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
-                        attr_name = 'cf_name' if name == 'var_name' else name
+                        attr_name = "cf_name" if name == "var_name" else name
                         # Fetch property : N.B. CFVariable caches the property values
                         # The use of a default here is the only difference from the code in NameConstraint.
                         actual = getattr(cf_datavar, attr_name, "")
