@@ -43,10 +43,14 @@ longer useful, this can be considerably simplified.
 from functools import wraps
 import warnings
 
+from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 
 from . import helpers as hh
+
+# Configure the logger.
+logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 def _default_rulenamesfunc(func_name):
@@ -385,13 +389,23 @@ def action_ukmo_stash(engine):
     attr_name = "ukmo__um_stash_source"
     attr_value = getattr(var, attr_name, None)
     if attr_value is None:
-        attr_altname = "um_stash_source"  # legacy form
-        attr_value = getattr(var, attr_altname, None)
+        attr_name = "um_stash_source"  # legacy form
+        attr_value = getattr(var, attr_name, None)
     if attr_value is None:
         rule_name += "(NOT-TRIGGERED)"
     else:
         # No helper routine : just do it
-        engine.cube.attributes["STASH"] = pp.STASH.from_msi(attr_value)
+        try:
+            stash_code = pp.STASH.from_msi(attr_value)
+        except (TypeError, ValueError):
+            engine.cube.attributes[attr_name] = attr_value
+            msg = (
+                "Unable to set attribute STASH as not a valid MSI "
+                f'string "mXXsXXiXXX", got "{attr_value}"'
+            )
+            logger.debug(msg)
+        else:
+            engine.cube.attributes["STASH"] = stash_code
 
     return rule_name
 

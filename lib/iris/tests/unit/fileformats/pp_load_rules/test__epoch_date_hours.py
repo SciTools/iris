@@ -30,27 +30,28 @@ from iris.fileformats.pp_load_rules import (
 
 class TestEpochHours__gregorian(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
-        )
+        self.calendar = cf_units.CALENDAR_GREGORIAN
+        self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
     def test_1970_1_1(self):
-        test_date = nc_datetime(1970, 1, 1)
+        test_date = nc_datetime(1970, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, 0.0)
 
     def test_ymd_1_1_1(self):
-        test_date = nc_datetime(1, 1, 1)
+        test_date = nc_datetime(1, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17259936.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(0, 1, 1)
+        test_date = nc_datetime(
+            0, 1, 1, calendar=self.calendar, has_year_zero=True
+        )
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17268720.0)
 
     def test_ymd_0_0_0(self):
-        test_date = nc_datetime(0, 0, 0)
+        test_date = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17269488.0)
 
@@ -60,7 +61,15 @@ class TestEpochHours__gregorian(tests.IrisTest):
             hrs + 1.0 / 60 * mins + 1.0 / 3600 * secs + (1.0e-6) / 3600 * usecs
         )
         test_date = nc_datetime(
-            0, 0, 0, hour=hrs, minute=mins, second=secs, microsecond=usecs
+            0,
+            0,
+            0,
+            hour=hrs,
+            minute=mins,
+            second=secs,
+            microsecond=usecs,
+            calendar=None,
+            has_year_zero=True,
         )
         result = epoch_hours_call(self.hrs_unit, test_date)
         # NOTE: the calculation is only accurate to approx +/- 0.5 seconds
@@ -73,66 +82,69 @@ class TestEpochHours__gregorian(tests.IrisTest):
 
 class TestEpochHours__360day(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_360_DAY
-        )
+        self.calendar = cf_units.CALENDAR_360_DAY
+        self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
     def test_1970_1_1(self):
-        test_date = nc_datetime(1970, 1, 1)
+        test_date = nc_datetime(1970, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, 0.0)
 
     def test_ymd_1_1_1(self):
-        test_date = nc_datetime(1, 1, 1)
+        test_date = nc_datetime(1, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17012160.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(0, 1, 1)
+        test_date = nc_datetime(
+            0, 1, 1, calendar=self.calendar, has_year_zero=True
+        )
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17020800.0)
 
     def test_ymd_0_0_0(self):
-        test_date = nc_datetime(0, 0, 0)
+        test_date = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17021544.0)
 
 
 class TestEpochHours__365day(tests.IrisTest):
     def setUp(self):
-        self.hrs_unit = Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_365_DAY
-        )
+        self.calendar = cf_units.CALENDAR_365_DAY
+        self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
     def test_1970_1_1(self):
-        test_date = nc_datetime(1970, 1, 1)
+        test_date = nc_datetime(1970, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, 0.0)
 
     def test_ymd_1_1_1(self):
-        test_date = nc_datetime(1, 1, 1)
+        test_date = nc_datetime(1, 1, 1, calendar=self.calendar)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17248440.0)
 
     def test_year_0(self):
-        test_date = nc_datetime(0, 1, 1)
+        test_date = nc_datetime(
+            0, 1, 1, calendar=self.calendar, has_year_zero=True
+        )
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17257200.0)
 
     def test_ymd_0_0_0(self):
-        test_date = nc_datetime(0, 0, 0)
+        test_date = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
         result = epoch_hours_call(self.hrs_unit, test_date)
         self.assertEqual(result, -17257968.0)
 
 
 class TestEpochHours__invalid_calendar(tests.IrisTest):
     def test_bad_calendar(self):
+        self.calendar = cf_units.CALENDAR_ALL_LEAP
         # Setup a unit with an unrecognised calendar
-        hrs_unit = Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_ALL_LEAP
-        )
+        hrs_unit = Unit("hours since epoch", calendar=self.calendar)
         # Test against a date with year=0, which requires calendar correction.
-        test_date = nc_datetime(0, 1, 1)
+        test_date = nc_datetime(
+            0, 1, 1, calendar=self.calendar, has_year_zero=True
+        )
         # Check that this causes an error.
         with self.assertRaisesRegex(ValueError, "unrecognised calendar"):
             epoch_hours_call(hrs_unit, test_date)

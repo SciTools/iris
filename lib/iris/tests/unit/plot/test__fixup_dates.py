@@ -43,13 +43,14 @@ class Test(tests.IrisTest):
 
     @tests.skip_nc_time_axis
     def test_360_day_calendar(self):
-        unit = Unit("days since 2000-02-25 00:00:00", calendar="360_day")
+        calendar = "360_day"
+        unit = Unit("days since 2000-02-25 00:00:00", calendar=calendar)
         coord = AuxCoord([3, 4, 5], "time", units=unit)
         result = _fixup_dates(coord, coord.points)
         expected_datetimes = [
-            cftime.datetime(2000, 2, 28),
-            cftime.datetime(2000, 2, 29),
-            cftime.datetime(2000, 2, 30),
+            cftime.datetime(2000, 2, 28, calendar=calendar),
+            cftime.datetime(2000, 2, 29, calendar=calendar),
+            cftime.datetime(2000, 2, 30, calendar=calendar),
         ]
         self.assertArrayEqual(
             [cdt.datetime for cdt in result], expected_datetimes
@@ -57,13 +58,14 @@ class Test(tests.IrisTest):
 
     @tests.skip_nc_time_axis
     def test_365_day_calendar(self):
-        unit = Unit("minutes since 2000-02-25 00:00:00", calendar="365_day")
+        calendar = "365_day"
+        unit = Unit("minutes since 2000-02-25 00:00:00", calendar=calendar)
         coord = AuxCoord([30, 60, 150], "time", units=unit)
         result = _fixup_dates(coord, coord.points)
         expected_datetimes = [
-            cftime.datetime(2000, 2, 25, 0, 30),
-            cftime.datetime(2000, 2, 25, 1, 0),
-            cftime.datetime(2000, 2, 25, 2, 30),
+            cftime.datetime(2000, 2, 25, 0, 30, calendar=calendar),
+            cftime.datetime(2000, 2, 25, 1, 0, calendar=calendar),
+            cftime.datetime(2000, 2, 25, 2, 30, calendar=calendar),
         ]
         self.assertArrayEqual(
             [cdt.datetime for cdt in result], expected_datetimes
@@ -71,10 +73,11 @@ class Test(tests.IrisTest):
 
     @tests.skip_nc_time_axis
     def test_360_day_calendar_attribute(self):
-        unit = Unit("days since 2000-02-01 00:00:00", calendar="360_day")
+        calendar = "360_day"
+        unit = Unit("days since 2000-02-01 00:00:00", calendar=calendar)
         coord = AuxCoord([0, 3, 6], "time", units=unit)
         result = _fixup_dates(coord, coord.points)
-        self.assertEqual(result[0].calendar, "360_day")
+        self.assertEqual(result[0].calendar, calendar)
 
 
 if __name__ == "__main__":

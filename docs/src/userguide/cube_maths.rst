@@ -157,7 +157,7 @@ Let's extend this example slightly, by taking a slice from the middle
     air_temperature / (K)               (longitude: 49; time: 240)
 
 Compared to our original time-series, the *air_temp_T_slice* cube has one
-less dimension *and* it's shape if different. However, this doesn't prevent
+less dimension *and* its shape is different. However, this doesn't prevent
 us from performing cube arithmetic with it, thanks to the extended cube
 broadcasting behaviour::
 
@@ -237,7 +237,7 @@ by a cube with unit ``'1'`` will preserve units, so the cube ``temperature``
 will be given the same units as are in ``pot_temperature``. It should be
 noted that some combinations of units, particularly those involving power
 operations, will not result in a valid unit and will cause the calculation
-to fail. For example, a cube ``a`` had units ``'m'`` then ``a ** 0.5``
+to fail. For example, if a cube ``a`` had units ``'m'`` then ``a ** 0.5``
 would result in an error since the square root of a meter has no meaningful
 unit (if ``a`` had units ``'m2'`` then ``a ** 0.5`` would result in a cube
 with units ``'m'``).

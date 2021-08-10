@@ -83,14 +83,16 @@ netcdf test {{
         self.check_result(cube, stashcode=self.stashcode)
 
     def test_stash_empty(self):
-        msg = "Expected STASH code MSI string"
-        with self.assertRaisesRegex(ValueError, msg):
-            self.run_testcase(ukmo__um_stash_source="")
+        value = ""
+        cube = self.run_testcase(ukmo__um_stash_source=value)
+        self.assertNotIn("STASH", cube.attributes)
+        self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
 
     def test_stash_invalid(self):
-        msg = "Expected STASH code MSI string"
-        with self.assertRaisesRegex(ValueError, msg):
-            self.run_testcase(ukmo__um_stash_source="XXX")
+        value = "XXX"
+        cube = self.run_testcase(ukmo__um_stash_source="XXX")
+        self.assertNotIn("STASH", cube.attributes)
+        self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
 
     def test_processflags_single(self):
         cube = self.run_testcase(ukmo__process_flags="this")

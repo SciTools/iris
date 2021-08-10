@@ -604,7 +604,8 @@ def _fixup_dates(coord, values):
 
             r = [
                 nc_time_axis.CalendarDateTime(
-                    cftime.datetime(*date), coord.units.calendar
+                    cftime.datetime(*date, calendar=coord.units.calendar),
+                    coord.units.calendar,
                 )
                 for date in dates
             ]

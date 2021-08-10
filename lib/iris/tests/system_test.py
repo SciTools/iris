@@ -22,7 +22,7 @@ import iris
 
 
 class SystemInitialTest(tests.IrisTest):
-    def system_test_supported_filetypes(self):
+    def test_supported_filetypes(self):
         nx, ny = 60, 60
         data = np.arange(nx * ny, dtype=">f4").reshape(nx, ny)
 
@@ -74,7 +74,7 @@ class SystemInitialTest(tests.IrisTest):
                 new_cube, ("system", "supported_filetype_%s.cml" % filetype)
             )
 
-    def system_test_imports_general(self):
+    def test_imports_general(self):
         if tests.MPL_AVAILABLE:
             import matplotlib  # noqa
         import netCDF4  # noqa
