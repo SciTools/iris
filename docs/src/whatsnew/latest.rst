@@ -63,7 +63,9 @@ This document explains the changes made to Iris for this release
    (:pull:`4206`)
 
 #. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
-   speed up when loading with a single :func:`~iris.NameConstraint`.
+   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
+   optimisation only applies when matching on standard name, long name or
+   NetCDF variable name, not when matching on STASH.
    (:pull:`4176`)
 
 

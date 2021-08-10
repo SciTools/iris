@@ -9,9 +9,10 @@ Unit tests for
 
 """
 
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 import iris
+from iris.fileformats.cf import CFDataVariable
 from iris.fileformats.netcdf import _translate_constraints_to_var_callback
 
 # import iris tests first so that some things can be initialised before
@@ -21,14 +22,11 @@ import iris.tests as tests
 
 class Test(tests.IrisTest):
     data_variables = [
-        Mock(standard_name="x_wind", cf_name="var1"),
-        Mock(standard_name="y_wind", cf_name="var2"),
-        Mock(long_name="x component of wind", cf_name="var1"),
-        Mock(
-            standard_name="x_wind",
-            long_name="x component of wind",
-            cf_name="var1",
-        ),
+        CFDataVariable('var1', MagicMock(standard_name='x_wind')),
+        CFDataVariable('var2', MagicMock(standard_name='y_wind')),
+        CFDataVariable('var1', MagicMock(long_name='x component of wind')),
+        CFDataVariable('var1', MagicMock(standard_name='x_wind', long_name='x component of wind')),
+        CFDataVariable('var1', MagicMock()),
     ]
 
     def test_multiple_constraints(self):
@@ -57,25 +55,25 @@ class Test(tests.IrisTest):
         constr = iris.NameConstraint(standard_name="x_wind")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        self.assertArrayEqual(result, [True, False, False, True])
+        self.assertArrayEqual(result, [True, False, False, True, False])
 
     def test_NameConstraint_long_name(self):
         constr = iris.NameConstraint(long_name="x component of wind")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        self.assertArrayEqual(result, [False, False, True, True])
+        self.assertArrayEqual(result, [False, False, True, True, False])
 
     def test_NameConstraint_var_name(self):
         constr = iris.NameConstraint(var_name="var1")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        self.assertArrayEqual(result, [True, False, True, True])
+        self.assertArrayEqual(result, [True, False, True, True, True])
 
     def test_NameConstraint_standard_name_var_name(self):
         constr = iris.NameConstraint(standard_name="x_wind", var_name="var1")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        self.assertArrayEqual(result, [True, False, False, True])
+        self.assertArrayEqual(result, [True, False, False, True, False])
 
     def test_NameConstraint_standard_name_long_name_var_name(self):
         constr = iris.NameConstraint(
@@ -85,7 +83,7 @@ class Test(tests.IrisTest):
         )
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        self.assertArrayEqual(result, [False, False, False, True])
+        self.assertArrayEqual(result, [False, False, False, True, False])
 
     def test_NameConstraint_with_STASH(self):
         constr = iris.NameConstraint(

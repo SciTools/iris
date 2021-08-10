@@ -791,6 +791,8 @@ def _translate_constraints_to_var_callback(constraints):
                         attr_name = "cf_name" if name == "var_name" else name
                         # Fetch property : N.B. CFVariable caches the property values
                         # The use of a default here is the only difference from the code in NameConstraint.
+                        if not hasattr(cf_datavar, attr_name):
+                            continue
                         actual = getattr(cf_datavar, attr_name, "")
                         if actual != expected:
                             match = False
