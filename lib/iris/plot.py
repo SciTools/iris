@@ -1419,6 +1419,55 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     return ((x_points, y_points, u_data, v_data), kwargs)
 
 
+def barbs(u_cube, v_cube, *args, **kwargs):
+    """
+    Draws a barb plot from two vector component cubes. Triangles, full-lines
+    and half-lines represent increments of 50, 10 and 5 respectively.
+
+    Args:
+
+    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
+        u and v vector components.  Must have same shape and units.
+        If the cubes have geographic coordinates, the values are treated as
+        true distance differentials, e.g. windspeeds, and *not* map coordinate
+        vectors.  The components are aligned with the North and East of the
+        cube coordinate system.
+
+    .. Note::
+
+        At present, if u_cube and v_cube have geographic coordinates, then they
+        must be in a lat-lon coordinate system, though it may be a rotated one.
+        To transform wind values between coordinate systems, use
+        :func:`iris.analysis.cartography.rotate_grid_vectors`.
+        To transform coordinate grid points, you will need to create
+        2-dimensional arrays of x and y values.  These can be transformed with
+        :meth:`cartopy.crs.CRS.transform_points`.
+
+    Kwargs:
+
+    * coords: (list of :class:`~iris.coords.Coord` or string)
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+
+    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
+        Defaults to the current axes if none provided.
+
+    See :func:`matplotlib.pyplot.barbs` for details of other valid
+    keyword arguments.
+
+    """
+    #
+    # TODO: check u + v cubes for compatibility.
+    #
+    kwargs["_v_data"] = v_cube.data
+    return _draw_2d_from_points(
+        "barbs", _vector_component_args, u_cube, *args, **kwargs
+    )
+
+
 def quiver(u_cube, v_cube, *args, **kwargs):
     """
     Draws an arrow plot from two vector component cubes.
@@ -1432,12 +1481,12 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         vectors.  The components are aligned with the North and East of the
         cube coordinate system.
 
-    .. Note:
+    .. Note::
 
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
         To transform wind values between coordinate systems, use
-        :func:`iris.analysis.cartography.rotate_vectors`.
+        :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
         :meth:`cartopy.crs.CRS.transform_points`.

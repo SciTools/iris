@@ -143,6 +143,10 @@
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa8172d0847ecd2bc913939c36846c714933799cc3cc8727e67639f939996a58.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa8172c6857ecd38cb3392ce36c564311931d85ec64e9787719a39993c316e66.png"
     ],
+    "gallery_tests.test_plot_wind_barbs.TestWindBarbs.test_wind_barbs.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169316c1fe9e96c29e36739e13c07c3d61c07f39a13921c07f3e21.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e9e161e996169316c1fe9e96c29e36739e13c07c3d61c07f39813929c07f3f01.png"
+    ],
     "gallery_tests.test_plot_wind_speed.TestWindSpeed.test_plot_wind_speed.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/bcf924fb9306930ce12ccf97c73236b28ecec4cd3e29847b18e639e6c14f1a09.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/e9e960e996169306c1fe9e96c29e36739e13c06c3d61c07f39a139e1c07f3f01.png"
@@ -172,6 +176,21 @@
     ],
     "iris.tests.integration.plot.test_plot_2d_coords.Test2dContour.test_2d_coords_contour.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/b4b2643ecb05cb43b0f23d80c53c4e1d3e5990eb1f81c19f2f983cb1c4ff3e42.png"
+    ],
+    "iris.tests.integration.plot.test_vector_plots.TestBarbs.test_2d_plain_latlon.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eb036726c47c9273918e6e2c6f216336787590eb969a165890ee6c676925b3b3.png"
+    ],
+    "iris.tests.integration.plot.test_vector_plots.TestBarbs.test_2d_plain_latlon_on_polar_map.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/e66d673c999031cd6667663398dc332c676364e798959336636660d933998666.png"
+    ],
+    "iris.tests.integration.plot.test_vector_plots.TestBarbs.test_2d_rotated_latlon.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/eba037a4c479c273b2963f2c6f6126966865d86f969e33c9b1706c26692793b0.png"
+    ],
+    "iris.tests.integration.plot.test_vector_plots.TestBarbs.test_non_latlon_1d_coords.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7ac334934d2e65c72596325b343338cb41c92d9c5b36f65330d379692ca6d6c.png"
+    ],
+    "iris.tests.integration.plot.test_vector_plots.TestBarbs.test_non_latlon_2d_coords.0": [
+        "https://scitools.github.io/test-iris-imagehash/images/v4/a7acb36134d2e676627963259343330cb43e92d9c5336e67330d379292ca6d6c.png"
     ],
     "iris.tests.integration.plot.test_vector_plots.TestQuiver.test_2d_plain_latlon.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fb8d4f21c472b27e919d2e216f216b3178e69c7e961ab39a84696c616d245b94.png"
