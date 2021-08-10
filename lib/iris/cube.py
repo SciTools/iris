@@ -2802,7 +2802,7 @@ class Cube(CFVariableMixin):
             if split_cell_indices.size:
                 indices = inside_indices[split_cell_indices]
                 cells = bounds[indices]
-                if maximum % modulus not in cells:
+                if maximum - modulus not in cells:
                     # Recalculate the extended minimum only if the output bounds
                     # do not span the requested (minimum, maximum) range.  If
                     # they do span that range, this adjustment would give unexpected
