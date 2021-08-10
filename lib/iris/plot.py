@@ -1432,7 +1432,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         vectors.  The components are aligned with the North and East of the
         cube coordinate system.
 
-    .. Note:
+    .. Note::
 
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
@@ -1480,7 +1480,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         vectors.  The components are aligned with the North and East of the
         cube coordinate system.
 
-    .. Note:
+    .. Note::
 
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
