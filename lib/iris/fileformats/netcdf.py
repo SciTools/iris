@@ -759,7 +759,51 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def load_cubes(filenames, callback=None):
+def _translate_constraints_to_var_callback(constraints):
+    """
+    Translate load constraints into a simple data-var filter function, if possible.
+
+    Returns:
+         * function(cf_var:CFDataVariable): --> bool,
+            or None.
+
+    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+
+    """
+    import iris._constraints
+
+    constraints = iris._constraints.list_of_constraints(constraints)
+    result = None
+    if len(constraints) == 1:
+        (constraint,) = constraints
+        if (
+            isinstance(constraint, iris._constraints.NameConstraint)
+            and constraint.STASH == "none"
+        ):
+            # As long as it doesn't use a STASH match, then we can treat it as
+            # a testing against name properties of cf_var.
+            # That's just like testing against name properties of a cube, except that they may not all exist.
+            def inner(cf_datavar):
+                match = True
+                for name in constraint._names:
+                    expected = getattr(constraint, name)
+                    if name != "STASH" and expected != "none":
+                        attr_name = "cf_name" if name == "var_name" else name
+                        # Fetch property : N.B. CFVariable caches the property values
+                        # The use of a default here is the only difference from the code in NameConstraint.
+                        if not hasattr(cf_datavar, attr_name):
+                            continue
+                        actual = getattr(cf_datavar, attr_name, "")
+                        if actual != expected:
+                            match = False
+                            break
+                return match
+
+            result = inner
+    return result
+
+
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of NetCDF filenames/URLs.
 
@@ -779,6 +823,9 @@ def load_cubes(filenames, callback=None):
     """
     from iris.io import run_callback
 
+    # Create a low-level data-var filter from the original load constraints, if they are suitable.
+    var_callback = _translate_constraints_to_var_callback(constraints)
+
     # Create an actions engine.
     engine = _actions_engine()
 
@@ -794,6 +841,10 @@ def load_cubes(filenames, callback=None):
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
+            if var_callback and not var_callback(cf_var):
+                # Deliver only selected results.
+                continue
+
             cube = _load_cube(engine, cf, cf_var, filename)
 
             # Process any associated formula terms and attach

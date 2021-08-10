@@ -672,5 +672,21 @@ data:
         self.assertEqual(cs.false_northing, 0.0)
 
 
+class TestConstrainedLoad(tests.IrisTest):
+    filename = tests.get_data_path(
+        ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")
+    )
+
+    def test_netcdf_with_NameConstraint(self):
+        constr = iris.NameConstraint(var_name="cdf_temp_dmax_tmean_abs")
+        cubes = iris.load(self.filename, constr)
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(cubes[0].var_name, "cdf_temp_dmax_tmean_abs")
+
+    def test_netcdf_with_no_constraint(self):
+        cubes = iris.load(self.filename)
+        self.assertEqual(len(cubes), 3)
+
+
 if __name__ == "__main__":
     tests.main()

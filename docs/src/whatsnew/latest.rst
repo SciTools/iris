@@ -65,6 +65,12 @@ This document explains the changes made to Iris for this release
    :attr:`~iris.cube.Cube.attributes`, and improving spacing throughout.
    (:pull:`4206`)
 
+#. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
+   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
+   optimisation only applies when matching on standard name, long name or
+   NetCDF variable name, not when matching on STASH.
+   (:pull:`4176`)
+
 
 🐛 Bugs Fixed
 =============

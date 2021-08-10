@@ -90,7 +90,12 @@ FORMAT_AGENT.add_spec(
 #
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "NetCDF", MagicNumber(4), 0x43444601, netcdf.load_cubes, priority=5
+        "NetCDF",
+        MagicNumber(4),
+        0x43444601,
+        netcdf.load_cubes,
+        priority=5,
+        constraint_aware_handler=True,
     )
 )
 
@@ -102,6 +107,7 @@ FORMAT_AGENT.add_spec(
         0x43444602,
         netcdf.load_cubes,
         priority=5,
+        constraint_aware_handler=True,
     )
 )
 
@@ -114,6 +120,7 @@ FORMAT_AGENT.add_spec(
         0x894844460D0A1A0A,
         netcdf.load_cubes,
         priority=5,
+        constraint_aware_handler=True,
     )
 )
 
@@ -124,6 +131,7 @@ _nc_dap = FormatSpecification(
     lambda protocol: protocol in ["http", "https"],
     netcdf.load_cubes,
     priority=6,
+    constraint_aware_handler=True,
 )
 FORMAT_AGENT.add_spec(_nc_dap)
 del _nc_dap
