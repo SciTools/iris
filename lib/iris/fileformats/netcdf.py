@@ -759,7 +759,7 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def translate_constraints_to_var_callback(constraints):
+def _translate_constraints_to_var_callback(constraints):
     """
     Translate load constraints into a simple data-var filter function, if possible.
 
@@ -822,7 +822,7 @@ def load_cubes(filenames, callback=None, constraints=None):
     from iris.io import run_callback
 
     # Create a low-level data-var filter from the original load constraints, if they are suitable.
-    var_callback = translate_constraints_to_var_callback(constraints)
+    var_callback = _translate_constraints_to_var_callback(constraints)
 
     # Create an actions engine.
     engine = _actions_engine()
