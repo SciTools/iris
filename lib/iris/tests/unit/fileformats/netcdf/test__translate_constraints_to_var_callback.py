@@ -22,11 +22,14 @@ import iris.tests as tests
 
 class Test(tests.IrisTest):
     data_variables = [
-        CFDataVariable('var1', MagicMock(standard_name='x_wind')),
-        CFDataVariable('var2', MagicMock(standard_name='y_wind')),
-        CFDataVariable('var1', MagicMock(long_name='x component of wind')),
-        CFDataVariable('var1', MagicMock(standard_name='x_wind', long_name='x component of wind')),
-        CFDataVariable('var1', MagicMock()),
+        CFDataVariable("var1", MagicMock(standard_name="x_wind")),
+        CFDataVariable("var2", MagicMock(standard_name="y_wind")),
+        CFDataVariable("var1", MagicMock(long_name="x component of wind")),
+        CFDataVariable(
+            "var1",
+            MagicMock(standard_name="x_wind", long_name="x component of wind"),
+        ),
+        CFDataVariable("var1", MagicMock()),
     ]
 
     def test_multiple_constraints(self):
