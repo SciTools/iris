@@ -82,6 +82,10 @@ This document explains the changes made to Iris for this release
 #. `@MHBalsmeier`_ modified :func:`~iris.plot.contourf` to generalize :pull:`4150`
    for the cases where NaN values occur in the plot array (:pull:`4263`)
 
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
+   one cell's bounds align with the requested maximum and negative minimum, fixing
+   :issue:`4221`. (:pull:`4278`)
+
 🚀 Performance Enhancements
 ===========================
 
