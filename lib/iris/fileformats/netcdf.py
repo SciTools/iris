@@ -37,7 +37,6 @@ from iris.aux_factory import (
     OceanSigmaZFactory,
 )
 import iris.config
-import iris._constraints
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
@@ -771,6 +770,7 @@ def translate_constraints_to_var_callback(constraints):
     For now, ONLY handles a single NameConstraint with no 'STASH' component.
 
     """
+    import iris._constraints
     constraints = iris._constraints.list_of_constraints(constraints)
     result = None
     if len(constraints) == 1:
@@ -787,9 +787,10 @@ def translate_constraints_to_var_callback(constraints):
                 for name in constraint._names:
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
+                        attr_name = 'cf_name' if name == 'var_name' else name
                         # Fetch property : N.B. CFVariable caches the property values
                         # The use of a default here is the only difference from the code in NameConstraint.
-                        actual = getattr(cf_datavar, name, "")
+                        actual = getattr(cf_datavar, attr_name, "")
                         if actual != expected:
                             match = False
                             break
