@@ -223,9 +223,9 @@ class CellMethodSection(Section):
         self.contents = []
         for method in cell_methods:
             content = str(method)
-            names = content.split(":")[:-1]
+            names = content.split(": ")[:-1]
             # Remove "coord: " or "coord1: coord2: " from the front of the string, leaving the value.
-            value = content.split(":")[-1][1:]
+            value = content.split(": ")[-1]
             self.names += names
             self.values.append(value)
             self.contents.append(content)
