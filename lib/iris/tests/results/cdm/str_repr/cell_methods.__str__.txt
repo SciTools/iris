@@ -8,12 +8,9 @@ air_temperature / (K)               (latitude: 73; longitude: 96)
         pressure                    1000.0 hPa
         time                        1998-12-01 00:00:00
     Cell methods:
-        longitude                   mean (6 minutes, This is a test comment)
-        latitude                    mean (12 minutes)
-        longitude                   average (6 minutes, This is another test comment)
-        latitude                    average (15 minutes, This is another comment)
-        longitude                   average
-        latitude                    average
+        longitude, latitude         mean (6 minutes, This is a test comment, 12 minutes)
+        longitude, latitude         average (6 minutes, This is another test comment,15 minutes, This is another comment)
+        longitude, latitude         average
         longitude                   percentile (6 minutes, This is another test comment)
     Attributes:
         STASH                       m01s16i203

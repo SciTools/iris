@@ -77,14 +77,14 @@ class Test(tests.IrisTest):
         token = "air_temperature"
         coord = AuxCoord(1, standard_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "{0}: {1}\n {2}: {1}".format(token, self.method, token)
+        expected = "{0}: {0}: {1}".format(token, self.method)
         self.assertEqual(str(result), expected)
 
     def test_mixture_default(self):
         token = "air temperature"  # includes space
         coord = AuxCoord(1, long_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "unknown: {0}\n unknown: {0}".format(self.method)
+        expected = "unknown: unknown: {}".format(self.method)
         self.assertEqual(str(result), expected)
 
 

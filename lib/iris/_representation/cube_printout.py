@@ -257,11 +257,11 @@ class CubePrinter:
                         add_scalar_row(item.name, item.content)
                         if item.extra:
                             add_scalar_row(item_to_extra_indent + item.extra)
-                elif "attribute" in title or "cell method" in title:
+                elif "attribute" in title:
                     for title, value in zip(sect.names, sect.values):
                         add_scalar_row(title, value)
-                elif "scalar cell measure" in title:
-                    # These are just strings: nothing in the 'value' column.
+                elif "scalar cell measure" in title or "cell method" in title:
+                    # These are just strings: nothing extra in the 'value' column.
                     for name in sect.contents:
                         add_scalar_row(name)
                 else:
