@@ -53,7 +53,7 @@ from iris.analysis._interpolation import (
 )
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
-from iris.exceptions import LazyAggregatorError
+from iris.exceptions import LazyAggregatorError, CoordinateNotFoundError
 
 __all__ = (
     "COUNT",
@@ -1003,8 +1003,16 @@ class Aggregator(_Aggregator):
                 )
             coord_names.append(coord.name())
 
-        # Add a cell method.
+        # Add a cell method. If both y and x coords are specified, replace with "area"
         method_name = self.cell_method.format(**kwargs)
+        try:
+            spatial_coords = [cube.coord(axis=axis) for axis in "yx"]
+        except CoordinateNotFoundError:
+            pass
+        else:
+            if all([x in coord_names for x in spatial_coords]):
+                [coord_names.pop(c) for c in spatial_coords]
+                coord_names.append("area")
         cell_method = iris.coords.CellMethod(method_name, coord_names)
         cube.add_cell_method(cell_method)
 
