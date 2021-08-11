@@ -198,10 +198,12 @@ class Test__get_bits(tests.IrisTest):
         contents = self.representer.str_headings["Cell methods:"]
         content_str = ",".join(content for content in contents)
         for method in self.cube.cell_methods:
-            name = method.method
-            value = str(method)[len(name + ": ") :]
-            self.assertIn(name, content_str)
-            self.assertIn(value, content_str)
+            for content in str(method).split("\n"):
+                name = content.split(":")[0]
+                # Remove "method: " from the front of the string, leaving the value.
+                value = content[len(f"{name}: ") :]
+                self.assertIn(name, content_str)
+                self.assertIn(value, content_str)
 
 
 @tests.skip_data
