@@ -53,7 +53,7 @@ from iris.analysis._interpolation import (
 )
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
-from iris.exceptions import LazyAggregatorError, CoordinateNotFoundError
+from iris.exceptions import CoordinateNotFoundError, LazyAggregatorError
 
 __all__ = (
     "COUNT",
