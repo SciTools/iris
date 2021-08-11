@@ -2816,25 +2816,24 @@ class CellMethod(iris.util._OrderedHashable):
         self._init(method, tuple(_coords), tuple(_intervals), tuple(_comments))
 
     def __str__(self):
-        """Return a custom string representation of CellMethod"""
-        # Group related coord names intervals and comments together
+        """Return a custom string representation of CellMethod in CF-format"""
+        # Ungroup related coord names intervals and comments
         cell_components = zip_longest(
             self.coord_names, self.intervals, self.comments, fillvalue=""
         )
 
         collection_summaries = []
-        cm_summary = "%s: " % self.method
 
         for coord_name, interval, comment in cell_components:
             other_info = ", ".join(filter(None, chain((interval, comment))))
             if other_info:
-                coord_summary = "%s (%s)" % (coord_name, other_info)
+                coord_summary = "%s: %s (%s)" % (self.method, coord_name, other_info)
             else:
-                coord_summary = "%s" % coord_name
+                coord_summary = "%s: %s" % (self.method, coord_name)
 
             collection_summaries.append(coord_summary)
 
-        return cm_summary + ", ".join(collection_summaries)
+        return "\n ".join(collection_summaries)
 
     def __add__(self, other):
         # Disable the default tuple behaviour of tuple concatenation
