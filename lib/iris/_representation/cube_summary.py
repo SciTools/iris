@@ -222,13 +222,13 @@ class CellMethodSection(Section):
         self.values = []
         self.contents = []
         for method in cell_methods:
-            name = method.coord
-            content = str(method)
-            # Remove "method: " from the front of the string, leaving the value.
-            value = content[len(name + ": ") :]
-            self.names.append(name)
-            self.values.append(value)
-            self.contents.append(content)
+            for content in str(method).split("\n"):
+                name = content.split(":")[0]
+                # Remove "method: " from the front of the string, leaving the value.
+                value = content[len(f"{name}: ") :]
+                self.names.append(name)
+                self.values.append(value)
+                self.contents.append(content)
 
 
 class CubeSummary:
