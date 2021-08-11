@@ -222,7 +222,7 @@ class CellMethodSection(Section):
         self.values = []
         self.contents = []
         for method in cell_methods:
-            name = method.method
+            name = method.coord
             content = str(method)
             # Remove "method: " from the front of the string, leaving the value.
             value = content[len(name + ": ") :]
