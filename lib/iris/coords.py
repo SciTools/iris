@@ -2827,7 +2827,11 @@ class CellMethod(iris.util._OrderedHashable):
         for coord_name, interval, comment in cell_components:
             other_info = ", ".join(filter(None, chain((interval, comment))))
             if other_info:
-                coord_summary = "%s: %s (%s)" % (self.method, coord_name, other_info)
+                coord_summary = "%s: %s (%s)" % (
+                    self.method,
+                    coord_name,
+                    other_info,
+                )
             else:
                 coord_summary = "%s: %s" % (self.method, coord_name)
 
