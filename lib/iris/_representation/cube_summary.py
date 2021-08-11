@@ -223,11 +223,11 @@ class CellMethodSection(Section):
         self.contents = []
         for method in cell_methods:
             name = method.method
+            content = str(method)
             # Remove "method: " from the front of the string, leaving the value.
-            value = str(method)[len(name + ": ") :]
+            value = content[len(name + ": ") :]
             self.names.append(name)
             self.values.append(value)
-            content = "{}: {}".format(name, value)
             self.contents.append(content)
 
 
