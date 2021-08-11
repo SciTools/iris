@@ -2828,12 +2828,12 @@ class CellMethod(iris.util._OrderedHashable):
             other_info = ", ".join(filter(None, chain((interval, comment))))
             if other_info:
                 coord_summary = "%s: %s (%s)" % (
-                    self.method,
                     coord_name,
+                    self.method,
                     other_info,
                 )
             else:
-                coord_summary = "%s: %s" % (self.method, coord_name)
+                coord_summary = "%s: %s" % (coord_name, self.method)
 
             collection_summaries.append(coord_summary)
 
