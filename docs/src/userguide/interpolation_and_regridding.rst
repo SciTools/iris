@@ -75,8 +75,8 @@ Let's take the air temperature cube we've seen previously:
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Cell methods:
-            mean within years           time
-            mean over years             time
+            time                        mean within years
+            time                        mean over years
         Attributes:
             STASH                       m01s16i203
             source                      Data from Met Office Unified Model
@@ -94,9 +94,9 @@ We can interpolate specific values from the coordinates of the cube:
             pressure                    1000.0 hPa
             time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Cell methods:
-            mean within years           time
-            mean over years             time
-        Attributes:
+            time                        mean within years
+            time                        mean over years
+         Attributes:
             STASH                       m01s16i203
             source                      Data from Met Office Unified Model
 

@@ -750,9 +750,9 @@ class Cube(CFVariableMixin):
                 time                        \
 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             Cell methods:
-                mean within years           time
-                mean over years             time
-            Attributes:
+                time                        mean within years
+                time                        mean over years
+             Attributes:
                 STASH                       m01s16i203
                 source                      Data from Met Office Unified Model
 
