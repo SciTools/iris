@@ -53,6 +53,19 @@ class Test(tests.IrisTest):
         )
         self.assertEqual(expected, repr(metadata))
 
+    def test_str(self):
+        metadata = self.cls(
+            standard_name="",
+            long_name=None,
+            var_name=self.var_name,
+            units=self.units,
+            attributes={},
+        )
+        expected = (
+            f"BaseMetadata(var_name={self.var_name!r}, units={self.units!r})"
+        )
+        self.assertEqual(expected, str(metadata))
+
     def test__fields(self):
         expected = (
             "standard_name",
@@ -1074,8 +1087,8 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=np.float(3.14),
-            four=np.arange(10, dtype=np.float),
+            three=np.float64(3.14),
+            four=np.arange(10, dtype=np.float64),
             five=ma.arange(10, dtype=np.int16),
         )
         self.cls = BaseMetadata

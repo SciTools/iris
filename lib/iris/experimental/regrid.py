@@ -498,9 +498,9 @@ def _regrid_area_weighted_array(src_data, x_dim, y_dim, weights_info, mdtol=0):
     # Flag to indicate whether the original data was a masked array.
     src_masked = src_data.mask.any() if ma.isMaskedArray(src_data) else False
     if src_masked:
-        src_area_masks = np.full(src_areas_shape, True, dtype=np.bool)
+        src_area_masks = np.full(src_areas_shape, True, dtype=np.bool_)
     else:
-        new_data_mask = np.full(new_shape, False, dtype=np.bool)
+        new_data_mask = np.full(new_shape, False, dtype=np.bool_)
 
     # Axes of data over which the weighted mean is calculated.
     axis = (y_dim, x_dim)

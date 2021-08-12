@@ -19,7 +19,7 @@ nox.options.reuse_existing_virtualenvs = True
 PACKAGE = str("lib" / Path("iris"))
 
 #: Cirrus-CI environment variable hook.
-PY_VER = os.environ.get("PY_VER", "3.7")
+PY_VER = os.environ.get("PY_VER", ["3.6", "3.7", "3.8"])
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
@@ -41,7 +41,7 @@ def venv_cached(session):
 
     """
     result = False
-    yml = Path(f"requirements/ci/py{PY_VER.replace('.', '')}.yml")
+    yml = Path(f"requirements/ci/py{session.python.replace('.', '')}.yml")
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / yml.name
     if cache.is_file():
@@ -66,7 +66,7 @@ def cache_venv(session):
         A `nox.sessions.Session` object.
 
     """
-    yml = Path(f"requirements/ci/py{PY_VER.replace('.', '')}.yml")
+    yml = Path(f"requirements/ci/py{session.python.replace('.', '')}.yml")
     with open(yml, "rb") as fi:
         hexdigest = hashlib.sha256(fi.read()).hexdigest()
     tmp_dir = Path(session.create_tmp())
@@ -90,6 +90,58 @@ def cache_cartopy(session):
             "python",
             "-c",
             "import cartopy; cartopy.io.shapereader.natural_earth()",
+        )
+
+
+def prepare_venv(session):
+    """
+    Create and cache the nox session conda environment, and additionally
+    provide conda environment package details and info.
+
+    Note that, iris is installed into the environment using pip.
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+
+    Notes
+    -----
+    See
+      - https://github.com/theacodes/nox/issues/346
+      - https://github.com/theacodes/nox/issues/260
+
+    """
+    if not venv_cached(session):
+        # Determine the conda requirements yaml file.
+        fname = f"requirements/ci/py{session.python.replace('.', '')}.yml"
+        # Back-door approach to force nox to use "conda env update".
+        command = (
+            "conda",
+            "env",
+            "update",
+            f"--prefix={session.virtualenv.location}",
+            f"--file={fname}",
+            "--prune",
+        )
+        session._run(*command, silent=True, external="error")
+        cache_venv(session)
+
+    cache_cartopy(session)
+    session.install("--no-deps", "--editable", ".")
+
+    # Determine whether verbose diagnostics have been requested
+    # from the command line.
+    verbose = "-v" in session.posargs or "--verbose" in session.posargs
+
+    if verbose:
+        session.run("conda", "info")
+        session.run("conda", "list", f"--prefix={session.virtualenv.location}")
+        session.run(
+            "conda",
+            "list",
+            f"--prefix={session.virtualenv.location}",
+            "--explicit",
         )
 
 
@@ -131,7 +183,7 @@ def black(session):
     session.run("black", "--check", __file__)
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def tests(session):
     """
     Perform iris system, integration and unit tests.
@@ -141,30 +193,8 @@ def tests(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    prepare_venv(session)
     session.run(
         "python",
         "-m",
@@ -174,7 +204,7 @@ def tests(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def gallery(session):
     """
     Perform iris gallery doc-tests.
@@ -184,30 +214,8 @@ def gallery(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
+    prepare_venv(session)
     session.run(
         "python",
         "-m",
@@ -216,7 +224,7 @@ def gallery(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def doctest(session):
     """
     Perform iris doc-tests.
@@ -226,31 +234,9 @@ def doctest(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
-    session.cd("docs/iris")
+    prepare_venv(session)
+    session.cd("docs")
     session.run(
         "make",
         "clean",
@@ -264,7 +250,7 @@ def doctest(session):
     )
 
 
-@nox.session(python=[PY_VER], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 def linkcheck(session):
     """
     Perform iris doc link check.
@@ -274,31 +260,9 @@ def linkcheck(session):
     session: object
         A `nox.sessions.Session` object.
 
-    Notes
-    -----
-    See
-      - https://github.com/theacodes/nox/issues/346
-      - https://github.com/theacodes/nox/issues/260
-
     """
-    if not venv_cached(session):
-        # Determine the conda requirements yaml file.
-        fname = f"requirements/ci/py{PY_VER.replace('.', '')}.yml"
-        # Back-door approach to force nox to use "conda env update".
-        command = (
-            "conda",
-            "env",
-            "update",
-            f"--prefix={session.virtualenv.location}",
-            f"--file={fname}",
-            "--prune",
-        )
-        session._run(*command, silent=True, external="error")
-        cache_venv(session)
-
-    cache_cartopy(session)
-    session.run("python", "setup.py", "develop")
-    session.cd("docs/iris")
+    prepare_venv(session)
+    session.cd("docs")
     session.run(
         "make",
         "clean",

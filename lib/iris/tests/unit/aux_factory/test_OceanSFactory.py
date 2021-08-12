@@ -137,6 +137,12 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSFactory(**self.kwargs)
 
+    def test_promote_s_units_unknown_to_dimensionless(self):
+        s = mock.Mock(units=Unit("unknown"), nbounds=0)
+        self.kwargs["s"] = s
+        factory = OceanSFactory(**self.kwargs)
+        self.assertEqual("1", factory.dependencies["s"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
@@ -189,12 +195,12 @@ class Test_make_coord(tests.IrisTest):
             np.arange(-0.975, 0, 0.05, dtype=float), units="1", long_name="s"
         )
         self.eta = AuxCoord(
-            np.arange(-1, 3, dtype=np.float).reshape(2, 2),
+            np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",
             units="m",
         )
         self.depth = AuxCoord(
-            np.arange(4, dtype=np.float).reshape(2, 2) * 1e3,
+            np.arange(4, dtype=np.float64).reshape(2, 2) * 1e3,
             long_name="depth",
             units="m",
         )

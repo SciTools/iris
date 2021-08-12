@@ -1,0 +1,325 @@
+v1.0 (17 Oct 2012)
+******************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+With the release of Iris 1.0, we have broadly completed the transition
+to the CF data model, and established a stable foundation for future
+work. Following this release we plan to deliver significant performance
+improvements and additional features.
+
+
+The Role of 1.x
+===============
+
+The 1.x series of releases is intended to provide a relatively stable,
+backwards-compatible platform based on the CF-netCDF data model, upon
+which long-lived services can be built.
+
+Iris 1.0 targets the data model implicit in CF-netCDF 1.5. This will be
+extended to cover the new features of CF-netCDF 1.6 (e.g. discrete
+sampling geometries) and any subsequent versions which maintain
+backwards compatibility. Similarly, as the efforts of the CF community
+to formalise their data model reach maturity, they will be included
+in Iris where significant backwards-compatibility can be maintained.
+
+
+Features
+========
+
+A summary of the main features added with version 1.0:
+
+* Hybrid-pressure vertical coordinates, and the ability to load from GRIB.
+
+* Initial support for CF-style coordinate systems.
+
+* Use of Cartopy for mapping in matplotlib.
+
+* Load data from NIMROD files.
+
+* Availability of Cynthia Brewer colour palettes.
+
+* Add a citation to a plot.
+
+* Ensures netCDF files are properly closed.
+
+* The ability to bypass merging when loading data.
+
+* Save netCDF files with an unlimited dimension.
+
+* A more explicit set of load functions, which also allow the automatic
+  cube merging to be bypassed as a last resort.
+
+* The ability to project a cube with a lat-lon or rotated lat-lon coordinate
+  system into a range of map projections e.g. Polar Stereographic.
+
+* Cube summaries are now more readable when the scalar coordinates
+  contain bounds.
+
+
+CF-NetCDF Coordinate Systems
+----------------------------
+
+The coordinate systems in Iris are now defined by the CF-netCDF
+`grid mappings <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#grid-mappings-and-projections>`_.
+As of Iris 1.0 a subset of the CF-netCDF coordinate systems are
+supported, but this will be expanded in subsequent versions. Adding
+this code is a relatively simple, incremental process - it would make a
+good task to tackle for users interested in getting involved in
+contributing to the project.
+
+The coordinate systems available in Iris 1.0 and their corresponding
+Iris classes are:
+
+================================================================================================================= =========================================
+CF Name                                                                                                           Iris Class
+================================================================================================================= =========================================
+`Latitude-longitude <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_latitude_longitude>`_   :class:`~iris.coord_systems.GeogCS`
+`Rotated pole <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_rotated_pole>`_               :class:`~iris.coord_systems.RotatedGeogCS`
+`Transverse Mercator <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_transverse_mercator>`_ :class:`~iris.coord_systems.TransverseMercator`
+================================================================================================================= =========================================
+
+For convenience, Iris also includes the :class:`~iris.coord_systems.OSGB`
+class which provides a simple way to create the transverse Mercator
+coordinate system used by the British
+`Ordnance Survey <http://www.ordnancesurvey.co.uk/>`_.
+
+
+.. _whats-new-cartopy:
+
+Using Cartopy for Mapping in Matplotlib
+---------------------------------------
+
+The underlying map drawing package has now been updated to use
+`Cartopy <http://scitools.github.com/cartopy>`_. Cartopy provides a
+highly flexible set of mapping tools, with a consistent, intuitive
+interface. As yet it doesn't have feature-parity with basemap, but its
+goal is to make maps "just work", making it the perfect complement to Iris.
+
+The ``iris.plot.map_setup`` function has now been replaced with a cleaner
+interface:
+
+    * To draw a cube on its native map project, one can simply draw the cube directly::
+
+            import iris.plot as iplt
+            import matplotlib.pyplot as plt
+
+            iplt.contourf(cube)
+            plt.gca().coastlines()
+            plt.show()
+
+    * To draw a cube on the native map and extents of another, one can use the
+      :func:`iris.plot.default_projection` and
+      :func:`iris.plot.default_projection_extent` functions::
+
+            import iris.plot as iplt
+            import matplotlib.pyplot as plt
+
+            cube1_projection = iplt.default_projection(cube1)
+            cube1_extent = iplt.default_projection_extent(cube1)
+
+            ax = plt.axes(projection=cube1_projection)
+            ax.set_extent(cube1_extent, cube1_projection)
+            iplt.contourf(cube2)
+            ax.coastlines()
+            plt.show()
+
+.. note::
+
+    The ``iris.plot.gcm`` function to get the current map is now
+    redundant; instead the current map *is* the current matplotlib axes,
+    and :func:`matplotlib.pyplot.gca` should be used instead.
+
+For more examples of what can be done with Cartopy, see the Iris gallery and
+`Cartopy's documentation  <http://scitools.github.com/cartopy>`_.
+
+
+Hybrid-Pressure
+---------------
+
+With the introduction of the :class:`~iris.aux_factory.HybridPressureFactory`
+class, it is now possible to represent data expressed on a
+`hybrid-pressure vertical coordinate <https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#_atmosphere_hybrid_sigma_pressure_coordinate>`_.
+A hybrid-pressure factory is created with references to the coordinates
+which provide the components of the hybrid coordinate ("ap" and "b") and
+the surface pressure. In return, it provides a virtual "pressure"
+coordinate whose values are derived from the given components.
+
+This facility is utilised by the GRIB2 loader to automatically provide
+the derived "pressure" coordinate for certain data [#f1]_ from the
+`ECMWF <http://www.ecmwf.int/>`_.
+
+.. [#f1] Where the level type is either 105 or 119, and where the
+         surface pressure has an ECMWF paramId of
+         `152 <https://apps.ecmwf.int/codes/grib/param-db/?id=152>`_.
+
+
+NetCDF
+------
+
+When saving a Cube to a netCDF file, Iris will now define the outermost
+dimension as an unlimited/record dimension. In combination with the
+:meth:`iris.cube.Cube.transpose` method, this allows any dimension to
+take the role of the unlimited/record dimension.
+
+For example, a Cube with the structure::
+
+    <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)>
+
+would result in a netCDF file whose CDL definition would include::
+
+    dimensions:
+            time = UNLIMITED ; // (6 currently)
+            model_level_number = 70 ;
+            grid_latitude = 100 ;
+            grid_longitude = 100 ;
+
+Also, Iris will now ensure that netCDF files are properly closed when
+they are no longer in use. Previously this could cause problems when
+dealing with large numbers of netCDF files, or in long running
+processes.
+
+
+Brewer Colour Palettes
+----------------------
+
+Iris includes a selection of carefully designed colour palettes produced
+by Cynthia Brewer. The :mod:`iris.palette` module registers the Brewer
+colour palettes with matplotlib, so they are explicitly selectable via
+the :func:`matplotlib.pyplot.set_cmap` function. For example::
+
+    import iris.palette
+    import matplotlib.pyplot as plt
+    import numpy as np
+    plt.contourf(np.random.randn(10, 10))
+    plt.set_cmap('brewer_RdBu_11')
+    plt.show()
+
+Citations
+---------
+Citations can easily be added to a plot using the :func:`iris.plot.citation`
+function. The recommended text for the Cynthia Brewer citation is provided
+by :data:`iris.plot.BREWER_CITE`.
+
+To include a reference in a journal article or report please refer to
+`section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+in the citation guidance provided by Cynthia Brewer.
+
+
+Metadata Attributes
+-------------------
+
+Iris now stores "source" and "history" metadata in Cube attributes.
+For example::
+
+    >>> print(iris.tests.stock.global_pp())
+    air_temperature                     (latitude: 73; longitude: 96)
+         ...
+         Attributes:
+              ...
+              source: Data from Met Office Unified Model
+         ...
+
+Where previously it would have appeared as::
+
+    air_temperature                     (latitude: 73; longitude: 96)
+         ...
+         Scalar coordinates:
+              ...
+              source: Data from Met Office Unified Model
+         ...
+
+.. note::
+
+    This change breaks backwards compatibility with Iris 0.9. But
+    if it is desirable to have the "source" metadata expressed as a
+    coordinate then it can be done with the following pattern::
+
+        src = cube.attributes.pop('source')
+        src_coord = iris.coords.AuxCoord(src, long_name='source')
+        cube.add_aux_coord(src_coord)
+
+
+New Loading Functions
+---------------------
+
+The main functions for loading cubes are now:
+  - :func:`iris.load()`
+  - :func:`iris.load_cube()`
+  - :func:`iris.load_cubes()`
+
+These provide convenient cube loading suitable for both interactive
+(:func:`iris.load()`) and scripted (:func:`iris.load_cube()`,
+:func:`iris.load_cubes()`) usage.
+
+In addition, :func:`iris.load_raw()` has been provided as a last resort
+for situations where the automatic cube merging is not appropriate.
+However, if you find you need to use this function we would encourage
+you to contact the Iris developers so we can see if a fix can be made
+to the cube merge algorithm.
+
+The :func:`iris.load_strict()` function has been deprecated. Code should
+now use the :func:`iris.load_cube()` and :func:`iris.load_cubes()`
+functions instead.
+
+
+Cube Projection
+---------------
+
+Iris now has the ability to project a cube into a number of map projections.
+This functionality is provided by :func:`iris.analysis.cartography.project()`.
+For example::
+
+    import iris
+    import cartopy.crs as ccrs
+    import matplotlib.pyplot as plt
+
+    # Load data
+    cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
+
+    # Transform cube to target projection
+    target_proj = ccrs.RotatedPole(pole_longitude=177.5,
+                                   pole_latitude=37.5)
+    new_cube, extent = iris.analysis.cartography.project(cube, target_proj)
+
+    # Plot
+    plt.axes(projection=target_proj)
+    plt.pcolor(new_cube.coord('projection_x_coordinate').points,
+               new_cube.coord('projection_y_coordinate').points,
+               new_cube.data)
+    plt.gca().coastlines()
+    plt.show()
+
+This function is intended to be used in cases where the cube's coordinates
+prevent one from directly visualising the data, e.g. when the longitude
+and latitude are two dimensional and do not make up a regular grid. The
+function uses a nearest neighbour approach rather than any form of
+linear/non-linear interpolation to determine the data value of each cell
+in the resulting cube. Consequently it may have an adverse effect on the
+statistics of the data e.g. the mean and standard deviation will not be
+preserved. This function currently assumes global data and will if
+necessary extrapolate beyond the geographical extent of the source cube.
+
+
+Incompatible Changes
+====================
+
+* The "source" and "history" metadata are now represented as Cube
+  attributes, where previously they used coordinates.
+
+* :meth:`iris.cube.Cube.coord_dims()` now returns a tuple instead of a list.
+
+* The ``iris.plot.gcm`` and ``iris.plot.map_setup`` functions are now removed.
+  See :ref:`whats-new-cartopy` for further details.
+
+
+Deprecations
+============
+
+* The methods :meth:`iris.coords.Coord.cos()` and
+  :meth:`iris.coords.Coord.sin()` have been deprecated.
+
+* The :func:`iris.load_strict()` function has been deprecated. Code
+  should now use the :func:`iris.load_cube()` and
+  :func:`iris.load_cubes()` functions instead.

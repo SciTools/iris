@@ -483,26 +483,26 @@ class IrisTest_nometa(unittest.TestCase):
                         stats.get("max", 0.0),
                         stats.get("min", 0.0),
                     ),
-                    dtype=np.float_,
+                    dtype=np.float64,
                 )
                 if math.isnan(stats.get("mean", 0.0)):
                     self.assertTrue(math.isnan(data.mean()))
                 else:
                     data_stats = np.array(
                         (data.mean(), data.std(), data.max(), data.min()),
-                        dtype=np.float_,
+                        dtype=np.float64,
                     )
                     self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             stats = collections.OrderedDict(
                 [
-                    ("std", np.float_(data.std())),
-                    ("min", np.float_(data.min())),
-                    ("max", np.float_(data.max())),
+                    ("std", np.float64(data.std())),
+                    ("min", np.float64(data.min())),
+                    ("max", np.float64(data.max())),
                     ("shape", data.shape),
                     ("masked", ma.is_masked(data)),
-                    ("mean", np.float_(data.mean())),
+                    ("mean", np.float64(data.mean())),
                 ]
             )
             with open(reference_path, "w") as reference_file:
@@ -573,6 +573,10 @@ class IrisTest_nometa(unittest.TestCase):
         """
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
+        # sort the attributes on xml elements before testing against known good state.
+        # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
+        # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
+        doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
         self._check_same(

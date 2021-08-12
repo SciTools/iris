@@ -1,0 +1,78 @@
+v1.2 (28 Feb 2013)
+******************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+
+Features
+========
+
+* :meth:`iris.cube.Cube.convert_units()` and
+  :meth:`iris.coords.Coord.convert_units()` have been added. This is
+  aimed at simplifying the conversion of a cube or coordinate from one unit to
+  another. For example, to convert a cube in kelvin to celsius, one can now
+  call cube.convert_units('celsius'). The operation is in-place and if the
+  units are not convertible an exception will be raised.
+
+* :attr:`iris.cube.Cube.var_name`, :attr:`iris.coords.Coord.var_name` and
+  :attr:`iris.aux_factory.AuxCoordFactory.var_name` attributes have been added.
+  This attribute represents the CF variable name of the object. It is populated
+  when loading from CF-netCDF files and is used when writing to CF-netCDF. A
+  var_name keyword argument has also been added to the
+  :meth:`iris.cube.Cube.coord()`, :meth:`iris.cube.Cube.coords()` and
+  :meth:`iris.cube.Cube.aux_factory()` methods.
+
+* :meth:`iris.coords.Coord.is_compatible()` has been added. This method is
+  used to determine whether two coordinates are sufficiently alike to
+  allow operations such as :meth:`iris.coords.Coord.intersect()` and
+  :func:`iris.analysis.interpolate.regrid()` to take place. A corresponding
+  method for cubes, :meth:`iris.cube.Cube.is_compatible()`, has also been
+  added.
+
+* Printing a :class:`~iris.cube.Cube` is now more user friendly with regards 
+  to dates and time. All *time* and *forecast_reference_time* scalar coordinates
+  now display human readable date/time information.
+
+* The units of a :class:`~iris.cube.Cube` are now shown when it is printed.
+
+* The area weights calculated by :func:`iris.analysis.cartography.area_weights`
+  may now be normalised relative to the total grid area.
+
+* Weights may now be passed to :meth:`iris.cube.Cube.rolling_window`
+  aggregations, thus allowing arbitrary digital filters to be applied to a
+  :class:`~iris.cube.Cube`.
+
+
+Bugs Fixed
+==========
+
+* The GRIB hindcast interpretation of negative forecast times can be enabled
+  via the :data:`iris.fileformats.grib.hindcast_workaround` flag.
+
+* The NIMROD file loader has been extended to cope with orography vertical
+  coordinates.
+
+
+Incompatible Changes
+====================
+
+* The deprecated :attr:`iris.cube.Cube.unit` and :attr:`iris.coords.Coord.unit`
+  attributes have been removed.
+
+
+Deprecations
+============
+
+* The :meth:`iris.coords.Coord.unit_converted()` method has been deprecated.
+  Users should make a copy of the coordinate using
+  :meth:`iris.coords.Coord.copy()` and then call the
+  :meth:`iris.coords.Coord.convert_units()` method of the new coordinate.
+
+* With the addition of the var_name attribute the signatures of DimCoord and
+  AuxCoord have changed. This should have no impact if you are providing
+  parameters as keyword arguments, but it may cause issues if you are relying
+  on the position/order of the arguments.
+
+* Iteration over a :class:`~iris.cube.Cube` has been deprecated. Instead,
+  users should use :meth:`iris.cube.Cube.slices`.

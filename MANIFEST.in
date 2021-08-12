@@ -11,7 +11,7 @@ include requirements/*.txt
 
 # File required to build docs
 recursive-include docs Makefile *.js *.png *.py *.rst
-prune docs/iris/build
+prune docs/build
 
 # Files required to build std_names module
 include tools/generate_std_names.py

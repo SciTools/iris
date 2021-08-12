@@ -415,7 +415,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (2, 4))
         mask = np.array(
             [[True, False, False, True], [False, True, True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -436,7 +436,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -458,7 +458,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -480,7 +480,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
