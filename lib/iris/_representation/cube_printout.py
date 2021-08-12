@@ -261,9 +261,8 @@ class CubePrinter:
                     for title, value in zip(sect.names, sect.values):
                         add_scalar_row(title, value)
                 elif "cell method" in title:
-                    title = ", ".join(sect.names)
-                    for value in sect.values:
-                        add_scalar_row(title, value)
+                    for title, value in zip(sect.names, sect.values):
+                        add_scalar_row(", ".join(title), value)
                 elif "scalar cell measure" in title:
                     # These are just strings: nothing in the 'value' column.
                     for name in sect.contents:

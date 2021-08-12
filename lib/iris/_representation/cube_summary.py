@@ -226,7 +226,7 @@ class CellMethodSection(Section):
             names = content.split(": ")[:-1]
             # Remove "coord: " or "coord1: coord2: " from the front of the string, leaving the value.
             value = content.split(": ")[-1]
-            self.names += names
+            self.names.append(names)
             self.values.append(value)
             self.contents.append(content)
 
