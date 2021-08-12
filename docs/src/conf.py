@@ -217,10 +217,11 @@ doctest_global_setup = "import iris"
 # -- Options for HTML output --------------------------------------------------
 
 # Generate logos.
-from importlib.util import spec_from_file_location, module_from_spec
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-import requests
 from tempfile import TemporaryDirectory
+
+import requests
 
 logo_gen_url = "https://raw.githubusercontent.com/SciTools/marketing/master/iris/logo/generate_logo.py"
 logo_gen_request = requests.get(logo_gen_url, allow_redirects=True)
