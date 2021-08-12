@@ -222,7 +222,7 @@ from pathlib import Path
 import requests
 from tempfile import TemporaryDirectory
 
-logo_gen_url = "https://raw.githubusercontent.com/trexfeathers/marketing/program_logo/iris/logo/generate_logo.py"
+logo_gen_url = "https://raw.githubusercontent.com/SciTools/marketing/master/iris/logo/generate_logo.py"
 logo_gen_request = requests.get(logo_gen_url, allow_redirects=True)
 with TemporaryDirectory() as tmp_dir:
     logo_gen_path = Path(tmp_dir) / "generate_logo.py"
@@ -231,15 +231,14 @@ with TemporaryDirectory() as tmp_dir:
     generate_logo = module_from_spec(logo_gen_spec)
     logo_gen_spec.loader.exec_module(generate_logo)
 
-logo_gen_kwargs = {
-    "filename_prefix": project.lower(),
-    "write_dir": Path("_static"),
-    "banner_text": project,
-    "banner_width": 588,
-    "banner_version": f"v{version}",
-    "rotate": False,
-}
-logo_paths = generate_logo.generate_logo(**logo_gen_kwargs)
+logo_paths = generate_logo.generate_logo(
+    filename_prefix=project.lower(),
+    write_dir=Path("_static"),
+    banner_text=project,
+    banner_width=588,
+    banner_version=f"v{version}",
+    rotate=False,
+)
 
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
