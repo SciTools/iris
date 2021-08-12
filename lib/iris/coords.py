@@ -2817,7 +2817,7 @@ class CellMethod(iris.util._OrderedHashable):
 
     def __str__(self):
         """Return a custom string representation of CellMethod in CF-format"""
-        # Group related coord names intervals and comments
+        # Group related coord names intervals and comments together
         cell_components = zip_longest(
             self.coord_names, self.intervals, self.comments, fillvalue=""
         )
