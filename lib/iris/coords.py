@@ -2830,7 +2830,7 @@ class CellMethod(iris.util._OrderedHashable):
             other_info = ", ".join(filter(None, chain((interval, comment))))
             other_infos.append(other_info)
 
-        result = f"{''.join([f'{c}: ' for c in coords])} {self.method}"
+        result = f"{''.join([f'{c}: ' for c in coords])}{self.method}"
         if any(other_infos):
             result += f" ({', '.join(other_infos)})"
         return result

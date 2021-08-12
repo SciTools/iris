@@ -508,8 +508,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Cell methods:",
-            "        stdev                       area",
-            "        mean                        y (10m, vertical), time (3min, =duration)",
+            "        area                        stdev",
+            "        y, time                     mean (10m, vertical, 3min, =duration)",
         ]
         self.assertEqual(rep, expected)
 
