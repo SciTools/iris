@@ -26,8 +26,8 @@ See also: http://en.wikipedia.org/wiki/False_color#Pseudocolor.
 """
 
 import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 import matplotlib.colors as mcols
+import matplotlib.pyplot as plt
 
 import iris
 import iris.coord_categorisation
@@ -68,14 +68,14 @@ def main():
     # Create a 'logarithmic' data normalization.
     anom_norm = mcols.SymLogNorm(
         linthresh=minimum_log_level,
-        linscale=0,
+        linscale=0.01,
         vmin=-maximum_scale_level,
         vmax=maximum_scale_level,
     )
     # Setting "linthresh=minimum_log_level" makes its non-logarithmic
     # data range equal to our 'zero band'.
-    # Setting "linscale=0" maps the whole zero band to the middle colour value
-    # (i.e. 0.5), which is the neutral point of a "diverging" style colormap.
+    # Setting "linscale=0.01" maps the whole zero band to the middle colour value
+    # (i.e., 0.5), which is the neutral point of a "diverging" style colormap.
 
     # Create an Axes, specifying the map projection.
     plt.axes(projection=ccrs.LambertConformal())

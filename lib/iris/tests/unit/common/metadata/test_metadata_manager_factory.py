@@ -10,7 +10,7 @@ Unit tests for the :func:`iris.common.metadata.metadata_manager_factory`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import pickle
 import unittest.mock as mock
@@ -26,7 +26,6 @@ from iris.common.metadata import (
     metadata_manager_factory,
 )
 
-
 BASES = [
     AncillaryVariableMetadata,
     BaseMetadata,
@@ -37,14 +36,6 @@ BASES = [
 
 
 class Test_factory(tests.IrisTest):
-    def test__subclass_invalid(self):
-        class Other:
-            pass
-
-        emsg = "Require a subclass of 'BaseMetadata'"
-        with self.assertRaisesRegex(TypeError, emsg):
-            _ = metadata_manager_factory(Other)
-
     def test__kwargs_invalid(self):
         emsg = "Invalid 'BaseMetadata' field parameters, got 'wibble'."
         with self.assertRaisesRegex(ValueError, emsg):
@@ -168,8 +159,8 @@ class Test_instance__pickle(tests.IrisTest):
             self.units,
             self.attributes,
         )
-        self.kwargs = dict(zip(BaseMetadata._fields, values))
-        self.metadata = metadata_manager_factory(BaseMetadata, **self.kwargs)
+        kwargs = dict(zip(BaseMetadata._fields, values))
+        self.metadata = metadata_manager_factory(BaseMetadata, **kwargs)
 
     def test_pickle(self):
         for protocol in range(pickle.HIGHEST_PROTOCOL + 1):

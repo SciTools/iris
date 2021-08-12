@@ -1,9 +1,10 @@
+import matplotlib.colors
+import matplotlib.pyplot as plt
+import numpy as np
+
 import iris
 import iris.analysis
 import iris.plot as iplt
-import matplotlib.pyplot as plt
-import matplotlib.colors
-import numpy as np
 
 global_air_temp = iris.load_cube(iris.sample_data_path("air_temp.pp"))
 

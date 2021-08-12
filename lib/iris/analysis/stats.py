@@ -10,6 +10,7 @@ Statistical operations between cubes.
 
 import numpy as np
 import numpy.ma as ma
+
 import iris
 from iris.util import broadcast_to_shape
 

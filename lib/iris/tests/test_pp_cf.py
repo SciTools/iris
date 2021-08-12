@@ -5,8 +5,7 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
-import iris.coords
+import iris.tests as tests  # isort:skip
 
 import os
 import tempfile
@@ -14,9 +13,10 @@ import tempfile
 import netCDF4
 
 import iris
+import iris.coords
+from iris.fileformats.pp import STASH
 import iris.tests.pp as pp
 import iris.util
-from iris.fileformats.pp import STASH
 
 
 def callback_000003000000_16_202_000128_1860_09_01_00_00_b_pp(

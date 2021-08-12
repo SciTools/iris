@@ -155,8 +155,17 @@ class PartialDateTime:
                     other_attr = other.microsecond
                     if attr is not None and attr != other_attr:
                         result = False
+
             except AttributeError:
-                result = NotImplemented
+                result = other.__eq__(self)
+                if result is NotImplemented:
+                    # Equality is undefined between these objects.  We don't
+                    # want Python to fall back to the default `object`
+                    # behaviour (which compares using object IDs), so we raise
+                    # an exception here instead.
+                    fmt = "unable to compare PartialDateTime with {}"
+                    raise TypeError(fmt.format(type(other)))
+
         return result
 
     def __ne__(self, other):
@@ -164,14 +173,3 @@ class PartialDateTime:
         if result is not NotImplemented:
             result = not result
         return result
-
-    def __cmp__(self, other):
-        # Since we've defined all the rich comparison operators (via
-        # functools.total_ordering), we can only reach this point if
-        # neither this class nor the other class had a rich comparison
-        # that could handle the type combination.
-        # We don't want Python to fall back to the default `object`
-        # behaviour (which compares using object IDs), so we raise an
-        # exception here instead.
-        fmt = "unable to compare PartialDateTime with {}"
-        raise TypeError(fmt.format(type(other)))

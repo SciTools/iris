@@ -20,40 +20,32 @@ import re
 import string
 import warnings
 
-import dask.array as da
 import cf_units
+import dask.array as da
 import netCDF4
 import numpy as np
 import numpy.ma as ma
-from pyke import knowledge_engine
 
-import iris.analysis
+from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
     HybridHeightFactory,
     HybridPressureFactory,
-    OceanSigmaZFactory,
-    OceanSigmaFactory,
     OceanSFactory,
     OceanSg1Factory,
     OceanSg2Factory,
+    OceanSigmaFactory,
+    OceanSigmaZFactory,
 )
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.cube
 import iris.exceptions
 import iris.fileformats.cf
-import iris.fileformats._pyke_rules
 import iris.io
 import iris.util
-from iris._lazy_data import as_lazy_data
 
-# Show Pyke inference engine statistics.
+# Show actions activation statistics.
 DEBUG = False
-
-# Pyke CF related file names.
-_PYKE_RULE_BASE = "fc_rules_cf"
-_PYKE_FACT_BASE = "facts_cf"
 
 # Standard CML spatio-temporal axis names.
 SPATIO_TEMPORAL_AXES = ["t", "z", "y", "x"]
@@ -384,34 +376,13 @@ class CFNameCoordMap:
         return result
 
 
-def _pyke_kb_engine():
-    """Return the PyKE knowledge engine for CF->cube conversion."""
+def _actions_engine():
+    # Return an 'actions engine', which provides a pyke-rules-like interface to
+    # the core cf translation code.
+    # Deferred import to avoid circularity.
+    import iris.fileformats._nc_load_rules.engine as nc_actions_engine
 
-    pyke_dir = os.path.join(os.path.dirname(__file__), "_pyke_rules")
-    compile_dir = os.path.join(pyke_dir, "compiled_krb")
-    engine = None
-
-    if os.path.exists(compile_dir):
-        tmpvar = [
-            os.path.getmtime(os.path.join(compile_dir, fname))
-            for fname in os.listdir(compile_dir)
-            if not fname.startswith("_")
-        ]
-        if tmpvar:
-            oldest_pyke_compile_file = min(tmpvar)
-            rule_age = os.path.getmtime(
-                os.path.join(pyke_dir, _PYKE_RULE_BASE + ".krb")
-            )
-
-            if oldest_pyke_compile_file >= rule_age:
-                # Initialise the pyke inference engine.
-                engine = knowledge_engine.engine(
-                    (None, "iris.fileformats._pyke_rules.compiled_krb")
-                )
-
-    if engine is None:
-        engine = knowledge_engine.engine(iris.fileformats._pyke_rules)
-
+    engine = nc_actions_engine.Engine()
     return engine
 
 
@@ -458,85 +429,78 @@ class NetCDFDataProxy:
 
 
 def _assert_case_specific_facts(engine, cf, cf_group):
-    # Initialise pyke engine "provides" hooks.
-    # These are used to patch non-processed element attributes after rules activation.
+    # Initialise a data store for built cube elements.
+    # This is used to patch element attributes *not* setup by the actions
+    # process, after the actions code has run.
     engine.cube_parts["coordinates"] = []
     engine.cube_parts["cell_measures"] = []
     engine.cube_parts["ancillary_variables"] = []
 
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "coordinate", (cf_name,)
-        )
+        engine.add_case_specific_fact("coordinate", (cf_name,))
 
     # Assert facts for CF auxiliary coordinates.
     for cf_name in cf_group.auxiliary_coordinates.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "auxiliary_coordinate", (cf_name,)
-        )
+        engine.add_case_specific_fact("auxiliary_coordinate", (cf_name,))
 
     # Assert facts for CF cell measures.
     for cf_name in cf_group.cell_measures.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "cell_measure", (cf_name,)
-        )
+        engine.add_case_specific_fact("cell_measure", (cf_name,))
 
     # Assert facts for CF ancillary variables.
     for cf_name in cf_group.ancillary_variables.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "ancillary_variable", (cf_name,)
-        )
+        engine.add_case_specific_fact("ancillary_variable", (cf_name,))
 
     # Assert facts for CF grid_mappings.
     for cf_name in cf_group.grid_mappings.keys():
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "grid_mapping", (cf_name,)
-        )
+        engine.add_case_specific_fact("grid_mapping", (cf_name,))
 
     # Assert facts for CF labels.
     for cf_name in cf_group.labels.keys():
-        engine.add_case_specific_fact(_PYKE_FACT_BASE, "label", (cf_name,))
+        engine.add_case_specific_fact("label", (cf_name,))
 
     # Assert facts for CF formula terms associated with the cf_group
     # of the CF data variable.
-    formula_root = set()
+
+    # Collect varnames of formula-root variables as we go.
+    # NOTE: use dictionary keys as an 'OrderedSet'
+    #   - see: https://stackoverflow.com/a/53657523/2615050
+    # This is to ensure that we can handle the resulting facts in a definite
+    # order, as using a 'set' led to indeterminate results.
+    formula_root = {}
     for cf_var in cf.cf_group.formula_terms.values():
         for cf_root, cf_term in cf_var.cf_terms_by_root.items():
             # Only assert this fact if the formula root variable is
             # defined in the CF group of the CF data variable.
             if cf_root in cf_group:
-                formula_root.add(cf_root)
+                formula_root[cf_root] = True
                 engine.add_case_specific_fact(
-                    _PYKE_FACT_BASE,
                     "formula_term",
                     (cf_var.cf_name, cf_root, cf_term),
                 )
 
-    for cf_root in formula_root:
-        engine.add_case_specific_fact(
-            _PYKE_FACT_BASE, "formula_root", (cf_root,)
-        )
+    for cf_root in formula_root.keys():
+        engine.add_case_specific_fact("formula_root", (cf_root,))
 
 
-def _pyke_stats(engine, cf_name):
-    if DEBUG:
-        print("-" * 80)
-        print("CF Data Variable: %r" % cf_name)
+def _actions_activation_stats(engine, cf_name):
+    print("-" * 80)
+    print("CF Data Variable: %r" % cf_name)
 
-        engine.print_stats()
+    engine.print_stats()
 
-        print("Rules Triggered:")
+    print("Rules Triggered:")
 
-        for rule in sorted(list(engine.rule_triggered)):
-            print("\t%s" % rule)
+    for rule in sorted(list(engine.rule_triggered)):
+        print("\t%s" % rule)
 
-        print("Case Specific Facts:")
-        kb_facts = engine.get_kb(_PYKE_FACT_BASE)
+    print("Case Specific Facts:")
+    kb_facts = engine.get_kb()
 
-        for key in kb_facts.entity_lists.keys():
-            for arg in kb_facts.entity_lists[key].case_specific_facts:
-                print("\t%s%s" % (key, arg))
+    for key in kb_facts.entity_lists.keys():
+        for arg in kb_facts.entity_lists[key].case_specific_facts:
+            print("\t%s%s" % (key, arg))
 
 
 def _set_attributes(attributes, key, value):
@@ -584,27 +548,50 @@ def _get_cf_var_data(cf_var, filename):
     return as_lazy_data(proxy, chunks=chunks)
 
 
+class OrderedAddableList(list):
+    # Used purely in actions debugging, to accumulate a record of which actions
+    # were activated.
+    # It replaces a set, so as to record the ordering of operations, with
+    # possible repeats, and it also numbers the entries.
+    # Actions routines invoke the 'add' method, which thus effectively converts
+    # a set.add into a list.append.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._n_add = 0
+
+    def add(self, msg):
+        self._n_add += 1
+        n_add = self._n_add
+        self.append(f"#{n_add:03d} : {msg}")
+
+
 def _load_cube(engine, cf, cf_var, filename):
+    from iris.cube import Cube
+
     """Create the cube associated with the CF-netCDF data variable."""
     data = _get_cf_var_data(cf_var, filename)
-    cube = iris.cube.Cube(data)
+    cube = Cube(data)
 
-    # Reset the pyke inference engine.
+    # Reset the actions engine.
     engine.reset()
 
-    # Initialise pyke engine rule processing hooks.
+    # Initialise engine rule processing hooks.
     engine.cf_var = cf_var
     engine.cube = cube
     engine.cube_parts = {}
     engine.requires = {}
-    engine.rule_triggered = set()
+    engine.rule_triggered = OrderedAddableList()
     engine.filename = filename
 
-    # Assert any case-specific facts.
+    # Assert all the case-specific facts.
+    # This extracts 'facts' specific to this data-variable (aka cube), from
+    # the info supplied in the CFGroup object.
     _assert_case_specific_facts(engine, cf, cf_var.cf_group)
 
-    # Run pyke inference engine with forward chaining rules.
-    engine.activate(_PYKE_RULE_BASE)
+    # Run the actions engine.
+    # This creates various cube elements and attaches them to the cube.
+    # It also records various other info on the engine, to be processed later.
+    engine.activate()
 
     # Having run the rules, now populate the attributes of all the cf elements with the
     # "unused" attributes from the associated CF-netCDF variable.
@@ -651,8 +638,9 @@ def _load_cube(engine, cf, cf_var, filename):
         for method in cube.cell_methods
     ]
 
-    # Show pyke session statistics.
-    _pyke_stats(engine, cf_var.cf_name)
+    if DEBUG:
+        # Show activation statistics for this data-var (i.e. cube).
+        _actions_activation_stats(engine, cf_var.cf_name)
 
     return cube
 
@@ -771,7 +759,51 @@ def _load_aux_factory(engine, cube):
         cube.add_aux_factory(factory)
 
 
-def load_cubes(filenames, callback=None):
+def _translate_constraints_to_var_callback(constraints):
+    """
+    Translate load constraints into a simple data-var filter function, if possible.
+
+    Returns:
+         * function(cf_var:CFDataVariable): --> bool,
+            or None.
+
+    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+
+    """
+    import iris._constraints
+
+    constraints = iris._constraints.list_of_constraints(constraints)
+    result = None
+    if len(constraints) == 1:
+        (constraint,) = constraints
+        if (
+            isinstance(constraint, iris._constraints.NameConstraint)
+            and constraint.STASH == "none"
+        ):
+            # As long as it doesn't use a STASH match, then we can treat it as
+            # a testing against name properties of cf_var.
+            # That's just like testing against name properties of a cube, except that they may not all exist.
+            def inner(cf_datavar):
+                match = True
+                for name in constraint._names:
+                    expected = getattr(constraint, name)
+                    if name != "STASH" and expected != "none":
+                        attr_name = "cf_name" if name == "var_name" else name
+                        # Fetch property : N.B. CFVariable caches the property values
+                        # The use of a default here is the only difference from the code in NameConstraint.
+                        if not hasattr(cf_datavar, attr_name):
+                            continue
+                        actual = getattr(cf_datavar, attr_name, "")
+                        if actual != expected:
+                            match = False
+                            break
+                return match
+
+            result = inner
+    return result
+
+
+def load_cubes(filenames, callback=None, constraints=None):
     """
     Loads cubes from a list of NetCDF filenames/URLs.
 
@@ -789,8 +821,13 @@ def load_cubes(filenames, callback=None):
         Generator of loaded NetCDF :class:`iris.cubes.Cube`.
 
     """
-    # Initialise the pyke inference engine.
-    engine = _pyke_kb_engine()
+    from iris.io import run_callback
+
+    # Create a low-level data-var filter from the original load constraints, if they are suitable.
+    var_callback = _translate_constraints_to_var_callback(constraints)
+
+    # Create an actions engine.
+    engine = _actions_engine()
 
     if isinstance(filenames, str):
         filenames = [filenames]
@@ -804,6 +841,10 @@ def load_cubes(filenames, callback=None):
             cf.cf_group.promoted.values()
         )
         for cf_var in data_variables:
+            if var_callback and not var_callback(cf_var):
+                # Deliver only selected results.
+                continue
+
             cube = _load_cube(engine, cf, cf_var, filename)
 
             # Process any associated formula terms and attach
@@ -814,7 +855,7 @@ def load_cubes(filenames, callback=None):
                 warnings.warn("{}".format(e))
 
             # Perform any user registered callback function.
-            cube = iris.io.run_callback(callback, cube, cf_var, filename)
+            cube = run_callback(callback, cube, cf_var, filename)
 
             # Callback mechanism may return None, which must not be yielded
             if cube is None:
@@ -1043,7 +1084,7 @@ class Saver:
             dtype(i.e. 'i2', 'short', 'u4') or a dict of packing parameters as
             described below. This provides support for netCDF data packing as
             described in
-            http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+            https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict
@@ -2589,7 +2630,7 @@ def save(
         (i.e. 'i2', 'short', 'u4') or a dict of packing parameters as described
         below or an iterable of such types, strings, or dicts.
         This provides support for netCDF data packing as described in
-        http://www.unidata.ucar.edu/software/netcdf/docs/BestPractices.html#bp_Packed-Data-Values
+        https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with
@@ -2624,11 +2665,13 @@ def save(
         NetCDF Context manager (:class:`~Saver`).
 
     """
+    from iris.cube import Cube, CubeList
+
     if unlimited_dimensions is None:
         unlimited_dimensions = []
 
-    if isinstance(cube, iris.cube.Cube):
-        cubes = iris.cube.CubeList()
+    if isinstance(cube, Cube):
+        cubes = CubeList()
         cubes.append(cube)
     else:
         cubes = cube
@@ -2655,7 +2698,7 @@ def save(
         local_keys.update(different_value_keys)
 
     def is_valid_packspec(p):
-        """ Only checks that the datatype is valid. """
+        """Only checks that the datatype is valid."""
         if isinstance(p, dict):
             if "dtype" in p:
                 return is_valid_packspec(p["dtype"])

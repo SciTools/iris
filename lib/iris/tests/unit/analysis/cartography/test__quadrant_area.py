@@ -9,13 +9,15 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
 
-from iris.analysis.cartography import _quadrant_area
-from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
+from iris.analysis.cartography import (
+    DEFAULT_SPHERICAL_EARTH_RADIUS,
+    _quadrant_area,
+)
 
 
 class TestExampleCases(tests.IrisTest):

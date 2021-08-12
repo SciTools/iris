@@ -10,14 +10,13 @@ Test iris.util
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import inspect
+from io import StringIO
 
 import cf_units
 import numpy as np
-
-from io import StringIO
 
 import iris.analysis
 import iris.coords

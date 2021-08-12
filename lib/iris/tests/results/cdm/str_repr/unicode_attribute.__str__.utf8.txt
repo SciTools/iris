@@ -1,5 +1,0 @@
-thingness / (1)                     (foo: 11)
-     Dimension coordinates:
-          foo                           x
-     Attributes:
-          source: ꀀabcd޴

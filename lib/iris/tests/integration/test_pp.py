@@ -7,21 +7,22 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-import numpy as np
 import os
 from unittest import mock
 
 from cf_units import Unit
+import numpy as np
+
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
+from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
+from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
-from iris.exceptions import IgnoreCubeException
-from iris.fileformats.pp import load_pairs_from_fields
 import iris.util
 
 
@@ -414,7 +415,7 @@ class TestVertical(tests.IrisTest):
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_once_with(msg)
+        warn.assert_called_with(msg)
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(

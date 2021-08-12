@@ -7,11 +7,11 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.plot import _broadcast_2d as broadcast
 from iris.coords import AuxCoord
-from iris.tests.stock import simple_2d, lat_lon_cube
+from iris.plot import _broadcast_2d as broadcast
+from iris.tests.stock import lat_lon_cube, simple_2d
 
 
 @tests.skip_plot

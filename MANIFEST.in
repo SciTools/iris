@@ -4,14 +4,14 @@ include CHANGES COPYING COPYING.LESSER
 # Files from setup.py package_data that are not automatically added to source distributions
 recursive-include lib/iris/tests/results *.cml *.cdl *.txt *.xml *.json
 recursive-include lib/iris/etc *
-include lib/iris/fileformats/_pyke_rules/*.k?b
-include lib/iris/tests/stock*.npz
 
-include requirements/*.txt
+recursive-include requirements *
 
 # File required to build docs
 recursive-include docs Makefile *.js *.png *.py *.rst
-prune docs/build
+prune docs/src/_build
+prune docs/src/generated
+prune docs/gallery_tests
 
 # Files required to build std_names module
 include tools/generate_std_names.py
@@ -19,3 +19,4 @@ include etc/cf-standard-name-table.xml
 
 global-exclude *.pyc
 global-exclude __pycache__
+global-exclude iris_image_test_output

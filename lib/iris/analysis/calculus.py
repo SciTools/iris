@@ -16,17 +16,15 @@ import warnings
 import cf_units
 import numpy as np
 
-import iris.cube
-import iris.coords
-import iris.coord_systems
 import iris.analysis
-import iris.analysis.maths
 from iris.analysis.cartography import (
     DEFAULT_SPHERICAL_EARTH_RADIUS,
     DEFAULT_SPHERICAL_EARTH_RADIUS_UNIT,
 )
+import iris.analysis.maths
+import iris.coord_systems
+import iris.coords
 from iris.util import delta
-
 
 __all__ = ["cube_delta", "differentiate", "curl"]
 
@@ -283,10 +281,12 @@ def _curl_subtract(a, b):
     context of curl.
 
     """
+    from iris.cube import Cube
+
     # We are definitely dealing with cubes or None - otherwise we have a
     # programmer error...
-    assert isinstance(a, iris.cube.Cube) or a is None
-    assert isinstance(b, iris.cube.Cube) or b is None
+    assert isinstance(a, Cube) or a is None
+    assert isinstance(b, Cube) or b is None
 
     if a is None and b is None:
         return None
@@ -305,9 +305,11 @@ def _curl_differentiate(cube, coord):
     deal with None in a way that makes sense in the context of curl.
 
     """
+    from iris.cube import Cube
+
     # We are definitely dealing with cubes/coords or None - otherwise we
     # have a programmer error...
-    assert isinstance(cube, iris.cube.Cube) or cube is None
+    assert isinstance(cube, Cube) or cube is None
     assert isinstance(coord, iris.coords.Coord) or coord is None
 
     if cube is None:
@@ -326,10 +328,12 @@ def _curl_regrid(cube, prototype):
     in a way that makes sense in the context of curl.
 
     """
+    from iris.cube import Cube
+
     # We are definitely dealing with cubes or None - otherwise we have a
     # programmer error...
-    assert isinstance(cube, iris.cube.Cube) or cube is None
-    assert isinstance(prototype, iris.cube.Cube)
+    assert isinstance(cube, Cube) or cube is None
+    assert isinstance(prototype, Cube)
 
     if cube is None:
         result = None
@@ -346,10 +350,12 @@ def _copy_cube_transformed(src_cube, data, coord_func):
     The data must have the same number of dimensions as the source cube.
 
     """
+    from iris.cube import Cube
+
     assert src_cube.ndim == data.ndim
 
     # Start with just the metadata and the data...
-    new_cube = iris.cube.Cube(data)
+    new_cube = Cube(data)
     new_cube.metadata = src_cube.metadata
     new_cube.metadata = src_cube.metadata
 

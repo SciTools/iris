@@ -10,12 +10,12 @@ Unit tests for the :func:`iris.common.metadata.hexdigest`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy.ma as ma
 import numpy as np
+import numpy.ma as ma
 from xxhash import xxh64, xxh64_hexdigest
 
 from iris.common.metadata import hexdigest

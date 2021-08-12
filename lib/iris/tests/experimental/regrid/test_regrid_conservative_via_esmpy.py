@@ -10,7 +10,7 @@ Tests for :func:`iris.experimental.regrid.regrid_conservative_via_esmpy`.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import contextlib
 import unittest
@@ -32,7 +32,6 @@ import iris.analysis
 import iris.analysis.cartography as i_cartog
 from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 import iris.tests.stock as istk
-
 
 _PLAIN_GEODETIC_CS = iris.coord_systems.GeogCS(
     i_cartog.DEFAULT_SPHERICAL_EARTH_RADIUS

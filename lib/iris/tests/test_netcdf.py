@@ -10,7 +10,7 @@ Test CF-NetCDF file loading and saving.
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os
 import os.path
@@ -26,16 +26,16 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
-import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
+import iris.coord_systems as icoord_systems
+from iris.coords import AncillaryVariable, CellMeasure
+from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
-import iris.util
-from iris.coords import AncillaryVariable, CellMeasure
-import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
-from iris._lazy_data import is_lazy_data
+import iris.util
 
 
 @tests.skip_data
@@ -499,6 +499,146 @@ class TestNetCDFLoad(tests.IrisTest):
             cubes[0].cell_measure("areas").units, as_unit("unknown")
         )
 
+    def test_um_stash_source(self):
+        """Test that um_stash_source is converted into a STASH code"""
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(1, 2, 3)
+        )
+
+    def test_ukmo__um_stash_source_priority(self):
+        """
+        Test that ukmo__um_stash_source is converted into a STASH code with a
+        higher priority than um_stash_source.
+        """
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
+                    qqv:ukmo__um_stash_source = "m09s08i007" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(9, 8, 7)
+        )
+
+    def test_bad_um_stash_source(self):
+        """Test that um_stash_source not in strict MSI form is kept"""
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "10*m01s02i003" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
+        self.assertEqual(
+            cubes[0].attributes["um_stash_source"], "10*m01s02i003"
+        )
+
     def test_units(self):
         # Test exercising graceful cube and coordinate units loading.
         cube0, cube1 = sorted(
@@ -522,13 +662,19 @@ class TestNetCDFCRS(tests.IrisTest):
         minor = 63567523
         self.grid.semi_major_axis = major
         self.grid.semi_minor_axis = minor
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(major, minor))
 
     def test_lat_lon_earth_radius(self):
         earth_radius = 63700000
         self.grid.earth_radius = earth_radius
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
 
 

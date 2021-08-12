@@ -25,21 +25,19 @@ import warnings
 # command-line argument as idiff is an interactive tool that requires a
 # gui interface.
 sys.argv.append("-d")
-import iris.tests  # noqa
-
 from PIL import Image  # noqa
 import filelock  # noqa
 import imagehash  # noqa
-import matplotlib.pyplot as plt  # noqa
 import matplotlib.image as mimg  # noqa
+import matplotlib.pyplot as plt  # noqa
 import matplotlib.testing.compare as mcompare  # noqa
 from matplotlib.testing.exceptions import ImageComparisonFailure  # noqa
 import matplotlib.widgets as mwidget  # noqa
 import numpy as np  # noqa
 import requests  # noqa
 
+import iris.tests  # noqa
 import iris.util as iutil  # noqa
-
 
 _POSTFIX_DIFF = "-failed-diff.png"
 _POSTFIX_JSON = os.path.join("results", "imagerepo.json")

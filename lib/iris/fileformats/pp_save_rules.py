@@ -6,10 +6,11 @@
 
 import warnings
 
+import cftime
+
 import iris
-from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.fileformats.um_cf_map import CF_TO_LBFC
+from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
     aux_factory,
@@ -18,8 +19,8 @@ from iris.fileformats.rules import (
     scalar_coord,
     vector_coord,
 )
+from iris.fileformats.um_cf_map import CF_TO_LBFC
 from iris.util import is_regular, regular_step
-import cftime
 
 
 def _basic_coord_system_rules(cube, pp):
@@ -122,7 +123,7 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ia = 0
         pp.lbtim.ib = 0
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = cftime.datetime(0, 0, 0)
+        pp.t2 = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
     # Forecast.
     if (

@@ -11,13 +11,13 @@ Test function
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
-from iris.coords import DimCoord
 from iris.coord_systems import GeogCS
+from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid,

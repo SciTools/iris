@@ -7,38 +7,36 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from itertools import permutations
 from unittest import mock
 
+from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from cf_units import Unit
-
+from iris._lazy_data import as_lazy_data
 import iris.analysis
+from iris.analysis import MEAN, Aggregator, WeightedAggregator
 import iris.aux_factory
-import iris.coords
-import iris.exceptions
-from iris.analysis import WeightedAggregator, Aggregator
-from iris.analysis import MEAN
 from iris.aux_factory import HybridHeightFactory
-from iris.cube import Cube
+import iris.coords
 from iris.coords import (
-    AuxCoord,
-    DimCoord,
-    CellMeasure,
     AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
     CellMethod,
+    DimCoord,
 )
+from iris.cube import Cube
+import iris.exceptions
 from iris.exceptions import (
-    CoordinateNotFoundError,
-    CellMeasureNotFoundError,
     AncillaryVariableNotFoundError,
+    CellMeasureNotFoundError,
+    CoordinateNotFoundError,
     UnitConversionError,
 )
-from iris._lazy_data import as_lazy_data
 import iris.tests.stock as stock
 
 
@@ -581,10 +579,10 @@ class Test_summary(tests.IrisTest):
         cube.add_ancillary_variable(av, 0)
         expected_summary = (
             "unknown / (unknown)                 (-- : 2; -- : 3)\n"
-            "     Ancillary variables:\n"
-            "          status_flag                   x       -"
+            "    Ancillary variables:\n"
+            "        status_flag                     x       -"
         )
-        self.assertEqual(cube.summary(), expected_summary)
+        self.assertEqual(expected_summary, cube.summary())
 
     def test_similar_coords(self):
         coord1 = AuxCoord(
@@ -595,6 +593,58 @@ class Test_summary(tests.IrisTest):
         for coord in [coord1, coord2]:
             self.cube.add_aux_coord(coord)
         self.assertIn("baz", self.cube.summary())
+
+    def test_long_components(self):
+        # Check that components with long names 'stretch' the printout correctly.
+        cube = Cube(np.zeros((20, 20, 20)), units=1)
+        dimco = DimCoord(np.arange(20), long_name="dimco")
+        auxco = AuxCoord(np.zeros(20), long_name="auxco")
+        ancil = AncillaryVariable(np.zeros(20), long_name="ancil")
+        cellm = CellMeasure(np.zeros(20), long_name="cellm")
+        cube.add_dim_coord(dimco, 0)
+        cube.add_aux_coord(auxco, 0)
+        cube.add_cell_measure(cellm, 1)
+        cube.add_ancillary_variable(ancil, 2)
+
+        original_summary = cube.summary()
+        long_name = "long_name______________________________________"
+        for component in (dimco, auxco, ancil, cellm):
+            # For each (type of) component, set a long name so the header columns get shifted.
+            old_name = component.name()
+            component.rename(long_name)
+            new_summary = cube.summary()
+            component.rename(
+                old_name
+            )  # Put each back the way it was afterwards
+
+            # Check that the resulting 'stretched' output has dimension columns aligned correctly.
+            lines = new_summary.split("\n")
+            header = lines[0]
+            colon_inds = [
+                i_char for i_char, char in enumerate(header) if char == ":"
+            ]
+            for line in lines[1:]:
+                # Replace all '-' with 'x' to make checking easier, and add a final buffer space.
+                line = line.replace("-", "x") + " "
+                if " x " in line:
+                    # For lines with any columns : check that columns are where expected
+                    for col_ind in colon_inds:
+                        # Chop out chars before+after each expected column.
+                        self.assertEqual(
+                            line[col_ind - 1 : col_ind + 2], " x "
+                        )
+
+            # Finally also: compare old with new, but replacing new name and ignoring spacing differences
+            def collapse_space(string):
+                # Replace all multiple spaces with a single space.
+                while "  " in string:
+                    string = string.replace("  ", " ")
+                return string
+
+            self.assertEqual(
+                collapse_space(new_summary).replace(long_name, old_name),
+                collapse_space(original_summary),
+            )
 
 
 class Test_is_compatible(tests.IrisTest):
@@ -1731,6 +1781,14 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 171)
         self.assertEqual(result.data[0, 0, -1], 189)
 
+    def test_aligned_bounds_at_modulus(self):
+        cube = create_cube(-179.5, 180.5, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0, 1])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [359, 360])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
     def test_negative_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(-10.25, 10.25))
@@ -1806,8 +1864,35 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         # modulus wrapping
         cube = create_cube(28.5, 68.5, bounds=True)
         result = cube.intersection(longitude=(27.74, 68.61))
-        self.assertAlmostEqual(result.coord("longitude").points[0], 28.5)
-        self.assertAlmostEqual(result.coord("longitude").points[-1], 67.5)
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], 28.5)
+        self.assertAlmostEqual(result_lons.points[-1], 67.5)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([28.0, 29.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([67.0, 68.0], dtype=dtype)
+        )
+
+    def test_numerical_tolerance_wrapped(self):
+        # test the tolerance on the coordinate value causes modulus wrapping
+        # where appropriate
+        cube = create_cube(0.5, 3600.5, bounds=True)
+        lons = cube.coord("longitude")
+        lons.points = lons.points / 10
+        lons.bounds = lons.bounds / 10
+        result = cube.intersection(longitude=(-60, 60))
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], -60.05)
+        self.assertAlmostEqual(result_lons.points[-1], 60.05)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([-60.1, -60.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
+        )
 
 
 def unrolled_cube():

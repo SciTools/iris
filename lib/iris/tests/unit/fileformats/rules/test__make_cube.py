@@ -7,15 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 import warnings
 
 import numpy as np
 
-from iris.fileformats.rules import _make_cube
-from iris.fileformats.rules import ConversionMetadata
+from iris.fileformats.rules import ConversionMetadata, _make_cube
 
 
 class Test(tests.IrisTest):

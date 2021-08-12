@@ -10,7 +10,7 @@ Unit tests for the :class:`iris._data_manager.DataManager`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 from unittest import mock

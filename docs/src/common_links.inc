@@ -2,20 +2,21 @@
     Common resources in alphabetical order:
 
 .. _black: https://black.readthedocs.io/en/stable/
-.. _.cirrus.yml: https://github.com/SciTools/iris/blob/master/.cirrus.yml
+.. _.cirrus.yml: https://github.com/SciTools/iris/blob/main/.cirrus.yml
 .. _flake8: https://flake8.pycqa.org/en/stable/
-.. _.flake8.yml: https://github.com/SciTools/iris/blob/master/.flake8
+.. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _GitHub Help Documentation: https://docs.github.com/en/github
+.. _Iris GitHub Discussions: https://github.com/SciTools/iris/discussions
 .. _Iris: https://github.com/SciTools/iris
 .. _Iris GitHub: https://github.com/SciTools/iris
-.. _iris mailing list: https://groups.google.com/forum/#!forum/scitools-iris
 .. _iris-sample-data: https://github.com/SciTools/iris-sample-data
 .. _iris-test-data: https://github.com/SciTools/iris-test-data
+.. _isort: https://pycqa.github.io/isort/
 .. _issue: https://github.com/SciTools/iris/issues
 .. _issues: https://github.com/SciTools/iris/issues
 .. _legacy documentation: https://scitools.org.uk/iris/docs/v2.4.0/
@@ -27,7 +28,7 @@
 .. _pull request: https://github.com/SciTools/iris/pulls
 .. _pull requests: https://github.com/SciTools/iris/pulls
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
-.. _readthedocs.yml: https://github.com/SciTools/iris/blob/master/requirements/ci/readthedocs.yml
+.. _readthedocs.yml: https://github.com/SciTools/iris/blob/main/requirements/ci/readthedocs.yml
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
 .. _sphinx: https://www.sphinx-doc.org/en/master/

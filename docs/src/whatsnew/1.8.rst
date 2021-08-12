@@ -223,7 +223,7 @@ Documentation
 * A chapter on :doc:`merge and concatenate </userguide/merge_and_concat>` has
   been added to the :doc:`user guide </userguide/index>`.
 
-* A section on installing Iris using `conda <http://conda.pydata.org/>`_ has
+* A section on installing Iris using `conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ has
   been added to the :doc:`install guide </installing>`.
 
 * Updates to the chapter on

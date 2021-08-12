@@ -7,21 +7,19 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-import cftime
+from types import MethodType
 from unittest import mock
 
 import cf_units
+import cftime
 import numpy as np
-from types import MethodType
 
+from iris.fileformats.pp import STASH, PPField3, SplittableInt
 from iris.fileformats.pp_load_rules import convert
-from iris.util import guess_coord_axis
-from iris.fileformats.pp import SplittableInt
-from iris.fileformats.pp import STASH
-from iris.fileformats.pp import PPField3
 import iris.tests.unit.fileformats
+from iris.util import guess_coord_axis
 
 
 def _mock_field(**kwargs):

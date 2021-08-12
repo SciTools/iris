@@ -5,12 +5,9 @@
 # licensing details.
 """Unit tests for the `iris._constraints.NameConstraint` class."""
 
-from __future__ import absolute_import, division, print_function
-from six.moves import filter, input, map, range, zip  # noqa
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest.mock import Mock, sentinel
 

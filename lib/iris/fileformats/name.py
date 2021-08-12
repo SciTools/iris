@@ -5,8 +5,6 @@
 # licensing details.
 """Provides NAME file format loading capabilities."""
 
-import iris.io
-
 
 def _get_NAME_loader(filename):
     """
@@ -67,6 +65,8 @@ def load_cubes(filenames, callback):
          A generator of :class:`iris.cubes.Cube` instances.
 
     """
+    from iris.io import run_callback
+
     if isinstance(filenames, str):
         filenames = [filenames]
 
@@ -74,6 +74,6 @@ def load_cubes(filenames, callback):
         load = _get_NAME_loader(filename)
         for cube in load(filename):
             if callback is not None:
-                cube = iris.io.run_callback(callback, cube, None, filename)
+                cube = run_callback(callback, cube, None, filename)
             if cube is not None:
                 yield cube

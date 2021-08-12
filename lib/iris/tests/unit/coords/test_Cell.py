@@ -7,13 +7,13 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import datetime
 from unittest import mock
 
-import numpy as np
 import cftime
+import numpy as np
 
 from iris.coords import Cell
 from iris.time import PartialDateTime
@@ -91,6 +91,26 @@ class Test___common_cmp__(tests.IrisTest):
         # See http://bugs.python.org/issue8005
         self.assertLess(cell, dt)
         self.assertLessEqual(cell, dt)
+
+    def test_0D_numpy_array(self):
+        # Check that cell comparison works with 0D numpy arrays
+
+        cell = Cell(1.3)
+
+        self.assertGreater(np.array(1.5), cell)
+        self.assertLess(np.array(1.1), cell)
+        self.assertGreaterEqual(np.array(1.3), cell)
+        self.assertLessEqual(np.array(1.3), cell)
+
+    def test_len_1_numpy_array(self):
+        # Check that cell comparison works with numpy arrays of len=1
+
+        cell = Cell(1.3)
+
+        self.assertGreater(np.array([1.5]), cell)
+        self.assertLess(np.array([1.1]), cell)
+        self.assertGreaterEqual(np.array([1.3]), cell)
+        self.assertLessEqual(np.array([1.3]), cell)
 
 
 class Test___eq__(tests.IrisTest):

@@ -7,15 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from iris.tests.unit.plot import TestGraphicStringCoord
 from iris.tests.unit.plot._blockplot_common import (
-    MixinStringCoordPlot,
-    Mixin2dCoordsPlot,
     Mixin2dCoordsContigTol,
+    Mixin2dCoordsPlot,
+    MixinStringCoordPlot,
 )
-
 
 if tests.MPL_AVAILABLE:
     import iris.plot as iplt

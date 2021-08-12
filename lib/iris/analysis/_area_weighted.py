@@ -5,7 +5,6 @@
 # licensing details.
 
 from iris.analysis._interpolation import get_xy_dim_coords, snapshot_grid
-import iris.experimental.regrid as eregrid
 
 
 class AreaWeightedRegridder:
@@ -41,9 +40,13 @@ class AreaWeightedRegridder:
             Both source and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
             All of the XY dimension coordinates must also be bounded, and have
-            the same cooordinate system.
+            the same coordinate system.
 
         """
+        from iris.experimental.regrid import (
+            _regrid_area_weighted_rectilinear_src_and_grid__prepare,
+        )
+
         # Snapshot the state of the source cube to ensure that the regridder is
         # impervious to external changes to the original cubes.
         self._src_grid = snapshot_grid(src_grid_cube)
@@ -55,10 +58,8 @@ class AreaWeightedRegridder:
         self._mdtol = mdtol
 
         # Store regridding information
-        _regrid_info = (
-            eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-                src_grid_cube, target_grid_cube
-            )
+        _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            src_grid_cube, target_grid_cube
         )
         (
             src_x,
@@ -101,6 +102,10 @@ class AreaWeightedRegridder:
             in the horizontal dimensions will be combined before regridding.
 
         """
+        from iris.experimental.regrid import (
+            _regrid_area_weighted_rectilinear_src_and_grid__perform,
+        )
+
         src_x, src_y = get_xy_dim_coords(cube)
         if (src_x, src_y) != self._src_grid:
             raise ValueError(
@@ -120,6 +125,6 @@ class AreaWeightedRegridder:
             self.meshgrid_y,
             self.weights_info,
         )
-        return eregrid._regrid_area_weighted_rectilinear_src_and_grid__perform(
+        return _regrid_area_weighted_rectilinear_src_and_grid__perform(
             cube, _regrid_info, mdtol=self._mdtol
         )

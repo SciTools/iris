@@ -10,15 +10,15 @@ Unit tests for the :class:`iris.common.resolve.Resolve`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections import namedtuple
 from copy import deepcopy
+import unittest.mock as mock
+from unittest.mock import sentinel
 
 from cf_units import Unit
 import numpy as np
-import unittest.mock as mock
-from unittest.mock import sentinel
 
 from iris.common.lenient import LENIENT
 from iris.common.metadata import CubeMetadata
@@ -28,8 +28,8 @@ from iris.common.resolve import (
     _CategoryItems,
     _DimCoverage,
     _Item,
-    _PreparedItem,
     _PreparedFactory,
+    _PreparedItem,
     _PreparedMetadata,
 )
 from iris.coords import DimCoord

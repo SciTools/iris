@@ -10,10 +10,11 @@ Unit tests for the :class:`iris.coord_systems.AlbersEqualArea` class.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
-from iris.coord_systems import GeogCS, AlbersEqualArea
+
+from iris.coord_systems import AlbersEqualArea, GeogCS
 
 
 class Test_as_cartopy_crs(tests.IrisTest):

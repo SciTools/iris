@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from contextlib import contextmanager
 from itertools import repeat
@@ -26,9 +26,11 @@ import numpy.ma as ma
 import iris
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
-from iris.fileformats.netcdf import Saver
-from iris.fileformats.netcdf import UnknownCellMethodWarning
+from iris.fileformats.netcdf import (
+    CF_CONVENTIONS_VERSION,
+    Saver,
+    UnknownCellMethodWarning,
+)
 import iris.tests.stock as stock
 
 
@@ -298,13 +300,13 @@ class TestCellMeasures(tests.IrisTest):
     def test_print(self):
         cube = iris.load_cube(self.fname)
         printed = cube.__str__()
-        self.assertTrue(
+        self.assertIn(
             (
-                "\n     Cell measures:\n          cell_area"
-                "                           -         -    "
+                "Cell measures:\n"
+                "        cell_area                             -         -    "
                 "    x         x"
-            )
-            in printed
+            ),
+            printed,
         )
 
 
@@ -516,7 +518,7 @@ class TestPackedData(tests.IrisTest):
         self._single_test("i2", "single_packed_signed.cdl")
 
     def test_single_packed_unsigned(self):
-        """Test saving a single CF-netCDF file with packing into unsigned. """
+        """Test saving a single CF-netCDF file with packing into unsigned."""
         self._single_test("u1", "single_packed_unsigned.cdl")
 
     def test_single_packed_manual_scale(self):
@@ -668,6 +670,22 @@ data:
         self.assertIsInstance(cs, iris.coord_systems.Geostationary)
         self.assertEqual(cs.false_easting, 0.0)
         self.assertEqual(cs.false_northing, 0.0)
+
+
+class TestConstrainedLoad(tests.IrisTest):
+    filename = tests.get_data_path(
+        ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")
+    )
+
+    def test_netcdf_with_NameConstraint(self):
+        constr = iris.NameConstraint(var_name="cdf_temp_dmax_tmean_abs")
+        cubes = iris.load(self.filename, constr)
+        self.assertEqual(len(cubes), 1)
+        self.assertEqual(cubes[0].var_name, "cdf_temp_dmax_tmean_abs")
+
+    def test_netcdf_with_no_constraint(self):
+        cubes = iris.load(self.filename)
+        self.assertEqual(len(cubes), 3)
 
 
 if __name__ == "__main__":

@@ -23,12 +23,11 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
-import iris.aux_factory
 from iris.common import (
     AncillaryVariableMetadata,
     BaseMetadata,
-    CFVariableMixin,
     CellMeasureMetadata,
+    CFVariableMixin,
     CoordMetadata,
     DimCoordMetadata,
     metadata_manager_factory,
@@ -404,28 +403,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
 
-        if isinstance(other, _DimensionalMetadata) or not isinstance(
-            other, (int, float, np.number)
-        ):
-
-            def typename(obj):
-                if isinstance(obj, Coord):
-                    result = "Coord"
-                else:
-                    # We don't really expect this, but do something anyway.
-                    result = self.__class__.__name__
-                return result
-
-            emsg = "{selftype} {operator} {othertype}".format(
-                selftype=typename(self),
-                operator=self._MODE_SYMBOL[mode_constant],
-                othertype=typename(other),
+        if isinstance(other, _DimensionalMetadata):
+            emsg = (
+                f"{self.__class__.__name__} "
+                f"{self._MODE_SYMBOL[mode_constant]} "
+                f"{other.__class__.__name__}"
             )
             raise iris.exceptions.NotYetImplementedError(emsg)
 
-        else:
-            # 'Other' is an array type : adjust points, and bounds if any.
-            result = NotImplemented
+        if isinstance(other, (int, float, np.number)):
 
             def op(values):
                 if mode_constant == self._MODE_ADD:
@@ -442,8 +428,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             new_values = op(self._values_dm.core_data())
             result = self.copy(new_values)
+
             if self.has_bounds():
                 result.bounds = op(self._bounds_dm.core_data())
+        else:
+            # must return NotImplemented to ensure invocation of any
+            # associated reflected operator on the "other" operand
+            # see https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types
+            result = NotImplemented
 
         return result
 
@@ -462,8 +454,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __truediv__(self, other):
         return self.__binary_operator__(other, self._MODE_DIV)
 
-    def __radd__(self, other):
-        return self + other
+    __radd__ = __add__
 
     def __rsub__(self, other):
         return (-self) + other
@@ -474,8 +465,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def __rtruediv__(self, other):
         return self.__binary_operator__(other, self._MODE_RDIV)
 
-    def __rmul__(self, other):
-        return self * other
+    __rmul__ = __mul__
 
     def __neg__(self):
         values = -self._core_values()
@@ -810,7 +800,6 @@ class CellMeasure(AncillaryVariable):
         attributes=None,
         measure=None,
     ):
-
         """
         Constructs a single cell measure.
 
@@ -1152,6 +1141,13 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
         Non-Cell vs Cell comparison is used to define Constraint matching.
 
         """
+
+        if (isinstance(other, list) and len(other) == 1) or (
+            isinstance(other, np.ndarray) and other.shape == (1,)
+        ):
+            other = other[0]
+        if isinstance(other, np.ndarray) and other.shape == ():
+            other = float(other)
         if not (
             isinstance(other, (int, float, np.number, Cell))
             or hasattr(other, "timetuple")
@@ -1316,7 +1312,6 @@ class Coord(_DimensionalMetadata):
         coord_system=None,
         climatological=False,
     ):
-
         """
         Coordinate abstract base class. As of ``v3.0.0`` you **cannot** create an instance of :class:`Coord`.
 

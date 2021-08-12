@@ -10,14 +10,13 @@ Unit tests for :meth:`iris.analysis.trajectory.interpolate`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
+from iris.analysis.trajectory import interpolate
 from iris.coords import AuxCoord, DimCoord
 import iris.tests.stock
-
-from iris.analysis.trajectory import interpolate
 
 
 class TestFailCases(tests.IrisTest):

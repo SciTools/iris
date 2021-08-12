@@ -5,16 +5,15 @@
 # licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
 
-from html import escape
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.coords import CellMethod, CellMeasure, AncillaryVariable
-import iris.tests.stock as stock
+from html import escape
 
+from iris.coords import AncillaryVariable, CellMeasure, CellMethod
 from iris.experimental.representation import CubeRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data
@@ -198,8 +197,11 @@ class Test__get_bits(tests.IrisTest):
     def test_headings__cellmethods(self):
         contents = self.representer.str_headings["Cell methods:"]
         content_str = ",".join(content for content in contents)
-        for cell_method in self.cube.cell_methods:
-            self.assertIn(str(cell_method), content_str)
+        for method in self.cube.cell_methods:
+            name = method.method
+            value = str(method)[len(name + ": ") :]
+            self.assertIn(name, content_str)
+            self.assertIn(value, content_str)
 
 
 @tests.skip_data
@@ -354,14 +356,6 @@ class Test__make_content(tests.IrisTest):
         not_included.pop(not_included.index("Dimension coordinates:"))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
-
-    def test_handle_newline(self):
-        cube = self.cube
-        cube.attributes["lines"] = "first\nsecond"
-        representer = CubeRepresentation(cube)
-        representer._get_bits(representer._get_lines())
-        result = representer._make_content()
-        self.assertIn("first<br>second", result)
 
 
 @tests.skip_data

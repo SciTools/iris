@@ -19,9 +19,15 @@
 
 # ----------------------------------------------------------------------------
 
+import datetime
 import ntpath
 import os
+from pathlib import Path
+import re
 import sys
+import warnings
+
+import iris
 
 
 # function to write  useful output to stdout, prefixing the source.
@@ -53,9 +59,6 @@ rtd_version = os.environ.get("READTHEDOCS_VERSION")
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import datetime
-import warnings
-
 # custom sphinx extensions
 sys.path.append(os.path.abspath("sphinxext"))
 
@@ -80,8 +83,6 @@ author = "Iris Developers"
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-import iris
-
 # The short X.Y version.
 if iris.__version__ == "dev":
     version = "dev"
@@ -101,9 +102,35 @@ autolog("Iris Release = {}".format(release))
 
 build_python_version = ".".join([str(i) for i in sys.version_info[:3]])
 
+
+def _dotv(version):
+    result = version
+    match = re.match(r"^py(\d+)$", version)
+    if match:
+        digits = match.group(1)
+        if len(digits) > 1:
+            result = f"{digits[0]}.{digits[1:]}"
+    return result
+
+
+# Automate the discovery of the python versions tested with CI.
+python_support = sorted(
+    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+)
+
+if not python_support:
+    python_support = "unknown Python versions"
+elif len(python_support) == 1:
+    python_support = f"Python {_dotv(python_support[0])}"
+else:
+    rest = ", ".join([_dotv(v) for v in python_support[:-1]])
+    last = _dotv(python_support[-1])
+    python_support = f"Python {rest} and {last}"
+
 rst_epilog = f"""
 .. |copyright_years| replace:: {copyright_years}
 .. |python_version| replace:: {build_python_version}
+.. |python_support| replace:: {python_support}
 .. |iris_version| replace:: v{version}
 .. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
 """
@@ -190,7 +217,7 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -269,12 +296,8 @@ html_context = {
             "https://github.com/SciTools/iris",
         ),
         (
-            '<i class="fa fa-comments fa-fw"></i> Users Google Group',
-            "https://groups.google.com/forum/#!forum/scitools-iris",
-        ),
-        (
-            '<i class="fa fa-comments fa-fw"></i> Developers Google Group',
-            "https://groups.google.com/forum/#!forum/scitools-iris-dev",
+            '<i class="fa fa-comments fa-fw"></i> GitHub Discussions',
+            "https://github.com/SciTools/iris/discussions",
         ),
         (
             '<i class="fa fa-question fa-fw"></i> StackOverflow for "How Do I?"',

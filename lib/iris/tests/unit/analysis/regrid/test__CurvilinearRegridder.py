@@ -7,20 +7,19 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import numpy as np
 
-from iris.analysis.cartography import rotate_pole
-from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord
-from iris.coord_systems import GeogCS, RotatedGeogCS
-from iris.fileformats.pp import EARTH_RADIUS
 from iris.analysis._regrid import CurvilinearRegridder as Regridder
+from iris.analysis.cartography import rotate_pole
+from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
+from iris.fileformats.pp import EARTH_RADIUS
 from iris.tests.stock import global_pp, lat_lon_cube
-
 
 RESULT_DIR = ("analysis", "regrid")
 

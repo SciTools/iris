@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
-import iris
-import iris.quickplot as qplt
-import iris.plot as iplt
 
+import iris
+import iris.plot as iplt
+import iris.quickplot as qplt
 
 fname = iris.sample_data_path("air_temp.pp")
 temperature_cube = iris.load_cube(fname)

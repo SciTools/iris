@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import collections
 from unittest import mock
@@ -17,11 +17,10 @@ import dask.array as da
 import numpy as np
 
 import iris
+from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.coords import DimCoord, AuxCoord, Coord
 from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
-
 
 Pair = collections.namedtuple("Pair", "points bounds")
 
