@@ -379,7 +379,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
 class AtmosphereSigmaFactory(AuxCoordFactory):
     """Defines an atmosphere sigma coordinate factory with the formula:
-        p = ptop + sigma * (ps - ptop)
+    p = ptop + sigma * (ps - ptop)
 
     """
 
