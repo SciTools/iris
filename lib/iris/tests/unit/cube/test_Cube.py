@@ -579,10 +579,10 @@ class Test_summary(tests.IrisTest):
         cube.add_ancillary_variable(av, 0)
         expected_summary = (
             "unknown / (unknown)                 (-- : 2; -- : 3)\n"
-            "     Ancillary variables:\n"
-            "          status_flag                   x       -"
+            "    Ancillary variables:\n"
+            "        status_flag                     x       -"
         )
-        self.assertEqual(cube.summary(), expected_summary)
+        self.assertEqual(expected_summary, cube.summary())
 
     def test_similar_coords(self):
         coord1 = AuxCoord(
@@ -1781,6 +1781,14 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 171)
         self.assertEqual(result.data[0, 0, -1], 189)
 
+    def test_aligned_bounds_at_modulus(self):
+        cube = create_cube(-179.5, 180.5, bounds=True)
+        result = cube.intersection(longitude=(0, 360))
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0, 1])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [359, 360])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
     def test_negative_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(-10.25, 10.25))
@@ -1856,8 +1864,35 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         # modulus wrapping
         cube = create_cube(28.5, 68.5, bounds=True)
         result = cube.intersection(longitude=(27.74, 68.61))
-        self.assertAlmostEqual(result.coord("longitude").points[0], 28.5)
-        self.assertAlmostEqual(result.coord("longitude").points[-1], 67.5)
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], 28.5)
+        self.assertAlmostEqual(result_lons.points[-1], 67.5)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([28.0, 29.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([67.0, 68.0], dtype=dtype)
+        )
+
+    def test_numerical_tolerance_wrapped(self):
+        # test the tolerance on the coordinate value causes modulus wrapping
+        # where appropriate
+        cube = create_cube(0.5, 3600.5, bounds=True)
+        lons = cube.coord("longitude")
+        lons.points = lons.points / 10
+        lons.bounds = lons.bounds / 10
+        result = cube.intersection(longitude=(-60, 60))
+        result_lons = result.coord("longitude")
+        self.assertAlmostEqual(result_lons.points[0], -60.05)
+        self.assertAlmostEqual(result_lons.points[-1], 60.05)
+        dtype = result_lons.dtype
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[0], np.array([-60.1, -60.0], dtype=dtype)
+        )
+        np.testing.assert_array_almost_equal(
+            result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
+        )
 
 
 def unrolled_cube():

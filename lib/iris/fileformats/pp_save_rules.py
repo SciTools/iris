@@ -123,7 +123,7 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ia = 0
         pp.lbtim.ib = 0
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = cftime.datetime(0, 0, 0)
+        pp.t2 = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
     # Forecast.
     if (

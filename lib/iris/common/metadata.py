@@ -13,7 +13,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from functools import wraps
+from functools import lru_cache, wraps
 import re
 
 import numpy as np
@@ -1338,39 +1338,19 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_manager_factory(cls, **kwargs):
-    """
-    A class instance factory function responsible for manufacturing
-    metadata instances dynamically at runtime.
-
-    The factory instances returned by the factory are capable of managing
-    their metadata state, which can be proxied by the owning container.
-
-    Args:
-
-    * cls:
-        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-        the metadata to be managed.
-
-    Kwargs:
-
-    * kwargs:
-        Initial values for the manufactured metadata instance. Unspecified
-        fields will default to a value of 'None'.
-
-    """
-
+@lru_cache(maxsize=None)
+def _factory_cache(cls):
     def __init__(self, cls, **kwargs):
-        # Restrict to only dealing with appropriate metadata classes.
-        if not issubclass(cls, BaseMetadata):
-            emsg = "Require a subclass of {!r}, got {!r}."
-            raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
+        # Proxy for self.cls._fields for later internal use, as this
+        # saves on indirect property lookup via self.cls
+        self._fields = cls._fields
+
         # Initialise the metadata class fields in the instance.
-        for field in self.fields:
+        # Use cls directly here since it's available.
+        for field in cls._fields:
             setattr(self, field, None)
 
         # Populate with provided kwargs, which have already been verified
@@ -1389,7 +1369,7 @@ def metadata_manager_factory(cls, **kwargs):
 
     def __getstate__(self):
         """Return the instance state to be pickled."""
-        return {field: getattr(self, field) for field in self.fields}
+        return {field: getattr(self, field) for field in self._fields}
 
     def __ne__(self, other):
         match = self.__eq__(other)
@@ -1412,7 +1392,7 @@ def metadata_manager_factory(cls, **kwargs):
         args = ", ".join(
             [
                 "{}={!r}".format(field, getattr(self, field))
-                for field in self.fields
+                for field in self._fields
             ]
         )
         return "{}({})".format(self.__class__.__name__, args)
@@ -1426,27 +1406,14 @@ def metadata_manager_factory(cls, **kwargs):
     def fields(self):
         """Return the name of the metadata members."""
         # Proxy for built-in namedtuple._fields property.
-        return self.cls._fields
+        return self._fields
 
     @property
     def values(self):
-        fields = {field: getattr(self, field) for field in self.fields}
+        fields = {field: getattr(self, field) for field in self._fields}
         return self.cls(**fields)
 
-    # Restrict factory to appropriate metadata classes only.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
-    # Check whether kwargs have valid fields for the specified metadata.
-    if kwargs:
-        extra = [field for field in kwargs.keys() if field not in cls._fields]
-        if extra:
-            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
-            emsg = "Invalid {!r} field parameters, got {}."
-            raise ValueError(emsg.format(cls.__name__, bad))
-
-    # Define the name, (inheritance) bases and namespace of the dynamic class.
+    # Define the name, (inheritance) bases, and namespace of the dynamic class.
     name = "MetadataManager"
     bases = ()
     namespace = {
@@ -1468,12 +1435,52 @@ def metadata_manager_factory(cls, **kwargs):
     if cls is CubeMetadata:
         namespace["_names"] = cls._names
 
-    # Dynamically create the class.
-    Metadata = type(name, bases, namespace)
-    # Now manufacture an instance of that class.
-    metadata = Metadata(cls, **kwargs)
+    # Dynamically create the metadata manager class.
+    MetadataManager = type(name, bases, namespace)
 
-    return metadata
+    return MetadataManager
+
+
+def metadata_manager_factory(cls, **kwargs):
+    """
+    A class instance factory function responsible for manufacturing
+    metadata instances dynamically at runtime.
+
+    The factory instances returned by the factory are capable of managing
+    their metadata state, which can be proxied by the owning container.
+
+    Args:
+
+    * cls:
+        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
+        the metadata to be managed.
+
+    Kwargs:
+
+    * kwargs:
+        Initial values for the manufactured metadata instance. Unspecified
+        fields will default to a value of 'None'.
+
+    Returns:
+        A manager instance for the provided metadata ``cls``.
+
+    """
+    # Check whether kwargs have valid fields for the specified metadata.
+    if kwargs:
+        extra = [field for field in kwargs.keys() if field not in cls._fields]
+        if extra:
+            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
+            emsg = "Invalid {!r} field parameters, got {}."
+            raise ValueError(emsg.format(cls.__name__, bad))
+
+    # Dynamically create the metadata manager class at runtime or get a cached
+    # version of it.
+    MetadataManager = _factory_cache(cls)
+
+    # Now manufacture an instance of the metadata manager class.
+    manager = MetadataManager(cls, **kwargs)
+
+    return manager
 
 
 #: Convenience collection of lenient metadata combine services.

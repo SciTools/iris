@@ -100,40 +100,40 @@ class Resolve:
 
         >>> print(cube1)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-             Scalar coordinates:
-                  forecast_reference_time: 1859-09-01 06:00:00
-                  height: 1.5 m
-             Attributes:
-                  Conventions: CF-1.5
-                  Model scenario: A1B
-                  STASH: m01s03i236
-                  source: Data from Met Office Unified Model 6.05
-             Cell methods:
-                  mean: time (6 hour)
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+            Scalar coordinates:
+                forecast_reference_time     1859-09-01 06:00:00
+                height                      1.5 m
+            Cell methods:
+                mean                        time (6 hour)
+            Attributes:
+                Conventions                 CF-1.5
+                Model scenario              A1B
+                STASH                       m01s03i236
+                source                      Data from Met Office Unified Model 6.05
 
         >>> print(cube2)
         air_temperature / (K)               (longitude: 49; latitude: 37)
-             Dimension coordinates:
-                  longitude                           x             -
-                  latitude                            -             x
-             Scalar coordinates:
-                  forecast_period: 10794 hours
-                  forecast_reference_time: 1859-09-01 06:00:00
-                  height: 1.5 m
-                  time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
-             Attributes:
-                  Conventions: CF-1.5
-                  Model scenario: E1
-                  STASH: m01s03i236
-                  source: Data from Met Office Unified Model 6.05
-             Cell methods:
-                  mean: time (6 hour)
+            Dimension coordinates:
+                longitude                             x             -
+                latitude                              -             x
+            Scalar coordinates:
+                forecast_period             10794 hours
+                forecast_reference_time     1859-09-01 06:00:00
+                height                      1.5 m
+                time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+            Cell methods:
+                mean                        time (6 hour)
+            Attributes:
+                Conventions                 CF-1.5
+                Model scenario              E1
+                STASH                       m01s03i236
+                source                      Data from Met Office Unified Model 6.05
 
         >>> print(data.shape)
         (240, 37, 49)
@@ -141,21 +141,21 @@ class Resolve:
         >>> result = resolver.cube(data)
         >>> print(result)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-             Scalar coordinates:
-                  forecast_reference_time: 1859-09-01 06:00:00
-                  height: 1.5 m
-             Attributes:
-                  Conventions: CF-1.5
-                  STASH: m01s03i236
-                  source: Data from Met Office Unified Model 6.05
-             Cell methods:
-                  mean: time (6 hour)
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+            Scalar coordinates:
+                forecast_reference_time     1859-09-01 06:00:00
+                height                      1.5 m
+            Cell methods:
+                mean                        time (6 hour)
+            Attributes:
+                Conventions                 CF-1.5
+                STASH                       m01s03i236
+                source                      Data from Met Office Unified Model 6.05
 
     Secondly, creating an *empty* ``resolver`` instance, that may be called *multiple*
     times with *different* :class:`~iris.cube.Cube` operands and *different* ``data``,
@@ -2401,39 +2401,39 @@ class Resolve:
 
             >>> print(cube1)
             air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-                 Dimension coordinates:
-                      time                           x              -              -
-                      latitude                       -              x              -
-                      longitude                      -              -              x
-                 Auxiliary coordinates:
-                      forecast_period                x              -              -
-                 Scalar coordinates:
-                      forecast_reference_time: 1859-09-01 06:00:00
-                      height: 1.5 m
-                 Attributes:
-                      Conventions: CF-1.5
-                      Model scenario: A1B
-                      STASH: m01s03i236
-                      source: Data from Met Office Unified Model 6.05
-                 Cell methods:
-                      mean: time (6 hour)
+                Dimension coordinates:
+                    time                             x              -              -
+                    latitude                         -              x              -
+                    longitude                        -              -              x
+                Auxiliary coordinates:
+                    forecast_period                  x              -              -
+                Scalar coordinates:
+                    forecast_reference_time     1859-09-01 06:00:00
+                    height                      1.5 m
+                Cell methods:
+                    mean                        time (6 hour)
+                Attributes:
+                    Conventions                 CF-1.5
+                    Model scenario              A1B
+                    STASH                       m01s03i236
+                    source                      Data from Met Office Unified Model 6.05
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
-                 Dimension coordinates:
-                      longitude                           x             -
-                      latitude                            -             x
-                 Scalar coordinates:
-                      forecast_period: 10794 hours
-                      forecast_reference_time: 1859-09-01 06:00:00
-                      height: 1.5 m
-                      time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
-                 Attributes:
-                      Conventions: CF-1.5
-                      Model scenario: E1
-                      STASH: m01s03i236
-                      source: Data from Met Office Unified Model 6.05
-                 Cell methods:
-                      mean: time (6 hour)
+                Dimension coordinates:
+                    longitude                             x             -
+                    latitude                              -             x
+                Scalar coordinates:
+                    forecast_period             10794 hours
+                    forecast_reference_time     1859-09-01 06:00:00
+                    height                      1.5 m
+                    time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+                Cell methods:
+                    mean                        time (6 hour)
+                Attributes:
+                    Conventions                 CF-1.5
+                    Model scenario              E1
+                    STASH                       m01s03i236
+                    source                      Data from Met Office Unified Model 6.05
             >>> Resolve().mapped is None
             True
             >>> resolver = Resolve(cube1, cube2)
@@ -2469,39 +2469,39 @@ class Resolve:
 
             >>> print(cube1)
             air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-                 Dimension coordinates:
-                      time                           x              -              -
-                      latitude                       -              x              -
-                      longitude                      -              -              x
-                 Auxiliary coordinates:
-                      forecast_period                x              -              -
-                 Scalar coordinates:
-                      forecast_reference_time: 1859-09-01 06:00:00
-                      height: 1.5 m
-                 Attributes:
-                      Conventions: CF-1.5
-                      Model scenario: A1B
-                      STASH: m01s03i236
-                      source: Data from Met Office Unified Model 6.05
-                 Cell methods:
-                      mean: time (6 hour)
+                Dimension coordinates:
+                    time                             x              -              -
+                    latitude                         -              x              -
+                    longitude                        -              -              x
+                Auxiliary coordinates:
+                    forecast_period                  x              -              -
+                Scalar coordinates:
+                    forecast_reference_time     1859-09-01 06:00:00
+                    height                      1.5 m
+                Cell methods:
+                    mean                        time (6 hour)
+                Attributes:
+                    Conventions                 CF-1.5
+                    Model scenario              A1B
+                    STASH                       m01s03i236
+                    source                      Data from Met Office Unified Model 6.05
             >>> print(cube2)
             air_temperature / (K)               (longitude: 49; latitude: 37)
-                 Dimension coordinates:
-                      longitude                           x             -
-                      latitude                            -             x
-                 Scalar coordinates:
-                      forecast_period: 10794 hours
-                      forecast_reference_time: 1859-09-01 06:00:00
-                      height: 1.5 m
-                      time: 1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
-                 Attributes:
-                      Conventions: CF-1.5
-                      Model scenario: E1
-                      STASH: m01s03i236
-                      source: Data from Met Office Unified Model 6.05
-                 Cell methods:
-                      mean: time (6 hour)
+                Dimension coordinates:
+                    longitude                             x             -
+                    latitude                              -             x
+                Scalar coordinates:
+                    forecast_period             10794 hours
+                    forecast_reference_time     1859-09-01 06:00:00
+                    height                      1.5 m
+                    time                        1860-06-01 00:00:00, bound=(1859-12-01 00:00:00, 1860-12-01 00:00:00)
+                Cell methods:
+                    mean                        time (6 hour)
+                Attributes:
+                    Conventions                 CF-1.5
+                    Model scenario              E1
+                    STASH                       m01s03i236
+                    source                      Data from Met Office Unified Model 6.05
             >>> Resolve().shape is None
             True
             >>> Resolve(cube1, cube2).shape

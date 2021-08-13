@@ -961,67 +961,6 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
             return NotImplemented
 
 
-def _array_slice_ifempty(keys, shape, dtype):
-    """
-    Detect cases where an array slice will contain no data, as it contains a
-    zero-length dimension, and produce an equivalent result for those cases.
-
-    The function indicates 'empty' slicing cases, by returning an array equal
-    to the slice result in those cases.
-
-    Args:
-
-    * keys (indexing key, or tuple of keys):
-        The argument from an array __getitem__ call.
-        Only tuples of integers and slices are supported, in particular no
-        newaxis, ellipsis or array keys.
-        These are the types of array access usage we expect from Dask.
-    * shape (tuple of int):
-        The shape of the array being indexed.
-    * dtype (numpy.dtype):
-        The dtype of the array being indexed.
-
-    Returns:
-        result (np.ndarray or None):
-            If 'keys' contains a slice(0, 0), this is an ndarray of the correct
-            resulting shape and provided dtype.
-            Otherwise it is None.
-
-    .. note::
-
-        This is used to prevent DataProxy arraylike objects from fetching their
-        file data when wrapped as Dask arrays.
-        This is because, for Dask >= 2.0, the "dask.array.from_array" call
-        performs a fetch like [0:0, 0:0, ...], to 'snapshot' array metadata.
-        This function enables us to avoid triggering a file data fetch in those
-        cases :  This is consistent because the result will not contain any
-        actual data content.
-
-    """
-    # Convert a single key into a 1-tuple, so we always have a tuple of keys.
-    if isinstance(keys, tuple):
-        keys_tuple = keys
-    else:
-        keys_tuple = (keys,)
-
-    if any(key == slice(0, 0) for key in keys_tuple):
-        # An 'empty' slice is present :  Return a 'fake' array instead.
-        target_shape = list(shape)
-        for i_dim, key in enumerate(keys_tuple):
-            if key == slice(0, 0):
-                # Reduce dims with empty slicing to length 0.
-                target_shape[i_dim] = 0
-        # Create a prototype result : no memory usage, as some dims are 0.
-        result = np.zeros(target_shape, dtype=dtype)
-        # Index with original keys to produce the desired result shape.
-        # Note : also ok in 0-length dims, as the slice is always '0:0'.
-        result = result[keys]
-    else:
-        result = None
-
-    return result
-
-
 def create_temp_filename(suffix=""):
     """Return a temporary file name.
 
@@ -1601,23 +1540,23 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
         >>> print(cube)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  year                           x              -              -
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
         >>> promote_aux_coord_to_dim_coord(cube, "year")
         >>> print(cube)
         air_temperature / (K)               (year: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  year                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  time                           x              -              -
+            Dimension coordinates:
+                year                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                time                             x              -              -
 
     """
     from iris.coords import Coord, DimCoord
@@ -1727,23 +1666,23 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
 
         >>> print(cube)
         air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  time                           x              -              -
-                  latitude                       -              x              -
-                  longitude                      -              -              x
-             Auxiliary coordinates:
-                  forecast_period                x              -              -
-                  year                           x              -              -
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
         >>> demote_dim_coord_to_aux_coord(cube, "time")
         >>> print(cube)
         air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
-             Dimension coordinates:
-                  latitude                      -              x              -
-                  longitude                     -              -              x
-             Auxiliary coordinates:
-                  forecast_period               x              -              -
-                  time                          x              -              -
-                  year                          x              -              -
+            Dimension coordinates:
+                latitude                        -              x              -
+                longitude                       -              -              x
+            Auxiliary coordinates:
+                forecast_period                 x              -              -
+                time                            x              -              -
+                year                            x              -              -
 
     """
     from iris.coords import Coord

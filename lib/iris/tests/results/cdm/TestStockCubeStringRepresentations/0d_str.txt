@@ -1,13 +1,13 @@
 air_potential_temperature / (K)     (scalar cube)
-     Scalar coordinates:
-          altitude: 418.69836 m, bound=(413.93686, 426.63434) m
-          forecast_period: 0.0 hours
-          grid_latitude: -0.1278 degrees, bound=(-0.12825, -0.12735) degrees
-          grid_longitude: 359.5796 degrees, bound=(359.57916, 359.58005) degrees
-          level_height: 5.0 m, bound=(0.0, 13.333332) m
-          model_level_number: 1
-          sigma: 0.9994238, bound=(1.0, 0.99846387)
-          surface_altitude: 413.93686 m
-          time: 2009-09-09 17:10:00
-     Attributes:
-          source: Iris test case
+    Scalar coordinates:
+        altitude                    418.69836 m, bound=(413.93686, 426.63434) m
+        forecast_period             0.0 hours
+        grid_latitude               -0.1278 degrees, bound=(-0.12825, -0.12735) degrees
+        grid_longitude              359.5796 degrees, bound=(359.57916, 359.58005) degrees
+        level_height                5.0 m, bound=(0.0, 13.333332) m
+        model_level_number          1
+        sigma                       0.9994238, bound=(1.0, 0.99846387)
+        surface_altitude            413.93686 m
+        time                        2009-09-09 17:10:00
+    Attributes:
+        source                      Iris test case

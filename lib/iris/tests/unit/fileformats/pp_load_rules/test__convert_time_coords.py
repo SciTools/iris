@@ -15,7 +15,7 @@ import iris.tests as tests  # isort:skip
 
 import unittest
 
-from cf_units import CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_360_DAY, CALENDAR_GREGORIAN, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -48,7 +48,9 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
     def _check_timepoint(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=0, ic=1)
         t1 = nc_datetime(1970, 1, 1, hour=6, minute=0, second=0)
-        t2 = nc_datetime(0, 0, 0)  # not used in result
+        t2 = nc_datetime(
+            0, 0, 0, calendar=None, has_year_zero=True
+        )  # not used in result
         lbft = None  # unused
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
@@ -297,8 +299,8 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
 class TestLBTIMx2x_ZeroYear(TestField):
     def test_(self):
         lbtim = _lbtim(ib=2, ic=1)
-        t1 = nc_datetime(0, 1, 1)
-        t2 = nc_datetime(0, 1, 31, 23, 59, 00)
+        t1 = nc_datetime(0, 1, 1, has_year_zero=True)
+        t2 = nc_datetime(0, 1, 31, 23, 59, 00, has_year_zero=True)
         lbft = 0
         lbcode = _lbcode(1)
         coords_and_dims = _convert_time_coords(
@@ -315,8 +317,8 @@ class TestLBTIMx2x_ZeroYear(TestField):
 class TestLBTIMxxx_Unhandled(TestField):
     def test_unrecognised(self):
         lbtim = _lbtim(ib=4, ic=1)
-        t1 = nc_datetime(0, 0, 0)
-        t2 = nc_datetime(0, 0, 0)
+        t1 = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
+        t2 = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
         lbft = None
         lbcode = _lbcode(0)
         coords_and_dims = _convert_time_coords(
@@ -334,8 +336,13 @@ class TestLBCODE3xx(TestField):
     def test(self):
         lbcode = _lbcode(value=31323)
         lbtim = _lbtim(ib=2, ic=2)
-        t1 = nc_datetime(1970, 1, 3, hour=0, minute=0, second=0)
-        t2 = nc_datetime(1970, 1, 4, hour=0, minute=0, second=0)
+        calendar = CALENDAR_360_DAY
+        t1 = nc_datetime(
+            1970, 1, 3, hour=0, minute=0, second=0, calendar=calendar
+        )
+        t2 = nc_datetime(
+            1970, 1, 4, hour=0, minute=0, second=0, calendar=calendar
+        )
         lbft = 24 * 4
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,

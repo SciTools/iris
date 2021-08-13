@@ -108,18 +108,20 @@ make a new ``z`` dimension coordinate:
     >>> print(cubes[0])
     air_temperature / (kelvin)          (y: 4; x: 5)
      ...
-         Scalar coordinates:
-              z: 1 meters
+        Scalar coordinates:
+            z                           1 meters
     >>> print(cubes[1])
     air_temperature / (kelvin)          (y: 4; x: 5)
      ...
-         Scalar coordinates:
-              z: 2 meters
+        Scalar coordinates:
+            z                           2 meters
     >>> print(cubes[2])
     air_temperature / (kelvin)          (y: 4; x: 5)
-     ...
-         Scalar coordinates:
-              z: 3 meters
+        Dimension coordinates:
+            y                             x     -
+            x                             -     x
+        Scalar coordinates:
+            z                           3 meters
 
     >>> print(cubes.merge())
     0: air_temperature / (kelvin)          (z: 3; y: 4; x: 5)
@@ -378,7 +380,7 @@ If this consistency is not maintained then the
 seemingly arbitrary manner.
 
 The methods :meth:`~iris.cube.CubeList.merge_cube` and
-:meth:`~iris.cube.CubeList.concatenate_cube` 
+:meth:`~iris.cube.CubeList.concatenate_cube`
 were introduced to Iris to help you locate differences in input cubes
 that prevent the input cubes merging or concatenating.
 Nevertheless, certain difficulties with using
@@ -473,7 +475,7 @@ This is shown in the example below::
 
 **Merging Duplicate Cubes**
 
-The Iris load process does not merge duplicate cubes (two or more identical cubes in
+The Iris merge process does not merge duplicate cubes (two or more identical cubes in
 the input cubes) by default.
 This behaviour can be changed by setting the ``unique`` keyword argument
 to :meth:`~iris.cube.CubeList.merge` to ``False``.
@@ -553,18 +555,18 @@ combine your cubes::
 
     >>> print(cubes[0])
     air_temperature / (kelvin)          (y: 4; x: 5)
-         Dimension coordinates:
-              x                           x      -
-              y                           -      x
-         Scalar coordinates:
-              z: 1
+        Dimension coordinates:
+            y                             x     -
+            x                             -     x
+        Scalar coordinates:
+            z                           1 meters
     >>> print(cubes[1])
     air_temperature / (kelvin)          (y: 4; x: 5)
-         Dimension coordinates:
-              x                           x      -
-              y                           -      x
-         Scalar coordinates:
-              z: 2
+        Dimension coordinates:
+            y                             x     -
+            x                             -     x
+        Scalar coordinates:
+            z                           2 meters
 
 
 If your cubes are similar to those below (the single value ``z`` coordinate is

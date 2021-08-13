@@ -156,24 +156,24 @@ output as this is the quickest way of inspecting the contents of a cube. Here is
 .. testoutput::
 
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-         Dimension coordinates:
-              time                           x                      -                 -                    -
-              model_level_number             -                      x                 -                    -
-              grid_latitude                  -                      -                 x                    -
-              grid_longitude                 -                      -                 -                    x
-         Auxiliary coordinates:
-              forecast_period                x                      -                 -                    -
-              level_height                   -                      x                 -                    -
-              sigma                          -                      x                 -                    -
-              surface_altitude               -                      -                 x                    x
-         Derived coordinates:
-              altitude                       -                      x                 x                    x
-         Scalar coordinates:
-              forecast_reference_time: 2009-11-19 04:00:00
-         Attributes:
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model
-              um_version: 7.3
+        Dimension coordinates:
+            time                             x                      -                 -                    -
+            model_level_number               -                      x                 -                    -
+            grid_latitude                    -                      -                 x                    -
+            grid_longitude                   -                      -                 -                    x
+        Auxiliary coordinates:
+            forecast_period                  x                      -                 -                    -
+            level_height                     -                      x                 -                    -
+            sigma                            -                      x                 -                    -
+            surface_altitude                 -                      -                 x                    x
+        Derived coordinates:
+            altitude                         -                      x                 x                    x
+        Scalar coordinates:
+            forecast_reference_time     2009-11-19 04:00:00
+        Attributes:
+            STASH                       m01s00i004
+            source                      Data from Met Office Unified Model
+            um_version                  7.3
 
 
 Using this output we can deduce that:

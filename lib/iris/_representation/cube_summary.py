@@ -218,13 +218,22 @@ class AttributeSection(Section):
 class CellMethodSection(Section):
     def __init__(self, title, cell_methods):
         self.title = title
-        self.contents = [str(cm) for cm in cell_methods]
+        self.names = []
+        self.values = []
+        self.contents = []
+        for method in cell_methods:
+            name = method.method
+            # Remove "method: " from the front of the string, leaving the value.
+            value = str(method)[len(name + ": ") :]
+            self.names.append(name)
+            self.values.append(value)
+            content = "{}: {}".format(name, value)
+            self.contents.append(content)
 
 
 class CubeSummary:
     """
     This class provides a structure for output representations of an Iris cube.
-    TODO: use to produce the printout of :meth:`iris.cube.Cube.__str__`.
 
     """
 
@@ -311,7 +320,7 @@ class CubeSummary:
             "Scalar cell measures:",
             scalar_cell_measures,
         )
-        add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
         add_scalar_section(
             CellMethodSection, "Cell methods:", cube.cell_methods
         )
+        add_scalar_section(AttributeSection, "Attributes:", cube.attributes)
