@@ -97,20 +97,32 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         """
 
-    @abstractmethod
     def update(self, old_coord, new_coord=None):
         """
-        Notifies the factory of a removal/replacement of a dependency.
+        Notifies the factory of the removal/replacement of a coordinate
+        which might be a dependency.
 
         Args:
 
         * old_coord:
-            The dependency coordinate to be removed/replaced.
+            The coordinate to be removed/replaced.
         * new_coord:
-            If None, the dependency using old_coord is removed, otherwise
-            the dependency is updated to use new_coord.
+            If None, any dependency using old_coord is removed, otherwise
+            any dependency using old_coord is updated to use new_coord.
 
         """
+        new_dependencies = self.dependencies
+        for name, coord in self.dependencies.items():
+            if old_coord is coord:
+                new_dependencies[name] = new_coord
+                try:
+                    self._check_dependencies(**new_dependencies)
+                except ValueError as e:
+                    msg = "Failed to update dependencies. " + str(e)
+                    raise ValueError(msg)
+                else:
+                    setattr(self, name, new_coord)
+                break
 
     def __repr__(self):
         def arg_text(item):
@@ -366,14 +378,15 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
 
 class AtmosphereSigmaFactory(AuxCoordFactory):
-    """Defines an atmosphere sigma coordinate factory."""
+    """Defines an atmosphere sigma coordinate factory with the formula:
+        p = ptop + sigma * (ps - ptop)
+
+    """
 
     def __init__(
         self, pressure_at_top=None, sigma=None, surface_air_pressure=None
     ):
-        """Create class instance.
-
-        Creates an atmosphere sigma coordinate factory with the formula:
+        """Creates an atmosphere sigma coordinate factory with the formula:
 
         p(n, k, j, i) = pressure_at_top + sigma(k) *
                         (surface_air_pressure(n, j, i) - pressure_at_top)
@@ -392,7 +405,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         self.sigma = sigma
         self.surface_air_pressure = surface_air_pressure
         self.standard_name = "air_pressure"
-        self.attributes = {"positive": "down"}
+        self.attributes = {}
 
     @staticmethod
     def _check_dependencies(pressure_at_top, sigma, surface_air_pressure):
@@ -470,7 +483,18 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         )
 
     def make_coord(self, coord_dims_func):
-        """Make new :class:`iris.coords.AuxCoord`."""
+        """
+        Returns a new :class:`iris.coords.AuxCoord` as defined by this
+        factory.
+
+        Args:
+
+        * coord_dims_func:
+            A callable which can return the list of dimensions relevant
+            to a given coordinate.
+            See :meth:`iris.cube.Cube.coord_dims()`.
+
+        """
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
@@ -528,20 +552,6 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
             attributes=self.attributes,
             coord_system=self.coord_system,
         )
-
-    def update(self, old_coord, new_coord=None):
-        """Notify the factory of the removal/replacement of a coordinate."""
-        new_dependencies = self.dependencies
-        for (name, coord) in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as exc:
-                    raise ValueError(f"Failed to update dependencies: {exc}")
-                else:
-                    setattr(self, name, new_coord)
-                break
 
 
 class HybridHeightFactory(AuxCoordFactory):
@@ -912,33 +922,6 @@ class HybridPressureFactory(AuxCoordFactory):
         )
         return hybrid_pressure
 
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break
-
 
 class OceanSigmaZFactory(AuxCoordFactory):
     """Defines an ocean sigma over z coordinate factory."""
@@ -1232,33 +1215,6 @@ class OceanSigmaZFactory(AuxCoordFactory):
         )
         return coord
 
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break
-
 
 class OceanSigmaFactory(AuxCoordFactory):
     """Defines an ocean sigma coordinate factory."""
@@ -1416,33 +1372,6 @@ class OceanSigmaFactory(AuxCoordFactory):
             coord_system=self.coord_system,
         )
         return coord
-
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break
 
 
 class OceanSg1Factory(AuxCoordFactory):
@@ -1639,33 +1568,6 @@ class OceanSg1Factory(AuxCoordFactory):
             coord_system=self.coord_system,
         )
         return coord
-
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break
 
 
 class OceanSFactory(AuxCoordFactory):
@@ -1865,33 +1767,6 @@ class OceanSFactory(AuxCoordFactory):
         )
         return coord
 
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break
-
 
 class OceanSg2Factory(AuxCoordFactory):
     """Defines an Ocean s-coordinate, generic form 2 factory."""
@@ -2088,30 +1963,3 @@ class OceanSg2Factory(AuxCoordFactory):
             coord_system=self.coord_system,
         )
         return coord
-
-    def update(self, old_coord, new_coord=None):
-        """
-        Notifies the factory of the removal/replacement of a coordinate
-        which might be a dependency.
-
-        Args:
-
-        * old_coord:
-            The coordinate to be removed/replaced.
-        * new_coord:
-            If None, any dependency using old_coord is removed, otherwise
-            any dependency using old_coord is updated to use new_coord.
-
-        """
-        new_dependencies = self.dependencies
-        for name, coord in self.dependencies.items():
-            if old_coord is coord:
-                new_dependencies[name] = new_coord
-                try:
-                    self._check_dependencies(**new_dependencies)
-                except ValueError as e:
-                    msg = "Failed to update dependencies. " + str(e)
-                    raise ValueError(msg)
-                else:
-                    setattr(self, name, new_coord)
-                break

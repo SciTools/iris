@@ -9,6 +9,10 @@ Unit tests for the
 
 """
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from unittest import mock
 
 from cf_units import Unit
@@ -16,10 +20,6 @@ import numpy as np
 
 from iris.aux_factory import AtmosphereSigmaFactory
 from iris.coords import AuxCoord, DimCoord
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 
 
 class Test___init__(tests.IrisTest):
@@ -33,21 +33,27 @@ class Test___init__(tests.IrisTest):
             surface_air_pressure=self.surface_air_pressure,
         )
 
-    def test_insufficient_coordinates(self):
+    def test_insufficient_coordinates_no_args(self):
         with self.assertRaises(ValueError):
             AtmosphereSigmaFactory()
+
+    def test_insufficient_coordinates_no_ptop(self):
         with self.assertRaises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=None,
                 sigma=self.sigma,
                 surface_air_pressure=self.surface_air_pressure,
             )
+
+    def test_insufficient_coordinates_no_sigma(self):
         with self.assertRaises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
                 sigma=None,
                 surface_air_pressure=self.surface_air_pressure,
             )
+
+    def test_insufficient_coordinates_no_ps(self):
         with self.assertRaises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
@@ -60,6 +66,7 @@ class Test___init__(tests.IrisTest):
             self.pressure_at_top.shape = shape
             AtmosphereSigmaFactory(**self.kwargs)
 
+    def test_ptop_invalid_shapes(self):
         for shape in [(2,), (1, 1)]:
             self.pressure_at_top.shape = shape
             with self.assertRaises(ValueError):
@@ -70,6 +77,7 @@ class Test___init__(tests.IrisTest):
             self.sigma.nbounds = n_bounds
             AtmosphereSigmaFactory(**self.kwargs)
 
+    def test_sigma_invalid_bounds(self):
         for n_bounds in [-1, 1, 3]:
             self.sigma.nbounds = n_bounds
             with self.assertRaises(ValueError):
@@ -80,6 +88,7 @@ class Test___init__(tests.IrisTest):
             self.sigma.units = Unit(units)
             AtmosphereSigmaFactory(**self.kwargs)
 
+    def test_sigma_invalid_units(self):
         for units in ["Pa", "m"]:
             self.sigma.units = Unit(units)
             with self.assertRaises(ValueError):
@@ -91,6 +100,7 @@ class Test___init__(tests.IrisTest):
             self.surface_air_pressure.units = Unit(units[1])
             AtmosphereSigmaFactory(**self.kwargs)
 
+    def test_ptop_ps_invalid_units(self):
         for units in [("Pa", "1"), ("1", "Pa"), ("bar", "Pa"), ("Pa", "hPa")]:
             self.pressure_at_top.units = Unit(units[0])
             self.surface_air_pressure.units = Unit(units[1])
@@ -103,6 +113,7 @@ class Test___init__(tests.IrisTest):
             self.surface_air_pressure.units = Unit(units)
             AtmosphereSigmaFactory(**self.kwargs)
 
+    def test_ptop_invalid_units(self):
         for units in ["1", "m", "kg", None]:
             self.pressure_at_top.units = Unit(units)
             self.surface_air_pressure.units = Unit(units)
@@ -127,7 +138,7 @@ class Test_dependencies(tests.IrisTest):
 
 
 class Test__derive(tests.IrisTest):
-    def test_function(self):
+    def test_function_scalar(self):
         assert AtmosphereSigmaFactory._derive(0, 0, 0) == 0
         assert AtmosphereSigmaFactory._derive(3, 0, 0) == 3
         assert AtmosphereSigmaFactory._derive(0, 5, 0) == 0
@@ -137,6 +148,7 @@ class Test__derive(tests.IrisTest):
         assert AtmosphereSigmaFactory._derive(0, 5, 7) == 35
         assert AtmosphereSigmaFactory._derive(3, 5, 7) == 23
 
+    def test_function_array(self):
         ptop = 3
         sigma = np.array([2, 4])
         ps = np.arange(4).reshape(2, 2)
@@ -167,7 +179,6 @@ class Test_make_coord(tests.IrisTest):
                 result,
                 standard_name=name,
                 units="Pa",
-                attributes=dict(positive="down"),
             )
         return result
 
