@@ -65,11 +65,8 @@ This document explains the changes made to Iris for this release
    :attr:`~iris.cube.Cube.attributes`, and improving spacing throughout.
    (:pull:`4206`)
 
-#. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
-   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
-   optimisation only applies when matching on standard name, long name or
-   NetCDF variable name, not when matching on STASH.
-   (:pull:`4176`)
+#. `@schlunma`_ added support for loading atmosphere sigma coordinates from netcdf-CF files.  These now load as
+   :class:`iris.aux_factory.AtmosphereSigmaFactory` derived coordinates. (:pull: `4052`)
 
 
 🐛 Bugs Fixed
@@ -91,6 +88,10 @@ This document explains the changes made to Iris for this release
 #. `@MHBalsmeier`_ modified :func:`~iris.plot.contourf` to generalize :pull:`4150`
    for the cases where NaN values occur in the plot array (:pull:`4263`)
 
+#. `@trexfeathers`_ fixed the "anomaly_log_colouring" gallery example to be compatible with the latest Matplotlib usage
+   (:pull:`4115`)
+
+
 🚀 Performance Enhancements
 ===========================
 
@@ -102,6 +103,12 @@ This document explains the changes made to Iris for this release
    speed-up in the creation of Iris :class:`~iris.coords.AncillaryVariable`,
    :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure`, and
    :class:`~iris.cube.Cube` instances. (:pull:`4227`)
+
+#. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
+   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
+   optimisation only applies when matching on standard name, long name or
+   NetCDF variable name, not when matching on STASH.
+   (:pull:`4176`)
 
 
 💣 Incompatible Changes
@@ -121,6 +128,8 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
    from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
+
+#. `@pp-mo`_ removed dependency on `PyKE_`. (:pull: `4198`)
 
 
 📚 Documentation
@@ -238,10 +247,14 @@ This document explains the changes made to Iris for this release
 #. `@jamesp`_ and `@trexfeathers`_ implemented a benchmarking CI check
    using `asv`_. (:pull:`4253`)
 
-#. `@pp-mo`_ refactored almost all of :meth:`iris.cube.Cube.summary` into the
+#. `@pp-mo`_ and `@stephenworsley`_ refactored almost all of :meth:`iris.cube.Cube.summary` into the
    new private module: :mod:`iris._representation`; rewritten with a more
    modular approach, resulting in more readable and extensible code.
-   (:pull:`4206`)
+   (:pull:`3987`) (:pull:`4206`)
+
+#. `@pp-mo`_ reworked the netcdf loading code, replacing Pyke rules with a pure Python implementation.
+   (:pull: `4198`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -251,7 +264,7 @@ This document explains the changes made to Iris for this release
 .. _@Badboy-16: https://github.com/Badboy-16
 .. _@gcaria: https://github.com/gcaria
 .. _@MHBalsmeier: https://github.com/MHBalsmeier
-
+.. _@schlunma: https://github.com/schlunma
 
 .. comment
     Whatsnew resources in alphabetical order:
