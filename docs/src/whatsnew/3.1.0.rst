@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+|iris_version| |build_date|
+***************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -17,6 +17,8 @@ This document explains the changes made to Iris for this release
    The highlights for this minor release of Iris include:
 
    * We've dropped support for `Python 3.6`_
+   * Updated formatting of cube printouts.
+   * Updated developer guide documentation.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -28,7 +30,7 @@ This document explains the changes made to Iris for this release
 #. Congratulations to `@jamesp`_ who recently became an Iris core developer
    after joining the Iris development team at the `Met Office`_. 🎉
 
-#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_, `@MHBalsmeier`_
+#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_, `@schlunma`_, `@MHBalsmeier`_
    and `@Badboy-16`_ all of whom made their first contributions to Iris, which
    were gratefully received and included in this release. Keep up the awesome
    work! 🍻
