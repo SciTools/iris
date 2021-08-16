@@ -243,6 +243,9 @@ This document explains the changes made to Iris for this release
    modular approach, resulting in more readable and extensible code.
    (:pull:`4206`)
 
+#. `@lbdreyer`_ updated the CF standard name table to the latest version: `v77`_.
+   (:pull:`4282`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
