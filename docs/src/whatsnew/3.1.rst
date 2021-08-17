@@ -130,7 +130,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
    from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
-#. `@pp-mo`_ removed dependency on `PyKE_`. (:pull:`4198`)
+#. `@pp-mo`_ removed dependency on `PyKE`_. (:pull:`4198`)
 
 
 📚 Documentation
@@ -297,6 +297,7 @@ This document explains the changes made to Iris for this release
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
 .. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
 .. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/main
+.. _PyKE: https://pypi.org/project/scitools-pyke/
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
 .. _Python 3.6: https://www.python.org/downloads/release/python-360/
