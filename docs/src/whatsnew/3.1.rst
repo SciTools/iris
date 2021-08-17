@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date|
-***************************
+v3.1 (17 Aug 2021) [unreleased]
+*******************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -68,7 +68,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4206`)
 
 #. `@schlunma`_ added support for loading atmosphere sigma coordinates from netcdf-CF files.  These now load as
-   :class:`iris.aux_factory.AtmosphereSigmaFactory` derived coordinates. (:pull: `4052`)
+   :class:`iris.aux_factory.AtmosphereSigmaFactory` derived coordinates. (:pull:`4052`)
 
 
 🐛 Bugs Fixed
@@ -112,7 +112,6 @@ This document explains the changes made to Iris for this release
    NetCDF variable name, not when matching on STASH.
    (:pull:`4176`)
 
-
 💣 Incompatible Changes
 =======================
 
@@ -131,7 +130,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
    from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
-#. `@pp-mo`_ removed dependency on `PyKE_`. (:pull: `4198`)
+#. `@pp-mo`_ removed dependency on `PyKE`_. (:pull:`4198`)
 
 
 📚 Documentation
@@ -179,6 +178,9 @@ This document explains the changes made to Iris for this release
 
 #. `@MHBalsmeier`_ updated and simplified non-conda installation on Debian-based distros.
    (:pull:`4260`)
+
+#. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
+   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`)
 
 
 💼 Internal
@@ -255,12 +257,22 @@ This document explains the changes made to Iris for this release
    (:pull:`3987`) (:pull:`4206`)
 
 #. `@pp-mo`_ reworked the netcdf loading code, replacing Pyke rules with a pure Python implementation.
-   (:pull: `4198`)
-
+   (:pull:`4198`)
 
 #. `@lbdreyer`_ updated the CF standard name table to the latest version: 
    `v77 <http://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
    (:pull:`4282`)
+
+#. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
+
+#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+
+#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+   developers to easily disable `cirrus-ci`_ tasks. See
+   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -276,18 +288,19 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _abstract base class: https://docs.python.org/3/library/abc.html
+.. _asv: https://asv.readthedocs.io/en/stable/
 .. _blacken-docs: https://github.com/asottile/blacken-docs
+.. _conda-lock: https://github.com/conda-incubator/conda-lock
 .. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
 .. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
 .. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/main
+.. _PyKE: https://pypi.org/project/scitools-pyke/
 .. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
 .. _PyPI: https://pypi.org/project/scitools-iris/
-.. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _Python 3.6: https://www.python.org/downloads/release/python-360/
+.. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _README.md: https://github.com/SciTools/iris#-----
 .. _xxhash: http://cyan4973.github.io/xxHash/
-.. _conda-lock: https://github.com/conda-incubator/conda-lock
-.. _asv: https://asv.readthedocs.io/en/stable/

@@ -180,6 +180,67 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ fixed a bug whereby numpy array type attributes on a cube's
    coordinates could prevent printing it.  See :issue:`3921`.  (:pull:`3922`)
 
+===================================
+Bugs fixed in v3.0.1 (27 Jan 2021)
+===================================
+
+#. `@bjlittle`_ gracefully promote formula terms within :mod:`~iris.aux_factory` that have ``units`` of ``unknown``
+   to ``units`` of ``1`` (dimensionless), where the formula term **must** have dimensionless ``units``. Without this
+   graceful treatment of ``units`` the resulting :class:`~iris.cube.Cube` will **not** contain the expected auxiliary
+   factory, and the associated derived coordinate will be missing. (:pull:`3965`)
+
+===================================
+Bugs fixed in v3.0.2 (27 May 2021)
+===================================
+
+#. `@jonseddon`_ handled a malformed ``um_stash_source`` CF variable attribute in
+   a netCDF file rather than raising a ``ValueError``. (:pull:`4035`)
+
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases
+   where one cell's bounds align with the requested maximum and minimum, as
+   reported in :issue:`3391`. (:pull:`4059`)
+
+#. `@bjlittle`_ resolved a regression in arithmetic behaviour between a coordinate
+   and a cube which resulted in a ``NotYetImplementedError`` being raised, as reported
+   in :issue:`4000`. This fix supports ``+``, ``-``, ``*``, and ``/`` operations
+   between a coordinate and a cube, and for convenience additionally includes
+   :meth:`iris.cube.Cube.__neg__` support. (:pull:`4159`)
+
+===================================
+Bugs fixed in v3.0.3 (07 July 2021)
+===================================
+
+#. `@lbdreyer`_ modified :meth:`~iris.cube.Cube.intersection` to use a tolerant
+   equality check, when looking for cells that straddle the wrapping point.
+   (:pull:`4220`)
+
+===================================
+Bugs fixed in v3.0.4 (22 July 2021)
+===================================
+
+#. `@pp-mo`_ fixed 2 bugs in cube printout:
+   Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
+   whereas previously printing these cases caused an Exception.
+   Secondly, cube units are now always printed, whereas previously they were missed out any time that the
+   "dimensions map" was widened to accomodate long coordinate names.
+   (:pull:`4233`)(:pull:`4238`)
+
+
+
+🚀 Performance Enhancements
+===========================
+
+================================================
+Performance Enhancements in v3.0.2 (27 May 2021)
+================================================
+
+#. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
+   to avoid the dask 'test access'. This makes loading of netcdf files with a
+   large number of variables significantly faster. (:pull:`4135`)
+
+
+
+
 .. _whatsnew 3.0 changes:
 
 💣 Incompatible Changes
@@ -452,6 +513,26 @@ This document explains the changes made to Iris for this release
    run the Iris tests, the doc-tests, the gallery doc-tests, and lint Iris
    with `flake8`_ and `black`_. (:pull:`3928`)
 
+========================================
+Internal changes in v3.0.2 (27 May 2021)
+========================================
+
+#. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
+   :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
+   is no longer needed since (:pull:`4135`) was added. (:pull:`4141`)
+
+=========================================
+Internal changes in v3.0.4 (22 July 2021)
+=========================================
+#. `@bjlittle`_ Unpinned the `cftime`_ package dependency within Iris in order
+   to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
+   (:pull:`4222`)
+
+#. `@rcomer`_ modified test modules so they run consistently under ``pytest`` and
+   ``nose``, and also fixed some minor issues with :class:`~iris.time.PartialDateTime`.
+   (:pull:`4249`)
+
+
 .. _Read the Docs: https://scitools-iris.readthedocs.io/en/latest/
 .. _CF units rules: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#units
 .. _CF Ancillary Data: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#ancillary-data
@@ -500,3 +581,6 @@ This document explains the changes made to Iris for this release
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _stickler-ci: https://stickler-ci.com/
+.. _cf-units: https://github.com/SciTools/cf-units
+.. _cftime: https://github.com/Unidata/cftime
+.. _nc-time-axis: https://github.com/SciTools/nc-time-axis
