@@ -68,7 +68,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4206`)
 
 #. `@schlunma`_ added support for loading atmosphere sigma coordinates from netcdf-CF files.  These now load as
-   :class:`iris.aux_factory.AtmosphereSigmaFactory` derived coordinates. (:pull: `4052`)
+   :class:`iris.aux_factory.AtmosphereSigmaFactory` derived coordinates. (:pull:`4052`)
 
 
 🐛 Bugs Fixed
@@ -130,7 +130,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
    from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
 
-#. `@pp-mo`_ removed dependency on `PyKE_`. (:pull: `4198`)
+#. `@pp-mo`_ removed dependency on `PyKE_`. (:pull:`4198`)
 
 
 📚 Documentation
@@ -257,7 +257,7 @@ This document explains the changes made to Iris for this release
    (:pull:`3987`) (:pull:`4206`)
 
 #. `@pp-mo`_ reworked the netcdf loading code, replacing Pyke rules with a pure Python implementation.
-   (:pull: `4198`)
+   (:pull:`4198`)
 
 #. `@lbdreyer`_ updated the CF standard name table to the latest version: 
    `v77 <http://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
