@@ -159,6 +159,14 @@ Bugs fixed in v3.0.1 (27 Jan 2021)
    NetCDF variable name, not when matching on STASH.
    (:pull:`4176`)
 
+================================================
+Performance Enhancements in v3.0.2 (27 May 2021)
+================================================
+
+#. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
+   to avoid the dask 'test access'. This makes loading of netcdf files with a
+   large number of variables significantly faster. (:pull:`4135`)
+
 
 💣 Incompatible Changes
 =======================
@@ -227,13 +235,8 @@ Bugs fixed in v3.0.1 (27 Jan 2021)
 #. `@MHBalsmeier`_ updated and simplified non-conda installation on Debian-based distros.
    (:pull:`4260`)
 
-=============================================
-Documentation changes in v3.0.2 (27 May 2021)
-=============================================
-
 #. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
-   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`) [``pre-v3.1.0``]
-
+   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`)
 
 
 💼 Internal
@@ -316,6 +319,16 @@ Documentation changes in v3.0.2 (27 May 2021)
    `v77 <http://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
    (:pull:`4282`)
 
+#. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
+
+#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+
+#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+   developers to easily disable `cirrus-ci`_ tasks. See
+   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+
+
 =========================================
 Internal changes in v3.0.4 (22 July 2021)
 =========================================
@@ -330,20 +343,6 @@ Internal changes in v3.0.4 (22 July 2021)
 ========================================
 Internal changes in v3.0.2 (27 May 2021)
 ========================================
-
-#. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`) [``pre-v3.1.0``]
-
-#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
-   from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
-   [``pre-v3.1.0``]
-
-#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`) [``pre-v3.1.0``]
-
-#. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
-   to avoid the dask 'test access'. This makes loading of netcdf files with a
-   large number of variables significantly faster. (:pull:`4135`)
 
 #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
    :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
