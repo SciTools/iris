@@ -2137,11 +2137,12 @@ class Coord(_DimensionalMetadata):
                 shape = self._bounds_dm.shape[-1:]
                 bounds = []
                 for index in np.ndindex(shape):
-                    index_slice = (slice(None),) + tuple(index)
+                    index_slice = (slice(None),) * self.ndim + tuple(index)
                     bounds.append(
                         serialize(self.bounds[index_slice], dims_to_collapse)
                     )
-                bounds = np.array(bounds).reshape((1,) + shape)
+                # Make sure bounds dim comes last.
+                bounds = np.moveaxis(bounds, 0, -1)
             points = serialize(self.points, dims_to_collapse)
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points), bounds=bounds)

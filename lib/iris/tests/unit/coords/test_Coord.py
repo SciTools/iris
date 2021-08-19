@@ -728,6 +728,56 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
         self.assertArrayEqual(collapsed_coord.points, expected)
 
+    def test_string_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(
+            self.pts_real.astype(str), bounds=self.bds_real.astype(str)
+        )
+
+        collapsed_coord = coord.collapsed(0)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|38.0|78.0",
+            "8.0|48.0|88.0",
+            "18.0|58.0|98.0",
+            "28.0|68.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|42.0|82.0",
+            "12.0|52.0|92.0",
+            "22.0|62.0|102.0",
+            "32.0|72.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
+    def test_string_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(
+            self.pts_real.astype(str), bounds=self.bds_real.astype(str)
+        )
+
+        collapsed_coord = coord.collapsed(1)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|8.0|18.0|28.0",
+            "38.0|48.0|58.0|68.0",
+            "78.0|88.0|98.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|12.0|22.0|32.0",
+            "42.0|52.0|62.0|72.0",
+            "82.0|92.0|102.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
