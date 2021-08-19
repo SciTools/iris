@@ -710,7 +710,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "0.0|40.0|80.0",
             "10.0|50.0|90.0",
             "20.0|60.0|100.0",
-            "30.0|70.0|111.0",
+            "30.0|70.0|110.0",
         ]
 
         self.assertArrayEqual(collapsed_coord.points, expected)
