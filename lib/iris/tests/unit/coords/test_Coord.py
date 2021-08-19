@@ -701,6 +701,33 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         self.assertArrayAlmostEqual(collapsed_coord.points, da.array([2.0]))
         self.assertArrayAlmostEqual(collapsed_coord.bounds, da.array([[0.0, 4.0]]))
 
+    def test_string_nd_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(0)
+        expected = [
+            "0.0|40.0|80.0",
+            "10.0|50.0|90.0",
+            "20.0|60.0|100.0",
+            "30.0|70.0|111.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(1)
+        expected = [
+            "0.0|10.0|20.0|30.0",
+            "40.0|50.0|60.0|70.0",
+            "80.0|90.0|100.0|110.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
 
 class Test_is_compatible(tests.IrisTest):
     def setUp(self):
