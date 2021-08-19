@@ -2120,7 +2120,7 @@ class Coord(_DimensionalMetadata):
                     return "|".join(x.flatten())
                 # np.apply_along_axis does not work with str.join, so we
                 # need to loop through the array directly. First move (possibly
-                # multiple) axis of interest to trailing dims, then make a 2D
+                # multiple) axis of interest to trailing dim(s), then make a 2D
                 # array we can loop through.
                 work_array = np.moveaxis(x, axis, range(-len(axis), 0))
                 out_shape = work_array.shape[: -len(axis)]
@@ -2134,13 +2134,11 @@ class Coord(_DimensionalMetadata):
 
             bounds = None
             if self.has_bounds():
-                shape = self._bounds_dm.shape[-1:]
                 bounds = []
-                for index in np.ndindex(shape):
-                    index_slice = (slice(None),) * self.ndim + tuple(index)
-                    bounds.append(
-                        serialize(self.bounds[index_slice], dims_to_collapse)
-                    )
+                for index in range(self.nbounds):
+                    bounds_slice = np.take(self.bounds, index, axis=-1)
+                    serialized = serialize(bounds_slice, dims_to_collapse)
+                    bounds.append(serialized)
                 # Make sure bounds dim comes last.
                 bounds = np.moveaxis(bounds, 0, -1)
             points = serialize(self.points, dims_to_collapse)
