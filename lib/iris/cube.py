@@ -3013,7 +3013,7 @@ class Cube(CFVariableMixin):
         Example usage::
 
             # put the second dimension first, followed by the third dimension,
-            and finally put the first dimension third::
+            # and finally put the first dimension third::
 
                 >>> cube.transpose([1, 2, 0])
 
