@@ -93,6 +93,23 @@ class TestsBasic(tests.IrisTest):
             """
         self.nc_path = cdl_to_nc(self.ref_cdl)
 
+    def add_second_mesh(self):
+        second_name = "mesh2"
+        cdl_extra = f"""
+                     int {second_name} ;
+                         {second_name}:cf_role = "mesh_topology" ;
+                         {second_name}:topology_dimension = 2 ;
+                         {second_name}:node_coordinates = "node_x node_y" ;
+                         {second_name}:face_coordinates = "face_x face_y" ;
+                         {second_name}:face_node_connectivity = "face_nodes" ;
+             """
+        vars_string = "variables:"
+        vars_start = self.ref_cdl.index(vars_string) + len(vars_string)
+        new_cdl = (
+            self.ref_cdl[:vars_start] + cdl_extra + self.ref_cdl[vars_start:]
+        )
+        return new_cdl, second_name
+
     def test_with_data(self):
         nc_path = cdl_to_nc(self.ref_cdl)
         with PARSE_UGRID_ON_LOAD.context():
@@ -123,12 +140,6 @@ class TestsBasic(tests.IrisTest):
         mesh = file_meshes[0]
         self.assertEqual("mesh", mesh.var_name)
 
-    def test_var_name(self):
-        nc_path = cdl_to_nc(self.ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_path, "some_other_mesh")
-        self.assertDictEqual({}, meshes)
-
     def test_multi_files(self):
         files_count = 3
         nc_paths = [cdl_to_nc(self.ref_cdl) for _ in range(files_count)]
@@ -137,20 +148,7 @@ class TestsBasic(tests.IrisTest):
         self.assertEqual(files_count, len(meshes))
 
     def test_multi_meshes(self):
-        cdl_extra = """
-                    int mesh2 ;
-                        mesh2:cf_role = "mesh_topology" ;
-                        mesh2:topology_dimension = 2 ;
-                        mesh2:node_coordinates = "node_x node_y" ;
-                        mesh2:face_coordinates = "face_x face_y" ;
-                        mesh2:face_node_connectivity = "face_nodes" ;
-            """
-        vars_string = "variables:"
-        vars_start = self.ref_cdl.index(vars_string) + len(vars_string)
-        ref_cdl = (
-            self.ref_cdl[:vars_start] + cdl_extra + self.ref_cdl[vars_start:]
-        )
-
+        ref_cdl, second_name = self.add_second_mesh()
         nc_path = cdl_to_nc(ref_cdl)
         with PARSE_UGRID_ON_LOAD.context():
             meshes = load_meshes(nc_path)
@@ -161,7 +159,20 @@ class TestsBasic(tests.IrisTest):
         self.assertEqual(2, len(file_meshes))
         mesh_names = [mesh.var_name for mesh in file_meshes]
         self.assertIn("mesh", mesh_names)
-        self.assertIn("mesh2", mesh_names)
+        self.assertIn(second_name, mesh_names)
+
+    def test_var_name(self):
+        second_cdl, second_name = self.add_second_mesh()
+        cdls = [self.ref_cdl, second_cdl]
+        nc_paths = [cdl_to_nc(cdl) for cdl in cdls]
+        with PARSE_UGRID_ON_LOAD.context():
+            meshes = load_meshes(nc_paths, second_name)
+
+        files = list(meshes.keys())
+        self.assertEqual(1, len(files))
+        file_meshes = meshes[files[0]]
+        self.assertEqual(1, len(file_meshes))
+        self.assertEqual(second_name, file_meshes[0].var_name)
 
     def test_no_parsing(self):
         nc_path = cdl_to_nc(self.ref_cdl)
