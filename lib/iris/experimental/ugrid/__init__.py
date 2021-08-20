@@ -3317,7 +3317,7 @@ def load_mesh(uris, var_name=None):
 
     """
     meshes_result = load_meshes(uris, var_name)
-    result = [mesh for file in meshes_result.values() for mesh in file]
+    result = set([mesh for file in meshes_result.values() for mesh in file])
     mesh_count = len(result)
     if mesh_count != 1:
         message = (
