@@ -21,6 +21,7 @@ from iris.experimental.ugrid import (
     PARSE_UGRID_ON_LOAD,
     Mesh,
     load_mesh,
+    load_meshes,
     logger,
 )
 from iris.tests.stock.netcdf import (
@@ -112,6 +113,15 @@ class TestBasic(tests.IrisTest):
             "lfric_ngvat_3D_veg_pseudo_levels_1t_face_half_levels_main_snowpack_density.nc",
             "3D_veg_pseudo_levels.cml",
         )
+
+    def test_no_mesh(self):
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_list = load(
+                tests.get_data_path(
+                    ["NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc"]
+                )
+            )
+        self.assertTrue(all([cube.mesh is None for cube in cube_list]))
 
 
 @tests.skip_data
@@ -222,6 +232,15 @@ class Test_load_mesh(tests.IrisTest):
 
     def test_mesh_file(self):
         self.common_test("mesh_C12.nc", "dynamics")
+
+    def test_no_mesh(self):
+        with PARSE_UGRID_ON_LOAD.context():
+            meshes = load_meshes(
+                tests.get_data_path(
+                    ["NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc"]
+                )
+            )
+        self.assertDictEqual({}, meshes)
 
 
 if __name__ == "__main__":
