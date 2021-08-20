@@ -27,7 +27,7 @@ class TestInputReshape(tests.IrisTest):
     def check_input(self, data, axis, expected):
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         wrapped_stat_func(data, axis=axis)
-        self.assertArrayEqual(self.stat_func.call_args.args[0], expected)
+        self.assertArrayEqual(self.stat_func.call_args[0][0], expected)
 
     def test_1d_input(self):
         # Trailing axis chosen, so array should be unchanged.
@@ -84,9 +84,9 @@ class TestInputReshape(tests.IrisTest):
 
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         wrapped_stat_func(lazy_data, axis=axis)
-        self.assertTrue(is_lazy_data(self.stat_func.call_args.args[0]))
+        self.assertTrue(is_lazy_data(self.stat_func.call_args[0][0]))
         self.assertArrayEqual(
-            as_concrete_data(self.stat_func.call_args.args[0]), expected
+            as_concrete_data(self.stat_func.call_args[0][0]), expected
         )
 
 
