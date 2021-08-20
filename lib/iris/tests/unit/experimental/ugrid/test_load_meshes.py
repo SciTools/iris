@@ -140,6 +140,22 @@ class TestsBasic(tests.IrisTest):
         mesh = file_meshes[0]
         self.assertEqual("mesh", mesh.var_name)
 
+    def test_no_mesh(self):
+        cdl_lines = self.ref_cdl.split("\n")
+        cdl_lines = filter(
+            lambda line: all(
+                [s not in line for s in (':mesh = "mesh"', "mesh_topology")]
+            ),
+            cdl_lines,
+        )
+        ref_cdl = "\n".join(cdl_lines)
+
+        nc_path = cdl_to_nc(ref_cdl)
+        with PARSE_UGRID_ON_LOAD.context():
+            meshes = load_meshes(nc_path)
+
+        self.assertDictEqual({}, meshes)
+
     def test_multi_files(self):
         files_count = 3
         nc_paths = [cdl_to_nc(self.ref_cdl) for _ in range(files_count)]
