@@ -3306,7 +3306,8 @@ def load_mesh(uris, var_name=None):
     Parameters
     ----------
     uris : str or iterable of str
-        One or more filenames/URI's. Any URI's must support OpenDAP.
+        One or more filenames/URI's. Filenames can include wildcards. Any URI's
+         must support OpenDAP.
     var_name : str, optional
         Only return a :class:`Mesh` if its var_name matches this value.
 
@@ -3333,15 +3334,16 @@ def load_meshes(uris, var_name=None):
     Parameters
     ----------
     uris : str or iterable of str
-        One or more filenames/URI's. Any URI's must support OpenDAP.
+        One or more filenames/URI's. Filenames can include wildcards. Any URI's
+         must support OpenDAP.
     var_name : str, optional
         Only return :class:`Mesh`\\ es that have var_names matching this value.
 
     Returns
     -------
     dict
-        A dictionary mapping each file path/URL to a list of the
-        :class:`Mesh`\\ es returned from each.
+        A dictionary mapping each mesh-containing file path/URL in the input
+         ``uris`` to a list of the :class:`Mesh`\\ es returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
