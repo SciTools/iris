@@ -1204,6 +1204,42 @@ def _build_dask_mdtol_function(dask_stats_function):
     return inner_stat
 
 
+def _axis_to_single_trailing(stats_function):
+    """
+    Given a statistical function that acts on the trailing axis of a 1D or 2D
+    array, wrap it so that higher dimension arrays can be passed, as well as any
+    axis as int or tuple.
+
+    """
+
+    @wraps(stats_function)
+    def inner_stat(data, axis, *args, **kwargs):
+        # Get data as a 1D or 2D view with the target axis as the trailing one.
+        if not isinstance(axis, Iterable):
+            axis = (axis,)
+        end = range(-len(axis), 0)
+
+        data = np.moveaxis(data, axis, end)
+        shape = data.shape[: -len(axis)]  # Shape of dims we won't collapse.
+        if shape:
+            data = data.reshape(np.prod(shape), -1)
+        else:
+            data = data.flatten()
+
+        result = stats_function(data, *args, **kwargs)
+
+        # Ensure to unflatten any leading dimensions.
+        if shape:
+            # Account for the additive dimension if necessary.
+            if result.size > np.prod(shape):
+                shape += (-1,)
+            result = result.reshape(shape)
+
+        return result
+
+    return inner_stat
+
+
 def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
     """
     Calculate percentiles along the trailing axis of a 1D or 2D array.
@@ -1226,8 +1262,9 @@ def _calc_percentile(data, percent, fast_percentile_method=False, **kwargs):
         return ma.MaskedArray(result)
 
 
+@_axis_to_single_trailing
 def _percentile(
-    data, axis, percent, fast_percentile_method=False, lazy=False, **kwargs
+    data, percent, fast_percentile_method=False, lazy=False, **kwargs
 ):
     """
     The percentile aggregator is an additive operation. This means that
@@ -1245,18 +1282,6 @@ def _percentile(
         masked arrays.
 
     """
-    # Get data as a 1D or 2D view with the target axis as the trailing one.
-    if not isinstance(axis, Iterable):
-        axis = (axis,)
-    end = range(-len(axis), 0)
-
-    data = np.moveaxis(data, axis, end)
-    shape = data.shape[: -len(axis)]
-    if shape:
-        data = data.reshape(np.prod(shape), -1)
-    else:
-        data = data.flatten()
-
     if not isinstance(percent, Iterable):
         scalar_percent = True
         percent = [percent]
@@ -1282,12 +1307,6 @@ def _percentile(
             **kwargs,
         )
 
-    # Ensure to unflatten any leading dimensions.
-    if shape:
-        # Account for the additive dimension.
-        if percent.shape > (1,):
-            shape += percent.shape
-        result = result.reshape(shape)
     # Check whether to reduce to a scalar result, as per the behaviour
     # of other aggregators.
     if result.shape == (1,) and scalar_percent:
