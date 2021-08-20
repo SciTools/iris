@@ -205,9 +205,9 @@ class Connectivity(_DimensionalMetadata):
             for Fortran and legacy NetCDF files).
         * src_dim (int):
             Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
-            of :attr:`indices` varies over the :attr:`src_location`'s (the
+            of :attr:`indices` varies over the :attr:`src_location`\\ s (the
             alternate dimension therefore varying within individual
-            :attr:`src_location`'s). (This parameter allows support for fastest varying index being
+            :attr:`src_location`\\ s). (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
             ``indices.shape[src_dim] = 10``.
@@ -358,7 +358,7 @@ class Connectivity(_DimensionalMetadata):
     def src_dim(self):
         """
         The dimension of the connectivity's :attr:`indices` array that varies
-        over the connectivity's :attr:`src_location`'s. Either ``0`` or ``1``.
+        over the connectivity's :attr:`src_location`\\ s. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
         :class:`Connectivity` if a different :attr:`src_dim` is needed.
@@ -372,7 +372,7 @@ class Connectivity(_DimensionalMetadata):
         Derived as the alternate value of :attr:`src_dim` - each must equal
         either ``0`` or ``1``.
         The dimension of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`src_location`'s.
+        within the connectivity's individual :attr:`src_location`\\ s.
 
         """
         return self._tgt_dim
@@ -496,7 +496,7 @@ class Connectivity(_DimensionalMetadata):
         """
         Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the sizes of individual
-        :attr:`src_location`'s (specified using masks on the
+        :attr:`src_location`\\ s (specified using masks on the
         :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
@@ -1933,7 +1933,7 @@ class Mesh(CFVariableMixin):
 
     def to_MeshCoords(self, location):
         """
-        Generate a tuple of :class:`MeshCoord`'s, each referencing the current
+        Generate a tuple of :class:`MeshCoord`\\ s, each referencing the current
         :class:`Mesh`, one for each :attr:`AXES` value, passing through the
         ``location`` argument.
 
@@ -1947,7 +1947,7 @@ class Mesh(CFVariableMixin):
             The ``location`` argument for :class:`MeshCoord` instantiation.
 
         Returns:
-            tuple of :class:`MeshCoord`'s referencing the current :class:`Mesh`.
+            tuple of :class:`MeshCoord`\\ s referencing the current :class:`Mesh`.
             One for each value in :attr:`AXES`, using the value for the
             ``axis`` argument.
 
@@ -3335,12 +3335,12 @@ def load_meshes(uris, var_name=None):
     uris : str or iterable of str
         One or more filenames/URI's. Any URI's must support OpenDAP.
     var_name : str, optional
-        Only return :class:`Mesh`'s that have var_names matching this value.
+        Only return :class:`Mesh`\\ es that have var_names matching this value.
 
     Returns
     -------
     dict
-        A dictionary of file paths/URL's and lists of the :class:`Mesh`'s
+        A dictionary of file paths/URL's and lists of the :class:`Mesh`\\ es
         returned from each.
 
     """
