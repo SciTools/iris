@@ -12,8 +12,6 @@ Unit tests for the :func:`iris.experimental.ugrid.load_mesh` function.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from unittest import mock
-
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 
@@ -21,10 +19,9 @@ class Tests(tests.IrisTest):
     # All 'real' tests have been done for load_meshes(). Here we just check
     #  that load_mesh() works with load_meshes() correctly, using mocking.
     def setUp(self):
-        patcher = mock.patch("iris.experimental.ugrid.load_meshes")
-        self.addCleanup(patcher.stop)
-
-        self.load_meshes_mock = patcher.start()
+        self.load_meshes_mock = self.patch(
+            "iris.experimental.ugrid.load_meshes"
+        )
         # The expected return from load_meshes - a dict of files, each with
         #  a list of meshes.
         self.load_meshes_mock.return_value = {"file": ["mesh"]}

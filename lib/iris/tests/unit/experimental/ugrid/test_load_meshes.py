@@ -16,7 +16,6 @@ from pathlib import Path
 from shutil import rmtree
 from subprocess import check_call
 import tempfile
-from unittest import mock
 from uuid import uuid4
 
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_meshes, logger
@@ -193,9 +192,9 @@ class TestsHttp(tests.IrisTest):
     # Tests of HTTP (OpenDAP) loading need mocking since we can't have tests
     #  that rely on 3rd party servers.
     def setUp(self):
-        patcher = mock.patch("iris.fileformats.FORMAT_AGENT.get_spec")
-        self.addCleanup(patcher.stop)
-        self.format_agent_mock = patcher.start()
+        self.format_agent_mock = self.patch(
+            "iris.fileformats.FORMAT_AGENT.get_spec"
+        )
 
     def test_http(self):
         url = "http://foo"
