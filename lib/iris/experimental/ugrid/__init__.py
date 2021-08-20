@@ -3340,8 +3340,8 @@ def load_meshes(uris, var_name=None):
     Returns
     -------
     dict
-        A dictionary of file paths/URL's and lists of the :class:`Mesh`\\ es
-        returned from each.
+        A dictionary mapping each file path/URL to a list of the
+        :class:`Mesh`\\ es returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
