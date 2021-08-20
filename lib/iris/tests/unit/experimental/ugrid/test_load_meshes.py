@@ -57,16 +57,11 @@ class TestsBasic(tests.IrisTest):
                         mesh:cf_role = "mesh_topology" ;
                         mesh:topology_dimension = 2 ;
                         mesh:node_coordinates = "node_x node_y" ;
-                        mesh:face_coordinates = "face_x face_y" ;
                         mesh:face_node_connectivity = "face_nodes" ;
                     float node_x(node) ;
                         node_x:standard_name = "longitude" ;
                     float node_y(node) ;
                         node_y:standard_name = "latitude" ;
-                    float face_x(face) ;
-                        face_x:standard_name = "longitude" ;
-                    float face_y(face) ;
-                        face_y:standard_name = "latitude" ;
                     int face_nodes(face, vertex) ;
                         face_nodes:cf_role = "face_node_connectivity" ;
                         face_nodes:start_index = 0 ;
@@ -75,20 +70,13 @@ class TestsBasic(tests.IrisTest):
                         node_data:coordinates = "node_x node_y" ;
                         node_data:location = "node" ;
                         node_data:mesh = "mesh" ;
-                    float face_data(levels, face) ;
-                        face_data:coordinates = "face_x face_y" ;
-                        face_data:location = "face" ;
-                        face_data:mesh = "mesh" ;
                 data:
                     mesh = 0;
                     node_x = 0., 2., 1.;
                     node_y = 0., 0., 1.;
-                    face_x = 0.5;
-                    face_y = 0.5;
                     face_nodes = 0, 1, 2;
                     levels = 1, 2;
                     node_data = 0., 0., 0.;
-                    face_data = 0.;
                 }
             """
         self.nc_path = cdl_to_nc(self.ref_cdl)
