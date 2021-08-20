@@ -1245,21 +1245,17 @@ def _percentile(
         masked arrays.
 
     """
-    # Express axis as list of non-negative integers.
-    if not isinstance(axis, Iterable):
-        axis = [axis % data.ndim]
-    else:
-        axis = sorted([dim % data.ndim for dim in axis])
-
     # Get data as a 1D or 2D view with the target axis as the trailing one.
-    end_size = np.prod([data.shape[dim] for dim in axis])
-    untouched_dims = [dim for dim in range(data.ndim) if dim not in axis]
-    shape = [data.shape[dim] for dim in untouched_dims]
+    if not isinstance(axis, Iterable):
+        axis = (axis,)
+    end = range(-len(axis), 0)
 
-    data = data.transpose(untouched_dims + axis)
-
-    if shape or len(axis) > 1:
-        data = data.reshape([np.prod(shape), end_size])
+    data = np.moveaxis(data, axis, end)
+    shape = data.shape[: -len(axis)]
+    if shape:
+        data = data.reshape(np.prod(shape), -1)
+    else:
+        data = data.flatten()
 
     if not isinstance(percent, Iterable):
         scalar_percent = True
