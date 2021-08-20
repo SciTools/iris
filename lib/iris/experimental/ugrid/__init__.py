@@ -1008,6 +1008,11 @@ class Mesh(CFVariableMixin):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)
 
+    def __hash__(self):
+        # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
+        # See https://github.com/SciTools/iris/pull/1772
+        return hash(id(self))
+
     def __getstate__(self):
         return (
             self._metadata_manager,
