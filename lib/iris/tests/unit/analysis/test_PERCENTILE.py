@@ -12,8 +12,8 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.analysis import PERCENTILE
-from iris._lazy_data import as_lazy_data, as_concrete_data, is_lazy_data
 
 
 class Test_aggregate(tests.IrisTest):
@@ -98,11 +98,11 @@ class Test_aggregate(tests.IrisTest):
         self.assertArrayAlmostEqual(actual, expected)
 
 
-class Test_lazy_fast_aggregate(tests.IrisTest):
+class LazyMixin:
     def test_1d_single(self):
         data = as_lazy_data(np.arange(11))
         actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=50, fast_percentile_method=True
+            data, axis=0, percent=50, fast_percentile_method=self.fast
         )
         expected = 5
         self.assertTupleEqual(actual.shape, ())
@@ -113,7 +113,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest):
         data = as_lazy_data(np.arange(11))
         percent = np.array([20, 50, 90])
         actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=percent, fast_percentile_method=True
+            data, axis=0, percent=percent, fast_percentile_method=self.fast
         )
         expected = [2, 5, 9]
         self.assertTupleEqual(actual.shape, percent.shape)
@@ -124,7 +124,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest):
         shape = (2, 11)
         data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
         actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=50, fast_percentile_method=True
+            data, axis=0, percent=50, fast_percentile_method=self.fast
         )
         self.assertTupleEqual(actual.shape, shape[-1:])
         self.assertTrue(is_lazy_data(actual))
@@ -136,7 +136,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest):
         data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
         percent = np.array([10, 50, 90, 100])
         actual = PERCENTILE.lazy_aggregate(
-            data, axis=0, percent=percent, fast_percentile_method=True
+            data, axis=0, percent=percent, fast_percentile_method=self.fast
         )
         self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
         self.assertTrue(is_lazy_data(actual))
@@ -144,6 +144,11 @@ class Test_lazy_fast_aggregate(tests.IrisTest):
         expected = expected.reshape(percent.size, shape[-1]).T + 1
         expected = expected + (percent / 10 - 1)
         self.assertArrayAlmostEqual(as_concrete_data(actual), expected)
+
+
+class Test_lazy_fast_aggregate(tests.IrisTest, LazyMixin):
+    def setUp(self):
+        self.fast = True
 
     def test_masked(self):
         shape = (2, 11)
@@ -159,14 +164,9 @@ class Test_lazy_fast_aggregate(tests.IrisTest):
             as_concrete_data(actual)
 
 
-class Test_lazy_aggregate(tests.IrisTest):
-    def test_1d_single(self):
-        data = as_lazy_data(np.arange(11))
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=50)
-        expected = 5
-        self.assertTupleEqual(actual.shape, ())
-        self.assertTrue(is_lazy_data(actual))
-        self.assertEqual(as_concrete_data(actual), expected)
+class Test_lazy_aggregate(tests.IrisTest, LazyMixin):
+    def setUp(self):
+        self.fast = False
 
     def test_masked_1d_single(self):
         data = ma.arange(11)
@@ -178,15 +178,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertTrue(is_lazy_data(actual))
         self.assertEqual(as_concrete_data(actual), expected)
 
-    def test_1d_multi(self):
-        data = as_lazy_data(np.arange(11))
-        percent = np.array([20, 50, 90])
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=percent)
-        expected = [2, 5, 9]
-        self.assertTupleEqual(actual.shape, percent.shape)
-        self.assertTrue(is_lazy_data(actual))
-        self.assertArrayEqual(as_concrete_data(actual), expected)
-
     def test_masked_1d_multi(self):
         data = ma.arange(11)
         data[3:9] = ma.masked
@@ -195,15 +186,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=percent)
         expected = [1, 2, 9]
         self.assertTupleEqual(actual.shape, percent.shape)
-        self.assertTrue(is_lazy_data(actual))
-        self.assertArrayEqual(as_concrete_data(actual), expected)
-
-    def test_2d_single(self):
-        shape = (2, 11)
-        data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=50)
-        expected = np.arange(shape[-1]) + 5.5
-        self.assertTupleEqual(actual.shape, shape[-1:])
         self.assertTrue(is_lazy_data(actual))
         self.assertArrayEqual(as_concrete_data(actual), expected)
 
@@ -220,18 +202,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         expected[1::2] = data[0, 1::2]
         expected[::2] = data[1, ::2]
         self.assertArrayEqual(as_concrete_data(actual), expected)
-
-    def test_2d_multi(self):
-        shape = (2, 10)
-        data = as_lazy_data(np.arange(np.prod(shape)).reshape(shape))
-        percent = np.array([10, 50, 90, 100])
-        actual = PERCENTILE.lazy_aggregate(data, axis=0, percent=percent)
-        self.assertTupleEqual(actual.shape, (shape[-1], percent.size))
-        self.assertTrue(is_lazy_data(actual))
-        expected = np.tile(np.arange(shape[-1]), percent.size)
-        expected = expected.reshape(percent.size, shape[-1]).T + 1
-        expected = expected + (percent / 10 - 1)
-        self.assertArrayAlmostEqual(as_concrete_data(actual), expected)
 
     def test_masked_2d_multi(self):
         shape = (3, 10)
