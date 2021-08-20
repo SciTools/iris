@@ -3299,7 +3299,7 @@ def _meshes_from_cf(cf_reader):
 
 def load_mesh(uris, var_name=None):
     """
-    Create a single :class:`Mesh` object from one or more NetCDF files.
+    Load a single :class:`Mesh` object from one or more NetCDF files.
 
     Raises an error if more/less than one :class:`Mesh` is found.
 
@@ -3329,7 +3329,7 @@ def load_mesh(uris, var_name=None):
 
 def load_meshes(uris, var_name=None):
     """
-    Create :class:`Mesh` objects from one or more NetCDF files.
+    Load :class:`Mesh` objects from one or more NetCDF files.
 
     Parameters
     ----------
