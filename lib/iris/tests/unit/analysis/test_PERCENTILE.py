@@ -163,6 +163,38 @@ class Test_lazy_fast_aggregate(tests.IrisTest, LazyMixin):
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
 
+    def test_multi_axis(self):
+        data = np.arange(24.0).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = as_lazy_data(data)
+        percent = 30
+        agg = PERCENTILE.lazy_aggregate(
+            lazy_data, axis=collapse_axes, percent=percent
+        )
+        result = as_concrete_data(agg)
+        self.assertTupleEqual(result.shape, (3,))
+        for num, sub_result in enumerate(result):
+            # results should be the same as percentiles calculated from slices.
+            self.assertArrayAlmostEqual(
+                sub_result, np.percentile(data[:, num, :], percent)
+            )
+
+    def test_multi_axis_multi_percent(self):
+        data = np.arange(24.0).reshape((2, 3, 4))
+        collapse_axes = (0, 2)
+        lazy_data = as_lazy_data(data)
+        percent = [20, 30, 50, 70, 80]
+        agg = PERCENTILE.lazy_aggregate(
+            lazy_data, axis=collapse_axes, percent=percent
+        )
+        result = as_concrete_data(agg)
+        self.assertTupleEqual(result.shape, (3, 5))
+        for num, sub_result in enumerate(result):
+            # results should be the same as percentiles calculated from slices.
+            self.assertArrayAlmostEqual(
+                sub_result, np.percentile(data[:, num, :], percent)
+            )
+
 
 class Test_lazy_aggregate(tests.IrisTest, LazyMixin):
     def setUp(self):
