@@ -14,14 +14,13 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import numpy as np
 import dask.array as da
+import numpy as np
 
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import PercentileAggregator
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
-from iris._lazy_data import as_concrete_data
 
 
 class Test(tests.IrisTest):
