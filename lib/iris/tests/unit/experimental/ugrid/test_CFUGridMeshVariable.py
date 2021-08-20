@@ -32,6 +32,7 @@ class TestIdentify(tests.IrisTest):
         self.cf_identity = "mesh"
 
     def test_cf_role(self):
+        # Test that mesh variables can be identified by having `cf_role="mesh_topology"`.
         match_name = "match"
         match = named_variable(match_name)
         setattr(match, "cf_role", "mesh_topology")
@@ -48,6 +49,8 @@ class TestIdentify(tests.IrisTest):
         self.assertDictEqual(expected, result)
 
     def test_cf_identity(self):
+        # Test that mesh variables can be identified by being another variable's
+        #  `mesh` attribute.
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source = named_variable("ref_source")
@@ -66,20 +69,26 @@ class TestIdentify(tests.IrisTest):
         self.assertDictEqual(expected, result)
 
     def test_cf_role_and_identity(self):
+        # Test that identification can successfully handle a combination of
+        #  mesh variables having `cf_role="mesh_topology"` AND being referenced as
+        #  another variable's `mesh` attribute.
         role_match_name = "match"
         role_match = named_variable(role_match_name)
         setattr(role_match, "cf_role", "mesh_topology")
+        ref_source_1 = named_variable("ref_source_1")
+        setattr(ref_source_1, self.cf_identity, role_match_name)
 
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        ref_source_2 = named_variable("ref_source_2")
+        setattr(ref_source_2, self.cf_identity, subject_name)
 
         vars_all = {
             role_match_name: role_match,
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
+            "ref_source_1": ref_source_1,
+            "ref_source_2": ref_source_2,
         }
 
         # Expecting role_match and ref_subject but excluding other variables.
