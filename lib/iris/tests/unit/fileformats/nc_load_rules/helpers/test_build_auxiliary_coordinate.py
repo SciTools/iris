@@ -77,7 +77,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             raise RuntimeError()
 
         self.patch(
-            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            "iris.fileformats.netcdf.load.NetCDFDataProxy.__getitem__",
             new=patched__getitem__,
         )
 
@@ -180,7 +180,7 @@ class TestDtype(tests.IrisTest):
             raise RuntimeError()
 
         self.deferred_load_patch = mock.patch(
-            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            "iris.fileformats.netcdf.load.NetCDFDataProxy.__getitem__",
             new=patched__getitem__,
         )
 
@@ -264,7 +264,7 @@ class TestCoordConstruction(tests.IrisTest):
             raise RuntimeError()
 
         self.patch(
-            "iris.fileformats.netcdf.NetCDFDataProxy.__getitem__",
+            "iris.fileformats.netcdf.load.NetCDFDataProxy.__getitem__",
             new=patched__getitem__,
         )
 
