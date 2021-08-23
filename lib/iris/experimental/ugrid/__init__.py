@@ -3329,7 +3329,7 @@ def load_mesh(uris, var_name=None):
             f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
         )
         raise ValueError(message)
-    return result[0]
+    return result.pop()  # Return the single element
 
 
 def load_meshes(uris, var_name=None):
