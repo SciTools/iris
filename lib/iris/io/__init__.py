@@ -275,7 +275,7 @@ def _check_init_savers():
         _savers.update(
             {
                 "pp": pp.save,
-                "nc": netcdf.save,
+                "nc": netcdf.save.save,
                 "dot": _dot_save,
                 "dotpng": _dot_save_png,
                 "grib2": _grib_save,

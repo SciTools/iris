@@ -90,7 +90,11 @@ FORMAT_AGENT.add_spec(
 #
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "NetCDF", MagicNumber(4), 0x43444601, netcdf.load_cubes, priority=5
+        "NetCDF",
+        MagicNumber(4),
+        0x43444601,
+        netcdf.load.load_cubes,
+        priority=5,
     )
 )
 
@@ -100,7 +104,7 @@ FORMAT_AGENT.add_spec(
         "NetCDF 64 bit offset format",
         MagicNumber(4),
         0x43444602,
-        netcdf.load_cubes,
+        netcdf.load.load_cubes,
         priority=5,
     )
 )
@@ -112,7 +116,7 @@ FORMAT_AGENT.add_spec(
         "NetCDF_v4",
         MagicNumber(8),
         0x894844460D0A1A0A,
-        netcdf.load_cubes,
+        netcdf.load.load_cubes,
         priority=5,
     )
 )
@@ -122,7 +126,7 @@ _nc_dap = FormatSpecification(
     "NetCDF OPeNDAP",
     UriProtocol(),
     lambda protocol: protocol in ["http", "https"],
-    netcdf.load_cubes,
+    netcdf.load.load_cubes,
     priority=6,
 )
 FORMAT_AGENT.add_spec(_nc_dap)
