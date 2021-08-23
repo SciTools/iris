@@ -28,7 +28,7 @@ from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
-import iris.fileformats.netcdf
+from iris.fileformats.netcdf.save import Saver
 import iris.std_names
 import iris.tests.stock as stock
 import iris.util
@@ -345,7 +345,7 @@ class SaverPermissions(tests.IrisTest):
         dir_name = os.path.join(tempfile.gettempdir(), "non_existent_dir")
         fnme = os.path.join(dir_name, "tmp.nc")
         with self.assertRaises(IOError):
-            with iris.fileformats.netcdf.Saver(fnme, "NETCDF4"):
+            with Saver(fnme, "NETCDF4"):
                 pass
 
     def test_bad_permissions(self):
@@ -359,7 +359,7 @@ class SaverPermissions(tests.IrisTest):
             try:
                 os.chmod(dir_name, stat.S_IREAD)
                 with self.assertRaises(PermissionError):
-                    iris.fileformats.netcdf.Saver(fname, "NETCDF4")
+                    Saver(fname, "NETCDF4")
                 self.assertFalse(os.path.exists(fname))
             finally:
                 shutil.rmtree(dir_name)

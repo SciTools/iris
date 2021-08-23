@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for :func:`iris.fileformats.netcdf.parse_cell_methods`.
+Unit tests for :func:`iris.fileformats.netcdf.load.parse_cell_methods`.
 
 """
 
@@ -15,7 +15,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.coords import CellMethod
-from iris.fileformats.netcdf import parse_cell_methods
+from iris.fileformats.netcdf.load import parse_cell_methods
 
 
 class Test(tests.IrisTest):

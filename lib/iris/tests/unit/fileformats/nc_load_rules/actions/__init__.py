@@ -7,7 +7,7 @@
 Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`.
 
 This module provides the engine.activate() call used in the function
-`iris.fileformats.netcdf._load_cube`.
+`iris.fileformats.netcdf.load._load_cube`.
 
 """
 from pathlib import Path
@@ -17,8 +17,8 @@ import tempfile
 
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
-import iris.fileformats.netcdf
-from iris.fileformats.netcdf import _load_cube
+import iris.fileformats.netcdf.load
+from iris.fileformats.netcdf.load import _load_cube
 
 """
 Notes on testing method.
@@ -92,11 +92,11 @@ class Mixin__nc_load_actions:
         # Grab a data variable : FOR NOW always grab the 'phenom' variable.
         cf_var = cf.cf_group.data_variables["phenom"]
 
-        engine = iris.fileformats.netcdf._actions_engine()
+        engine = iris.fileformats.netcdf.load._actions_engine()
 
         # If debug enabled, switch on the activation summary debug output.
         # Use 'patch' so it is restored after the test.
-        self.patch("iris.fileformats.netcdf.DEBUG", self.debug)
+        self.patch("iris.fileformats.netcdf.load.DEBUG", self.debug)
 
         # Call the main translation function to load a single cube.
         # _load_cube establishes per-cube facts, activates rules and
@@ -107,7 +107,7 @@ class Mixin__nc_load_actions:
         # by the rules operation.
         # Unlike the other translations, _load_cube does *not* convert this
         # information into actual cube elements.  That is instead done by
-        # `iris.fileformats.netcdf._load_aux_factory`.
+        # `iris.fileformats.netcdf.load._load_aux_factory`.
         # For rules testing, it is anyway more convenient to deal with the raw
         # data, as each factory type has different validity requirements to
         # build it, and none of that is relevant to the rules operation.

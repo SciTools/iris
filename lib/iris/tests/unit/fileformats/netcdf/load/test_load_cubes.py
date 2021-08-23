@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.fileformats.netcdf.load_cubes` function.
+Unit tests for the :func:`iris.fileformats.netcdf.load.load_cubes` function.
 
 todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
  switching to use netcdf.load_cubes() instead of iris.load()/load_cube().
@@ -21,7 +21,7 @@ import numpy as np
 
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, MeshCoord
-from iris.fileformats.netcdf import load_cubes, logger
+from iris.fileformats.netcdf.load import load_cubes, logger
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -77,7 +77,7 @@ class Tests(tests.IrisTest):
             """
         nc_path = cdl_to_nc(ref_cdl)
 
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        # Load with load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         avs = cubes[0].ancillary_variables()
@@ -116,7 +116,7 @@ class Tests(tests.IrisTest):
             """
         nc_path = cdl_to_nc(ref_cdl)
 
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        # Load with load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         avs = cubes[0].ancillary_variables()
@@ -163,7 +163,7 @@ class Tests(tests.IrisTest):
             """
         nc_path = cdl_to_nc(ref_cdl)
 
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        # Load with load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         cms = cubes[0].cell_measures()
@@ -207,7 +207,7 @@ class Tests(tests.IrisTest):
             """
         nc_path = cdl_to_nc(ref_cdl)
 
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        # Load with load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
         self.assertEqual(cubes[0].units, as_unit("unknown"))

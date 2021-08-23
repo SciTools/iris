@@ -26,11 +26,8 @@ import numpy.ma as ma
 import iris
 from iris.coords import CellMethod
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import (
-    CF_CONVENTIONS_VERSION,
-    Saver,
-    UnknownCellMethodWarning,
-)
+from iris.fileformats.netcdf.load import UnknownCellMethodWarning
+from iris.fileformats.netcdf.save import CF_CONVENTIONS_VERSION, Saver
 import iris.tests.stock as stock
 
 

@@ -17,7 +17,7 @@ import numpy as np
 import iris
 from iris.coords import DimCoord
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, save
+from iris.fileformats.netcdf.save import CF_CONVENTIONS_VERSION, save
 from iris.tests.stock import lat_lon_cube
 
 

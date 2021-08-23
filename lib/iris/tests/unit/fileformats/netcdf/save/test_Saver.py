@@ -32,7 +32,7 @@ from iris.coord_systems import (
 )
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import Saver
+from iris.fileformats.netcdf.save import Saver
 import iris.tests.stock as stock
 
 
@@ -185,7 +185,7 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.netCDF4")
+        api = self.patch("iris.fileformats.netcdf.save.netCDF4")
         with Saver("/dummy/path", "NETCDF4") as saver:
             saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
