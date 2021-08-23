@@ -39,8 +39,9 @@ from ...common.mixin import CFVariableMixin
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...fileformats import cf, netcdf
+from ...fileformats import cf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
+from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
 
@@ -3359,7 +3360,7 @@ def load_meshes(uris, var_name=None):
     from iris.fileformats import FORMAT_AGENT
 
     if not PARSE_UGRID_ON_LOAD:
-        # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
+        # Explicit behaviour, consistent with netcdf.loader.load_cubes(), rather than
         #  an invisible assumption.
         message = (
             f"PARSE_UGRID_ON_LOAD is {bool(PARSE_UGRID_ON_LOAD)}. Must be "
@@ -3395,7 +3396,7 @@ def load_meshes(uris, var_name=None):
             else:
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
-            if handling_format_spec.handler == netcdf.load_cubes:
+            if handling_format_spec.handler == nc_loader.load_cubes:
                 valid_sources.append(source)
             else:
                 message = f"Ignoring non-NetCDF file: {source}"
@@ -3718,7 +3719,7 @@ class CFUGridReader(cf.CFReader):
 
 ############
 # Object construction.
-# Helper functions, supporting netcdf.load_cubes ONLY, expected to
+# Helper functions, supporting netcdf.loader.load_cubes ONLY, expected to
 # altered/moved when pyke is removed.
 
 
@@ -3733,7 +3734,7 @@ def _build_aux_coord(coord_var, file_path):
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
-    points_data = netcdf._get_cf_var_data(coord_var, file_path)
+    points_data = nc_loader._get_cf_var_data(coord_var, file_path)
 
     # Bounds will not be loaded:
     # Bounds may be present, but the UGRID conventions state this would
@@ -3785,7 +3786,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
-    indices_data = netcdf._get_cf_var_data(connectivity_var, file_path)
+    indices_data = nc_loader._get_cf_var_data(connectivity_var, file_path)
 
     cf_role = connectivity_var.cf_role
     start_index = connectivity_var.start_index
@@ -3952,7 +3953,7 @@ def _build_mesh(cf, mesh_var, file_path):
     )
     mesh_elements = filter(None, mesh_elements)
     for iris_object in mesh_elements:
-        netcdf._add_unused_attributes(
+        nc_loader._add_unused_attributes(
             iris_object, cf.cf_group[iris_object.var_name]
         )
 
