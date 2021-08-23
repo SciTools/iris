@@ -25,8 +25,15 @@ class TestInputReshape(tests.IrisTest):
         self.stat_func = mock.Mock()
 
     def check_input(self, data, axis, expected):
+        """
+        Given data and axis passed to the wrapped function, check that expected
+        array is passed to the inner function.
+
+        """
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         wrapped_stat_func(data, axis=axis)
+        # Can't use Mock.assert_called_with because array equality is ambiguous
+        # get hold of the first arg instead.
         self.assertArrayEqual(self.stat_func.call_args[0][0], expected)
 
     def test_1d_input(self):
