@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the `iris.fileformats.netcdf.save._FillValueMaskCheckAndStoreTarget`
+Unit tests for the `iris.fileformats.netcdf.saver._FillValueMaskCheckAndStoreTarget`
 class.
 
 """
@@ -17,7 +17,7 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats.netcdf.save import _FillValueMaskCheckAndStoreTarget
+from iris.fileformats.netcdf.saver import _FillValueMaskCheckAndStoreTarget
 
 
 class Test__FillValueMaskCheckAndStoreTarget(tests.IrisTest):

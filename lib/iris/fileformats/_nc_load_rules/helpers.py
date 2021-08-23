@@ -26,7 +26,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.fileformats.cf as cf
-from iris.fileformats.netcdf.load import (
+from iris.fileformats.netcdf.loader import (
     UnknownCellMethodWarning,
     _get_cf_var_data,
     parse_cell_methods,

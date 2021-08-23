@@ -5,7 +5,7 @@
 # licensing details.
 """
 A simple mimic of the Pyke 'knowledge_engine', for interfacing to the routines
-in 'iris.fileformats.netcdf.load' with minimal changes to that code.
+in 'iris.fileformats.netcdf.loader' with minimal changes to that code.
 
 This allows us to replace the Pyke rules operation with the simpler pure-Python
 translation operations in :mod:`iris.fileformats._nc_load_rules.actions`.
@@ -15,7 +15,7 @@ as used by our code to translate each data cube.
 
 engine.get_kb() also returns a FactEntity object, which mimics *just enough*
 API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
-used in :meth:`iris.fileformats.netcdf.load._actions_activation_stats`.
+used in :meth:`iris.fileformats.netcdf.loader._actions_activation_stats`.
 
 """
 from .actions import run_actions
@@ -66,7 +66,7 @@ class Engine:
     A minimal mimic of a Pyke.engine.
 
     Provides just enough API so that the existing code in
-    :mod:`iris.fileformats.netcdf.load` can interface with our new rules functions.
+    :mod:`iris.fileformats.netcdf.loader` can interface with our new rules functions.
 
     A list of possible fact-arglists is stored, for each of a set of fact-names
     (which are strings).
@@ -91,7 +91,7 @@ class Engine:
         set by engine.cf_var (a CFDataVariable).
 
         The rules operation itself is coded elsewhere,
-        in :mod:`iris.fileformats.netcdf.load._nc_load_rules.actions`.
+        in :mod:`iris.fileformats.netcdf.loader._nc_load_rules.actions`.
 
         """
         run_actions(self)
@@ -101,7 +101,7 @@ class Engine:
         Get a FactEntity, which mimic (bits of) a knowledge-base.
 
         Just allowing
-        :meth:`iris.fileformats.netcdf.load._action_activation_stats` to list the
+        :meth:`iris.fileformats.netcdf.loader._action_activation_stats` to list the
         facts.
 
         """
@@ -110,7 +110,7 @@ class Engine:
     def print_stats(self):
         """
         No-op, called by
-        :meth:`iris.fileformats.netcdf.load._action_activation_stats`.
+        :meth:`iris.fileformats.netcdf.loader._action_activation_stats`.
 
         """
         pass

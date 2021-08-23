@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.fileformats.netcdf.load.load_cubes` function.
+Unit tests for the :func:`iris.fileformats.netcdf.loader.load_cubes` function.
 
 todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
  switching to use netcdf.load_cubes() instead of iris.load()/load_cube().
@@ -21,7 +21,7 @@ import numpy as np
 
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, MeshCoord
-from iris.fileformats.netcdf.load import load_cubes, logger
+from iris.fileformats.netcdf.loader import load_cubes, logger
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

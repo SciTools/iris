@@ -7,14 +7,14 @@
 A package for loading and saving cubes to and from netcdf files.
 
 """
-from .load import (
+from .loader import (
     NetCDFDataProxy,
     OrderedAddableList,
     UnknownCellMethodWarning,
     load_cubes,
     parse_cell_methods,
 )
-from .save import CFNameCoordMap, Saver, save
+from .saver import CFNameCoordMap, Saver, save
 
 __all__ = [
     "CFNameCoordMap",

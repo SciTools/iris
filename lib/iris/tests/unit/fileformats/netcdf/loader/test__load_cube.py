@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.load._load_cube` function."""
+"""Unit tests for the `iris.fileformats.netcdf.loader._load_cube` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -15,7 +15,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 import iris.fileformats.cf
-from iris.fileformats.netcdf.load import _load_cube
+from iris.fileformats.netcdf.loader import _load_cube
 
 
 class TestCoordAttributes(tests.IrisTest):
@@ -28,7 +28,7 @@ class TestCoordAttributes(tests.IrisTest):
         engine.cube_parts["coordinates"] = coordinates
 
     def setUp(self):
-        this = "iris.fileformats.netcdf.load._assert_case_specific_facts"
+        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
         patch = mock.patch(this, side_effect=self._patcher)
         patch.start()
         self.addCleanup(patch.stop)
@@ -112,7 +112,7 @@ class TestCoordAttributes(tests.IrisTest):
 
 class TestCubeAttributes(tests.IrisTest):
     def setUp(self):
-        this = "iris.fileformats.netcdf.load._assert_case_specific_facts"
+        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
         patch = mock.patch(this)
         patch.start()
         self.addCleanup(patch.stop)

@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.load._get_cf_var_data` function."""
+"""Unit tests for the `iris.fileformats.netcdf.loader._get_cf_var_data` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -16,7 +16,7 @@ import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf.load import _get_cf_var_data
+from iris.fileformats.netcdf.loader import _get_cf_var_data
 
 
 class Test__get_cf_var_data(tests.IrisTest):

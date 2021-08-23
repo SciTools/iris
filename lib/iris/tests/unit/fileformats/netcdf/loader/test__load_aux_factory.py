@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.load._load_aux_factory` function."""
+"""Unit tests for the `iris.fileformats.netcdf.loader._load_aux_factory` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -16,7 +16,7 @@ import numpy as np
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.fileformats.load.netcdf import _load_aux_factory
+from iris.fileformats.netcdf.loader import _load_aux_factory
 
 
 class TestAtmosphereHybridSigmaPressureCoordinate(tests.IrisTest):

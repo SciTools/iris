@@ -28,7 +28,7 @@ from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
-from iris.fileformats.netcdf.save import Saver
+from iris.fileformats.netcdf.saver import Saver
 import iris.std_names
 import iris.tests.stock as stock
 import iris.util

@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.save` function."""
+"""Unit tests for the `iris.fileformats.netcdf.saver.save` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -17,7 +17,7 @@ import numpy as np
 import iris
 from iris.coords import DimCoord
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf.save import CF_CONVENTIONS_VERSION, save
+from iris.fileformats.netcdf.saver import CF_CONVENTIONS_VERSION, save
 from iris.tests.stock import lat_lon_cube
 
 
@@ -138,7 +138,7 @@ class Test_fill_value(tests.IrisTest):
         # Test that when no fill_value argument is passed, the fill_value
         # argument to Saver.write is None or not present.
         cubes = self._make_cubes()
-        with mock.patch("iris.fileformats.netcdf.Saver") as Saver:
+        with mock.patch("iris.fileformats.netcdf.saver.Saver") as Saver:
             save(cubes, "dummy.nc")
 
         # Get the Saver.write mock
@@ -156,7 +156,7 @@ class Test_fill_value(tests.IrisTest):
         # that value is passed to each call to Saver.write
         cubes = self._make_cubes()
         fill_value = 12345.0
-        with mock.patch("iris.fileformats.netcdf.Saver") as Saver:
+        with mock.patch("iris.fileformats.netcdf.saver.Saver") as Saver:
             save(cubes, "dummy.nc", fill_value=fill_value)
 
         # Get the Saver.write mock
@@ -173,7 +173,7 @@ class Test_fill_value(tests.IrisTest):
         # each element is passed to separate calls to Saver.write
         cubes = self._make_cubes()
         fill_values = [123.0, 456.0, 789.0]
-        with mock.patch("iris.fileformats.netcdf.Saver") as Saver:
+        with mock.patch("iris.fileformats.netcdf.saver.Saver") as Saver:
             save(cubes, "dummy.nc", fill_value=fill_values)
 
         # Get the Saver.write mock
@@ -190,7 +190,7 @@ class Test_fill_value(tests.IrisTest):
         # that value is passed to calls to Saver.write
         cube = Cube(["abc", "def", "hij"])
         fill_value = "xyz"
-        with mock.patch("iris.fileformats.netcdf.Saver") as Saver:
+        with mock.patch("iris.fileformats.netcdf.saver.Saver") as Saver:
             save(cube, "dummy.nc", fill_value=fill_value)
 
         # Get the Saver.write mock
@@ -206,7 +206,7 @@ class Test_fill_value(tests.IrisTest):
         # is passed as the fill_value argument, an error is raised
         cubes = self._make_cubes()
         fill_values = [1.0, 2.0, 3.0, 4.0]
-        with mock.patch("iris.fileformats.netcdf.Saver"):
+        with mock.patch("iris.fileformats.netcdf.saver.Saver"):
             with self.assertRaises(ValueError):
                 save(cubes, "dummy.nc", fill_value=fill_values)
 
