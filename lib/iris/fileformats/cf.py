@@ -1067,6 +1067,11 @@ class CFReader:
         self._build_cf_groups()
         self._reset()
 
+    @property
+    def filename(self):
+        """The file that the CFReader is reading."""
+        return self._filename
+
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._filename)
 

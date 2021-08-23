@@ -15,7 +15,9 @@ from collections import namedtuple
 from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
+from itertools import groupby
 import logging
+from pathlib import Path
 import re
 import threading
 
@@ -39,12 +41,15 @@ from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...fileformats import cf, netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
+from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
 
 __all__ = [
     "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
+    "load_mesh",
+    "load_meshes",
     "Mesh",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
@@ -200,9 +205,9 @@ class Connectivity(_DimensionalMetadata):
             for Fortran and legacy NetCDF files).
         * src_dim (int):
             Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
-            of :attr:`indices` varies over the :attr:`src_location`'s (the
+            of :attr:`indices` varies over the :attr:`src_location`\\ s (the
             alternate dimension therefore varying within individual
-            :attr:`src_location`'s). (This parameter allows support for fastest varying index being
+            :attr:`src_location`\\ s). (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
             ``indices.shape[src_dim] = 10``.
@@ -353,7 +358,7 @@ class Connectivity(_DimensionalMetadata):
     def src_dim(self):
         """
         The dimension of the connectivity's :attr:`indices` array that varies
-        over the connectivity's :attr:`src_location`'s. Either ``0`` or ``1``.
+        over the connectivity's :attr:`src_location`\\ s. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
         :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
         :class:`Connectivity` if a different :attr:`src_dim` is needed.
@@ -367,7 +372,7 @@ class Connectivity(_DimensionalMetadata):
         Derived as the alternate value of :attr:`src_dim` - each must equal
         either ``0`` or ``1``.
         The dimension of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`src_location`'s.
+        within the connectivity's individual :attr:`src_location`\\ s.
 
         """
         return self._tgt_dim
@@ -491,7 +496,7 @@ class Connectivity(_DimensionalMetadata):
         """
         Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the sizes of individual
-        :attr:`src_location`'s (specified using masks on the
+        :attr:`src_location`\\ s (specified using masks on the
         :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
@@ -1002,6 +1007,11 @@ class Mesh(CFVariableMixin):
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)
+
+    def __hash__(self):
+        # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
+        # See https://github.com/SciTools/iris/pull/1772
+        return hash(id(self))
 
     def __getstate__(self):
         return (
@@ -1928,7 +1938,7 @@ class Mesh(CFVariableMixin):
 
     def to_MeshCoords(self, location):
         """
-        Generate a tuple of :class:`MeshCoord`'s, each referencing the current
+        Generate a tuple of :class:`MeshCoord`\\ s, each referencing the current
         :class:`Mesh`, one for each :attr:`AXES` value, passing through the
         ``location`` argument.
 
@@ -1942,7 +1952,7 @@ class Mesh(CFVariableMixin):
             The ``location`` argument for :class:`MeshCoord` instantiation.
 
         Returns:
-            tuple of :class:`MeshCoord`'s referencing the current :class:`Mesh`.
+            tuple of :class:`MeshCoord`\\ s referencing the current :class:`Mesh`.
             One for each value in :attr:`AXES`, using the value for the
             ``axis`` argument.
 
@@ -3274,6 +3284,135 @@ class ParseUGridOnLoad(threading.local):
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
+def _meshes_from_cf(cf_reader):
+    """
+    Common behaviour for extracting meshes from a CFReader.
+
+    Simple now, but expected to increase in complexity as Mesh sharing develops.
+
+    """
+    # Mesh instances are shared between file phenomena.
+    # TODO: more sophisticated Mesh sharing between files.
+    # TODO: access external Mesh cache?
+    mesh_vars = cf_reader.cf_group.meshes
+    meshes = {
+        name: _build_mesh(cf_reader, var, cf_reader.filename)
+        for name, var in mesh_vars.items()
+    }
+    return meshes
+
+
+def load_mesh(uris, var_name=None):
+    """
+    Load a single :class:`Mesh` object from one or more NetCDF files.
+
+    Raises an error if more/less than one :class:`Mesh` is found.
+
+    Parameters
+    ----------
+    uris : str or iterable of str
+        One or more filenames/URI's. Filenames can include wildcards. Any URI's
+         must support OpenDAP.
+    var_name : str, optional
+        Only return a :class:`Mesh` if its var_name matches this value.
+
+    Returns
+    -------
+    :class:`Mesh`
+
+    """
+    meshes_result = load_meshes(uris, var_name)
+    result = set([mesh for file in meshes_result.values() for mesh in file])
+    mesh_count = len(result)
+    if mesh_count != 1:
+        message = (
+            f"Expecting 1 mesh, but input file(s) produced: {mesh_count} ."
+        )
+        raise ValueError(message)
+    return result.pop()  # Return the single element
+
+
+def load_meshes(uris, var_name=None):
+    """
+    Load :class:`Mesh` objects from one or more NetCDF files.
+
+    Parameters
+    ----------
+    uris : str or iterable of str
+        One or more filenames/URI's. Filenames can include wildcards. Any URI's
+         must support OpenDAP.
+    var_name : str, optional
+        Only return :class:`Mesh`\\ es that have var_names matching this value.
+
+    Returns
+    -------
+    dict
+        A dictionary mapping each mesh-containing file path/URL in the input
+         ``uris`` to a list of the :class:`Mesh`\\ es returned from each.
+
+    """
+    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    #  into standard behaviour.
+    # No constraints or callbacks supported - these assume they are operating
+    #  on a Cube.
+
+    from iris.fileformats import FORMAT_AGENT
+
+    if not PARSE_UGRID_ON_LOAD:
+        # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
+        #  an invisible assumption.
+        message = (
+            f"PARSE_UGRID_ON_LOAD is {bool(PARSE_UGRID_ON_LOAD)}. Must be "
+            f"True to enable mesh loading."
+        )
+        raise ValueError(message)
+
+    if isinstance(uris, str):
+        uris = [uris]
+
+    # Group collections of uris by their iris handler
+    # Create list of tuples relating schemes to part names.
+    uri_tuples = sorted(decode_uri(uri) for uri in uris)
+
+    valid_sources = []
+    for scheme, groups in groupby(uri_tuples, key=lambda x: x[0]):
+        # Call each scheme handler with the appropriate URIs
+        if scheme == "file":
+            filenames = [x[1] for x in groups]
+            sources = expand_filespecs(filenames)
+        elif scheme in ["http", "https"]:
+            sources = [":".join(x) for x in groups]
+        else:
+            message = f"Iris cannot handle the URI scheme: {scheme}"
+            raise ValueError(message)
+
+        for source in sources:
+            if scheme == "file":
+                with open(source, "rb") as fh:
+                    handling_format_spec = FORMAT_AGENT.get_spec(
+                        Path(source).name, fh
+                    )
+            else:
+                handling_format_spec = FORMAT_AGENT.get_spec(source, None)
+
+            if handling_format_spec.handler == netcdf.load_cubes:
+                valid_sources.append(source)
+            else:
+                message = f"Ignoring non-NetCDF file: {source}"
+                logger.info(msg=message, extra=dict(cls=None))
+
+    result = {}
+    for source in valid_sources:
+        meshes_dict = _meshes_from_cf(CFUGridReader(source))
+        meshes = list(meshes_dict.values())
+        if var_name is not None:
+            meshes = list(filter(lambda m: m.var_name == var_name, meshes))
+        if meshes:
+            result[source] = meshes
+
+    return result
+
+
 ############
 # CF Overrides.
 # These are not included in __all__ since they are not [currently] needed
@@ -3469,7 +3608,17 @@ class CFUGridMeshVariable(cf.CFVariable):
         log_level = logging.WARNING if warn else logging.DEBUG
 
         # Identify all CF-UGRID mesh variables.
+        all_vars = target == variables
         for nc_var_name, nc_var in target.items():
+            if all_vars:
+                # SPECIAL BEHAVIOUR FOR MESH VARIABLES.
+                # We are looking for all mesh variables. Check if THIS variable
+                #  is a mesh using its own attributes.
+                if getattr(nc_var, "cf_role", "") == "mesh_topology":
+                    result[nc_var_name] = CFUGridMeshVariable(
+                        nc_var_name, nc_var
+                    )
+
             # Check for mesh variable references.
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
@@ -3679,6 +3828,21 @@ def _build_mesh(cf, mesh_var, file_path):
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
 
+    cf_role_message = None
+    if not hasattr(mesh_var, "cf_role"):
+        cf_role_message = f"{mesh_var.cf_name} has no cf_role attribute."
+        cf_role = "mesh_topology"
+    else:
+        cf_role = getattr(mesh_var, "cf_role")
+    if cf_role != "mesh_topology":
+        cf_role_message = (
+            f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
+        )
+    if cf_role_message:
+        cf_role_message += " Correcting to 'mesh_topology'."
+        # TODO: reconsider logging level when we have consistent practice.
+        logger.warning(cf_role_message, extra=dict(cls=None))
+
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
     elif hasattr(mesh_var, "face_node_connectivity"):
@@ -3782,7 +3946,6 @@ def _build_mesh(cf, mesh_var, file_path):
         edge_dimension=edge_dimension,
         face_dimension=face_dimension,
     )
-    assert mesh.cf_role == mesh_var.cf_role
 
     mesh_elements = (
         list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]

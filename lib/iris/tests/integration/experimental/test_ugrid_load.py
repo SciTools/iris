@@ -10,15 +10,20 @@ todo: fold these tests into netcdf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
 
 from iris import Constraint, load
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, logger
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from iris.experimental.ugrid import (
+    PARSE_UGRID_ON_LOAD,
+    Mesh,
+    load_mesh,
+    load_meshes,
+    logger,
+)
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
@@ -109,6 +114,15 @@ class TestBasic(tests.IrisTest):
             "3D_veg_pseudo_levels.cml",
         )
 
+    def test_no_mesh(self):
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_list = load(
+                tests.get_data_path(
+                    ["NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc"]
+                )
+            )
+        self.assertTrue(all([cube.mesh is None for cube in cube_list]))
+
 
 @tests.skip_data
 class TestMultiplePhenomena(tests.IrisTest):
@@ -177,6 +191,56 @@ class TestTolerantLoading(XIOSFileMixin):
 
         # Check that the result has the correct topology-dimension value.
         self.assertEqual(cube.mesh.topology_dimension, 2)
+
+    def test_mesh_bad_cf_role(self):
+        # Check that the load generates a suitable warning.
+        log_regex = r"inappropriate cf_role"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
+            template = "minimal_bad_mesh_cf_role"
+            dim_line = 'mesh_var:cf_role = "foo" ;'
+            _ = self.create_synthetic_test_cube(
+                template=template, subs=dict(CF_ROLE_DEFINITION=dim_line)
+            )
+
+    def test_mesh_no_cf_role(self):
+        # Check that the load generates a suitable warning.
+        log_regex = r"no cf_role attribute"
+        with self.assertLogs(logger, level="WARNING", msg_regex=log_regex):
+            template = "minimal_bad_mesh_cf_role"
+            dim_line = ""
+            _ = self.create_synthetic_test_cube(
+                template=template, subs=dict(CF_ROLE_DEFINITION=dim_line)
+            )
+
+
+@tests.skip_data
+class Test_load_mesh(tests.IrisTest):
+    def common_test(self, file_name, mesh_var_name):
+        with PARSE_UGRID_ON_LOAD.context():
+            mesh = load_mesh(
+                tests.get_data_path(["NetCDF", "unstructured_grid", file_name])
+            )
+        # NOTE: cannot use CML tests as this isn't supported for non-Cubes.
+        self.assertIsInstance(mesh, Mesh)
+        self.assertEqual(mesh.var_name, mesh_var_name)
+
+    def test_full_file(self):
+        self.common_test(
+            "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
+            "Mesh2d_half_levels",
+        )
+
+    def test_mesh_file(self):
+        self.common_test("mesh_C12.nc", "dynamics")
+
+    def test_no_mesh(self):
+        with PARSE_UGRID_ON_LOAD.context():
+            meshes = load_meshes(
+                tests.get_data_path(
+                    ["NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc"]
+                )
+            )
+        self.assertDictEqual({}, meshes)
 
 
 if __name__ == "__main__":
