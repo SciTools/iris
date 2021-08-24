@@ -2116,8 +2116,9 @@ class Coord(_DimensionalMetadata):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(x, axis):
-                if axis is None:
+                if axis is None or len(axis) == x.ndim:
                     return "|".join(str(i) for i in x.flatten())
+
                 # np.apply_along_axis does not work with str.join, so we
                 # need to loop through the array directly. First move (possibly
                 # multiple) axis of interest to trailing dim(s), then make a 2D

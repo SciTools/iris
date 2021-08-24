@@ -720,7 +720,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
         coord = AuxCoord(points)
 
-        collapsed_coord = coord.collapsed()
+        collapsed_coord = coord.collapsed(0)
 
         expected = "foo|--|bing"
         self.assertEqual(collapsed_coord.points, expected)
