@@ -2117,7 +2117,7 @@ class Coord(_DimensionalMetadata):
             # bounds as strings.
             def serialize(x, axis):
                 if axis is None:
-                    return "|".join(x.flatten())
+                    return "|".join(str(i) for i in x.flatten())
                 # np.apply_along_axis does not work with str.join, so we
                 # need to loop through the array directly. First move (possibly
                 # multiple) axis of interest to trailing dim(s), then make a 2D
@@ -2128,7 +2128,7 @@ class Coord(_DimensionalMetadata):
 
                 joined = []
                 for arr_slice in work_array:
-                    joined.append("|".join(arr_slice))
+                    joined.append(serialize(arr_slice, None))
 
                 return np.array(joined).reshape(out_shape)
 

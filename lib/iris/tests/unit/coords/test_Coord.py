@@ -16,6 +16,7 @@ import warnings
 import cf_units
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 import pytest
 
 import iris
@@ -714,6 +715,15 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         ]
 
         self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_masked(self):
+        points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
+        coord = AuxCoord(points)
+
+        collapsed_coord = coord.collapsed()
+
+        expected = "foo|--|bing"
+        self.assertEqual(collapsed_coord.points, expected)
 
     def test_string_nd_second(self):
         self.setupTestArrays((3, 4))
