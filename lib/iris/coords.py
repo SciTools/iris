@@ -2135,13 +2135,15 @@ class Coord(_DimensionalMetadata):
 
             bounds = None
             if self.has_bounds():
-                bounds = []
-                for index in range(self.nbounds):
-                    bounds_slice = np.take(self.bounds, index, axis=-1)
-                    serialized = serialize(bounds_slice, dims_to_collapse)
-                    bounds.append(serialized)
-                # Make sure bounds dim comes last.
-                bounds = np.moveaxis(bounds, 0, -1)
+                # Express dims_to_collapse as non-negative integers.
+                if dims_to_collapse is None:
+                    dims_to_collapse = range(self.ndim)
+                else:
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse
+                    )
+                bounds = serialize(self.bounds, dims_to_collapse)
+
             points = serialize(self.points, dims_to_collapse)
             # Create the new collapsed coordinate.
             coord = self.copy(points=np.array(points), bounds=bounds)
