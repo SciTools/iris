@@ -1929,7 +1929,7 @@ class Coord(_DimensionalMetadata):
 
         return Cell(point, bound)
 
-    def collapsed(self, dims_to_collapse=None):
+    def collapsed(self, dims_to_collapse=None, points_func=None):
         """
         Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
@@ -2003,7 +2003,10 @@ class Coord(_DimensionalMetadata):
                 ],
                 axis=-1,
             )
-            points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
+            if points_func is None:
+                points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
+            else:
+                points = points_func(self.core_points(), axis=dims_to_collapse)
 
             # Create the new collapsed coordinate.
             coord = self.copy(points=points, bounds=bounds)
@@ -2497,8 +2500,10 @@ class DimCoord(Coord):
         coord.circular = self.circular and coord.shape == self.shape
         return coord
 
-    def collapsed(self, dims_to_collapse=None):
-        coord = Coord.collapsed(self, dims_to_collapse=dims_to_collapse)
+    def collapsed(self, dims_to_collapse=None, points_func=None):
+        coord = Coord.collapsed(
+            self, dims_to_collapse=dims_to_collapse, points_func=points_func
+        )
         if self.circular and self.units.modulus is not None:
             bnds = coord.bounds.copy()
             bnds[0, 1] = coord.bounds[0, 0] + self.units.modulus

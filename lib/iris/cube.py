@@ -3414,7 +3414,7 @@ class Cube(CFVariableMixin):
 
     # END OPERATOR OVERLOADS
 
-    def collapsed(self, coords, aggregator, **kwargs):
+    def collapsed(self, coords, aggregator, points_funcs=dict(), **kwargs):
         """
         Collapse one or more dimensions over the cube given the coordinate/s
         and an aggregation.
@@ -3568,7 +3568,11 @@ class Cube(CFVariableMixin):
                     for dim in dims_to_collapse
                     if dim in coord_dims
                 ]
-                collapsed_cube.replace_coord(coord.collapsed(local_dims))
+                collapsed_cube.replace_coord(
+                    coord.collapsed(
+                        local_dims, points_func=points_funcs.get(coord.name())
+                    )
+                )
 
         untouched_dims = sorted(untouched_dims)
 
