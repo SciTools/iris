@@ -1,0 +1,29 @@
+dimensions:
+	latitude = 161 ;
+	longitude = 320 ;
+	time = 31 ;
+variables:
+	double tcco2(time, latitude, longitude) ;
+		tcco2:long_name = "Total column Carbon Dioxide" ;
+		tcco2:units = "kg m**-2" ;
+	int time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1900-01-01 00:00:0.0" ;
+		time:standard_name = "time" ;
+		time:long_name = "time" ;
+		time:calendar = "gregorian" ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+		latitude:long_name = "latitude" ;
+	float longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+		longitude:long_name = "longitude" ;
+
+// global attributes:
+		:history = "Thu Feb 11 10:56:57 2010: ncks total_column_co2.nc -o SMALL_total_column_co2.nc -d time,,30\n2009-09-02 08:23:49 GMT by mars2netcdf-0.92" ;
+		:Conventions = "CF-1.7" ;
+}

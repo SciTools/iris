@@ -21,6 +21,10 @@ from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, save
 from iris.tests.stock import lat_lon_cube
 
 
+def savecheck(self, *args, **kwargs):
+    self.assertIrisSaveSnapshot(*args, saver_routine=save, **kwargs)
+
+
 class Test_conventions(tests.IrisTest):
     def setUp(self):
         self.cube = Cube([0])
@@ -32,7 +36,7 @@ class Test_conventions(tests.IrisTest):
         # Ensure that we drop existing conventions attributes and replace with
         # CF convention.
         with self.temp_filename(".nc") as nc_path:
-            save(self.cube, nc_path, "NETCDF4")
+            savecheck(self, self.cube, nc_path, "NETCDF4")
             ds = nc.Dataset(nc_path)
             res = ds.getncattr("Conventions")
             ds.close()
@@ -43,7 +47,7 @@ class Test_conventions(tests.IrisTest):
         # relevant Iris option is set.
         with mock.patch.object(self.options, "conventions_override", True):
             with self.temp_filename(".nc") as nc_path:
-                save(self.cube, nc_path, "NETCDF4")
+                savecheck(self, self.cube, nc_path, "NETCDF4")
                 ds = nc.Dataset(nc_path)
                 res = ds.getncattr("Conventions")
                 ds.close()
@@ -55,7 +59,7 @@ class Test_conventions(tests.IrisTest):
         del self.cube.attributes["Conventions"]
         with mock.patch.object(self.options, "conventions_override", True):
             with self.temp_filename(".nc") as nc_path:
-                save(self.cube, nc_path, "NETCDF4")
+                savecheck(self, self.cube, nc_path, "NETCDF4")
                 ds = nc.Dataset(nc_path)
                 res = ds.getncattr("Conventions")
                 ds.close()
@@ -70,7 +74,7 @@ class Test_attributes(tests.IrisTest):
         c2 = Cube([2], attributes={"bar": np.arange(2)})
 
         with self.temp_filename("foo.nc") as nc_out:
-            save([c1, c2], nc_out)
+            savecheck(self, [c1, c2], nc_out)
             ds = nc.Dataset(nc_out)
             res = ds.getncattr("bar")
             ds.close()
@@ -86,7 +90,7 @@ class Test_attributes(tests.IrisTest):
         c2 = Cube([0], var_name="test_1", attributes={"name": "bar_1"})
 
         with self.temp_filename("foo.nc") as nc_out:
-            save([c1, c2], nc_out)
+            savecheck(self, [c1, c2], nc_out)
             ds = nc.Dataset(nc_out)
             res = ds.variables["test"].getncattr("name")
             res_1 = ds.variables["test_1"].getncattr("name")
@@ -99,7 +103,7 @@ class Test_unlimited_dims(tests.IrisTest):
     def test_no_unlimited_dims(self):
         cube = lat_lon_cube()
         with self.temp_filename("foo.nc") as nc_out:
-            save(cube, nc_out)
+            savecheck(self, cube, nc_out)
             ds = nc.Dataset(nc_out)
             self.assertFalse(ds.dimensions["latitude"].isunlimited())
 
@@ -107,7 +111,9 @@ class Test_unlimited_dims(tests.IrisTest):
         cube = lat_lon_cube()
         unlim_dim_name = "latitude"
         with self.temp_filename("foo.nc") as nc_out:
-            save(cube, nc_out, unlimited_dimensions=[unlim_dim_name])
+            savecheck(
+                self, cube, nc_out, unlimited_dimensions=[unlim_dim_name]
+            )
             ds = nc.Dataset(nc_out)
             self.assertTrue(ds.dimensions[unlim_dim_name].isunlimited())
 

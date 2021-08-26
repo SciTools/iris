@@ -1,0 +1,10 @@
+dimensions:
+	dim0 = 2 ;
+variables:
+	int64 odd_phenomenon(dim0) ;
+		odd_phenomenon:long_name = "odd_phenomenon" ;
+		odd_phenomenon:cell_methods = "x: oddity" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

@@ -388,18 +388,39 @@ class IrisTest_nometa(unittest.TestCase):
         re_ncprop = re.compile(r"^\s*:_NCProperties *=")
         lines = [line for line in lines if not re_ncprop.match(line)]
 
-        # Sort the dimensions (except for the first, which can be unlimited).
-        # This gives consistent CDL across different platforms.
-        def sort_key(line):
-            return ("UNLIMITED" not in line, line)
+        if "dimensions:" in lines:
+            # Sort the dimensions (except for the first, which can be unlimited).
+            # This gives consistent CDL across different platforms.
+            def sort_key(line):
+                return ("UNLIMITED" not in line, line)
 
-        dimension_lines = slice(
-            lines.index("dimensions:") + 1, lines.index("variables:")
-        )
-        lines[dimension_lines] = sorted(lines[dimension_lines], key=sort_key)
+            dimension_lines = slice(
+                lines.index("dimensions:") + 1, lines.index("variables:")
+            )
+            lines[dimension_lines] = sorted(
+                lines[dimension_lines], key=sort_key
+            )
+
         cdl = "\n".join(lines) + "\n"
 
         self._check_same(cdl, reference_path, type_comparison_name="CDL")
+
+    def assertIrisSaveSnapshot(
+        self,
+        source_cubes,
+        target_filepath,
+        *args,
+        saver_routine=iris.save,
+        reference_filename=None,
+        flags="-h",
+        **kwargs,
+    ):
+        # A drop-in replacement for iris.save that also checks the resulting
+        # file against a saved CDL snapshot.
+        saver_routine(source_cubes, target_filepath, *args, **kwargs)
+        self.assertCDL(
+            target_filepath, reference_filename=reference_filename, flags=flags
+        )
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
         """

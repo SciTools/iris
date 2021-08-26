@@ -1,0 +1,7 @@
+variables:
+	int64 air_temperature_detection_minimum ;
+		air_temperature_detection_minimum:standard_name = "air_temperature detection_minimum" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

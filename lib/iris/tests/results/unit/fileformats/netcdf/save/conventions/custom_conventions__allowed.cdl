@@ -1,0 +1,8 @@
+dimensions:
+	dim0 = 1 ;
+variables:
+	int64 unknown(dim0) ;
+
+// global attributes:
+		:Conventions = "convention1 convention2" ;
+}

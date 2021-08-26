@@ -1,0 +1,20 @@
+dimensions:
+	dim0 = 2 ;
+	dim1 = 2 ;
+variables:
+	double temp(dim0, dim1) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+		temp:um_stash_source = "m01s02i003" ;
+		temp:flag_masks = "a" ;
+		temp:flag_meanings = "b" ;
+		temp:flag_values = "c" ;
+		temp:missing_value = 1.e+20 ;
+		temp:standard_error_multiplier = 23LL ;
+
+// global attributes:
+		:foo = "bar" ;
+		:history = "A long time ago..." ;
+		:title = "Attribute test" ;
+		:Conventions = "CF-1.7" ;
+}

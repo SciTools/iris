@@ -1,0 +1,13 @@
+dimensions:
+	dim1 = 2 ;
+	x = 2 ;
+variables:
+	double temp(x, dim1) ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+	int x(x) ;
+		x:long_name = "x" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

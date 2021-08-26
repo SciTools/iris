@@ -1,0 +1,50 @@
+dimensions:
+	bnds = 2 ;
+	latitude = 73 ;
+	longitude = 96 ;
+variables:
+	short air_temperature(latitude, longitude) ;
+		air_temperature:scale_factor = 0.00119806791576066 ;
+		air_temperature:add_offset = 267.40062344802 ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+		air_temperature:um_stash_source = "m01s03i236" ;
+		air_temperature:cell_methods = "time: mean (interval: 6 hour)" ;
+		air_temperature:grid_mapping = "latitude_longitude" ;
+		air_temperature:coordinates = "forecast_period forecast_reference_time height time" ;
+	int latitude_longitude ;
+		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
+		latitude_longitude:longitude_of_prime_meridian = 0. ;
+		latitude_longitude:earth_radius = 6371229. ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	float longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+	double forecast_period ;
+		forecast_period:bounds = "forecast_period_bnds" ;
+		forecast_period:units = "hours" ;
+		forecast_period:standard_name = "forecast_period" ;
+	double forecast_period_bnds(bnds) ;
+	double forecast_reference_time ;
+		forecast_reference_time:units = "hours since 1970-01-01 00:00:00" ;
+		forecast_reference_time:standard_name = "forecast_reference_time" ;
+		forecast_reference_time:calendar = "gregorian" ;
+	double height ;
+		height:units = "m" ;
+		height:standard_name = "height" ;
+		height:positive = "up" ;
+	double time ;
+		time:bounds = "time_bnds" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "gregorian" ;
+	double time_bnds(bnds) ;
+
+// global attributes:
+		:source = "Data from Met Office Unified Model" ;
+		:Conventions = "CF-1.7" ;
+}

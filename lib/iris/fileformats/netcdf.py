@@ -960,6 +960,7 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
+        self._filename = filename
         try:
             self._dataset = netCDF4.Dataset(
                 filename, mode="w", format=netcdf_format

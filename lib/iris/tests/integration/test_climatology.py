@@ -80,7 +80,7 @@ class TestClimatology(iris.tests.IrisTest):
     def test_cube_to_cube(self):
         # Save reference cube to file, load cube from same file, test against
         # reference cube.
-        iris.save(self.cube_ref, self.path_temp_nc)
+        self.assertIrisSaveSnapshot(self.cube_ref, self.path_temp_nc)
         cube = self._load_sanitised_cube(self.path_temp_nc)
         self.assertEqual(cube, self.cube_ref)
 

@@ -1,0 +1,8 @@
+dimensions:
+	dim0 = 3 ;
+variables:
+	double temp(dim0) ;
+		temp:least_significant_digit = 1LL ;
+		temp:standard_name = "surface_temperature" ;
+		temp:units = "K" ;
+}

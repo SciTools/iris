@@ -1,0 +1,7 @@
+variables:
+	int64 scalar_cube ;
+		scalar_cube:long_name = "scalar_cube" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

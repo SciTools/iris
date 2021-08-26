@@ -1,0 +1,10 @@
+dimensions:
+	dim0 = 1 ;
+variables:
+	int64 unknown(dim0) ;
+	int64 unknown_0(dim0) ;
+
+// global attributes:
+		:bar = 0LL, 1LL ;
+		:Conventions = "CF-1.7" ;
+}

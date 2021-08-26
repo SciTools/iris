@@ -479,6 +479,7 @@ class TestNetCDFSave(tests.IrisTest):
                 ds.file_format, "NETCDF4", "Failed to save as NETCDF4 format"
             )
             ds.close()
+            self.assertCDL(file_out)
 
             # Test NETCDF4_CLASSIC file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF4_CLASSIC")
@@ -489,6 +490,10 @@ class TestNetCDFSave(tests.IrisTest):
                 "Failed to save as NETCDF4_CLASSIC format",
             )
             ds.close()
+            self.assertCDL(
+                file_out,
+                "netcdf/TestNetCDFSave/netcdf_save_format_NC4_CLASSIC.cdl",
+            )
 
             # Test NETCDF3_CLASSIC file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF3_CLASSIC")
@@ -499,6 +504,10 @@ class TestNetCDFSave(tests.IrisTest):
                 "Failed to save as NETCDF3_CLASSIC format",
             )
             ds.close()
+            self.assertCDL(
+                file_out,
+                "netcdf/TestNetCDFSave/netcdf_save_format_NC3_CLASSIC.cdl",
+            )
 
             # Test NETCDF4_64BIT file format saving.
             iris.save(cube, file_out, netcdf_format="NETCDF3_64BIT")
@@ -508,6 +517,10 @@ class TestNetCDFSave(tests.IrisTest):
                 "Failed to save as NETCDF3_64BIT format",
             )
             ds.close()
+            self.assertCDL(
+                file_out,
+                "netcdf/TestNetCDFSave/netcdf_save_format_NC3_64BIT.cdl",
+            )
 
             # Test invalid file format saving.
             with self.assertRaises(ValueError):
@@ -861,6 +874,7 @@ class TestNetCDFSave(tests.IrisTest):
                 reloaded, ("netcdf", "save_load_traj.cml"), checksum=False
             )
             self.assertArrayEqual(traj.data, reloaded.data)
+            self.assertCDL(temp_filename)
 
     def test_attributes(self):
         # Should be global attributes.
@@ -888,6 +902,7 @@ class TestNetCDFSave(tests.IrisTest):
             self.cube.attributes[k] = v
         with self.temp_filename(suffix=".nc") as filename:
             iris.save(self.cube, filename)
+            self.assertCDL(filename)
             # Load the dataset.
             ds = nc.Dataset(filename, "r")
             exceptions = []
@@ -1124,6 +1139,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
                 ("netcdf", "int64_dimension_coord_netcdf3.cml"),
                 checksum=False,
             )
+            self.assertCDL(filename)
 
     def test_int64_auxiliary_coord_netcdf3(self):
         coord = iris.coords.AuxCoord(
@@ -1138,6 +1154,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
                 ("netcdf", "int64_auxiliary_coord_netcdf3.cml"),
                 checksum=False,
             )
+            self.assertCDL(filename)
 
     def test_int64_data_netcdf3(self):
         self.cube.data = self.cube.data.astype(np.int64)
@@ -1159,6 +1176,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
                 ("netcdf", "uint32_dimension_coord_netcdf3.cml"),
                 checksum=False,
             )
+            self.assertCDL(filename)
 
     def test_uint32_auxiliary_coord_netcdf3(self):
         coord = iris.coords.AuxCoord(
@@ -1173,6 +1191,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
                 ("netcdf", "uint32_auxiliary_coord_netcdf3.cml"),
                 checksum=False,
             )
+            self.assertCDL(filename)
 
     def test_uint32_data_netcdf3(self):
         self.cube.data = self.cube.data.astype(np.uint32)
@@ -1180,6 +1199,7 @@ class TestNetCDF3SaveInteger(tests.IrisTest):
             iris.save(self.cube, filename, netcdf_format="NETCDF3_CLASSIC")
             reloaded = iris.load_cube(filename)
             self.assertCML(reloaded, ("netcdf", "uint32_data_netcdf3.cml"))
+            self.assertCDL(filename)
 
     def test_uint64_dimension_coord_netcdf3(self):
         # Points that cannot be safely cast to int32.
@@ -1227,7 +1247,7 @@ class TestCFStandardName(tests.IrisTest):
 class TestNetCDFUKmoProcessFlags(tests.IrisTest):
     def test_process_flags(self):
         # Test single process flags
-        for _, process_desc in iris.fileformats.pp.LBPROC_PAIRS[1:]:
+        for i_proc, process_desc in iris.fileformats.pp.LBPROC_PAIRS[1:]:
             # Get basic cube and set process flag manually
             ll_cube = stock.lat_lon_cube()
             ll_cube.attributes["ukmo__process_flags"] = (process_desc,)
@@ -1246,6 +1266,11 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
                 )
                 process_flag = cube.attributes["ukmo__process_flags"][0]
                 self.assertEqual(process_flag, process_desc)
+                cdl_name = (
+                    f"netcdf/TestNetCDFUKmoProcessFlags/"
+                    f"process_flags_{i_proc}.cdl"
+                )
+                self.assertCDL(temp_filename, cdl_name)
 
         # Test mutiple process flags
         multiple_bit_values = ((128, 64), (4096, 1024), (8192, 1024))
@@ -1275,6 +1300,12 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
                     "Mismatch in " "number of process flags.",
                 )
                 self.assertEqual(set(process_flags), set(descriptions))
+                bits_descr = "+".join(str(n) for n in bits)
+                cdl_name = (
+                    f"netcdf/TestNetCDFUKmoProcessFlags/"
+                    f"process_flags_multi_{bits_descr}.cdl"
+                )
+                self.assertCDL(temp_filename, cdl_name)
 
 
 if __name__ == "__main__":

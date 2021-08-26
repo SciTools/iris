@@ -1,0 +1,57 @@
+dimensions:
+	grid_latitude = 5 ;
+	grid_longitude = 6 ;
+	model_level_number = 4 ;
+	time = 3 ;
+variables:
+	int64 air_temperature(time, model_level_number, grid_latitude, grid_longitude) ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+		air_temperature:cube = "hh1" ;
+		air_temperature:coordinates = "level_height sigma surface_altitude" ;
+	int64 time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1970-01-01 00:00:00" ;
+		time:standard_name = "time" ;
+		time:calendar = "gregorian" ;
+	int64 model_level_number(model_level_number) ;
+		model_level_number:units = "1" ;
+		model_level_number:standard_name = "model_level_number" ;
+	int64 grid_latitude(grid_latitude) ;
+		grid_latitude:axis = "Y" ;
+		grid_latitude:units = "degrees" ;
+		grid_latitude:standard_name = "grid_latitude" ;
+	int64 grid_longitude(grid_longitude) ;
+		grid_longitude:axis = "X" ;
+		grid_longitude:units = "degrees" ;
+		grid_longitude:standard_name = "grid_longitude" ;
+	int64 level_height(model_level_number) ;
+		level_height:units = "m" ;
+		level_height:long_name = "level_height" ;
+		level_height:standard_name = "atmosphere_hybrid_height_coordinate" ;
+		level_height:axis = "Z" ;
+		level_height:formula_terms = "a: level_height b: sigma orog: surface_altitude" ;
+	int64 sigma(model_level_number) ;
+		sigma:units = "1" ;
+		sigma:long_name = "sigma" ;
+	int64 surface_altitude(grid_latitude, grid_longitude) ;
+		surface_altitude:units = "m" ;
+		surface_altitude:long_name = "surface_altitude" ;
+	int64 air_temperature_0(time, model_level_number, grid_latitude, grid_longitude) ;
+		air_temperature_0:standard_name = "air_temperature" ;
+		air_temperature_0:units = "K" ;
+		air_temperature_0:cube = "hh2" ;
+		air_temperature_0:coordinates = "level_height_0 sigma surface_altitude_0" ;
+	int64 surface_altitude_0(grid_latitude, grid_longitude) ;
+		surface_altitude_0:units = "m" ;
+		surface_altitude_0:long_name = "surface_altitude" ;
+	int64 level_height_0(model_level_number) ;
+		level_height_0:units = "m" ;
+		level_height_0:long_name = "level_height" ;
+		level_height_0:standard_name = "atmosphere_hybrid_height_coordinate" ;
+		level_height_0:axis = "Z" ;
+		level_height_0:formula_terms = "a: level_height_0 b: sigma orog: surface_altitude_0" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

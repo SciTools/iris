@@ -1,0 +1,17 @@
+dimensions:
+	latitude = 3 ;
+	longitude = 4 ;
+variables:
+	byte air_temperature(latitude, longitude) ;
+		air_temperature:_FillValue = 1b ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+	int64 latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	int64 longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+}

@@ -1,0 +1,11 @@
+dimensions:
+	dim0 = 1 ;
+variables:
+	int64 test(dim0) ;
+		test:name = "bar" ;
+	int64 test_1(dim0) ;
+		test_1:name = "bar_1" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

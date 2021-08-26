@@ -222,6 +222,7 @@ class Test_write(tests.IrisTest):
             )
             self.assertFalse(np.all(cube.data == cube_saved.data))
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
+            self.assertCDL(nc_path)
 
     def test_default_unlimited_dimensions(self):
         # Default is no unlimited dimensions.
@@ -233,6 +234,7 @@ class Test_write(tests.IrisTest):
             self.assertFalse(ds.dimensions["dim0"].isunlimited())
             self.assertFalse(ds.dimensions["dim1"].isunlimited())
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_no_unlimited_dimensions(self):
         cube = self._simple_cube(">f4")
@@ -243,6 +245,7 @@ class Test_write(tests.IrisTest):
             for dim in ds.dimensions.values():
                 self.assertFalse(dim.isunlimited())
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_invalid_unlimited_dimensions(self):
         cube = self._simple_cube(">f4")
@@ -250,6 +253,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 # should not raise an exception
                 saver.write(cube, unlimited_dimensions=["not_found"])
+            self.assertCDL(nc_path)
 
     def test_custom_unlimited_dimensions(self):
         cube = self._transverse_mercator_cube()
@@ -265,6 +269,7 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+            self.assertCDL(nc_path)
         # test coordinate arguments
         with self.temp_filename(".nc") as nc_path:
             coords = [cube.coord(dim) for dim in unlimited_dimensions]
@@ -274,6 +279,10 @@ class Test_write(tests.IrisTest):
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
+            self.assertCDL(
+                nc_path,
+                reference_filename="Saver/write/custom_unlimited_dimensions_X2.cdl",
+            )
 
     def test_reserved_attributes(self):
         cube = self._simple_cube(">f4")
@@ -285,6 +294,7 @@ class Test_write(tests.IrisTest):
             res = ds.getncattr("dimensions")
             ds.close()
             self.assertEqual(res, "something something_else")
+            self.assertCDL(nc_path)
 
     def test_with_climatology(self):
         cube = stock.climatology_3d()
@@ -363,6 +373,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.valid_range, vrange)
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_valid_min_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -375,6 +386,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.valid_min, 1)
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_valid_max_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -387,6 +399,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.valid_max, 2)
             ds.close()
+            self.assertCDL(nc_path)
 
 
 class Test_write__valid_x_coord_attributes(tests.IrisTest):
@@ -406,6 +419,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
                 ds.variables["longitude"].valid_range, vrange
             )
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_valid_min_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -418,6 +432,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_min, 1)
             ds.close()
+            self.assertCDL(nc_path)
 
     def test_valid_max_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -430,6 +445,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             ds = nc.Dataset(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_max, 2)
             ds.close()
+            self.assertCDL(nc_path)
 
 
 class Test_write_fill_value(tests.IrisTest):
@@ -467,6 +483,8 @@ class Test_write_fill_value(tests.IrisTest):
                 if var.standard_name == standard_name
             ]
             yield var
+            ds.close()
+            self.assertCDL(nc_path)
 
     def test_fill_value(self):
         # Test that a passed fill value is saved as a _FillValue attribute.
@@ -1029,11 +1047,12 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
     def test_masked_data__insitu(self):
         # Test that the error is raised in the right place.
         with self.temp_filename(".nc") as nc_path:
-            saver = Saver(nc_path, "NETCDF4")
-            with self.assertRaisesRegex(ValueError, self.exp_emsg):
-                saver._create_cf_cell_measure_variable(
-                    self.cube, self.names_map, self.cm
-                )
+            with Saver(nc_path, "NETCDF4") as saver:
+                with self.assertRaisesRegex(ValueError, self.exp_emsg):
+                    saver._create_cf_cell_measure_variable(
+                        self.cube, self.names_map, self.cm
+                    )
+            self.assertCDL(nc_path)
 
     def test_masked_data__save_pipeline(self):
         # Test that the right error is raised by the saver pipeline.
@@ -1041,6 +1060,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 with self.assertRaisesRegex(ValueError, self.exp_emsg):
                     saver.write(self.cube)
+            self.assertCDL(nc_path)
 
 
 if __name__ == "__main__":
