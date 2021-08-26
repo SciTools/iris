@@ -1,0 +1,61 @@
+// For now: have omitted all optional information (on edges + connectivity),
+// *except* for face locations.
+netcdf ${DATASET_NAME} {
+dimensions:
+	axis_nbounds = 2 ;
+	Two = 2 ;
+	nMesh2d_half_levels_node = ${NUM_NODES} ;
+	nMesh2d_half_levels_face = ${NUM_FACES} ;
+	nMesh2d_half_levels_vertex = 4 ;
+	half_levels = ${NUM_LEVELS} ;
+	time_counter = UNLIMITED ; // (1 currently)
+variables:
+	int Mesh2d_half_levels ;
+		Mesh2d_half_levels:cf_role = "mesh_topology" ;
+		Mesh2d_half_levels:long_name = "Topology data of 2D unstructured mesh" ;
+		Mesh2d_half_levels:topology_dimension = 2 ;
+		Mesh2d_half_levels:node_coordinates = "Mesh2d_half_levels_node_x Mesh2d_half_levels_node_y" ;
+		Mesh2d_half_levels:face_coordinates = "Mesh2d_half_levels_face_x Mesh2d_half_levels_face_y" ;
+		Mesh2d_half_levels:face_node_connectivity = "Mesh2d_half_levels_face_nodes" ;
+	float Mesh2d_half_levels_node_x(nMesh2d_half_levels_node) ;
+		Mesh2d_half_levels_node_x:standard_name = "longitude" ;
+		Mesh2d_half_levels_node_x:long_name = "Longitude of mesh nodes." ;
+		Mesh2d_half_levels_node_x:units = "degrees_east" ;
+	float Mesh2d_half_levels_node_y(nMesh2d_half_levels_node) ;
+		Mesh2d_half_levels_node_y:standard_name = "latitude" ;
+		Mesh2d_half_levels_node_y:long_name = "Latitude of mesh nodes." ;
+		Mesh2d_half_levels_node_y:units = "degrees_north" ;
+	float Mesh2d_half_levels_face_x(nMesh2d_half_levels_face) ;
+		Mesh2d_half_levels_face_x:standard_name = "longitude" ;
+		Mesh2d_half_levels_face_x:long_name = "Characteristic longitude of mesh faces." ;
+		Mesh2d_half_levels_face_x:units = "degrees_east" ;
+	float Mesh2d_half_levels_face_y(nMesh2d_half_levels_face) ;
+		Mesh2d_half_levels_face_y:standard_name = "latitude" ;
+		Mesh2d_half_levels_face_y:long_name = "Characteristic latitude of mesh faces." ;
+		Mesh2d_half_levels_face_y:units = "degrees_north" ;
+	int Mesh2d_half_levels_face_nodes(nMesh2d_half_levels_face, nMesh2d_half_levels_vertex) ;
+		Mesh2d_half_levels_face_nodes:cf_role = "face_node_connectivity" ;
+		Mesh2d_half_levels_face_nodes:long_name = "Maps every face to its corner nodes." ;
+		Mesh2d_half_levels_face_nodes:start_index = 0 ;
+	float half_levels(half_levels) ;
+		half_levels:name = "half_levels" ;
+	double time_instant(time_counter) ;
+		time_instant:standard_name = "time" ;
+		time_instant:long_name = "Time axis" ;
+		time_instant:calendar = "gregorian" ;
+		time_instant:units = "seconds since 2016-01-01 15:00:00" ;
+		time_instant:time_origin = "2016-01-01 15:00:00" ;
+		time_instant:bounds = "time_instant_bounds" ;
+	double time_instant_bounds(time_counter, axis_nbounds) ;
+	double thing(time_counter, half_levels, nMesh2d_half_levels_face) ;
+//      Fictional phenomenon to simplify and avoid un-realistic data/units in the required file.
+		thing:long_name = "thingness" ;
+		thing:mesh = "Mesh2d_half_levels" ;
+		thing:location = "face" ;
+		thing:coordinates = "time_instant Mesh2d_half_levels_face_y Mesh2d_half_levels_face_x" ;
+
+// global attributes:
+		:name = "${DATASET_NAME}" ;
+//		original name = "lfric_ngvat_3D_1t_half_level_face_grid_derived_theta_in_w3"
+		:Conventions = "UGRID" ;
+}

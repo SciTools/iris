@@ -18,6 +18,7 @@ import warnings
 import zlib
 
 import cftime
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -579,8 +580,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`_DimensionalMetadata`, and the dictionary of attributes
-            that require to be added to this element.
+            :class:`_DimensionalMetadata`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
@@ -627,6 +627,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
+        # TODO: replace with isinstance(self, Connectivity) once Connectivity
+        # is re-integrated here (currently in experimental.ugrid).
+        elif hasattr(self, "indices"):
+            values_term = "indices"
         else:
             values_term = "data"
         element.setAttribute(values_term, self._xml_array_repr(self._values))
@@ -1936,7 +1940,6 @@ class Coord(_DimensionalMetadata):
 
         Replaces the points & bounds with a simple bounded region.
         """
-        import dask.array as da
 
         # Ensure dims_to_collapse is a tuple to be able to pass
         # through to numpy
@@ -2262,8 +2265,7 @@ class Coord(_DimensionalMetadata):
 
         Returns:
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`DimCoord`, and the dictionary of attributes that require
-            to be added to this element.
+            :class:`DimCoord`.
 
         """
         # Create the XML element as the camelCaseEquivalent of the
