@@ -947,6 +947,28 @@ class CFGroup(MutableMapping):
         """Collection of CF-netCDF measure variables."""
         return self._cf_getter(CFMeasureVariable)
 
+    @property
+    def non_data_variable_names(self):
+        """
+        :class:`set` of the names of the CF-netCDF variables that are not
+        the data pay-load.
+
+        """
+        non_data_variables = (
+            self.ancillary_variables,
+            self.auxiliary_coordinates,
+            self.bounds,
+            self.climatology,
+            self.coordinates,
+            self.grid_mappings,
+            self.labels,
+            self.cell_measures,
+        )
+        result = set()
+        for variable in non_data_variables:
+            result |= set(variable)
+        return result
+
     def keys(self):
         """Return the names of all the CF-netCDF variables in the group."""
         return self._cf_variables.keys()
@@ -1006,22 +1028,26 @@ class CFReader:
 
     """
 
+    # All CF variable types EXCEPT for the "special cases" of
+    # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
+    _variable_types = (
+        CFAncillaryDataVariable,
+        CFAuxiliaryCoordinateVariable,
+        CFBoundaryVariable,
+        CFClimatologyVariable,
+        CFGridMappingVariable,
+        CFLabelVariable,
+        CFMeasureVariable,
+    )
+
+    # TODO: remove once iris.experimental.ugrid.CFUGridReader is folded in.
+    CFGroup = CFGroup
+
     def __init__(self, filename, warn=False, monotonic=False):
         self._filename = os.path.expanduser(filename)
-        # All CF variable types EXCEPT for the "special cases" of
-        # CFDataVariable, CFCoordinateVariable and _CFFormulaTermsVariable.
-        self._variable_types = (
-            CFAncillaryDataVariable,
-            CFAuxiliaryCoordinateVariable,
-            CFBoundaryVariable,
-            CFClimatologyVariable,
-            CFGridMappingVariable,
-            CFLabelVariable,
-            CFMeasureVariable,
-        )
 
         #: Collection of CF-netCDF variables associated with this netCDF file
-        self.cf_group = CFGroup()
+        self.cf_group = self.CFGroup()
 
         self._dataset = netCDF4.Dataset(self._filename, mode="r")
 
@@ -1040,6 +1066,11 @@ class CFReader:
         self._translate()
         self._build_cf_groups()
         self._reset()
+
+    @property
+    def filename(self):
+        """The file that the CFReader is reading."""
+        return self._filename
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._filename)
@@ -1096,15 +1127,7 @@ class CFReader:
 
         # Determine the CF data variables.
         data_variable_names = (
-            set(netcdf_variable_names)
-            - set(self.cf_group.ancillary_variables)
-            - set(self.cf_group.auxiliary_coordinates)
-            - set(self.cf_group.bounds)
-            - set(self.cf_group.climatology)
-            - set(self.cf_group.coordinates)
-            - set(self.cf_group.grid_mappings)
-            - set(self.cf_group.labels)
-            - set(self.cf_group.cell_measures)
+            set(netcdf_variable_names) - self.cf_group.non_data_variable_names
         )
 
         for name in data_variable_names:
@@ -1116,17 +1139,28 @@ class CFReader:
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
+            # TODO: isinstance(cf_variable, UGridMeshVariable)
+            #  UGridMeshVariable currently in experimental.ugrid - circular import.
+            is_mesh_var = cf_variable.cf_identity == "mesh"
+            ugrid_coord_names = []
+            ugrid_coords = getattr(self.cf_group, "ugrid_coords", None)
+            if ugrid_coords is not None:
+                ugrid_coord_names = list(ugrid_coords.keys())
+
             coordinate_names = list(self.cf_group.coordinates.keys())
-            cf_group = CFGroup()
+            cf_group = self.CFGroup()
 
             # Build CF variable relationships.
             for variable_type in self._variable_types:
-                # Prevent grid mapping variables being mis-identified as
-                # CF coordinate variables.
-                if issubclass(variable_type, CFGridMappingVariable):
-                    ignore = None
-                else:
-                    ignore = coordinate_names
+                ignore = []
+                # Avoid UGridAuxiliaryCoordinateVariables also being
+                # processed as CFAuxiliaryCoordinateVariables.
+                if not is_mesh_var:
+                    ignore += ugrid_coord_names
+                # Prevent grid mapping variables being mis-identified as CF coordinate variables.
+                if not issubclass(variable_type, CFGridMappingVariable):
+                    ignore += coordinate_names
+
                 match = variable_type.identify(
                     self._dataset.variables,
                     ignore=ignore,
@@ -1135,7 +1169,8 @@ class CFReader:
                 )
                 # Sanity check dimensionality coverage.
                 for cf_name, cf_var in match.items():
-                    if cf_var.spans(cf_variable):
+                    # No span check is necessary if variable is attached to a mesh.
+                    if is_mesh_var or cf_var.spans(cf_variable):
                         cf_group[cf_name] = self.cf_group[cf_name]
                     else:
                         # Register the ignored variable.
