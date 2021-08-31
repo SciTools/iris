@@ -2116,7 +2116,7 @@ class Coord(_DimensionalMetadata):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(x, axis):
-                if axis is None or len(axis) == x.ndim:
+                if axis is None:
                     return "|".join(str(i) for i in x.flatten())
 
                 # np.apply_along_axis does not work with str.join, so we
@@ -2125,7 +2125,9 @@ class Coord(_DimensionalMetadata):
                 # array we can loop through.
                 work_array = np.moveaxis(x, axis, range(-len(axis), 0))
                 out_shape = work_array.shape[: -len(axis)]
-                work_array = work_array.reshape(np.prod(out_shape), -1)
+                work_array = work_array.reshape(
+                    np.prod(out_shape, dtype=int), -1
+                )
 
                 joined = []
                 for arr_slice in work_array:
