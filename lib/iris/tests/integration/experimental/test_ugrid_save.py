@@ -87,9 +87,36 @@ class TestBasicSave(IrisTest):
         target_filepath = str(self.temp_dir / file_name)
         iris.save(cube, target_filepath)
 
-        print(cube)
+        from subprocess import check_output
+
+        print("")
+        print("ORIGINAL:")
+        text = check_output("ncdump -h " + source_filepath, shell=True)
+        print(text.decode())
+        print("")
+        print("RE-SAVED:")
+        text = check_output("ncdump -h " + target_filepath, shell=True)
+        print(text.decode())
         # # Ensure that the saved result is identical
         # self.assertCDL(target_filepath)
+
+        # Now try loading BACK...
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_reload = iris.load_cube(target_filepath)
+        print("")
+        print("OUTPUT-RE-LOADED:")
+        print(cube_reload)
+
+        mesh_orig = cube.mesh
+        mesh_reload = cube_reload.mesh
+        for propname in dir(mesh_orig):
+            if not propname.startswith("_"):
+                prop_orig = getattr(mesh_orig, propname)
+                if not callable(prop_orig):
+                    prop_reload = getattr(mesh_reload, propname)
+                    self.assertEqual(
+                        (propname, prop_reload), (propname, prop_orig)
+                    )
 
 
 if __name__ == "__main__":

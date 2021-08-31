@@ -2000,6 +2000,12 @@ class Saver:
             [],
         )
 
+        # Add the basic essential attributes
+        _setncattr(cf_mesh_var, "cf_role", "mesh_topology")
+        _setncattr(cf_mesh_var, "topology_dimension", mesh.topology_dimension)
+        # Add 'standard' names + units atributes
+        self._set_cf_var_attributes(cf_mesh_var, mesh)
+
         # Get the mesh-element dim names.
         mesh_dims = {
             location: getattr(mesh, f"{location}_dimension")
@@ -2007,8 +2013,9 @@ class Saver:
         }
         # Add the element coordinate variables.
         for location in MESH_LOCATIONS:
-            coords_attr_name = f"{location}_coords"
-            mesh_coords = getattr(mesh, coords_attr_name)
+            coords_meshobj_attr = f"{location}_coords"
+            coords_file_attr = f"{location}_coordinates"
+            mesh_coords = getattr(mesh, coords_meshobj_attr)
             if mesh_coords:
                 coord_names = []
                 for coord in mesh_coords:
@@ -2021,7 +2028,7 @@ class Saver:
                 # Record the coordinates (if any) on the mesh variable.
                 if coord_names:
                     coord_names = " ".join(coord_names)
-                    _setncattr(cf_mesh_var, coords_attr_name, coord_names)
+                    _setncattr(cf_mesh_var, coords_file_attr, coord_names)
 
         # Add all the connectivity variables.
         # pre-fetch the set + ignore "None"s -- looks like a bug ?
@@ -2041,12 +2048,55 @@ class Saver:
             cf_conn_name = self._create_generic_cf_array_var(
                 cube, [], conn, element_dims=conn_dims
             )
-            # Record in a mesh var attr whose name is the cf_role.
+            # Add essential attributes to the Connectivity variable.
+            cf_conn_var = self._dataset.variables[cf_conn_name]
+            _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
+            _setncattr(cf_conn_var, "start_index", conn.start_index)
+
+            # Record the connectivity on the parent mesh var.
             _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
 
         # TODO: possibly we need to handle boundary coords/conns separately
 
         return cf_mesh_name
+
+    def _set_cf_var_attributes(self, cf_var, element):
+        # Deal with CF-netCDF units and standard name.
+        if isinstance(element, iris.coords.Coord):
+            # Fix "degree" units if needed.
+            # TODO: rewrite the handler routine to a more sensible API.
+            _, _, units_str = self._cf_coord_identity(element)
+        else:
+            units_str = str(element.units)
+
+        if cf_units.as_unit(units_str).is_udunits():
+            _setncattr(cf_var, "units", units_str)
+
+        standard_name = element.standard_name
+        if standard_name is not None:
+            _setncattr(cf_var, "standard_name", standard_name)
+
+        long_name = element.long_name
+        if long_name is not None:
+            _setncattr(cf_var, "long_name", long_name)
+
+        # Add the CF-netCDF calendar attribute.
+        if element.units.calendar:
+            _setncattr(cf_var, "calendar", str(element.units.calendar))
+
+        # Add any other custom coordinate attributes.
+        for name in sorted(element.attributes):
+            value = element.attributes[name]
+
+            if name == "STASH":
+                # Adopting provisional Metadata Conventions for representing MO
+                # Scientific Data encoded in NetCDF Format.
+                name = "um_stash_source"
+                value = str(value)
+
+            # Don't clobber existing attributes.
+            if not hasattr(cf_var, name):
+                _setncattr(cf_var, name, value)
 
     def _create_generic_cf_array_var(
         self, cube, cube_dim_names, element, element_dims=None
@@ -2173,42 +2223,8 @@ class Saver:
         # Add the data to the CF-netCDF variable.
         cf_var[:] = data
 
-        # Deal with CF-netCDF units and standard name.
-        if isinstance(element, iris.coords.Coord):
-            # Fix "degree" units if needed.
-            # TODO: rewrite the handler routine to a more sensible API.
-            _, _, units_str = self._cf_coord_identity(element)
-        else:
-            units_str = str(element.units)
-
-        if cf_units.as_unit(units_str).is_udunits():
-            _setncattr(cf_var, "units", units_str)
-
-        standard_name = element.standard_name
-        if standard_name is not None:
-            _setncattr(cf_var, "standard_name", standard_name)
-
-        long_name = element.long_name
-        if long_name is not None:
-            _setncattr(cf_var, "long_name", long_name)
-
-        # Add the CF-netCDF calendar attribute.
-        if element.units.calendar:
-            _setncattr(cf_var, "calendar", str(element.units.calendar))
-
-        # Add any other custom coordinate attributes.
-        for name in sorted(element.attributes):
-            value = element.attributes[name]
-
-            if name == "STASH":
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                name = "um_stash_source"
-                value = str(value)
-
-            # Don't clobber existing attributes.
-            if not hasattr(cf_var, name):
-                _setncattr(cf_var, name, value)
+        # Add names + units
+        self._set_cf_var_attributes(cf_var, element)
 
         return cf_name
 
