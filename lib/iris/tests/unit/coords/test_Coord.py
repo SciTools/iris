@@ -565,6 +565,15 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             collapsed_coord.bounds, da.array([[0.0, 4.0]])
         )
 
+    def test_string_masked(self):
+        points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
+        coord = AuxCoord(points)
+
+        collapsed_coord = coord.collapsed(0)
+
+        expected = "foo|--|bing"
+        self.assertEqual(collapsed_coord.points, expected)
+
     def test_string_nd_first(self):
         self.setupTestArrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str))
@@ -578,15 +587,6 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         ]
 
         self.assertArrayEqual(collapsed_coord.points, expected)
-
-    def test_string_masked(self):
-        points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
-        coord = AuxCoord(points)
-
-        collapsed_coord = coord.collapsed(0)
-
-        expected = "foo|--|bing"
-        self.assertEqual(collapsed_coord.points, expected)
 
     def test_string_nd_second(self):
         self.setupTestArrays((3, 4))
