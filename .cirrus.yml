@@ -76,7 +76,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
       - conda create --quiet --name cartopy-cache cartopy
       - source ${HOME}/miniconda/etc/profile.d/conda.sh >/dev/null 2>&1
       - conda activate cartopy-cache >/dev/null 2>&1
-      - python tools/cartopy_feature_download.py --output ${HOME}/.local/share/cartopy --nowarn
+      - python tools/cartopy_feature_download.py --output ${HOME}/.local/share/cartopy --feature physical --nowarn
       - conda deactivate >/dev/null 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
