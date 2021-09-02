@@ -26,7 +26,7 @@ env:
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
-  CARTOPY_CACHE_BUILD: "0"
+  CARTOPY_CACHE_BUILD: "1"
   # Increment the build number to force new conda cache upload.
   CONDA_CACHE_BUILD: "0"
   # Increment the build number to force new nox cache upload.
@@ -72,6 +72,12 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - echo "${CIRRUS_OS}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CARTOPY_CACHE_BUILD}"
+    populate_script:
+      - conda create --quiet --name cartopy-cache cartopy
+      - source ${HOME}/miniconda/etc/profile.d/conda.sh >/dev/null 2>&1
+      - conda activate cartopy-cache >/dev/null 2>&1
+      - python tools/cartopy_feature_download.py --output ${HOME}/.local/share/cartopy --nowarn
+      - conda deactivate >/dev/null 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
     reupload_on_changes: true
