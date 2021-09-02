@@ -11,112 +11,113 @@ Integration tests for NetCDF-UGRID file saving.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import glob
 from pathlib import Path
 import shutil
+from subprocess import check_call
 import tempfile
 
 import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 import iris.fileformats.netcdf
 from iris.tests import IrisTest
-from iris.tests.stock.mesh import (  # sample_mesh,; sample_meshcoord,
-    sample_mesh_cube,
-)
+from iris.tests.stock.netcdf import _add_standard_data
 
 
 class TestBasicSave(IrisTest):
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = Path(tempfile.mkdtemp())
+        cls.examples_dir = (
+            Path(__file__).absolute().parent / "ugrid_conventions_examples"
+        )
+        example_paths = glob.glob(str(cls.examples_dir / "*ex*.cdl"))
+        example_names = [
+            str(Path(filepath).name).split("_")[1]  # = "ex<N>"
+            for filepath in example_paths
+        ]
+        cls.example_names_paths = {
+            name: path for name, path in zip(example_names, example_paths)
+        }
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_dir)
 
-    def test_parts(self):
-        cube = sample_mesh_cube()
-        # Make this REALLY minimal
-        # Note: removing the 'extras' in the 'sample+mesh_cube'
-        cube = cube[0]  # Strip out first dimension.
-        # # Remove un-needed extra coords (for now).
-        for name in ("level", "i_mesh_face", "mesh_face_aux"):
-            cube.remove_coord(name)
-        print(cube)
+    def test_example_result_cdls(self):
+        # Snapshot the result of saving the example cases.
+        for ex_name, filepath in self.example_names_paths.items():
+            target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
+            # Create a netcdf file from the test CDL.
+            check_call(
+                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
+            )
+            # Fill in blank data-variables.
+            _add_standard_data(target_ncfile_path)
+            # Load as Iris data
+            with PARSE_UGRID_ON_LOAD.context():
+                cubes = iris.load(target_ncfile_path)
+            # Re-save, to check the save behaviour.
+            resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
+            iris.save(cubes, resave_ncfile_path)
+            # Check the output against a CDL snapshot.
+            refdir_relpath = (
+                "integration/experimental/ugrid_save/TestBasicSave/"
+            )
+            reffile_name = str(Path(filepath).name).replace(".nc", ".cdl")
+            reffile_path = refdir_relpath + reffile_name
+            self.assertCDL(resave_ncfile_path, reference_filename=reffile_path)
 
-        temp_path = str(self.temp_dir / "tmp.nc")
-        with iris.fileformats.netcdf.Saver(temp_path, "NETCDF4") as saver:
-            saver.write(cube)
-        # TODO: do some actual testing, beyond "does not fail"
-        # self.assertCDL(temp_path)  # TODO: for now onl
-
-    def test_basic_save(self):
-        # Generate an ultra-simple unstructured cube
-        cube = sample_mesh_cube()
-        print(cube)
-        return
-
-        # Save it out, and check that the CDL is as expected.
-        tempfile_path = str(self.temp_dir / "basic.nc")
-        iris.save(cube, tempfile_path)
-        self.assertCDL(tempfile_path)
-
-    # def test_complex_multiple_save(self):
-    #     source_dirpath = Path(iris.tests.get_data_path(
-    #             ['NetCDF', 'unstructured_grid', 'lfric_surface_mean.nc']))
-    #
-    #     # Save it out, and check that the CDL is as expected.
-    #     tempfile_path = str(self.temp_dir / 'basic.nc')
-    #     iris.save(cube, tempfile_path)
-    #     self.assertCDL(tempfile_path)
-
-    def test_roundtrip(self):
-        source_dirpath = Path(
-            iris.tests.get_data_path(["NetCDF", "unstructured_grid"])
-        )
-        file_name = "data_C4.nc"
-        source_filepath = str(source_dirpath / file_name)
-
-        # # Ensure that our test reference text matches the original input file
-        # self.assertCDL(source_filepath)
-
-        # Load the data (one cube) and save it out to a temporary file of the same name
-        with PARSE_UGRID_ON_LOAD.context():
-            cube = iris.load_cube(source_filepath)
-
-        print(cube)
-        target_filepath = str(self.temp_dir / file_name)
-        iris.save(cube, target_filepath)
-
-        from subprocess import check_output
-
-        print("")
-        print("ORIGINAL:")
-        text = check_output("ncdump -h " + source_filepath, shell=True)
-        print(text.decode())
-        print("")
-        print("RE-SAVED:")
-        text = check_output("ncdump -h " + target_filepath, shell=True)
-        print(text.decode())
-        # # Ensure that the saved result is identical
-        # self.assertCDL(target_filepath)
-
-        # Now try loading BACK...
-        with PARSE_UGRID_ON_LOAD.context():
-            cube_reload = iris.load_cube(target_filepath)
-        print("")
-        print("OUTPUT-RE-LOADED:")
-        print(cube_reload)
-
-        mesh_orig = cube.mesh
-        mesh_reload = cube_reload.mesh
-        for propname in dir(mesh_orig):
-            if not propname.startswith("_"):
-                prop_orig = getattr(mesh_orig, propname)
-                if not callable(prop_orig):
-                    prop_reload = getattr(mesh_reload, propname)
-                    self.assertEqual(
-                        (propname, prop_reload), (propname, prop_orig)
-                    )
+    def test_example_roundtrips(self):
+        # Check that save-and-loadback leaves Iris data unchanged,
+        # for data derived from each UGRID example CDL.
+        # Snapshot the result of saving the example cases.
+        for ex_name, filepath in self.example_names_paths.items():
+            print(f"Roundtrip checking : {ex_name}")
+            if "ex4" in ex_name:
+                # Skip this one now : still causing some problems ...
+                continue
+            target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
+            # Create a netcdf file from the test CDL.
+            check_call(
+                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
+            )
+            # Fill in blank data-variables.
+            _add_standard_data(target_ncfile_path)
+            # Load the original as Iris data
+            with PARSE_UGRID_ON_LOAD.context():
+                orig_cubes = iris.load(target_ncfile_path)
+            # Save-and-load-back to compare the Iris saved result.
+            resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
+            iris.save(orig_cubes, resave_ncfile_path)
+            with PARSE_UGRID_ON_LOAD.context():
+                savedloaded_cubes = iris.load(resave_ncfile_path)
+            # This should match the original exactly
+            # ..EXCEPT for our inability to compare meshes.
+            for orig, reloaded in zip(orig_cubes, savedloaded_cubes):
+                for cube in (orig, reloaded):
+                    # Remove conventions attributes, which may differ.
+                    cube.attributes.pop("Conventions", None)
+                    # Remove var-names, which may differ.
+                    cube.var_name = None
+                # Compare the mesh contents (as we can't compare actual meshes)
+                self.assertEqual(orig.location, reloaded.location)
+                orig_mesh = orig.mesh
+                reloaded_mesh = reloaded.mesh
+                self.assertEqual(
+                    orig_mesh.all_coords, reloaded_mesh.all_coords
+                )
+                self.assertEqual(
+                    orig_mesh.all_connectivities,
+                    reloaded_mesh.all_connectivities,
+                )
+                # Index the cubes to replace meshes with meshcoord-derived aux coords.
+                # This needs [:0] on the mesh dim, so do that on all dims.
+                keys = tuple([slice(0, None)] * orig.ndim)
+                orig = orig[keys]
+                reloaded = reloaded[keys]
+                # Resulting cubes, with collapsed mesh, should be IDENTICAL.
+                self.assertEqual(orig, reloaded)
 
 
 if __name__ == "__main__":
