@@ -71,7 +71,6 @@ class TestBasicSave(IrisTest):
     def test_example_roundtrips(self):
         # Check that save-and-loadback leaves Iris data unchanged,
         # for data derived from each UGRID example CDL.
-        # Snapshot the result of saving the example cases.
         for ex_name, filepath in self.example_names_paths.items():
             print(f"Roundtrip checking : {ex_name}")
             if "ex4" in ex_name:
