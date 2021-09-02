@@ -70,7 +70,10 @@ if __name__ == "__main__":
         "-f",
         nargs="+",
         default=["physical"],
-        help="list of one or more features to download",
+        help=(
+            "specify one or more features to download [cultural|cultural-extra|gshhs|physical], "
+            'default is "physical"'
+        ),
     )
     parser.add_argument(
         "--nowarn",
