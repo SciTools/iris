@@ -32,7 +32,7 @@ def build_mesh(
     nodecoord_xyargs=None,
     edgecoord_xyargs=None,
     facecoord_xyargs=None,
-    conn_role_kwargs={},  # role: kwargs
+    conn_role_kwargs=None,  # mapping {connectivity-role: connectivity-kwargs}
     mesh_kwargs=None,
 ):
     """
@@ -89,15 +89,18 @@ def build_mesh(
 
     mesh_dims = {"node": n_nodes, "edge": n_edges, "face": n_faces}
 
-    for role, kwargs in conn_role_kwargs.items():
-        if role in connectivities:
-            conn = connectivities[role]
-        else:
-            loc_from, loc_to, _ = role.split("_")
-            dims = [mesh_dims[loc] for loc in (loc_from, loc_to)]
-            conn = Connectivity(np.zeros(dims, dtype=np.int32), cf_role=role)
-            connectivities[role] = conn
-        applyargs(conn, kwargs)
+    if conn_role_kwargs:
+        for role, kwargs in conn_role_kwargs.items():
+            if role in connectivities:
+                conn = connectivities[role]
+            else:
+                loc_from, loc_to, _ = role.split("_")
+                dims = [mesh_dims[loc] for loc in (loc_from, loc_to)]
+                conn = Connectivity(
+                    np.zeros(dims, dtype=np.int32), cf_role=role
+                )
+                connectivities[role] = conn
+            applyargs(conn, kwargs)
 
     mesh = Mesh(
         topology_dimension=topology_dimension,
@@ -138,10 +141,8 @@ def make_mesh(basic=True, **kwargs):
     return mesh
 
 
-# Make simple "standard" test meshes for multiple uses
+# Pre-create a simple "standard" test mesh for multiple uses
 _DEFAULT_MESH = make_mesh()
-# NB the 'minimal' mesh might have just nodes, but Mesh doesn't (yet) support it
-_MINIMAL_MESH = make_mesh(basic=False, n_nodes=3, n_edges=2, n_faces=0)
 
 
 def make_cube(mesh=_DEFAULT_MESH, location="face", **kwargs):
@@ -156,17 +157,17 @@ def make_cube(mesh=_DEFAULT_MESH, location="face", **kwargs):
 
 def scan_dataset(filepath):
     """
-    Snapshot a dataset (the key metadata).
+    Snapshot a netcdf dataset (the key metadata).
 
     Returns:
-        a tuple (dimsdict, varsdict)
+        dimsdict, varsdict
         * dimsdict (dict):
-            A mapping of dimension-name: length.
+            A map of dimension-name: length.
         * varsdict (dict):
             A map of each variable's properties, {var_name: propsdict}
             Each propsdict is {attribute-name: value} over the var's ncattrs().
             Each propsdict ALSO contains a ['_dims'] entry listing the
-                variable's dims.
+            variable's dims.
 
     """
     import netCDF4 as nc
@@ -185,8 +186,9 @@ def scan_dataset(filepath):
 
 def vars_w_props(varsdict, **kwargs):
     """
-    Subset a vars dict, {name:props}, for those where given attributes=values.
-    Except '<key>="*"' means the '<key>' attribute must only exist.
+    Subset a vars dict, {name:props}, returning only those where each
+    <attribute>=<value>, defined by the given keywords.
+    Except that '<key>="*"' means that an attribute '<key>' merely _exists_.
 
     """
 
@@ -194,10 +196,9 @@ def vars_w_props(varsdict, **kwargs):
         result = True
         for key, val in kwargs.items():
             result = key in attrs
-            if result and val != "*":
+            if result:
                 # val='*'' for a simple existence check
-                # Otherwise actual value must also match
-                result = attrs[key] == val
+                result = (val == "*") or attrs[key] == val
             if not result:
                 break
         return result
@@ -211,13 +212,45 @@ def vars_w_props(varsdict, **kwargs):
 
 
 def vars_w_dims(varsdict, dim_names):
-    """Subset a vars dict elect, selecting only those with all the given dimensions."""
+    """Subset a vars dict, returning all those which map all the specified dims."""
     varsdict = {
         name: propsdict
         for name, propsdict in varsdict.items()
         if all(dim in propsdict["_dims"] for dim in dim_names)
     }
     return varsdict
+
+
+def vars_meshvars(vars):
+    """Subset a varsdict, returning those which are mesh variables (by cf_role)."""
+    return vars_w_props(vars, cf_role="mesh_topology")
+
+
+def vars_meshdim(vars, location, mesh_name=None):
+    """ "
+    Extract a dim-name for a given element location.
+
+    Args:
+        * vars (varsdict):
+            file varsdict, as returned from 'snapshot_dataset'.
+        * location (string):
+            a mesh location : 'node' / 'edge' / 'face'
+        * mesh_name (string or None):
+            If given, identifies the mesh var.
+            Otherwise, find a unique mesh var (i.e. there must be exactly 1).
+
+    Returns:
+        dim_name (string)
+            The dim-name of the mesh dim for the given location.
+
+    """
+    if mesh_name is None:
+        # Find "the" meshvar -- assuming there is just one.
+        (mesh_name,) = vars_meshvars(vars).keys()
+    mesh_props = vars[mesh_name]
+    loc_coords = mesh_props[f"{location}_coordinates"].split(" ")
+    (single_location_dim,) = vars[loc_coords[0]]["_dims"]
+    return single_location_dim
 
 
 class TestSaveUgrid__cube(tests.IrisTest):
@@ -237,53 +270,83 @@ class TestSaveUgrid__cube(tests.IrisTest):
         print(text)
         return scan_dataset(self.tempfile_path)
 
-    def test_minimal_mesh_cdl(self):
-        data = make_cube(mesh=_MINIMAL_MESH, location="edge")
-        dims, vars = self.check_save(data)
-
-        # There should be 1 mesh var.
-        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
-        self.assertEqual(1, len(mesh_vars))
-        (mesh_name,) = mesh_vars.keys()
-
-        # There should be 1 mesh-linked (data)var
-        data_vars = vars_w_props(vars, mesh="*")
-        self.assertEqual(1, len(data_vars))
-
-        # The mesh var should link to the mesh, at 'edges'
-        self.assertEqual(["unknown"], list(data_vars.keys()))
-        (a_props,) = data_vars.values()
-        self.assertEqual(mesh_name, a_props["mesh"])
-        self.assertEqual("edge", a_props["location"])
-
-        # get name of first edge coord
-        edge_coord = vars[mesh_name]["edge_coordinates"].split(" ")[0]
-        # get edge dim = first dim of edge coord
-        (edge_dim,) = vars[edge_coord]["_dims"]
-
-        # The dims of the datavar should == [edges]
-        self.assertEqual([edge_dim], a_props["_dims"])
-
     def test_basic_mesh_cdl(self):
         data = make_cube(mesh=_DEFAULT_MESH)
-        self.check_save(data)
-        # self.assertCDL(self.tempfile_path)
+        dims, vars = self.check_save(data)
+
+        # There is exactly 1 mesh var.
+        ((mesh_name, mesh_props),) = vars_meshvars(vars).items()
+
+        # There is exactly 1 mesh-linked (data)var
+        data_vars = vars_w_props(vars, mesh="*")
+        ((a_name, a_props),) = data_vars.items()
+
+        # The mesh var links to the mesh, with location 'faces'
+        self.assertEqual(a_name, "unknown")
+        self.assertEqual(a_props["mesh"], mesh_name)
+        self.assertEqual(a_props["location"], "face")
+
+        # There are 2 face coords == those listed in the mesh
+        face_coords = mesh_props["face_coordinates"].split(" ")
+        self.assertEqual(len(face_coords), 2)
+        # get face dim (actually, from the dims of the first face coord)
+        face_dim = vars_meshdim(vars, "face")
+        # The face coords should both map that single dim.
+        self.assertTrue(
+            all(vars[co]["_dims"] == [face_dim] for co in face_coords)
+        )
+
+        # The dims of the datavar also == [<faces-dim>]
+        self.assertEqual(a_props["_dims"], [face_dim])
+
+        # There are 2 node coordinates == those listed in the mesh.
+        node_coords = mesh_props["node_coordinates"].split(" ")
+        self.assertEqual(len(node_coords), 2)
+        # These should be the only ones using the 'nodes' dimension.
+        node_dim = vars_meshdim(vars, "node")
+        self.assertEqual(
+            sorted(node_coords), sorted(vars_w_dims(vars, [node_dim]).keys())
+        )
+
+        # There are no edges.
+        self.assertEqual(
+            len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0
+        )
 
     def test_multi_cubes_common_mesh(self):
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b")
         dims, vars = self.check_save([cube1, cube2])
-        # there is only 1 mesh in the file
-        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
-        self.assertEqual(len(mesh_vars), 1)
-        (mesh_name,) = mesh_vars.keys()
+        # there is exactly 1 mesh in the file
+        ((mesh_name, _),) = vars_meshvars(vars).items()
         # both the main variables reference the same mesh, and 'face' location
         v_a, v_b = vars["a"], vars["b"]
-        self.assertEqual(mesh_name, v_a["mesh"])
-        self.assertEqual("face", v_a["location"])
-        self.assertEqual(mesh_name, v_b["mesh"])
-        self.assertEqual("face", v_b["location"])
+        self.assertEqual(v_a["mesh"], mesh_name)
+        self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_b["mesh"], mesh_name)
+        self.assertEqual(v_b["location"], "face")
         # self.assertCDL(self.tempfile_path)
+
+    def test_multi_cubes_different_locations(self):
+        cube1 = make_cube(var_name="a", location="face")
+        cube2 = make_cube(var_name="b", location="node")
+        dims, vars = self.check_save([cube1, cube2])
+
+        # there is exactly 1 mesh in the file
+        ((mesh_name, mesh_props),) = vars_meshvars(vars).items()
+
+        # the main variables reference the same mesh at different locations
+        v_a, v_b = vars["a"], vars["b"]
+        self.assertEqual(v_a["mesh"], mesh_name)
+        self.assertEqual(v_a["location"], "face")
+        self.assertEqual(v_b["mesh"], mesh_name)
+        self.assertEqual(v_b["location"], "node")
+
+        # the main variables map the face and node dimensions
+        face_dim = vars_meshdim(vars, "face")
+        node_dim = vars_meshdim(vars, "node")
+        self.assertEqual(v_a["_dims"], [face_dim])
+        self.assertEqual(v_b["_dims"], [node_dim])
 
     def test_multi_cubes_identical_meshes(self):
         mesh1 = make_mesh()
@@ -293,19 +356,20 @@ class TestSaveUgrid__cube(tests.IrisTest):
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b")
         dims, vars = self.check_save([cube1, cube2])
+
         # there are 2 meshes in the file
-        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
+        mesh_vars = vars_meshvars(vars)
         self.assertEqual(len(mesh_vars), 2)
+
         # there are two (data)variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
         self.assertEqual(2, len(mesh_datavars))
         self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
-        # the main variables reference the same mesh, and 'face' location
-        v_a, v_b = vars["a"], vars["b"]
-        mesh_a, mesh_b = v_a["mesh"], v_b["mesh"]
-        self.assertNotEqual(mesh_a, mesh_b)
+
+        # the data variables reference the two separate meshes
+        a_props, b_props = vars["a"], vars["b"]
+        mesh_a, mesh_b = a_props["mesh"], b_props["mesh"]
         self.assertEqual(sorted([mesh_a, mesh_b]), sorted(mesh_vars.keys()))
-        # self.assertCDL(self.tempfile_path)
 
     def test_multi_cubes_different_mesh(self):
         cube1 = make_cube(var_name="a")
@@ -320,12 +384,6 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(2, len(mesh_datavars))
         self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
         # the main variables reference the same mesh, and 'face' location
-        # self.assertCDL(self.tempfile_path)
-
-    def test_multi_cubes_different_locations(self):
-        cube1 = make_cube(var_name="a", location="face")
-        cube2 = make_cube(var_name="b", location="node")
-        self.check_save([cube1, cube2])
         # self.assertCDL(self.tempfile_path)
 
 
