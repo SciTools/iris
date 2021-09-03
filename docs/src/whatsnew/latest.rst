@@ -31,9 +31,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@bjlittle`_ added the `tools/cartopy_feature_download.py` command-line utility
-   which allows developers to easily download feature resources for `cartopy`_.
-   (:pull:`4304`)
+#. N/A
 
 
 🐛 Bugs Fixed
