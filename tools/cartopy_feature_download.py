@@ -39,8 +39,6 @@ def main(target_dir, features, dry_run):
         # Download cartopy feature_download tool, which is not bundled
         # within a cartopy package, and make it importable.
         urllib.request.urlretrieve(FEATURE_DOWNLOAD_URL, "feature_download.py")
-        with open("__init__.py", "w"):
-            pass
         sys.path.append(tmpdir)
 
         from feature_download import download_features
