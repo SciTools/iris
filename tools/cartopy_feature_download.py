@@ -23,6 +23,7 @@ from cartopy import config
 
 FEATURE_DOWNLOAD_URL = f"https://raw.githubusercontent.com/SciTools/cartopy/v{cartopy.__version__}/tools/feature_download.py"
 # This will be the (more stable) cartopy resource endpoint from v0.19.0.post1+
+# See https://github.com/SciTools/cartopy/pull/1833
 URL_TEMPLATE = "https://naturalearth.s3.amazonaws.com/{resolution}_{category}/ne_{resolution}_{name}.zip"
 SHP_NE_SPEC = ("shapefiles", "natural_earth")
 
@@ -30,9 +31,9 @@ SHP_NE_SPEC = ("shapefiles", "natural_earth")
 def main(target_dir, features, dry_run):
     target_dir = pathlib.Path(target_dir).expanduser().resolve()
     target_dir.mkdir(parents=True, exist_ok=True)
+    cwd = pathlib.Path.cwd()
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        cwd = pathlib.Path.cwd()
         os.chdir(tmpdir)
 
         # Download cartopy feature_download tool, which is not bundled
@@ -48,10 +49,12 @@ def main(target_dir, features, dry_run):
         config["pre_existing_data_dir"] = str(target_dir)
         config["data_dir"] = str(target_dir)
         config["repo_data_dir"] = str(target_dir)
+        # Force use of stable endpoint for pre-v0.20 cartopy.
         config["downloaders"][SHP_NE_SPEC].url_template = URL_TEMPLATE
 
         # Perform download, or dry-run.
         download_features(features, dry_run=dry_run)
+
         os.chdir(cwd)
 
 
