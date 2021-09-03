@@ -21,7 +21,7 @@ import urllib.request
 import cartopy
 from cartopy import config
 
-FEATURE_DOWNLOAD_URL = f"https://raw.githubusercontent.com/SciTools/cartopy/v{cartopy.__version__}/tools/feature_download.py"
+FEATURE_DOWNLOAD_URL = f"https://raw.githubusercontent.com/SciTools/cartopy/v{cartopy.__version__}/tools/{{name}}.py"
 # This will be the (more stable) cartopy resource endpoint from v0.19.0.post1+
 # See https://github.com/SciTools/cartopy/pull/1833
 URL_TEMPLATE = "https://naturalearth.s3.amazonaws.com/{resolution}_{category}/ne_{resolution}_{name}.zip"
@@ -38,10 +38,21 @@ def main(target_dir, features, dry_run):
 
         # Download cartopy feature_download tool, which is not bundled
         # within a cartopy package, and make it importable.
-        urllib.request.urlretrieve(FEATURE_DOWNLOAD_URL, "feature_download.py")
-        sys.path.append(tmpdir)
+        script = "download.py"
+        try:
+            urllib.request.urlretrieve(
+                FEATURE_DOWNLOAD_URL.format(name="feature_download"), script
+            )
+        except urllib.error.HTTPError:
+            # See https://github.com/SciTools/cartopy/pull/1602
+            urllib.request.urlretrieve(
+                FEATURE_DOWNLOAD_URL.format(name="cartopy_feature_download"),
+                script,
+            )
 
-        from feature_download import download_features
+        # Add the script to the path to make it importable.
+        sys.path.append(tmpdir)
+        from download import download_features
 
         # Configure the cartopy resource cache.
         config["pre_existing_data_dir"] = str(target_dir)
