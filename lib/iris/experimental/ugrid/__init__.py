@@ -51,6 +51,7 @@ __all__ = [
     "load_mesh",
     "load_meshes",
     "Mesh",
+    "mesh_from_coords",
     "Mesh1DConnectivities",
     "Mesh1DCoords",
     "Mesh1DNames",
@@ -2744,6 +2745,117 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     @property
     def face_node(self):
         return self._members["face_node_connectivity"]
+
+
+def mesh_from_coords(coord_1, coord_2):
+    """
+    Construct a :class:`Mesh` by derivation from two :class:`~iris.coords.Coord`\\ s.
+
+    The :attr:`~Mesh.topology_dimension`, :class:`~iris.coords.Coord`
+    membership and :class:`Connectivity` membership are all determined based on
+    the shape of ``coord_1``'s :attr:`~iris.coords.Coord.bounds`:
+
+    * ``None`` or ``(n, <2)``:
+        Not supported
+
+    * ``(n, 2)``:
+        :attr:`~Mesh.topology_dimension` = ``1``.
+        :attr:`~Mesh.node_coords` and :attr:`~Mesh.edge_node_connectivity`
+        constructed from the :attr:`~iris.coords.Coord.bounds` of ``coord_1``
+        and ``coord_2``. :attr:`~Mesh.edge_coords` constructed from the
+        :attr:`~iris.coords.Coord.points` of ``coord_1`` and ``coord_2``.
+
+    * ``(n, >=3)``:
+        :attr:`~Mesh.topology_dimension` = ``2``.
+        :attr:`~Mesh.node_coords` and :attr:`~Mesh.face_node_connectivity`
+        constructed from the :attr:`~iris.coords.Coord.bounds` of ``coord_1``
+        and ``coord_2``. :attr:`~Mesh.face_coords` constructed from the
+        :attr:`~iris.coords.Coord.points` of ``coord_1`` and ``coord_2``.
+
+    Kwargs:
+
+    * coord_1 (:class:`~iris.coords.Coord`):
+        The coordinate corresponding to the :class:`Mesh`'s first axis.
+
+    * coord_2 (:class:`~iris.coords.Coord`):
+        The coordinate corresponding to the  :class:`Mesh`'s second axis. Must
+        be orthogonal to ``coord_1``. :attr:`~iris.coords.Coord.points` and
+        :attr:`~iris.coords.Coord.bounds` must have same shapes as those of
+        ``coord_1``.
+
+    Returns:
+        :class:`Mesh`
+
+    .. note::
+        Any resulting duplicate nodes are not currently removed, due to the
+        computational intensity.
+
+    .. testsetup::
+
+        from iris import load_cube
+        from iris.experimental.ugrid import (
+            PARSE_UGRID_ON_LOAD,
+            MeshCoord,
+            mesh_from_coords,
+        )
+
+        # TODO: Replace with a file in iris-sample-data, as soon as we can
+        #  generate something adequately small and representative.
+        from iris.tests import get_data_path
+        file_path = get_data_path(
+            [
+                "NetCDF",
+                "unstructured_grid",
+                "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
+            ]
+        )
+        with PARSE_UGRID_ON_LOAD.context():
+            cube_w_mesh = load_cube(file_path, "conv_rain")
+
+    For example::
+
+        # Reconstruct a cube-with-mesh after subsetting it.
+
+        >>> print(cube_w_mesh.mesh.name())
+        Topology data of 2D unstructured mesh
+        >>> mesh_coord_names = [
+        ...     coord.name()
+        ...     for coord in cube_w_mesh.coords()
+        ...     if isinstance(coord, MeshCoord)
+        ... ]
+        >>> print(f"MeshCoords: {mesh_coord_names}")
+        MeshCoords: ['latitude', 'longitude']
+
+        # Subsetting converts MeshCoords to AuxCoords.
+        >>> slices = [slice(None)] * cube_w_mesh.ndim
+        >>> slices[cube_w_mesh.mesh_dim()] = slice(-1)
+        >>> cube_sub = cube_w_mesh[tuple(slices)]
+        >>> print(cube_sub.mesh)
+        None
+        >>> orig_mesh_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
+        >>> for coord in orig_mesh_coords:
+        ...     print(f"{coord.name()}: {type(coord).__name__}")
+        latitude: AuxCoord
+        longitude: AuxCoord
+
+        >>> new_mesh = mesh_from_coords(orig_mesh_coords[0], orig_mesh_coords[1])
+        >>> new_mesh_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
+
+        # Replace the AuxCoords with MeshCoords.
+        >>> for ix in range(2):
+        ...     cube_sub.remove(orig_mesh_coords[ix])
+        ...     cube_sub.add_coord(new_mesh_coords[ix], cube_w_mesh.mesh_dim())
+
+        >>> print(cube_sub.mesh.name())
+        Topology data of 2D unstructured mesh
+        >>> for coord_name in mesh_coord_names:
+        ...     coord = cube_sub.coord(coord_name)
+        ...     print(f"{coord_name}: {type(coord).__name__}")
+        latitude: MeshCoord
+        longitude: MeshCoord
+
+    """
+    pass
 
 
 class MeshCoord(AuxCoord):
