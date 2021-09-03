@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 
 from pathlib import Path
 import shutil
+from subprocess import check_output
 import tempfile
 
 import numpy as np
@@ -153,7 +154,70 @@ def make_cube(mesh=_DEFAULT_MESH, location="face", **kwargs):
     return cube
 
 
-from subprocess import check_output
+def scan_dataset(filepath):
+    """
+    Snapshot a dataset (the key metadata).
+
+    Returns:
+        a tuple (dimsdict, varsdict)
+        * dimsdict (dict):
+            A mapping of dimension-name: length.
+        * varsdict (dict):
+            A map of each variable's properties, {var_name: propsdict}
+            Each propsdict is {attribute-name: value} over the var's ncattrs().
+            Each propsdict ALSO contains a ['_dims'] entry listing the
+                variable's dims.
+
+    """
+    import netCDF4 as nc
+
+    ds = nc.Dataset(filepath)
+    # dims dict is {name: len}
+    dimsdict = {name: dim.size for name, dim in ds.dimensions.items()}
+    # vars dict is {name: {attr:val}}
+    varsdict = {}
+    for name, var in ds.variables.items():
+        varsdict[name] = {prop: getattr(var, prop) for prop in var.ncattrs()}
+        varsdict[name]["_dims"] = list(var.dimensions)
+    ds.close()
+    return dimsdict, varsdict
+
+
+def vars_w_props(varsdict, **kwargs):
+    """
+    Subset a vars dict, {name:props}, for those where given attributes=values.
+    Except '<key>="*"' means the '<key>' attribute must only exist.
+
+    """
+
+    def check_attrs_match(attrs):
+        result = True
+        for key, val in kwargs.items():
+            result = key in attrs
+            if result and val != "*":
+                # val='*'' for a simple existence check
+                # Otherwise actual value must also match
+                result = attrs[key] == val
+            if not result:
+                break
+        return result
+
+    varsdict = {
+        name: attrs
+        for name, attrs in varsdict.items()
+        if check_attrs_match(attrs)
+    }
+    return varsdict
+
+
+def vars_w_dims(varsdict, dim_names):
+    """Subset a vars dict elect, selecting only those with all the given dimensions."""
+    varsdict = {
+        name: propsdict
+        for name, propsdict in varsdict.items()
+        if all(dim in propsdict["_dims"] for dim in dim_names)
+    }
+    return varsdict
 
 
 class TestSaveUgrid__cube(tests.IrisTest):
@@ -171,11 +235,34 @@ class TestSaveUgrid__cube(tests.IrisTest):
         text = check_output(f"ncdump -h {self.tempfile_path}", shell=True)
         text = text.decode()
         print(text)
+        return scan_dataset(self.tempfile_path)
 
     def test_minimal_mesh_cdl(self):
         data = make_cube(mesh=_MINIMAL_MESH, location="edge")
-        self.check_save(data)
-        # self.assertCDL(self.tempfile_path)
+        dims, vars = self.check_save(data)
+
+        # There should be 1 mesh var.
+        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
+        self.assertEqual(1, len(mesh_vars))
+        (mesh_name,) = mesh_vars.keys()
+
+        # There should be 1 mesh-linked (data)var
+        data_vars = vars_w_props(vars, mesh="*")
+        self.assertEqual(1, len(data_vars))
+
+        # The mesh var should link to the mesh, at 'edges'
+        self.assertEqual(["unknown"], list(data_vars.keys()))
+        (a_props,) = data_vars.values()
+        self.assertEqual(mesh_name, a_props["mesh"])
+        self.assertEqual("edge", a_props["location"])
+
+        # get name of first edge coord
+        edge_coord = vars[mesh_name]["edge_coordinates"].split(" ")[0]
+        # get edge dim = first dim of edge coord
+        (edge_dim,) = vars[edge_coord]["_dims"]
+
+        # The dims of the datavar should == [edges]
+        self.assertEqual([edge_dim], a_props["_dims"])
 
     def test_basic_mesh_cdl(self):
         data = make_cube(mesh=_DEFAULT_MESH)
@@ -185,21 +272,54 @@ class TestSaveUgrid__cube(tests.IrisTest):
     def test_multi_cubes_common_mesh(self):
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b")
-        self.check_save([cube1, cube2])
+        dims, vars = self.check_save([cube1, cube2])
+        # there is only 1 mesh in the file
+        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
+        self.assertEqual(len(mesh_vars), 1)
+        (mesh_name,) = mesh_vars.keys()
+        # both the main variables reference the same mesh, and 'face' location
+        v_a, v_b = vars["a"], vars["b"]
+        self.assertEqual(mesh_name, v_a["mesh"])
+        self.assertEqual("face", v_a["location"])
+        self.assertEqual(mesh_name, v_b["mesh"])
+        self.assertEqual("face", v_b["location"])
         # self.assertCDL(self.tempfile_path)
 
-    def test_multi_cubes_identical_mesh(self):
+    def test_multi_cubes_identical_meshes(self):
         mesh1 = make_mesh()
         mesh2 = make_mesh()
         cube1 = make_cube(var_name="a", mesh=mesh1)
         cube2 = make_cube(var_name="b", mesh=mesh2)
-        self.check_save([cube1, cube2])
+        cube1 = make_cube(var_name="a")
+        cube2 = make_cube(var_name="b")
+        dims, vars = self.check_save([cube1, cube2])
+        # there are 2 meshes in the file
+        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
+        self.assertEqual(len(mesh_vars), 2)
+        # there are two (data)variables with a 'mesh' property
+        mesh_datavars = vars_w_props(vars, mesh="*")
+        self.assertEqual(2, len(mesh_datavars))
+        self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
+        # the main variables reference the same mesh, and 'face' location
+        v_a, v_b = vars["a"], vars["b"]
+        mesh_a, mesh_b = v_a["mesh"], v_b["mesh"]
+        self.assertNotEqual(mesh_a, mesh_b)
+        self.assertEqual(sorted([mesh_a, mesh_b]), sorted(mesh_vars.keys()))
         # self.assertCDL(self.tempfile_path)
 
     def test_multi_cubes_different_mesh(self):
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b", mesh=make_mesh(n_faces=4))
         self.check_save([cube1, cube2])
+        dims, vars = self.check_save([cube1, cube2])
+        # there are 2 meshes in the file
+        mesh_vars = vars_w_props(vars, cf_role="mesh_topology")
+        self.assertEqual(len(mesh_vars), 2)
+        # there are two (data)variables with a 'mesh' property
+        mesh_datavars = vars_w_props(vars, mesh="*")
+        self.assertEqual(2, len(mesh_datavars))
+        self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
+        # the main variables reference the same mesh, and 'face' location
         # self.assertCDL(self.tempfile_path)
 
     def test_multi_cubes_different_locations(self):
