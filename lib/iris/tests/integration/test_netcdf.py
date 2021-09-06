@@ -35,6 +35,41 @@ import iris.tests.stock as stock
 
 
 @tests.skip_data
+class TestAtmosphereSigma(tests.IrisTest):
+    def setUp(self):
+        # Modify stock cube so it is suitable to have a atmosphere sigma
+        # factory added to it.
+        cube = stock.realistic_4d_no_derived()
+        cube.coord("surface_altitude").rename("surface_air_pressure")
+        cube.coord("surface_air_pressure").units = "Pa"
+        cube.coord("sigma").units = "1"
+        ptop_coord = iris.coords.AuxCoord(1000.0, var_name="ptop", units="Pa")
+        cube.add_aux_coord(ptop_coord, ())
+        cube.remove_coord("level_height")
+        # Construct and add atmosphere sigma factory.
+        factory = iris.aux_factory.AtmosphereSigmaFactory(
+            cube.coord("ptop"),
+            cube.coord("sigma"),
+            cube.coord("surface_air_pressure"),
+        )
+        cube.add_aux_factory(factory)
+        self.cube = cube
+
+    def test_save(self):
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            self.assertCDL(filename)
+
+    def test_save_load_loop(self):
+        # Ensure that the AtmosphereSigmaFactory is automatically loaded
+        # when loading the file.
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            cube = iris.load_cube(filename, "air_potential_temperature")
+            assert cube.coords("air_pressure")
+
+
+@tests.skip_data
 class TestHybridPressure(tests.IrisTest):
     def setUp(self):
         # Modify stock cube so it is suitable to have a

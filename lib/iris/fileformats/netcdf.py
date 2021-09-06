@@ -6,7 +6,7 @@
 """
 Module to support the loading of a NetCDF file into an Iris cube.
 
-See also: `netCDF4 python <http://code.google.com/p/netcdf4-python/>`_.
+See also: `netCDF4 python <https://github.com/Unidata/netcdf4-python>`_
 
 Also refer to document 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
@@ -28,6 +28,7 @@ import numpy.ma as ma
 
 from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
+    AtmosphereSigmaFactory,
     HybridHeightFactory,
     HybridPressureFactory,
     OceanSFactory,
@@ -111,6 +112,12 @@ _FactoryDefn = collections.namedtuple(
     "_FactoryDefn", ("primary", "std_name", "formula_terms_format")
 )
 _FACTORY_DEFNS = {
+    AtmosphereSigmaFactory: _FactoryDefn(
+        primary="sigma",
+        std_name="atmosphere_sigma_coordinate",
+        formula_terms_format="ptop: {pressure_at_top} sigma: {sigma} "
+        "ps: {surface_air_pressure}",
+    ),
     HybridHeightFactory: _FactoryDefn(
         primary="delta",
         std_name="atmosphere_hybrid_height_coordinate",
@@ -652,6 +659,7 @@ def _load_aux_factory(engine, cube):
     """
     formula_type = engine.requires.get("formula_type")
     if formula_type in [
+        "atmosphere_sigma_coordinate",
         "atmosphere_hybrid_height_coordinate",
         "atmosphere_hybrid_sigma_pressure_coordinate",
         "ocean_sigma_z_coordinate",
@@ -673,7 +681,14 @@ def _load_aux_factory(engine, cube):
                     "{!r}".format(name)
                 )
 
-        if formula_type == "atmosphere_hybrid_height_coordinate":
+        if formula_type == "atmosphere_sigma_coordinate":
+            pressure_at_top = coord_from_term("ptop")
+            sigma = coord_from_term("sigma")
+            surface_air_pressure = coord_from_term("ps")
+            factory = AtmosphereSigmaFactory(
+                pressure_at_top, sigma, surface_air_pressure
+            )
+        elif formula_type == "atmosphere_hybrid_height_coordinate":
             delta = coord_from_term("a")
             sigma = coord_from_term("b")
             orography = coord_from_term("orog")
