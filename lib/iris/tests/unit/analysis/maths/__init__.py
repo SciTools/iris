@@ -12,9 +12,9 @@ import iris.tests as tests  # isort:skip
 from abc import ABCMeta, abstractmethod
 import operator
 
+import dask.array as da
 import numpy as np
 from numpy import ma
-import dask.array as da
 
 from iris.analysis import MEAN
 from iris.analysis.maths import add
