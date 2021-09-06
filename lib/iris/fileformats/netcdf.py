@@ -1683,8 +1683,8 @@ class Saver:
         dimension_names.clear()
         mesh = cube.mesh
         if mesh is None:
-            mesh_location_dimnames = {}
             cube_mesh_dim = None
+            cube_mesh_dim_name = ""
         else:
             # Create all the mesh dimensions.
             # NOTE: one of these will be a cube dimension, but that is not
@@ -1692,23 +1692,49 @@ class Saver:
             # (face,edge,node), and before non-mesh dimensions.
             mesh_location_dimnames = {}
             for location in MESH_LOCATIONS:
-                location_select_key = f"include_{location}s"
-                mesh_coords = mesh.coords(**{location_select_key: True})
-                if len(mesh_coords) > 0:
-                    (dim_length,) = mesh_coords[0].shape  # Must be 1-d
-                    location_dim_attr = f"{location}_dimension"
-                    dim_name = getattr(mesh, location_dim_attr)
-                    if dim_name is None:
-                        dim_name = f"{mesh.name()}_{location}"
-                        while dim_name in self._existing_dim:
-                            self._increment_name(dim_name)
+                # Find if this location exists in the mesh, and a characteristic
+                # coordinate to identify it with.
+                # To use only _required_ UGRID components, we use a location
+                # coord for nodes, but a connectivity for faces/edges
+                if location == 'node':
+                    # For definiteness, use the 'X' axis one.
+                    dim_coords = mesh.coords(include_nodes=True,
+                                             axis='x')
+                else:
+                    cf_role = f"{location}_node_connectivity"
+                    dim_coords = mesh.connectivities(cf_role=cf_role)
+                if len(dim_coords) > 0:
+                    # There should only be 1 connectivity of a given type
+                    assert len(dim_coords) == 1
+                    # As the mesh contains this location, we want to include this
+                    # dim in our returned mesh dims.
+                    # N.B. the connectivity is used as the identifying 'dim_coord'
+                    mesh_coord = dim_coords[0]
+                    if mesh_coord in self._dim_coords:
+                        # Use the name already recorded for this dim of this mesh
+                        dim_name = self._name_coord_map.name(mesh_coord)
+                    else:
+                        if location == 'node':
+                            # always 1-d
+                            (dim_length,) = mesh_coord.shape
+                        else:
+                            # extract source dim, respecting dim-ordering
+                            dim_length = mesh_coord.shape[mesh_coord.src_dim]
+                        location_dim_attr = f"{location}_dimension"
+                        dim_name = getattr(mesh, location_dim_attr)
+                        if dim_name is None:
+                            dim_name = f"{mesh.name()}_{location}"
+                            while dim_name in self._existing_dim:
+                                self._increment_name(dim_name)
 
                     record_dimension(dim_name, dim_length)
+                    # Store the mesh dims indexed by location
                     mesh_location_dimnames[location] = dim_name
 
             # Identify the cube dimension which maps to the mesh.
             # NB always at least one mesh-coord: it has exactly one cube-dim
             (cube_mesh_dim,) = cube.coords(mesh_coords=True)[0].cube_dims(cube)
+            cube_mesh_dim_name = mesh_location_dimnames[cube.location]
 
         mesh_dimensions = dimension_names.copy()
 
@@ -1718,7 +1744,7 @@ class Saver:
             if dim == cube_mesh_dim:
                 # Handle a mesh dimension: we already named this.
                 dim_coords = []
-                dim_name = mesh_location_dimnames[cube.location]
+                dim_name = cube_mesh_dim_name
             else:
                 # Get a name from the dim-coord (if any).
                 dim_coords = cube.coords(dimensions=dim, dim_coords=True)

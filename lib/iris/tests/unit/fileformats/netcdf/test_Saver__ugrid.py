@@ -270,7 +270,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         print(text)
         return scan_dataset(self.tempfile_path)
 
-    def test_basic_mesh_cdl(self):
+    def test_basic_mesh(self):
         data = make_cube(mesh=_DEFAULT_MESH)
         dims, vars = self.check_save(data)
 
