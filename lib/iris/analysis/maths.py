@@ -967,7 +967,7 @@ def _math_op_common(
         if skeleton_cube:
             # Simply wrap the resultant data in a cube, as no
             # cube metadata is required by the caller.
-            new_cube = iris.cube.Cube(data)
+            new_cube = Cube(data)
         else:
             new_cube = cube.copy(data)
 
