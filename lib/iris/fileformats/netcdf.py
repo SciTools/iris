@@ -1686,10 +1686,10 @@ class Saver:
             cube_mesh_dim = None
             cube_mesh_dim_name = ""
         else:
-            # Create all the mesh dimensions.
-            # NOTE: one of these will be a cube dimension, but that is not
-            # special.  We *do* want to list these in a priority order
-            # (face,edge,node), and before non-mesh dimensions.
+            # Identify all the mesh dimensions.
+            # NOTE: one of these will be a cube dimension, but that one does not
+            # get any special handling.  We *do* want to list/create them in a
+            # definite order (face,edge,node), and before non-mesh dimensions.
             mesh_location_dimnames = {}
             for location in MESH_LOCATIONS:
                 # Find if this location exists in the mesh, and a characteristic
@@ -1697,21 +1697,23 @@ class Saver:
                 # To use only _required_ UGRID components, we use a location
                 # coord for nodes, but a connectivity for faces/edges
                 if location == 'node':
-                    # For definiteness, use the 'X' axis one.
+                    # For nodes, identify the dim with a coordinate variable.
+                    # Selecting the X-axis one for definiteness.
                     dim_coords = mesh.coords(include_nodes=True,
                                              axis='x')
                 else:
+                    # For face/edge, use the non-optional connectivity variable.
                     cf_role = f"{location}_node_connectivity"
                     dim_coords = mesh.connectivities(cf_role=cf_role)
                 if len(dim_coords) > 0:
-                    # There should only be 1 connectivity of a given type
-                    assert len(dim_coords) == 1
                     # As the mesh contains this location, we want to include this
                     # dim in our returned mesh dims.
-                    # N.B. the connectivity is used as the identifying 'dim_coord'
+                    # We should have 1 identifying variable (of either type).
+                    assert len(dim_coords) == 1
                     mesh_coord = dim_coords[0]
                     if mesh_coord in self._dim_coords:
-                        # Use the name already recorded for this dim of this mesh
+                        # Use the previous name for this dim of this mesh, from
+                        # a previously saved cube with the same mesh.
                         dim_name = self._name_coord_map.name(mesh_coord)
                     else:
                         if location == 'node':
@@ -1756,6 +1758,9 @@ class Saver:
                     if coord in self._dim_coords:
                         # Return the dim_name associated with the existing
                         # coordinate.
+                        # NOTE: as _name_coord_map tracks actual file variables,
+                        # which are not created till later, this must be from
+                        # a _previously_ saved cube.
                         dim_name = self._name_coord_map.name(coord)
                     else:
                         # Determine a unique dimension name from the coord
