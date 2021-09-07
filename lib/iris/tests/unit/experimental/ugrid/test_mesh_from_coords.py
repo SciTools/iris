@@ -89,6 +89,7 @@ class Test1Dim(tests.IrisTest):
             _ = self.create()
 
     def test_coord_invalid_axis(self):
+        # TODO: augment guess_axis to accept "X" or "Y".
         # Identical to original lon, but with a non-axis name.
         self.lon = self.lon.__class__(
             points=self.lon.points,
@@ -99,12 +100,22 @@ class Test1Dim(tests.IrisTest):
             units=self.lon.units,
             attributes=self.lon.attributes
         )
-        with self.assertRaisesRegex(ValueError, ""):
+        with self.assertRaisesRegex(ValueError, "Unable to guess coord axis.*"):
             _ = self.create()
 
     def test_coord_axis_mismatch(self):
-        # coord_2 not orthogonal
-        pass
+        # Identical to original lat, but with the same names as lon.
+        self.lat = self.lat.__class__(
+            points=self.lat.points,
+            bounds=self.lat.bounds,
+            standard_name=self.lon.standard_name,
+            long_name=self.lon.long_name,
+            var_name=self.lon.var_name,
+            units=self.lat.units,
+            attributes=self.lat.units
+        )
+        with self.assertRaisesRegex(ValueError, ""):
+            _ = self.create()
 
 
 class Test2Dim(Test1Dim):
