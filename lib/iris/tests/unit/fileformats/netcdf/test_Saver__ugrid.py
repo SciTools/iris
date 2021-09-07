@@ -353,8 +353,6 @@ class TestSaveUgrid__cube(tests.IrisTest):
         mesh2 = make_mesh()
         cube1 = make_cube(var_name="a", mesh=mesh1)
         cube2 = make_cube(var_name="b", mesh=mesh2)
-        cube1 = make_cube(var_name="a")
-        cube2 = make_cube(var_name="b")
         dims, vars = self.check_save([cube1, cube2])
 
         # there are 2 meshes in the file
