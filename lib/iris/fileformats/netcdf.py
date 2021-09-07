@@ -1022,12 +1022,15 @@ class Saver:
         # All persistent variables
         #: CF name mapping with iris coordinates
         self._name_coord_map = CFNameCoordMap()
-        #: List of dimension coordinates added to the file
-        self._dim_coords = []
+        #: Map of dimensions to characteristic coordinates with which they are identified
+        self._dim_names_and_coords = CFNameCoordMap()
         #: List of grid mappings added to the file
         self._coord_systems = []
         #: A dictionary, listing dimension names and corresponding length
         self._existing_dim = {}
+        #: A map from meshes to their actual file dimensions (names).
+        # NB: might not match those of the mesh, if they were 'incremented'.
+        self._mesh_dims = {}
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
@@ -1656,9 +1659,9 @@ class Saver:
         """
         dimension_names = []
 
-        def record_dimension(dim_name, length, dim_coords=[]):
+        def record_dimension(dim_name, length, matching_coords=[]):
             """
-            Record a file dimension and its length.
+            Record a file dimension, its length and associated coordinates.
 
             If the dimension has been seen already, check that it's length
             matches the earlier finding.
@@ -1672,9 +1675,9 @@ class Saver:
                 assert self._existing_dim[dim_name] == length
 
             # Add new coords (mesh or dim) to the already-seen list.
-            for coord in dim_coords:
-                if coord not in self._dim_coords:
-                    self._dim_coords.append(coord)
+            for coord in matching_coords:
+                if coord not in self._dim_names_and_coords.coords:
+                    self._dim_names_and_coords.append(dim_name, coord)
 
             # Add the latest name to the returned list
             dimension_names.append(dim_name)
@@ -1684,7 +1687,6 @@ class Saver:
         mesh = cube.mesh
         if mesh is None:
             cube_mesh_dim = None
-            cube_mesh_dim_name = ""
         else:
             # Identify all the mesh dimensions.
             # NOTE: one of these will be a cube dimension, but that one does not
@@ -1696,11 +1698,10 @@ class Saver:
                 # coordinate to identify it with.
                 # To use only _required_ UGRID components, we use a location
                 # coord for nodes, but a connectivity for faces/edges
-                if location == 'node':
+                if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
                     # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(include_nodes=True,
-                                             axis='x')
+                    dim_coords = mesh.coords(include_nodes=True, axis="x")
                 else:
                     # For face/edge, use the non-optional connectivity variable.
                     cf_role = f"{location}_node_connectivity"
@@ -1711,12 +1712,19 @@ class Saver:
                     # We should have 1 identifying variable (of either type).
                     assert len(dim_coords) == 1
                     mesh_coord = dim_coords[0]
-                    if mesh_coord in self._dim_coords:
+                    match = mesh_coord in self._dim_names_and_coords.coords
+                    if match:
+                        # For mesh-identifying coords, we require the *same*
+                        # coord, not an identical one (i.e. "is" not "==")
+                        name = self._dim_names_and_coords.name(mesh_coord)
+                        stored_coord = self._dim_names_and_coords.coord(name)
+                        match = mesh_coord is stored_coord
+                    if match:
                         # Use the previous name for this dim of this mesh, from
                         # a previously saved cube with the same mesh.
-                        dim_name = self._name_coord_map.name(mesh_coord)
+                        dim_name = self._dim_names_and_coords.name(mesh_coord)
                     else:
-                        if location == 'node':
+                        if location == "node":
                             # always 1-d
                             (dim_length,) = mesh_coord.shape
                         else:
@@ -1726,17 +1734,18 @@ class Saver:
                         dim_name = getattr(mesh, location_dim_attr)
                         if dim_name is None:
                             dim_name = f"{mesh.name()}_{location}"
-                            while dim_name in self._existing_dim:
-                                self._increment_name(dim_name)
+                        while dim_name in self._existing_dim:
+                            dim_name = self._increment_name(dim_name)
 
-                    record_dimension(dim_name, dim_length)
+                        record_dimension(dim_name, dim_length, dim_coords)
+
                     # Store the mesh dims indexed by location
                     mesh_location_dimnames[location] = dim_name
 
             # Identify the cube dimension which maps to the mesh.
-            # NB always at least one mesh-coord: it has exactly one cube-dim
             (cube_mesh_dim,) = cube.coords(mesh_coords=True)[0].cube_dims(cube)
-            cube_mesh_dim_name = mesh_location_dimnames[cube.location]
+            # Record the actual file dimension names for each mesh.
+            self._mesh_dims[mesh] = mesh_location_dimnames.copy()
 
         mesh_dimensions = dimension_names.copy()
 
@@ -1746,7 +1755,7 @@ class Saver:
             if dim == cube_mesh_dim:
                 # Handle a mesh dimension: we already named this.
                 dim_coords = []
-                dim_name = cube_mesh_dim_name
+                dim_name = self._mesh_dims[mesh][cube.location]
             else:
                 # Get a name from the dim-coord (if any).
                 dim_coords = cube.coords(dimensions=dim, dim_coords=True)
@@ -1755,13 +1764,10 @@ class Saver:
                     coord = dim_coords[0]  # always have at least one
 
                     # Add only dimensions that have not already been added.
-                    if coord in self._dim_coords:
+                    if coord in self._dim_names_and_coords.coords:
                         # Return the dim_name associated with the existing
                         # coordinate.
-                        # NOTE: as _name_coord_map tracks actual file variables,
-                        # which are not created till later, this must be from
-                        # a _previously_ saved cube.
-                        dim_name = self._name_coord_map.name(coord)
+                        dim_name = self._dim_names_and_coords.name(coord)
                     else:
                         # Determine a unique dimension name from the coord
                         dim_name = self._get_coord_variable_name(cube, coord)
@@ -2067,10 +2073,7 @@ class Saver:
         self._set_cf_var_attributes(cf_mesh_var, mesh)
 
         # Get the mesh-element dim names.
-        mesh_dims = {
-            location: getattr(mesh, f"{location}_dimension")
-            for location in MESH_LOCATIONS
-        }
+        mesh_dims = self._mesh_dims[mesh]
         # Add the element coordinate variables.
         for location in MESH_LOCATIONS:
             coords_meshobj_attr = f"{location}_coords"
