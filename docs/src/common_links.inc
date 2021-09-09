@@ -10,6 +10,7 @@
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
+.. _discussions: https://github.com/SciTools/iris/discussions
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _Iris GitHub Discussions: https://github.com/SciTools/iris/discussions
