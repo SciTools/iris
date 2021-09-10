@@ -67,13 +67,16 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ included `Iris GitHub Discussions`_ in
+   :ref:`get involved <development_where_to_start>`. (:pull:`4307`)
 
 
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ set the linkcheck to ignore
+   http://www.nationalarchives.gov.uk/doc/open-government-licence since this
+   always works locally, but never within CI. (:pull:`4307`)
 
 
 .. comment
