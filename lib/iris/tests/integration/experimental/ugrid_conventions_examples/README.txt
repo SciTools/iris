@@ -2,45 +2,15 @@ Examples generated from CDL example sections in UGRID conventions v1.0
   ( see webpage: https://ugrid-conventions.github.io/ugrid-conventions/ )
 
 CHANGES:
-    * all files had a data-var added, for ease of iris-roundtripping
+    * added a data-var to all examples, for ease of iris-roundtripping
     * EX4 :
         - had a couple of missing ";"s at lineends
-        - existing var "Mesh2_surface" is tied to the node dimension but has ':location = "face"'
-        - actually, ALL the formula terms should map to 'face', not nodes.
-        - created data-var maps (layers, faces), as reqd
-
-/home/h05/itpp/git/iris/iris_main/lib/iris/tests/results/ugrid_ref
-    $ for f in $(ls *.cdl); do n=$(echo $f | grep -o "[^.]*" | grep "ugrid"); echo $n; ncgen $n.cdl -4 -o $n.nc; done
-    ugrid_ex1_1d_mesh
-    ugrid_ex2_2d_triangular
-    ugrid_ex3_2d_flexible
-    ugrid_ex4_3d_layered
-
-    (ncdump -h $n.nc >$n.ncdump.txt)
-    $ for f in $(ls *.cdl); do n=$(echo $f | grep -o "[^.]*" | grep "ugrid"); echo $n; ncdump -h $n.nc >$n.ncdump.txt; done
-
-    (xxdiff $n.cdl $n.ncdump.txt;)
-    $ for f in $(ls *.cdl); do n=$(echo $f | grep -o "[^.]*" | grep "ugrid"); echo $n; xxdiff $n.cdl $n.ncdump.txt; done
-
-Then for compatibility testing...
-    (python iris_loadsave.py $n.nc)
-    $ for f in $(ls *.cdl); do n=$(echo $f | grep -o "[^.]*" | grep "ugrid"); echo $n; python iris_loadsave.py $n.nc; done
-
-
-
-So each of (4) examples has :
-    <ex>.cdl            : original text from UGRID webpage
-    <ex>.nc             : "ncgen" output  = generated netcdf file
-    <ex>.ncdump.txt     : "ncdump -h" output  = re-generated CDL from nc file
-(from iris_loadsave.py)
-    <ex>_REDUMP_cdl.txt             : same as .ncdump.txt
-    <ex>_RESAVED.nc                 : from loading <ex>.nc + re-saving it
-    <ex>_RESAVED_REDUMP_cdl.txt     : ncdump of _RESAVED.nc
-
-NEWSTYLE CHECKS ?
-<ex>.CDL :
-  ==> ncgen ==> <ex>.nc
-  ==> load ==> ex_iris_data
-  ==> save ==> ex_iris_resaved
-  ==> load ==> ex_iris_saveload :: COMPARE with ex_iris_data
+        - the formula terms (depth+surface) should map to 'Mesh2_layers', and not to the mesh at all.
+            - use Mesh2d_layers dim, and have no 'mesh' or 'location'
+    * "EX4a" -- closer mix of hybrid-vertical and mesh dimensions
+        - *don't* think we can have a hybrid coord ON the mesh dimension
+            - mesh being a vertical location (only) seems to make no sense
+            - .. and implies that the mesh is 1d and ordered, which is not really unstructured at all
+        - *could* have hybrid-height with the _orography_ mapping to the mesh
+            - doesn't match the UGRID examples, but see : iris.tests.unit.fileformats.netcdf.test_Saver__ugrid.TestSaveUgrid__cube.test_nonmesh_hybrid_dim
 
