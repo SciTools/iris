@@ -18,7 +18,7 @@ any WSL_ distributions.
 
 .. note:: Iris is currently supported and tested against |python_support|
           running on Linux.  We do not currently actively test on other
-          platforms such as Windows os macOS.
+          platforms such as Windows or macOS.
 
 .. note:: This documentation was built using Python |python_version|.
 
