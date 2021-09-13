@@ -2106,20 +2106,26 @@ class Saver:
             if last_dim not in self._dataset.dimensions:
                 length = conn.shape[1]
                 self._dataset.createDimension(last_dim, length)
+
             # Create variable.
+            # NOTE: for connectivities *with missing points*, this will use a
+            # fixed standard fill-value of -1, and add a _FillValue property.
             conn_dims = (mesh_dims[loc_from], last_dim)
             cf_conn_name = self._create_generic_cf_array_var(
-                cube, [], conn, element_dims=conn_dims
+                cube, [], conn, element_dims=conn_dims, fill_value=-1
             )
             # Add essential attributes to the Connectivity variable.
             cf_conn_var = self._dataset.variables[cf_conn_name]
             _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
             _setncattr(cf_conn_var, "start_index", conn.start_index)
 
+            # If content was masked, also add a "_FillValue" property.
+            # N.B. for now, we are using -1 as a universal 'safe' value.
+            if np.ma.is_masked(conn.indices):
+                _setncattr(cf_var, "_FillValue", -1)
+
             # Record the connectivity on the parent mesh var.
             _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
-
-        # TODO: possibly we need to handle boundary coords/conns separately
 
         return cf_mesh_name
 
@@ -2162,7 +2168,7 @@ class Saver:
                 _setncattr(cf_var, name, value)
 
     def _create_generic_cf_array_var(
-        self, cube, cube_dim_names, element, element_dims=None
+        self, cube, cube_dim_names, element, element_dims=None, fill_value=None
     ):
         """
         Create the associated CF-netCDF variable in the netCDF dataset for the
@@ -2188,6 +2194,8 @@ class Saver:
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
             *must* be passed in, as "element.cube_dims" does not function.
+        * fill_value (number or None):
+            If set, fill any masked data points with this value.
 
         Returns:
             var_name (string):
@@ -2249,6 +2257,10 @@ class Saver:
             # ensure a valid datatype for the file format.
             element_type = type(element).__name__
             data = self._ensure_valid_dtype(data, element_type, element)
+
+            if fill_value is not None:
+                # Use a specific fill-value in place of the netcdf default.
+                data = np.ma.filled(data, fill_value)
 
             # Check if this is a dim-coord.
             is_dimcoord = element in cube.dim_coords
