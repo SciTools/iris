@@ -73,9 +73,6 @@ class TestBasicSave(IrisTest):
         # for data derived from each UGRID example CDL.
         for ex_name, filepath in self.example_names_paths.items():
             print(f"Roundtrip checking : {ex_name}")
-            if "ex4" in ex_name:
-                # Skip this one now : still causing some problems ...
-                continue
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
             # Create a netcdf file from the test CDL.
             check_call(
@@ -86,11 +83,18 @@ class TestBasicSave(IrisTest):
             # Load the original as Iris data
             with PARSE_UGRID_ON_LOAD.context():
                 orig_cubes = iris.load(target_ncfile_path)
+
+            if "ex4" in ex_name:
+                # Discard the extra formula terms component cubes
+                # Saving these does not do what you expect
+                orig_cubes = orig_cubes.extract('datavar')
+
             # Save-and-load-back to compare the Iris saved result.
             resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
             iris.save(orig_cubes, resave_ncfile_path)
             with PARSE_UGRID_ON_LOAD.context():
                 savedloaded_cubes = iris.load(resave_ncfile_path)
+
             # This should match the original exactly
             # ..EXCEPT for our inability to compare meshes.
             for orig, reloaded in zip(orig_cubes, savedloaded_cubes):
@@ -99,6 +103,7 @@ class TestBasicSave(IrisTest):
                     cube.attributes.pop("Conventions", None)
                     # Remove var-names, which may differ.
                     cube.var_name = None
+
                 # Compare the mesh contents (as we can't compare actual meshes)
                 self.assertEqual(orig.location, reloaded.location)
                 orig_mesh = orig.mesh

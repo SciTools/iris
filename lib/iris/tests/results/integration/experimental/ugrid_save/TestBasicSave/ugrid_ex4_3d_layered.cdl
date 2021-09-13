@@ -78,28 +78,22 @@ variables:
 		Mesh2_layers:long_name = "sigma at layer midpoints" ;
 		Mesh2_layers:positive = "up" ;
 		Mesh2_layers:formula_terms = "sigma: Mesh2_layers eta: Mesh2_surface depth: Mesh2_depth" ;
-	double Mesh2_depth(nMesh2_face) ;
+	double Mesh2_depth(Mesh2_layers) ;
 		Mesh2_depth:units = "m" ;
 		Mesh2_depth:standard_name = "sea_floor_depth_below_geoid" ;
-		Mesh2_depth:location = "face" ;
-		Mesh2_depth:mesh = "Mesh2" ;
 		Mesh2_depth:positive = "down" ;
-	double Mesh2_surface(nMesh2_face) ;
+	double Mesh2_surface(Mesh2_layers) ;
 		Mesh2_surface:units = "m" ;
 		Mesh2_surface:standard_name = "sea_surface_height_above_geoid" ;
-		Mesh2_surface:location = "face" ;
-		Mesh2_surface:mesh = "Mesh2" ;
-	double Mesh2_depth_0(nMesh2_face) ;
+	double Mesh2_depth_0(Mesh2_layers) ;
 		Mesh2_depth_0:standard_name = "sea_floor_depth_below_geoid" ;
 		Mesh2_depth_0:units = "m" ;
 		Mesh2_depth_0:positive = "down" ;
-		Mesh2_depth_0:mesh = "Mesh2" ;
-		Mesh2_depth_0:location = "face" ;
-	double Mesh2_surface_0(nMesh2_face) ;
+		Mesh2_depth_0:coordinates = "Mesh2_depth Mesh2_surface" ;
+	double Mesh2_surface_0(Mesh2_layers) ;
 		Mesh2_surface_0:standard_name = "sea_surface_height_above_geoid" ;
 		Mesh2_surface_0:units = "m" ;
-		Mesh2_surface_0:mesh = "Mesh2" ;
-		Mesh2_surface_0:location = "face" ;
+		Mesh2_surface_0:coordinates = "Mesh2_depth Mesh2_surface" ;
 
 // global attributes:
 		:Conventions = "CF-1.7" ;
