@@ -5,6 +5,10 @@
 Continuous Integration (CI) Testing
 ===================================
 
+.. note:: Iris is currently supported and tested against |python_support|
+          running on Linux.  We do not currently actively test on other
+          platforms such as Windows or macOS.
+
 The `Iris`_ GitHub repository is configured to run checks against all its
 branches automatically whenever a pull-request is created, updated or merged.
 The checks performed are:
