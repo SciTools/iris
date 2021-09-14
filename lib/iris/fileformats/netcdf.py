@@ -40,6 +40,7 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
 import iris.io
@@ -1356,40 +1357,50 @@ class Saver:
                 self._dataset.createDimension(dim_name, size)
 
     def _add_inner_related_vars(
-        self,
-        cube,
-        cf_var_cube,
-        dimension_names,
-        coordlike_elements,
-        role_attribute_name,
+        self, cube, cf_var_cube, dimension_names, coordlike_elements
     ):
-        # Common method to create a set of file variables and attach them to
-        # the parent data variable.
-        element_names = []
-        # Add CF-netCDF variables for the associated auxiliary coordinates.
-        for element in sorted(
-            coordlike_elements, key=lambda element: element.name()
-        ):
-            # Create the associated CF-netCDF variable.
-            if element not in self._name_coord_map.coords:
-                cf_name = self._create_generic_cf_array_var(
-                    cube, dimension_names, element
-                )
-                self._name_coord_map.append(cf_name, element)
+        """
+        Create a set of variables for aux-coords, ancillaries or cell-measures,
+        and attach them to the parent data variable.
+
+        """
+        if coordlike_elements:
+            # Choose the approriate parent attribute
+            elem_type = type(coordlike_elements[0])
+            if elem_type in (AuxCoord, DimCoord):
+                role_attribute_name = "coordinates"
+            elif elem_type == AncillaryVariable:
+                role_attribute_name = "ancillary_variables"
             else:
-                cf_name = self._name_coord_map.name(element)
+                # We *only* handle aux-coords, cell-measures and ancillaries
+                assert elem_type == CellMeasure
+                role_attribute_name = "cell_measures"
 
-            if cf_name is not None:
-                if role_attribute_name == "cell_measures":
-                    # In the case of cell-measures, the attribute entries are not just
-                    # a var_name, but each have the form "<measure>: <varname>".
-                    cf_name = "{}: {}".format(element.measure, cf_name)
-                element_names.append(cf_name)
+            # Add CF-netCDF variables for the given cube components.
+            element_names = []
+            for element in sorted(
+                coordlike_elements, key=lambda element: element.name()
+            ):
+                # Create the associated CF-netCDF variable.
+                if element not in self._name_coord_map.coords:
+                    cf_name = self._create_generic_cf_array_var(
+                        cube, dimension_names, element
+                    )
+                    self._name_coord_map.append(cf_name, element)
+                else:
+                    cf_name = self._name_coord_map.name(element)
 
-        # Add CF-netCDF references to the primary data variable.
-        if element_names:
-            variable_names = " ".join(sorted(element_names))
-            _setncattr(cf_var_cube, role_attribute_name, variable_names)
+                if cf_name is not None:
+                    if role_attribute_name == "cell_measures":
+                        # In the case of cell-measures, the attribute entries are not just
+                        # a var_name, but each have the form "<measure>: <varname>".
+                        cf_name = "{}: {}".format(element.measure, cf_name)
+                    element_names.append(cf_name)
+
+            # Add CF-netCDF references to the primary data variable.
+            if element_names:
+                variable_names = " ".join(sorted(element_names))
+                _setncattr(cf_var_cube, role_attribute_name, variable_names)
 
     def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
         """
@@ -1410,7 +1421,6 @@ class Saver:
             cf_var_cube,
             dimension_names,
             cube.aux_coords,
-            "coordinates",
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
@@ -1432,7 +1442,6 @@ class Saver:
             cf_var_cube,
             dimension_names,
             cube.cell_measures(),
-            "cell_measures",
         )
 
     def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names):
@@ -1455,7 +1464,6 @@ class Saver:
             cf_var_cube,
             dimension_names,
             cube.ancillary_variables(),
-            "ancillary_variables",
         )
 
     def _add_dim_coords(self, cube, dimension_names):
@@ -1941,14 +1949,11 @@ class Saver:
                 if axis is not None and axis.lower() in SPATIO_TEMPORAL_AXES:
                     _setncattr(cf_var, "axis", axis.upper())
 
-            # Add the data to the CF-netCDF variable.
-            cf_var[:] = data  # TODO: support dask streaming
-
             # Create the associated CF-netCDF bounds variable, if any.
             self._create_cf_bounds(element, cf_var, cf_name)
 
         # Add the data to the CF-netCDF variable.
-        cf_var[:] = data
+        cf_var[:] = data  # TODO: support dask streaming
 
         # Deal with CF-netCDF units and standard name.
         if isinstance(element, iris.coords.Coord):
