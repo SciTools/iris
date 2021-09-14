@@ -1410,70 +1410,75 @@ class Saver:
                 cf_mesh_name = self._create_mesh(cube, mesh)
                 self._name_coord_map.append(cf_mesh_name, mesh)
 
-        cf_mesh_var = self._dataset.variables[cf_mesh_name]
+            cf_mesh_var = self._dataset.variables[cf_mesh_name]
 
-        # Get the mesh-element dim names.
-        mesh_dims = self._mesh_dims[mesh]
+            # Get the mesh-element dim names.
+            mesh_dims = self._mesh_dims[mesh]
 
-        # Add all the element coordinate variables.
-        for location in MESH_LOCATIONS:
-            coords_meshobj_attr = f"{location}_coords"
-            coords_file_attr = f"{location}_coordinates"
-            mesh_coords = getattr(mesh, coords_meshobj_attr, None)
-            if mesh_coords:
-                coord_names = []
-                for coord in mesh_coords:
-                    if coord is None:
-                        continue  # an awkward thing that mesh.coords does
-                    coord_name = self._create_generic_cf_array_var(
-                        cube, [], coord, element_dims=(mesh_dims[location],)
-                    )
-                    coord_names.append(coord_name)
-                # Record the coordinates (if any) on the mesh variable.
-                if coord_names:
-                    coord_names = " ".join(coord_names)
-                    _setncattr(cf_mesh_var, coords_file_attr, coord_names)
+            # Add all the element coordinate variables.
+            for location in MESH_LOCATIONS:
+                coords_meshobj_attr = f"{location}_coords"
+                coords_file_attr = f"{location}_coordinates"
+                mesh_coords = getattr(mesh, coords_meshobj_attr, None)
+                if mesh_coords:
+                    coord_names = []
+                    for coord in mesh_coords:
+                        if coord is None:
+                            continue  # an awkward thing that mesh.coords does
+                        coord_name = self._create_generic_cf_array_var(
+                            cube,
+                            [],
+                            coord,
+                            element_dims=(mesh_dims[location],),
+                        )
+                        coord_names.append(coord_name)
+                    # Record the coordinates (if any) on the mesh variable.
+                    if coord_names:
+                        coord_names = " ".join(coord_names)
+                        _setncattr(cf_mesh_var, coords_file_attr, coord_names)
 
-        # Add all the connectivity variables.
-        # pre-fetch the set + ignore "None"s -- looks like a bug ?
-        conns = [conn for conn in mesh.all_connectivities if conn is not None]
-        for conn in conns:
-            # Get the connectivity role, = "{loc1}_{loc2}_connectivity".
-            cf_conn_attr_name = conn.cf_role
-            loc_from, loc_to, _ = cf_conn_attr_name.split("_")
-            # Construct a trailing dimension name.
-            last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
-            # Create if it does not already exist.
-            if last_dim not in self._dataset.dimensions:
-                length = conn.shape[1 - conn.src_dim]
-                self._dataset.createDimension(last_dim, length)
+            # Add all the connectivity variables.
+            # pre-fetch the set + ignore "None"s -- looks like a bug ?
+            conns = [
+                conn for conn in mesh.all_connectivities if conn is not None
+            ]
+            for conn in conns:
+                # Get the connectivity role, = "{loc1}_{loc2}_connectivity".
+                cf_conn_attr_name = conn.cf_role
+                loc_from, loc_to, _ = cf_conn_attr_name.split("_")
+                # Construct a trailing dimension name.
+                last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
+                # Create if it does not already exist.
+                if last_dim not in self._dataset.dimensions:
+                    length = conn.shape[1 - conn.src_dim]
+                    self._dataset.createDimension(last_dim, length)
 
-            # Create variable.
-            # NOTE: for connectivities *with missing points*, this will use a
-            # fixed standard fill-value of -1.  In that case, we also add a
-            # mesh property '_FillValue', below.
-            loc_dim_name = mesh_dims[loc_from]
-            conn_dims = (loc_dim_name, last_dim)
-            if conn.src_dim == 1:
-                # Has the 'other' dimension order, =reversed
-                conn_dims = conn_dims[::-1]
-            cf_conn_name = self._create_generic_cf_array_var(
-                cube, [], conn, element_dims=conn_dims, fill_value=-1
-            )
-            # Add essential attributes to the Connectivity variable.
-            cf_conn_var = self._dataset.variables[cf_conn_name]
-            _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
-            _setncattr(cf_conn_var, "start_index", conn.start_index)
+                # Create variable.
+                # NOTE: for connectivities *with missing points*, this will use a
+                # fixed standard fill-value of -1.  In that case, we also add a
+                # mesh property '_FillValue', below.
+                loc_dim_name = mesh_dims[loc_from]
+                conn_dims = (loc_dim_name, last_dim)
+                if conn.src_dim == 1:
+                    # Has the 'other' dimension order, =reversed
+                    conn_dims = conn_dims[::-1]
+                cf_conn_name = self._create_generic_cf_array_var(
+                    cube, [], conn, element_dims=conn_dims, fill_value=-1
+                )
+                # Add essential attributes to the Connectivity variable.
+                cf_conn_var = self._dataset.variables[cf_conn_name]
+                _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
+                _setncattr(cf_conn_var, "start_index", conn.start_index)
 
-            # Record the connectivity on the parent mesh var.
-            _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
-            # If the connectivity had the 'alternate' dimension order, add the
-            # relevant dimension property
-            if conn.src_dim == 1:
-                loc_dim_attr = f"{loc_from}_dimension"
-                # Should only get here once.
-                assert loc_dim_attr not in cf_mesh_var.ncattrs()
-                _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
+                # Record the connectivity on the parent mesh var.
+                _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
+                # If the connectivity had the 'alternate' dimension order, add the
+                # relevant dimension property
+                if conn.src_dim == 1:
+                    loc_dim_attr = f"{loc_from}_dimension"
+                    # Should only get here once.
+                    assert loc_dim_attr not in cf_mesh_var.ncattrs()
+                    _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
 
         return cf_mesh_name
 
