@@ -2220,29 +2220,47 @@ class _Groupby:
             else:
                 new_bounds = []
                 if coord.has_bounds():
+                    item = coord.bounds
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
                 else:
+                    item = coord.points
                     first_choices = last_choices = coord.points
 
+                # Check whether item is monotonic along the dimension of interest.
+                deltas = np.diff(item, 1, dim)
+                monotonic = np.all(deltas >= 0) or np.all(deltas <= 0)
+
                 # Construct list of coordinate group boundary pairs.
-                for start, stop in groupby_bounds:
-                    if (
-                        getattr(coord, "circular", False)
-                        and (stop + 1) == self._stop
-                    ):
+                if monotonic:
+                    # Use first and last bound or point for new bounds.
+                    for start, stop in groupby_bounds:
+                        if (
+                            getattr(coord, "circular", False)
+                            and (stop + 1) == self._stop
+                        ):
+                            new_bounds.append(
+                                [
+                                    first_choices.take(start, dim),
+                                    first_choices.take(0, dim)
+                                    + coord.units.modulus,
+                                ]
+                            )
+                        else:
+                            new_bounds.append(
+                                [
+                                    first_choices.take(start, dim),
+                                    last_choices.take(stop, dim),
+                                ]
+                            )
+                else:
+                    # Use min and max bound or point for new bounds.
+                    for indices in groupby_indices:
+                        item_slice = item.take(indices, dim)
                         new_bounds.append(
                             [
-                                first_choices.take(start, dim),
-                                first_choices.take(0, dim)
-                                + coord.units.modulus,
-                            ]
-                        )
-                    else:
-                        new_bounds.append(
-                            [
-                                first_choices.take(start, dim),
-                                last_choices.take(stop, dim),
+                                item_slice.min(axis=dim),
+                                item_slice.max(axis=dim),
                             ]
                         )
 
