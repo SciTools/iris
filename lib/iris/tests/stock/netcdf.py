@@ -62,6 +62,8 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     ]
     # Data addition dependent on this assumption:
     assert len(unlimited_dim_names) < 2
+    if len(unlimited_dim_names) == 0:
+        unlimited_dim_names = ["*unused*"]
 
     # Fill variables data with placeholder numbers.
     for var in ds.variables.values():
@@ -72,11 +74,13 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             unlimited_dim_size if dim == unlimited_dim_names[0] else size
             for dim, size in zip(dims, shape)
         ]
-        data = np.zeros(shape, dtype=var.dtype)
+        data = np.ones(shape, dtype=var.dtype)  # Do not use zero
         if len(var.dimensions) == 1 and var.dimensions[0] == var.name:
             # Fill the var with ascending values (not all zeroes),
             # so it can be a dim-coord.
-            data = np.arange(data.size, dtype=data.dtype).reshape(data.shape)
+            data = np.arange(1, data.size + 1, dtype=data.dtype).reshape(
+                data.shape
+            )
         var[:] = data
 
     ds.close()
