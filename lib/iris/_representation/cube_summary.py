@@ -262,13 +262,14 @@ class CubeSummary:
         if cube.mesh is None:
             mesh_coords = []
         else:
-            mesh_coords = [coord for coord in aux_coords
-                           if hasattr(coord, 'mesh')]
+            mesh_coords = [
+                coord for coord in aux_coords if hasattr(coord, "mesh")
+            ]
 
         vector_aux_coords = [
-            coord for coord in aux_coords
-            if (id(coord) not in scalar_coord_ids
-                and coord not in mesh_coords)
+            coord
+            for coord in aux_coords
+            if (id(coord) not in scalar_coord_ids and coord not in mesh_coords)
         ]
         vector_derived_coords = [
             coord

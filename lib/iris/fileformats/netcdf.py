@@ -2104,13 +2104,18 @@ class Saver:
             last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
             # Create if it does not already exist.
             if last_dim not in self._dataset.dimensions:
-                length = conn.shape[1]
+                length = conn.shape[1 - conn.src_dim]
                 self._dataset.createDimension(last_dim, length)
 
             # Create variable.
             # NOTE: for connectivities *with missing points*, this will use a
-            # fixed standard fill-value of -1, and add a _FillValue property.
-            conn_dims = (mesh_dims[loc_from], last_dim)
+            # fixed standard fill-value of -1.  In that case, we also add a
+            # mesh property '_FillValue', below.
+            loc_dim_name = mesh_dims[loc_from]
+            conn_dims = (loc_dim_name, last_dim)
+            if conn.src_dim == 1:
+                # Has the 'other' dimension order, =reversed
+                conn_dims = conn_dims[::-1]
             cf_conn_name = self._create_generic_cf_array_var(
                 cube, [], conn, element_dims=conn_dims, fill_value=-1
             )
@@ -2120,12 +2125,19 @@ class Saver:
             _setncattr(cf_conn_var, "start_index", conn.start_index)
 
             # If content was masked, also add a "_FillValue" property.
-            # N.B. for now, we are using -1 as a universal 'safe' value.
+            # N.B. for now at least, use -1 as a universal 'safe' value.
             if np.ma.is_masked(conn.indices):
-                _setncattr(cf_var, "_FillValue", -1)
+                _setncattr(cf_mesh_var, "_FillValue", -1)
 
             # Record the connectivity on the parent mesh var.
             _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
+            # If the connectivity had the 'alternate' dimension order, add the
+            # relevant dimension property
+            if conn.src_dim == 1:
+                loc_dim_attr = f"{loc_from}_dimension"
+                # Should only get here once.
+                assert loc_dim_attr not in cf_mesh_var.ncattrs()
+                _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
 
         return cf_mesh_name
 

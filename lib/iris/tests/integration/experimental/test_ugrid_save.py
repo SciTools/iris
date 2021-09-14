@@ -87,7 +87,7 @@ class TestBasicSave(IrisTest):
             if "ex4" in ex_name:
                 # Discard the extra formula terms component cubes
                 # Saving these does not do what you expect
-                orig_cubes = orig_cubes.extract('datavar')
+                orig_cubes = orig_cubes.extract("datavar")
 
             # Save-and-load-back to compare the Iris saved result.
             resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
