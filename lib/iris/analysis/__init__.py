@@ -2219,48 +2219,32 @@ class _Groupby:
                     raise ValueError(msg)
             else:
                 new_bounds = []
+                if coord.has_bounds():
+                    first_choices = coord.bounds.take(0, -1)
+                    last_choices = coord.bounds.take(1, -1)
+                else:
+                    first_choices = last_choices = coord.points
 
                 # Construct list of coordinate group boundary pairs.
                 for start, stop in groupby_bounds:
-                    if coord.has_bounds():
-                        # Collapse group bounds into bounds.
-                        if (
-                            getattr(coord, "circular", False)
-                            and (stop + 1) == coord.shape[dim]
-                        ):
-                            new_bounds.append(
-                                [
-                                    coord.bounds.take(start, dim).take(0, -1),
-                                    coord.bounds.take(0, dim).take(0, -1)
-                                    + coord.units.modulus,
-                                ]
-                            )
-                        else:
-                            new_bounds.append(
-                                [
-                                    coord.bounds.take(start, dim).take(0, -1),
-                                    coord.bounds.take(stop, dim).take(1, -1),
-                                ]
-                            )
+                    if (
+                        getattr(coord, "circular", False)
+                        and (stop + 1) == self._stop
+                    ):
+                        new_bounds.append(
+                            [
+                                first_choices.take(start, dim),
+                                first_choices.take(0, dim)
+                                + coord.units.modulus,
+                            ]
+                        )
                     else:
-                        # Collapse group points into bounds.
-                        if getattr(coord, "circular", False) and (
-                            stop + 1
-                        ) == len(coord.points):
-                            new_bounds.append(
-                                [
-                                    coord.points.take(start, dim),
-                                    coord.points.take(0, dim)
-                                    + coord.units.modulus,
-                                ]
-                            )
-                        else:
-                            new_bounds.append(
-                                [
-                                    coord.points.take(start, dim),
-                                    coord.points.take(stop, dim),
-                                ]
-                            )
+                        new_bounds.append(
+                            [
+                                first_choices.take(start, dim),
+                                last_choices.take(stop, dim),
+                            ]
+                        )
 
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
