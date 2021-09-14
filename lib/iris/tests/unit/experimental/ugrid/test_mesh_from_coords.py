@@ -21,19 +21,20 @@ class Test1Dim(tests.IrisTest):
             points=[0.5, 1.5, 2.5],
             bounds=[[0, 1], [1, 2], [2, 3]],
             standard_name="longitude",
-            long_name="test lon",
+            long_name="edge longitudes",
             var_name="lon",
             units="degrees",
-            attributes={"test": 1}
-            )
+            attributes={"test": 1},
+        )
         # Should be fine with either a DimCoord or an AuxCoord.
         self.lat = AuxCoord(
             points=[0.5, 2.5, 1.5],
             bounds=[[0, 1], [2, 3], [1, 2]],
-            long_name="test lat",
+            standard_name="latitude",
+            long_name="edge_latitudes",
             var_name="lat",
             units="degrees",
-            attributes={"test": 1}
+            attributes={"test": 1},
         )
 
     def create(self):
@@ -47,8 +48,8 @@ class Test1Dim(tests.IrisTest):
         self.assertEqual([0, 1, 2, 3, 1, 2], mesh.node_y)
         self.assertEqual([0.5, 1.5, 2.5], mesh.edge_x)
         self.assertEqual([0.5, 2.5, 1.5], mesh.edge_y)
-        self.assertIsNotNone(mesh.face_x)
-        self.assertIsNotNone(mesh.face_y)
+        self.assertIsNone(mesh.face_x)
+        self.assertIsNone(mesh.face_y)
 
         for conn_name in Connectivity.UGRID_CF_ROLES:
             conn = getattr(mesh, conn_name)
@@ -70,7 +71,13 @@ class Test1Dim(tests.IrisTest):
     def test_mesh_metadata(self):
         # Inappropriate to guess these values from the input coords.
         mesh = self.create()
-        for attr in ("standard_name", "long_name", "var_name", "units", "attributes"):
+        for attr in (
+            "standard_name",
+            "long_name",
+            "var_name",
+            "units",
+            "attributes",
+        ):
             self.assertIsNone(getattr(mesh, attr))
 
     def test_not_coord(self):
@@ -98,9 +105,11 @@ class Test1Dim(tests.IrisTest):
             long_name="foo",
             var_name="bar",
             units=self.lon.units,
-            attributes=self.lon.attributes
+            attributes=self.lon.attributes,
         )
-        with self.assertRaisesRegex(ValueError, "Unable to guess coord axis.*"):
+        with self.assertRaisesRegex(
+            ValueError, "Unable to guess coord axis.*"
+        ):
             _ = self.create()
 
     def test_coord_axis_mismatch(self):
@@ -112,26 +121,72 @@ class Test1Dim(tests.IrisTest):
             long_name=self.lon.long_name,
             var_name=self.lon.var_name,
             units=self.lat.units,
-            attributes=self.lat.units
+            attributes=self.lat.units,
         )
-        with self.assertRaisesRegex(ValueError, ""):
+        with self.assertRaisesRegex(
+            ValueError, "coord_2 must be orthogonal.*"
+        ):
             _ = self.create()
 
 
 class Test2Dim(Test1Dim):
     def setUp(self):
-        pass
+        self.lon = DimCoord(
+            points=[0.5, 1.5, 2.5],
+            bounds=[[0, 0.5, 1], [1, 1.5, 2], [2, 2.5, 3]],
+            standard_name="longitude",
+            long_name="triangle longitudes",
+            var_name="lon",
+            units="degrees",
+            attributes={"test": 1},
+        )
+        # Should be fine with either a DimCoord or an AuxCoord.
+        self.lat = AuxCoord(
+            points=[0.5, 2.5, 1.5],
+            bounds=[[0, 1, 0], [2, 3, 2], [1, 2, 1]],
+            standard_name="latitude",
+            long_name="triangle latitudes",
+            var_name="lat",
+            units="degrees",
+            attributes={"test": 1},
+        )
 
     def test_dimensionality(self):
-        # topology_dimension, coords, connectivities
-        pass
+        mesh = self.create()
+        self.assertEqual(2, mesh.topology_dimension)
+
+        self.assertEqual([0, 0.5, 1, 1, 1.5, 2, 2, 2.5, 3], mesh.node_x)
+        self.assertEqual([0, 1, 0, 2, 3, 2, 1, 2, 1], mesh.node_y)
+        self.assertIsNone(mesh.edge_x)
+        self.assertIsNone(mesh.edge_y)
+        self.assertEqual([0.5, 1.5, 2.5], mesh.face_x)
+        self.assertEqual([0.5, 2.5, 1.5], mesh.face_y)
+
+        for conn_name in Connectivity.UGRID_CF_ROLES:
+            conn = getattr(mesh, conn_name)
+            if conn_name == "face_node_connectivity":
+                self.assertEqual(
+                    [[0, 1, 2], [3, 4, 5], [6, 7, 8]], conn.indices
+                )
+            else:
+                self.assertIsNone(conn)
 
 
 class TestInvalidBounds(tests.IrisTest):
     """Invalid bounds not supported."""
+
     def test_no_bounds(self):
-        pass
+        lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0, 1], [1, 2], [2, 3]])
+        lat = AuxCoord(points=[0, 1, 2])
+        with self.assertRaisesRegex(
+            ValueError, "coord_2 has invalid bounds: None"
+        ):
+            _ = mesh_from_coords(lon, lat)
 
     def test_1_bound(self):
-        # shape = (n, 1)
-        pass
+        lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0, 1], [1, 2], [2, 3]])
+        lat = AuxCoord(points=[0, 1, 2], bounds=[[0.5], [1.5], [2.5]])
+        with self.assertRaisesRegex(
+            ValueError, "coord_2 has invalid bounds: shape (n, 1)"
+        ):
+            _ = mesh_from_coords(lon, lat)

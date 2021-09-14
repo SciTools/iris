@@ -2818,11 +2818,7 @@ def mesh_from_coords(coord_1, coord_2):
 
         >>> print(cube_w_mesh.mesh.name())
         Topology data of 2D unstructured mesh
-        >>> mesh_coord_names = [
-        ...     coord.name()
-        ...     for coord in cube_w_mesh.coords()
-        ...     if isinstance(coord, MeshCoord)
-        ... ]
+        >>> mesh_coord_names = cube_w_mesh.coords(mesh_coords=True)
         >>> print(f"MeshCoords: {mesh_coord_names}")
         MeshCoords: ['latitude', 'longitude']
 
