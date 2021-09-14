@@ -1465,11 +1465,6 @@ class Saver:
             _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
             _setncattr(cf_conn_var, "start_index", conn.start_index)
 
-            # If content was masked, also add a "_FillValue" property.
-            # N.B. for now at least, use -1 as a universal 'safe' value.
-            if np.ma.is_masked(conn.indices):
-                _setncattr(cf_mesh_var, "_FillValue", -1)
-
             # Record the connectivity on the parent mesh var.
             _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
             # If the connectivity had the 'alternate' dimension order, add the
@@ -2274,8 +2269,12 @@ class Saver:
             data = self._ensure_valid_dtype(data, element_type, element)
 
             if fill_value is not None:
-                # Use a specific fill-value in place of the netcdf default.
-                data = np.ma.filled(data, fill_value)
+                if np.ma.is_masked(data):
+                    # Use a specific fill-value in place of the netcdf default.
+                    data = np.ma.filled(data, fill_value)
+                else:
+                    # Create variable without a (non-standard) fill_value
+                    fill_value = None
 
             # Check if this is a dim-coord.
             is_dimcoord = element in cube.dim_coords
@@ -2298,7 +2297,10 @@ class Saver:
 
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
-                cf_name, data.dtype.newbyteorder("="), element_dims
+                cf_name,
+                data.dtype.newbyteorder("="),
+                element_dims,
+                fill_value=fill_value,
             )
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.

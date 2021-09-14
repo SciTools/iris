@@ -636,6 +636,63 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(mesh_props["face_dimension"], "Mesh2d_face")
         self.assertEqual(mesh_props["edge_dimension"], "Mesh2d_edge")
 
+    def test_nonuniform_connectivity(self):
+        # Check handling of connecitivities with missing points.
+        n_faces = 7
+        mesh = make_mesh(n_faces=n_faces)
+
+        # In this case, add on a partial face-face connectivity.
+        # construct a vaguely plausible face-face index array
+        indices = np.ma.arange(n_faces * 4).reshape((7, 4))
+        indices = indices % 7
+        # include some missing points -- i.e. not all faces have 4 neighbours
+        indices[(2, (2, 3))] = np.ma.masked
+        indices[(3, (0, 2))] = np.ma.masked
+        indices[6, :] = np.ma.masked
+
+        conn = Connectivity(
+            indices,
+            cf_role="face_face_connectivity",
+        )
+        mesh.add_connectivities(conn)
+        cube = make_cube(mesh=mesh)
+
+        # Save and snapshot the result
+        dims, vars = self.check_save(cube)
+
+        # Check that the mesh saved with the additional connectivity
+        (mesh_name,) = vars_meshnames(vars)
+        mesh_props = vars[mesh_name]
+        self.assertIn("face_face_connectivity", mesh_props)
+        ff_conn_name = mesh_props["face_face_connectivity"]
+
+        # check that the connectivity has the corrects dims and fill-property
+        ff_props = vars[ff_conn_name]
+        self.assertEqual(
+            ff_props["_DIMS"], ["Mesh2d_faces", "Mesh2d_face_N_faces"]
+        )
+        self.assertIn("_FillValue", ff_props)
+        self.assertEqual(ff_props["_FillValue"], -1)
+
+        # Check that a 'normal' connectivity does *not* have a _FillValue
+        fn_conn_name = mesh_props["face_node_connectivity"]
+        fn_props = vars[fn_conn_name]
+        self.assertNotIn("_FillValue", fn_props)
+
+        # For what it's worth, *also* check the actual data array in the file
+        ds = nc.Dataset(self.tempfile_path)
+        try:
+            conn_var = ds.variables[ff_conn_name]
+            data = conn_var[:]
+        finally:
+            ds.close()
+        self.assertIsInstance(data, np.ma.MaskedArray)
+        self.assertEqual(data.fill_value, -1)
+        # Compare raw values stored, to indices with -1 at missing points
+        raw_data = data.data
+        filled_indices = indices.filled(-1)
+        self.assertArrayEqual(raw_data, filled_indices)
+
 
 if __name__ == "__main__":
     tests.main()
