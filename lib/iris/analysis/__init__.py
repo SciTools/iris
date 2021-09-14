@@ -2221,10 +2221,12 @@ class _Groupby:
                 new_bounds = []
                 if coord.has_bounds():
                     item = coord.bounds
+                    axis = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
                 else:
                     item = coord.points
+                    axis = dim
                     first_choices = last_choices = coord.points
 
                 # Check whether item is monotonic along the dimension of interest.
@@ -2259,8 +2261,8 @@ class _Groupby:
                         item_slice = item.take(indices, dim)
                         new_bounds.append(
                             [
-                                item_slice.min(axis=dim),
-                                item_slice.max(axis=dim),
+                                item_slice.min(axis=axis),
+                                item_slice.max(axis=axis),
                             ]
                         )
 
