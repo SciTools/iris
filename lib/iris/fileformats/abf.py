@@ -10,7 +10,7 @@ ABF and ABL files are satellite file formats defined by Boston University.
 Including this module adds ABF and ABL loading to the session's capabilities.
 
 The documentation for this file format can be found
-`here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
+`here <https://nasanex.s3.amazonaws.com/AVHRR/GIMMS/LAI3G/00README_V01.pdf>`_.
 
 """
 

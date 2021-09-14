@@ -17,13 +17,16 @@ The `Iris GitHub`_ project has been configured to use templates for each of
 the above issue types when creating a `new issue`_ to ensure the appropriate
 information is provided.
 
+Alternatively, **join the conversation** in `Iris GitHub Discussions`_, when
+you would like the opinions of the Iris community.
+
 A `pull request`_ may also be created by anyone who has become a
 **contributor** to Iris_.  Permissions to merge pull requests to the
 ``main`` branch are only given to **core developers** of Iris_, this is
 to ensure a measure of control.
 
-To get started we suggest reading recent `issues`_ and `pull requests`_
-for Iris.
+To get started we suggest reading recent `issues`_, `discussions`_ and
+`pull requests`_ for Iris.
 
 If you are new to using GitHub we recommend reading the
 `GitHub getting started`_
