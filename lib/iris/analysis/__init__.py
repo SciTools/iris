@@ -2170,15 +2170,20 @@ class _Groupby:
     def _compute_shared_coords(self):
         """Create the new shared coordinates given the group slices."""
 
+        groupby_indices = []
         groupby_bounds = []
 
         # Iterate over the ordered dictionary in order to construct
-        # a list of tuple group boundary indexes.
+        # a list of tuple group indices, and the respective bounds of those
+        # indices.
         for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
-                groupby_bounds.append((key_slice[0], key_slice[-1]))
+                indices = key_slice
             else:
-                groupby_bounds.append((key_slice.start, key_slice.stop - 1))
+                indices = tuple(range(*key_slice.indices(self._stop)))
+
+            groupby_indices.append(indices)
+            groupby_bounds.append((indices[0], indices[-1]))
 
         # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
@@ -2197,15 +2202,9 @@ class _Groupby:
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for key_slice in self._slices_by_key.values():
-                        if isinstance(key_slice, slice):
-                            indices = key_slice.indices(
-                                coord.points.shape[dim]
-                            )
-                            key_slice = range(*indices)
-
+                    for indices in groupby_indices:
                         for arr in work_arr:
-                            new_points.append("|".join(arr.take(key_slice)))
+                            new_points.append("|".join(arr.take(indices)))
 
                     # Reinstate flattened dimensions. Aggregated dim now leads.
                     new_points = np.array(new_points).reshape(new_shape)
