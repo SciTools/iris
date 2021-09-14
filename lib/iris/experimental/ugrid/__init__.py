@@ -3977,8 +3977,6 @@ def _build_mesh_coords(mesh, cf_var):
     }
     mesh_dim_name = locations_dimensions[cf_var.location]
     # (Only expecting 1 mesh dimension per cf_var).
-    if mesh_dim_name not in cf_var.dimensions:
-        oops = True
     mesh_dim = cf_var.dimensions.index(mesh_dim_name)
 
     mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
