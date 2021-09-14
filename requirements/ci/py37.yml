@@ -29,7 +29,6 @@ dependencies:
   - pandas
   - pip
   - python-stratify
-  - pyugrid
 
 # Test dependencies.
   - asv

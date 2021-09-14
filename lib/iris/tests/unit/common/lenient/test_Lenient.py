@@ -39,10 +39,10 @@ class Test___contains__(tests.IrisTest):
         self.lenient = Lenient()
 
     def test_in(self):
-        self.assertTrue("maths", self.lenient)
+        self.assertIn("maths", self.lenient)
 
     def test_not_in(self):
-        self.assertTrue(("concatenate", self.lenient))
+        self.assertNotIn("concatenate", self.lenient)
 
 
 class Test___getitem__(tests.IrisTest):
@@ -180,3 +180,7 @@ class Test_context(tests.IrisTest):
         # still synchronised
         self.assertFalse(_LENIENT.enable)
         self.assertFalse(self.lenient["maths"])
+
+
+if __name__ == "__main__":
+    tests.main()
