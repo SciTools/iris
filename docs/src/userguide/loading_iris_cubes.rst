@@ -215,14 +215,6 @@ constraint to ``load``::
     level_10 = iris.Constraint(model_level_number=10)
     cubes = iris.load(filename, forecast_6 & level_10)
 
-.. note::
-
-    Whilst ``&`` is supported, the ``|`` that might reasonably be expected
-    is not. This is because "or" constraints could lead to a cube which did
-    not cover a hyper-rectangular region if these constraints were on
-    different coordinates. If an "or" type constraint on a single coordinate
-    is useful then it may be obtained by passing a function to :class:`iris.Constraint`.
-
 As well as being able to combine constraints using ``&``,
 the :class:`iris.Constraint` class can accept multiple arguments,
 and a list of values can be given to constrain a coordinate to one of
