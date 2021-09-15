@@ -304,6 +304,7 @@ linkcheck_ignore = [
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
 ]
 
 # list of sources to exclude from the build.
