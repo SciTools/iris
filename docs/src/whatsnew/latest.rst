@@ -105,6 +105,10 @@ This document explains the changes made to Iris for this release
    always works locally, but never within CI. (:pull:`4307`)
 
 
+#. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
+   marked stale. (:pull:`4317`)
+
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
