@@ -43,7 +43,7 @@ Interpolating a cube is achieved with the :meth:`~iris.cube.Cube.interpolate`
 method. This method expects two arguments:
 
  #. the sample points to interpolate, and
- #. the second argument being the interpolation scheme to use.
+ #. the interpolation scheme to use.
 
 The result is a new cube, interpolated at the sample points.
 
