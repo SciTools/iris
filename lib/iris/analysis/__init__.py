@@ -2173,8 +2173,8 @@ class _Groupby:
         groupby_indices = []
         groupby_bounds = []
 
-        # Iterate over the ordered dictionary in order to construct
-        # a list of tuple group indices, and the respective bounds of those
+        # Iterate over the ordered dictionary in order to construct a list of
+        # tuple group indices, and a list of the respective bounds of those
         # indices.
         for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
@@ -2220,13 +2220,15 @@ class _Groupby:
             else:
                 new_bounds = []
                 if coord.has_bounds():
+                    # Derive new coord's bounds from bounds.
                     item = coord.bounds
-                    axis = (dim, -1)
+                    maxmin_axis = (dim, -1)
                     first_choices = coord.bounds.take(0, -1)
                     last_choices = coord.bounds.take(1, -1)
                 else:
+                    # Derive new coord's bounds from points.
                     item = coord.points
-                    axis = dim
+                    maxmin_axis = dim
                     first_choices = last_choices = coord.points
 
                 # Check whether item is monotonic along the dimension of interest.
@@ -2261,8 +2263,8 @@ class _Groupby:
                         item_slice = item.take(indices, dim)
                         new_bounds.append(
                             [
-                                item_slice.min(axis=axis),
-                                item_slice.max(axis=axis),
+                                item_slice.min(axis=maxmin_axis),
+                                item_slice.max(axis=maxmin_axis),
                             ]
                         )
 
