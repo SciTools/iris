@@ -32,7 +32,7 @@ are licensed under the UK's Open Government Licence:
     
     You may use and re-use the information featured on this website (not including logos) free of 
     charge in any format or medium, under the terms of the 
-    `Open Government Licence <http://reference.data.gov.uk/id/open-government-licence>`_. 
+    `Open Government Licence <https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/>`_. 
     We encourage users to establish hypertext links to this website.
     
     Any email enquiries regarding the use and re-use of this information resource should be 
