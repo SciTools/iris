@@ -707,6 +707,7 @@ data:
         self.assertEqual(cs.false_northing, 0.0)
 
 
+@tests.skip_data
 class TestConstrainedLoad(tests.IrisTest):
     filename = tests.get_data_path(
         ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")
