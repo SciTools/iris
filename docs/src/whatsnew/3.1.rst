@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-v3.1 (17 Aug 2021) [unreleased]
+v3.1 (15 Sep 2021)
 *******************************
 
 This document explains the changes made to Iris for this release
@@ -16,6 +16,10 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
+   * Much faster import time, from minimised loading of submodules.
+     Note however that this may break existing code which does not declare full imports.
+     See :ref:`Minimised Imports <minimised_imports>`.
+   * Speedup for loading single phenomena from netcdf.  See :ref:`netcdf load speedup <fast_nc_load>`.
    * We've dropped support for `Python 3.6`_
    * Updated formatting of cube printouts.
    * Updated developer guide documentation.
@@ -97,6 +101,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
+.. _isort_adopt:
+
 #. `@bjlittle`_ added support for automated ``import`` linting with `isort`_, which
    also includes significant speed-ups for Iris imports. (:pull:`4174`)
 
@@ -106,16 +112,32 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure`, and
    :class:`~iris.cube.Cube` instances. (:pull:`4227`)
 
+   .. _fast_nc_load:
+
 #. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
-   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
-   optimisation only applies when matching on standard name, long name or
+   speed up when loading with a single :func:`~iris.NameConstraint`.
+
+   For example, ``cube = iris.load('x.nc', NameConstraint('air_temperature')``.
+
+   Note that this  optimisation only applies when matching on standard name, long name or
    NetCDF variable name, not when matching on STASH.
    (:pull:`4176`)
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+.. _minimised_imports:
+
+#. The :ref:`adoption of 'isort' <isort_adopt>`  means that subpackage loading is everywhere minimised.
+
+   However, this may break existing code that relied on subpackages being imported 'automatically'.
+
+   For example: ``import iris; print(iris.cube.Cube)``.
+
+   This style is essentially unsafe, and in this case no longer works.
+   It must be modified to explicitly import all subpackages,
+
+   i.e. ``import iris.cube; print(iris.cube.Cube)``.
 
 
 🔥 Deprecations
