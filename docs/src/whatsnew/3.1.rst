@@ -117,7 +117,7 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
    speed up when loading with a single :func:`~iris.NameConstraint`.
 
-   For example, ``cube = iris.load('x.nc', NameConstraint('air_temperature')``.
+   For example, ``cube = iris.load('x.nc', NameConstraint('air_temperature'))``.
 
    Note that this  optimisation only applies when matching on standard name, long name or
    NetCDF variable name, not when matching on STASH.
