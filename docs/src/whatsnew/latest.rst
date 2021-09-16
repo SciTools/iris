@@ -104,7 +104,7 @@ This document explains the changes made to Iris for this release
    http://www.nationalarchives.gov.uk/doc/open-government-licence since this
    always works locally, but never within CI. (:pull:`4307`)
 
-#. `@wjbenfold`_ netCDF integration tests now skip TestConstrainedLoad if
+#. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
    test data is missing (:pull:`4319`)
 
 
