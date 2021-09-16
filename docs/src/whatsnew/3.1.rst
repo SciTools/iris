@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.1 (17 Aug 2021) [unreleased]
-*******************************
+v3.1 (16 Sep 2021)
+******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -16,9 +16,14 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've dropped support for `Python 3.6`_
-   * Updated formatting of cube printouts.
-   * Updated developer guide documentation.
+   * Much faster import times, from minimised loading of submodules.
+     However, note that this may break existing code which does not declare all imports.
+     See :ref:`minimised imports <minimised_imports>`.
+   * Speedup for loading single phenomena from netcdf.  See :ref:`netcdf load speedup <fast_nc_load>`.
+   * We've dropped support for `Python 3.6`_.  See :ref:`minimum Python version 3.7 <no_py36>`.
+   * Updated formatting of cube printouts.  See :ref:`new-style cube printouts <newstyle_cube_print>`.
+   * Multiple improvements to developer guide documentation.
+     See entries in the :ref:`"Documentation" section <docs_section>`, below.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -61,6 +66,8 @@ This document explains the changes made to Iris for this release
 #. `@Badboy-16`_ implemented a ``CubeList.copy()`` method to return a
    ``CubeList`` object instead of a ``list``. (:pull:`4094`)
 
+   .. _newstyle_cube_print:
+
 #. `@pp-mo`_ and `@trexfeathers`_ reformatted :meth:`iris.cube.Cube.summary`,
    (which is used for ``print(Cube)``); putting
    :attr:`~iris.cube.Cube.cell_methods` before
@@ -97,6 +104,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
+.. _isort_adopt:
+
 #. `@bjlittle`_ added support for automated ``import`` linting with `isort`_, which
    also includes significant speed-ups for Iris imports. (:pull:`4174`)
 
@@ -106,22 +115,33 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure`, and
    :class:`~iris.cube.Cube` instances. (:pull:`4227`)
 
+   .. _fast_nc_load:
+
 #. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
-   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
-   optimisation only applies when matching on standard name, long name or
+   speed up when loading with a single :func:`~iris.NameConstraint`.
+
+   For example, ``cube = iris.load('x.nc', NameConstraint('air_temperature'))``.
+
+   Note that this optimisation only applies when matching on standard name, long name or
    NetCDF variable name, not when matching on STASH.
    (:pull:`4176`)
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+.. _minimised_imports:
 
+#. The :ref:`adoption of 'isort' <isort_adopt>` has significantly reduced the import time of Iris packages.
 
-🔥 Deprecations
-===============
+   However, this may break existing code which, for convenience, relies on some subpackages being imported implicitly
+   (as some, but not all, previously were).
 
-#. N/A
+   For example: ``import iris; print(iris.cube.Cube)``.
+
+   This style is essentially unsafe, and in this case no longer works.
+   It must be modified to explicitly import all subpackages,
+
+   i.e. ``import iris.cube; print(iris.cube.Cube)``.
 
 
 🔗 Dependencies
@@ -132,6 +152,7 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ removed dependency on `PyKE`_. (:pull:`4198`)
 
+.. _docs_section:
 
 📚 Documentation
 ================
@@ -222,6 +243,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ updated the ``bug-report`` and ``feature-request`` GitHub issue
    templates to remove an external URL reference that caused un-posted user issue
    content to be lost in the browser when followed. (:pull:`4147`)
+
+   .. _no_py36:
 
 #. `@bjlittle`_ dropped `Python 3.6`_ support, and automated the discovery of
    supported Python versions tested by `cirrus-ci`_ for documentation.

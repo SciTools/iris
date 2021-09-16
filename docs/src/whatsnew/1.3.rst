@@ -34,8 +34,8 @@ Loading ABF/ABL Files
 ---------------------
 
 Support for the ABF and ABL file formats (as
-`defined <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_ by the
-climate and vegetation research group of Boston University), is
+`defined <https://nasanex.s3.amazonaws.com/AVHRR/GIMMS/LAI3G/00README_V01.pdf>`_
+by the climate and vegetation research group of Boston University), is
 currently provided under the "experimental" system. As such, ABF/ABL
 file detection is not automatically enabled.
 
