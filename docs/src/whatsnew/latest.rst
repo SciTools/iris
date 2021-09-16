@@ -96,6 +96,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ improved readability in :ref:`userguide interpolation
    section <interpolation>`. (:pull:`4314`)
 
+#. `@wjbenfold`_ added explanation about the absence of | operator for
+   :class:`iris.Constraint` to :ref:`userguide loading section <constrained-loading>`. (:pull:`4321`)
+
 
 💼 Internal
 ===========
