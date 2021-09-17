@@ -26,7 +26,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Welcome to `@wjbenfold`_ who has made their first contribution to Iris,
+   the first of many we hope!
 
 
 ✨ Features
@@ -86,13 +87,29 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@rcomer`_ updated the "Plotting Wind Direction Using Quiver" Gallery
+   example. (:pull:`4120`)
+
+#. `@trexfeathers`_ included `Iris GitHub Discussions`_ in
+   :ref:`get involved <development_where_to_start>`. (:pull:`4307`)
+
+#. `@wjbenfold`_ improved readability in :ref:`userguide interpolation
+   section <interpolation>`. (:pull:`4314`)
 
 
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ set the linkcheck to ignore
+   http://www.nationalarchives.gov.uk/doc/open-government-licence since this
+   always works locally, but never within CI. (:pull:`4307`)
+
+#. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
+   test data is missing (:pull:`4319`)
+
+
+#. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
+   marked stale. (:pull:`4317`)
 
 
 .. comment
