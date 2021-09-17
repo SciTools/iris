@@ -22,6 +22,10 @@ This document explains the changes made to Iris for this release
    feature requests for improving Iris. Enjoy!
 
 
+NOTE: section below is a template for bugfix patches
+====================================================
+    (Please remove this section when creating an initial 'latest.rst')
+
 v3.X.X (DD MMM YYYY)
 ====================
 
