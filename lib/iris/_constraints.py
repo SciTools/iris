@@ -73,6 +73,26 @@ class Constraint:
                        model_level_number=[10, 12])
                        & Constraint(ensemble_member=2)
 
+        .. note::
+            Whilst ``&`` is supported, the ``|`` that might reasonably be expected
+            is not. This is because each constraint describes a boxlike region, and
+            thus the intersection of these constraints (obtained with ``&``) will
+            also describe a boxlike region. Allowing the union of two constraints
+            (with the ``|`` symbol) would allow the description of a non-boxlike
+            region. These are difficult to describe with cubes and so it would be
+            ambiguous what should be extracted.
+
+            To generate multiple cubes, each constrained to a different range of
+            the same coordinate, use :py:func:`iris.load_cubes`.
+
+            A constraint covering multiple ranges of the same coordinate may be
+            used to generate a single cube like so::
+
+                def latitude_bands(cell):
+                    return (0 < cell < 30) or (60 < cell < 90)
+
+                Constraint(cube_func=latitude_bands)
+
         Constraint filtering is performed at the cell level.
         For further details on how cell comparisons are performed see
         :class:`iris.coords.Cell`.
