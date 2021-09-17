@@ -251,17 +251,25 @@ def guess_coord_axis(coord):
         "projection_x_coordinate",
     ):
         axis = "X"
+    elif coord.standard_name is None and coord.long_name == "X":
+        axis = "X"
     elif coord.standard_name in (
         "latitude",
         "grid_latitude",
         "projection_y_coordinate",
     ):
         axis = "Y"
+    elif coord.standard_name is None and coord.long_name == "Y":
+        axis = "Y"
     elif coord.units.is_convertible("hPa") or coord.attributes.get(
         "positive"
     ) in ("up", "down"):
         axis = "Z"
+    elif coord.standard_name is None and coord.long_name == "Z":
+        axis = "Z"
     elif coord.units.is_time_reference():
+        axis = "T"
+    elif coord.standard_name is None and coord.long_name == "T":
         axis = "T"
 
     return axis

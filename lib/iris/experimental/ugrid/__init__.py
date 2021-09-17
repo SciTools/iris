@@ -37,7 +37,7 @@ from ...common.metadata import (
 )
 from ...common.mixin import CFVariableMixin
 from ...config import get_logger
-from ...coords import AuxCoord, _DimensionalMetadata
+from ...coords import AuxCoord, Coord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...fileformats import cf, netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
@@ -2792,25 +2792,16 @@ def mesh_from_coords(coord_1, coord_2):
 
     .. testsetup::
 
-        from iris import load_cube
+        from iris import load_cube, sample_data_path
         from iris.experimental.ugrid import (
             PARSE_UGRID_ON_LOAD,
             MeshCoord,
             mesh_from_coords,
         )
 
-        # TODO: Replace with a file in iris-sample-data, as soon as we can
-        #  generate something adequately small and representative.
-        from iris.tests import get_data_path
-        file_path = get_data_path(
-            [
-                "NetCDF",
-                "unstructured_grid",
-                "lfric_ngvat_2D_1t_face_half_levels_main_conv_rain.nc",
-            ]
-        )
+        file_path = sample_data_path("mesh_C4_synthetic_float.nc")
         with PARSE_UGRID_ON_LOAD.context():
-            cube_w_mesh = load_cube(file_path, "conv_rain")
+            cube_w_mesh = load_cube(file_path)
 
     For example::
 
@@ -2818,7 +2809,9 @@ def mesh_from_coords(coord_1, coord_2):
 
         >>> print(cube_w_mesh.mesh.name())
         Topology data of 2D unstructured mesh
-        >>> mesh_coord_names = cube_w_mesh.coords(mesh_coords=True)
+        >>> mesh_coord_names = [
+        ...     coord.name() for coord in cube_w_mesh.coords(mesh_coords=True)
+        ... ]
         >>> print(f"MeshCoords: {mesh_coord_names}")
         MeshCoords: ['latitude', 'longitude']
 
@@ -2839,8 +2832,8 @@ def mesh_from_coords(coord_1, coord_2):
 
         # Replace the AuxCoords with MeshCoords.
         >>> for ix in range(2):
-        ...     cube_sub.remove(orig_mesh_coords[ix])
-        ...     cube_sub.add_coord(new_mesh_coords[ix], cube_w_mesh.mesh_dim())
+        ...     cube_sub.remove_coord(orig_mesh_coords[ix])
+        ...     cube_sub.add_aux_coord(new_mesh_coords[ix], cube_w_mesh.mesh_dim())
 
         >>> print(cube_sub.mesh.name())
         Topology data of 2D unstructured mesh
@@ -2851,7 +2844,140 @@ def mesh_from_coords(coord_1, coord_2):
         longitude: MeshCoord
 
     """
-    pass
+    # Validate coord essentials.
+    coord_names = {coord_1: "coord_1", coord_2: "coord_2"}
+    for coord, name in coord_names.items():
+        if not isinstance(coord, Coord):
+            message = f"Expected a Coord for {name}, got: {type(coord)}"
+            raise ValueError(message)
+
+        if coord.ndim != 1:
+            message = f"Coordinates must have ndim == 1. f{name}.ndim == {coord.ndim} ."
+            raise ValueError(message)
+
+        invalid_bounds = False
+        sub_message = ""
+        if not coord.has_bounds():
+            invalid_bounds = True
+            sub_message = "None"
+        else:
+            bounds_shape = coord.core_bounds().shape
+            # 1D coord check guarantees bounds are ndim==2.
+            if bounds_shape[1] < 2:
+                invalid_bounds = 2
+                sub_message = f"shape {bounds_shape}. Must be (n, >=2)."
+        if invalid_bounds:
+            message = f"{name} has invalid bounds: " + sub_message
+            raise ValueError(message)
+
+    # Validate orthogonality.
+    coord_axes = {
+        coord: guess_coord_axis(coord) for coord in (coord_1, coord_2)
+    }
+    if coord_axes[coord_1] is not None and coord_axes[coord_2] is not None:
+        orthogonal = coord_axes[coord_2] != coord_axes[coord_1]
+        sub_message = f"Both axes == {coord_axes[coord_1]} ."
+    elif (
+        coord_1.standard_name is not None and coord_2.standard_name is not None
+    ):
+        orthogonal = coord_2.standard_name != coord_1.standard_name
+        sub_message = f"Both standard_names == {coord_1.standard_name} ."
+    else:
+        orthogonal = coord_2.metadata != coord_1.metadata
+        sub_message = "Both coords' metadata identical."
+
+    if not orthogonal:
+        message = f"coord_2 must be orthogonal to coord_1. {sub_message}"
+        raise ValueError(message)
+
+    # Validate points and bounds shape match.
+    def check_shape(array_name):
+        attr_name = f"core_{array_name}"
+        shape_1 = getattr(coord_1, attr_name)().shape
+        shape_2 = getattr(coord_2, attr_name)().shape
+        if shape_2 != shape_1:
+            message = f"coord_2 {array_name} shape must be: {shape_1}, got: {shape_2}."
+            raise ValueError(message)
+
+    for array in ("points", "bounds"):
+        check_shape(array)
+
+    # Determine dimensionality, using coord_1.
+    bounds_shape = coord_1.core_bounds().shape
+    if bounds_shape[1] == 2:
+        topology_dimension = 1
+        coord_centring = "edge"
+        conn_cf_role = "edge_node_connectivity"
+    else:
+        topology_dimension = 2
+        coord_centring = "face"
+        conn_cf_role = "face_node_connectivity"
+
+    # Create connectivity.
+    if coord_1.has_lazy_bounds():
+        array_lib = da
+    else:
+        array_lib = np
+    indices = array_lib.arange(np.prod(bounds_shape)).reshape(bounds_shape)
+    connectivity = Connectivity(indices, conn_cf_role)
+
+    # Create coords.
+    # Mesh currently requires specific X and Y coords, so fit inputs into this.
+    axis_coords = {}
+    for coord, axis in coord_axes.items():
+        if axis in ["X", "Y"]:
+            axis_coords[axis] = coord
+        else:
+            axis_coords["other"] = coord
+    if list(axis_coords.keys()) == ["other"]:
+        # Neither X nor Y guessed, use in original order.
+        coord_x = coord_1
+        coord_y = coord_2
+    else:
+        # Find X/Y if guessed, otherwise use the single un-guessed coord.
+        coord_x = axis_coords.get("X") or axis_coords["other"]
+        coord_y = axis_coords.get("Y") or axis_coords["other"]
+
+    node_x = AuxCoord(
+        points=coord_x.core_bounds().flatten(),
+        standard_name=coord_x.standard_name,
+        long_name=coord_x.long_name,
+        units=coord_x.units,
+        attributes=coord_x.attributes,
+    )
+    node_y = AuxCoord(
+        points=coord_y.core_bounds().flatten(),
+        standard_name=coord_y.standard_name,
+        long_name=coord_y.long_name,
+        units=coord_y.units,
+        attributes=coord_y.attributes,
+    )
+    centre_x = AuxCoord(
+        points=coord_x.core_points(),
+        standard_name=coord_x.standard_name,
+        long_name=coord_x.long_name,
+        units=coord_x.units,
+        attributes=coord_x.attributes,
+    )
+    centre_y = AuxCoord(
+        points=coord_y.core_points(),
+        standard_name=coord_y.standard_name,
+        long_name=coord_y.long_name,
+        units=coord_y.units,
+        attributes=coord_y.attributes,
+    )
+
+    # Construct the Mesh.
+    mesh_kwargs = dict(
+        topology_dimension=topology_dimension,
+        node_coords_and_axes=[(node_x, "x"), (node_y, "y")],
+        connectivities=[connectivity],
+    )
+    mesh_kwargs[f"{coord_centring}_coords_and_axes"] = [
+        (centre_x, "x"),
+        (centre_y, "y"),
+    ]
+    return Mesh(**mesh_kwargs)
 
 
 class MeshCoord(AuxCoord):
