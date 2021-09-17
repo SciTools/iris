@@ -83,7 +83,8 @@ class Constraint:
             ambiguous what should be extracted.
 
             To generate multiple cubes, each constrained to a different range of
-            the same coordinate, use :py:func:`iris.load_cubes`.
+            the same coordinate, use :py:func:`iris.load_cubes` or
+            :py:func:`iris.cube.CubeList.extract_cubes`.
 
             A constraint covering multiple ranges of the same coordinate may be
             used to generate a single cube like so::
