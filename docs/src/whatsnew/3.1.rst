@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-v3.1 (16 Sep 2021)
+v3.1 (17 Sep 2021)
 ******************
 
 This document explains the changes made to Iris for this release
