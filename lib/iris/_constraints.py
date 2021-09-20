@@ -87,7 +87,7 @@ class Constraint:
             :py:func:`iris.cube.CubeList.extract_cubes`.
 
             A constraint covering multiple ranges of the same coordinate may be
-            used to generate a single cube like so::
+            created like so::
 
                 def latitude_bands(cell):
                     return (0 < cell < 30) or (60 < cell < 90)
