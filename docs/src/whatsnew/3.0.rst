@@ -583,7 +583,7 @@ v3.0.4 (22 July 2021)
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _iris-grib: https://github.com/SciTools/iris-grib
 .. _Cartopy: https://github.com/SciTools/cartopy
-.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
+.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.mpl.geoaxes.GeoAxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
 .. _Cartopy#1105: https://github.com/SciTools/cartopy/pull/1105
 .. _Cartopy#1117: https://github.com/SciTools/cartopy/pull/1117
 .. _Dask: https://github.com/dask/dask
