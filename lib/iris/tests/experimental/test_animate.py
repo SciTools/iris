@@ -12,6 +12,8 @@ Test the animation of cubes within iris.
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+import warnings
+
 import numpy as np
 
 import iris
@@ -21,6 +23,11 @@ from iris.coord_systems import GeogCS
 if tests.MPL_AVAILABLE:
     import iris.experimental.animate as animate
     import iris.plot as iplt
+
+# Suppress warning about animation deletion, as it tends to "leak" into other,
+# unrelated tests.
+msg = "Animation was deleted without rendering anything."
+warnings.filterwarnings("ignore", msg, UserWarning, "matplotlib.animation")
 
 
 @tests.skip_plot
