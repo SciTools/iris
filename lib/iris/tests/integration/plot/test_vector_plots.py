@@ -155,8 +155,8 @@ class MixinVectorPlotCases:
             for coord in cube.coords():
                 coord.coord_system = patch_coord_system
         re_msg = (
-            "Can only plot .* lat-lon projection, .* "
-            "This .* translates as Cartopy.*Mercator"
+            r"Can only plot .* lat-lon projection, .* "
+            r"This .* translates as Cartopy \+proj=merc .*"
         )
         with self.assertRaisesRegex(ValueError, re_msg):
             self.plot(
