@@ -1856,7 +1856,7 @@ class Saver:
         * cube_dim_names (list of string):
             The name of each dimension of the cube.
         * element:
-            An Iris :class:`iris.coords.DimensionalMetadata`, belonging to the
+            An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
 
         Returns:
