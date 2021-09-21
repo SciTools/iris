@@ -1031,7 +1031,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             saver = Saver(nc_path, "NETCDF4")
             with self.assertRaisesRegex(ValueError, self.exp_emsg):
-                saver._create_cf_cell_measure_variable(
+                saver._create_generic_cf_array_var(
                     self.cube, self.names_map, self.cm
                 )
 
