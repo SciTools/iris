@@ -115,6 +115,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
    marked stale. (:pull:`4317`)
 
+#. `@tkknight`_ added additional make targets for reducing the time of the
+   documentation build including ``html-noapi`` and ``html-quick``.
+   Useful for development purposes only.  For more information see
+   :ref:`contributing.documentation.building` the documentation. (:pull:`4333`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

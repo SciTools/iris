@@ -36,13 +36,26 @@ When updating the documentation ensure the html build has *no errors* or
 Once the build is complete, if it is rerun it will only rebuild the impacted
 build artefacts so should take less time.
 
-There is also an option to perform a build but skip the
+There is an option to perform a build but skip the
 :ref:`contributing.documentation.gallery` creation completely.  This can be
 achieved via::
 
     make html-noplot
 
-If you wish to run a clean build you can run::
+Another option is to skip the :ref:`iris` documentation creation.  This can be
+useful as it reduces the time to build the documentation, however you may have
+some build warnings as there maybe references to the API documentation.
+This can be achieved via::
+
+    make html-noapi
+
+You can combine both the above and skip the
+:ref:`contributing.documentation.gallery` and :ref:`iris` documentation
+completely.  This can be achieved via::
+
+    make html-quick
+
+If you wish to run a full clean build you can run::
 
     make clean
     make html
