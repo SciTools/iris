@@ -1456,8 +1456,9 @@ class Saver:
 
                 # Create variable.
                 # NOTE: for connectivities *with missing points*, this will use a
-                # fixed standard fill-value of -1.  In that case, we also add a
-                # mesh property '_FillValue', below.
+                # fixed standard fill-value of -1.  In that case, we create the
+                # variable with a '_FillValue' property, which can only be done
+                # when it is first created.
                 loc_dim_name = mesh_dims[loc_from]
                 conn_dims = (loc_dim_name, last_dim)
                 if conn.src_dim == 1:
@@ -1543,7 +1544,7 @@ class Saver:
             Names associated with the dimensions of the cube.
 
         """
-        # Exclude mesh coords, which are bundled in with the aux-coords.
+        # Exclude any mesh coords, which are bundled in with the aux-coords.
         aux_coords_no_mesh = [
             coord for coord in cube.aux_coords if not hasattr(coord, "mesh")
         ]
@@ -2088,7 +2089,7 @@ class Saver:
 
     def _get_mesh_variable_name(self, mesh):
         """
-        Returns a CF-netCDF variable name for the given coordinate.
+        Returns a CF-netCDF variable name for the mesh.
 
         Args:
 
@@ -2217,7 +2218,11 @@ class Saver:
             For Mesh components (element coordinates and connectivities), this
             *must* be passed in, as "element.cube_dims" does not function.
         * fill_value (number or None):
-            If set, fill any masked data points with this value.
+            If set, create the variable with this fill-value, and fill any
+            masked data points with this value.
+            If not set, standard netcdf4-python behaviour : the variable has no
+            '_FillValue' property, and uses the "standard" fill-value for its
+            type.
 
         Returns:
             var_name (string):
