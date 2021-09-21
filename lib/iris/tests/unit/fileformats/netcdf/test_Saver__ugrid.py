@@ -11,7 +11,6 @@ import iris.tests as tests  # isort:skip
 
 from pathlib import Path
 import shutil
-from subprocess import check_output
 import tempfile
 
 import netCDF4 as nc
@@ -325,11 +324,6 @@ class TestSaveUgrid__cube(tests.IrisTest):
         # Save data to the file.
         save(data, tempfile_path)
 
-        # Debug: send an 'ncdump' of the file to the terminal
-        # TODO: remove this when done debugging
-        text = check_output(f"ncdump -h {tempfile_path}", shell=True)
-        text = text.decode()
-        print(text)
         return tempfile_path
 
     def test_basic_mesh(self):
@@ -659,11 +653,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # Save data to the file.
         save(cube, tempfile_path)
 
-        # Debug: send an 'ncdump' of the file to the terminal
-        # TODO: remove this when done debugging
-        text = check_output(f"ncdump -h {tempfile_path}", shell=True)
-        text = text.decode()
-        # print(text)
         return tempfile_path
 
     def test_connectivity_dim_order(self):

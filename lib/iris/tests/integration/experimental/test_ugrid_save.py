@@ -72,7 +72,6 @@ class TestBasicSave(IrisTest):
         # Check that save-and-loadback leaves Iris data unchanged,
         # for data derived from each UGRID example CDL.
         for ex_name, filepath in self.example_names_paths.items():
-            print(f"Roundtrip checking : {ex_name}")
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
             # Create a netcdf file from the test CDL.
             check_call(
