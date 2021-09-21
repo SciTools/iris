@@ -1805,7 +1805,7 @@ class Saver:
 
         * cube (:class:`iris.cube.Cube`):
             The cube that contains the given coordinate.
-        * coord (:class:`iris.coords.DimensionalMetadata`):
+        * coord (:class:`iris.coords._DimensionalMetadata`):
             An instance of a coordinate (or similar), for which a CF-netCDF
             variable name is required.
 
