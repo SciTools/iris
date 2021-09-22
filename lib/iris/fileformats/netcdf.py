@@ -978,7 +978,7 @@ class _FillValueMaskCheckAndStoreTarget:
 
 
 # NOTE : this matches :class:`iris.experimental.ugrid.Mesh.LOCATIONS`,
-# but in a specific preferred order.
+# but in the preferred order for coord/connectivity variables in the file.
 MESH_LOCATIONS = ("node", "edge", "face")
 
 
