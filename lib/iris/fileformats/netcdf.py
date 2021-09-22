@@ -1732,7 +1732,7 @@ class Saver:
                 A list of the mesh dimensions of the attached mesh, if any.
 
         ..note::
-            One of the mesh dimensions will generally also appear in the cube
+            One of the mesh dimensions will typically also appear in the cube
             dimensions.
 
         """
