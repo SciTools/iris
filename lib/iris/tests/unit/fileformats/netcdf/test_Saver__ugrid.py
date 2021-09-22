@@ -46,7 +46,7 @@ def build_mesh(
 
     * n_nodes, n_faces, n_edges (int):
         Basic dimensions of mesh components.  Zero means no such location.
-    * nodecoord_xyargs, nodecoord_xyargs, nodecoord_xyargs (pair of dict):
+    * nodecoord_xyargs, edgecoord_xyargs, facecoord_xyargs (pair of dict):
         Pairs (x,y) of settings kwargs, applied after initial creation the
         relevant location coordinates.
     * conn_role_kwargs (dict of string:dict):
