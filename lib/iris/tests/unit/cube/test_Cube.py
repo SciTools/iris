@@ -1795,6 +1795,16 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 180)
         self.assertEqual(result.data[0, 0, -1], 179)
 
+    def test_negative_aligned_bounds_at_modulus(self):
+        cube = create_cube(0.5, 360.5, bounds=True)
+        result = cube.intersection(longitude=(-180, 180))
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[0], [-180, -179]
+        )
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [179, 180])
+        self.assertEqual(result.data[0, 0, 0], 180)
+        self.assertEqual(result.data[0, 0, -1], 179)
+
     def test_negative_misaligned_points_inside(self):
         cube = create_cube(0, 360, bounds=True)
         result = cube.intersection(longitude=(-10.25, 10.25))
