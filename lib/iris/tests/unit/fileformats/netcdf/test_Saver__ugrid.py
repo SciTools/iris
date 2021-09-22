@@ -42,6 +42,19 @@ def build_mesh(
     Mesh has faces edges, face-coords and edge-coords, numbers of which can be
     controlled.
 
+    Args:
+
+    * n_nodes, n_faces, n_edges (int):
+        Basic dimensions of mesh components.  Zero means no such location.
+    * nodecoord_xyargs, nodecoord_xyargs, nodecoord_xyargs (pair of dict):
+        Pairs (x,y) of settings kwargs, applied after initial creation the
+        relevant location coordinates.
+    * conn_role_kwargs (dict of string:dict):
+        Mapping from cf_role name to settings kwargs for connectivities,
+        applied after initially creating them.
+    * mesh_kwargs (dict):
+        Dictionary of key settings to apply to the Mesh, after creating it.
+
     """
 
     def applyargs(coord, kwargs):
@@ -56,7 +69,6 @@ def build_mesh(
                 # coords and xyargs both iterables : implicitly=(x,y)
                 applyargs(coord, kwargs)
 
-    # NB when creating coords, supply axis to make Mesh.to_AuxCoords work
     node_coords = [
         AuxCoord(np.arange(n_nodes), standard_name=name)
         for loc, name in zip(XY_LOCS, XY_NAMES)
@@ -117,6 +129,18 @@ def build_mesh(
 
 
 def make_mesh(basic=True, **kwargs):
+    """
+    Create a test mesh, with some built-in 'standard' settings.
+
+    Kwargs:
+
+    * basic (bool):
+        If true (default), create with 'standard' set of test properties.
+    * kwargs (dict):
+        Additional kwargs, passed through to 'build_mesh'.
+        Items here override the 'standard' settings.
+
+    """
     if basic:
         # Use some helpful non-minimal settings as our 'basic' mesh.
         use_kwargs = dict(
@@ -174,6 +198,19 @@ def default_mesh():
 
 
 def make_cube(mesh=None, location="face", **kwargs):
+    """
+    Create a test cube, based on a given mesh + location.
+
+    Kwargs:
+
+    * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
+        If None, use 'default_mesh()'
+    * location (string):
+        Which mesh element to map the cube to.
+    * kwargs (dict):
+        Additional property settings to apply to the cube (after creation).
+
+    """
     if mesh is None:
         mesh = default_mesh()
     dim = mesh_location_size(mesh, location)
@@ -186,7 +223,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
 
 def add_height_dim(cube):
-    # Add an extra inital 'height' dimension onto a cube.
+    """Add an extra inital 'height' dimension onto a cube."""
     cube = cube.copy()  # Avoid trashing the input cube.
     cube.add_aux_coord(AuxCoord([0.0], standard_name="height", units="m"))
     # Make three copies with different heights
@@ -268,7 +305,7 @@ def vars_meshnames(vars):
 
 
 def vars_meshdim(vars, location, mesh_name=None):
-    """ "
+    """
     Extract a dim-name for a given element location.
 
     Args:
