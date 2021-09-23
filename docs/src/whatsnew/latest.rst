@@ -124,6 +124,9 @@ This document explains the changes made to Iris for this release
    Useful for development purposes only.  For more information see
    :ref:`contributing.documentation.building` the documentation. (:pull:`4333`)
 
+#. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
+   that sometimes interferes with unrelated tests. (:pull:`4330`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
