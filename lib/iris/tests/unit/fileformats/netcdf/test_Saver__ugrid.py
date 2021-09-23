@@ -932,35 +932,45 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         ]
         return f'({" ".join(name_texts)})'
 
-    def test_mesh_names__varname(self):
+    def test_mesh_names(self):
         # Check the selection of mesh-variables names.
         # N.B. this is basically centralised in Saver._get_mesh_variable_name,
         # but we test in an implementation-neutral way (as it's fairly easy).
         mesh_names_tests = [
+            # no names : based on dimensionality
+            (
+                (None, None, None),
+                (None, None, "Mesh_2d"),
+            ),
             # var_name only
             (
                 (None, None, "meshvar_x"),
                 (None, None, "meshvar_x"),
             ),
-            # standard_name only
+            # standard_name only : does not apply to Mesh
             (
                 ("air_temperature", None, None),
-                ("air_temperature", None, "air_temperature"),
+                ("air_temperature", None, "Mesh_2d"),
             ),
             # long_name only
             (
                 (None, "my_long_name", None),
                 (None, "my_long_name", "my_long_name"),
             ),
+            # long_name that needs "fixing"
+            (
+                (None, "my long name&%!", None),
+                (None, "my long name&%!", "my_long_name___"),
+            ),
             # standard + long names
             (
-                ("air_temperature", "airtemp long name", None),
-                ("air_temperature", "airtemp long name", "air_temperature"),
+                ("air_temperature", "this_long_name", None),
+                ("air_temperature", "this_long_name", "this_long_name"),
             ),
-            # standard + var names
+            # long + var names
             (
-                ("air_temperature", None, "varname"),
-                ("air_temperature", None, "varname"),
+                (None, "my_longname", "varname"),
+                (None, "my_longname", "varname"),
             ),
             # all 3 names
             (
@@ -968,8 +978,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 ("air_temperature", "airtemp long name", "meshvar_varname_1"),
             ),
             # long name which is not valid as a varname
-            # NB this case is different for connectivities -- and not relevant
-            # for location-coords, which must have recognised standard_name.
             (
                 (None, "some Odd_chars ^&%yYz", None),  # character validation
                 (None, "some Odd_chars ^&%yYz", "some_Odd_chars____yYz"),
@@ -1059,6 +1067,30 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 f"with {self._namestext(given_names)}"
             )
             self.assertEqual(expected_names, result_names, fail_msg)
+
+    def test_mesh_dim_names(self):
+        # Check the selection of dimension names from the mesh.
+
+        dim_names_tests = [
+            (None, "Mesh2d_face"),
+            ("my_face_dimension", "my_face_dimension"),
+            ("dim invalid-name &%!", "dim_invalid_name____"),
+        ]
+        for given_name, expected_name in dim_names_tests:
+
+            mesh = make_mesh(mesh_kwargs={"face_dimension": given_name})
+
+            filepath = self.check_save_mesh(mesh)
+            dims, vars = scan_dataset(filepath)
+
+            (mesh_name,) = vars_meshnames(vars)
+            conn_varname = vars[mesh_name]["face_node_connectivity"]
+            face_dim = vars[conn_varname]["_DIMS"][0]
+            fail_msg = (
+                f'Unexpected resulting dimension name "{face_dim}" '
+                f'when saving mesh with dimension name of "{given_name}".'
+            )
+            self.assertEqual(expected_name, face_dim, fail_msg)
 
     def test_connectivity_names(self):
         # Check the selection of connectivity names.
