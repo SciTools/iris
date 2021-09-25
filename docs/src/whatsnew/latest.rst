@@ -57,7 +57,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
+   one cell's bounds align with the requested maximum and negative minimum, fixing
+   :issue:`4221`. (:pull:`4278`)
 
 
 💣 Incompatible Changes
@@ -65,10 +68,6 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
-
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
-   one cell's bounds align with the requested maximum and negative minimum, fixing
-   :issue:`4221`. (:pull:`4278`)
 
 🚀 Performance Enhancements
 ===========================
