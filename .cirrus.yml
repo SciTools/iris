@@ -41,6 +41,8 @@ env:
   IRIS_TEST_DATA_VERSION: "2.4"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
+  # Base directory for the iris-test-data (Windows path).
+  IRIS_TEST_DATA_DIR_WIN: ${HOME}\iris-test-data
 
 
 #
@@ -86,6 +88,63 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME}"
       - echo "${NOX_CACHE_BUILD}"
+
+
+#
+# YAML alias for common windows test infra-structure.
+#
+windows_task_template: &WINDOWS_TASK_TEMPLATE
+  auto_cancellation: true
+  env:
+    CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
+    CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
+    SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
+  python_win_cache:
+    folder: ${CHOCO_BASE}/python3/tools
+    fingerprint_script:
+      - echo %CIRRUS_OS%
+      - choco info python
+    populate_script:
+      - choco install python
+  conda_cache:
+    folder: ${CHOCO_BASE}/miniconda
+    fingerprint_script:
+      - echo %CIRRUS_OS%
+      - echo %CONDA_CACHE_PACKAGES%
+      # TODO: We've started refreshing every day rather than every week here
+      - echo %date%:%CONDA_CACHE_BUILD%
+      - choco info conda
+      # TODO: We can SHA256 hash like this if that's useful
+      # - CertUtil -hashfile temp.txt SHA256 | findstr /v "hash" > tmp.txt
+    populate_script:
+      - choco install miniconda
+      - conda config --set always_yes yes --set changeps1 no
+      - conda config --set show_channel_urls True
+      - conda config --add channels conda-forge
+      - conda update --quiet --name base conda
+      - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
+  cartopy_cache:
+    folder: ${CHOCO_BASE}/.local/share/cartopy
+    fingerprint_script:
+      - echo %CIRRUS_OS%
+      # TODO: We've started refreshing every day rather than every week here
+      - echo %date%:%CARTOPY_CACHE_BUILD%
+    populate_script:
+      - conda create --quiet --name cartopy-cache cartopy
+      - conda init cmd.exe
+      - conda activate cartopy-cache > nul 2>&1
+      # TODO: This used to use mktemp. This is less random
+      - mkdir tmp
+      - cd tmp
+      - ps: Invoke-WebRequest -OutFile cfd.py -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
+      - python cfd.py physical --output %CHOCO_BASE_WIN%\.local\share\cartopy --no-warn
+      - conda deactivate > nul 2>&1
+  nox_cache:
+    folder: ${CIRRUS_WORKING_DIR}/.nox
+    reupload_on_changes: true
+    fingerprint_script:
+      - echo %CIRRUS_TASK_NAME%
+      - echo %NOX_CACHE_BUILD%
 
 
 #
@@ -157,6 +216,31 @@ task:
     - echo "[Resources]" > ${SITE_CFG}
     - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
     - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
+    - nox --session tests -- --verbose
+
+
+#
+# Testing (Windows)
+#
+task:
+  only_if: ${SKIP_TEST_TASK} == ""
+  << : *CREDITS_TEMPLATE
+  matrix:
+    env:
+      PY_VER: 3.7
+    env:
+      PY_VER: 3.8
+  name: "${CIRRUS_OS}: py${PY_VER} tests"
+  windows_container:
+    image: cirrusci/windowsservercore:2019
+    cpu: 6
+    memory: 8G
+  << : *IRIS_TEST_DATA_TEMPLATE
+  << : *WINDOWS_TASK_TEMPLATE
+  tests_script:
+    - echo [Resources] > %SITE_CFG%
+    - echo test_data_dir = %IRIS_TEST_DATA_DIR_WIN%\test_data >> %SITE_CFG%
+    - echo doc_dir = %CIRRUS_WORKING_DIR%\docs >> %SITE_CFG%
     - nox --session tests -- --verbose
 
 
