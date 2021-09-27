@@ -977,11 +977,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 ("air_temperature", "airtemp long name", "meshvar_varname_1"),
                 ("air_temperature", "airtemp long name", "meshvar_varname_1"),
             ),
-            # long name which is not valid as a varname
-            (
-                (None, "some Odd_chars ^&%yYz", None),  # character validation
-                (None, "some Odd_chars ^&%yYz", "some_Odd_chars____yYz"),
-            ),
         ]
         for given_names, expected_names in mesh_names_tests:
             mesh_stdname, mesh_longname, mesh_varname = given_names
