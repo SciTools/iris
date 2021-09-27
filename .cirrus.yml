@@ -170,6 +170,19 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 
 
 #
+# YAML alias for the iris-test-data cache.
+#
+win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
+  data_cache:
+    folder: ${IRIS_TEST_DATA_DIR_WIN}
+    fingerprint_script:
+      - echo win_iris-test-data v%IRIS_TEST_DATA_VERSION%
+    populate_script:
+      - ps: Invoke-WebRequest -OutFile iris-test-data.zip -Uri https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip > nul 2>&1
+      - ps: Expand-Archive -Path iris-test-data.zip -DestinationPath %IRIS_TEST_DATA_DIR_WIN%
+
+
+#
 # Linting
 #
 task:
@@ -235,7 +248,7 @@ task:
     image: cirrusci/windowsservercore:2019
     cpu: 6
     memory: 8G
-  << : *IRIS_TEST_DATA_TEMPLATE
+  << : *WIN_IRIS_TEST_DATA_TEMPLATE
   << : *WINDOWS_TASK_TEMPLATE
   tests_script:
     - echo [Resources] > %SITE_CFG%
