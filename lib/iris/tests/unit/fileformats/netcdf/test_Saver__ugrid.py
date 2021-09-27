@@ -1038,6 +1038,14 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 ("projection_x_coordinate", "long name", "x_var_name"),
                 ("projection_x_coordinate", "long name", "x_var_name"),
             ),
+            # # no standard name ?
+            # # not possible at present, as Mesh requires a recognisable
+            # # standard_name to identify the axis of a location-coord.
+            # # TODO: test this if+when Mesh usage is relaxed
+            # (
+            #     (None, None, 'node_x'),
+            #     (None, None, "node_x"),
+            # ),
         ]
         for given_names, expected_names in coord_names_tests:
             mesh_stdname, mesh_longname, mesh_varname = given_names

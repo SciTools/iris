@@ -2079,17 +2079,10 @@ class Saver:
                     # Name it for it's first dim, i.e. mesh-dim of its location.
                     from iris.experimental.ugrid import Connectivity
 
-                    if isinstance(coord, Connectivity):
-                        location = coord.cf_role.split("_")[0]
-                    else:
-                        # Must be a mesh-element coordinate.
-                        location = None
-                        for test_location in MESH_LOCATIONS:
-                            include_key = f"include_{test_location}s"
-                            if coord in cube.mesh.coords({include_key: True}):
-                                location = test_location
-                                break
-                        assert location is not None
+                    # At present, a location-coord cannot be nameless, as the
+                    # Mesh code relies on guess_coord_axis.
+                    assert isinstance(coord, Connectivity)
+                    location = coord.cf_role.split("_")[0]
                     location_dim_attr = f"{location}_dimension"
                     name = getattr(cube.mesh, location_dim_attr)
 
