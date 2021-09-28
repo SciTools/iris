@@ -233,6 +233,28 @@ class Test2Dim(Test1Dim):
                 self.assertEqual(expected, actual)
             self.assertIsNone(actual_coord.var_name)
 
+    def test_mixed_shapes(self):
+        lon_bounds = np.array([[0, 0, 1, 1], [1, 1, 2, 2], [2, 3, 2.5, 999]])
+        lon_bounds = np.ma.masked_equal(lon_bounds, 999)
+        lon = AuxCoord(
+            points=[0.5, 1.5, 2.5],
+            bounds=lon_bounds,
+            standard_name="longitude",
+        )
+
+        lat_bounds = np.array([[0, 1, 1, 0], [1, 2, 2, 1], [2, 2, 3, 999]])
+        lat_bounds = np.ma.masked_equal(lat_bounds, 999)
+        lat = AuxCoord(
+            points=[0.5, 1.5, 2.5], bounds=lat_bounds, standard_name="latitude"
+        )
+
+        mesh = mesh_from_coords(lon, lat)
+        self.assertArrayEqual(
+            mesh.face_node_connectivity.src_lengths(), [4, 4, 3]
+        )
+        self.assertEqual(mesh.node_coords.node_x.points[-1], 0.0)
+        self.assertEqual(mesh.node_coords.node_y.points[-1], 0.0)
+
 
 class TestInvalidBounds(tests.IrisTest):
     """Invalid bounds not supported."""

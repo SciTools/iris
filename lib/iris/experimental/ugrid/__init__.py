@@ -2919,6 +2919,8 @@ def mesh_from_coords(coord_1, coord_2):
     else:
         array_lib = np
     indices = array_lib.arange(np.prod(bounds_shape)).reshape(bounds_shape)
+    masking = array_lib.ma.getmaskarray(coord_1.core_bounds())
+    indices = array_lib.ma.masked_array(indices, masking)
     connectivity = Connectivity(indices, conn_cf_role)
 
     # Create coords.
@@ -2939,14 +2941,14 @@ def mesh_from_coords(coord_1, coord_2):
         coord_y = axis_coords.get("Y") or axis_coords["other"]
 
     node_x = AuxCoord(
-        points=coord_x.core_bounds().flatten(),
+        points=array_lib.ma.filled(coord_x.core_bounds(), 0.0).flatten(),
         standard_name=coord_x.standard_name,
         long_name=coord_x.long_name,
         units=coord_x.units,
         attributes=coord_x.attributes,
     )
     node_y = AuxCoord(
-        points=coord_y.core_bounds().flatten(),
+        points=array_lib.ma.filled(coord_y.core_bounds(), 0.0).flatten(),
         standard_name=coord_y.standard_name,
         long_name=coord_y.long_name,
         units=coord_y.units,
