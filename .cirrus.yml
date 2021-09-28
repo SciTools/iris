@@ -182,6 +182,9 @@ win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
     populate_script:
       - set zipfile=%CIRRUS_WORKING_DIR%%IRIS_TEST_DATA_DIR_EXT_WIN%/win_iris-test-data.zip
       - set url=https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip
+      - ps: echo $Env:zipfile
+      - ps: echo $Env:url
+      - ps: Invoke-WebRequest -OutFile $Env:zipfile -Uri $Env:url
       - ps: Invoke-WebRequest -OutFile $Env:zipfile -Uri $Env:url > nul 2>&1
       - ps: Expand-Archive -Path $Env:zipfile -DestinationPath $Env:IRIS_TEST_DATA_DIR_WIN
 
