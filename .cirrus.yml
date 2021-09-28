@@ -120,6 +120,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # - CertUtil -hashfile temp.txt SHA256 | findstr /v "hash" > tmp.txt
     populate_script:
       - choco install miniconda -y --params="'/AddToPath:1'"
+      - echo %PATH%
+      - dir C:\tools
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
