@@ -342,7 +342,7 @@ class CFNameCoordMap:
 
     def name(self, coord):
         """
-        Return the CF name, given a coordinate
+        Return the CF name, given a coordinate, or None if not recognised.
 
         Args:
 
@@ -350,7 +350,7 @@ class CFNameCoordMap:
             The coordinate of the associated CF name.
 
         Returns:
-            Coordinate.
+            Coordinate or None.
 
         """
         result = None
@@ -358,22 +358,19 @@ class CFNameCoordMap:
             if coord == pair.coord:
                 result = pair.name
                 break
-        if result is None:
-            msg = "Coordinate is not mapped, {!r}".format(coord)
-            raise KeyError(msg)
         return result
 
     def coord(self, name):
         """
-        Return the coordinate, given a CF name.
+        Return the coordinate, given a CF name, or None if not recognised.
 
         Args:
 
         * name:
-            CF name of the associated coordinate.
+            CF name of the associated coordinate, or None if not recognised.
 
         Returns:
-            CF name.
+            CF name or None.
 
         """
         result = None
@@ -381,9 +378,6 @@ class CFNameCoordMap:
             if name == pair.name:
                 result = pair.coord
                 break
-        if result is None:
-            msg = "Name is not mapped, {!r}".format(name)
-            raise KeyError(msg)
         return result
 
 
@@ -977,6 +971,11 @@ class _FillValueMaskCheckAndStoreTarget:
         self.target[keys] = arr
 
 
+# NOTE : this matches :class:`iris.experimental.ugrid.Mesh.LOCATIONS`,
+# but in the preferred order for coord/connectivity variables in the file.
+MESH_LOCATIONS = ("node", "edge", "face")
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
@@ -1018,12 +1017,15 @@ class Saver:
         # All persistent variables
         #: CF name mapping with iris coordinates
         self._name_coord_map = CFNameCoordMap()
-        #: List of dimension coordinates added to the file
-        self._dim_coords = []
+        #: Map of dimensions to characteristic coordinates with which they are identified
+        self._dim_names_and_coords = CFNameCoordMap()
         #: List of grid mappings added to the file
         self._coord_systems = []
         #: A dictionary, listing dimension names and corresponding length
         self._existing_dim = {}
+        #: A map from meshes to their actual file dimensions (names).
+        # NB: might not match those of the mesh, if they were 'incremented'.
+        self._mesh_dims = {}
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
@@ -1192,15 +1194,25 @@ class Saver:
             self.check_attribute_compliance(coord, coord.points)
 
         # Get suitable dimension names.
-        dimension_names = self._get_dim_names(cube)
+        mesh_dimensions, cube_dimensions = self._get_dim_names(cube)
 
-        # Create the CF-netCDF data dimensions.
-        self._create_cf_dimensions(cube, dimension_names, unlimited_dimensions)
+        # Create all the CF-netCDF data dimensions.
+        # Put mesh dims first, then non-mesh dims in cube-occurring order.
+        nonmesh_dimensions = [
+            dim for dim in cube_dimensions if dim not in mesh_dimensions
+        ]
+        all_dimensions = mesh_dimensions + nonmesh_dimensions
+        self._create_cf_dimensions(cube, all_dimensions, unlimited_dimensions)
+
+        # Create the mesh components, if there is a mesh.
+        # We do this before creating the data-var, so that mesh vars precede
+        # data-vars in the file.
+        cf_mesh_name = self._add_mesh(cube)
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
             cube,
-            dimension_names,
+            cube_dimensions,
             local_keys,
             zlib=zlib,
             complevel=complevel,
@@ -1214,24 +1226,31 @@ class Saver:
             fill_value=fill_value,
         )
 
+        # Associate any mesh with the data-variable.
+        # N.B. _add_mesh cannot do this, as we want to put mesh variables
+        # before data-variables in the file.
+        if cf_mesh_name is not None:
+            _setncattr(cf_var_cube, "mesh", cf_mesh_name)
+            _setncattr(cf_var_cube, "location", cube.location)
+
         # Add coordinate variables.
-        self._add_dim_coords(cube, dimension_names)
+        self._add_dim_coords(cube, cube_dimensions)
 
         # Add the auxiliary coordinate variables and associate the data
         # variable to them
-        self._add_aux_coords(cube, cf_var_cube, dimension_names)
+        self._add_aux_coords(cube, cf_var_cube, cube_dimensions)
 
         # Add the cell_measures variables and associate the data
         # variable to them
-        self._add_cell_measures(cube, cf_var_cube, dimension_names)
+        self._add_cell_measures(cube, cf_var_cube, cube_dimensions)
 
         # Add the ancillary_variables variables and associate the data variable
         # to them
-        self._add_ancillary_variables(cube, cf_var_cube, dimension_names)
+        self._add_ancillary_variables(cube, cf_var_cube, cube_dimensions)
 
         # Add the formula terms to the appropriate cf variables for each
         # aux factory in the cube.
-        self._add_aux_factories(cube, cf_var_cube, dimension_names)
+        self._add_aux_factories(cube, cf_var_cube, cube_dimensions)
 
         # Add data variable-only attribute names to local_keys.
         if local_keys is None:
@@ -1356,6 +1375,109 @@ class Saver:
                     size = self._existing_dim[dim_name]
                 self._dataset.createDimension(dim_name, size)
 
+    def _add_mesh(self, cube):
+        """
+        Add the cube's mesh, and all related variables to the dataset.
+        Includes all the mesh-element coordinate and connectivity variables.
+
+        ..note::
+
+            Here, we do *not* add the relevant referencing attributes to the
+            data-variable, because we want to create the data-variable later.
+
+        Args:
+
+        * cube (:class:`iris.cube.Cube`):
+            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+
+        Returns:
+            * cf_mesh_name (string or None):
+            The name of the mesh variable created, or None if the cube does not
+            have a mesh.
+
+        """
+        cf_mesh_name = None
+        mesh = cube.mesh
+        if mesh:
+            cf_mesh_name = self._name_coord_map.name(mesh)
+            if cf_mesh_name is None:
+                # Not already present : create it
+                cf_mesh_name = self._create_mesh(mesh)
+                self._name_coord_map.append(cf_mesh_name, mesh)
+
+            cf_mesh_var = self._dataset.variables[cf_mesh_name]
+
+            # Get the mesh-element dim names.
+            mesh_dims = self._mesh_dims[mesh]
+
+            # Add all the element coordinate variables.
+            for location in MESH_LOCATIONS:
+                coords_meshobj_attr = f"{location}_coords"
+                coords_file_attr = f"{location}_coordinates"
+                mesh_coords = getattr(mesh, coords_meshobj_attr, None)
+                if mesh_coords:
+                    coord_names = []
+                    for coord in mesh_coords:
+                        if coord is None:
+                            continue  # an awkward thing that mesh.coords does
+                        coord_name = self._create_generic_cf_array_var(
+                            cube,
+                            [],
+                            coord,
+                            element_dims=(mesh_dims[location],),
+                        )
+                        coord_names.append(coord_name)
+                    # Record the coordinates (if any) on the mesh variable.
+                    if coord_names:
+                        coord_names = " ".join(coord_names)
+                        _setncattr(cf_mesh_var, coords_file_attr, coord_names)
+
+            # Add all the connectivity variables.
+            # pre-fetch the set + ignore "None"s, which are empty slots.
+            conns = [
+                conn for conn in mesh.all_connectivities if conn is not None
+            ]
+            for conn in conns:
+                # Get the connectivity role, = "{loc1}_{loc2}_connectivity".
+                cf_conn_attr_name = conn.cf_role
+                loc_from, loc_to, _ = cf_conn_attr_name.split("_")
+                # Construct a trailing dimension name.
+                last_dim = f"{cf_mesh_name}_{loc_from}_N_{loc_to}s"
+                # Create if it does not already exist.
+                if last_dim not in self._dataset.dimensions:
+                    length = conn.shape[1 - conn.src_dim]
+                    self._dataset.createDimension(last_dim, length)
+
+                # Create variable.
+                # NOTE: for connectivities *with missing points*, this will use a
+                # fixed standard fill-value of -1.  In that case, we create the
+                # variable with a '_FillValue' property, which can only be done
+                # when it is first created.
+                loc_dim_name = mesh_dims[loc_from]
+                conn_dims = (loc_dim_name, last_dim)
+                if conn.src_dim == 1:
+                    # Has the 'other' dimension order, =reversed
+                    conn_dims = conn_dims[::-1]
+                cf_conn_name = self._create_generic_cf_array_var(
+                    cube, [], conn, element_dims=conn_dims, fill_value=-1
+                )
+                # Add essential attributes to the Connectivity variable.
+                cf_conn_var = self._dataset.variables[cf_conn_name]
+                _setncattr(cf_conn_var, "cf_role", cf_conn_attr_name)
+                _setncattr(cf_conn_var, "start_index", conn.start_index)
+
+                # Record the connectivity on the parent mesh var.
+                _setncattr(cf_mesh_var, cf_conn_attr_name, cf_conn_name)
+                # If the connectivity had the 'alternate' dimension order, add the
+                # relevant dimension property
+                if conn.src_dim == 1:
+                    loc_dim_attr = f"{loc_from}_dimension"
+                    # Should only get here once.
+                    assert loc_dim_attr not in cf_mesh_var.ncattrs()
+                    _setncattr(cf_mesh_var, loc_dim_attr, loc_dim_name)
+
+        return cf_mesh_name
+
     def _add_inner_related_vars(
         self, cube, cf_var_cube, dimension_names, coordlike_elements
     ):
@@ -1381,21 +1503,21 @@ class Saver:
             for element in sorted(
                 coordlike_elements, key=lambda element: element.name()
             ):
-                # Create the associated CF-netCDF variable.
-                if element not in self._name_coord_map.coords:
+                # Re-use, or create, the associated CF-netCDF variable.
+                cf_name = self._name_coord_map.name(element)
+                if cf_name is None:
+                    # Not already present : create it
                     cf_name = self._create_generic_cf_array_var(
                         cube, dimension_names, element
                     )
                     self._name_coord_map.append(cf_name, element)
-                else:
-                    cf_name = self._name_coord_map.name(element)
 
-                if cf_name is not None:
-                    if role_attribute_name == "cell_measures":
-                        # In the case of cell-measures, the attribute entries are not just
-                        # a var_name, but each have the form "<measure>: <varname>".
-                        cf_name = "{}: {}".format(element.measure, cf_name)
-                    element_names.append(cf_name)
+                if role_attribute_name == "cell_measures":
+                    # In the case of cell-measures, the attribute entries are not just
+                    # a var_name, but each have the form "<measure>: <varname>".
+                    cf_name = "{}: {}".format(element.measure, cf_name)
+
+                element_names.append(cf_name)
 
             # Add CF-netCDF references to the primary data variable.
             if element_names:
@@ -1416,11 +1538,15 @@ class Saver:
             Names associated with the dimensions of the cube.
 
         """
+        # Exclude any mesh coords, which are bundled in with the aux-coords.
+        aux_coords_no_mesh = [
+            coord for coord in cube.aux_coords if not hasattr(coord, "mesh")
+        ]
         return self._add_inner_related_vars(
             cube,
             cf_var_cube,
             dimension_names,
-            cube.aux_coords,
+            aux_coords_no_mesh,
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
@@ -1482,6 +1608,7 @@ class Saver:
         for coord in cube.dim_coords:
             # Create the associated coordinate CF-netCDF variable.
             if coord not in self._name_coord_map.coords:
+                # Not already present : create it
                 cf_name = self._create_generic_cf_array_var(
                     cube, dimension_names, coord
                 )
@@ -1593,57 +1720,175 @@ class Saver:
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
 
         Returns:
-            List of dimension names with length equal the number of dimensions
-            in the cube.
+            mesh_dimensions, cube_dimensions
+            * mesh_dimensions (list of string):
+                A list of the mesh dimensions of the attached mesh, if any.
+            * cube_dimensions (list of string):
+                A lists of dimension names for each dimension of the cube
+
+        ..note::
+            The returned lists are in the preferred file creation order.
+            One of the mesh dimensions will typically also appear in the cube
+            dimensions.
 
         """
-        dimension_names = []
-        for dim in range(cube.ndim):
-            coords = cube.coords(dimensions=dim, dim_coords=True)
-            if coords:
-                coord = coords[0]
 
-                dim_name = self._get_coord_variable_name(cube, coord)
-                # Add only dimensions that have not already been added.
-                if coord not in self._dim_coords:
-                    # Determine unique dimension name
-                    while (
-                        dim_name in self._existing_dim
-                        or dim_name in self._name_coord_map.names
-                    ):
-                        dim_name = self._increment_name(dim_name)
+        def record_dimension(names_list, dim_name, length, matching_coords=[]):
+            """
+            Record a file dimension, its length and associated "coordinates"
+            (which may in fact also be connectivities).
 
-                    # Update names added, current cube dim names used and
-                    # unique coordinates added.
-                    self._existing_dim[dim_name] = coord.shape[0]
-                    dimension_names.append(dim_name)
-                    self._dim_coords.append(coord)
-                else:
-                    # Return the dim_name associated with the existing
-                    # coordinate.
-                    dim_name = self._name_coord_map.name(coord)
-                    dimension_names.append(dim_name)
+            If the dimension has been seen already, check that it's length
+            matches the earlier finding.
 
+            """
+            if dim_name not in self._existing_dim:
+                self._existing_dim[dim_name] = length
             else:
-                # No CF-netCDF coordinates describe this data dimension.
-                dim_name = "dim%d" % dim
-                if dim_name in self._existing_dim:
-                    # Increment name if conflicted with one already existing.
-                    if self._existing_dim[dim_name] != cube.shape[dim]:
+                # Make sure we never re-write one, though it's really not
+                # clear how/if this could ever actually happen.
+                existing_length = self._existing_dim[dim_name]
+                if length != existing_length:
+                    msg = (
+                        "Netcdf saving error : existing dimension "
+                        f'"{dim_name}" has length {existing_length}, '
+                        f"but occurrence in cube {cube} has length {length}"
+                    )
+                    raise ValueError(msg)
+
+            # Record given "coords" (sort-of, maybe connectivities) to be
+            # identified with this dimension: add to the already-seen list.
+            existing_coords = self._dim_names_and_coords.coords
+            for coord in matching_coords:
+                if coord not in existing_coords:
+                    self._dim_names_and_coords.append(dim_name, coord)
+
+            # Add the latest name to the list passed in.
+            names_list.append(dim_name)
+
+        # Get info on mesh, first.
+        mesh_dimensions = []
+        mesh = cube.mesh
+        if mesh is None:
+            cube_mesh_dim = None
+        else:
+            # Identify all the mesh dimensions.
+            mesh_location_dimnames = {}
+            # NOTE: one of these will be a cube dimension, but that one does not
+            # get any special handling.  We *do* want to list/create them in a
+            # definite order (node,edge,face), and before non-mesh dimensions.
+            for location in MESH_LOCATIONS:
+                # Find if this location exists in the mesh, and a characteristic
+                # coordinate to identify it with.
+                # To use only _required_ UGRID components, we use a location
+                # coord for nodes, but a connectivity for faces/edges
+                if location == "node":
+                    # For nodes, identify the dim with a coordinate variable.
+                    # Selecting the X-axis one for definiteness.
+                    dim_coords = mesh.coords(include_nodes=True, axis="x")
+                else:
+                    # For face/edge, use the relevant "optionally required"
+                    # connectivity variable.
+                    cf_role = f"{location}_node_connectivity"
+                    dim_coords = mesh.connectivities(cf_role=cf_role)
+                if len(dim_coords) > 0:
+                    # As the mesh contains this location, we want to include this
+                    # dim in our returned mesh dims.
+                    # We should have 1 identifying variable (of either type).
+                    assert len(dim_coords) == 1
+                    dim_element = dim_coords[0]
+                    dim_name = self._dim_names_and_coords.name(dim_element)
+                    if dim_name is not None:
+                        # For mesh-identifying coords, we require the *same*
+                        # coord, not an identical one (i.e. "is" not "==")
+                        stored_coord = self._dim_names_and_coords.coord(
+                            dim_name
+                        )
+                        if dim_element is not stored_coord:
+                            # This is *not* a proper match after all.
+                            dim_name = None
+                    if dim_name is None:
+                        # No existing dim matches this, so assign a new name
+                        if location == "node":
+                            # always 1-d
+                            (dim_length,) = dim_element.shape
+                        else:
+                            # extract source dim, respecting dim-ordering
+                            dim_length = dim_element.shape[dim_element.src_dim]
+                        # Name it for the relevant mesh dimension
+                        location_dim_attr = f"{location}_dimension"
+                        dim_name = getattr(mesh, location_dim_attr)
+                        # NOTE: This cannot currently be empty, as a Mesh
+                        # "invents" dimension names which were not given.
+                        assert dim_name is not None
+                        # Ensure it is a valid variable name.
+                        dim_name = self.cf_valid_var_name(dim_name)
+                        # Disambiguate if it matches an existing one.
+                        while dim_name in self._existing_dim:
+                            dim_name = self._increment_name(dim_name)
+
+                        # Record the new dimension.
+                        record_dimension(
+                            mesh_dimensions, dim_name, dim_length, dim_coords
+                        )
+
+                    # Store the mesh dims indexed by location
+                    mesh_location_dimnames[location] = dim_name
+
+            # Finally, identify the cube dimension which maps to the mesh: this
+            # is used below to recognise the mesh among the cube dimensions.
+            any_mesh_coord = cube.coords(mesh_coords=True)[0]
+            (cube_mesh_dim,) = any_mesh_coord.cube_dims(cube)
+            # Record actual file dimension names for each mesh saved.
+            self._mesh_dims[mesh] = mesh_location_dimnames
+
+        # Get the cube dimensions, in order.
+        cube_dimensions = []
+        for dim in range(cube.ndim):
+            if dim == cube_mesh_dim:
+                # Handle a mesh dimension: we already named this.
+                dim_coords = []
+                dim_name = self._mesh_dims[mesh][cube.location]
+            else:
+                # Get a name from the dim-coord (if any).
+                dim_coords = cube.coords(dimensions=dim, dim_coords=True)
+                if dim_coords:
+                    # Derive a dim name from a coord.
+                    coord = dim_coords[0]  # always have at least one
+
+                    # Add only dimensions that have not already been added.
+                    dim_name = self._dim_names_and_coords.name(coord)
+                    if dim_name is None:
+                        # Not already present : create  a unique dimension name
+                        # from the coord.
+                        dim_name = self._get_coord_variable_name(cube, coord)
                         while (
                             dim_name in self._existing_dim
-                            and self._existing_dim[dim_name] != cube.shape[dim]
                             or dim_name in self._name_coord_map.names
                         ):
                             dim_name = self._increment_name(dim_name)
-                        # Update dictionary with new entry
-                        self._existing_dim[dim_name] = cube.shape[dim]
-                else:
-                    # Update dictionary with new entry
-                    self._existing_dim[dim_name] = cube.shape[dim]
 
-                dimension_names.append(dim_name)
-        return dimension_names
+                else:
+                    # No CF-netCDF coordinates describe this data dimension.
+                    # Make up a new, distinct dimension name
+                    dim_name = f"dim{dim}"
+                    if dim_name in self._existing_dim:
+                        # Increment name if conflicted with one already existing.
+                        if self._existing_dim[dim_name] != cube.shape[dim]:
+                            while (
+                                dim_name in self._existing_dim
+                                and self._existing_dim[dim_name]
+                                != cube.shape[dim]
+                                or dim_name in self._name_coord_map.names
+                            ):
+                                dim_name = self._increment_name(dim_name)
+
+            # Record the dimension.
+            record_dimension(
+                cube_dimensions, dim_name, cube.shape[dim], dim_coords
+            )
+
+        return mesh_dimensions, cube_dimensions
 
     @staticmethod
     def cf_valid_var_name(var_name):
@@ -1667,7 +1912,7 @@ class Saver:
         return var_name
 
     @staticmethod
-    def _cf_coord_identity(coord):
+    def _cf_coord_standardised_units(coord):
         """
         Determine a suitable units from a given coordinate.
 
@@ -1696,7 +1941,7 @@ class Saver:
             elif coord.standard_name == "longitude":
                 units = "degrees_east"
 
-        return coord.standard_name, coord.long_name, units
+        return units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
@@ -1818,29 +2063,138 @@ class Saver:
         else:
             name = coord.standard_name or coord.long_name
             if not name or set(name).intersection(string.whitespace):
-                # NB don't know how to fix this if it is not a Coord or similar
-                assert isinstance(coord, iris.coords.Coord)
-                # Auto-generate name based on associated dimensions.
-                name = ""
-                for dim in cube.coord_dims(coord):
-                    name += "dim{}".format(dim)
-                # Handle scalar coordinate (dims == ()).
-                if not name:
-                    name = "unknown_scalar"
+                # We need to invent a name, based on its associated dimensions.
+                if cube.coords(coord):
+                    # It is a regular cube coordinate.
+                    # Auto-generate a name based on the dims.
+                    name = ""
+                    for dim in cube.coord_dims(coord):
+                        name += f"dim{dim}"
+                    # Handle scalar coordinate (dims == ()).
+                    if not name:
+                        name = "unknown_scalar"
+                else:
+                    # Not a cube coord, so must be a connectivity or
+                    # element-coordinate of the mesh.
+                    # Name it for it's first dim, i.e. mesh-dim of its location.
+                    from iris.experimental.ugrid import Connectivity
+
+                    # At present, a location-coord cannot be nameless, as the
+                    # Mesh code relies on guess_coord_axis.
+                    assert isinstance(coord, Connectivity)
+                    location = coord.cf_role.split("_")[0]
+                    location_dim_attr = f"{location}_dimension"
+                    name = getattr(cube.mesh, location_dim_attr)
+
             # Convert to lower case and replace whitespace by underscores.
             cf_name = "_".join(name.lower().split())
 
         cf_name = self.cf_valid_var_name(cf_name)
         return cf_name
 
-    _ELEMENT_TYPE_NAMES = {
-        iris.coords.DimCoord: "coordinate",
-        iris.coords.AuxCoord: "coordinate",
-        iris.coords.CellMeasure: "cell-measure",
-        iris.coords.AncillaryVariable: "ancillary-variable",
-    }
+    def _get_mesh_variable_name(self, mesh):
+        """
+        Returns a CF-netCDF variable name for the mesh.
 
-    def _create_generic_cf_array_var(self, cube, cube_dim_names, element):
+        Args:
+
+        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+            An instance of a Mesh for which a CF-netCDF variable name is
+            required.
+
+        Returns:
+            A CF-netCDF variable name as a string.
+
+        """
+        cf_name = mesh.var_name or mesh.long_name
+        # Prefer a var-name, but accept a long_name as an alternative.
+        # N.B. we believe it can't (shouldn't) have a standard name.
+        if not cf_name:
+            # Auto-generate a name based on mesh properties.
+            cf_name = f"Mesh_{mesh.topology_dimension}d"
+
+        # Ensure valid form for var-name.
+        cf_name = self.cf_valid_var_name(cf_name)
+        return cf_name
+
+    def _create_mesh(self, mesh):
+        """
+        Create a mesh variable in the netCDF dataset.
+
+        Args:
+
+        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+            The Mesh to be saved to CF-netCDF file.
+
+        Returns:
+            The string name of the associated CF-netCDF variable saved.
+
+        """
+        # First choose a var-name for the mesh variable itself.
+        cf_mesh_name = self._get_mesh_variable_name(mesh)
+        # Disambiguate any possible clashes.
+        while cf_mesh_name in self._dataset.variables:
+            cf_mesh_name = self._increment_name(cf_mesh_name)
+
+        # Create the main variable
+        cf_mesh_var = self._dataset.createVariable(
+            cf_mesh_name,
+            np.dtype(np.int32),
+            [],
+        )
+
+        # Add the basic essential attributes
+        _setncattr(cf_mesh_var, "cf_role", "mesh_topology")
+        _setncattr(
+            cf_mesh_var,
+            "topology_dimension",
+            np.int32(mesh.topology_dimension),
+        )
+        # Add the usual names + units attributes
+        self._set_cf_var_attributes(cf_mesh_var, mesh)
+
+        return cf_mesh_name
+
+    def _set_cf_var_attributes(self, cf_var, element):
+        # Deal with CF-netCDF units, and add the name+units properties.
+        if isinstance(element, iris.coords.Coord):
+            # Fix "degree" units if needed.
+            units_str = self._cf_coord_standardised_units(element)
+        else:
+            units_str = str(element.units)
+
+        if cf_units.as_unit(units_str).is_udunits():
+            _setncattr(cf_var, "units", units_str)
+
+        standard_name = element.standard_name
+        if standard_name is not None:
+            _setncattr(cf_var, "standard_name", standard_name)
+
+        long_name = element.long_name
+        if long_name is not None:
+            _setncattr(cf_var, "long_name", long_name)
+
+        # Add the CF-netCDF calendar attribute.
+        if element.units.calendar:
+            _setncattr(cf_var, "calendar", str(element.units.calendar))
+
+        # Add any other custom coordinate attributes.
+        for name in sorted(element.attributes):
+            value = element.attributes[name]
+
+            if name == "STASH":
+                # Adopting provisional Metadata Conventions for representing MO
+                # Scientific Data encoded in NetCDF Format.
+                name = "um_stash_source"
+                value = str(value)
+
+            # Don't clobber existing attributes.
+            if not hasattr(cf_var, name):
+                _setncattr(cf_var, name, value)
+
+    def _create_generic_cf_array_var(
+        self, cube, cube_dim_names, element, element_dims=None, fill_value=None
+    ):
         """
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
@@ -1858,6 +2212,18 @@ class Saver:
         * element:
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
+            Not used if 'element_dims' is not None.
+        * element_dims (list of string, or None):
+            If set, contains the variable dimension (names),
+            otherwise these are taken from `element.cube_dims[cube]`.
+            For Mesh components (element coordinates and connectivities), this
+            *must* be passed in, as "element.cube_dims" does not function.
+        * fill_value (number or None):
+            If set, create the variable with this fill-value, and fill any
+            masked data points with this value.
+            If not set, standard netcdf4-python behaviour : the variable has no
+            '_FillValue' property, and uses the "standard" fill-value for its
+            type.
 
         Returns:
             var_name (string):
@@ -1869,10 +2235,11 @@ class Saver:
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
-        # Get the list of file-dimensions (names), to create the variable.
-        element_dims = [
-            cube_dim_names[dim] for dim in element.cube_dims(cube)
-        ]  # NB using 'cube_dims' as this works for any type of element
+        if element_dims is None:
+            # Get the list of file-dimensions (names), to create the variable.
+            element_dims = [
+                cube_dim_names[dim] for dim in element.cube_dims(cube)
+            ]  # NB using 'cube_dims' as this works for any type of element
 
         # Get the data values, in a way which works for any element type, as
         # all are subclasses of _DimensionalMetadata.
@@ -1916,8 +2283,16 @@ class Saver:
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.
-            element_type = self._ELEMENT_TYPE_NAMES[type(element)]
+            element_type = type(element).__name__
             data = self._ensure_valid_dtype(data, element_type, element)
+
+            if fill_value is not None:
+                if np.ma.is_masked(data):
+                    # Use a specific fill-value in place of the netcdf default.
+                    data = np.ma.filled(data, fill_value)
+                else:
+                    # Create variable without a (non-standard) fill_value
+                    fill_value = None
 
             # Check if this is a dim-coord.
             is_dimcoord = element in cube.dim_coords
@@ -1940,7 +2315,10 @@ class Saver:
 
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
-                cf_name, data.dtype.newbyteorder("="), element_dims
+                cf_name,
+                data.dtype.newbyteorder("="),
+                element_dims,
+                fill_value=fill_value,
             )
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -1955,42 +2333,8 @@ class Saver:
         # Add the data to the CF-netCDF variable.
         cf_var[:] = data  # TODO: support dask streaming
 
-        # Deal with CF-netCDF units and standard name.
-        if isinstance(element, iris.coords.Coord):
-            # Fix "degree" units if needed.
-            # TODO: rewrite the handler routine to a more sensible API.
-            _, _, units_str = self._cf_coord_identity(element)
-        else:
-            units_str = str(element.units)
-
-        if cf_units.as_unit(units_str).is_udunits():
-            _setncattr(cf_var, "units", units_str)
-
-        standard_name = element.standard_name
-        if standard_name is not None:
-            _setncattr(cf_var, "standard_name", standard_name)
-
-        long_name = element.long_name
-        if long_name is not None:
-            _setncattr(cf_var, "long_name", long_name)
-
-        # Add the CF-netCDF calendar attribute.
-        if element.units.calendar:
-            _setncattr(cf_var, "calendar", str(element.units.calendar))
-
-        # Add any other custom coordinate attributes.
-        for name in sorted(element.attributes):
-            value = element.attributes[name]
-
-            if name == "STASH":
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                name = "um_stash_source"
-                value = str(value)
-
-            # Don't clobber existing attributes.
-            if not hasattr(cf_var, name):
-                _setncattr(cf_var, name, value)
+        # Add names + units
+        self._set_cf_var_attributes(cf_var, element)
 
         return cf_name
 

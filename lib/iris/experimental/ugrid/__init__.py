@@ -523,6 +523,8 @@ class Connectivity(_DimensionalMetadata):
                 # metadata comparison
                 eq = self.metadata == other.metadata
                 if eq:
+                    eq = self.shape == other.shape
+                if eq:
                     eq = (
                         self.indices_by_src() == other.indices_by_src()
                     ).all()

@@ -746,10 +746,8 @@ class Test__cf_coord_identity(tests.IrisTest):
         coord = iris.coords.DimCoord(
             [30, 45], coord_name, units=units, coord_system=coord_system
         )
-        result = Saver._cf_coord_identity(coord)
-        self.assertEqual(
-            result, (coord.standard_name, coord.long_name, expected_units)
-        )
+        result = Saver._cf_coord_standardised_units(coord)
+        self.assertEqual(result, expected_units)
 
     def test_geogcs_latitude(self):
         crs = iris.coord_systems.GeogCS(60, 0)

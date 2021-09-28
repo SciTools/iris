@@ -1,0 +1,99 @@
+netcdf ex3_2d_flexible {
+dimensions:
+nMesh2_node = 5 ; // nNodes
+nMesh2_edge = 6 ; // nEdges
+nMesh2_face = 2 ; // nFaces
+nMaxMesh2_face_nodes = 4 ; // MaxNumNodesPerFace
+
+Two = 2 ;
+
+variables:
+// Mesh topology
+integer Mesh2 ;
+Mesh2:cf_role = "mesh_topology" ;
+Mesh2:long_name = "Topology data of 2D unstructured mesh" ;
+Mesh2:topology_dimension = 2 ;
+Mesh2:node_coordinates = "Mesh2_node_x Mesh2_node_y" ;
+Mesh2:face_node_connectivity = "Mesh2_face_nodes" ;
+Mesh2:face_dimension = "nMesh2_face" ;
+Mesh2:edge_node_connectivity = "Mesh2_edge_nodes" ; // attribute required if variables will be defined on edges
+Mesh2:edge_dimension = "nMesh2_edge" ;
+Mesh2:edge_coordinates = "Mesh2_edge_x Mesh2_edge_y" ; // optional attribute (requires edge_node_connectivity)
+Mesh2:face_coordinates = "Mesh2_face_x Mesh2_face_y" ; // optional attribute
+Mesh2:face_edge_connectivity = "Mesh2_face_edges" ; // optional attribute (requires edge_node_connectivity)
+Mesh2:face_face_connectivity = "Mesh2_face_links" ; // optional attribute
+Mesh2:edge_face_connectivity = "Mesh2_edge_face_links" ; // optional attribute (requires edge_node_connectivity)
+integer Mesh2_face_nodes(nMesh2_face, nMaxMesh2_face_nodes) ;
+Mesh2_face_nodes:cf_role = "face_node_connectivity" ;
+Mesh2_face_nodes:long_name = "Maps every face to its corner nodes." ;
+Mesh2_face_nodes:_FillValue = 999999 ;
+Mesh2_face_nodes:start_index = 1 ;
+integer Mesh2_edge_nodes(nMesh2_edge, Two) ;
+Mesh2_edge_nodes:cf_role = "edge_node_connectivity" ;
+Mesh2_edge_nodes:long_name = "Maps every edge to the two nodes that it connects." ;
+Mesh2_edge_nodes:start_index = 1 ;
+
+// Optional mesh topology variables
+integer Mesh2_face_edges(nMesh2_face, nMaxMesh2_face_nodes) ;
+Mesh2_face_edges:cf_role = "face_edge_connectivity" ;
+Mesh2_face_edges:long_name = "Maps every face to its edges." ;
+Mesh2_face_edges:_FillValue = 999999 ;
+Mesh2_face_edges:start_index = 1 ;
+integer Mesh2_face_links(nMesh2_face, nMaxMesh2_face_nodes) ;
+Mesh2_face_links:cf_role = "face_face_connectivity" ;
+Mesh2_face_links:long_name = "neighbor faces for faces" ;
+Mesh2_face_links:start_index = 1 ;
+Mesh2_face_links:_FillValue = -999 ;
+Mesh2_face_links:comment = "missing edges as well as missing neighbor faces are indicated using _FillValue" ;
+integer Mesh2_edge_face_links(nMesh2_edge, Two) ;
+Mesh2_edge_face_links:cf_role = "edge_face_connectivity" ;
+Mesh2_edge_face_links:long_name = "neighbor faces for edges" ;
+Mesh2_edge_face_links:start_index = 1 ;
+Mesh2_edge_face_links:_FillValue = -999 ;
+Mesh2_edge_face_links:comment = "missing neighbor faces are indicated using _FillValue" ;
+
+// Mesh node coordinates
+double Mesh2_node_x(nMesh2_node) ;
+Mesh2_node_x:standard_name = "longitude" ;
+Mesh2_node_x:long_name = "Longitude of 2D mesh nodes." ;
+Mesh2_node_x:units = "degrees_east" ;
+double Mesh2_node_y(nMesh2_node) ;
+Mesh2_node_y:standard_name = "latitude" ;
+Mesh2_node_y:long_name = "Latitude of 2D mesh nodes." ;
+Mesh2_node_y:units = "degrees_north" ;
+
+// Optional mesh face and edge coordinate variables
+double Mesh2_face_x(nMesh2_face) ;
+Mesh2_face_x:standard_name = "longitude" ;
+Mesh2_face_x:long_name = "Characteristics longitude of 2D mesh face." ;
+Mesh2_face_x:units = "degrees_east" ;
+Mesh2_face_x:bounds = "Mesh2_face_xbnds" ;
+double Mesh2_face_y(nMesh2_face) ;
+Mesh2_face_y:standard_name = "latitude" ;
+Mesh2_face_y:long_name = "Characteristics latitude of 2D mesh face." ;
+Mesh2_face_y:units = "degrees_north" ;
+Mesh2_face_y:bounds = "Mesh2_face_ybnds" ;
+double Mesh2_face_xbnds(nMesh2_face,nMaxMesh2_face_nodes) ;
+Mesh2_face_xbnds:standard_name = "longitude" ;
+Mesh2_face_xbnds:long_name = "Longitude bounds of 2D mesh face (i.e. corner coordinates)." ;
+Mesh2_face_xbnds:units = "degrees_east" ;
+Mesh2_face_xbnds:_FillValue = 9.9692099683868690E36;
+double Mesh2_face_ybnds(nMesh2_face,nMaxMesh2_face_nodes) ;
+Mesh2_face_ybnds:standard_name = "latitude" ;
+Mesh2_face_ybnds:long_name = "Latitude bounds of 2D mesh face (i.e. corner coordinates)." ;
+Mesh2_face_ybnds:units = "degrees_north" ;
+Mesh2_face_ybnds:_FillValue = 9.9692099683868690E36;
+double Mesh2_edge_x(nMesh2_edge) ;
+Mesh2_edge_x:standard_name = "longitude" ;
+Mesh2_edge_x:long_name = "Characteristic longitude of 2D mesh edge (e.g. midpoint of the edge)." ;
+Mesh2_edge_x:units = "degrees_east" ;
+double Mesh2_edge_y(nMesh2_edge) ;
+Mesh2_edge_y:standard_name = "latitude" ;
+Mesh2_edge_y:long_name = "Characteristic latitude of 2D mesh edge (e.g. midpoint of the edge)." ;
+Mesh2_edge_y:units = "degrees_north" ;
+// bounds variables for edges skipped
+
+float datavar(nMesh2_face) ;
+  datavar:mesh = "Mesh2" ;
+  datavar:location = "face" ;
+}
