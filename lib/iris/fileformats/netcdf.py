@@ -1610,6 +1610,7 @@ class Saver:
                     while (
                         dim_name in self._existing_dim
                         or dim_name in self._name_coord_map.names
+                        or dim_name in self._dataset.variables
                     ):
                         dim_name = self._increment_name(dim_name)
 
@@ -1634,6 +1635,7 @@ class Saver:
                             dim_name in self._existing_dim
                             and self._existing_dim[dim_name] != cube.shape[dim]
                             or dim_name in self._name_coord_map.names
+                            or dim_name in self._dataset.variables
                         ):
                             dim_name = self._increment_name(dim_name)
                         # Update dictionary with new entry

@@ -984,6 +984,20 @@ class TestNetCDFSave(tests.IrisTest):
             # Check the netCDF file against CDL expected output.
             self.assertCDL(file_out, ("netcdf", "netcdf_save_conf_name.cdl"))
 
+    def test_netcdf_save_conflicting_names_cube_to_coord(self):
+        # Test saving CF-netCDF with a dimension name corresponding to
+        # an existing variable name (conflict).
+        self.cube6.add_dim_coord(
+            iris.coords.DimCoord(np.arange(10), var_name="temp"), 0
+        )
+
+        cubes = [self.cube4, self.cube6]
+        with self.temp_filename(suffix=".nc") as file_out:
+            iris.save(cubes, file_out)
+
+            # Check the netCDF file against CDL expected output.
+            self.assertCDL(file_out, ("netcdf", "netcdf_save_conf_name_2.cdl"))
+
     @tests.skip_data
     def test_trajectory(self):
         file_in = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
