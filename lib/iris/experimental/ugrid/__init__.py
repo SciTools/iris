@@ -2864,7 +2864,7 @@ def mesh_from_coords(coord_1, coord_2):
             bounds_shape = coord.core_bounds().shape
             # 1D coord check guarantees bounds are ndim==2.
             if bounds_shape[1] < 2:
-                invalid_bounds = 2
+                invalid_bounds = True
                 sub_message = f"shape {bounds_shape}. Must be (n, >=2)."
         if invalid_bounds:
             message = f"{name} has invalid bounds: " + sub_message
