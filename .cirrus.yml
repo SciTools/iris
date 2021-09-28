@@ -178,7 +178,7 @@ win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
     fingerprint_script:
       - echo win_iris-test-data v%IRIS_TEST_DATA_VERSION%
     populate_script:
-      - ps: Invoke-WebRequest -OutFile win_iris-test-data.zip -Uri https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip > nul 2>&1
+      - ps: Invoke-WebRequest -OutFile %IRIS_TEST_DATA_DIR_WIN%\win_iris-test-data.zip -Uri https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip > nul 2>&1
       - ps: Expand-Archive -Path win_iris-test-data.zip -DestinationPath %IRIS_TEST_DATA_DIR_WIN%
 
 
