@@ -17,12 +17,12 @@ container:
 
 env:
   # Skip specific tasks by name. Set to a non-empty string to skip.
-  SKIP_LINT_TASK: ""
-  SKIP_TEST_TASK: ""
-  SKIP_DOCTEST_TASK: ""
-  SKIP_LINKCHECK_TASK: ""
+  SKIP_LINT_TASK: "X"
+  SKIP_TEST_TASK: "X"
+  SKIP_DOCTEST_TASK: "X"
+  SKIP_LINKCHECK_TASK: "X"
   # Skip task groups by type. Set to a non-empty string to skip.
-  SKIP_ALL_DOC_TASKS: ""
+  SKIP_ALL_DOC_TASKS: "X"
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
@@ -178,7 +178,7 @@ win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
     fingerprint_script:
       - echo win_iris-test-data v%IRIS_TEST_DATA_VERSION%
     populate_script:
-      - ps: Invoke-WebRequest -OutFile iris-test-data.zip -Uri https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip > nul 2>&1
+      - ps: Invoke-WebRequest -OutFile iris-test-data.zip -Uri https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip > nul 2>&1
       - ps: Expand-Archive -Path iris-test-data.zip -DestinationPath %IRIS_TEST_DATA_DIR_WIN%
 
 
@@ -236,7 +236,7 @@ task:
 # Testing (Windows)
 #
 task:
-  only_if: ${SKIP_TEST_TASK} == ""
+  # only_if: ${SKIP_TEST_TASK} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
