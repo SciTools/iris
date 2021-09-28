@@ -107,7 +107,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - echo %CIRRUS_OS%
       - choco info python
     populate_script:
-      - choco install python
+      - choco install python -y
   conda_cache:
     folder: ${CHOCO_BASE}/miniconda
     fingerprint_script:
@@ -119,7 +119,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: We can SHA256 hash like this if that's useful
       # - CertUtil -hashfile temp.txt SHA256 | findstr /v "hash" > tmp.txt
     populate_script:
-      - choco install miniconda
+      - choco install miniconda -y
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
