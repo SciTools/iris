@@ -42,7 +42,7 @@ env:
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
   # Directory extension for the iris-test-data (Windows path).
-  IRIS_TEST_DATA_DIR_EXT_WIN: \iris-test-data
+  IRIS_TEST_DATA_DIR_EXT_WIN: /iris-test-data
   # Base directory for the iris-test-data (Windows path).
   IRIS_TEST_DATA_DIR_WIN: ${HOME}${IRIS_TEST_DATA_DIR_EXT_WIN}
 
@@ -180,7 +180,7 @@ win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
     fingerprint_script:
       - echo win_iris-test-data v%IRIS_TEST_DATA_VERSION%
     populate_script:
-      - set zipfile=%CIRRUS_WORKING_DIR%%IRIS_TEST_DATA_DIR_EXT_WIN%\win_iris-test-data.zip
+      - set zipfile=%CIRRUS_WORKING_DIR%%IRIS_TEST_DATA_DIR_EXT_WIN%/win_iris-test-data.zip
       - set url=https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip
       - ps: Invoke-WebRequest -OutFile $Env:zipfile -Uri $Env:url > nul 2>&1
       - ps: Expand-Archive -Path $Env:zipfile -DestinationPath $Env:IRIS_TEST_DATA_DIR_WIN
