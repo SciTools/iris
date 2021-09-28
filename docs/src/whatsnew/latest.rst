@@ -7,7 +7,7 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` Release Highlights
+.. dropdown:: :opticon:`report` |iris_version| Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -57,7 +57,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
+   one cell's bounds align with the requested maximum and negative minimum, fixing
+   :issue:`4221`. (:pull:`4278`)
 
 
 💣 Incompatible Changes
@@ -96,6 +99,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ improved readability in :ref:`userguide interpolation
    section <interpolation>`. (:pull:`4314`)
 
+#. `@wjbenfold`_ added explanation about the absence of | operator for
+   :class:`iris.Constraint` to :ref:`userguide loading section
+   <constrained-loading>` and to api reference documentation. (:pull:`4321`)
+
 
 💼 Internal
 ===========
@@ -111,6 +118,13 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
    marked stale. (:pull:`4317`)
 
+#. `@tkknight`_ added additional make targets for reducing the time of the
+   documentation build including ``html-noapi`` and ``html-quick``.
+   Useful for development purposes only.  For more information see
+   :ref:`contributing.documentation.building` the documentation. (:pull:`4333`)
+
+#. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
+   that sometimes interferes with unrelated tests. (:pull:`4330`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

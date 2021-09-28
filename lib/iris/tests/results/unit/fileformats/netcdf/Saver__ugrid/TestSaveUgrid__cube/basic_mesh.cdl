@@ -1,0 +1,29 @@
+dimensions:
+	Mesh2d_face_N_nodes = 4 ;
+	Mesh2d_faces = 2 ;
+	Mesh2d_nodes = 5 ;
+variables:
+	int Mesh2d ;
+		Mesh2d:cf_role = "mesh_topology" ;
+		Mesh2d:topology_dimension = 2 ;
+		Mesh2d:node_coordinates = "node_x node_y" ;
+		Mesh2d:face_coordinates = "face_x face_y" ;
+		Mesh2d:face_node_connectivity = "mesh2d_faces" ;
+	int64 node_x(Mesh2d_nodes) ;
+		node_x:standard_name = "longitude" ;
+	int64 node_y(Mesh2d_nodes) ;
+		node_y:standard_name = "latitude" ;
+	int64 face_x(Mesh2d_faces) ;
+		face_x:standard_name = "longitude" ;
+	int64 face_y(Mesh2d_faces) ;
+		face_y:standard_name = "latitude" ;
+	int mesh2d_faces(Mesh2d_faces, Mesh2d_face_N_nodes) ;
+		mesh2d_faces:cf_role = "face_node_connectivity" ;
+		mesh2d_faces:start_index = 0LL ;
+	float unknown(Mesh2d_faces) ;
+		unknown:mesh = "Mesh2d" ;
+		unknown:location = "face" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

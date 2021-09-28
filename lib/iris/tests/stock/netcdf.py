@@ -62,6 +62,8 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     ]
     # Data addition dependent on this assumption:
     assert len(unlimited_dim_names) < 2
+    if len(unlimited_dim_names) == 0:
+        unlimited_dim_names = ["*unused*"]
 
     # Fill variables data with placeholder numbers.
     for var in ds.variables.values():
@@ -72,11 +74,15 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             unlimited_dim_size if dim == unlimited_dim_names[0] else size
             for dim, size in zip(dims, shape)
         ]
-        data = np.zeros(shape, dtype=var.dtype)
         if len(var.dimensions) == 1 and var.dimensions[0] == var.name:
             # Fill the var with ascending values (not all zeroes),
             # so it can be a dim-coord.
-            data = np.arange(data.size, dtype=data.dtype).reshape(data.shape)
+            data_size = np.prod(shape)
+            data = np.arange(1, data_size + 1, dtype=var.dtype).reshape(shape)
+        else:
+            # Fill with a plain value.  But avoid zeros, so we can simulate
+            # valid ugrid connectivities even when start_index=1.
+            data = np.ones(shape, dtype=var.dtype)  # Do not use zero
         var[:] = data
 
     ds.close()
