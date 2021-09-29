@@ -113,7 +113,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     fingerprint_script:
       - echo %CIRRUS_OS%
       - echo %CONDA_CACHE_PACKAGES%
-      # TODO: We've started refreshing every day rather than every week here
+      # TODO: We've started refreshing every day rather than every fortnight here
       - echo %date%:%CONDA_CACHE_BUILD%
       - choco info miniconda
       # TODO: We can SHA256 hash like this if that's useful
@@ -122,7 +122,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - choco install miniconda -y
       - echo %PATH%
       - dir 
-      - dir C:\PROGRAMDATA\chocolatey
+      - dir C:\PROGRAMDATA\chocolatey\bin
+      - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda
       - ps: dir $Env:CHOCO_BASE
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
@@ -133,7 +134,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     folder: ${CHOCO_BASE}/.local/share/cartopy
     fingerprint_script:
       - echo %CIRRUS_OS%
-      # TODO: We've started refreshing every day rather than every week here
+      # TODO: We've started refreshing every day rather than every fortnight here
       - echo %date%:%CARTOPY_CACHE_BUILD%
     populate_script:
       - conda create --quiet --name cartopy-cache cartopy
@@ -251,8 +252,8 @@ task:
   matrix:
     env:
       PY_VER: 3.7
-    env:
-      PY_VER: 3.8
+    # env:
+    #   PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   windows_container:
     image: cirrusci/windowsservercore:2019
