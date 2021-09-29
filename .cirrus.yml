@@ -101,6 +101,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
     CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
+    PATH: C:\PROGRAMDATA\chocolatey\lib\Miniconda;${PATH}
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
