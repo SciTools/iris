@@ -127,7 +127,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - echo %PATH%
       - echo %CHOCO_BASE%
       - echo %CHOCO_BASE_WIN%
-      - dir 
+      - dir
       - dir miniconda3
       # - dir C:\PROGRAMDATA\chocolatey\bin
       # - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
