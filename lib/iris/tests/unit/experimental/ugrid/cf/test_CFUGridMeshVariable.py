@@ -16,8 +16,9 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.experimental.ugrid import CFUGridMeshVariable, logger
-from iris.tests.unit.experimental.ugrid.test_CFUGridReader import (
+from iris.experimental.ugrid import logger
+from iris.experimental.ugrid.cf import CFUGridMeshVariable
+from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
 

@@ -10,7 +10,7 @@ import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh, MeshCoord
+from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
 
 # Default creation controls for creating a test Mesh.
 # Note: we're not creating any kind of sensible 'normal' mesh here, the numbers

@@ -19,7 +19,7 @@ import numpy as np
 from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
-from iris.experimental.ugrid import Connectivity, Mesh
+from iris.experimental.ugrid.mesh import Connectivity, Mesh
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")
