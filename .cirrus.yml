@@ -101,7 +101,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
     CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
-    PATH: C:\PROGRAMDATA\chocolatey\lib\Miniconda;${PATH}
+    # PATH: C:\PROGRAMDATA\chocolatey\lib\Miniconda;${PATH}
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
@@ -120,12 +120,14 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: We can SHA256 hash like this if that's useful
       # - CertUtil -hashfile temp.txt SHA256 | findstr /v "hash" > tmp.txt
     populate_script:
-      - choco install miniconda -y
-      - echo %PATH%
-      - dir 
-      - dir C:\PROGRAMDATA\chocolatey\bin
-      - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
-      - ps: dir $Env:CHOCO_BASE
+      - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+      - Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=miniconda3
+      # - choco install miniconda -y
+      # - echo %PATH%
+      # - dir 
+      # - dir C:\PROGRAMDATA\chocolatey\bin
+      # - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
+      # - ps: dir $Env:CHOCO_BASE
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
