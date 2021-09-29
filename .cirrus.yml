@@ -121,7 +121,10 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     populate_script:
       - choco install miniconda -y
       - echo %PATH%
-      - dir miniconda3 /s
+      - dir %CIRRUS_WORKING_DIR%
+      - dir %CIRRUS_WORKING_DIR%\chocolatey
+      - dir %CIRRUS_WORKING_DIR%\chocolatey\lib
+      - dir %CIRRUS_WORKING_DIR%\chocolatey\lib\miniconda
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
