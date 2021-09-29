@@ -123,7 +123,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - echo %PATH%
       - dir 
       - dir C:\PROGRAMDATA\chocolatey\bin
-      - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda
+      - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
       - ps: dir $Env:CHOCO_BASE
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
