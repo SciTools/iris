@@ -122,9 +122,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - choco install miniconda -y
       - echo %PATH%
       - dir 
-      - dir \chocolatey
-      - dir \chocolatey\lib
-      - dir \chocolatey\lib\miniconda
+      - dir C:\PROGRAMDATA\chocolatey
+      - ps: dir $Env:CHOCO_BASE
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
