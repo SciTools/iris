@@ -61,7 +61,7 @@ This document explains the changes made to Iris for this release
    `UGRID`_ conventions.
    The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
    A routine :meth:`iris.experimental.ugrid.save_mesh` allows saving
-   :class:`iris.experimental.ugrid.Mesh` objects to netcdf _without_ any associated data
+   :class:`~iris.experimental.ugrid.Mesh` objects to netcdf *without* any associated data
    (i.e. not attached to cubes).
    (:pull:`4318` and :pull:`4339`).
 
