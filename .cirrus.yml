@@ -120,10 +120,13 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: We can SHA256 hash like this if that's useful
       # - CertUtil -hashfile temp.txt SHA256 | findstr /v "hash" > tmp.txt
     populate_script:
+      - mkdir miniconda3
       - ps: Invoke-WebRequest -OutFile Miniconda3-latest-Windows-x86_64.exe -Uri https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-      - Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=miniconda3
+      - Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3
       # - choco install miniconda -y
-      # - echo %PATH%
+      - echo %PATH%
+      - echo %CHOCO_BASE%
+      - echo %CHOCO_BASE_WIN%
       - dir 
       - dir miniconda3
       # - dir C:\PROGRAMDATA\chocolatey\bin
