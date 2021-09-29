@@ -101,7 +101,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
     CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
-    PATH: ${CIRRUS_WORKING_DIR}\Miniconda;${PATH}
+    PATH: ${CIRRUS_WORKING_DIR}\miniconda3;${PATH}
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
@@ -124,7 +124,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=miniconda3
       # - choco install miniconda -y
       # - echo %PATH%
-      # - dir 
+      - dir 
+      - dir miniconda3
       # - dir C:\PROGRAMDATA\chocolatey\bin
       # - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
       # - ps: dir $Env:CHOCO_BASE
