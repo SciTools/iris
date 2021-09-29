@@ -121,7 +121,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     populate_script:
       - choco install miniconda -y
       - echo %PATH%
-      - dir miniconda /s
+      - dir miniconda3 /s
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
