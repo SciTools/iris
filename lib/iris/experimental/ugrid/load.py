@@ -232,6 +232,7 @@ def _build_aux_coord(coord_var, file_path):
     todo: integrate with standard loading API post-pyke.
 
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
@@ -245,7 +246,8 @@ def _build_aux_coord(coord_var, file_path):
     # Fetch climatological - not allowed for a Mesh, but loading it will
     # mean an informative error gets raised.
     climatological = False
-    # TODO: use CF_ATTR_CLIMATOLOGY once re-integrated post-pyke.
+    # TODO: use CF_ATTR_CLIMATOLOGY on re-integration, when no longer
+    #  'experimental'.
     attr_climatology = getattr(coord_var, "climatology", None)
     if attr_climatology is not None:
         climatology_vars = coord_var.cf_group.climatology
@@ -284,6 +286,7 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     todo: integrate with standard loading API post-pyke.
 
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
@@ -327,6 +330,7 @@ def _build_mesh(cf, mesh_var, file_path):
     todo: integrate with standard loading API post-pyke.
 
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
@@ -471,6 +475,7 @@ def _build_mesh_coords(mesh, cf_var):
     todo: integrate with standard loading API post-pyke.
 
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     # Identify the cube's mesh dimension, for attaching MeshCoords.
     locations_dimensions = {
         "node": mesh.node_dimension,

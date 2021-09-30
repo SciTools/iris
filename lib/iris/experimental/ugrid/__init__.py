@@ -22,12 +22,14 @@ logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 # Lazy imports to avoid circularity.
 from .load import load_mesh, load_meshes, PARSE_UGRID_ON_LOAD  # isort:skip
 from .mesh import Connectivity, Mesh, MeshCoord  # isort:skip
+from .save import save_mesh  # isort:skip
 
 
 __all__ = [
     "Connectivity",
     "load_mesh",
     "load_meshes",
+    "save_mesh",
     "Mesh",
     "MeshCoord",
     "PARSE_UGRID_ON_LOAD",
