@@ -555,7 +555,7 @@ class CubeList(list):
         else:
             msgs = []
             msgs.append(
-                "Cube names differ: {} != {}".format(names[0], names[1])
+                "Cube names differ: {} != {}".format(unique_names[0], unique_names[1])
             )
             raise iris.exceptions.ConcatenateError(msgs)
 
