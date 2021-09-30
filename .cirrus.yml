@@ -141,7 +141,6 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda activate cartopy-cache > nul 2>&1
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
-      - cd tmp
       - set cartopy_dl_script=%CIRRUS_WORKING_DIR%/tmp/cfd.py
       - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
       - ps: python $Env:cartopy_dl_script physical --output %CIRRUS_WORKING_DIR%\.local\share\cartopy --no-warn
@@ -262,6 +261,7 @@ task:
   << : *WIN_IRIS_TEST_DATA_TEMPLATE
   << : *WINDOWS_TASK_TEMPLATE
   tests_script:
+    - conda activate base
     - echo [Resources] > %SITE_CFG%
     - echo test_data_dir = %IRIS_TEST_DATA_DIR_WIN%\test_data >> %SITE_CFG%
     - echo doc_dir = %CIRRUS_WORKING_DIR%\docs >> %SITE_CFG%
