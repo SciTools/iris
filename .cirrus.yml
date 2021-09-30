@@ -122,16 +122,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     populate_script:
       - mkdir miniconda3
       - ps: Invoke-WebRequest -OutFile Miniconda3-latest-Windows-x86_64.exe -Uri https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+      # Check sha256?
       - Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3
-      # - choco install miniconda -y
-      - echo %PATH%
-      - echo %CHOCO_BASE%
-      - echo %CHOCO_BASE_WIN%
-      - dir
-      - dir miniconda3
-      # - dir C:\PROGRAMDATA\chocolatey\bin
-      # - dir C:\PROGRAMDATA\chocolatey\lib\Miniconda\tools
-      # - ps: dir $Env:CHOCO_BASE
       - conda config --set always_yes yes --set changeps1 no
       - conda config --set show_channel_urls True
       - conda config --add channels conda-forge
@@ -150,9 +142,9 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
       - cd tmp
-      - $outfile = %CIRRUS_WORKING_DIR%\cfd.py
-      - ps: Invoke-WebRequest -OutFile $outfile -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
-      - python $outfile physical --output %CIRRUS_WORKING_DIR%\.local\share\cartopy --no-warn
+      - set cartopy_dl_script=%CIRRUS_WORKING_DIR%\cfd.py
+      - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
+      - python $Env:cartopy_dl_script physical --output %CIRRUS_WORKING_DIR%\.local\share\cartopy --no-warn
       - conda deactivate > nul 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
