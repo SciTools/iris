@@ -100,6 +100,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
   env:
     CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
     CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
+    HOME: ${CIRRUS_WORKING_DIR}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
     PATH: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3\condabin;${PATH}
   python_win_cache:
@@ -141,9 +142,10 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda activate cartopy-cache > nul 2>&1
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
+      - echo %HOME%
       - set cartopy_dl_script=%CIRRUS_WORKING_DIR%/tmp/cfd.py
       - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
-      - ps: python $Env:cartopy_dl_script physical --output %HOME%\.local\share\cartopy --no-warn
+      - ps: python $Env:cartopy_dl_script physical --output %HOME%/.local/share/cartopy --no-warn
       - conda deactivate > nul 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
