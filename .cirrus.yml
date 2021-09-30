@@ -144,7 +144,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - cd tmp
       - set cartopy_dl_script=%CIRRUS_WORKING_DIR%/tmp/cfd.py
       - echo %cartopy_dl_script%
-      - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
+      - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
       - ps: python %cartopy_dl_script% physical --output %CIRRUS_WORKING_DIR%\.local\share\cartopy --no-warn
       - conda deactivate > nul 2>&1
   nox_cache:
