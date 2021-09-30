@@ -150,8 +150,9 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
       - cd tmp
-      - ps: Invoke-WebRequest -OutFile cfd.py -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
-      - python cfd.py physical --output %CHOCO_BASE_WIN%\.local\share\cartopy --no-warn
+      - $outfile = %CIRRUS_WORKING_DIR%\cfd.py
+      - ps: Invoke-WebRequest -OutFile $outfile -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py > nul 2>&1
+      - python $outfile physical --output %CIRRUS_WORKING_DIR%\.local\share\cartopy --no-warn
       - conda deactivate > nul 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
