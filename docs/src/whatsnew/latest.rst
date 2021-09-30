@@ -39,19 +39,19 @@ This document explains the changes made to Iris for this release
    :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) and
    loading (:pull:`4058`) of data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
-   objects introduced are :class:`iris.experimental.ugrid.Mesh`,
-   :class:`iris.experimental.ugrid.MeshCoord` and
-   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`.
-   A :class:`iris.experimental.ugrid.Mesh` contains a full description of a UGRID
-   type mesh. :class:`~iris.experimental.ugrid.MeshCoord`\ s are coordinates that
-   reference and represent a :class:`~iris.experimental.ugrid.Mesh` for use
+   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
+   :class:`iris.experimental.ugrid.mesh.MeshCoord` and
+   :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
+   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
+   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
    on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
    property :attr:`~iris.cube.Cube.mesh` which returns a
-   :class:`~iris.experimental.ugrid.Mesh` if one is attached to the
-   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.MeshCoord`.
-   Finally, the context manager :obj:`~iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`
+   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
+   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
+   Finally, the context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
    provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
-   returned with a :class:`~iris.experimental.ugrid.Mesh` attached.
+   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
 
 
 🐛 Bugs Fixed

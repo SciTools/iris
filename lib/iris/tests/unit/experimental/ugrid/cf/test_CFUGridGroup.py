@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.CFUGridGroup` class.
+Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridGroup` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.

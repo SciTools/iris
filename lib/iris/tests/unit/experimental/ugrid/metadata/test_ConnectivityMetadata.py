@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.ConnectivityMetadata`.
+Unit tests for the :class:`iris.experimental.ugrid.metadata.ConnectivityMetadata`.
 
 """
 # Import iris.tests first so that some things can be initialised before

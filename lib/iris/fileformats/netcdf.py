@@ -971,7 +971,7 @@ class _FillValueMaskCheckAndStoreTarget:
         self.target[keys] = arr
 
 
-# NOTE : this matches :class:`iris.experimental.ugrid.Mesh.LOCATIONS`,
+# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.LOCATIONS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_LOCATIONS = ("node", "edge", "face")
 
@@ -2099,7 +2099,7 @@ class Saver:
 
         Args:
 
-        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -2124,7 +2124,7 @@ class Saver:
 
         Args:
 
-        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
             The Mesh to be saved to CF-netCDF file.
 
         Returns:

@@ -24,7 +24,7 @@ from ...common.metadata import (
 
 class ConnectivityMetadata(BaseMetadata):
     """
-    Metadata container for a :class:`~iris.experimental.ugrid.Connectivity`.
+    Metadata container for a :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
     """
 
@@ -144,7 +144,7 @@ class ConnectivityMetadata(BaseMetadata):
 
 class MeshMetadata(BaseMetadata):
     """
-    Metadata container for a :class:`~iris.experimental.ugrid.Mesh`.
+    Metadata container for a :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
     """
 

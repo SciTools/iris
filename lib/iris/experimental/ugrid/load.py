@@ -38,7 +38,8 @@ class ParseUGridOnLoad(threading.local):
         A flag for dictating whether to use the experimental UGRID-aware
         version of Iris NetCDF loading. Object is thread-safe.
 
-        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+        Use via the run-time switch
+        :const:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
         Use :meth:`context` to temporarily activate.
 
         .. seealso::
@@ -61,7 +62,8 @@ class ParseUGridOnLoad(threading.local):
         the loaded file(s) include any UGRID content, this will be parsed and
         attached to the resultant cube(s) accordingly.
 
-        Use via the run-time switch :const:`PARSE_UGRID_ON_LOAD`.
+        Use via the run-time switch
+        :const:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
 
         For example::
 
@@ -78,7 +80,7 @@ class ParseUGridOnLoad(threading.local):
             self._state = False
 
 
-#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`ParseUGridOnLoad`.
+#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.experimental.ugrid.load.ParseUGridOnLoad`.
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
@@ -102,9 +104,10 @@ def _meshes_from_cf(cf_reader):
 
 def load_mesh(uris, var_name=None):
     """
-    Load a single :class:`Mesh` object from one or more NetCDF files.
+    Load a single :class:`~iris.experimental.ugrid.mesh.Mesh` object from one or more NetCDF files.
 
-    Raises an error if more/less than one :class:`Mesh` is found.
+    Raises an error if more/less than one
+    :class:`~iris.experimental.ugrid.mesh.Mesh` is found.
 
     Parameters
     ----------
@@ -112,7 +115,8 @@ def load_mesh(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
          must support OpenDAP.
     var_name : str, optional
-        Only return a :class:`Mesh` if its var_name matches this value.
+        Only return a :class:`~iris.experimental.ugrid.mesh.Mesh` if its
+         var_name matches this value.
 
     Returns
     -------
@@ -132,7 +136,7 @@ def load_mesh(uris, var_name=None):
 
 def load_meshes(uris, var_name=None):
     """
-    Load :class:`Mesh` objects from one or more NetCDF files.
+    Load :class:`~iris.experimental.ugrid.mesh.Mesh` objects from one or more NetCDF files.
 
     Parameters
     ----------
@@ -140,13 +144,15 @@ def load_meshes(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
          must support OpenDAP.
     var_name : str, optional
-        Only return :class:`Mesh`\\ es that have var_names matching this value.
+        Only return :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es that have
+         var_names matching this value.
 
     Returns
     -------
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
-         ``uris`` to a list of the :class:`Mesh`\\ es returned from each.
+         ``uris`` to a list of the
+         :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
@@ -220,7 +226,8 @@ def load_meshes(uris, var_name=None):
 def _build_aux_coord(coord_var, file_path):
     """
     Construct a :class:`~iris.coords.AuxCoord` from a given
-    :class:`CFUGridAuxiliaryCoordinateVariable`, and guess its mesh axis.
+    :class:`~iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable`,
+    and guess its mesh axis.
 
     todo: integrate with standard loading API post-pyke.
 
@@ -270,9 +277,9 @@ def _build_aux_coord(coord_var, file_path):
 
 def _build_connectivity(connectivity_var, file_path, location_dims):
     """
-    Construct a :class:`Connectivity` from a given
-    :class:`CFUGridConnectivityVariable`, and identify the name of its first
-    dimension.
+    Construct a :class:`~iris.experimental.ugrid.mesh.Connectivity` from a
+    given :class:`~iris.experimental.ugrid.cf.CFUGridConnectivityVariable`,
+    and identify the name of its first dimension.
 
     todo: integrate with standard loading API post-pyke.
 
@@ -314,7 +321,8 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
 
 def _build_mesh(cf, mesh_var, file_path):
     """
-    Construct a :class:`Mesh` from a given :class:`CFUGridMeshVariable`.
+    Construct a :class:`~iris.experimental.ugrid.mesh.Mesh` from a given
+    :class:`~iris.experimental.ugrid.cf.CFUGridMeshVariable`.
 
     todo: integrate with standard loading API post-pyke.
 
@@ -456,7 +464,8 @@ def _build_mesh(cf, mesh_var, file_path):
 
 def _build_mesh_coords(mesh, cf_var):
     """
-    Construct a tuple of :class:`MeshCoord` using from a given :class:`Mesh`
+    Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord` using
+    from a given :class:`~iris.experimental.ugrid.mesh.Mesh`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
     todo: integrate with standard loading API post-pyke.

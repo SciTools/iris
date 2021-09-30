@@ -32,7 +32,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
     that specifies for every volume its shape.
 
     Identified by a CF-netCDF variable attribute equal to any one of the values
-    in :attr:`~iris.experimental.ugrid.Connectivity.UGRID_CF_ROLES`.
+    in :attr:`~iris.experimental.ugrid.mesh.Connectivity.UGRID_CF_ROLES`.
 
     .. seealso::
 
@@ -108,7 +108,7 @@ class CFUGridAuxiliaryCoordinateVariable(cf.CFVariable):
     variables).
 
     Identified by the CF-netCDF variable attribute
-    'node_'/'edge_'/'face_'/'volume_coordinates'.
+    ``node_``/``edge_``/``face_``/``volume_coordinates``.
 
     .. seealso::
 

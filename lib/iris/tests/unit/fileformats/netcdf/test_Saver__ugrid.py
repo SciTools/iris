@@ -202,7 +202,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
     Kwargs:
 
-    * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
+    * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
         If None, use 'default_mesh()'
     * location (string):
         Which mesh element to map the cube to.

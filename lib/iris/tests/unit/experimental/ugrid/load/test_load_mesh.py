@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.experimental.ugrid.load_mesh` function.
+Unit tests for the :func:`iris.experimental.ugrid.load.load_mesh` function.
 
 """
 # Import iris.tests first so that some things can be initialised before

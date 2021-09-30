@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.ParseUgridOnLoad` class.
+Unit tests for the :class:`iris.experimental.ugrid.load.ParseUgridOnLoad` class.
 
 todo: remove this module when experimental.ugrid is folded into standard behaviour.
 

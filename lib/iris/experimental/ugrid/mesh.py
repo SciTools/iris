@@ -70,9 +70,9 @@ MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 # Mesh connectivity manager namedtuples.
 #
 
-#: Namedtuple for 1D mesh :class:`Connectivity` instances.
+#: Namedtuple for 1D mesh :class:`~iris.experimental.ugrid.mesh.Connectivity` instances.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
-#: Namedtuple for 2D mesh :class:`Connectivity` instances.
+#: Namedtuple for 2D mesh :class:`~iris.experimental.ugrid.mesh.Connectivity` instances.
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
     [
@@ -859,7 +859,8 @@ class Mesh(CFVariableMixin):
     @property
     def all_connectivities(self):
         """
-        All the :class:`Connectivity` instances of the :class:`Mesh`.
+        All the :class:`~iris.experimental.ugrid.mesh.Connectivity` instances
+        of the :class:`Mesh`.
 
         """
         return self._connectivity_manager.all_members
@@ -875,8 +876,9 @@ class Mesh(CFVariableMixin):
     @property
     def boundary_node_connectivity(self):
         """
-        The *optional* UGRID ``boundary_node_connectivity`` :class:`Connectivity`
-        of the :class:`Mesh`.
+        The *optional* UGRID ``boundary_node_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
+        :class:`Mesh`.
 
         """
         return self._connectivity_manager.boundary_node
@@ -910,8 +912,9 @@ class Mesh(CFVariableMixin):
     @property
     def edge_face_connectivity(self):
         """
-        The *optional* UGRID ``edge_face_connectivity`` :class:`Connectivity`
-        of the :class:`Mesh`.
+        The *optional* UGRID ``edge_face_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
+        :class:`Mesh`.
 
         """
         return self._connectivity_manager.edge_face
@@ -919,7 +922,8 @@ class Mesh(CFVariableMixin):
     @property
     def edge_node_connectivity(self):
         """
-        The UGRID ``edge_node_connectivity`` :class:`Connectivity` of the
+        The UGRID ``edge_node_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
         of ``1``, and *optionally required* for
         :attr:`Mesh.topology_dimension` ``>=2``.
@@ -965,8 +969,9 @@ class Mesh(CFVariableMixin):
     @property
     def face_edge_connectivity(self):
         """
-        The *optional* UGRID ``face_edge_connectivity`` :class:`Connectivity`
-        of the :class:`Mesh`.
+        The *optional* UGRID ``face_edge_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
+        :class:`Mesh`.
 
         """
         # optional
@@ -975,8 +980,9 @@ class Mesh(CFVariableMixin):
     @property
     def face_face_connectivity(self):
         """
-        The *optional* UGRID ``face_face_connectivity`` :class:`Connectivity`
-        of the :class:`Mesh`.
+        The *optional* UGRID ``face_face_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
+        :class:`Mesh`.
 
         """
         return self._connectivity_manager.face_face
@@ -984,7 +990,8 @@ class Mesh(CFVariableMixin):
     @property
     def face_node_connectivity(self):
         """
-        The UGRID ``face_node_connectivity`` :class:`Connectivity` of the
+        The UGRID ``face_node_connectivity``
+        :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
         :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
         of ``2``, and *optionally required* for :attr:`Mesh.topology_dimension`
         of ``3``.
@@ -1016,12 +1023,13 @@ class Mesh(CFVariableMixin):
 
     def add_connectivities(self, *connectivities):
         """
-        Add one or more :class:`Connectivity` instances to the :class:`Mesh`.
+        Add one or more :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to the :class:`Mesh`.
 
         Args:
 
         * connectivities (iterable of object):
-            A collection of one or more :class:`Connectivity` instances to
+            A collection of one or more
+            :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to
             add to the :class:`Mesh`.
 
         """
@@ -1087,8 +1095,8 @@ class Mesh(CFVariableMixin):
         contains_face=None,
     ):
         """
-        Return all :class:`Connectivity` instances from the :class:`Mesh` that
-        match the provided criteria.
+        Return all :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        instances from the :class:`Mesh` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1108,43 +1116,52 @@ class Mesh(CFVariableMixin):
               compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * a connectivity or metadata instance equal to that of
-              the desired objects e.g., :class:`Connectivity` or
-              :class:`ConnectivityMetadata`.
+              the desired objects e.g.,
+              :class:`~iris.experimental.ugrid.mesh.Connectivity` or
+              :class:`~iris.experimental.ugrid.metadata.ConnectivityMetadata`.
 
         * standard_name (str):
-            The CF standard name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``standard_name``.
+            The CF standard name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``standard_name``.
 
         * long_name (str):
-            An unconstrained description of the :class:`Connectivity`. If
-            ``None``, does not check for ``long_name``.
+            An unconstrained description of the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``long_name``.
 
         * var_name (str):
-            The NetCDF variable name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``var_name``.
+            The NetCDF variable name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``var_name``.
 
         * attributes (dict):
-            A dictionary of attributes desired on the :class:`Connectivity`. If
-            ``None``, does not check for ``attributes``.
+            A dictionary of attributes desired on the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``attributes``.
 
         * cf_role (str):
-            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+            The UGRID ``cf_role`` of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
             Contains the ``node`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         * contains_edge (bool):
             Contains the ``edge`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         * contains_face (bool):
             Contains the ``face`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         Returns:
-            A list of :class:`Connectivity` instances from the :class:`Mesh`
-            that matched the given criteria.
+            A list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
+            instances from the :class:`Mesh` that matched the given criteria.
 
         """
         result = self._connectivity_manager.filters(
@@ -1173,8 +1190,8 @@ class Mesh(CFVariableMixin):
         contains_face=None,
     ):
         """
-        Return a single :class:`Connectivity` from the :class:`Mesh` that
-        matches the provided criteria.
+        Return a single :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        from the :class:`Mesh` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1182,7 +1199,7 @@ class Mesh(CFVariableMixin):
         .. note::
 
             If the given criteria do not return **precisely one**
-            :class:`Connectivity`, then a
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`, then a
             :class:`~iris.exceptions.ConnectivityNotFoundError` is raised.
 
         .. seealso::
@@ -1200,43 +1217,52 @@ class Mesh(CFVariableMixin):
               compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * a connectivity or metadata instance equal to that of
-              the desired object e.g., :class:`Connectivity` or
-              :class:`ConnectivityMetadata`.
+              the desired object e.g.,
+              :class:`~iris.experimental.ugrid.mesh.Connectivity` or
+              :class:`~iris.experimental.ugrid.metadata.ConnectivityMetadata`.
 
         * standard_name (str):
-            The CF standard name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``standard_name``.
+            The CF standard name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``standard_name``.
 
         * long_name (str):
-            An unconstrained description of the :class:`Connectivity`. If
-            ``None``, does not check for ``long_name``.
+            An unconstrained description of the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``long_name``.
 
         * var_name (str):
-            The NetCDF variable name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``var_name``.
+            The NetCDF variable name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``var_name``.
 
         * attributes (dict):
-            A dictionary of attributes desired on the :class:`Connectivity`. If
-            ``None``, does not check for ``attributes``.
+            A dictionary of attributes desired on the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``attributes``.
 
         * cf_role (str):
-            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+            The UGRID ``cf_role`` of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
             Contains the ``node`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         * contains_edge (bool):
             Contains the ``edge`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         * contains_face (bool):
             Contains the ``face`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched.
 
         Returns:
-            The :class:`Connectivity` from the :class:`Mesh` that matched the
-            given criteria.
+            The :class:`~iris.experimental.ugrid.mesh.Connectivity` from the
+            :class:`Mesh` that matched the given criteria.
 
         """
 
@@ -1441,8 +1467,8 @@ class Mesh(CFVariableMixin):
         contains_face=None,
     ):
         """
-        Remove one or more :class:`Connectivity` from the :class:`Mesh` that
-        match the provided criteria.
+        Remove one or more :class:`~iris.experimental.ugrid.mesh.Connectivity`
+        from the :class:`Mesh` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1458,46 +1484,53 @@ class Mesh(CFVariableMixin):
               compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * a connectivity or metadata instance equal to that of
-              the desired objects e.g., :class:`Connectivity` or
-              :class:`ConnectivityMetadata`.
+              the desired objects e.g.,
+              :class:`~iris.experimental.ugrid.mesh.Connectivity` or
+              :class:`~iris.experimental.ugrid.metadata.ConnectivityMetadata`.
 
         * standard_name (str):
-            The CF standard name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``standard_name``.
+            The CF standard name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``standard_name``.
 
         * long_name (str):
-            An unconstrained description of the :class:`Connectivity. If
-            ``None``, does not check for ``long_name``.
+            An unconstrained description of the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity. If ``None``,
+            does not check for ``long_name``.
 
         * var_name (str):
-            The NetCDF variable name of the desired :class:`Connectivity`. If
-            ``None``, does not check for ``var_name``.
+            The NetCDF variable name of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``var_name``.
 
         * attributes (dict):
-            A dictionary of attributes desired on the :class:`Connectivity`. If
-            ``None``, does not check for ``attributes``.
+            A dictionary of attributes desired on the
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`. If ``None``,
+            does not check for ``attributes``.
 
         * cf_role (str):
-            The UGRID ``cf_role`` of the desired :class:`Connectivity`.
+            The UGRID ``cf_role`` of the desired
+            :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
             Contains the ``node`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
-            for potential removal.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched for potential removal.
 
         * contains_edge (bool):
             Contains the ``edge`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
-            for potential removal.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched for potential removal.
 
         * contains_face (bool):
             Contains the ``face`` location as part of the
-            :attr:`ConnectivityMetadata.cf_role` in the list of objects to be matched
-            for potential removal.
+            :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
+            in the list of objects to be matched for potential removal.
 
         Returns:
-            A list of :class:`Connectivity` instances removed from the :class:`Mesh`
-            that matched the given criteria.
+            A list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
+            instances removed from the :class:`Mesh` that matched the given
+            criteria.
 
         """
         return self._connectivity_manager.remove(
@@ -1633,9 +1666,9 @@ class Mesh(CFVariableMixin):
 
     def to_MeshCoord(self, location, axis):
         """
-        Generate a :class:`MeshCoord` that references the current
-        :class:`Mesh`, and passing through the ``location`` and ``axis``
-        arguments.
+        Generate a :class:`~iris.experimental.ugrid.mesh.MeshCoord` that
+        references the current :class:`Mesh`, and passing through the
+        ``location`` and ``axis`` arguments.
 
         .. seealso::
 
@@ -1644,22 +1677,26 @@ class Mesh(CFVariableMixin):
         Args:
 
         * location (str)
-            The ``location`` argument for :class:`MeshCoord` instantiation.
+            The ``location`` argument for
+            :class:`~iris.experimental.ugrid.mesh.MeshCoord` instantiation.
 
         * axis (str)
-            The ``axis`` argument for :class:`MeshCoord` instantiation.
+            The ``axis`` argument for
+            :class:`~iris.experimental.ugrid.mesh.MeshCoord` instantiation.
 
         Returns:
-            A :class:`MeshCoord` referencing the current :class:`Mesh`.
+            A :class:`~iris.experimental.ugrid.mesh.MeshCoord` referencing the
+            current :class:`Mesh`.
 
         """
         return MeshCoord(mesh=self, location=location, axis=axis)
 
     def to_MeshCoords(self, location):
         """
-        Generate a tuple of :class:`MeshCoord`\\ s, each referencing the current
-        :class:`Mesh`, one for each :attr:`AXES` value, passing through the
-        ``location`` argument.
+        Generate a tuple of
+        :class:`~iris.experimental.ugrid.mesh.MeshCoord`\\ s, each referencing
+        the current :class:`Mesh`, one for each :attr:`AXES` value, passing
+        through the ``location`` argument.
 
         .. seealso::
 
@@ -1671,9 +1708,9 @@ class Mesh(CFVariableMixin):
             The ``location`` argument for :class:`MeshCoord` instantiation.
 
         Returns:
-            tuple of :class:`MeshCoord`\\ s referencing the current :class:`Mesh`.
-            One for each value in :attr:`AXES`, using the value for the
-            ``axis`` argument.
+            tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`\\ s
+            referencing the current :class:`Mesh`. One for each value in
+            :attr:`AXES`, using the value for the ``axis`` argument.
 
         """
         # factory method
@@ -2469,7 +2506,7 @@ class MeshCoord(AuxCoord):
     """
     Geographic coordinate values of data on an unstructured mesh.
 
-    A MeshCoord references a `~iris.experimental.ugrid.Mesh`.
+    A MeshCoord references a `~iris.experimental.ugrid.mesh.Mesh`.
     When contained in a `~iris.cube.Cube` it connects the cube to the Mesh.
     It records (a) which 1-D cube dimension represents the unstructured mesh,
     and (b) which  mesh 'location' the cube data is mapped to -- i.e. is it
