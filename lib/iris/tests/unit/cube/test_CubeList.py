@@ -49,6 +49,21 @@ class Test_concatenate_cube(tests.IrisTest):
         with self.assertRaises(iris.exceptions.ConcatenateError):
             CubeList([self.cube1, cube2]).concatenate_cube()
 
+    def test_names_differ_fail(self):
+        self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
+        self.cube2.add_dim_coord(
+            DimCoord([3, 4, 5], "time", units=self.units), 0
+        )
+        self.cube3 = Cube([1, 2, 3], "air_pressure", units="Pa")
+        self.cube3.add_dim_coord(
+            DimCoord([3, 4, 5], "time", units=self.units), 0
+        )
+        exc_regexp = "Cube names differ: air_temperature != air_pressure"
+        with self.assertRaisesRegex(
+            iris.exceptions.ConcatenateError, exc_regexp
+        ):
+            CubeList([self.cube1, self.cube2, self.cube3]).concatenate_cube()
+
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
         with self.assertRaisesRegex(ValueError, exc_regexp):
