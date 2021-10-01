@@ -12,9 +12,12 @@ Eventual destination: :mod:`iris.fileformats.cf`.
 """
 import logging
 
-from . import logger
+from ...config import get_logger
 from ...fileformats import cf
 from .mesh import Connectivity
+
+# Configure the logger.
+logger = get_logger(__name__, propagate=True, handler=False)
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):

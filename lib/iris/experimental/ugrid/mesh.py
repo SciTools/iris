@@ -18,17 +18,20 @@ from typing import Iterable
 from dask import array as da
 import numpy as np
 
-from . import logger
 from ... import _lazy_data as _lazy
 from ...common import (
     CFVariableMixin,
     metadata_filter,
     metadata_manager_factory,
 )
+from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...util import guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
+
+# Configure the logger.
+logger = get_logger(__name__, propagate=True, handler=False)
 
 #: Numpy "threshold" printoptions default argument.
 NP_PRINTOPTIONS_THRESHOLD = 10
