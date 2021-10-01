@@ -138,6 +138,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
    that sometimes interferes with unrelated tests. (:pull:`4330`)
 
+#. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
+   (:pull:`4347`).
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
