@@ -3,7 +3,11 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the :class:`iris.experimental.ugrid.Connectivity` class."""
+"""Unit tests for the :class:`iris.experimental.ugrid.mesh.Connectivity` class."""
+
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
 
 from xml.dom import minidom
 
@@ -11,11 +15,7 @@ import numpy as np
 from numpy import ma
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
-from iris.experimental.ugrid import Connectivity
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from iris.experimental.ugrid.mesh import Connectivity
 
 
 class TestStandard(tests.IrisTest):

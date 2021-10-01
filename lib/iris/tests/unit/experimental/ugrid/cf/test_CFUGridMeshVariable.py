@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.CFUGridMeshVariable` class.
+Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridMeshVariable` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
@@ -16,8 +16,9 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.experimental.ugrid import CFUGridMeshVariable, logger
-from iris.tests.unit.experimental.ugrid.test_CFUGridReader import (
+from iris.experimental.ugrid import logger
+from iris.experimental.ugrid.cf import CFUGridMeshVariable
+from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
 

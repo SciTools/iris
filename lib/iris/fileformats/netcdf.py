@@ -844,9 +844,9 @@ def load_cubes(filenames, callback=None, constraints=None):
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
     #  into standard behaviour.
     # Deferred import to avoid circular imports.
-    from iris.experimental.ugrid import (
+    from iris.experimental.ugrid.cf import CFUGridReader
+    from iris.experimental.ugrid.load import (
         PARSE_UGRID_ON_LOAD,
-        CFUGridReader,
         _build_mesh_coords,
         _meshes_from_cf,
     )
@@ -972,7 +972,7 @@ class _FillValueMaskCheckAndStoreTarget:
         self.target[keys] = arr
 
 
-# NOTE : this matches :class:`iris.experimental.ugrid.Mesh.LOCATIONS`,
+# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.LOCATIONS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_LOCATIONS = ("node", "edge", "face")
 
@@ -2124,7 +2124,8 @@ class Saver:
                     # Not a cube coord, so must be a connectivity or
                     # element-coordinate of the mesh.
                     # Name it for it's first dim, i.e. mesh-dim of its location.
-                    from iris.experimental.ugrid import Connectivity
+
+                    from iris.experimental.ugrid.mesh import Connectivity
 
                     # At present, a location-coord cannot be nameless, as the
                     # Mesh code relies on guess_coord_axis.
@@ -2145,7 +2146,7 @@ class Saver:
 
         Args:
 
-        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -2170,7 +2171,7 @@ class Saver:
 
         Args:
 
-        * mesh (:class:`iris.experimental.ugrid.Mesh`):
+        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh`):
             The Mesh to be saved to CF-netCDF file.
 
         Returns:

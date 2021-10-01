@@ -39,29 +39,29 @@ This document explains the changes made to Iris for this release
    :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) of
    data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
-   objects introduced are :class:`iris.experimental.ugrid.Mesh`,
-   :class:`iris.experimental.ugrid.MeshCoord` and
-   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`.
-   A :class:`iris.experimental.ugrid.Mesh` contains a full description of a UGRID
-   type mesh. :class:`~iris.experimental.ugrid.MeshCoord`\ s are coordinates that
-   reference and represent a :class:`~iris.experimental.ugrid.Mesh` for use
+   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
+   :class:`iris.experimental.ugrid.mesh.MeshCoord` and
+   :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
+   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
+   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
    on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
    property :attr:`~iris.cube.Cube.mesh` which returns a
-   :class:`~iris.experimental.ugrid.Mesh` if one is attached to the
-   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.MeshCoord`.
+   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
+   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
 #. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
    for files using the `UGRID`_ conventions.
-   The context manager :obj:`~iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`
+   The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
    provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
-   returned with a :class:`~iris.experimental.ugrid.Mesh` attached.
+   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
    (:pull:`4058`).
 
 #. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
    `UGRID`_ conventions.
    The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
-   A routine :meth:`iris.experimental.ugrid.save_mesh` allows saving
-   :class:`~iris.experimental.ugrid.Mesh` objects to netcdf *without* any associated data
+   A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
+   :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
    (i.e. not attached to cubes).
    (:pull:`4318` and :pull:`4339`).
 
@@ -145,6 +145,8 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
    (:pull:`4349`)
 
+#. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
+   (:pull:`4347`).
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

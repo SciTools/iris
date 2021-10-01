@@ -4,17 +4,21 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.CFUGridGroup` class.
+Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridGroup` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 from unittest import mock
 
 import numpy as np
 
-from iris.experimental.ugrid import (
+from iris.experimental.ugrid.cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridGroup,
@@ -22,10 +26,6 @@ from iris.experimental.ugrid import (
     CFUGridReader,
 )
 from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 
 
@@ -95,7 +95,7 @@ class Test_build_cf_groups(tests.IrisTest):
     def setUp(self):
         # Restrict the CFUGridReader functionality to only performing
         # translations and building first level cf-groups for variables.
-        self.patch("iris.experimental.ugrid.CFUGridReader._reset")
+        self.patch("iris.experimental.ugrid.cf.CFUGridReader._reset")
         self.patch("netCDF4.Dataset", return_value=self.dataset)
         cf_reader = CFUGridReader("dummy")
         self.cf_group = cf_reader.cf_group

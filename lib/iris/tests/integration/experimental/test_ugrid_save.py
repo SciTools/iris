@@ -18,7 +18,7 @@ from subprocess import check_call
 import tempfile
 
 import iris
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 import iris.fileformats.netcdf
 from iris.tests import IrisTest
 from iris.tests.stock.netcdf import _add_standard_data
