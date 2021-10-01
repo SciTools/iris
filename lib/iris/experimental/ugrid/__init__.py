@@ -27,10 +27,10 @@ from .save import save_mesh  # isort:skip
 
 __all__ = [
     "Connectivity",
-    "load_mesh",
-    "load_meshes",
-    "save_mesh",
     "Mesh",
     "MeshCoord",
     "PARSE_UGRID_ON_LOAD",
+    "load_mesh",
+    "load_meshes",
+    "save_mesh",
 ]
