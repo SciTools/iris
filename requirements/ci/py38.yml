@@ -10,7 +10,7 @@ dependencies:
   - setuptools >=40.8.0
 
 # Core dependencies.
-  - cartopy >=0.18
+  - cartopy >=0.20
   - cf-units
   - cftime >=1.5
   - dask >=2

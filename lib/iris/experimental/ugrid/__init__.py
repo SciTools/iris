@@ -45,11 +45,11 @@ from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
 
 __all__ = [
-    "CFUGridReader",
     "Connectivity",
     "ConnectivityMetadata",
     "load_mesh",
     "load_meshes",
+    "save_mesh",
     "Mesh",
     "mesh_from_coords",
     "Mesh1DConnectivities",
@@ -3965,9 +3965,8 @@ def _build_aux_coord(coord_var, file_path):
     Construct a :class:`~iris.coords.AuxCoord` from a given
     :class:`CFUGridAuxiliaryCoordinateVariable`, and guess its mesh axis.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
@@ -3981,7 +3980,8 @@ def _build_aux_coord(coord_var, file_path):
     # Fetch climatological - not allowed for a Mesh, but loading it will
     # mean an informative error gets raised.
     climatological = False
-    # TODO: use CF_ATTR_CLIMATOLOGY once re-integrated post-pyke.
+    # TODO: use CF_ATTR_CLIMATOLOGY on re-integration, when no longer
+    #  'experimental'.
     attr_climatology = getattr(coord_var, "climatology", None)
     if attr_climatology is not None:
         climatology_vars = coord_var.cf_group.climatology
@@ -4017,9 +4017,8 @@ def _build_connectivity(connectivity_var, file_path, location_dims):
     :class:`CFUGridConnectivityVariable`, and identify the name of its first
     dimension.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
@@ -4059,9 +4058,8 @@ def _build_mesh(cf, mesh_var, file_path):
     """
     Construct a :class:`Mesh` from a given :class:`CFUGridMeshVariable`.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
@@ -4202,9 +4200,8 @@ def _build_mesh_coords(mesh, cf_var):
     Construct a tuple of :class:`MeshCoord` using from a given :class:`Mesh`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
     # Identify the cube's mesh dimension, for attaching MeshCoords.
     locations_dimensions = {
         "node": mesh.node_dimension,
@@ -4221,3 +4218,55 @@ def _build_mesh_coords(mesh, cf_var):
 
 # END of loading section.
 ###############################################################################
+
+
+###############################################################################
+# SAVING
+
+
+def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
+    """
+    Save mesh(es) to a netCDF file.
+
+    Args:
+
+    * mesh (:class:`iris.experimental.ugrid.Mesh` or iterable):
+        mesh(es) to save.
+
+    * filename (string):
+        Name of the netCDF file to create.
+
+    Kwargs:
+
+    * netcdf_format (string):
+        Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
+        'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
+
+    """
+    # TODO: integrate with standard saving API when no longer 'experimental'.
+
+    if isinstance(mesh, Iterable):
+        meshes = mesh
+    else:
+        meshes = [mesh]
+
+    # Initialise Manager for saving
+    with netcdf.Saver(filename, netcdf_format) as sman:
+        # Iterate through the list.
+        for mesh in meshes:
+            # Get suitable dimension names.
+            mesh_dimensions, _ = sman._get_dim_names(mesh)
+
+            # Create dimensions.
+            sman._create_cf_dimensions(
+                cube=None, dimension_names=mesh_dimensions
+            )
+
+            # Create the mesh components.
+            sman._add_mesh(mesh)
+
+        # Add a conventions attribute.
+        # TODO: add 'UGRID' to conventions, when this is agreed with CF ?
+        sman.update_global_attributes(
+            Conventions=netcdf.CF_CONVENTIONS_VERSION
+        )
