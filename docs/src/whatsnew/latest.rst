@@ -74,6 +74,10 @@ This document explains the changes made to Iris for this release
    one cell's bounds align with the requested maximum and negative minimum, fixing
    :issue:`4221`. (:pull:`4278`)
 
+#. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
+   when a cube list contains cubes with different names, which will no longer report
+   "Cube names differ: var1 != var1" if var1 appears multiple times in the list
+   (:issue:`4342`, :pull:`4345`)
 
 💣 Incompatible Changes
 =======================
@@ -96,7 +100,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ introduced the ``cartopy >=0.20`` minimum pin.
+   (:pull:`4331`)
 
 
 📚 Documentation
@@ -126,8 +131,7 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
    test data is missing (:pull:`4319`)
 
-
-#. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
+#. `@wjbenfold`_ excluded ``Good First Issue`` labelled issues from being
    marked stale. (:pull:`4317`)
 
 #. `@tkknight`_ added additional make targets for reducing the time of the
@@ -138,6 +142,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
    that sometimes interferes with unrelated tests. (:pull:`4330`)
 
+#. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
+   (:pull:`4349`)
+
 #. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
    (:pull:`4347`).
 
@@ -145,6 +152,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@tinyendian: https://github.com/tinyendian
 
 
 

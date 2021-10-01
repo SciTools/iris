@@ -61,7 +61,7 @@ def make_plot(projection_name, projection_crs):
         overlay_data, 20, linewidths=2.0, colors="darkgreen", linestyles="-"
     )
 
-    # Draw a margin line, some way in from the border of the 'main' data...
+    # Draw a high resolution margin line, inset from the pcolormesh border.
     # First calculate rectangle corners, 7% in from each corner of the data.
     x_coord, y_coord = main_data.coord(axis="x"), main_data.coord(axis="y")
     x_start, x_end = np.min(x_coord.points), np.max(x_coord.points)
@@ -70,8 +70,15 @@ def make_plot(projection_name, projection_crs):
     margin_fractions = np.array([margin, 1.0 - margin])
     x_lower, x_upper = x_start + (x_end - x_start) * margin_fractions
     y_lower, y_upper = y_start + (y_end - y_start) * margin_fractions
-    box_x_points = x_lower + (x_upper - x_lower) * np.array([0, 1, 1, 0, 0])
-    box_y_points = y_lower + (y_upper - y_lower) * np.array([0, 0, 1, 1, 0])
+    steps = np.linspace(0, 1)
+    zeros, ones = np.zeros(steps.size), np.ones(steps.size)
+    x_delta, y_delta = (x_upper - x_lower), (y_upper - y_lower)
+    x_points = x_lower + x_delta * np.concatenate(
+        (steps, ones, steps[::-1], zeros)
+    )
+    y_points = y_lower + y_delta * np.concatenate(
+        (zeros, steps, ones, steps[::-1])
+    )
     # Get the Iris coordinate sytem of the X coordinate (Y should be the same).
     cs_data1 = x_coord.coord_system
     # Construct an equivalent Cartopy coordinate reference system ("crs").
@@ -80,8 +87,8 @@ def make_plot(projection_name, projection_crs):
     # NOTE: the 'transform' keyword specifies a non-display coordinate system
     # for the plot points (as used by the "iris.plot" functions).
     plt.plot(
-        box_x_points,
-        box_y_points,
+        x_points,
+        y_points,
         transform=crs_data1,
         linewidth=2.0,
         color="white",
