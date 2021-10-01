@@ -74,6 +74,10 @@ This document explains the changes made to Iris for this release
    one cell's bounds align with the requested maximum and negative minimum, fixing
    :issue:`4221`. (:pull:`4278`)
 
+#. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
+   when a cube list contains cubes with different names, which will no longer report
+   "Cube names differ: var1 != var1" if var1 appears multiple times in the list
+   (:issue:`4342`, :pull:`4345`)
 
 💣 Incompatible Changes
 =======================
@@ -143,6 +147,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@tinyendian: https://github.com/tinyendian
 
 
 
