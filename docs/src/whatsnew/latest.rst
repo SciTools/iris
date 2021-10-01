@@ -142,6 +142,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
    that sometimes interferes with unrelated tests. (:pull:`4330`)
 
+#. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
+   (:pull:`4349`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
