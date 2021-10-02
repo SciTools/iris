@@ -107,19 +107,19 @@ __version__ = "3.2.dev0"
 
 # Restrict the names imported when using "from iris import *"
 __all__ = [
+    "AttributeConstraint",
+    "Constraint",
+    "FUTURE",
+    "Future",
+    "IrisDeprecation",
+    "NameConstraint",
     "load",
     "load_cube",
     "load_cubes",
     "load_raw",
-    "save",
-    "Constraint",
-    "AttributeConstraint",
-    "NameConstraint",
     "sample_data_path",
+    "save",
     "site_configuration",
-    "Future",
-    "FUTURE",
-    "IrisDeprecation",
 ]
 
 
