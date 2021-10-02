@@ -148,6 +148,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
    (:pull:`4347`).
 
+#. `@bjlittle`_ enabled the `sort-all`_ `pre-commit`_ hook to automatically
+   sort ``__all__`` entries into alphabetical order. (:pull:`4353`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -155,9 +158,9 @@ This document explains the changes made to Iris for this release
 .. _@tinyendian: https://github.com/tinyendian
 
 
-
 .. comment
     Whatsnew resources in alphabetical order:
 
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
+.. _sort-all: https://github.com/aio-libs/sort-all
