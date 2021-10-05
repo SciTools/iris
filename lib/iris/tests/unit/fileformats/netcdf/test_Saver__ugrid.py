@@ -263,7 +263,6 @@ def scan_dataset(filepath):
         varsdict[name] = {prop: getattr(var, prop) for prop in var.ncattrs()}
         varsdict[name][_VAR_DIMS] = list(var.dimensions)
     ds.close()
-
     return dimsdict, varsdict
 
 
