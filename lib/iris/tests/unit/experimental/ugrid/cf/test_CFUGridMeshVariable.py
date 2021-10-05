@@ -16,8 +16,7 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.experimental.ugrid import logger
-from iris.experimental.ugrid.cf import CFUGridMeshVariable
+from iris.experimental.ugrid.cf import CFUGridMeshVariable, logger
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
@@ -25,7 +24,7 @@ from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
 
 def named_variable(name):
     # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_ugrid_variable(name, "", np.int)
+    return netcdf_ugrid_variable(name, "", int)
 
 
 class TestIdentify(tests.IrisTest):

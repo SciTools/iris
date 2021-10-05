@@ -14,16 +14,10 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
     definition at :const:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
 
 """
-# Configure the logger.
 from ...config import get_logger
-
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
-
-# Lazy imports to avoid circularity.
-from .load import load_mesh, load_meshes, PARSE_UGRID_ON_LOAD  # isort:skip
-from .mesh import Connectivity, Mesh, MeshCoord  # isort:skip
-from .save import save_mesh  # isort:skip
-
+from .load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
+from .mesh import Connectivity, Mesh, MeshCoord
+from .save import save_mesh
 
 __all__ = [
     "Connectivity",
@@ -34,3 +28,6 @@ __all__ = [
     "load_meshes",
     "save_mesh",
 ]
+
+# Configure the logger as a root logger.
+logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET")

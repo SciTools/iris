@@ -13,7 +13,8 @@ import numpy as np
 
 from iris.coords import AuxCoord
 from iris.exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from iris.experimental.ugrid import logger, mesh, metadata
+from iris.experimental.ugrid import mesh, metadata
+from iris.experimental.ugrid.mesh import logger
 
 
 class TestMeshCommon(tests.IrisTest):

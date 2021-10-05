@@ -17,7 +17,7 @@ from itertools import groupby
 from pathlib import Path
 import threading
 
-from . import logger
+from ...config import get_logger
 from ...coords import AuxCoord
 from ...fileformats import netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
@@ -30,6 +30,9 @@ from .cf import (
     CFUGridReader,
 )
 from .mesh import Connectivity, Mesh
+
+# Configure the logger.
+logger = get_logger(__name__, propagate=True, handler=False)
 
 
 class ParseUGridOnLoad(threading.local):
