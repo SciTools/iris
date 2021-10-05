@@ -26,7 +26,7 @@ import iris.coord_systems
 import iris.coords
 from iris.util import delta
 
-__all__ = ["cube_delta", "differentiate", "curl"]
+__all__ = ["cube_delta", "curl", "differentiate"]
 
 
 def _construct_delta_coord(coord):

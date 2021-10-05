@@ -17,9 +17,9 @@ from ._fast_load import FieldCollation, structured_um_loading
 from ._ff_replacement import load_cubes, load_cubes_32bit_ieee, um_to_pp
 
 __all__ = [
-    "um_to_pp",
+    "FieldCollation",
     "load_cubes",
     "load_cubes_32bit_ieee",
     "structured_um_loading",
-    "FieldCollation",
+    "um_to_pp",
 ]

@@ -28,6 +28,8 @@ from ._grid_angles import gridcell_angles, rotate_grid_vectors
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
+    "DistanceDifferential",
+    "PartialDifferential",
     "area_weights",
     "cosine_latitude_weights",
     "get_xy_contiguous_bounded_grids",
@@ -39,8 +41,6 @@ __all__ = [
     "rotate_winds",
     "unrotate_pole",
     "wrap_lons",
-    "DistanceDifferential",
-    "PartialDifferential",
 ]
 
 # This value is used as a fall-back if the cube does not define the earth
