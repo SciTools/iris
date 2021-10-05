@@ -21,10 +21,10 @@ dependencies:
   - scipy
 
 # Optional dependencies.
-  - esmpy >=7.0
+  # - esmpy >=7.0
   - graphviz
   - iris-sample-data
-  - mo_pack
+  # - mo_pack
   - nc-time-axis
   - pandas
   - pip
