@@ -11,9 +11,13 @@ import iris.tests as tests  # isort:skip
 
 from html import escape
 
+import numpy as np
+
 from iris.coords import AncillaryVariable, CellMeasure, CellMethod
+from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
+from iris.tests.stock.mesh import sample_mesh
 
 
 @tests.skip_data
@@ -125,7 +129,12 @@ class Test__get_bits(tests.IrisTest):
         self.representer._get_bits(self.representer._get_lines())
 
     def test_population(self):
-        for v in self.representer.str_headings.values():
+        nonmesh_values = [
+            value
+            for key, value in self.representer.str_headings.items()
+            if "Mesh" not in key
+        ]
+        for v in nonmesh_values:
             self.assertIsNotNone(v)
 
     def test_headings__dimcoords(self):
@@ -343,6 +352,17 @@ class Test__make_content(tests.IrisTest):
         self.representer._get_bits(self.representer._get_lines())
         self.result = self.representer._make_content()
 
+        # Also provide an ultra-simple mesh cube, with only meshcoords.
+        mesh = sample_mesh()
+        meshco_x, meshco_y = mesh.to_MeshCoords("face")
+        mesh_cube = Cube(np.zeros(meshco_x.shape))
+        mesh_cube.add_aux_coord(meshco_x, (0,))
+        mesh_cube.add_aux_coord(meshco_y, (0,))
+        self.mesh_cube = mesh_cube
+        self.mesh_representer = CubeRepresentation(self.mesh_cube)
+        self.mesh_representer._get_bits(self.mesh_representer._get_lines())
+        self.mesh_result = self.mesh_representer._make_content()
+
     def test_included(self):
         included = "Dimension coordinates"
         self.assertIn(included, self.result)
@@ -354,6 +374,23 @@ class Test__make_content(tests.IrisTest):
         # `stock.simple_3d()` only contains the `Dimension coordinates` attr.
         not_included = list(self.representer.str_headings.keys())
         not_included.pop(not_included.index("Dimension coordinates:"))
+        for heading in not_included:
+            self.assertNotIn(heading, self.result)
+
+    def test_mesh_included(self):
+        # self.mesh_cube contains a `Mesh coordinates` section.
+        included = "Mesh coordinates"
+        self.assertIn(included, self.mesh_result)
+        mesh_coord_names = [
+            c.name() for c in self.mesh_cube.coords(mesh_coords=True)
+        ]
+        for coord_name in mesh_coord_names:
+            self.assertIn(coord_name, self.result)
+
+    def test_mesh_not_included(self):
+        # self.mesh_cube _only_ contains a `Mesh coordinates` section.
+        not_included = list(self.representer.str_headings.keys())
+        not_included.pop(not_included.index("Mesh coordinates:"))
         for heading in not_included:
             self.assertNotIn(heading, self.result)
 

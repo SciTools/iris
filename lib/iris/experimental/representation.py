@@ -88,6 +88,7 @@ class CubeRepresentation:
         self.str_headings = {
             "Dimension coordinates:": None,
             "Auxiliary coordinates:": None,
+            "Mesh coordinates:": None,
             "Derived coordinates:": None,
             "Cell measures:": None,
             "Ancillary variables:": None,
@@ -99,6 +100,7 @@ class CubeRepresentation:
         self.dim_desc_coords = [
             "Dimension coordinates:",
             "Auxiliary coordinates:",
+            "Mesh coordinates:",
             "Derived coordinates:",
             "Cell measures:",
             "Ancillary variables:",
