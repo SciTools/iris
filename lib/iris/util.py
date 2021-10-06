@@ -1854,7 +1854,7 @@ def equalise_attributes(cubes):
     Delete cube attributes that are not identical over all cubes in a group.
 
     This function deletes any attributes which are not the same for all the
-    given cubes.  The cubes will then have identical attributes, and the 
+    given cubes.  The cubes will then have identical attributes, and the
     removed attributes are returned.  The given cubes are modified in-place.
 
     Args:
@@ -1888,8 +1888,7 @@ def equalise_attributes(cubes):
     # Remove all the other attributes.
     for cube in cubes:
         deleted_attributes = {
-            key: cube.attributes.pop(key, None)
-            for key in keys_to_remove
+            key: cube.attributes.pop(key, None) for key in keys_to_remove
         }
         removed.append(deleted_attributes)
     return removed
