@@ -4,9 +4,13 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.MeshCoord`.
+Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 
 """
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 import unittest.mock as mock
 
 import dask.array as da
@@ -16,11 +20,7 @@ from iris._lazy_data import is_lazy_data
 from iris.common.metadata import BaseMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
-from iris.experimental.ugrid import Connectivity, Mesh, MeshCoord
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 

@@ -4,27 +4,30 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.CFUGridAuxiliaryCoordinateVariable` class.
+Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
-import numpy as np
-
-from iris.experimental.ugrid import CFUGridAuxiliaryCoordinateVariable, logger
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
-from iris.tests.unit.experimental.ugrid.test_CFUGridReader import (
+import iris.tests as tests  # isort:skip
+
+import numpy as np
+
+from iris.experimental.ugrid.cf import (
+    CFUGridAuxiliaryCoordinateVariable,
+    logger,
+)
+from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
 
 
 def named_variable(name):
     # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_ugrid_variable(name, "", np.int)
+    return netcdf_ugrid_variable(name, "", int)
 
 
 class TestIdentify(tests.IrisTest):

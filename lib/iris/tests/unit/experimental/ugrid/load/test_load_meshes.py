@@ -4,10 +4,9 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.experimental.ugrid.load_meshes` function.
+Unit tests for the :func:`iris.experimental.ugrid.load.load_meshes` function.
 
 """
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -18,7 +17,11 @@ from subprocess import check_call
 import tempfile
 from uuid import uuid4
 
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_meshes, logger
+from iris.experimental.ugrid.load import (
+    PARSE_UGRID_ON_LOAD,
+    load_meshes,
+    logger,
+)
 
 
 def setUpModule():

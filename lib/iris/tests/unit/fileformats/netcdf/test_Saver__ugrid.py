@@ -19,7 +19,8 @@ import numpy as np
 from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
-from iris.experimental.ugrid import Connectivity, Mesh
+from iris.experimental.ugrid.mesh import Connectivity, Mesh
+from iris.experimental.ugrid.save import save_mesh
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")
@@ -202,7 +203,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
     Kwargs:
 
-    * mesh (:class:`iris.experimental.ugrid.Mesh` or None):
+    * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
         If None, use 'default_mesh()'
     * location (string):
         Which mesh element to map the cube to.
@@ -683,11 +684,6 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         Use a name unique to this testcase, to avoid any clashes.
 
         """
-        # FOR NOW: build a cube around the mesh.
-        # TODO: test via a 'save_mesh' function, when available.
-        cube = make_cube(mesh, location="node")
-        # N.B. using 'node' as always present, unlike the default 'face'
-
         # use 'result_path' to name the file after the test function
         tempfile_path = self.result_path(ext=".nc")
         # Create a file of that name, but discard the result path and put it
@@ -695,7 +691,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         tempfile_path = self.temp_dir / Path(tempfile_path).name
 
         # Save data to the file.
-        save(cube, tempfile_path)
+        save_mesh(mesh, tempfile_path)
 
         return tempfile_path
 
@@ -1172,6 +1168,96 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 f"with {self._namestext(given_names)}"
             )
             self.assertEqual(expected_names, result_names, fail_msg)
+
+    def _check_two_different_meshes(self, vars):
+        # there are exactly 2 meshes in the file
+        mesh_names = vars_meshnames(vars)
+        self.assertEqual(sorted(mesh_names), ["Mesh2d", "Mesh2d_0"])
+
+        # they use different dimensions
+        # mesh1
+        self.assertEqual(
+            vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
+        )
+        self.assertEqual(
+            vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
+        )
+        if "edge_coordinates" in vars["Mesh2d"]:
+            self.assertEqual(
+                vars_meshdim(vars, "edge", mesh_name="Mesh2d"), "Mesh2d_edge"
+            )
+
+        # mesh2
+        self.assertEqual(
+            vars_meshdim(vars, "node", mesh_name="Mesh2d_0"), "Mesh2d_nodes_0"
+        )
+        self.assertEqual(
+            vars_meshdim(vars, "face", mesh_name="Mesh2d_0"), "Mesh2d_faces_0"
+        )
+        if "edge_coordinates" in vars["Mesh2d_0"]:
+            self.assertEqual(
+                vars_meshdim(vars, "edge", mesh_name="Mesh2d_0"),
+                "Mesh2d_edge_0",
+            )
+
+        # the relevant coords + connectivities are also distinct
+        # mesh1
+        self.assertEqual(vars["node_x"][_VAR_DIMS], ["Mesh2d_nodes"])
+        self.assertEqual(vars["face_x"][_VAR_DIMS], ["Mesh2d_faces"])
+        self.assertEqual(
+            vars["mesh2d_faces"][_VAR_DIMS],
+            ["Mesh2d_faces", "Mesh2d_face_N_nodes"],
+        )
+        if "edge_coordinates" in vars["Mesh2d"]:
+            self.assertEqual(vars["longitude"][_VAR_DIMS], ["Mesh2d_edge"])
+            self.assertEqual(
+                vars["mesh2d_edge"][_VAR_DIMS],
+                ["Mesh2d_edge", "Mesh2d_edge_N_nodes"],
+            )
+
+        # mesh2
+        self.assertEqual(vars["node_x_0"][_VAR_DIMS], ["Mesh2d_nodes_0"])
+        self.assertEqual(vars["face_x_0"][_VAR_DIMS], ["Mesh2d_faces_0"])
+        self.assertEqual(
+            vars["mesh2d_faces_0"][_VAR_DIMS],
+            ["Mesh2d_faces_0", "Mesh2d_0_face_N_nodes"],
+        )
+        if "edge_coordinates" in vars["Mesh2d_0"]:
+            self.assertEqual(vars["longitude_0"][_VAR_DIMS], ["Mesh2d_edge_0"])
+            self.assertEqual(
+                vars["mesh2d_edge_0"][_VAR_DIMS],
+                ["Mesh2d_edge_0", "Mesh2d_0_edge_N_nodes"],
+            )
+
+    def test_multiple_identical_meshes(self):
+        mesh1 = make_mesh()
+        mesh2 = make_mesh()
+
+        # Save and snapshot the result
+        tempfile_path = self.check_save_mesh([mesh1, mesh2])
+        dims, vars = scan_dataset(tempfile_path)
+
+        # Check there are two independent meshes
+        self._check_two_different_meshes(vars)
+
+    def test_multiple_different_meshes(self):
+        # Create 2 meshes with different faces, but same edges.
+        # N.B. they should *not* then share an edge dimension !
+        mesh1 = make_mesh(n_faces=3, n_edges=2)
+        mesh2 = make_mesh(n_faces=4, n_edges=2)
+
+        # Save and snapshot the result
+        tempfile_path = self.check_save_mesh([mesh1, mesh2])
+        dims, vars = scan_dataset(tempfile_path)
+
+        # Check there are two independent meshes
+        self._check_two_different_meshes(vars)
+
+        # Check the dims are as expected
+        self.assertEqual(dims["Mesh2d_faces"], 3)
+        self.assertEqual(dims["Mesh2d_faces_0"], 4)
+        self.assertEqual(dims["Mesh2d_edge"], 2)
+        self.assertEqual(dims["Mesh2d_edge_0"], 2)
 
 
 if __name__ == "__main__":

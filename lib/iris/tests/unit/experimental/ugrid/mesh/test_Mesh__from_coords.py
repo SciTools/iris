@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :meth:`iris.experimental.ugrid.Mesh.from_coords`.
+Unit tests for the :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`.
 
 """
 # Import iris.tests first so that some things can be initialised before
@@ -14,7 +14,8 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
-from iris.experimental.ugrid import Connectivity, Mesh, logger
+from iris.experimental.ugrid import logger
+from iris.experimental.ugrid.mesh import Connectivity, Mesh
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 

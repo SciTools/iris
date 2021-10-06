@@ -32,13 +32,13 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
-    "hexdigest",
-    "metadata_filter",
-    "metadata_manager_factory",
     "SERVICES",
     "SERVICES_COMBINE",
     "SERVICES_DIFFERENCE",
     "SERVICES_EQUAL",
+    "hexdigest",
+    "metadata_filter",
+    "metadata_manager_factory",
 ]
 
 

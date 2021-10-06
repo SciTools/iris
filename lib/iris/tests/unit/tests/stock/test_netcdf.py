@@ -9,7 +9,8 @@ import shutil
 import tempfile
 
 from iris import load_cube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, Mesh, MeshCoord
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid.mesh import Mesh, MeshCoord
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

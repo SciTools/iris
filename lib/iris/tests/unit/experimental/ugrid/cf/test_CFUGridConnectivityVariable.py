@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.CFUGridMeshVariable` class.
+Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridConnectivityVariable` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
@@ -16,88 +16,39 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
-from iris.experimental.ugrid import CFUGridMeshVariable, logger
-from iris.tests.unit.experimental.ugrid.test_CFUGridReader import (
+from iris.experimental.ugrid.cf import CFUGridConnectivityVariable, logger
+from iris.experimental.ugrid.mesh import Connectivity
+from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
 
 
 def named_variable(name):
     # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_ugrid_variable(name, "", np.int)
+    return netcdf_ugrid_variable(name, "", int)
 
 
 class TestIdentify(tests.IrisTest):
-    def setUp(self):
-        self.cf_identity = "mesh"
-
-    def test_cf_role(self):
-        # Test that mesh variables can be identified by having `cf_role="mesh_topology"`.
-        match_name = "match"
-        match = named_variable(match_name)
-        setattr(match, "cf_role", "mesh_topology")
-
-        not_match_name = f"not_{match_name}"
-        not_match = named_variable(not_match_name)
-        setattr(not_match, "cf_role", "foo")
-
-        vars_all = {match_name: match, not_match_name: not_match}
-
-        # ONLY expecting match, excluding not_match.
-        expected = {match_name: CFUGridMeshVariable(match_name, match)}
-        result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
-
-    def test_cf_identity(self):
-        # Test that mesh variables can be identified by being another variable's
-        #  `mesh` attribute.
+    def test_cf_identities(self):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
-        vars_all = {
+        vars_common = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
         }
-
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {
-            subject_name: CFUGridMeshVariable(subject_name, ref_subject)
-        }
-        result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
-
-    def test_cf_role_and_identity(self):
-        # Test that identification can successfully handle a combination of
-        #  mesh variables having `cf_role="mesh_topology"` AND being referenced as
-        #  another variable's `mesh` attribute.
-        role_match_name = "match"
-        role_match = named_variable(role_match_name)
-        setattr(role_match, "cf_role", "mesh_topology")
-        ref_source_1 = named_variable("ref_source_1")
-        setattr(ref_source_1, self.cf_identity, role_match_name)
-
-        subject_name = "ref_subject"
-        ref_subject = named_variable(subject_name)
-        ref_source_2 = named_variable("ref_source_2")
-        setattr(ref_source_2, self.cf_identity, subject_name)
-
-        vars_all = {
-            role_match_name: role_match,
-            subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source_1": ref_source_1,
-            "ref_source_2": ref_source_2,
+            subject_name: CFUGridConnectivityVariable(
+                subject_name, ref_subject
+            )
         }
 
-        # Expecting role_match and ref_subject but excluding other variables.
-        expected = {
-            role_match_name: CFUGridMeshVariable(role_match_name, role_match),
-            subject_name: CFUGridMeshVariable(subject_name, ref_subject),
-        }
-        result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        for identity in Connectivity.UGRID_CF_ROLES:
+            ref_source = named_variable("ref_source")
+            setattr(ref_source, identity, subject_name)
+            vars_all = dict({"ref_source": ref_source}, **vars_common)
+            result = CFUGridConnectivityVariable.identify(vars_all)
+            self.assertDictEqual(expected, result)
 
     def test_duplicate_refs(self):
         subject_name = "ref_subject"
@@ -107,7 +58,7 @@ class TestIdentify(tests.IrisTest):
             for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
-            setattr(var, self.cf_identity, subject_name)
+            setattr(var, Connectivity.UGRID_CF_ROLES[0], subject_name)
         vars_all = dict(
             {
                 subject_name: ref_subject,
@@ -118,12 +69,14 @@ class TestIdentify(tests.IrisTest):
 
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {
-            subject_name: CFUGridMeshVariable(subject_name, ref_subject)
+            subject_name: CFUGridConnectivityVariable(
+                subject_name, ref_subject
+            )
         }
-        result = CFUGridMeshVariable.identify(vars_all)
+        result = CFUGridConnectivityVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
 
-    def test_two_refs(self):
+    def test_two_cf_roles(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {
             name: named_variable(name) for name in subject_names
@@ -134,7 +87,7 @@ class TestIdentify(tests.IrisTest):
             for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, Connectivity.UGRID_CF_ROLES[ix], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -143,38 +96,40 @@ class TestIdentify(tests.IrisTest):
 
         # Not expecting ref_not_subject.
         expected = {
-            name: CFUGridMeshVariable(name, var)
+            name: CFUGridConnectivityVariable(name, var)
             for name, var in ref_subject_vars.items()
         }
-        result = CFUGridMeshVariable.identify(vars_all)
+        result = CFUGridConnectivityVariable.identify(vars_all)
         self.assertDictEqual(expected, result)
 
     def test_two_part_ref_ignored(self):
-        # Not expected to handle more than one variable for a mesh
+        # Not expected to handle more than one variable for a connectivity
         # cf role - invalid UGRID.
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name + " foo")
+        setattr(
+            ref_source, Connectivity.UGRID_CF_ROLES[0], subject_name + " foo"
+        )
         vars_all = {
             subject_name: named_variable(subject_name),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
 
-        result = CFUGridMeshVariable.identify(vars_all)
+        result = CFUGridConnectivityVariable.identify(vars_all)
         self.assertDictEqual({}, result)
 
     def test_string_type_ignored(self):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        setattr(ref_source, Connectivity.UGRID_CF_ROLES[0], subject_name)
         vars_all = {
             subject_name: netcdf_ugrid_variable(subject_name, "", np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
 
-        result = CFUGridMeshVariable.identify(vars_all)
+        result = CFUGridConnectivityVariable.identify(vars_all)
         self.assertDictEqual({}, result)
 
     def test_ignore(self):
@@ -188,7 +143,7 @@ class TestIdentify(tests.IrisTest):
             for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, Connectivity.UGRID_CF_ROLES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -198,11 +153,11 @@ class TestIdentify(tests.IrisTest):
         # ONLY expect the subject variable that hasn't been ignored.
         expected_name = subject_names[0]
         expected = {
-            expected_name: CFUGridMeshVariable(
+            expected_name: CFUGridConnectivityVariable(
                 expected_name, ref_subject_vars[expected_name]
             )
         }
-        result = CFUGridMeshVariable.identify(
+        result = CFUGridConnectivityVariable.identify(
             vars_all, ignore=subject_names[1]
         )
         self.assertDictEqual(expected, result)
@@ -216,7 +171,7 @@ class TestIdentify(tests.IrisTest):
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, Connectivity.UGRID_CF_ROLES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -226,17 +181,19 @@ class TestIdentify(tests.IrisTest):
         # ONLY expect the variable referenced by the named ref_source_var.
         expected_name = subject_names[0]
         expected = {
-            expected_name: CFUGridMeshVariable(
+            expected_name: CFUGridConnectivityVariable(
                 expected_name, ref_subject_vars[expected_name]
             )
         }
-        result = CFUGridMeshVariable.identify(vars_all, target=source_names[0])
+        result = CFUGridConnectivityVariable.identify(
+            vars_all, target=source_names[0]
+        )
         self.assertDictEqual(expected, result)
 
     def test_warn(self):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        setattr(ref_source, Connectivity.UGRID_CF_ROLES[0], subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -246,10 +203,12 @@ class TestIdentify(tests.IrisTest):
         warn_and_level = {True: "WARNING", False: "DEBUG"}
 
         # Missing warning.
-        log_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
+        log_regex = rf"Missing CF-UGRID connectivity variable {subject_name}.*"
         for warn, level in warn_and_level.items():
             with self.assertLogs(logger, level=level, msg_regex=log_regex):
-                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
+                result = CFUGridConnectivityVariable.identify(
+                    vars_all, warn=warn
+                )
                 self.assertDictEqual({}, result)
 
         # String variable warning.
@@ -259,5 +218,7 @@ class TestIdentify(tests.IrisTest):
                 vars_all[subject_name] = netcdf_ugrid_variable(
                     subject_name, "", np.bytes_
                 )
-                result = CFUGridMeshVariable.identify(vars_all, warn=warn)
+                result = CFUGridConnectivityVariable.identify(
+                    vars_all, warn=warn
+                )
                 self.assertDictEqual({}, result)

@@ -31,7 +31,10 @@ class CondaLock(Conda):
         super().__init__(conf, python, requirements)
 
     def _uninstall_project(self):
-        if self._get_installed_commit_hash():
+        installed_hash = self._get_installed_commit_hash()
+        if installed_hash:
+            log.info(f"Clearing conda environment for {self.name}")
+            self._cache._remove_cache_dir(installed_hash)
             # we can only run the uninstall command if an environment has already
             # been made before, otherwise there is no python to use to uninstall
             super()._uninstall_project()

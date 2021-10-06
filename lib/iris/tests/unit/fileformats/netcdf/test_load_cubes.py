@@ -20,7 +20,8 @@ from cf_units import as_unit
 import numpy as np
 
 from iris.coords import AncillaryVariable, CellMeasure
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, MeshCoord
+from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
+from iris.experimental.ugrid.mesh import MeshCoord
 from iris.fileformats.netcdf import load_cubes, logger
 
 # Import iris.tests first so that some things can be initialised before

@@ -4,9 +4,12 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :class:`iris.experimental.ugrid.ConnectivityMetadata`.
+Unit tests for the :class:`iris.experimental.ugrid.metadata.MeshCoordMetadata`.
 
 """
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
 
 from copy import deepcopy
 import unittest.mock as mock
@@ -14,24 +17,19 @@ from unittest.mock import sentinel
 
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata
-from iris.experimental.ugrid import ConnectivityMetadata
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
+from iris.experimental.ugrid.metadata import MeshCoordMetadata
 
 
-class Test(tests.IrisTest):
+class Test__identity(tests.IrisTest):
     def setUp(self):
         self.standard_name = mock.sentinel.standard_name
         self.long_name = mock.sentinel.long_name
         self.var_name = mock.sentinel.var_name
         self.units = mock.sentinel.units
         self.attributes = mock.sentinel.attributes
-        self.cf_role = mock.sentinel.cf_role
-        self.start_index = mock.sentinel.start_index
-        self.src_dim = mock.sentinel.src_dim
-        self.cls = ConnectivityMetadata
+        self.location = mock.sentinel.location
+        self.axis = mock.sentinel.axis
+        self.cls = MeshCoordMetadata
 
     def test_repr(self):
         metadata = self.cls(
@@ -40,14 +38,13 @@ class Test(tests.IrisTest):
             var_name=self.var_name,
             units=self.units,
             attributes=self.attributes,
-            cf_role=self.cf_role,
-            start_index=self.start_index,
-            src_dim=self.src_dim,
+            location=self.location,
+            axis=self.axis,
         )
         fmt = (
-            "ConnectivityMetadata(standard_name={!r}, long_name={!r}, "
-            "var_name={!r}, units={!r}, attributes={!r}, cf_role={!r}, "
-            "start_index={!r}, src_dim={!r})"
+            "MeshCoordMetadata(standard_name={!r}, long_name={!r}, "
+            "var_name={!r}, units={!r}, attributes={!r}, "
+            "location={!r}, axis={!r})"
         )
         expected = fmt.format(
             self.standard_name,
@@ -55,9 +52,8 @@ class Test(tests.IrisTest):
             self.var_name,
             self.units,
             self.attributes,
-            self.cf_role,
-            self.start_index,
-            self.src_dim,
+            self.location,
+            self.axis,
         )
         self.assertEqual(expected, repr(metadata))
 
@@ -68,9 +64,8 @@ class Test(tests.IrisTest):
             "var_name",
             "units",
             "attributes",
-            "cf_role",
-            "start_index",
-            "src_dim",
+            "location",
+            "axis",
         )
         self.assertEqual(self.cls._fields, expected)
 
@@ -86,17 +81,11 @@ class Test__eq__(tests.IrisTest):
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            cf_role=sentinel.cf_role,
-            start_index=sentinel.start_index,
-            src_dim=sentinel.src_dim,
+            location=sentinel.location,
+            axis=sentinel.axis,
         )
         self.dummy = sentinel.dummy
-        self.cls = ConnectivityMetadata
-        # The "src_dim" member is stateful only, and does not participate in
-        # lenient/strict equivalence.
-        self.members_no_src_dim = filter(
-            lambda member: member != "src_dim", self.cls._members
-        )
+        self.cls = MeshCoordMetadata
 
     def test_wraps_docstring(self):
         self.assertEqual(BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__)
@@ -130,10 +119,10 @@ class Test__eq__(tests.IrisTest):
             self.assertTrue(lmetadata.__eq__(rmetadata))
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
-    def test_op_lenient_same_none(self):
+    def test_op_lenient_same_none_nonmember(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
-        right["var_name"] = None
+        right["long_name"] = None
         rmetadata = self.cls(**right)
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
@@ -141,7 +130,7 @@ class Test__eq__(tests.IrisTest):
             self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_lenient_same_members_none(self):
-        for member in self.members_no_src_dim:
+        for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
@@ -153,20 +142,10 @@ class Test__eq__(tests.IrisTest):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
 
-    def test_op_lenient_same_src_dim_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["src_dim"] = None
-        rmetadata = self.cls(**right)
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
-
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
-        right["units"] = self.dummy
+        right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
@@ -174,7 +153,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_lenient_different_members(self):
-        for member in self.members_no_src_dim:
+        for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
@@ -185,16 +164,6 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
-
-    def test_op_lenient_different_src_dim(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["src_dim"] = self.dummy
-        rmetadata = self.cls(**right)
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_same(self):
         lmetadata = self.cls(**self.values)
@@ -215,7 +184,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_members(self):
-        for member in self.members_no_src_dim:
+        for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
@@ -226,16 +195,6 @@ class Test__eq__(tests.IrisTest):
             ):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
-
-    def test_op_strict_different_src_dim(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["src_dim"] = self.dummy
-        rmetadata = self.cls(**right)
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_none(self):
         lmetadata = self.cls(**self.values)
@@ -248,7 +207,7 @@ class Test__eq__(tests.IrisTest):
             self.assertFalse(rmetadata.__eq__(lmetadata))
 
     def test_op_strict_different_members_none(self):
-        for member in self.members_no_src_dim:
+        for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
@@ -260,24 +219,24 @@ class Test__eq__(tests.IrisTest):
                 self.assertFalse(lmetadata.__eq__(rmetadata))
                 self.assertFalse(rmetadata.__eq__(lmetadata))
 
-    def test_op_strict_different_src_dim_none(self):
-        lmetadata = self.cls(**self.values)
-        right = self.values.copy()
-        right["src_dim"] = None
-        rmetadata = self.cls(**right)
-
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
-
 
 class Test___lt__(tests.IrisTest):
     def setUp(self):
-        self.cls = ConnectivityMetadata
-        self.one = self.cls(1, 1, 1, 1, 1, 1, 1, 1)
-        self.two = self.cls(1, 1, 1, 2, 1, 1, 1, 1)
-        self.none = self.cls(1, 1, 1, None, 1, 1, 1, 1)
-        self.attributes = self.cls(1, 1, 1, 1, 10, 1, 1, 1)
+        self.cls = MeshCoordMetadata
+        values = [1] * len(self.cls._fields)
+        self.one = self.cls(*values)
+
+        values_two = values[:]
+        values_two[2] = 2
+        self.two = self.cls(*values_two)
+
+        values_none = values[:]
+        values_none[2] = None
+        self.none = self.cls(*values_none)
+
+        values_attrs = values[:]
+        values_attrs[4] = 10
+        self.attributes = self.cls(*values_attrs)
 
     def test__ascending_lt(self):
         result = self.one < self.two
@@ -304,18 +263,17 @@ class Test___lt__(tests.IrisTest):
 
 class Test_combine(tests.IrisTest):
     def setUp(self):
+        self.cls = MeshCoordMetadata
         self.values = dict(
             standard_name=sentinel.standard_name,
             long_name=sentinel.long_name,
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            cf_role=sentinel.cf_role,
-            start_index=sentinel.start_index,
-            src_dim=sentinel.src_dim,
+            location=sentinel.location,
+            axis=sentinel.axis,
         )
         self.dummy = sentinel.dummy
-        self.cls = ConnectivityMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
@@ -370,7 +328,7 @@ class Test_combine(tests.IrisTest):
     def test_op_lenient_same_none(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
-        right["var_name"] = None
+        right["long_name"] = None
         rmetadata = self.cls(**right)
         expected = self.values
 
@@ -399,10 +357,10 @@ class Test_combine(tests.IrisTest):
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
-        right["units"] = self.dummy
+        right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
         expected = self.values.copy()
-        expected["units"] = None
+        expected["long_name"] = None
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
@@ -501,18 +459,17 @@ class Test_combine(tests.IrisTest):
 
 class Test_difference(tests.IrisTest):
     def setUp(self):
+        self.cls = MeshCoordMetadata
         self.values = dict(
             standard_name=sentinel.standard_name,
             long_name=sentinel.long_name,
             var_name=sentinel.var_name,
             units=sentinel.units,
             attributes=sentinel.attributes,
-            cf_role=sentinel.cf_role,
-            start_index=sentinel.start_index,
-            src_dim=sentinel.src_dim,
+            location=sentinel.location,
+            axis=sentinel.axis,
         )
         self.dummy = sentinel.dummy
-        self.cls = ConnectivityMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
@@ -566,7 +523,7 @@ class Test_difference(tests.IrisTest):
     def test_op_lenient_same_none(self):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
-        right["var_name"] = None
+        right["long_name"] = None
         rmetadata = self.cls(**right)
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
@@ -599,12 +556,12 @@ class Test_difference(tests.IrisTest):
         left = self.values.copy()
         lmetadata = self.cls(**left)
         right = self.values.copy()
-        right["units"] = self.dummy
+        right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
         lexpected = deepcopy(self.none)._asdict()
-        lexpected["units"] = (left["units"], right["units"])
+        lexpected["long_name"] = (left["long_name"], right["long_name"])
         rexpected = deepcopy(self.none)._asdict()
-        rexpected["units"] = lexpected["units"][::-1]
+        rexpected["long_name"] = lexpected["long_name"][::-1]
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
             self.assertEqual(
@@ -729,7 +686,7 @@ class Test_difference(tests.IrisTest):
 
 class Test_equal(tests.IrisTest):
     def setUp(self):
-        self.cls = ConnectivityMetadata
+        self.cls = MeshCoordMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):

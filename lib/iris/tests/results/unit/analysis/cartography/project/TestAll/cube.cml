@@ -9,10 +9,10 @@
         <dimCoord id="1d45e087" points="[0.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="8f75dad5" points="[[inf, inf, -27.1960378264, ..., -26.4183314681,
-		 inf, inf],
-		[inf, -7.60877872467, -22.5253246282, ...,
-		 -20.3389131851, -6.6367758118, inf],
+        <auxCoord id="8f75dad5" points="[[nan, nan, -27.1960378264, ..., -26.4183314681,
+		 nan, nan],
+		[nan, -7.60877872467, -22.5253246282, ...,
+		 -20.3389131851, -6.6367758118, nan],
 		[11.9373960713, 1.68737720645, -19.7510869281,
 		 ..., -16.5990751865, 3.75281337984,
 		 12.1482298878],
@@ -20,10 +20,10 @@
 		[84.2615071705, 54.8444503701, 26.7572382165,
 		 ..., 30.1637424823, 58.6051855118,
 		 86.9541974993],
-		[inf, 62.6851802716, 39.629088106, ...,
-		 42.3249307728, 64.8680485778, inf],
-		[inf, inf, 46.2669891845, ..., 47.2804926757,
-		 inf, inf]]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+		[nan, 62.6851802716, 39.629088106, ...,
+		 42.3249307728, 64.8680485778, nan],
+		[nan, nan, 46.2669891845, ..., 47.2804926757,
+		 nan, nan]]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>
@@ -37,20 +37,20 @@
         </dimCoord>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="81715b9b" points="[[inf, inf, -168.158920348, ..., 169.237777806,
-		 inf, inf],
-		[inf, -164.537714569, -145.687716669, ...,
-		 147.432977295, 167.102016129, inf],
+        <auxCoord id="81715b9b" points="[[nan, nan, -168.158920348, ..., 169.237777806,
+		 nan, nan],
+		[nan, -164.537714569, -145.687716669, ...,
+		 147.432977295, 167.102016129, nan],
 		[-175.009062798, -147.024891707, -126.259029624,
 		 ..., 128.513092975, 150.23087042, 178.899397359],
 		..., 
 		[-58.34983089, -70.8813785605, -58.2031036304,
 		 ..., 60.1459645527, 72.0019781785,
 		 20.6956240803],
-		[inf, -35.1608514733, -42.5369291003, ...,
-		 43.052784475, 31.4703511243, inf],
-		[inf, inf, -15.3083916055, ..., 14.2709222711,
-		 inf, inf]]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+		[nan, -35.1608514733, -42.5369291003, ...,
+		 43.052784475, 31.4703511243, nan],
+		[nan, nan, -15.3083916055, ..., 14.2709222711,
+		 nan, nan]]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </auxCoord>
       </coord>

@@ -36,22 +36,34 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
    meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
    :pull:`4014`, :pull:`4027`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`,
-   :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) and
-   loading (:pull:`4058`) of data on meshes.
+   :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) of
+   data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
-   objects introduced are :class:`iris.experimental.ugrid.Mesh`,
-   :class:`iris.experimental.ugrid.MeshCoord` and
-   :obj:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`.
-   A :class:`iris.experimental.ugrid.Mesh` contains a full description of a UGRID
-   type mesh. :class:`~iris.experimental.ugrid.MeshCoord`\ s are coordinates that
-   reference and represent a :class:`~iris.experimental.ugrid.Mesh` for use
+   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
+   :class:`iris.experimental.ugrid.mesh.MeshCoord` and
+   :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
+   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
+   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
    on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
    property :attr:`~iris.cube.Cube.mesh` which returns a
-   :class:`~iris.experimental.ugrid.Mesh` if one is attached to the
-   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.MeshCoord`.
-   Finally, the context manager :obj:`~iris.experimental.ugrid.PARSE_UGRID_ON_LOAD`
+   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
+   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
+
+#. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
+   for files using the `UGRID`_ conventions.
+   The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
    provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
-   returned with a :class:`~iris.experimental.ugrid.Mesh` attached.
+   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
+   (:pull:`4058`).
+
+#. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
+   `UGRID`_ conventions.
+   The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
+   A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
+   :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
+   (i.e. not attached to cubes).
+   (:pull:`4318` and :pull:`4339`).
 
 
 🐛 Bugs Fixed
@@ -62,6 +74,10 @@ This document explains the changes made to Iris for this release
    one cell's bounds align with the requested maximum and negative minimum, fixing
    :issue:`4221`. (:pull:`4278`)
 
+#. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
+   when a cube list contains cubes with different names, which will no longer report
+   "Cube names differ: var1 != var1" if var1 appears multiple times in the list
+   (:issue:`4342`, :pull:`4345`)
 
 💣 Incompatible Changes
 =======================
@@ -84,7 +100,11 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ introduced the ``cartopy >=0.20`` minimum pin.
+   (:pull:`4331`)
+
+#. `@trexfeathers`_ introduced the ``cf-units >=3`` and ``nc-time-axis >=1.3``
+   minimum pins. (:pull:`4356`)
 
 
 📚 Documentation
@@ -114,8 +134,7 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
    test data is missing (:pull:`4319`)
 
-
-#. `@wjbenfold`_ excluded "Good First Issue" labelled issues from being
+#. `@wjbenfold`_ excluded ``Good First Issue`` labelled issues from being
    marked stale. (:pull:`4317`)
 
 #. `@tkknight`_ added additional make targets for reducing the time of the
@@ -126,11 +145,20 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
    that sometimes interferes with unrelated tests. (:pull:`4330`)
 
+#. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
+   (:pull:`4349`)
+
+#. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
+   (:pull:`4347`).
+
+#. `@bjlittle`_ enabled the `sort-all`_ `pre-commit`_ hook to automatically
+   sort ``__all__`` entries into alphabetical order. (:pull:`4353`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@tinyendian: https://github.com/tinyendian
 
 
 .. comment
@@ -138,3 +166,4 @@ This document explains the changes made to Iris for this release
 
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
+.. _sort-all: https://github.com/aio-libs/sort-all
