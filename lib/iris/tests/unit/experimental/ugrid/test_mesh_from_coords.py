@@ -14,7 +14,7 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
-from iris.experimental.ugrid import Connectivity, mesh_from_coords
+from iris.experimental.ugrid import Connectivity, logger, mesh_from_coords
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 
@@ -122,56 +122,55 @@ class Test1Dim(tests.IrisTest):
             if conn is not None:
                 self.assertTrue(conn.has_lazy_indices())
 
-    def test_not_coord(self):
-        self.lon = "not a Coord"
-        with self.assertRaisesRegex(ValueError, "Expected a Coord.*"):
-            _ = self.create()
-
     def test_coord_shape_mismatch(self):
         lat_orig = self.lat.copy(self.lat.points, self.lat.bounds)
         self.lat = lat_orig.copy(
             points=lat_orig.points, bounds=np.tile(lat_orig.bounds, 2)
         )
-        with self.assertRaisesRegex(ValueError, ".*bounds shape must be"):
+        with self.assertRaisesRegex(
+            ValueError, "bounds shapes are not identical.*"
+        ):
             _ = self.create()
 
         self.lat = lat_orig.copy(
             points=lat_orig.points[-1], bounds=lat_orig.bounds[-1]
         )
-        with self.assertRaisesRegex(ValueError, ".*points shape must be"):
+        with self.assertRaisesRegex(
+            ValueError, "points shapes are not identical.*"
+        ):
             _ = self.create()
 
-    def test_coords_not_orthogonal(self):
-        def replace_standard_name(coord, standard_name):
+    def test_reorder(self):
+        # Swap the coords.
+        self.lat, self.lon = self.lon, self.lat
+        mesh = self.create()
+        # Confirm that the coords have been swapped back to the 'correct' order.
+        self.assertEqual("longitude", mesh.node_coords.node_x.standard_name)
+        self.assertEqual("latitude", mesh.node_coords.node_y.standard_name)
+
+    def test_non_xy(self):
+        def unname_coord(coord):
             return coord.__class__(
                 points=coord.points,
                 bounds=coord.bounds,
-                standard_name=standard_name,
                 long_name=coord.long_name,
                 var_name=coord.var_name,
                 units=coord.units,
                 attributes=coord.attributes,
             )
 
-        # Identical to original lat, but with the same names as lon.
-        self.lat = replace_standard_name(self.lat, self.lon.standard_name)
-        with self.assertRaisesRegex(ValueError, ".*Both axes == X ."):
-            _ = self.create()
-
-        new_standard_name = "air_temperature"
-        self.lon = replace_standard_name(self.lon, new_standard_name)
-        self.lat = replace_standard_name(self.lat, new_standard_name)
-        with self.assertRaisesRegex(
-            ValueError, f".*Both standard_names == {new_standard_name}"
-        ):
-            _ = self.create()
-
-        self.lon = replace_standard_name(self.lon, None)
-        self.lat = replace_standard_name(self.lon, None)
-        with self.assertRaisesRegex(
-            ValueError, ".*Both coords' metadata identical."
-        ):
-            _ = self.create()
+        lat_name, lon_name = [
+            coord.long_name for coord in (self.lat, self.lon)
+        ]
+        # Swap the coords.
+        self.lat, self.lon = [
+            unname_coord(coord) for coord in (self.lon, self.lat)
+        ]
+        with self.assertLogs(logger, "INFO", "Unable to find .*"):
+            mesh = self.create()
+        # Confirm that the coords have not been swapped back.
+        self.assertEqual(lat_name, mesh.node_coords.node_x.long_name)
+        self.assertEqual(lon_name, mesh.node_coords.node_y.long_name)
 
 
 class Test2Dim(Test1Dim):
@@ -260,18 +259,16 @@ class TestInvalidBounds(tests.IrisTest):
     """Invalid bounds not supported."""
 
     def test_no_bounds(self):
-        lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0, 1], [1, 2], [2, 3]])
+        lon = AuxCoord(points=[0.5, 1.5, 2.5])
         lat = AuxCoord(points=[0, 1, 2])
-        with self.assertRaisesRegex(
-            ValueError, "coord_2 has invalid bounds: None"
-        ):
+        with self.assertRaisesRegex(ValueError, "bounds missing from.*"):
             _ = mesh_from_coords(lon, lat)
 
     def test_1_bound(self):
-        lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0, 1], [1, 2], [2, 3]])
+        lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0], [1], [2]])
         lat = AuxCoord(points=[0, 1, 2], bounds=[[0.5], [1.5], [2.5]])
         with self.assertRaisesRegex(
-            ValueError, r"coord_2 has invalid bounds: shape.*"
+            ValueError, r"Expected coordinate bounds.shape \(n, >=2\).*"
         ):
             _ = mesh_from_coords(lon, lat)
 
@@ -283,6 +280,6 @@ class TestInvalidPoints(tests.IrisTest):
         cube = simple_2d_w_multidim_coords()[:3, :3]
         coord_1, coord_2 = cube.coords()
         with self.assertRaisesRegex(
-            ValueError, "Coordinates must have ndim == 1.*"
+            ValueError, "Expected coordinate ndim == 1.*"
         ):
             _ = mesh_from_coords(coord_1, coord_2)
