@@ -271,6 +271,10 @@ task:
     - echo [Resources] > %SITE_CFG%
     - echo test_data_dir =  C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data >> %SITE_CFG%
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
+    - ps: cat $Env:SITE_CFG
+    - echo ${PATH}
+    - echo ${LIB}
+    - echo ${INCLUDE}
     - nox --session tests -- --verbose
 
 
