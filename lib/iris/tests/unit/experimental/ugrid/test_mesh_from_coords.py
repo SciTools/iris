@@ -103,15 +103,12 @@ class Test1Dim(tests.IrisTest):
         self.assertDictEqual({}, mesh.attributes)
 
     def test_lazy(self):
-        self.lon = AuxCoord(
-            points=self.lon.lazy_points(),
-            bounds=self.lon.lazy_bounds(),
-            standard_name="longitude",
+        self.lon = AuxCoord.from_coord(self.lon)
+        self.lon = self.lon.copy(
+            self.lon.lazy_points(), self.lon.lazy_bounds()
         )
-        self.lat = AuxCoord(
-            points=self.lat.lazy_points(),
-            bounds=self.lat.lazy_bounds(),
-            standard_name="latitude",
+        self.lat = self.lat.copy(
+            self.lat.lazy_points(), self.lat.lazy_bounds()
         )
 
         mesh = self.create()
@@ -149,23 +146,13 @@ class Test1Dim(tests.IrisTest):
         self.assertEqual("latitude", mesh.node_coords.node_y.standard_name)
 
     def test_non_xy(self):
-        def unname_coord(coord):
-            return coord.__class__(
-                points=coord.points,
-                bounds=coord.bounds,
-                long_name=coord.long_name,
-                var_name=coord.var_name,
-                units=coord.units,
-                attributes=coord.attributes,
-            )
-
-        lat_name, lon_name = [
-            coord.long_name for coord in (self.lat, self.lon)
+        for coord in self.lon, self.lat:
+            coord.standard_name = None
+        lon_name, lat_name = [
+            coord.long_name for coord in (self.lon, self.lat)
         ]
         # Swap the coords.
-        self.lat, self.lon = [
-            unname_coord(coord) for coord in (self.lon, self.lat)
-        ]
+        self.lat, self.lon = self.lon, self.lat
         with self.assertLogs(logger, "INFO", "Unable to find .*"):
             mesh = self.create()
         # Confirm that the coords have not been swapped back.
@@ -175,25 +162,12 @@ class Test1Dim(tests.IrisTest):
 
 class Test2Dim(Test1Dim):
     def setUp(self):
-        self.lon = DimCoord(
-            points=[0.5, 1.5, 2.5],
-            bounds=[[0, 0.5, 1], [1, 1.5, 2], [2, 2.5, 3]],
-            standard_name="longitude",
-            long_name="triangle longitudes",
-            var_name="lon",
-            units="degrees",
-            attributes={"test": 1},
-        )
-        # Should be fine with either a DimCoord or an AuxCoord.
-        self.lat = AuxCoord(
-            points=[0.5, 2.5, 1.5],
-            bounds=[[0, 1, 0], [2, 3, 2], [1, 2, 1]],
-            standard_name="latitude",
-            long_name="triangle latitudes",
-            var_name="lat",
-            units="degrees",
-            attributes={"test": 1},
-        )
+        super().setUp()
+
+        self.lon.bounds = [[0, 0.5, 1], [1, 1.5, 2], [2, 2.5, 3]]
+        self.lon.long_name = "triangle longitudes"
+        self.lat.bounds = [[0, 1, 0], [2, 3, 2], [1, 2, 1]]
+        self.lat.long_name = "triangle latitudes"
 
     def test_dimensionality(self):
         mesh = self.create()
@@ -233,21 +207,14 @@ class Test2Dim(Test1Dim):
             self.assertIsNone(actual_coord.var_name)
 
     def test_mixed_shapes(self):
+        self.lon = AuxCoord.from_coord(self.lon)
         lon_bounds = np.array([[0, 0, 1, 1], [1, 1, 2, 2], [2, 3, 2.5, 999]])
-        lon_bounds = np.ma.masked_equal(lon_bounds, 999)
-        lon = AuxCoord(
-            points=[0.5, 1.5, 2.5],
-            bounds=lon_bounds,
-            standard_name="longitude",
-        )
+        self.lon.bounds = np.ma.masked_equal(lon_bounds, 999)
 
         lat_bounds = np.array([[0, 1, 1, 0], [1, 2, 2, 1], [2, 2, 3, 999]])
-        lat_bounds = np.ma.masked_equal(lat_bounds, 999)
-        lat = AuxCoord(
-            points=[0.5, 1.5, 2.5], bounds=lat_bounds, standard_name="latitude"
-        )
+        self.lat.bounds = np.ma.masked_equal(lat_bounds, 999)
 
-        mesh = mesh_from_coords(lon, lat)
+        mesh = self.create()
         self.assertArrayEqual(
             mesh.face_node_connectivity.src_lengths(), [4, 4, 3]
         )

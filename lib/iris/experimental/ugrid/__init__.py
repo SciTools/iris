@@ -2789,6 +2789,12 @@ def mesh_from_coords(*coords):
         Any resulting duplicate nodes are not currently removed, due to the
         computational intensity.
 
+    .. note::
+        :class:`~iris.experimental.ugrid.Mesh` currently requires ``X`` and
+        ``Y`` :class:`~iris.coords.Coord`\\ s specifically.
+        :meth:`iris.util.guess_coord_axis` is therefore attempted, else the
+        first two ``Y`` :class:`~iris.coords.Coord`\\ s are taken.
+
     .. testsetup::
 
         from iris import load_cube, sample_data_path
