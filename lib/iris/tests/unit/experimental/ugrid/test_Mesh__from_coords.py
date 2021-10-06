@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for the :func:`iris.experimental.ugrid.mesh_from_coords`.
+Unit tests for the :meth:`iris.experimental.ugrid.Mesh.from_coords`.
 
 """
 # Import iris.tests first so that some things can be initialised before
@@ -14,7 +14,7 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
-from iris.experimental.ugrid import Connectivity, logger, mesh_from_coords
+from iris.experimental.ugrid import Connectivity, Mesh, logger
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 
@@ -41,7 +41,7 @@ class Test1Dim(tests.IrisTest):
         )
 
     def create(self):
-        return mesh_from_coords(self.lon, self.lat)
+        return Mesh.from_coords(self.lon, self.lat)
 
     def test_dimensionality(self):
         mesh = self.create()
@@ -229,7 +229,7 @@ class TestInvalidBounds(tests.IrisTest):
         lon = AuxCoord(points=[0.5, 1.5, 2.5])
         lat = AuxCoord(points=[0, 1, 2])
         with self.assertRaisesRegex(ValueError, "bounds missing from.*"):
-            _ = mesh_from_coords(lon, lat)
+            _ = Mesh.from_coords(lon, lat)
 
     def test_1_bound(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0], [1], [2]])
@@ -237,7 +237,7 @@ class TestInvalidBounds(tests.IrisTest):
         with self.assertRaisesRegex(
             ValueError, r"Expected coordinate bounds.shape \(n, >=2\).*"
         ):
-            _ = mesh_from_coords(lon, lat)
+            _ = Mesh.from_coords(lon, lat)
 
 
 class TestInvalidPoints(tests.IrisTest):
@@ -249,4 +249,4 @@ class TestInvalidPoints(tests.IrisTest):
         with self.assertRaisesRegex(
             ValueError, "Expected coordinate ndim == 1.*"
         ):
-            _ = mesh_from_coords(coord_1, coord_2)
+            _ = Mesh.from_coords(coord_1, coord_2)
