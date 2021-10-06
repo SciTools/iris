@@ -65,6 +65,8 @@ This document explains the changes made to Iris for this release
    (i.e. not attached to cubes).
    (:pull:`4318` and :pull:`4339`).
 
+#. `@larsbarring`_ updated :func`~iris.util.equalise_attributes` to return a list of dictionaries
+   containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
 
 🐛 Bugs Fixed
 =============
@@ -158,8 +160,8 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@larsbarring: https://github.com/larsbarring
 .. _@tinyendian: https://github.com/tinyendian
-
 
 .. comment
     Whatsnew resources in alphabetical order:
