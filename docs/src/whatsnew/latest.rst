@@ -103,6 +103,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ introduced the ``cartopy >=0.20`` minimum pin.
    (:pull:`4331`)
 
+#. `@trexfeathers`_ introduced the ``cf-units >=3`` and ``nc-time-axis >=1.3``
+   minimum pins. (:pull:`4356`)
+
 
 📚 Documentation
 ================
