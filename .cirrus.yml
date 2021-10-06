@@ -104,9 +104,9 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     HOME: ${CIRRUS_WORKING_DIR}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
-    PATH: '%CONDA_DIR%\condabin;%CONDA_DIR%;%CONDA_DIR%\scripts;${PATH}'
-    INCLUDE: '%CONDA_DIR%\Library\include;%INCLUDE%'
-    LIB: '%CONDA_DIR%\Library\lib;%LIB%'
+    PATH: '${CONDA_DIR}\condabin;${CONDA_DIR};${CONDA_DIR}\scripts;${PATH}'
+    INCLUDE: '${CONDA_DIR}\Library\include;${INCLUDE}'
+    LIB: '${CONDA_DIR}\Library\lib;${LIB}'
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
@@ -273,8 +273,8 @@ task:
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
     - ps: cat $Env:SITE_CFG
     - echo %PATH%
-    - echo %LIB%
     - echo %INCLUDE%
+    - echo %LIB%
     - dir %CONDA_DIR%
     - dir %CONDA_DIR%\Library
     - nox --session tests -- --verbose
