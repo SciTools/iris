@@ -106,8 +106,8 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # PATH: '%CONDA_DIR%\condabin;%CONDA_DIR%;%CONDA_DIR%\scripts;${PATH}'
     PATH: '${CONDA_DIR}/condabin;${CONDA_DIR};${CONDA_DIR}/scripts;${PATH}'
-    INCLUDE: '${CONDA_DIR}/Library/include'
-    LIB: '${CONDA_DIR}/Library/lib'
+    INCLUDE: '${CONDA_DIR}\Library\include'
+    LIB: '${CONDA_DIR}\Library\lib'
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
