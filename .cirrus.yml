@@ -45,6 +45,7 @@ env:
   IRIS_TEST_DATA_DIR_EXT_WIN: /iris-test-data
   # Base directory for the iris-test-data (Windows path).
   IRIS_TEST_DATA_DIR_WIN: ${HOME}${IRIS_TEST_DATA_DIR_EXT_WIN}
+ 
 
 
 #
@@ -268,8 +269,8 @@ task:
   tests_script:
     - conda activate base
     - echo [Resources] > %SITE_CFG%
-    - echo test_data_dir = %IRIS_TEST_DATA_DIR_WIN%\test_data >> %SITE_CFG%
-    - echo doc_dir = %CIRRUS_WORKING_DIR%\docs >> %SITE_CFG%
+    - echo test_data_dir =  C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data >> %SITE_CFG%
+    - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
     - nox --session tests -- --verbose
 
 
