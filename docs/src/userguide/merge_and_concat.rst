@@ -438,7 +438,7 @@ input cubes before merging the input cubes using :meth:`~iris.cube.CubeList.merg
     iris.exceptions.MergeError: failed to merge into a single cube.
       cube.attributes keys differ: 'Conventions'
 
-    >>> equalise_attributes(cubes)
+    >>> removed_attributes = equalise_attributes(cubes)
 
     >>> print(cubes[0].attributes)
     {}
