@@ -72,7 +72,7 @@ class ClassWithConstructorDocumenter(autodoc.ClassDocumenter):
     def format_args(self):
         initmeth = self.get_constructor()
         try:
-            argspec = inspect.getargspec(initmeth)
+            argspec = inspect.getfullargspec(initmeth)
         except TypeError:
             # still not possible: happens e.g. for old-style classes
             # with __init__ in C

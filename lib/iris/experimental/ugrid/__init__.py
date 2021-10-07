@@ -14,7 +14,6 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
     definition at :const:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
 
 """
-from ...config import get_logger
 from .load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from .mesh import Connectivity, Mesh, MeshCoord
 from .save import save_mesh
@@ -28,6 +27,3 @@ __all__ = [
     "load_meshes",
     "save_mesh",
 ]
-
-# Configure the logger as a root logger.
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET")

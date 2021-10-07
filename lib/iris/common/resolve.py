@@ -19,13 +19,13 @@ from dask.array.core import broadcast_shapes
 import numpy as np
 
 from . import LENIENT
-from ..config import get_logger
+from ..logger import get_logger
 
 __all__ = ["Resolve"]
 
 
 # Configure the logger.
-logger = get_logger(__name__, fmt="[%(funcName)s]")
+logger = get_logger(__name__)
 
 
 _AuxCoverage = namedtuple(

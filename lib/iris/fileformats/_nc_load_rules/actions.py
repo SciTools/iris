@@ -43,14 +43,14 @@ longer useful, this can be considerably simplified.
 from functools import wraps
 import warnings
 
-from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
+from iris.logger import get_logger
 
 from . import helpers as hh
 
 # Configure the logger.
-logger = get_logger(__name__, fmt="[%(funcName)s]")
+logger = get_logger(__name__)
 
 
 def _default_rulenamesfunc(func_name):

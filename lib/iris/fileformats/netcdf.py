@@ -45,13 +45,14 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
 import iris.io
+from iris.logger import get_logger
 import iris.util
 
 # Show actions activation statistics.
 DEBUG = False
 
 # Configure the logger.
-logger = iris.config.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Standard CML spatio-temporal axis names.
 SPATIO_TEMPORAL_AXES = ["t", "z", "y", "x"]

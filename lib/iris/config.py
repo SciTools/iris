@@ -32,86 +32,8 @@ defined by :mod:`configparser`.
 
 import configparser
 import contextlib
-import logging
 import os.path
 import warnings
-
-
-def get_logger(
-    name, datefmt=None, fmt=None, level=None, propagate=None, handler=True
-):
-    """
-    Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`
-    and custom :class:`logging.Formatter`.
-
-    Args:
-
-    * name:
-        The name of the logger. Typically this is the module filename that
-        owns the logger.
-
-    Kwargs:
-
-    * datefmt:
-        The date format string of the :class:`logging.Formatter`.
-        Defaults to ``%d-%m-%Y %H:%M:%S``.
-
-    * fmt:
-        The additional format string of the :class:`logging.Formatter`.
-        This is appended to the default format string
-        ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
-
-    * level:
-        The threshold level of the logger. Defaults to ``INFO``.
-
-    * propagate:
-        Sets the ``propagate`` attribute of the :class:`logging.Logger`,
-        which determines whether events logged to this logger will be
-        passed to the handlers of higher level loggers. Defaults to
-        ``False``.
-
-    * handler:
-        Create and attach a :class:`logging.StreamHandler` to the
-        logger. Defaults to ``True``.
-
-    Returns:
-        A :class:`logging.Logger`.
-
-    """
-    if level is None:
-        # Default logging level.
-        level = "INFO"
-
-    if propagate is None:
-        # Default logging propagate behaviour.
-        propagate = False
-
-    # Create the named logger.
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.propagate = propagate
-
-    # Create and add the handler to the logger, if required.
-    if handler:
-        if datefmt is None:
-            # Default date format string.
-            datefmt = "%d-%m-%Y %H:%M:%S"
-
-        # Default format string.
-        _fmt = "%(asctime)s %(name)s %(levelname)s - %(message)s"
-        # Append additional format string, if appropriate.
-        fmt = _fmt if fmt is None else f"{_fmt} {fmt}"
-
-        # Create a formatter.
-        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
-
-        # Create a logging handler.
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-
-        logger.addHandler(handler)
-
-    return logger
 
 
 # Returns simple string options

@@ -17,11 +17,11 @@ from itertools import groupby
 from pathlib import Path
 import threading
 
-from ...config import get_logger
 from ...coords import AuxCoord
 from ...fileformats import netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...io import decode_uri, expand_filespecs
+from ...logger import get_logger
 from ...util import guess_coord_axis
 from .cf import (
     CFUGridAuxiliaryCoordinateVariable,
@@ -32,7 +32,7 @@ from .cf import (
 from .mesh import Connectivity, Mesh
 
 # Configure the logger.
-logger = get_logger(__name__, propagate=True, handler=False)
+logger = get_logger(__name__)
 
 
 class ParseUGridOnLoad(threading.local):
@@ -206,7 +206,7 @@ def load_meshes(uris, var_name=None):
                 valid_sources.append(source)
             else:
                 message = f"Ignoring non-NetCDF file: {source}"
-                logger.info(msg=message, extra=dict(cls=None))
+                logger.info(message)
 
     result = {}
     for source in valid_sources:
@@ -351,7 +351,7 @@ def _build_mesh(cf, mesh_var, file_path):
     if cf_role_message:
         cf_role_message += " Correcting to 'mesh_topology'."
         # TODO: reconsider logging level when we have consistent practice.
-        logger.warning(cf_role_message, extra=dict(cls=None))
+        logger.warning(cf_role_message)
 
     if hasattr(mesh_var, "volume_node_connectivity"):
         topology_dimension = 3
@@ -370,7 +370,7 @@ def _build_mesh(cf, mesh_var, file_path):
             ", consistent with the attached connectivities."
         )
         # TODO: reconsider logging level when we have consistent practice.
-        logger.warning(msg, extra=dict(cls=None))
+        logger.warning(msg)
     else:
         quoted_topology_dimension = mesh_var.topology_dimension
         if quoted_topology_dimension != topology_dimension:
@@ -383,7 +383,7 @@ def _build_mesh(cf, mesh_var, file_path):
                 " -- ignoring this as it is inconsistent."
             )
             # TODO: reconsider logging level when we have consistent practice.
-            logger.warning(msg=msg, extra=dict(cls=None))
+            logger.warning(msg)
 
     node_dimension = None
     edge_dimension = getattr(mesh_var, "edge_dimension", None)

@@ -24,14 +24,14 @@ from ...common import (
     metadata_filter,
     metadata_manager_factory,
 )
-from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
+from ...logger import get_logger
 from ...util import guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
-logger = get_logger(__name__, propagate=True, handler=False)
+logger = get_logger(__name__)
 
 #: Numpy "threshold" printoptions default argument.
 NP_PRINTOPTIONS_THRESHOLD = 10

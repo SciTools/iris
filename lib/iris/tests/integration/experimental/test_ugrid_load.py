@@ -17,11 +17,11 @@ import iris.tests as tests  # isort:skip
 from collections.abc import Iterable
 
 from iris import Constraint, load
-from iris.experimental.ugrid import logger
 from iris.experimental.ugrid.load import (
     PARSE_UGRID_ON_LOAD,
     load_mesh,
     load_meshes,
+    logger,
 )
 from iris.experimental.ugrid.mesh import Mesh
 from iris.tests.stock.netcdf import (

@@ -95,6 +95,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
+from iris.logger import get_logger
 
 try:
     import iris_sample_data
@@ -126,6 +127,9 @@ __all__ = [
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 NameConstraint = iris._constraints.NameConstraint
+
+# Configure the logger as the root logger.
+logger = get_logger(__name__, root=True)
 
 
 class Future(threading.local):

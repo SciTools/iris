@@ -20,7 +20,7 @@ import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
-from ..config import get_logger
+from ..logger import get_logger
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
@@ -49,7 +49,7 @@ from ..util import guess_coord_axis
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+logger = get_logger(__name__)
 
 
 def hexdigest(item):

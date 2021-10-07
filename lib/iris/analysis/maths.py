@@ -22,9 +22,9 @@ from numpy import ma
 import iris.analysis
 from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
-from iris.config import get_logger
 import iris.coords
 import iris.exceptions
+from iris.logger import get_logger
 import iris.util
 
 # Configure the logger.
