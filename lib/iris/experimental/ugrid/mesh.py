@@ -757,8 +757,9 @@ class Mesh(CFVariableMixin):
 
         * \\*coords (Iterable of :class:`~iris.coords.Coord`):
             Coordinates to pass into the :class:`Mesh`.
-            :attr:`~iris.coords.Coord.points` and
-            :attr:`~iris.coords.Coord.bounds` must all have the same shapes.
+            All :attr:`~iris.coords.Coord.points` must have the same shapes;
+            all :attr:`~iris.coords.Coord.bounds` must have the same shapes,
+            and must not be ``None``.
 
         Returns:
             :class:`Mesh`
