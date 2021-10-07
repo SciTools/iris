@@ -726,6 +726,218 @@ class Mesh(CFVariableMixin):
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
 
+    @classmethod
+    def from_coords(cls, *coords):
+        """
+        Construct a :class:`Mesh` by derivation from one or more
+        :class:`~iris.coords.Coord`\\ s.
+
+        The :attr:`~Mesh.topology_dimension`, :class:`~iris.coords.Coord`
+        membership and :class:`Connectivity` membership are all determined
+        based on the shape of the first :attr:`~iris.coords.Coord.bounds`:
+
+        * ``None`` or ``(n, <2)``:
+            Not supported
+
+        * ``(n, 2)``:
+            :attr:`~Mesh.topology_dimension` = ``1``.
+            :attr:`~Mesh.node_coords` and :attr:`~Mesh.edge_node_connectivity`
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~Mesh.edge_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
+
+        * ``(n, >=3)``:
+            :attr:`~Mesh.topology_dimension` = ``2``.
+            :attr:`~Mesh.node_coords` and :attr:`~Mesh.face_node_connectivity`
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~Mesh.face_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
+
+        Args:
+
+        * \\*coords (Iterable of :class:`~iris.coords.Coord`):
+            Coordinates to pass into the :class:`Mesh`.
+            All :attr:`~iris.coords.Coord.points` must have the same shapes;
+            all :attr:`~iris.coords.Coord.bounds` must have the same shapes,
+            and must not be ``None``.
+
+        Returns:
+            :class:`Mesh`
+
+        .. note::
+            Any resulting duplicate nodes are not currently removed, due to the
+            computational intensity.
+
+        .. note::
+            :class:`Mesh` currently requires ``X`` and ``Y``
+            :class:`~iris.coords.Coord`\\ s specifically.
+            :meth:`iris.util.guess_coord_axis` is therefore attempted, else the
+            first two :class:`~iris.coords.Coord`\\ s are taken.
+
+        .. testsetup::
+
+            from iris import load_cube, sample_data_path
+            from iris.experimental.ugrid import (
+                PARSE_UGRID_ON_LOAD,
+                Mesh,
+                MeshCoord,
+            )
+
+            file_path = sample_data_path("mesh_C4_synthetic_float.nc")
+            with PARSE_UGRID_ON_LOAD.context():
+                cube_w_mesh = load_cube(file_path)
+
+        For example::
+
+            # Reconstruct a cube-with-mesh after subsetting it.
+
+            >>> print(cube_w_mesh.mesh.name())
+            Topology data of 2D unstructured mesh
+            >>> mesh_coord_names = [
+            ...     coord.name() for coord in cube_w_mesh.coords(mesh_coords=True)
+            ... ]
+            >>> print(f"MeshCoords: {mesh_coord_names}")
+            MeshCoords: ['latitude', 'longitude']
+
+            # Subsetting converts MeshCoords to AuxCoords.
+            >>> slices = [slice(None)] * cube_w_mesh.ndim
+            >>> slices[cube_w_mesh.mesh_dim()] = slice(-1)
+            >>> cube_sub = cube_w_mesh[tuple(slices)]
+            >>> print(cube_sub.mesh)
+            None
+            >>> orig_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
+            >>> for coord in orig_coords:
+            ...     print(f"{coord.name()}: {type(coord).__name__}")
+            latitude: AuxCoord
+            longitude: AuxCoord
+
+            >>> new_mesh = Mesh.from_coords(*orig_coords)
+            >>> new_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
+
+            # Replace the AuxCoords with MeshCoords.
+            >>> for ix in range(2):
+            ...     cube_sub.remove_coord(orig_coords[ix])
+            ...     cube_sub.add_aux_coord(new_coords[ix], cube_w_mesh.mesh_dim())
+
+            >>> print(cube_sub.mesh.name())
+            Topology data of 2D unstructured mesh
+            >>> for coord_name in mesh_coord_names:
+            ...     coord = cube_sub.coord(coord_name)
+            ...     print(f"{coord_name}: {type(coord).__name__}")
+            latitude: MeshCoord
+            longitude: MeshCoord
+
+        """
+
+        # Validate points and bounds shape match.
+        def check_shape(array_name):
+            attr_name = f"core_{array_name}"
+            arrays = [getattr(coord, attr_name)() for coord in coords]
+            if any(a is None for a in arrays):
+                message = (
+                    f"{array_name} missing from coords[{arrays.index(None)}] ."
+                )
+                raise ValueError(message)
+            shapes = [array.shape for array in arrays]
+            if shapes.count(shapes[0]) != len(shapes):
+                message = (
+                    f"{array_name} shapes are not identical for all "
+                    f"coords."
+                )
+                raise ValueError(message)
+
+        for array in ("points", "bounds"):
+            check_shape(array)
+
+        # Determine dimensionality, using first coord.
+        first_coord = coords[0]
+
+        ndim = first_coord.ndim
+        if ndim != 1:
+            message = f"Expected coordinate ndim == 1, got: f{ndim} ."
+            raise ValueError(message)
+
+        bounds_shape = first_coord.core_bounds().shape
+        bounds_dim1 = bounds_shape[1]
+        if bounds_dim1 < 2:
+            message = (
+                f"Expected coordinate bounds.shape (n, >"
+                f"=2), got: {bounds_shape} ."
+            )
+            raise ValueError(message)
+        elif bounds_dim1 == 2:
+            topology_dimension = 1
+            coord_centring = "edge"
+            conn_cf_role = "edge_node_connectivity"
+        else:
+            topology_dimension = 2
+            coord_centring = "face"
+            conn_cf_role = "face_node_connectivity"
+
+        # Create connectivity.
+        if first_coord.has_lazy_bounds():
+            array_lib = da
+        else:
+            array_lib = np
+        indices = array_lib.arange(np.prod(bounds_shape)).reshape(bounds_shape)
+        masking = array_lib.ma.getmaskarray(first_coord.core_bounds())
+        indices = array_lib.ma.masked_array(indices, masking)
+        connectivity = Connectivity(indices, conn_cf_role)
+
+        # Create coords.
+        node_coords = []
+        centre_coords = []
+        for coord in coords:
+            coord_kwargs = dict(
+                standard_name=coord.standard_name,
+                long_name=coord.long_name,
+                units=coord.units,
+                attributes=coord.attributes,
+            )
+            node_points = array_lib.ma.filled(
+                coord.core_bounds(), 0.0
+            ).flatten()
+            node_coords.append(AuxCoord(points=node_points, **coord_kwargs))
+
+            centre_points = coord.core_points()
+            centre_coords.append(
+                AuxCoord(points=centre_points, **coord_kwargs)
+            )
+
+        #####
+        # TODO: remove axis assignment once Mesh supports arbitrary coords.
+        axes_present = [guess_coord_axis(coord) for coord in coords]
+        axes_required = ("X", "Y")
+        if all([req in axes_present for req in axes_required]):
+            axis_indices = [axes_present.index(req) for req in axes_required]
+        else:
+            message = (
+                "Unable to find 'X' and 'Y' using guess_coord_axis. Assuming "
+                "X=coords[0], Y=coords[1] ."
+            )
+            # TODO: reconsider logging level when we have consistent practice.
+            logger.info(message, extra=dict(cls=None))
+            axis_indices = range(len(axes_required))
+
+        def axes_assign(coord_list):
+            coords_sorted = [coord_list[ix] for ix in axis_indices]
+            return zip(coords_sorted, axes_required)
+
+        node_coords_and_axes = axes_assign(node_coords)
+        centre_coords_and_axes = axes_assign(centre_coords)
+        #####
+
+        # Construct the Mesh.
+        mesh_kwargs = dict(
+            topology_dimension=topology_dimension,
+            node_coords_and_axes=node_coords_and_axes,
+            connectivities=[connectivity],
+        )
+        mesh_kwargs[
+            f"{coord_centring}_coords_and_axes"
+        ] = centre_coords_and_axes
+        return cls(**mesh_kwargs)
+
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)

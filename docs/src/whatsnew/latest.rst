@@ -65,8 +65,13 @@ This document explains the changes made to Iris for this release
    (i.e. not attached to cubes).
    (:pull:`4318` and :pull:`4339`).
 
+#. `@trexfeathers`_ added :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`
+   for inferring a :class:`~iris.experimental.ugrid.mesh.Mesh` from an
+   appropriate collection of :class:`iris.coords.Coord`\ s.
+
 #. `@larsbarring`_ updated :func`~iris.util.equalise_attributes` to return a list of dictionaries
    containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
+
 
 🐛 Bugs Fixed
 =============
