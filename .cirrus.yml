@@ -99,8 +99,6 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 windows_task_template: &WINDOWS_TASK_TEMPLATE
   auto_cancellation: true
   env:
-    CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
-    CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # PATH: '%CONDA_DIR%\condabin;%CONDA_DIR%;%CONDA_DIR%\scripts;${PATH}'
@@ -108,13 +106,6 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     INCLUDE: '${CONDA_DIR}\Library\include'
     LIB: '${CONDA_DIR}\Library\lib'
     HOME: ${UserProfile} # Because nox looks for this
-  # python_win_cache:
-  #   folder: ${CHOCO_BASE}/python3/tools
-  #   fingerprint_script:
-  #     - echo %CIRRUS_OS%
-  #     - choco info python
-  #   populate_script:
-  #     - choco install python -y
   conda_cache:
     folder: ${CONDA_DIR}
     fingerprint_script:
@@ -271,7 +262,7 @@ task:
   tests_script:
     - conda activate base
     - echo [Resources] > %SITE_CFG%
-    - echo test_data_dir =  C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data >> %SITE_CFG%
+    - echo test_data_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data >> %SITE_CFG%
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
     - ps: cat $Env:SITE_CFG
     - echo %PATH%
