@@ -1888,7 +1888,9 @@ def equalise_attributes(cubes):
     # Remove all the other attributes.
     for cube in cubes:
         deleted_attributes = {
-            key: cube.attributes.pop(key, None) for key in keys_to_remove
+            key: cube.attributes.pop(key)
+            for key in keys_to_remove
+            if key in cube.attributes
         }
         removed.append(deleted_attributes)
     return removed
