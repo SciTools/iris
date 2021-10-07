@@ -41,10 +41,6 @@ env:
   IRIS_TEST_DATA_VERSION: "2.4"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
-  # Directory extension for the iris-test-data (Windows path).
-  IRIS_TEST_DATA_DIR_EXT_WIN: /iris-test-data
-  # Base directory for the iris-test-data (Windows path).
-  IRIS_TEST_DATA_DIR_WIN: ${HOME}${IRIS_TEST_DATA_DIR_EXT_WIN}
  
 
 
@@ -106,6 +102,9 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     INCLUDE: '${CONDA_DIR}\Library\include'
     LIB: '${CONDA_DIR}\Library\lib'
     HOME: ${UserProfile} # Because nox looks for this
+    # Base directory for the iris-test-data (Windows path).
+    IRIS_TEST_DATA_DIR_WIN_FWD: ${CIRRUS_WORKING_DIR}/iris-test-data
+    IRIS_TEST_DATA_DIR_WIN_BWD: '%CIRRUS_WORKING_DIR%\iris-test-data'
   conda_cache:
     folder: ${CONDA_DIR}
     fingerprint_script:
@@ -179,12 +178,12 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 #
 win_iris_test_data_template: &WIN_IRIS_TEST_DATA_TEMPLATE
   data_cache:
-    folder: ${IRIS_TEST_DATA_DIR_WIN}
+    folder: ${IRIS_TEST_DATA_DIR_WIN_FWD}
     fingerprint_script:
       - echo win_iris-test-data v%IRIS_TEST_DATA_VERSION%
     populate_script:
-      - set ziploc=%CIRRUS_WORKING_DIR%%IRIS_TEST_DATA_DIR_EXT_WIN%
-      - set zipfile=%CIRRUS_WORKING_DIR%%IRIS_TEST_DATA_DIR_EXT_WIN%/win_iris-test-data.zip
+      - set ziploc=%IRIS_TEST_DATA_DIR_WIN_FWD%
+      - set zipfile=%IRIS_TEST_DATA_DIR_WIN_FWD%/win_iris-test-data.zip
       - set url=https://github.com/SciTools/iris-test-data/archive/v%IRIS_TEST_DATA_VERSION%.zip
       - ps: mkdir $Env:ziploc
       - ps: Invoke-WebRequest -OutFile $Env:zipfile -Uri $Env:url
@@ -262,7 +261,7 @@ task:
   tests_script:
     - conda activate base
     - echo [Resources] > %SITE_CFG%
-    - echo test_data_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data >> %SITE_CFG%
+    - echo test_data_dir = %IRIS_TEST_DATA_DIR_WIN_BWD%\test_data >> %SITE_CFG%
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
     - ps: cat $Env:SITE_CFG
     - echo %PATH%
