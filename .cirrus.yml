@@ -107,6 +107,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     PATH: '%CONDA_DIR%/.local/share/cartopy;${CONDA_DIR}/bin;${CONDA_DIR}/condabin;${CONDA_DIR};${CONDA_DIR}/scripts;${PATH}'
     INCLUDE: '${CONDA_DIR}\Library\include'
     LIB: '${CONDA_DIR}\Library\lib'
+    HOME: ${UserProfile} # Because nox looks for this
   python_win_cache:
     folder: ${CHOCO_BASE}/python3/tools
     fingerprint_script:
