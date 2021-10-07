@@ -126,7 +126,7 @@ class Test1Dim(tests.IrisTest):
             points=lat_orig.points, bounds=np.tile(lat_orig.bounds, 2)
         )
         with self.assertRaisesRegex(
-            ValueError, "bounds shapes are not identical.*"
+            ValueError, "bounds shapes are not identical"
         ):
             _ = self.create()
 
@@ -134,7 +134,7 @@ class Test1Dim(tests.IrisTest):
             points=lat_orig.points[-1], bounds=lat_orig.bounds[-1]
         )
         with self.assertRaisesRegex(
-            ValueError, "points shapes are not identical.*"
+            ValueError, "points shapes are not identical"
         ):
             _ = self.create()
 
@@ -154,7 +154,7 @@ class Test1Dim(tests.IrisTest):
         ]
         # Swap the coords.
         self.lat, self.lon = self.lon, self.lat
-        with self.assertLogs(logger, "INFO", "Unable to find .*"):
+        with self.assertLogs(logger, "INFO", "Unable to find 'X' and 'Y'"):
             mesh = self.create()
         # Confirm that the coords have not been swapped back.
         self.assertEqual(lat_name, mesh.node_coords.node_x.long_name)
@@ -229,14 +229,14 @@ class TestInvalidBounds(tests.IrisTest):
     def test_no_bounds(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5])
         lat = AuxCoord(points=[0, 1, 2])
-        with self.assertRaisesRegex(ValueError, "bounds missing from.*"):
+        with self.assertRaisesRegex(ValueError, "bounds missing from"):
             _ = Mesh.from_coords(lon, lat)
 
     def test_1_bound(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0], [1], [2]])
         lat = AuxCoord(points=[0, 1, 2], bounds=[[0.5], [1.5], [2.5]])
         with self.assertRaisesRegex(
-            ValueError, r"Expected coordinate bounds.shape \(n, >=2\).*"
+            ValueError, r"Expected coordinate bounds.shape \(n, >=2\)"
         ):
             _ = Mesh.from_coords(lon, lat)
 
@@ -248,6 +248,6 @@ class TestInvalidPoints(tests.IrisTest):
         cube = simple_2d_w_multidim_coords()[:3, :3]
         coord_1, coord_2 = cube.coords()
         with self.assertRaisesRegex(
-            ValueError, "Expected coordinate ndim == 1.*"
+            ValueError, "Expected coordinate ndim == 1"
         ):
             _ = Mesh.from_coords(coord_1, coord_2)
