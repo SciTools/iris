@@ -135,7 +135,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda update --quiet --name base conda
       - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
   cartopy_cache:
-    folder: ${HOME}/.local/share/cartopy
+    folder: ${UserProfile}/.local/share/cartopy
     fingerprint_script:
       - echo %CIRRUS_OS%
       # TODO: We've started refreshing every day rather than every fortnight here
@@ -146,7 +146,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda activate cartopy-cache > nul 2>&1
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
-      - set nat_earth_dest=%HOME%/.local/share/cartopy
+      - set nat_earth_dest=%UserProfile%/.local/share/cartopy
       - echo nat_earth_dest
       - set cartopy_dl_script=%nat_earth_dest%/tmp/cfd.py
       - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
