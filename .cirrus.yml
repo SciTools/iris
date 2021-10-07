@@ -108,15 +108,15 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     INCLUDE: '${CONDA_DIR}\Library\include'
     LIB: '${CONDA_DIR}\Library\lib'
     HOME: ${UserProfile} # Because nox looks for this
-  python_win_cache:
-    folder: ${CHOCO_BASE}/python3/tools
-    fingerprint_script:
-      - echo %CIRRUS_OS%
-      - choco info python
-    populate_script:
-      - choco install python -y
+  # python_win_cache:
+  #   folder: ${CHOCO_BASE}/python3/tools
+  #   fingerprint_script:
+  #     - echo %CIRRUS_OS%
+  #     - choco info python
+  #   populate_script:
+  #     - choco install python -y
   conda_cache:
-    folder: ${CHOCO_BASE}/miniconda
+    folder: ${CONDA_DIR}
     fingerprint_script:
       - echo %CIRRUS_OS%
       - echo %CONDA_CACHE_PACKAGES%
