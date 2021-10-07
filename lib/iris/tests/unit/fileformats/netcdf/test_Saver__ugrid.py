@@ -1240,6 +1240,30 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # Check there are two independent meshes
         self._check_two_different_meshes(vars)
 
+    def test_multiple_same_mesh(self):
+        mesh = make_mesh()
+
+        # Save and snapshot the result
+        tempfile_path = self.check_save_mesh([mesh, mesh])
+        dims, vars = scan_dataset(tempfile_path)
+
+        # In this case there should be only *one* mesh.
+        mesh_names = vars_meshnames(vars)
+        self.assertEqual(1, len(mesh_names))
+
+        # Check it has the correct number of coords + conns (no duplicates)
+        # Should have 2 each X and Y coords (face+node): _no_ edge coords.
+        coord_vars_x = vars_w_props(vars, standard_name="longitude")
+        coord_vars_y = vars_w_props(vars, standard_name="latitude")
+        self.assertEqual(2, len(coord_vars_x))
+        self.assertEqual(2, len(coord_vars_y))
+
+        # Check the connectivities are all present: _only_ 1 var of each type.
+        for conn in mesh.all_connectivities:
+            if conn is not None:
+                conn_vars = vars_w_props(vars, cf_role=conn.cf_role)
+                self.assertEqual(1, len(conn_vars))
+
     def test_multiple_different_meshes(self):
         # Create 2 meshes with different faces, but same edges.
         # N.B. they should *not* then share an edge dimension !
