@@ -167,6 +167,8 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
    deprecation warning.  (:issue:`4374`, :pull:`4376`)
 
+#. `@bjlittle`_ rationalised logging into :mod:`iris.logger`. (:pull:`4360`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
