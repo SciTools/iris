@@ -804,19 +804,19 @@ class Mesh(CFVariableMixin):
             >>> cube_sub = cube_w_mesh[tuple(slices)]
             >>> print(cube_sub.mesh)
             None
-            >>> orig_mesh_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
-            >>> for coord in orig_mesh_coords:
+            >>> orig_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
+            >>> for coord in orig_coords:
             ...     print(f"{coord.name()}: {type(coord).__name__}")
             latitude: AuxCoord
             longitude: AuxCoord
 
-            >>> new_mesh = Mesh.from_coords(orig_mesh_coords[0], orig_mesh_coords[1])
-            >>> new_mesh_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
+            >>> new_mesh = Mesh.from_coords(*orig_coords)
+            >>> new_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
 
             # Replace the AuxCoords with MeshCoords.
             >>> for ix in range(2):
-            ...     cube_sub.remove_coord(orig_mesh_coords[ix])
-            ...     cube_sub.add_aux_coord(new_mesh_coords[ix], cube_w_mesh.mesh_dim())
+            ...     cube_sub.remove_coord(orig_coords[ix])
+            ...     cube_sub.add_aux_coord(new_coords[ix], cube_w_mesh.mesh_dim())
 
             >>> print(cube_sub.mesh.name())
             Topology data of 2D unstructured mesh
