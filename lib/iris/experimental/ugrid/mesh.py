@@ -742,18 +742,16 @@ class Mesh(CFVariableMixin):
         * ``(n, 2)``:
             :attr:`~Mesh.topology_dimension` = ``1``.
             :attr:`~Mesh.node_coords` and :attr:`~Mesh.edge_node_connectivity`
-            constructed from the :attr:`~iris.coords.Coord.bounds` of
-            ``coord_1`` and ``coord_2``. :attr:`~Mesh.edge_coords` constructed
-            from the :attr:`~iris.coords.Coord.points` of ``coord_1`` and
-            ``coord_2``.
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~Mesh.edge_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
 
         * ``(n, >=3)``:
             :attr:`~Mesh.topology_dimension` = ``2``.
             :attr:`~Mesh.node_coords` and :attr:`~Mesh.face_node_connectivity`
-            constructed from the :attr:`~iris.coords.Coord.bounds` of
-            ``coord_1`` and ``coord_2``. :attr:`~Mesh.face_coords` constructed
-            from the :attr:`~iris.coords.Coord.points` of ``coord_1`` and
-            ``coord_2``.
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~Mesh.face_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
 
         Args:
 
