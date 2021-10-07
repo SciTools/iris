@@ -906,9 +906,10 @@ class Mesh(CFVariableMixin):
 
         #####
         # TODO: remove axis assignment once Mesh supports arbitrary coords.
-        coord_axes = [guess_coord_axis(coord) for coord in coords]
-        if "X" in coord_axes and "Y" in coord_axes:
-            axes_coords = {axis: coord_axes.index(axis) for axis in ("X", "Y")}
+        axes_present = [guess_coord_axis(coord) for coord in coords]
+        axes_required = ("X", "Y")
+        if all([req in axes_present for req in axes_required]):
+            axis_indices = [axes_present.index(req) for req in axes_required]
         else:
             message = (
                 "Unable to find 'X' and 'Y' using guess_coord_axis. Assuming "
@@ -916,10 +917,11 @@ class Mesh(CFVariableMixin):
             )
             # TODO: reconsider logging level when we have consistent practice.
             logger.info(message, extra=dict(cls=None))
-            axes_coords = {"X": 0, "Y": 1}
+            axis_indices = range(len(axes_required))
 
         def axes_assign(coord_list):
-            return [(coord_list[ix], axis) for axis, ix in axes_coords.items()]
+            coords_sorted = [coord_list[ix] for ix in axis_indices]
+            return zip(coords_sorted, axes_required)
 
         node_coords_and_axes = axes_assign(node_coords)
         centre_coords_and_axes = axes_assign(centre_coords)
