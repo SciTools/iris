@@ -101,7 +101,6 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
   env:
     CHOCO_BASE: ${PROGRAMDATA}/chocolatey/lib
     CHOCO_BASE_WIN: ${PROGRAMDATA}\chocolatey\lib
-    HOME: ${CIRRUS_WORKING_DIR}
     SITE_CFG: ${CIRRUS_WORKING_DIR}/lib/iris/etc/site.cfg
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # PATH: '%CONDA_DIR%\condabin;%CONDA_DIR%;%CONDA_DIR%\scripts;${PATH}'
@@ -136,7 +135,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda update --quiet --name base conda
       - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
   cartopy_cache:
-    folder: ${CONDA_DIR}/.local/share/cartopy
+    folder: ${HOME}/.local/share/cartopy
     fingerprint_script:
       - echo %CIRRUS_OS%
       # TODO: We've started refreshing every day rather than every fortnight here
@@ -145,13 +144,13 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda create --quiet --name cartopy-cache cartopy
       - conda init cmd.exe
       - conda activate cartopy-cache > nul 2>&1
-      - echo %PATH%
       # TODO: This used to use mktemp. This is less random
       - mkdir tmp
-      - echo %CONDA_DIR%
-      - set cartopy_dl_script=%CIRRUS_WORKING_DIR%/tmp/cfd.py
+      - set nat_earth_dest=%HOME%/.local/share/cartopy
+      - echo nat_earth_dest
+      - set cartopy_dl_script=%nat_earth_dest%/tmp/cfd.py
       - ps: Invoke-WebRequest -OutFile $Env:cartopy_dl_script -Uri https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
-      - ps: python $Env:cartopy_dl_script physical --output %CONDA_DIR%/.local/share/cartopy --no-warn
+      - ps: python $Env:cartopy_dl_script physical --output $Env:nat_earth_dest --no-warn
       - conda deactivate > nul 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
