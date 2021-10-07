@@ -104,7 +104,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     HOME: ${UserProfile} # Because nox looks for this
     # Base directory for the iris-test-data (Windows path).
     IRIS_TEST_DATA_DIR_WIN_FWD: ${CIRRUS_WORKING_DIR}/iris-test-data
-    IRIS_TEST_DATA_DIR_WIN_BWD: '%CIRRUS_WORKING_DIR%\iris-test-data'
+    IRIS_TEST_DATA_DIR_WIN_BWD: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data\test_data\iris-test-data
   conda_cache:
     folder: ${CONDA_DIR}
     fingerprint_script:
