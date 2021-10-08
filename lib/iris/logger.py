@@ -94,8 +94,9 @@ def get_logger(
         The threshold level of the logger. If the logger is a ``root`` logger,
         then defaults to ``NOTSET``, otherwise ``INFO``.
     root : bool, default=False
-        Specify whether this is a root logger, or a child logger that will
-        propagate its message to the first parent root logger.
+        Specify whether this is a root logger with a stream handler and
+        formatter, or a child logger that will propagate its message to
+        the first parent root logger in the logging hierarchy.
 
     Returns
     -------
