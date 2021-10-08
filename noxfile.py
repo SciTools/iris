@@ -32,8 +32,8 @@ CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
     return Path(
-        # f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-win-64.lock"
-        f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-linux-64.lock"
+        f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-win-64.lock"
+        # f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-linux-64.lock"
     )
 
 
