@@ -125,6 +125,9 @@ This document explains the changes made to Iris for this release
    :class:`iris.Constraint` to :ref:`userguide loading section
    <constrained-loading>` and to api reference documentation. (:pull:`4321`)
 
+#. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
+   during :ref:`developer_running_tests`. (:pull:`4359`)
+
 
 💼 Internal
 ===========
