@@ -126,6 +126,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda update --quiet --name base conda
       - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
       - conda update -c defaults python # New suggestion from conda to try to fix c libs
+      - set CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1 # And the search flag that should help
   cartopy_cache:
     folder: ${UserProfile}/.local/share/cartopy
     fingerprint_script:
