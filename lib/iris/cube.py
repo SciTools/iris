@@ -2605,14 +2605,12 @@ class Cube(CFVariableMixin):
 
         Coordinate ranges can be specified as:
 
-        (a) instances of :class:`iris.coords.CoordExtent`.
+        (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,
+            or equivalent tuples of 3-5 items:
 
-        (b) keyword arguments, where the keyword name specifies the name
-            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
-            and the value defines the corresponding range of coordinate
-            values as a tuple. The tuple must contain two, three, or four
-            items corresponding to: (minimum, maximum, min_inclusive,
-            max_inclusive). Where the items are defined as:
+            * coord
+                Either a :class:`iris.coords.Coord`, or coordinate name
+                (as defined in :meth:`iris.cube.Cube.coords()`)
 
             * minimum
                 The minimum value of the range to select.
@@ -2628,15 +2626,28 @@ class Cube(CFVariableMixin):
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
-        To perform an intersection that ignores any bounds on the coordinates,
-        set the optional keyword argument *ignore_bounds* to True. Defaults to
-        False.
+        (b) keyword arguments, where the keyword name specifies the name
+            of the coordinate, and the value defines the corresponding range of
+            coordinate values as a tuple. The tuple must contain two, three, or
+            four items, corresponding to `(minimum, maximum, min_inclusive,
+            max_inclusive)` as defined above.
+
+        Kwargs:
+
+        * ignore_bounds:
+            Intersect based on points only. Default False.
+
+        * threshold:
+            Minimum proportion of a bounded cell that must overlap with the
+            specified range. Default 0.
 
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
             where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where necessary.
+            will be "rolled" to fit where necessary.  When requesting a
+            range that covers the entire modulus, a split cell will
+            preferentially be placed at the ``minimum`` end.
 
         .. warning::
 
@@ -2666,11 +2677,14 @@ class Cube(CFVariableMixin):
         """
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
+        threshold = kwargs.pop("threshold", 0)
         for arg in args:
-            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
+            result = result._intersect(
+                *arg, ignore_bounds=ignore_bounds, threshold=threshold
+            )
         for name, value in kwargs.items():
             result = result._intersect(
-                name, *value, ignore_bounds=ignore_bounds
+                name, *value, ignore_bounds=ignore_bounds, threshold=threshold
             )
         return result
 
@@ -2682,6 +2696,7 @@ class Cube(CFVariableMixin):
         min_inclusive=True,
         max_inclusive=True,
         ignore_bounds=False,
+        threshold=0,
     ):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
@@ -2702,6 +2717,7 @@ class Cube(CFVariableMixin):
             min_inclusive,
             max_inclusive,
             ignore_bounds,
+            threshold,
         )
 
         # By this point we have either one or two subsets along the relevant
@@ -2882,6 +2898,7 @@ class Cube(CFVariableMixin):
         min_inclusive,
         max_inclusive,
         ignore_bounds,
+        threshold,
     ):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
@@ -2930,13 +2947,21 @@ class Cube(CFVariableMixin):
             upper = wrap_lons(coord.bounds[iupper], minimum, modulus)
             wrap_offset = upper - coord.bounds[iupper]
             wrap_offset = np.round(wrap_offset / modulus) * modulus
+            lower = coord.bounds[ilower] + wrap_offset
+
+            # Scale threshold for each bound
+            thresholds = (upper - lower) * threshold
 
             if minimum + modulus == maximum:
                 # For a range that covers the whole modulus, there may be a
                 # cell that is "split" and could appear at either side of
-                # the range.  Choose lower, unless it only overlaps in a point
-                # (ie `minimum` itself)
-                is_split = np.isclose(upper, minimum)
+                # the range.  Choose lower, unless there is not enough overlap.
+                if threshold == 0:
+                    # Special case: overlapping in a single point
+                    # (ie `minimum` itself) is always unintuitive
+                    is_split = np.isclose(upper, minimum)
+                else:
+                    is_split = upper - minimum < thresholds
                 wrap_offset += is_split * modulus
 
             # Apply wrapping
@@ -2944,13 +2969,18 @@ class Cube(CFVariableMixin):
             bounds = coord.bounds + wrap_offset[:, np.newaxis]
 
             # Interval [min, max] intersects [a, b] iff min <= b and a <= max
-            # (or < for non-inclusive min/max)
-            (inside_indices,) = np.where(
+            # (or < for non-inclusive min/max respectively).
+            # In this case, its length is L = min(max, b) - max(min, a)
+            upper = bounds[iupper]
+            lower = bounds[ilower]
+            overlap = np.where(
                 np.logical_and(
-                    min_comp(minimum, bounds[iupper]),
-                    max_comp(bounds[ilower], maximum),
-                )
+                    min_comp(minimum, upper), max_comp(lower, maximum)
+                ),
+                np.minimum(maximum, upper) - np.maximum(minimum, lower),
+                np.nan,
             )
+            (inside_indices,) = np.where(overlap >= thresholds)
 
         # Determine the subsets
         subsets = self._intersect_derive_subset(
