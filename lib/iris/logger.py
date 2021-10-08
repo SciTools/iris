@@ -11,7 +11,7 @@ Infrastructure to support logging.
 import logging
 from typing import Optional, Union
 
-__all__ = ["IrisFormatter", "get_logger"]
+__all__ = ["IrisFormatter", "ROOT_DATEFMT", "ROOT_FMT", "get_logger"]
 
 
 #: The ``datefmt`` string of the root logger formatter.
@@ -31,8 +31,21 @@ class IrisFormatter(logging.Formatter):
     """
 
     def __init__(
-        self, fmt: Optional[str] = None, datefmt: Optional[str] = None
+        self,
+        fmt: Optional[str] = None,
+        datefmt: Optional[str] = None,
     ):
+        """
+        Parameters
+        ----------
+        fmt : str, optional
+            The format string of the :class:`logging.Formatter`.
+            Defaults to :data:`ROOT_FMT`.
+        datefmt : str, optional
+            The date format string of the :class:`logging.Formatter`.
+            Defaults to :data:`ROOT_DATEFMT`.
+
+        """
         if fmt is None:
             fmt = ROOT_FMT
         if datefmt is None:
