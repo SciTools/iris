@@ -69,7 +69,7 @@ This document explains the changes made to Iris for this release
    for inferring a :class:`~iris.experimental.ugrid.mesh.Mesh` from an
    appropriate collection of :class:`iris.coords.Coord`\ s.
 
-#. `@larsbarring`_ updated :func`~iris.util.equalise_attributes` to return a list of dictionaries
+#. `@larsbarring`_ updated :func:`~iris.util.equalise_attributes` to return a list of dictionaries
    containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
 
 
