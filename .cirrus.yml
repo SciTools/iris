@@ -125,6 +125,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda config --add channels conda-forge
       - conda update --quiet --name base conda
       - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
+      - conda update -c defaults python # New suggestion from conda to try to fix c libs
   cartopy_cache:
     folder: ${UserProfile}/.local/share/cartopy
     fingerprint_script:
