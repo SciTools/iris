@@ -267,8 +267,12 @@ task:
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
     - ps: cat $Env:SITE_CFG
     - echo %PATH%
+    - echo %INCLUDE%
+    - echo %LIB%
     - dir %CONDA_DIR%
     - dir %CONDA_DIR%\Library
+    - dir %CONDA_DIR%\Library\include
+    - dir %CONDA_DIR%\Library\lib
     - nox --session tests -- --verbose
 
 
