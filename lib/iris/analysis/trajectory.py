@@ -320,9 +320,13 @@ def interpolate(cube, sample_points, method=None):
             break
 
     if method in ["linear", None]:
+        columns = cube.interpolate(sample_points, Linear())
         for i in range(trajectory_size):
-            point = [(coord, values[i]) for coord, values in sample_points]
-            column = cube.interpolate(point, Linear())
+            column_dims = [
+                i if dim in squish_my_dims else slice(None)
+                for dim in range(columns.ndim)
+            ]
+            column = columns[tuple(column_dims)]
             new_cube.data[..., i] = column.data
             # Fill in the empty squashed (non derived) coords.
             for column_coord in column.dim_coords + column.aux_coords:
