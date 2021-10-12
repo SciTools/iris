@@ -102,7 +102,6 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     INCLUDE: '${CONDA_DIR}\Library\include;${CONDA_DIR}'
     LIB: '${CONDA_DIR}\Library\lib;${CONDA_DIR}'
     HOME: ${UserProfile} # Because nox looks for this
-    CONDA_DLL_SEARCH_MODIFICATION_ENABLE: 1
     # Base directory for the iris-test-data (Windows path).
     IRIS_TEST_DATA_DIR_WIN_FWD: ${CIRRUS_WORKING_DIR}/iris-test-data
     IRIS_TEST_DATA_DIR_WIN_BWD: C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\iris-test-data
