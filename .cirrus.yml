@@ -26,13 +26,13 @@ env:
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
-  CARTOPY_CACHE_BUILD: "3"
+  CARTOPY_CACHE_BUILD: "4"
   # Increment the build number to force new conda cache upload.
-  CONDA_CACHE_BUILD: "0"
+  CONDA_CACHE_BUILD: "1"
   # Increment the build number to force new nox cache upload.
-  NOX_CACHE_BUILD: "0"
+  NOX_CACHE_BUILD: "1"
   # Increment the build number to force new pip cache upload.
-  PIP_CACHE_BUILD: "0"
+  PIP_CACHE_BUILD: "1"
   # Pip packages to be upgraded/installed.
   PIP_CACHE_PACKAGES: "nox pip pyyaml setuptools wheel"
   # Conda packages to be installed.
@@ -99,7 +99,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # \scripts needs to be in path to find nox but
     # \scripts before \condabin in path stops cartopy running with dll issue
-    PATH: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\.nox\tests;%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
+    PATH: '%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
     # PATH: '%CONDA_DIR%\.local\share\cartopy;${CONDA_DIR}\bin;${CONDA_DIR}\Library\bin;${CONDA_DIR}\condabin;${CONDA_DIR};${CONDA_DIR}\scripts;${PATH}'
     INCLUDE: '${CONDA_DIR}\Library\include;${CONDA_DIR}'
     LIB: '${CONDA_DIR}\Library\lib;${CONDA_DIR}'
@@ -127,8 +127,6 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       - conda config --add channels conda-forge
       - conda update --quiet --name base conda
       - conda install --quiet --name base %CONDA_CACHE_PACKAGES%
-      - conda update -c defaults python # New suggestion from conda to try to fix c libs
-      - set CONDA_DLL_SEARCH_MODIFICATION_ENABLE=1 # And the search flag that should help
   cartopy_cache:
     folder: ${UserProfile}/.local/share/cartopy
     fingerprint_script:
