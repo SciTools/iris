@@ -86,6 +86,10 @@ This document explains the changes made to Iris for this release
    "Cube names differ: var1 != var1" if var1 appears multiple times in the list
    (:issue:`4342`, :pull:`4345`)
 
+#. `@larsbarring`_ fixed :class:`~iris.coord_systems.GeoCS` to handle spherical ellipsoid
+   parameter inverse_flattening = 0 (:issue: `4146`, :pull:`4348`)
+
+
 💣 Incompatible Changes
 =======================
 
