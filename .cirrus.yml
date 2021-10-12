@@ -99,7 +99,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # \bin, \Library\bin, straight CONDA_DIR, cartopy don't let nox run
     # \scripts stops cartopy running with dll issue
-    PATH: '%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
+    PATH: '${CONDA_DIR}\Library;${CONDA_DIR}\Library\lib;${CONDA_DIR}\Library\include;%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
     # PATH: '%CONDA_DIR%\.local\share\cartopy;${CONDA_DIR}\bin;${CONDA_DIR}\Library\bin;${CONDA_DIR}\condabin;${CONDA_DIR};${CONDA_DIR}\scripts;${PATH}'
     INCLUDE: '${CONDA_DIR}\Library\include;${CONDA_DIR}'
     LIB: '${CONDA_DIR}\Library\lib;${CONDA_DIR}'
