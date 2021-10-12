@@ -99,7 +99,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     CONDA_DIR: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\miniconda3'
     # \scripts needs to be in path to find nox but
     # \scripts before \condabin in path stops cartopy running with dll issue
-    PATH: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\.nox\tests\bin;C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\.nox\tests\lib;%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
+    PATH: 'C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\.nox\tests\lib\site-packages\numpy\.libs;%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
     # PATH: '%CONDA_DIR%\.local\share\cartopy;${CONDA_DIR}\bin;${CONDA_DIR}\Library\bin;${CONDA_DIR}\condabin;${CONDA_DIR};${CONDA_DIR}\scripts;${PATH}'
     INCLUDE: '${CONDA_DIR}\Library\include;${CONDA_DIR}'
     LIB: '${CONDA_DIR}\Library\lib;${CONDA_DIR}'
