@@ -261,7 +261,7 @@ task:
   << : *WIN_IRIS_TEST_DATA_TEMPLATE
   << : *WINDOWS_TASK_TEMPLATE
   tests_script:
-    # - conda activate base
+    - conda activate base
     - echo [Resources] > %SITE_CFG%
     - echo test_data_dir = %IRIS_TEST_DATA_DIR_WIN_BWD%\test_data >> %SITE_CFG%
     - echo doc_dir = C:\Users\ContainerAdministrator\AppData\Local\Temp\cirrus-ci-build\docs >> %SITE_CFG%
