@@ -274,9 +274,7 @@ task:
     - dir %CONDA_DIR%\Library
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
-    - conda create --quiet --name testing python=%PY_VER% scitools-iris
-    - conda activate testing
-    - python -m unittest discover iris
+    - dir
     - nox --list
     # - nox --session tests -- --verbose
 
