@@ -34,7 +34,7 @@ env:
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
   # Pip packages to be upgraded/installed.
-  PIP_CACHE_PACKAGES: "nox pip pyyaml setuptools wheel"
+  PIP_CACHE_PACKAGES: "nox numpy pip pyyaml setuptools wheel"
   # Conda packages to be installed.
   CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
@@ -274,9 +274,9 @@ task:
     - dir %CONDA_DIR%\Library
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
-    - conda create --quiet --name numpy numpy nox
-    - conda init cmd.exe
-    - conda activate numpy > nul 2>&1
+    # - conda create --quiet --name numpy numpy nox
+    # - conda init cmd.exe
+    # - conda activate numpy > nul 2>&1
     - python -c "import numpy"
     - nox --session tests -- --verbose
 
