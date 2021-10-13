@@ -274,6 +274,7 @@ task:
     - dir %CONDA_DIR%\Library
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
+    - python -c "import numpy"
     - nox --session tests -- --verbose
 
 
