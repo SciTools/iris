@@ -26,8 +26,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@wjbenfold`_ and `@larsbarring`_ who made their first contributions to Iris.
-   The first of many we hope!
+#. Welcome to `@wjbenfold`_, `@tinyendian`_ and `@larsbarring`_ who made their
+   first contributions to Iris.  The first of many we hope!
 
 
 ✨ Features
