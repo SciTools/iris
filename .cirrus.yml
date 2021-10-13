@@ -274,9 +274,11 @@ task:
     - dir %CONDA_DIR%\Library
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
-    - ps: cat C:\Users\ContainerAdministrator\.condarc
-    - python -c "import numpy"
-    - nox --session tests -- --verbose
+    - conda create --quiet --name testing python=%PY_VER% scitools-iris
+    - conda activate testing
+    - python -m unittest discover iris
+    - nox --list
+    # - nox --session tests -- --verbose
 
 
 #
