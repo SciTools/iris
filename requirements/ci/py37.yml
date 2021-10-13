@@ -33,7 +33,6 @@ dependencies:
 # Test dependencies.
   - asv
   - filelock
-  - flake8
   - imagehash >=4.0
   - nose
   - pillow <7
