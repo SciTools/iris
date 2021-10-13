@@ -57,5 +57,6 @@ class Test_init_defaults(tests.IrisTest):
         )
         self._check_crs_defaults(crs)
 
+
 if __name__ == "__main__":
     tests.main()
