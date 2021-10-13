@@ -100,7 +100,7 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
     # \scripts needs to be in path to find nox but
     # \scripts before \condabin in path blocks cartopy from running with a dll issue
     PATH: '%CONDA_DIR%\condabin;${PATH}'
-    PATH: '%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
+    # PATH: '%CONDA_DIR%\condabin;${CONDA_DIR}\scripts;${PATH}'
     # PATH: '%CONDA_DIR%\.local\share\cartopy;${CONDA_DIR}\bin;${CONDA_DIR}\Library\bin;${CONDA_DIR}\condabin;${CONDA_DIR};${CONDA_DIR}\scripts;${PATH}'
     INCLUDE: '${CONDA_DIR}\Library\include;${CONDA_DIR}'
     LIB: '${CONDA_DIR}\Library\lib;${CONDA_DIR}'
@@ -250,10 +250,10 @@ task:
   # only_if: ${SKIP_TEST_TASK} == ""
   << : *CREDITS_TEMPLATE
   matrix:
-    env:
-      PY_VER: 3.7
     # env:
-    #   PY_VER: 3.8
+    #   PY_VER: 3.7
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   windows_container:
     image: cirrusci/windowsservercore:2019
