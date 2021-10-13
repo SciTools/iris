@@ -144,6 +144,8 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         session.virtualenv.reuse_existing = _re_orig
         cache_venv(session)
 
+    session.run("conda", "init", "cmd.exe")
+
     logger.debug(f"Environment {venv_dir} is up to date")
 
     cache_cartopy(session)
