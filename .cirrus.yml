@@ -274,7 +274,7 @@ task:
     - dir %CONDA_DIR%\Library
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
-    - conda create --quiet --name numpy numpy
+    - conda create --quiet --name numpy numpy nox
     - conda init cmd.exe
     - conda activate numpy > nul 2>&1
     - python -c "import numpy"
