@@ -275,8 +275,8 @@ task:
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
     - dir
-    - nox --list
-    # - nox --session tests -- --verbose
+    # - nox --list
+    - nox --session tests -- --verbose
 
 
 #
