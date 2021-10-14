@@ -252,8 +252,8 @@ task:
   matrix:
     env:
       PY_VER: 3.7
-    # env:
-    #   PY_VER: 3.8
+    env:
+      PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   windows_container:
     image: cirrusci/windowsservercore:2019
