@@ -20,7 +20,7 @@ import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
-from ..logger import get_logger
+from ..logging import get_logger
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname

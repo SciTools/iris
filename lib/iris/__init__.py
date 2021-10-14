@@ -95,7 +95,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
-from iris.logger import get_logger
+from iris.logging import get_logger
 
 try:
     import iris_sample_data
@@ -128,8 +128,11 @@ Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 NameConstraint = iris._constraints.NameConstraint
 
-# Configure the logger as the root logger.
-logger = get_logger(__name__, root=True)
+# Configure the logger. This will be the top-level logger within
+# Iris i.e., the only logger to have a handler and a formatter. This
+# unifies all message reporting for logging, as child loggers simply
+# propagate their messages to this top-level logger for handling.
+logger = get_logger(__name__)
 
 
 class Future(threading.local):

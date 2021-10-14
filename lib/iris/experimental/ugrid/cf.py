@@ -13,7 +13,7 @@ Eventual destination: :mod:`iris.fileformats.cf`.
 import logging
 
 from ...fileformats import cf
-from ...logger import get_logger
+from ...logging import get_logger
 from .mesh import Connectivity
 
 # Configure the logger.

@@ -45,7 +45,7 @@ import warnings
 
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
-from iris.logger import get_logger
+from iris.logging import get_logger
 
 from . import helpers as hh
 
