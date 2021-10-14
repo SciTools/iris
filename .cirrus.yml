@@ -275,7 +275,8 @@ task:
     - dir %CONDA_DIR%\Library\include
     - dir %CONDA_DIR%\Library\lib
     - dir
-    - set pro
+    - conda install xxhash
+    - python -c "import xxhash"
     - nox --session tests -- --verbose
 
 
