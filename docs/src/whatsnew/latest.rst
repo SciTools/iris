@@ -72,6 +72,15 @@ This document explains the changes made to Iris for this release
 #. `@larsbarring`_ updated :func:`~iris.util.equalise_attributes` to return a list of dictionaries
    containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
 
+#. `@trexfeathers`_ enabled streaming of **all** lazy arrays when saving to
+   NetCDF files (was previously just :class:`~iris.cube.Cube`
+   :attr:`~iris.cube.Cube.data`). This is
+   important given the much greater size of
+   :class:`~iris.coords.AuxCoord` :attr:`~iris.coords.AuxCoord.points` and
+   :class:`~iris.experimental.ugrid.mesh.Connectivity`
+   :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
+   `UGRID`_ model. (:pull:`4375`)
+
 
 🐛 Bugs Fixed
 =============
