@@ -164,6 +164,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enabled the `sort-all`_ `pre-commit`_ hook to automatically
    sort ``__all__`` entries into alphabetical order. (:pull:`4353`)
 
+#. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
+   deprecation warning.  (:issue:`4374`, :pull:`4376`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
