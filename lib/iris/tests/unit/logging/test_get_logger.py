@@ -20,6 +20,12 @@ class Test(tests.IrisTest):
         # Get the singleton logging root logger
         self.root = logging.getLogger()
 
+    @staticmethod
+    def _filter_handlers(logger, name):
+        return list(
+            filter(lambda handler: handler.get_name() == name, logger.handlers)
+        )
+
     def test_get_root__with_none(self):
         logger = get_logger(None)
         self.assertIs(self.root, logger)
@@ -65,29 +71,31 @@ class Test(tests.IrisTest):
 
     def test_root_handler(self):
         logger = get_logger(None)
-        self.assertEqual(len(logger.handlers), 1)
-        (handler,) = logger.handlers
-        self.assertEqual(handler.get_name(), "root_handler")
-        self.assertIsInstance(handler.formatter, IrisFormatter)
+        handlers = self._filter_handlers(logger, "root_handler")
+        self.assertEqual(len(handlers), 1)
+        self.assertIsInstance(handlers[0].formatter, IrisFormatter)
 
     def test_root_handler__multiple(self):
         logger = get_logger(None)
         other = get_logger(None)
         self.assertIs(logger, other)
-        self.assertEqual(len(logger.handlers), 1)
+        handlers = self._filter_handlers(logger, "root_handler")
+        self.assertEqual(len(handlers), 1)
+        self.assertIsInstance(handlers[0].formatter, IrisFormatter)
 
     def test_iris_handler(self):
         logger = get_logger("iris")
-        self.assertEqual(len(logger.handlers), 1)
-        (handler,) = logger.handlers
-        self.assertEqual(handler.get_name(), "iris_handler")
-        self.assertIsInstance(handler.formatter, IrisFormatter)
+        handlers = self._filter_handlers(logger, "iris_handler")
+        self.assertEqual(len(handlers), 1)
+        self.assertIsInstance(handlers[0].formatter, IrisFormatter)
 
     def test_iris_handler__multiple(self):
         logger = get_logger("iris")
         other = get_logger("iris")
         self.assertIs(logger, other)
-        self.assertEqual(len(logger.handlers), 1)
+        handlers = self._filter_handlers(logger, "iris_handler")
+        self.assertEqual(len(handlers), 1)
+        self.assertIsInstance(handlers[0].formatter, IrisFormatter)
 
     def test_child_handler(self):
         logger = get_logger("iris.child")

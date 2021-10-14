@@ -9,6 +9,7 @@ A package for provisioning logging infra-structure.
 """
 
 import logging
+import threading
 from typing import Optional, Union
 
 __all__ = ["DATEFMT", "FMT", "IrisFormatter", "get_logger"]
@@ -19,6 +20,10 @@ DATEFMT: str = "%d-%m-%Y %H:%M:%S"
 
 #: The default ``fmt`` string of the logger formatter.
 FMT: str = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+
+# Critical region lock to protect against race conditions
+# when adding a handler to a logger.
+_LOCK = threading.Lock()
 
 
 class IrisFormatter(logging.Formatter):
@@ -137,21 +142,22 @@ def get_logger(
 
     # Create and add the handler, if required.
     if root or top:
-        # Give the handler a specific name.
-        handler_name = f"{'root' if root else __package__}_handler"
-        logger_handler_names = [
-            handler.get_name() for handler in logger.handlers
-        ]
+        with _LOCK:
+            # Give the handler a specific name.
+            handler_name = f"{'root' if root else __package__}_handler"
+            logger_handler_names = [
+                handler.get_name() for handler in logger.handlers
+            ]
 
-        # Ensure that we only ever add our handler to the logger once.
-        if handler_name not in logger_handler_names:
-            # Create a logging handler.
-            handler = logging.StreamHandler()
-            # Set the handler name.
-            handler.set_name(handler_name)
-            # Set the handler custom formatter.
-            handler.setFormatter(IrisFormatter())
-            # Add the handler to the logger.
-            logger.addHandler(handler)
+            # Ensure that we only ever add our handler to the logger once.
+            if handler_name not in logger_handler_names:
+                # Create a logging handler.
+                handler = logging.StreamHandler()
+                # Set the handler name.
+                handler.set_name(handler_name)
+                # Set the handler custom formatter.
+                handler.setFormatter(IrisFormatter())
+                # Add the handler to the logger.
+                logger.addHandler(handler)
 
     return logger
