@@ -213,7 +213,6 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
-    print(session.virtualenv.bin_paths)
     session.run(
         "python",
         "-m",
