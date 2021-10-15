@@ -24,11 +24,13 @@ jobs:
         run: |
           pip install nox
 
-      - name: Cache Nox-ASV env directory
+      - name: Cache .nox and .asv/env directories
         id: cache-env-dir
         uses: actions/cache@v2
         with:
-          path: benchmarks/.asv/env
+          path: |
+            .nox
+            benchmarks/.asv/env
           key: "always cache"
 
       - name: Run CI benchmarks
