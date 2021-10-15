@@ -215,6 +215,10 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.run(
         "python",
+        "-V",
+    )
+    session.run(
+        "python",
         "-m",
         "iris.tests.runner",
         "--default-tests",
