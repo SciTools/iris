@@ -46,28 +46,29 @@ class Test(tests.IrisTest):
         self.obj = MyTestClass()
 
     def test_format__my_test_func(self):
-        expected = r"[caller:my_test_func]"
+        regex = r".* \[caller:my_test_func\]"
         with self.assertLogs(logger, level=LEVEL) as cm:
             my_test_func()
         self.assertEqual(cm.output, self.output)
         actual = self.formatter.format(cm.records[0])
-        self.assertRegex(actual, expected)
+        self.assertRegex(actual, regex)
 
     def test_format__my_test_method__no_cls(self):
-        expected = r"[caller:my_test_method__no_cls]"
+        regex = r".* \[caller:my_test_method__no_cls\]"
         with self.assertLogs(logger, level=LEVEL) as cm:
             self.obj.my_test_method__no_cls()
         self.assertEqual(cm.output, self.output)
         actual = self.formatter.format(cm.records[0])
-        self.assertRegex(actual, expected)
+        print(actual)
+        self.assertRegex(actual, regex)
 
     def test_format__my_test_method__with_cls(self):
-        expected = r"[caller:my_test_method__with_cls]"
+        regex = r".* \[caller:MyTestClass.my_test_method__with_cls\]"
         with self.assertLogs(logger, level=LEVEL) as cm:
             self.obj.my_test_method__with_cls()
         self.assertEqual(cm.output, self.output)
         actual = self.formatter.format(cm.records[0])
-        self.assertRegex(actual, expected)
+        self.assertRegex(actual, regex)
 
 
 if __name__ == "__main__":

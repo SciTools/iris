@@ -14,8 +14,7 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
-from iris.experimental.ugrid import logger
-from iris.experimental.ugrid.mesh import Connectivity, Mesh
+from iris.experimental.ugrid.mesh import Connectivity, Mesh, logger
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 
