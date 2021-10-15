@@ -280,7 +280,7 @@ task:
     - conda create -n xxhash-test --file requirements\ci\nox.lock\py37-win-64.lock
     - conda init cmd.exe
     - conda activate xxhash-test
-    - python -c "import sys; print(sys.path)"
+    - python -c "import sys; sys.path.append('c:\\users\\containeradministrator\\appdata\\local\\temp\\cirrus-ci-build\\lib'); print(sys.path)"
     - python -c "import xxhash"
     - conda activate base
     - nox --session tests -- --verbose
