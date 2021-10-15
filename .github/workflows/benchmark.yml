@@ -24,6 +24,13 @@ jobs:
         run: |
           pip install nox
 
+      - name: Cache Nox-ASV env directory
+        id: cache-env-dir
+        uses: actions/cache@v2
+        with:
+          path: benchmarks/.asv/env
+          key: "always cache"
+
       - name: Run CI benchmarks
         run: |
           mkdir benchmarks/.asv
@@ -36,4 +43,4 @@ jobs:
           name: asv-report
           path: |
             benchmarks/.asv/results
-            benchmarks/.asv/compare.txt
+            benchmarks/.asv/ci_compare.txt
