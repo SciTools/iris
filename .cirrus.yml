@@ -135,8 +135,11 @@ windows_task_template: &WINDOWS_TASK_TEMPLATE
       # TODO: We've started refreshing every day rather than every fortnight here
       - echo %date%:%CARTOPY_CACHE_BUILD%
     populate_script:
+      - dir
       - conda create --quiet --name cartopy-cache cartopy
+      - dir
       - conda init cmd.exe
+      - dir
       - conda activate cartopy-cache > nul 2>&1
       # TODO: This used to use mktemp. This is less random
       - set nat_earth_dest=%UserProfile%\.local\share\cartopy
