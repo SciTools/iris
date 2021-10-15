@@ -31,7 +31,8 @@ class MyTestClass:
     def __init__(self):
         self.cls = self.__class__.__name__
 
-    def my_test_method__no_cls(self):
+    @staticmethod
+    def my_test_method__no_cls():
         logger.debug(MESSAGE)
 
     def my_test_method__with_cls(self):

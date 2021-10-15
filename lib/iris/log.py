@@ -82,7 +82,7 @@ class IrisFormatter(logging.Formatter):
 
 
 def get_logger(
-    name: str, level: Optional[Union[int, str]] = None
+    name: Union[str, None], level: Optional[Union[int, str]] = None
 ) -> logging.Logger:
     """
     .. versionadded:: 3.2.0
@@ -100,7 +100,7 @@ def get_logger(
 
     Parameters
     ----------
-    name : str
+    name : str or None
         The name of the logger. Typically this is the module filename
         (``__name__``) that owns the logger. Note that, the singleton logging
         root logger is selected with a ``name`` of ``None`` or ``root``.
