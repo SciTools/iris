@@ -89,25 +89,26 @@ def get_logger(
 
     Create and configure a :class:`logging.Logger`.
 
-    Child loggers will simply propagate their messages to the singleton root
-    logger in the logging hierarchy, or the first parent logger with a handler
-    configured. Typically, this will be the top-level ``iris`` logger.
+    Child loggers will simply propagate their messages to the first parent
+    logger in the logging hierarchy with a handler. Typically, this will be
+    the top-level ``iris`` logger.
 
-    The root logger, if specified by ``name``, will be configured with a
-    :class:`logging.StreamHandler` and a custom :class:`Formatter`, as will the
-    top-level ``iris`` logger. No other loggers will be configured with a
-    handler.
+    The ``iris`` top-level logger, specified by ``name``, will be configured
+    with a :class:`logging.StreamHandler` and a custom :class:`IrisFormatter`,
+    as will the logging root logger, if specifically chosen to be configured.
+    Note that, no other loggers will be configured with a handler.
 
     Parameters
     ----------
     name : str
         The name of the logger. Typically this is the module filename
-        (``__name__``) that owns the logger. Note that, the singleton root
-        logger is selected with a ``name`` of ``None`` or ``root``.
+        (``__name__``) that owns the logger. Note that, the singleton logging
+        root logger is selected with a ``name`` of ``None`` or ``root``.
     level : int or str, optional
-        The threshold level of the logger. If ``None``, defaults to ``WARNING``
-        for the ``root`` logger, ``NOTSET`` for the top-level logger, ``INFO``
-        otherwise.
+        The threshold level of the logger. If ``None``, defaults to ``NOTSET``
+        for the top-level ``iris`` logger, otherwise ``INFO`` for child loggers.
+        Note that, the logging root logger ``level`` will not be configured by
+        default.
 
     Returns
     -------
@@ -125,19 +126,22 @@ def get_logger(
     # Determine if this is the top-level logger.
     top = name == __package__
 
-    if level is None:
-        level = "WARNING" if root else "NOTSET" if top else "INFO"
+    # Don't configure the root logger level by default.
+    if not root and level is None:
+        level = "NOTSET" if top else "INFO"
 
     # Create the named logger. If it already exists, logging
-    # takes care logger management, and will return the existing
+    # takes care of logger management, and will return the existing
     # logger.
     logger = logging.getLogger(name)
 
     # Set the logger level, which is different to the effective level.
-    logger.setLevel(level)
+    if level is not None:
+        logger.setLevel(level)
 
     if not root:
-        # Children propagate to the top-level logger.
+        # Only children propagate to the first parent logger in the
+        # hierarchy configured with a handler.
         logger.propagate = not top
 
     # Create and add the handler, if required.

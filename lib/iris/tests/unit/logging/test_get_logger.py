@@ -11,7 +11,7 @@ import iris.tests as tests  # isort:skip
 import logging
 import unittest
 
-from iris import logger as ilogger
+import iris
 from iris.logging import IrisFormatter, get_logger
 
 
@@ -36,17 +36,13 @@ class Test(tests.IrisTest):
 
     def test_get_iris(self):
         logger = get_logger("iris")
-        self.assertIs(logger, ilogger)
+        self.assertIs(logger, iris.logger)
 
     def test_get_child(self):
         name = "iris.child"
         child = get_logger(name)
         logger = get_logger(name)
         self.assertIs(logger, child)
-
-    def test_root_level(self):
-        logger = get_logger("root")
-        self.assertEqual(logger.level, logging._nameToLevel["WARN"])
 
     def test_iris_level(self):
         logger = get_logger("iris")
