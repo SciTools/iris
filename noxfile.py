@@ -97,7 +97,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
     """
     if not CARTOPY_CACHE_DIR.is_dir():
-        session.run(
+        session.run_always(
             "python",
             "-c",
             "import cartopy; cartopy.io.shapereader.natural_earth()",
@@ -152,9 +152,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
     verbose = "-v" in session.posargs or "--verbose" in session.posargs
 
     if verbose:
-        session.run("conda", "info")
-        session.run("conda", "list", f"--prefix={venv_dir}")
-        session.run(
+        session.run_always("conda", "info")
+        session.run_always("conda", "list", f"--prefix={venv_dir}")
+        session.run_always(
             "conda",
             "list",
             f"--prefix={venv_dir}",
@@ -278,3 +278,50 @@ def linkcheck(session: nox.sessions.Session):
         "linkcheck",
         external=True,
     )
+
+
+@nox.session(python=PY_VER[-1], venv_backend="conda")
+@nox.parametrize(
+    ["ci_mode"],
+    [True, False],
+    ids=["ci compare", "full"],
+)
+def benchmarks(session: nox.sessions.Session, ci_mode: bool):
+    """
+    Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+    ci_mode: bool
+        Run a cut-down selection of benchmarks, comparing the current commit to
+        the last commit for performance regressions.
+
+    Notes
+    -----
+    ASV is set up to use ``nox --session=tests --install-only`` to prepare
+    the benchmarking environment. This session environment must use a Python
+    version that is also available for ``--session=tests``.
+
+    """
+    session.install("asv", "nox")
+    session.cd("benchmarks")
+    # Skip over setup questions for a new machine.
+    session.run("asv", "machine", "--yes")
+
+    def asv_exec(*sub_args: str) -> None:
+        run_args = ["asv", *sub_args]
+        session.run(*run_args)
+
+    if ci_mode:
+        # If on a PR: compare to the base (target) branch.
+        #  Else: compare to previous commit.
+        previous_commit = os.environ.get("PR_BASE_SHA", "HEAD^1")
+        try:
+            asv_exec("continuous", "--factor=1.2", previous_commit, "HEAD")
+        finally:
+            asv_exec("compare", previous_commit, "HEAD")
+    else:
+        # f5ceb808 = first commit supporting nox --install-only .
+        asv_exec("run", "f5ceb808..HEAD")
