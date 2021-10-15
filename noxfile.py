@@ -215,7 +215,8 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.run(
         "python",
-        "-V",
+        "-c",
+        "import xxhash",
     )
     session.run(
         "python",
