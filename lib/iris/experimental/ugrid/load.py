@@ -21,7 +21,7 @@ from ...coords import AuxCoord
 from ...fileformats import netcdf
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...io import decode_uri, expand_filespecs
-from ...logging import get_logger
+from ...log import get_logger
 from ...util import guess_coord_axis
 from .cf import (
     CFUGridAuxiliaryCoordinateVariable,

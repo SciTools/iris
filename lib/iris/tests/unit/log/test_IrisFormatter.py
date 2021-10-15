@@ -3,14 +3,14 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Test function :func:`iris.logging.IrisFormatter`."""
+"""Test function :func:`iris.log.IrisFormatter`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
 import unittest
 
-from iris.logging import IrisFormatter, get_logger
+from iris.log import IrisFormatter, get_logger
 
 # create test child logger of iris
 NAME = "iris.test"

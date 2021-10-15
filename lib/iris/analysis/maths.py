@@ -24,7 +24,7 @@ from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
 import iris.coords
 import iris.exceptions
-from iris.logging import get_logger
+from iris.log import get_logger
 import iris.util
 
 # Configure the logger.

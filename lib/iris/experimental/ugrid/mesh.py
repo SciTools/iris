@@ -26,7 +26,7 @@ from ...common import (
 )
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...logging import get_logger
+from ...log import get_logger
 from ...util import guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 

@@ -45,7 +45,7 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
 import iris.io
-from iris.logging import get_logger
+from iris.log import get_logger
 import iris.util
 
 # Show actions activation statistics.

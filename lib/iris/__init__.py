@@ -95,7 +95,7 @@ import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated
 import iris.config
 import iris.io
-from iris.logging import get_logger
+from iris.log import get_logger
 
 try:
     import iris_sample_data

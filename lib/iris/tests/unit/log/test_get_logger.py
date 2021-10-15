@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Test function :func:`iris.logging.get_logger`."""
+"""Test function :func:`iris.log.get_logger`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -12,7 +12,7 @@ import logging
 import unittest
 
 import iris
-from iris.logging import IrisFormatter, get_logger
+from iris.log import IrisFormatter, get_logger
 
 
 class Test(tests.IrisTest):
