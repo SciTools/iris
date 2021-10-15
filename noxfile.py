@@ -216,7 +216,7 @@ def tests(session: nox.sessions.Session):
     session.run(
         "python",
         "-c",
-        "import xxhash",
+        "import sys; print(sys.path)",
     )
     session.run(
         "python",
