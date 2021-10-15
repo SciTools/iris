@@ -34,7 +34,7 @@ jobs:
       - name: Run CI benchmarks
         run: |
           mkdir benchmarks/.asv
-          nox --session="benchmarks(ci compare)" > benchmarks/.asv/ci_compare.txt
+          nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
 
       - name: Archive asv results
         if: ${{ always() }}
