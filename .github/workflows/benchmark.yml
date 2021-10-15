@@ -17,7 +17,7 @@ jobs:
       - name: Fetch the PR base branch too
         run: |
           git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
-          PR_BASE_SHA = $(git rev-parse upstream/${{ github.event.pull_request.base.ref }})
+          PR_BASE_SHA=$(git rev-parse upstream/${{ github.event.pull_request.base.ref }})
           echo "PR_BASE_SHA=$PR_BASE_SHA" >> $GITHUB_ENV
 
       - name: Install Nox
