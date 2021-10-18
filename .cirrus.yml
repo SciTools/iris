@@ -36,7 +36,7 @@ env:
   # Pip packages to be upgraded/installed.
   PIP_CACHE_PACKAGES: "nox pip pyyaml setuptools wheel"
   # Conda packages to be installed.
-  CONDA_CACHE_PACKAGES: "nox pip numpy"
+  CONDA_CACHE_PACKAGES: "nox pip numpy python-xxhash"
   # Git commit hash for iris test data.
   IRIS_TEST_DATA_VERSION: "2.4"
   # Base directory for the iris-test-data.
