@@ -10,6 +10,7 @@
 import iris.tests as tests  # isort:skip
 
 from itertools import permutations
+import pickle
 from unittest import mock
 
 from cf_units import Unit
@@ -3161,6 +3162,34 @@ class Test__eq__meta(tests.IrisTest):
         cube2.add_cell_method(cmth1)
         cube2.add_cell_method(cmth2)
         self.assertTrue(cube1 == cube2)
+
+
+class Test_pickle(tests.IrisTest):
+    """Unit tests for pickling of Cube objects"""
+
+    def test_pickle_real(self):
+        data = np.arange(12.0).reshape((3, 4))
+        cube = iris.cube.Cube(data)
+        pickle_data = pickle.dumps(cube)
+        restored_cube = pickle.loads(pickle_data)
+        self.assertEqual(cube, restored_cube)
+
+    def test_pickle_lazy(self):
+        real_data = np.arange(12.0).reshape((3, 4))
+        lazy_data = as_lazy_data(real_data)
+        cube = iris.cube.Cube(lazy_data)
+        pickle_data = pickle.dumps(cube)
+        restored_cube = pickle.loads(pickle_data)
+        self.assertEqual(cube, restored_cube)
+
+    def test_pickle_deferred_unit_conversion(self):
+        real_data = np.arange(12.0).reshape((3, 4))
+        lazy_data = as_lazy_data(real_data)
+        cube = iris.cube.Cube(lazy_data, units="m")
+        cube.convert_units("ft")
+        pickle_data = pickle.dumps(cube)
+        restored_cube = pickle.loads(pickle_data)
+        self.assertEqual(cube, restored_cube)
 
 
 if __name__ == "__main__":
