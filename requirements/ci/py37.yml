@@ -17,7 +17,7 @@ dependencies:
   - matplotlib
   - netcdf4
   - numpy >=1.14
-  - python-xxhash < 2
+  - python-xxhash
   - scipy
 
 # Optional dependencies.
