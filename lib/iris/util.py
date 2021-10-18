@@ -1397,7 +1397,18 @@ def regular_step(coord):
 
 
 def points_step(points):
-    """Determine whether a NumPy array has a regular step."""
+    """Determine whether `points` has a regular step.
+
+    Parameters
+    ----------
+    points : numeric, array-like
+        The sequence of values to check for a regular difference.
+
+    Returns
+    -------
+    numeric, bool
+        A tuple containing the average difference between values, and whether the difference is regular.
+    """
     # Calculations only make sense with multiple points
     points = np.asanyarray(points)
     if points.size >= 2:
