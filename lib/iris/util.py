@@ -1399,7 +1399,8 @@ def regular_step(coord):
 def points_step(points):
     """Determine whether a NumPy array has a regular step."""
     # Calculations only make sense with multiple points
-    if len(points) >= 2:
+    points = np.asanyarray(points)
+    if points.size >= 2:
         diffs = np.diff(points)
         avdiff = np.mean(diffs)
         # TODO: This value for `rtol` is set for test_analysis to pass...
