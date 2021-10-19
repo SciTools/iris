@@ -177,16 +177,15 @@ class NoxConda(Conda):
                 # Cache all of ASV's files as Nox may remove and re-build the environment.
                 copy_asv_files(env_path, asv_cache_path)
                 # Get location of noxfile in cache.
-                noxfile_path_build = (
+                noxfile_original = (
                     build_root_path / self._repo_subdir / self.noxfile_rel_path
                 )
-                noxfile_path = asv_cache_path / noxfile_path_build.relative_to(
-                    build_root_path.parent
-                )
+                noxfile_subpath = noxfile_original.relative_to(build_root_path.parent)
+                noxfile = asv_cache_path / noxfile_subpath
 
             nox_cmd = [
                 "nox",
-                f"--noxfile={noxfile_path}",
+                f"--noxfile={noxfile}",
                 f"--envdir={env_path.parent}",
                 f"--session={self.nox_session_name}",
                 f"--python={self._python}",
