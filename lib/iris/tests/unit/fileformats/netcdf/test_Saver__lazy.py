@@ -9,8 +9,6 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from unittest.mock import patch
-
 from dask import array as da
 
 from iris.coords import AuxCoord
@@ -90,7 +88,6 @@ class Test__create_cf_cell_measure_variable(
     pass
 
 
-@patch.object(da, "store")
 class TestStreamed(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_2d()
@@ -101,27 +98,27 @@ class TestStreamed(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube_to_save)
 
-    def test_realised_not_streamed(self, mock):
+    def test_realised_not_streamed(self):
         self.save_common(self.cube)
-        self.assertFalse(mock.called)
+        self.assertFalse(self.store_watch.called)
 
-    def test_lazy_streamed_data(self, mock):
+    def test_lazy_streamed_data(self):
         self.cube.data = self.cube.lazy_data()
         self.save_common(self.cube)
-        self.assertTrue(mock.called)
+        self.assertTrue(self.store_watch.called)
 
-    def test_lazy_streamed_coord(self, mock):
+    def test_lazy_streamed_coord(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(
             aux_coord.lazy_points(), aux_coord.lazy_bounds()
         )
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
-        self.assertTrue(mock.called)
+        self.assertTrue(self.store_watch.called)
 
-    def test_lazy_streamed_bounds(self, mock):
+    def test_lazy_streamed_bounds(self):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(aux_coord.points, aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
-        self.assertTrue(mock.called)
+        self.assertTrue(self.store_watch.called)
