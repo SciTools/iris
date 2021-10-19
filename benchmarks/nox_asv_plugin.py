@@ -148,6 +148,7 @@ class NoxConda(Conda):
         else:
             line = list_matches[0]
             session_name = line.split(" ")[1]
+            assert isinstance(session_name, str)
             return session_name
 
     def _nox_prep_env(self, setup: bool = False) -> None:
