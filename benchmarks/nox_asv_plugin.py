@@ -15,6 +15,7 @@ from tempfile import TemporaryDirectory
 
 from asv.config import Config
 from asv.console import log
+from asv.environment import get_env_name
 from asv.plugins.conda import Conda, _find_conda
 from asv.repo import get_repo, Repo
 from asv import util as asv_util
@@ -113,6 +114,11 @@ class NoxConda(Conda):
         """Enforce overriding of this variable by disabling modification."""
         pass
 
+    @property
+    def name(self) -> str:
+        """Overridden to prevent inclusion of user input requirements."""
+        return get_env_name(self.tool_name, self._python, {})
+
     def _get_nox_session_name(self, python: str) -> str:
         nox_cmd_substring = (
             f"--noxfile={self.setup_noxfile} "
@@ -205,12 +211,6 @@ class NoxConda(Conda):
                 # Restore ASV's files from the cache (if necessary).
                 copy_asv_files(asv_cache_path, env_path)
 
-        if (not setup) and self._extra_reqs_path.is_file():
-            # No need during initial ASV setup - this will be run again before
-            #  any benchmarks are run.
-            cmd = f"{self.conda} env update -f {self._extra_reqs_path} -p {env_path}"
-            asv_util.check_output(cmd.split(" "))
-
     def _setup(self) -> None:
         """Used for initial environment creation - mimics parent method where possible."""
         try:
@@ -231,30 +231,13 @@ class NoxConda(Conda):
             # No longer need the setup checkout now that the environment has been built.
             self.project_temp_checkout.cleanup()
 
-        # Create an environment.yml file from the requirements in asv.conf.json.
-        # No default dependencies to specify - unlike parent - because Nox
-        #  includes these by default.
         conda_args, pip_args = self._get_requirements(self.conda)
         if conda_args or pip_args:
-            with self._extra_reqs_path.open("w") as req_file:
-                req_file.write(f"name: {self.name}\n")
-                req_file.write("channels:\n")
-                req_file.writelines(
-                    [f"   - {channel}\n" for channel in self._conda_channels]
-                )
-                req_file.write("dependencies:\n")
-
-                # Categorise and write dependencies based on pip vs. conda.
-                req_file.writelines(
-                    [f"   - {package}\n" for package in conda_args]
-                )
-                if pip_args:
-                    # And now specify the packages that are to be installed in the
-                    # pip subsection.
-                    req_file.write("   - pip:\n")
-                    req_file.writelines(
-                        [f"     - {package}\n" for package in pip_args]
-                    )
+            message = (
+                "Ignoring user input package requirements. Benchmark "
+                "environment management is exclusively performed by Nox."
+            )
+            log.warning(message)
 
     def checkout_project(self, repo: Repo, commit_hash: str) -> None:
         """Check out the working tree of the project at given commit hash."""
