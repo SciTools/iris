@@ -243,3 +243,4 @@ class NoxConda(Conda):
         """Check out the working tree of the project at given commit hash."""
         super().checkout_project(repo, commit_hash)
         self._nox_prep_env()
+        log.info(f"Environment {self.name} updated to spec at {commit_hash[:8]}")
