@@ -187,7 +187,9 @@ class NoxConda(Conda):
                 noxfile_original = (
                     build_root_path / self._repo_subdir / self.noxfile_rel_path
                 )
-                noxfile_subpath = noxfile_original.relative_to(build_root_path.parent)
+                noxfile_subpath = noxfile_original.relative_to(
+                    build_root_path.parent
+                )
                 noxfile = asv_cache_path / noxfile_subpath
 
             nox_cmd = [
@@ -244,4 +246,6 @@ class NoxConda(Conda):
         """Check out the working tree of the project at given commit hash."""
         super().checkout_project(repo, commit_hash)
         self._nox_prep_env()
-        log.info(f"Environment {self.name} updated to spec at {commit_hash[:8]}")
+        log.info(
+            f"Environment {self.name} updated to spec at {commit_hash[:8]}"
+        )
