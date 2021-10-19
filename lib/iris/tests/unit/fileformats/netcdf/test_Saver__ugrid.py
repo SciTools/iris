@@ -3,8 +3,13 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-"""Unit tests for the `iris.fileformats.netcdf.Saver` class."""
+"""
+Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
 
+WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
+:mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
+
+"""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -1282,6 +1287,10 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         self.assertEqual(dims["Mesh2d_faces_0"], 4)
         self.assertEqual(dims["Mesh2d_edge"], 2)
         self.assertEqual(dims["Mesh2d_edge_0"], 2)
+
+
+# WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
+# :mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
 
 
 if __name__ == "__main__":

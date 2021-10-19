@@ -42,7 +42,7 @@ class Test__create_cf_bounds(test_Saver.Test__create_cf_bounds):
         return cube
 
 
-class Test_write_valid_x_cube_attributes(
+class Test_write__valid_x_cube_attributes(
     LazyMixin, test_Saver.Test_write__valid_x_cube_attributes
 ):
     pass
