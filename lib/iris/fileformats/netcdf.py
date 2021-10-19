@@ -1992,7 +1992,7 @@ class Saver:
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
         # so we check if we can store them as int32 instead.
         if (
-            np.issubdtype(values.dtype, int)
+            np.issubdtype(values.dtype, np.int64)
             or np.issubdtype(values.dtype, np.unsignedinteger)
         ) and self._dataset.file_format in (
             "NETCDF3_CLASSIC",

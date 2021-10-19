@@ -661,7 +661,7 @@ class Test_check_attribute_compliance__valid_range(
         self.data = self.data.astype("int8")
         value = [1, 2]
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(int)
+        self.assertAttribute(np.int64)
 
 
 class Test_check_attribute_compliance__valid_min(
@@ -693,7 +693,7 @@ class Test_check_attribute_compliance__valid_min(
         self.data = self.data.astype("int8")
         value = 1
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(int)
+        self.assertAttribute(np.int64)
 
 
 class Test_check_attribute_compliance__valid_max(
@@ -725,7 +725,7 @@ class Test_check_attribute_compliance__valid_max(
         self.data = self.data.astype("int8")
         value = 2
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(int)
+        self.assertAttribute(np.int64)
 
 
 class Test_check_attribute_compliance__exception_handling(
