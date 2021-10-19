@@ -2884,6 +2884,9 @@ class Saver:
 
         dtype = cf_var.dtype
 
+        # fill_warn allows us to skip warning if packing attributes have been
+        #  specified. It would require much more complex operations to work out
+        #  what the values and fill_value _would_ be in such a case.
         if fill_warn:
             if fill_value is not None:
                 fill_value_to_check = fill_value
