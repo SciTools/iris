@@ -186,6 +186,7 @@ class NoxConda(Conda):
             nox_cmd = [
                 "nox",
                 f"--noxfile={noxfile}",
+                # Place the env in the ASV env directory, instead of the default.
                 f"--envdir={env_path.parent}",
                 f"--session={self.nox_session_name}",
                 f"--python={self._python}",
