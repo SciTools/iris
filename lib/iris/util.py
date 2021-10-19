@@ -1900,7 +1900,7 @@ def equalise_attributes(cubes):
 
 def is_masked(array):
     """
-    Equivalent to :func:`numpy.ma.is_masked`, but can also operate on a :class:`dask.array.Array`
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
 
     Parameters
     ----------
