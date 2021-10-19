@@ -132,11 +132,13 @@ class NoxConda(Conda):
         if matches_count == 0:
             message = f"No Nox sessions found for: {nox_cmd_substring} ."
             log.error(message)
+            raise RuntimeError(message)
         elif matches_count > 1:
             message = (
                 f"Ambiguous - >1 Nox session found for: {nox_cmd_substring} ."
             )
             log.error(message)
+            raise RuntimeError(message)
         else:
             line = list_matches[0]
             session_name = line.split(" ")[1]
@@ -197,6 +199,7 @@ class NoxConda(Conda):
             if not env_path.is_dir():
                 message = f"Expected Nox environment not found: {env_path}"
                 log.error(message)
+                raise RuntimeError(message)
 
             if not setup:
                 # Restore ASV's files from the cache (if necessary).
