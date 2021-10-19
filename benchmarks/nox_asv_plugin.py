@@ -178,7 +178,7 @@ class NoxConda(Conda):
         with TemporaryDirectory(prefix="nox_asv_cache_") as asv_cache:
             asv_cache_path = Path(asv_cache)
             if setup:
-                noxfile_path = self.setup_noxfile
+                noxfile = self.setup_noxfile
             else:
                 # Cache all of ASV's files as Nox may remove and re-build the environment.
                 copy_asv_files(env_path, asv_cache_path)
