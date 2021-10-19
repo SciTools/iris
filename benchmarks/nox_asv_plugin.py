@@ -13,8 +13,6 @@ from pathlib import Path
 from shutil import copy2, copytree
 from tempfile import TemporaryDirectory
 
-from nox.sessions import _normalize_path
-
 from asv.config import Config
 from asv.console import log
 from asv.plugins.conda import Conda, _find_conda
@@ -71,6 +69,8 @@ class NoxConda(Conda):
             identifier string.
 
         """
+        from nox.sessions import _normalize_path
+
         # Need to checkout the project BEFORE the benchmark run - to access a noxfile.
         self.project_temp_checkout = TemporaryDirectory(
             prefix="nox_asv_checkout_"
