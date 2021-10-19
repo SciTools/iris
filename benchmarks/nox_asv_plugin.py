@@ -228,8 +228,6 @@ class NoxConda(Conda):
 
         try:
             self._nox_prep_env(setup=True)
-        except Exception:
-            raise
         finally:
             # No longer need the setup checkout now that the environment has been built.
             self.project_temp_checkout.cleanup()
