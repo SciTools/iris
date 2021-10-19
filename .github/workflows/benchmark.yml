@@ -31,7 +31,12 @@ jobs:
           path: |
             .nox
             benchmarks/.asv/env
-          key: "always cache"
+          # Make sure GHA never gets an exact cache match by using the unique
+          #  github.sha. This means it will always store this run as a new
+          #  cache (Nox may have made relevant changes during run). Cache
+          #  restoration still succeeds via the partial restore-key match.
+          key: ${{ runner.os }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}
 
       - name: Run CI benchmarks
         run: |
