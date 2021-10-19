@@ -27,7 +27,7 @@ import netCDF4
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris._lazy_data import _co_realise_lazy_arrays, as_lazy_data, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
     HybridHeightFactory,
@@ -2001,7 +2001,7 @@ class Saver:
         ):
             val_min, val_max = (values.min(), values.max())
             if is_lazy_data(values):
-                val_min, val_max = [m.compute() for m in (val_min, val_max)]
+                val_min, val_max = _co_realise_lazy_arrays([val_min, val_max])
             # Cast to an integer type supported by netCDF3.
             can_cast = all(
                 [np.can_cast(m, np.int32) for m in (val_min, val_max)]
@@ -2735,7 +2735,7 @@ class Saver:
                 dtype = np.dtype(packing)
                 cmin, cmax = (data.min(), data.max())
                 if is_lazy_data(data):
-                    cmin, cmax = [m.compute() for m in (cmin, cmax)]
+                    cmin, cmax = _co_realise_lazy_arrays([cmin, cmax])
                 n = dtype.itemsize * 8
                 if masked:
                     scale_factor = (cmax - cmin) / (2 ** n - 2)
