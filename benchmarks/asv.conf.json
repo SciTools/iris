@@ -3,15 +3,18 @@
     "project": "scitools-iris",
     "project_url": "https://github.com/SciTools/iris",
     "repo": "..",
-    "environment_type": "conda-lock",
+    "environment_type": "nox-conda",
     "show_commit_url": "http://github.com/scitools/iris/commit/",
 
     "benchmark_dir": "./benchmarks",
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-    "plugins": [".conda_lock_plugin"],
-    // this is not an asv standard config entry, just for our plugin
-    // path to lockfile, relative to project base
-    "conda_lockfile": "requirements/ci/nox.lock/py38-linux-64.lock"
+    "plugins": [".nox_asv_plugin"],
+    // The commit to checkout to first run Nox to set up the environment.
+    "nox_setup_commit": "HEAD",
+    // The path of the noxfile's location relative to the project root.
+    "noxfile_rel_path": "noxfile.py",
+    // The ``--session`` arg to be used with ``--install-only`` to prep an environment.
+    "nox_session_name": "tests"
 }

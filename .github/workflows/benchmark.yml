@@ -14,29 +14,34 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Checkout the branches
+      - name: Fetch the PR base branch too
         run: |
           git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
           git branch _base FETCH_HEAD
-          git fetch --depth=1 origin ${{ github.ref }}
-          git branch _head FETCH_HEAD
+          echo PR_BASE_SHA=$(git rev-parse _base) >> $GITHUB_ENV
 
-      - name: Setup asv
+      - name: Install Nox
         run: |
-          pip install asv
-          cd benchmarks
-          asv machine --yes
+          pip install nox
 
-      - name: Run benchmarks on source and target
-        run: |
-          cd benchmarks
-          asv continuous --factor 1.2 _base _head
+      - name: Cache .nox and .asv/env directories
+        id: cache-env-dir
+        uses: actions/cache@v2
+        with:
+          path: |
+            .nox
+            benchmarks/.asv/env
+          # Make sure GHA never gets an exact cache match by using the unique
+          #  github.sha. This means it will always store this run as a new
+          #  cache (Nox may have made relevant changes during run). Cache
+          #  restoration still succeeds via the partial restore-key match.
+          key: ${{ runner.os }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}
 
-      - name: Write a compare file to the output folder
-        if: ${{ always() }}
+      - name: Run CI benchmarks
         run: |
-          cd benchmarks
-          asv compare -s _base _head > .asv/compare.txt
+          mkdir --parents benchmarks/.asv
+          nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
 
       - name: Archive asv results
         if: ${{ always() }}
@@ -45,4 +50,4 @@ jobs:
           name: asv-report
           path: |
             benchmarks/.asv/results
-            benchmarks/.asv/compare.txt
+            benchmarks/.asv/ci_compare.txt
