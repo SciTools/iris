@@ -20,10 +20,12 @@ import sys
 import tempfile
 
 import cf_units
+from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import is_lazy_data
 import iris.exceptions
 
 
@@ -1894,6 +1896,28 @@ def equalise_attributes(cubes):
         }
         removed.append(deleted_attributes)
     return removed
+
+
+def is_masked(array):
+    """
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or `dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the array has any masks.
+
+    """
+    if is_lazy_data(array):
+        result = da.ma.getmaskarray(array).any().compute()
+    else:
+        result = ma.is_masked(array)
+    return result
 
 
 def _strip_metadata_from_dims(cube, dims):
