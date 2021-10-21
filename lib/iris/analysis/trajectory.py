@@ -320,14 +320,20 @@ def interpolate(cube, sample_points, method=None):
             break
 
     if method in ["linear", None]:
-        columns = cube.interpolate(sample_points, Linear())
+        # Rearrange sample_points to extract the coordinates, which we need
+        # immediately, and the points, which we'll use shortly
+        coords, points = zip(*sample_points)
+        # Create our interpolator once, which we can then use repeatedly
+        interp = Linear().interpolator(cube, coords)
         for i in range(trajectory_size):
-            column_dims = [
-                i if dim in squish_my_dims else slice(None)
-                for dim in range(columns.ndim)
-            ]
-            column = columns[tuple(column_dims)]
-            new_cube.data[..., i] = column.data
+            # interp is callable with a seqence of arrays. We're using it in
+            # such a way that each array is length 1
+            column = interp([[coord_vals[i]] for coord_vals in points])
+            # Now we need to cut down some length 1 coordinates and pop it in
+            # the cube data
+            new_cube.data[..., i] = np.squeeze(
+                column.data, tuple(squish_my_dims)
+            )
             # Fill in the empty squashed (non derived) coords.
             for column_coord in column.dim_coords + column.aux_coords:
                 src_dims = cube.coord_dims(column_coord)
