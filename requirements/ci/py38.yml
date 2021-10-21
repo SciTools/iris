@@ -16,7 +16,7 @@ dependencies:
   - dask >=2
   - matplotlib
   - netcdf4
-  - numpy >=1.14
+  - numpy >=1.18
   - python-xxhash
   - scipy
 
