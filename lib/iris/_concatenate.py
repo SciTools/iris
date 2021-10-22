@@ -437,7 +437,7 @@ class _CubeSignature:
             av_and_dims = _CoordAndDims(av, tuple(dims))
             self.ancillary_variables_and_dims.append(av_and_dims)
 
-    def _coordinate_differences(self, other, attr):
+    def _coordinate_differences(self, other, attr, reason="metadata"):
         """
         Determine the names of the coordinates that differ between `self` and
         `other` for a coordinate attribute on a _CubeSignature.
@@ -450,6 +450,10 @@ class _CubeSignature:
         * attr (string):
             The _CubeSignature attribute within which differences exist
             between `self` and `other`.
+
+        * reason (string):
+            The reason to give for mismatch (function is normally, but not
+            always, testing metadata)
 
         Returns:
             Tuple of the names of attributes that differ between `self` and
@@ -476,6 +480,7 @@ class _CubeSignature:
                 if self_value != other_value:
                     diff_names.append(self_key)
             result = (
+                " " + reason,
                 ", ".join(diff_names),
                 ", ".join(diff_names),
             )
@@ -521,39 +526,31 @@ class _CubeSignature:
         if self.dim_metadata != other.dim_metadata:
             differences = self._coordinate_differences(other, "dim_metadata")
             msgs.append(
-                msg_template.format(
-                    "Dimension coordinates", " metadata", *differences
-                )
+                msg_template.format("Dimension coordinates", *differences)
             )
         # Check aux coordinates.
         if self.aux_metadata != other.aux_metadata:
             differences = self._coordinate_differences(other, "aux_metadata")
             msgs.append(
-                msg_template.format(
-                    "Auxiliary coordinates", " metadata", *differences
-                )
+                msg_template.format("Auxiliary coordinates", *differences)
             )
         # Check cell measures.
         if self.cm_metadata != other.cm_metadata:
             differences = self._coordinate_differences(other, "cm_metadata")
-            msgs.append(
-                msg_template.format("Cell measures", " metadata", *differences)
-            )
+            msgs.append(msg_template.format("Cell measures", *differences))
         # Check ancillary variables.
         if self.av_metadata != other.av_metadata:
             differences = self._coordinate_differences(other, "av_metadata")
             msgs.append(
-                msg_template.format(
-                    "Ancillary variables", " metadata", *differences
-                )
+                msg_template.format("Ancillary variables", *differences)
             )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            differences = self._coordinate_differences(other, "scalar_coords")
+            differences = self._coordinate_differences(
+                other, "scalar_coords", reason="values or metadata"
+            )
             msgs.append(
-                msg_template.format(
-                    "Scalar coordinates", " values or metadata", *differences
-                )
+                msg_template.format("Scalar coordinates", *differences)
             )
         # Check ndim.
         if self.ndim != other.ndim:
