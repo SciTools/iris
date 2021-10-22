@@ -456,8 +456,8 @@ class _CubeSignature:
             always, testing metadata)
 
         Returns:
-            Tuple of the names of attributes that differ between `self` and
-            `other`.
+            Tuple of a descriptive error message and the names of attributes
+            that differ between `self` and `other`.
 
         """
         # Set up {name: attribute} dictionaries.
