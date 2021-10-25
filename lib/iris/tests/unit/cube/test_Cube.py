@@ -2062,8 +2062,9 @@ def _add_test_meshcube(self, nomesh=False, n_z=2, **meshcoord_kwargs):
     its components as properties of the 'self' TestCase.
 
     """
+    nomesh_faces = 5 if nomesh else None
     cube, parts = sample_mesh_cube(
-        nomesh=nomesh, n_z=n_z, with_parts=True, **meshcoord_kwargs
+        nomesh_faces=nomesh_faces, n_z=n_z, with_parts=True, **meshcoord_kwargs
     )
     mesh, zco, mesh_dimco, auxco_x, meshx, meshy = parts
     self.mesh = mesh
