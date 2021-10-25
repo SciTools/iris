@@ -23,7 +23,7 @@ _TEST_N_BOUNDS = 4
 
 
 def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
-    f"""
+    """
     Make a test mesh.
 
     Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
@@ -31,12 +31,12 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
 
     Args:
     * n_nodes (int or None):
-        Number of nodes in mesh. Default is {_TEST_N_NODES}.  Cannot be 0.
+        Number of nodes in mesh. Default is 15.  Cannot be 0.
     * n_edges (int or None):
-        Number of edges in mesh. Default is {_TEST_N_EDGES}.
+        Number of edges in mesh. Default is 5.
         If not 0, edge coords and an 'edge_node_connectivity' are included.
     * n_faces (int or None):
-        Number of faces in mesh. Default is {_TEST_N_FACES}.
+        Number of faces in mesh. Default is 3.
         If not 0, face coords and a 'face_node_connectivity' are included.
     * lazy_values (bool):
         If True, all content values of coords and connectivities are lazy.
