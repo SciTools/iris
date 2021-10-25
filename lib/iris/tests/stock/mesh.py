@@ -77,7 +77,6 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
         connectivities.append(edge_nodes)
 
-        conns = arr.arange(n_edges * 2, dtype=int)
         edge_x = AuxCoord(
             2100 + arr.arange(n_edges), standard_name="longitude"
         )
