@@ -146,6 +146,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
    during :ref:`developer_running_tests`. (:pull:`4359`)
 
+#. `@trexfeathers`_ encouraged contributors to include type hinting in code
+   they are working on - :ref:`code_formatting`. (:pull:`4390`)
+
 
 💼 Internal
 ===========
