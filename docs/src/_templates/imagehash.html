@@ -1,0 +1,16 @@
+{% extends "!layout.html" %}
+
+{% block body %}
+
+<h1>Test: {{ test }}</h1>
+
+Below are the known "good" images for test: {{test}}.
+
+{% for file in hashfiles %}
+<div>
+    <p>{{file}}</p>
+    <img src="{{file}}" />
+</div>
+{% endfor %}
+
+{% endblock %}
