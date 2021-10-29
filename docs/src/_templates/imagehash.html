@@ -4,11 +4,10 @@
 
 <h1>Test: {{ test }}</h1>
 
-Below are the known "good" images for test: {{test}}.
 
-{% for file in hashfiles %}
+{% for hash, file in hashfiles %}
 <div>
-    <p>{{file}}</p>
+    <h3>{{hash}}</h3>
     <img src="{{file}}" />
 </div>
 {% endfor %}
