@@ -126,6 +126,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ introduced the ``cf-units >=3`` and ``nc-time-axis >=1.3``
    minimum pins. (:pull:`4356`)
 
+#. `@bjlittle`_ introduced the ``numpy >=1.19`` minimum pin, in
+   accordance with `NEP-29`_ deprecation policy. (:pull:`4386`)
+
 
 📚 Documentation
 ================
@@ -191,5 +194,6 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
