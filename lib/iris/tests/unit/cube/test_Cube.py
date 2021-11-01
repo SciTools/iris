@@ -1963,6 +1963,18 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
         self.assertEqual(result.data[0, 0, 0], 181)
         self.assertEqual(result.data[0, 0, -1], 180)
 
+    def test_threshold_wrapped_gap(self):
+        # Test that a cell is wrapped to `maximum` if required to exceed
+        # the threshold (even with a gap in the range)
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0.4, 360.35), threshold=0.2)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [359.5, 360.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype="f4")

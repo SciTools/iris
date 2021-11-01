@@ -2922,7 +2922,9 @@ class Cube(CFVariableMixin):
             bounds = coord.bounds
             if bounds is not None:
                 # To avoid splitting any cells (by wrapping only one of its
-                # bounds), apply exactly the same wrapping as the points
+                # bounds), apply exactly the same wrapping as the points.
+                # Note that the offsets should be exact multiples of the
+                # modulus, but may initially be slightly off and need rounding.
                 wrap_offset = points - coord.points
                 wrap_offset = np.round(wrap_offset / modulus) * modulus
                 bounds = coord.bounds + wrap_offset[:, np.newaxis]
@@ -2944,6 +2946,8 @@ class Cube(CFVariableMixin):
                 iupper = (slice(None), 0)
 
             # Initially wrap such that upper bounds are in [min, min + modulus]
+            # As with the ignore_bounds case, need to round to modulus due to
+            # floating point precision
             upper = wrap_lons(coord.bounds[iupper], minimum, modulus)
             wrap_offset = upper - coord.bounds[iupper]
             wrap_offset = np.round(wrap_offset / modulus) * modulus
@@ -2952,17 +2956,16 @@ class Cube(CFVariableMixin):
             # Scale threshold for each bound
             thresholds = (upper - lower) * threshold
 
-            if minimum + modulus == maximum:
-                # For a range that covers the whole modulus, there may be a
-                # cell that is "split" and could appear at either side of
-                # the range.  Choose lower, unless there is not enough overlap.
-                if threshold == 0:
-                    # Special case: overlapping in a single point
-                    # (ie `minimum` itself) is always unintuitive
-                    is_split = np.isclose(upper, minimum)
-                else:
-                    is_split = upper - minimum < thresholds
-                wrap_offset += is_split * modulus
+            # For a range that covers the whole modulus, there may be a
+            # cell that is "split" and could appear at either side of
+            # the range.  Choose lower, unless there is not enough overlap.
+            if minimum + modulus == maximum and threshold == 0:
+                # Special case: overlapping in a single point
+                # (ie `minimum` itself) is always unintuitive
+                is_split = np.isclose(upper, minimum)
+            else:
+                is_split = upper - minimum < thresholds
+            wrap_offset += is_split * modulus
 
             # Apply wrapping
             points = coord.points + wrap_offset
