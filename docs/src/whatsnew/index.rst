@@ -11,7 +11,7 @@ Iris versions.
    :maxdepth: 1
 
    latest.rst
-   3.0.1.rst
+   3.1.rst
    3.0.rst
    2.4.rst
    2.3.rst

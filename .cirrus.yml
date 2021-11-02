@@ -18,18 +18,15 @@ container:
 env:
   # Skip specific tasks by name. Set to a non-empty string to skip.
   SKIP_LINT_TASK: ""
-  SKIP_TEST_MINIMAL_TASK: ""
-  SKIP_TEST_FULL_TASK: ""
-  SKIP_GALLERY_TASK: ""
+  SKIP_TEST_TASK: ""
   SKIP_DOCTEST_TASK: ""
   SKIP_LINKCHECK_TASK: ""
   # Skip task groups by type. Set to a non-empty string to skip.
-  SKIP_ALL_TEST_TASKS: ""
   SKIP_ALL_DOC_TASKS: ""
   # Maximum cache period (in weeks) before forcing a new cache upload.
   CACHE_PERIOD: "2"
   # Increment the build number to force new cartopy cache upload.
-  CARTOPY_CACHE_BUILD: "0"
+  CARTOPY_CACHE_BUILD: "3"
   # Increment the build number to force new conda cache upload.
   CONDA_CACHE_BUILD: "0"
   # Increment the build number to force new nox cache upload.
@@ -37,11 +34,11 @@ env:
   # Increment the build number to force new pip cache upload.
   PIP_CACHE_BUILD: "0"
   # Pip packages to be upgraded/installed.
-  PIP_CACHE_PACKAGES: "pip setuptools wheel nox"
+  PIP_CACHE_PACKAGES: "nox pip pyyaml setuptools wheel"
   # Conda packages to be installed.
   CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_VERSION: "2.0.0"
+  IRIS_TEST_DATA_VERSION: "2.4"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
@@ -75,6 +72,14 @@ linux_task_template: &LINUX_TASK_TEMPLATE
     fingerprint_script:
       - echo "${CIRRUS_OS}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${CARTOPY_CACHE_BUILD}"
+    populate_script:
+      - conda create --quiet --name cartopy-cache cartopy
+      - source ${HOME}/miniconda/etc/profile.d/conda.sh >/dev/null 2>&1
+      - conda activate cartopy-cache >/dev/null 2>&1
+      - cd $(mktemp -d)
+      - wget --quiet https://raw.githubusercontent.com/SciTools/cartopy/v0.20.0/tools/cartopy_feature_download.py
+      - python cartopy_feature_download.py physical --output ${HOME}/.local/share/cartopy --no-warn
+      - conda deactivate >/dev/null 2>&1
   nox_cache:
     folder: ${CIRRUS_WORKING_DIR}/.nox
     reupload_on_changes: true
@@ -87,7 +92,7 @@ linux_task_template: &LINUX_TASK_TEMPLATE
 # YAML alias for compute credits.
 #
 compute_credits_template: &CREDITS_TEMPLATE
-  # Only use credits for non-DRAFT pull-requests to SciTools/iris master branch by collaborators
+  # Restrict where compute credits are used.
   use_compute_credits: ${CIRRUS_REPO_FULL_NAME} == "SciTools/iris" && ${CIRRUS_USER_COLLABORATOR} == "true" && ${CIRRUS_PR_DRAFT} == "false" && ${CIRRUS_PR} != ""
 
 
@@ -108,7 +113,7 @@ iris_test_data_template: &IRIS_TEST_DATA_TEMPLATE
 #
 # Linting
 #
-lint_task:
+task:
   only_if: ${SKIP_LINT_TASK} == ""
   << : *CREDITS_TEMPLATE
   auto_cancellation: true
@@ -116,52 +121,31 @@ lint_task:
     image: python:3.8
     cpu: 2
     memory: 4G
-  name: "${CIRRUS_OS}: flake8 and black"
+  name: "${CIRRUS_OS}: pre-commit hooks"
   pip_cache:
     folder: ~/.cache/pip
     fingerprint_script:
       - echo "${CIRRUS_TASK_NAME} py${PYTHON_VERSION}"
       - echo "$(date +%Y).$(expr $(date +%U) / ${CACHE_PERIOD}):${PIP_CACHE_BUILD} ${PIP_CACHE_PACKAGES}"
-  lint_script:
+  precommit_script:
     - pip list
     - python -m pip install --retries 3 --upgrade ${PIP_CACHE_PACKAGES}
     - pip list
-    - nox --session flake8
-    - nox --session black
+    - nox --session precommit
 
 
 #
-# Testing Minimal (Linux)
+# Testing (Linux)
 #
-test_minimal_task:
-  only_if: ${SKIP_TEST_MINIMAL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
+task:
+  only_if: ${SKIP_TEST_TASK} == ""
   << : *CREDITS_TEMPLATE
   matrix:
     env:
       PY_VER: 3.7
     env:
       PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} tests (minimal)"
-  << : *LINUX_TASK_TEMPLATE
-  tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
-    - echo "[Resources]" > ${SITE_CFG}
-    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session tests -- --verbose
-
-
-#
-# Testing Full (Linux)
-#
-test_full_task:
-  only_if: ${SKIP_TEST_FULL_TASK} == "" && ${SKIP_ALL_TEST_TASKS} == ""
-  << : *CREDITS_TEMPLATE
-  matrix:
-    env:
-      PY_VER: 3.7
-    env:
-      PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} tests (full)"
+  name: "${CIRRUS_OS}: py${PY_VER} tests"
   container:
     image: gcc:latest
     cpu: 6
@@ -177,35 +161,16 @@ test_full_task:
 
 
 #
-# Testing Documentation Gallery (Linux)
+# Documentation Testing and Gallery (Linux)
 #
-gallery_task:
-  only_if: ${SKIP_GALLERY_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
-  << : *CREDITS_TEMPLATE
-  env:
-    PY_VER: 3.8
-  name: "${CIRRUS_OS}: py${PY_VER} doc tests (gallery)"
-  << : *IRIS_TEST_DATA_TEMPLATE
-  << : *LINUX_TASK_TEMPLATE
-  tests_script:
-    - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"
-    - echo "[Resources]" > ${SITE_CFG}
-    - echo "test_data_dir = ${IRIS_TEST_DATA_DIR}/test_data" >> ${SITE_CFG}
-    - echo "doc_dir = ${CIRRUS_WORKING_DIR}/docs" >> ${SITE_CFG}
-    - nox --session gallery -- --verbose
-
-
-#
-# Testing Documentation (Linux)
-#
-doctest_task:
+task:
   only_if: ${SKIP_DOCTEST_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} doc tests"
+  name: "${CIRRUS_OS}: py${PY_VER} doctests and gallery"
   << : *IRIS_TEST_DATA_TEMPLATE
   << : *LINUX_TASK_TEMPLATE
   tests_script:
@@ -220,16 +185,16 @@ doctest_task:
 
 
 #
-# Testing Documentation Link Check (Linux)
+# Documentation Link Check (Linux)
 #
-linkcheck_task:
+task:
   only_if: ${SKIP_LINKCHECK_TASK} == "" && ${SKIP_ALL_DOC_TASKS} == ""
   << : *CREDITS_TEMPLATE
   env:
     PY_VER: 3.8
     MPL_RC_DIR: ${HOME}/.config/matplotlib
     MPL_RC_FILE: ${HOME}/.config/matplotlib/matplotlibrc
-  name: "${CIRRUS_OS}: py${PY_VER} doc link check"
+  name: "${CIRRUS_OS}: py${PY_VER} link check"
   << : *LINUX_TASK_TEMPLATE
   tests_script:
     - export CONDA_OVERRIDE_LINUX="$(uname -r | cut -d'+' -f1)"

@@ -16,8 +16,10 @@ any WSL_ distributions.
 
 .. _WSL: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
-.. note:: Iris is currently supported and tested against |python_support|.
-          
+.. note:: Iris is currently supported and tested against |python_support|
+          running on Linux.  We do not currently actively test on other
+          platforms such as Windows or macOS.
+
 .. note:: This documentation was built using Python |python_version|.
 
 
@@ -40,7 +42,7 @@ need the Iris sample data. This can also be installed using conda::
   conda install -c conda-forge iris-sample-data
 
 Further documentation on using conda and the features it provides can be found
-at https://conda.io/en/latest/index.html.
+at https://docs.conda.io/projects/conda/en/latest/index.html.
 
 .. _installing_from_source_without_conda:
 
@@ -52,30 +54,18 @@ this section are valid for Debian-based Linux distributions (Debian, Ubuntu,
 Kubuntu, etc.).
 
 Iris and its dependencies need some shared libraries in order to work properly.
-These can be installed
-with apt::
+These can be installed with apt::
 
   sudo apt-get install python3-pip python3-tk libudunits2-dev libproj-dev proj-bin libgeos-dev libcunit1-dev
 
-Consider executing::
+The rest can be done with pip::
 
-  sudo apt-get update
-
-before and after installation of Debian packages.
-
-The rest can be done with pip. Begin with numpy::
-
-  pip3 install numpy
-
-Finally, Iris and its Python dependencies can be installed with the following
-command::
-
-  pip3 install setuptools cftime==1.2.1 cf-units scitools-pyke scitools-iris
+  pip3 install scitools-iris
 
 This procedure was tested on a Ubuntu 20.04 system on the
-27th of January, 2021.
-Be aware that through updates of the involved Debian and/or Python packages,
-dependency conflicts might arise or the procedure might have to modified.
+26th of July, 2021.
+Be aware that through updates of the involved Debian packages,
+dependency conflicts might arise or the procedure might have to be modified.
 
 .. _installing_from_source:
 
@@ -92,8 +82,13 @@ Once conda is installed, you can install Iris using conda and then activate
 it.  The example commands below assume you are in the root directory of your
 local copy of Iris::
 
-  conda env create --file=requirements/ci/iris.yml
+  conda env create --force --file=requirements/ci/iris.yml
   conda activate iris-dev
+
+The ``--force`` option is used when creating the environment, this is optional
+and will force the any existing ``iris-dev`` conda environment to be deleted
+first if present.  This is useful when rebuilding your environment due to a
+change in requirements.
 
 The ``requirements/ci/iris.yml`` file defines the Iris development conda
 environment *name* and all the relevant *top level* `conda-forge` package
@@ -108,7 +103,7 @@ all the packages from the `testing` and `documentation` sections.
           are supported and tested against by Iris, view the contents of
           the `requirements/ci`_ directory.
 
-.. _requirements/ci: https://github.com/scitools/iris/tree/master/requirements/ci
+.. _requirements/ci: https://github.com/scitools/iris/tree/main/requirements/ci
 
 Finally you need to run the command to configure your shell environment
 to find your local Iris code::

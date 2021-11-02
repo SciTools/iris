@@ -43,7 +43,7 @@ Interpolating a cube is achieved with the :meth:`~iris.cube.Cube.interpolate`
 method. This method expects two arguments:
 
  #. the sample points to interpolate, and
- #. the second argument being the interpolation scheme to use.
+ #. the interpolation scheme to use.
 
 The result is a new cube, interpolated at the sample points.
 
@@ -66,39 +66,39 @@ Let's take the air temperature cube we've seen previously:
     >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
     >>> print(air_temp)
     air_temperature / (K)               (latitude: 73; longitude: 96)
-         Dimension coordinates:
-              latitude                           x              -
-              longitude                          -              x
-         Scalar coordinates:
-              forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
-              forecast_reference_time: 1998-03-01 03:00:00
-              pressure: 1000.0 hPa
-              time: 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-         Attributes:
-              STASH: m01s16i203
-              source: Data from Met Office Unified Model
-         Cell methods:
-              mean within years: time
-              mean over years: time
+        Dimension coordinates:
+            latitude                             x              -
+            longitude                            -              x
+        Scalar coordinates:
+            forecast_period             6477 hours, bound=(-28083.0, 6477.0) hours
+            forecast_reference_time     1998-03-01 03:00:00
+            pressure                    1000.0 hPa
+            time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
+        Cell methods:
+            mean within years           time
+            mean over years             time
+        Attributes:
+            STASH                       m01s16i203
+            source                      Data from Met Office Unified Model
 
 We can interpolate specific values from the coordinates of the cube:
 
     >>> sample_points = [('latitude', 51.48), ('longitude', 0)]
     >>> print(air_temp.interpolate(sample_points, iris.analysis.Linear()))
     air_temperature / (K)               (scalar cube)
-         Scalar coordinates:
-              forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
-              forecast_reference_time: 1998-03-01 03:00:00
-              latitude: 51.48 degrees
-              longitude: 0 degrees
-              pressure: 1000.0 hPa
-              time: 1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-         Attributes:
-              STASH: m01s16i203
-              source: Data from Met Office Unified Model
-         Cell methods:
-              mean within years: time
-              mean over years: time
+        Scalar coordinates:
+            forecast_period             6477 hours, bound=(-28083.0, 6477.0) hours
+            forecast_reference_time     1998-03-01 03:00:00
+            latitude                    51.48 degrees
+            longitude                   0 degrees
+            pressure                    1000.0 hPa
+            time                        1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
+        Cell methods:
+            mean within years           time
+            mean over years             time
+        Attributes:
+            STASH                       m01s16i203
+            source                      Data from Met Office Unified Model
 
 As we can see, the resulting cube is scalar and has longitude and latitude coordinates with
 the values defined in our sample points.
@@ -237,12 +237,12 @@ For example::
 Regridding
 ----------
 
-Regridding is conceptually a very similar process to interpolation in Iris. 
+Regridding is conceptually a very similar process to interpolation in Iris.
 The primary difference is that interpolation is based on sample points, while
 regridding is based on the **horizontal** grid of *another cube*.
 
 Regridding a cube is achieved with the :meth:`cube.regrid() <iris.cube.Cube.regrid>` method.
-This method expects two arguments: 
+This method expects two arguments:
 
  #. *another cube* that defines the target grid onto which the cube should be regridded, and
  #. the regridding scheme to use.

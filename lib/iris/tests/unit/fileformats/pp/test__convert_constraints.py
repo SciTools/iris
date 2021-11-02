@@ -7,13 +7,12 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import iris
-from iris.fileformats.pp import _convert_constraints
-from iris.fileformats.pp import STASH
+from iris.fileformats.pp import STASH, _convert_constraints
 
 
 class Test_convert_constraints(tests.IrisTest):

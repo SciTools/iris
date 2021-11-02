@@ -14,15 +14,13 @@ TODO: If this module graduates from experimental the (optional) GDAL
 
 """
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 from osgeo import gdal, osr
 
-import cf_units
-
 import iris
 import iris.coord_systems
-
 
 _GDAL_DATATYPES = {
     "i2": gdal.GDT_Int16,

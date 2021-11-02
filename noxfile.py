@@ -12,15 +12,18 @@ from pathlib import Path
 import nox
 from nox.logger import logger
 
-
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
 
-#: Name of the package to test.
-PACKAGE = str("lib" / Path("iris"))
+#: Python versions we can run sessions under
+_PY_VERSIONS_ALL = ["3.7", "3.8"]
+_PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
+
+#: One specific python version for docs builds
+_PY_VERSION_DOCSBUILD = _PY_VERSION_LATEST
 
 #: Cirrus-CI environment variable hook.
-PY_VER = os.environ.get("PY_VER", ["3.7", "3.8"])
+PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
 
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
@@ -94,7 +97,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
     """
     if not CARTOPY_CACHE_DIR.is_dir():
-        session.run(
+        session.run_always(
             "python",
             "-c",
             "import cartopy; cartopy.io.shapereader.natural_earth()",
@@ -149,9 +152,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
     verbose = "-v" in session.posargs or "--verbose" in session.posargs
 
     if verbose:
-        session.run("conda", "info")
-        session.run("conda", "list", f"--prefix={venv_dir}")
-        session.run(
+        session.run_always("conda", "info")
+        session.run_always("conda", "list", f"--prefix={venv_dir}")
+        session.run_always(
             "conda",
             "list",
             f"--prefix={venv_dir}",
@@ -160,9 +163,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 
 @nox.session
-def flake8(session: nox.sessions.Session):
+def precommit(session: nox.sessions.Session):
     """
-    Perform flake8 linting of iris.
+    Perform pre-commit hooks of iris codebase.
 
     Parameters
     ----------
@@ -170,31 +173,28 @@ def flake8(session: nox.sessions.Session):
         A `nox.sessions.Session` object.
 
     """
+    import yaml
+
     # Pip install the session requirements.
-    session.install("flake8")
-    # Execute the flake8 linter on the package.
-    session.run("flake8", PACKAGE)
-    # Execute the flake8 linter on this file.
-    session.run("flake8", __file__)
+    session.install("pre-commit")
 
+    # Load the pre-commit configuration YAML file.
+    with open(".pre-commit-config.yaml", "r") as fi:
+        config = yaml.load(fi, Loader=yaml.FullLoader)
 
-@nox.session
-def black(session: nox.sessions.Session):
-    """
-    Perform black format checking of iris.
+    # List of pre-commit hook ids that we don't want to run.
+    excluded = ["no-commit-to-branch"]
 
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
+    # Enumerate the ids of pre-commit hooks we do want to run.
+    ids = [
+        hook["id"]
+        for entry in config["repos"]
+        for hook in entry["hooks"]
+        if hook["id"] not in excluded
+    ]
 
-    """
-    # Pip install the session requirements.
-    session.install("black==21.5b2")
-    # Execute the black format checker on the package.
-    session.run("black", "--check", PACKAGE)
-    # Execute the black format checker on this file.
-    session.run("black", "--check", __file__)
+    # Execute the pre-commit hooks.
+    [session.run("pre-commit", "run", "--all-files", id) for id in ids]
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
@@ -219,31 +219,10 @@ def tests(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
-def gallery(session: nox.sessions.Session):
-    """
-    Perform iris gallery doc-tests.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    prepare_venv(session)
-    session.install("--no-deps", "--editable", ".")
-    session.run(
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--gallery-tests",
-    )
-
-
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def doctest(session: nox.sessions.Session):
     """
-    Perform iris doc-tests.
+    Perform iris doctests and gallery.
 
     Parameters
     ----------
@@ -265,9 +244,16 @@ def doctest(session: nox.sessions.Session):
         "doctest",
         external=True,
     )
+    session.cd("..")
+    session.run(
+        "python",
+        "-m",
+        "iris.tests.runner",
+        "--gallery-tests",
+    )
 
 
-@nox.session(python=PY_VER, venv_backend="conda")
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def linkcheck(session: nox.sessions.Session):
     """
     Perform iris doc link check.
@@ -292,3 +278,50 @@ def linkcheck(session: nox.sessions.Session):
         "linkcheck",
         external=True,
     )
+
+
+@nox.session(python=PY_VER[-1], venv_backend="conda")
+@nox.parametrize(
+    ["ci_mode"],
+    [True, False],
+    ids=["ci compare", "full"],
+)
+def benchmarks(session: nox.sessions.Session, ci_mode: bool):
+    """
+    Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
+
+    Parameters
+    ----------
+    session: object
+        A `nox.sessions.Session` object.
+    ci_mode: bool
+        Run a cut-down selection of benchmarks, comparing the current commit to
+        the last commit for performance regressions.
+
+    Notes
+    -----
+    ASV is set up to use ``nox --session=tests --install-only`` to prepare
+    the benchmarking environment. This session environment must use a Python
+    version that is also available for ``--session=tests``.
+
+    """
+    session.install("asv", "nox")
+    session.cd("benchmarks")
+    # Skip over setup questions for a new machine.
+    session.run("asv", "machine", "--yes")
+
+    def asv_exec(*sub_args: str) -> None:
+        run_args = ["asv", *sub_args]
+        session.run(*run_args)
+
+    if ci_mode:
+        # If on a PR: compare to the base (target) branch.
+        #  Else: compare to previous commit.
+        previous_commit = os.environ.get("PR_BASE_SHA", "HEAD^1")
+        try:
+            asv_exec("continuous", "--factor=1.2", previous_commit, "HEAD")
+        finally:
+            asv_exec("compare", previous_commit, "HEAD")
+    else:
+        # f5ceb808 = first commit supporting nox --install-only .
+        asv_exec("run", "f5ceb808..HEAD")

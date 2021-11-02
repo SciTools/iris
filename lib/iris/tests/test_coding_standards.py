@@ -6,7 +6,7 @@
 
 # import iris.tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 from fnmatch import fnmatch
@@ -15,7 +15,6 @@ import os
 import subprocess
 
 import iris
-
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
@@ -111,7 +110,6 @@ class TestLicenseHeaders(tests.IrisTest):
             "docs/src/userguide/regridding_plots/*.py",
             "docs/src/_build/*",
             "lib/iris/analysis/_scipy_interpolate.py",
-            "lib/iris/fileformats/_pyke_rules/*",
         )
 
         try:

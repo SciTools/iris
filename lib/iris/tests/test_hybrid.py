@@ -10,14 +10,14 @@ Test the hybrid vertical coordinate representations.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import warnings
 
 import numpy as np
 
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris
+from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris.tests.stock
 
 

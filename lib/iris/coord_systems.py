@@ -11,8 +11,8 @@ Definitions of coordinate systems.
 from abc import ABCMeta, abstractmethod
 import warnings
 
-import numpy as np
 import cartopy.crs as ccrs
+import numpy as np
 
 
 def _arg_default(value, default, cast_as=float):
@@ -196,7 +196,7 @@ class GeogCS(CoordSystem):
 
         # Perfect sphere (semi_major_axis only)? (1 0 0)
         elif semi_major_axis is not None and (
-            semi_minor_axis is None and inverse_flattening is None
+            semi_minor_axis is None and not inverse_flattening
         ):
             semi_minor_axis = semi_major_axis
             inverse_flattening = 0.0

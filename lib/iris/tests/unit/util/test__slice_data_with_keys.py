@@ -16,12 +16,12 @@ in combination.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.util import _slice_data_with_keys
-from iris._lazy_data import as_lazy_data, as_concrete_data
 
 
 class DummyArray:

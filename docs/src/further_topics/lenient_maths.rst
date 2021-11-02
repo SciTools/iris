@@ -68,26 +68,26 @@ represents the output of an low-resolution global atmospheric ``experiment``,
 .. doctest:: lenient-example
 
     >>> print(experiment)
-    air_potential_temperature / (K)     (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
-         Dimension coordinates:
-              model_level_number                           x                  -                    -
-              grid_latitude                                -                  x                    -
-              grid_longitude                               -                  -                    x
-         Auxiliary coordinates:
-              atmosphere_hybrid_height_coordinate          x                  -                    -
-              sigma                                        x                  -                    -
-              surface_altitude                             -                  x                    x
-         Derived coordinates:
-              altitude                                     x                  x                    x
-         Scalar coordinates:
-              forecast_period: 0.0 hours
-              forecast_reference_time: 2009-09-09 17:10:00
-              time: 2009-09-09 17:10:00
-         Attributes:
-              Conventions: CF-1.5
-              STASH: m01s00i004
-              experiment-id: RT3 50
-              source: Data from Met Office Unified Model 7.04
+    air_potential_temperature / (K)             (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
+        Dimension coordinates:
+            model_level_number                                     x                  -                    -
+            grid_latitude                                          -                  x                    -
+            grid_longitude                                         -                  -                    x
+        Auxiliary coordinates:
+            atmosphere_hybrid_height_coordinate                    x                  -                    -
+            sigma                                                  x                  -                    -
+            surface_altitude                                       -                  x                    x
+        Derived coordinates:
+            altitude                                               x                  x                    x
+        Scalar coordinates:
+            forecast_period                     0.0 hours
+            forecast_reference_time             2009-09-09 17:10:00
+            time                                2009-09-09 17:10:00
+        Attributes:
+            Conventions                         CF-1.5
+            STASH                               m01s00i004
+            experiment-id                       RT3 50
+            source                              Data from Met Office Unified Model 7.04
 
 Consider also the following :class:`~iris.cube.Cube`, which has the same global
 spatial extent, and acts as a ``control``,
@@ -96,16 +96,16 @@ spatial extent, and acts as a ``control``,
 
     >>> print(control)
     air_potential_temperature / (K)     (grid_latitude: 100; grid_longitude: 100)
-         Dimension coordinates:
-              grid_latitude                           x                    -
-              grid_longitude                          -                    x
-         Scalar coordinates:
-              model_level_number: 1
-              time: 2009-09-09 17:10:00
-         Attributes:
-              Conventions: CF-1.7
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model 7.04
+        Dimension coordinates:
+            grid_latitude                             x                    -
+            grid_longitude                            -                    x
+        Scalar coordinates:
+            model_level_number          1
+            time                        2009-09-09 17:10:00
+        Attributes:
+            Conventions                 CF-1.7
+            STASH                       m01s00i004
+            source                      Data from Met Office Unified Model 7.04
 
 Now let's subtract these cubes in order to calculate a simple ``difference``,
 
@@ -113,24 +113,24 @@ Now let's subtract these cubes in order to calculate a simple ``difference``,
 
     >>> difference = experiment - control
     >>> print(difference)
-    unknown / (K)                       (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
-         Dimension coordinates:
-              model_level_number                           x                  -                    -
-              grid_latitude                                -                  x                    -
-              grid_longitude                               -                  -                    x
-         Auxiliary coordinates:
-              atmosphere_hybrid_height_coordinate          x                  -                    -
-              sigma                                        x                  -                    -
-              surface_altitude                             -                  x                    x
-         Derived coordinates:
-              altitude                                     x                  x                    x
-         Scalar coordinates:
-              forecast_period: 0.0 hours
-              forecast_reference_time: 2009-09-09 17:10:00
-              time: 2009-09-09 17:10:00
-         Attributes:
-              experiment-id: RT3 50
-              source: Data from Met Office Unified Model 7.04
+    unknown / (K)                               (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
+        Dimension coordinates:
+            model_level_number                                     x                  -                    -
+            grid_latitude                                          -                  x                    -
+            grid_longitude                                         -                  -                    x
+        Auxiliary coordinates:
+            atmosphere_hybrid_height_coordinate                    x                  -                    -
+            sigma                                                  x                  -                    -
+            surface_altitude                                       -                  x                    x
+        Derived coordinates:
+            altitude                                               x                  x                    x
+        Scalar coordinates:
+            forecast_period                     0.0 hours
+            forecast_reference_time             2009-09-09 17:10:00
+            time                                2009-09-09 17:10:00
+        Attributes:
+            experiment-id                       RT3 50
+            source                              Data from Met Office Unified Model 7.04
 
 Note that, cube maths automatically takes care of broadcasting the
 dimensionality of the ``control`` up to that of the ``experiment``, in order to
@@ -204,21 +204,21 @@ time perform **strict** cube maths instead,
     ...     difference = experiment - control
     ...
     >>> print(difference)
-    unknown / (K)                       (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
-         Dimension coordinates:
-              model_level_number                           x                  -                    -
-              grid_latitude                                -                  x                    -
-              grid_longitude                               -                  -                    x
-         Auxiliary coordinates:
-              atmosphere_hybrid_height_coordinate          x                  -                    -
-              sigma                                        x                  -                    -
-              surface_altitude                             -                  x                    x
-         Derived coordinates:
-              altitude                                     x                  x                    x
-         Scalar coordinates:
-              time: 2009-09-09 17:10:00
-         Attributes:
-              source: Data from Met Office Unified Model 7.04
+    unknown / (K)                               (model_level_number: 15; grid_latitude: 100; grid_longitude: 100)
+        Dimension coordinates:
+            model_level_number                                     x                  -                    -
+            grid_latitude                                          -                  x                    -
+            grid_longitude                                         -                  -                    x
+        Auxiliary coordinates:
+            atmosphere_hybrid_height_coordinate                    x                  -                    -
+            sigma                                                  x                  -                    -
+            surface_altitude                                       -                  x                    x
+        Derived coordinates:
+            altitude                                               x                  x                    x
+        Scalar coordinates:
+            time                                2009-09-09 17:10:00
+        Attributes:
+            source                              Data from Met Office Unified Model 7.04
 
 Although the numerical result of this strict cube maths operation is identical,
 it is not as rich in metadata as the :ref:`lenient alternative <lenient example>`.

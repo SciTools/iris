@@ -1,0 +1,53 @@
+# This is a basic workflow to help you get started with Actions
+
+name: benchmark-check
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  pull_request:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Fetch the PR base branch too
+        run: |
+          git fetch --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          git branch _base FETCH_HEAD
+          echo PR_BASE_SHA=$(git rev-parse _base) >> $GITHUB_ENV
+
+      - name: Install Nox
+        run: |
+          pip install nox
+
+      - name: Cache .nox and .asv/env directories
+        id: cache-env-dir
+        uses: actions/cache@v2
+        with:
+          path: |
+            .nox
+            benchmarks/.asv/env
+          # Make sure GHA never gets an exact cache match by using the unique
+          #  github.sha. This means it will always store this run as a new
+          #  cache (Nox may have made relevant changes during run). Cache
+          #  restoration still succeeds via the partial restore-key match.
+          key: ${{ runner.os }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}
+
+      - name: Run CI benchmarks
+        run: |
+          mkdir --parents benchmarks/.asv
+          nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
+
+      - name: Archive asv results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: asv-report
+          path: |
+            benchmarks/.asv/results
+            benchmarks/.asv/ci_compare.txt

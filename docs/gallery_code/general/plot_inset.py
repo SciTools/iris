@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import iris
-import iris.quickplot as qplt
 import iris.plot as iplt
+import iris.quickplot as qplt
 
 
 def main():

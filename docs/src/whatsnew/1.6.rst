@@ -19,11 +19,11 @@ Features
     reference coordinate will return *datetime-like* objects when invoked
     with :meth:`iris.coords.Coord.cell` or :meth:`iris.coords.Coord.cells`.
 
-    .. code-block:: python
+    .. code-block:: pycon
 
         >>> from iris.coords import DimCoord
         >>> iris.FUTURE.cell_datetime_objects = True
-        >>> coord = DimCoord([1, 2, 3], 'time', units='hours since epoch')
+        >>> coord = DimCoord([1, 2, 3], "time", units="hours since epoch")
         >>> print([str(cell) for cell in coord.cells()])
         ['1970-01-01 01:00:00', '1970-01-01 02:00:00', '1970-01-01 03:00:00']
 
@@ -44,7 +44,7 @@ Features
     which allows multiple sections of code to execute with different run-time
     behaviour.
 
-    .. code-block:: python
+    .. code-block:: pycon
 
         >>> print(iris.FUTURE)
         Future(cell_datetime_objects=False)
@@ -159,7 +159,7 @@ consuming processing, or to reap the benefit of fast-loading a pickled cube.
 
     # Determine whether to load from the cache or source.
     if iris.util.file_is_newer(cache_file, source_file):
-        with open(cache_file, 'rb') as fh:
+        with open(cache_file, "rb") as fh:
             cube = cPickle.load(fh)
     else:
         cube = iris.load_cube(source_file)
@@ -184,7 +184,8 @@ For example, an RMS weighted cube collapse is performed as follows:
 .. code-block:: python
 
     from iris.analysis import RMS
-    collapsed_cube = cube.collapsed('height', RMS, weights=weights)
+
+    collapsed_cube = cube.collapsed("height", RMS, weights=weights)
 
 
 .. _equalise:
@@ -241,7 +242,8 @@ For example, to calculate the peak time:
 .. code-block:: python
 
     from iris.analysis import PEAK
-    collapsed_cube = cube.collapsed('time', PEAK)
+
+    collapsed_cube = cube.collapsed("time", PEAK)
 
 
 Bugs Fixed

@@ -4,11 +4,15 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import iris.analysis
-import iris.tests as tests
-import iris.tests.stock
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+import iris.tests as tests  # isort:skip
+
 import numpy as np
 import numpy.ma as ma
+
+import iris.analysis
+import iris.tests.stock
 
 
 class TestPeakAggregator(tests.IrisTest):

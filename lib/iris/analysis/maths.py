@@ -24,10 +24,8 @@ from iris.common import SERVICES, Resolve
 from iris.common.lenient import _lenient_client
 from iris.config import get_logger
 import iris.coords
-import iris.cube
 import iris.exceptions
 import iris.util
-
 
 # Configure the logger.
 logger = get_logger(__name__)
@@ -180,7 +178,9 @@ def intersection_of_cubes(cube, other_cube):
 
 
 def _assert_is_cube(cube):
-    if not isinstance(cube, iris.cube.Cube):
+    from iris.cube import Cube
+
+    if not isinstance(cube, Cube):
         raise TypeError(
             'The "cube" argument must be an instance of ' "iris.cube.Cube."
         )
@@ -767,6 +767,8 @@ def _binary_op_common(
     in_place             - whether or not to apply the operation in place to
                            `cube` and `cube.data`
     """
+    from iris.cube import Cube
+
     _assert_is_cube(cube)
 
     # Flag to notify the _math_op_common function to simply wrap the resultant
@@ -776,7 +778,7 @@ def _binary_op_common(
     if isinstance(other, iris.coords.Coord):
         # The rhs must be an array.
         rhs = _broadcast_cube_coord_data(cube, other, operation_name, dim=dim)
-    elif isinstance(other, iris.cube.Cube):
+    elif isinstance(other, Cube):
         # Prepare to resolve the cube operands and associated coordinate
         # metadata into the resultant cube.
         resolver = Resolve(cube, other)
@@ -818,7 +820,7 @@ def _binary_op_common(
         skeleton_cube=skeleton_cube,
     )
 
-    if isinstance(other, iris.cube.Cube):
+    if isinstance(other, Cube):
         # Insert the resultant data from the maths operation
         # within the resolved cube.
         result = resolver.cube(result.core_data(), in_place=in_place)
@@ -905,6 +907,8 @@ def _math_op_common(
     in_place=False,
     skeleton_cube=False,
 ):
+    from iris.cube import Cube
+
     _assert_is_cube(cube)
 
     if in_place and not skeleton_cube:
@@ -922,7 +926,7 @@ def _math_op_common(
         if skeleton_cube:
             # Simply wrap the resultant data in a cube, as no
             # cube metadata is required by the caller.
-            new_cube = iris.cube.Cube(data)
+            new_cube = Cube(data)
         else:
             new_cube = cube.copy(data)
 

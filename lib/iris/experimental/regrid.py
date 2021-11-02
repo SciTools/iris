@@ -19,17 +19,17 @@ import numpy.ma as ma
 import scipy.interpolate
 
 from iris._lazy_data import map_complete_blocks
-import iris.analysis.cartography
 from iris.analysis._interpolation import (
-    get_xy_dim_coords,
     get_xy_coords,
+    get_xy_dim_coords,
     snapshot_grid,
 )
 from iris.analysis._regrid import (
     RectilinearRegridder,
-    _regrid_weighted_curvilinear_to_rectilinear__prepare,
     _regrid_weighted_curvilinear_to_rectilinear__perform,
+    _regrid_weighted_curvilinear_to_rectilinear__prepare,
 )
+import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
 from iris.util import _meshgrid

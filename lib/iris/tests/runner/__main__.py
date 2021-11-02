@@ -12,7 +12,6 @@ import argparse
 
 from ._runner import TestRunner
 
-
 parser = argparse.ArgumentParser(
     "iris.tests", description=TestRunner.description
 )

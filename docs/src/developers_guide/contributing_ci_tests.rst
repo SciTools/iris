@@ -5,6 +5,10 @@
 Continuous Integration (CI) Testing
 ===================================
 
+.. note:: Iris is currently supported and tested against |python_support|
+          running on Linux.  We do not currently actively test on other
+          platforms such as Windows or macOS.
+
 The `Iris`_ GitHub repository is configured to run checks against all its
 branches automatically whenever a pull-request is created, updated or merged.
 The checks performed are:
@@ -145,6 +149,6 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
 
 .. _Cirrus-CI Dashboard: https://cirrus-ci.com/github/SciTools/iris
 .. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
-.. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/master/.pre-commit-config.yaml
+.. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
 .. _GitHub Actions: https://github.com/SciTools/iris/actions/workflows/refresh-lockfiles.yml

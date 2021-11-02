@@ -8,7 +8,7 @@ Provides access to Iris-specific configuration values.
 
 The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
-defined by :mod:`ConfigParser`.
+defined by :mod:`configparser`.
 
 ----------
 
@@ -37,7 +37,9 @@ import os.path
 import warnings
 
 
-def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
+def get_logger(
+    name, datefmt=None, fmt=None, level=None, propagate=None, handler=True
+):
     """
     Create a :class:`logging.Logger` with a :class:`logging.StreamHandler`
     and custom :class:`logging.Formatter`.
@@ -68,16 +70,14 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
         passed to the handlers of higher level loggers. Defaults to
         ``False``.
 
+    * handler:
+        Create and attach a :class:`logging.StreamHandler` to the
+        logger. Defaults to ``True``.
+
+    Returns:
+        A :class:`logging.Logger`.
+
     """
-    if datefmt is None:
-        # Default date format string.
-        datefmt = "%d-%m-%Y %H:%M:%S"
-
-    # Default format string.
-    _fmt = "%(asctime)s %(name)s %(levelname)s - %(message)s"
-    # Append additional format string, if appropriate.
-    fmt = _fmt if fmt is None else f"{_fmt} {fmt}"
-
     if level is None:
         # Default logging level.
         level = "INFO"
@@ -91,16 +91,25 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None):
     logger.setLevel(level)
     logger.propagate = propagate
 
-    # Create a formatter.
-    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+    # Create and add the handler to the logger, if required.
+    if handler:
+        if datefmt is None:
+            # Default date format string.
+            datefmt = "%d-%m-%Y %H:%M:%S"
 
-    # Create a logging handler.
-    handler = logging.StreamHandler()
-    # handler.setLevel(level)
-    handler.setFormatter(formatter)
+        # Default format string.
+        _fmt = "%(asctime)s %(name)s %(levelname)s - %(message)s"
+        # Append additional format string, if appropriate.
+        fmt = _fmt if fmt is None else f"{_fmt} {fmt}"
 
-    # Add the handler to the logger.
-    logger.addHandler(handler)
+        # Create a formatter.
+        formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+        # Create a logging handler.
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+
+        logger.addHandler(handler)
 
     return logger
 

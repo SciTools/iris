@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from abc import ABCMeta, abstractmethod
 from unittest import mock
@@ -18,7 +18,7 @@ import numpy.ma as ma
 import iris
 from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.coords import DimCoord, AuxCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.exceptions import MergeError
 
 

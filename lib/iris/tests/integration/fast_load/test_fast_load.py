@@ -7,23 +7,22 @@
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
-import tempfile
 import shutil
+import tempfile
 
 import numpy as np
 
-import iris.coords
-from iris.coords import DimCoord, AuxCoord, CellMethod
+import iris
 from iris.coord_systems import GeogCS
+import iris.coords
+from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube, CubeList
 from iris.exceptions import IgnoreCubeException
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 from iris.fileformats.um._fast_load import STRUCTURED_LOAD_CONTROLS
-
-import iris
 
 
 class Mixin_FieldTest:

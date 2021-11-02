@@ -7,20 +7,18 @@
 
 import collections
 import datetime
+from operator import itemgetter
 import re
 import warnings
 
 import cf_units
 import numpy as np
 
-from iris.coords import AuxCoord, DimCoord, CellMethod
 import iris.coord_systems
+from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
-
-from operator import itemgetter
-
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = "%d/%m/%Y  %H:%M %Z"
@@ -480,7 +478,7 @@ def _generate_cubes(
                 coord_units = _parse_units("FL")
             if coord.name == "time":
                 coord_units = time_unit
-                pts = time_unit.date2num(coord.values)
+                pts = np.float_(time_unit.date2num(coord.values))
 
             if coord.dimension is not None:
                 if coord.name == "longitude":
@@ -507,7 +505,7 @@ def _generate_cubes(
                 ):
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
-                    icoord.bounds = bnds
+                    icoord.bounds = np.float_(bnds)
                 else:
                     icoord.guess_bounds()
                 cube.add_dim_coord(icoord, coord.dimension)
@@ -524,7 +522,7 @@ def _generate_cubes(
                 ):
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
-                    icoord.bounds = bnds[i, :]
+                    icoord.bounds = np.float_(bnds[i, :])
                 cube.add_aux_coord(icoord)
 
         # Headings/column headings which are encoded elsewhere.
@@ -1252,7 +1250,7 @@ def load_NAMEIII_trajectory(filename):
 
         long_name = units = None
         if isinstance(values[0], datetime.datetime):
-            values = time_unit.date2num(values)
+            values = np.float_(time_unit.date2num(values))
             units = time_unit
             if name == "Time":
                 name = "time"

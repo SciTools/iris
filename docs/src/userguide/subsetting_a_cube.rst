@@ -21,16 +21,16 @@ A subset of a cube can be "extracted" from a multi-dimensional cube in order to 
     >>> equator_slice = cube.extract(iris.Constraint(grid_latitude=0))
     >>> print(equator_slice)
     electron density / (1E11 e/m^3)     (height: 29; grid_longitude: 31)
-         Dimension coordinates:
-              height                           x                   -
-              grid_longitude                   -                   x
-         Auxiliary coordinates:
-              latitude                         -                   x
-              longitude                        -                   x
-         Scalar coordinates:
-              grid_latitude: 0.0 degrees
-         Attributes:
-              Conventions: CF-1.5
+        Dimension coordinates:
+            height                             x                   -
+            grid_longitude                     -                   x
+        Auxiliary coordinates:
+            latitude                           -                   x
+            longitude                          -                   x
+        Scalar coordinates:
+            grid_latitude               0.0 degrees
+        Attributes:
+            Conventions                 CF-1.5
 
 
 In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``grid_latitude`` and ``grid_longitude``,
@@ -81,24 +81,24 @@ same way as loading with constraints:
     0: air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
     >>> print(cubes[0])
     air_potential_temperature / (K)     (grid_latitude: 204; grid_longitude: 187)
-         Dimension coordinates:
-              grid_latitude                           x                    -
-              grid_longitude                          -                    x
-         Auxiliary coordinates:
-              surface_altitude                        x                    x
-         Derived coordinates:
-              altitude                                x                    x
-         Scalar coordinates:
-              forecast_period: 6.0 hours
-              forecast_reference_time: 2009-11-19 04:00:00
-              level_height: 395.0 m, bound=(360.0, 433.3332) m
-              model_level_number: 10
-              sigma: 0.9549927, bound=(0.9589389, 0.95068014)
-              time: 2009-11-19 10:00:00
-         Attributes:
-              STASH: m01s00i004
-              source: Data from Met Office Unified Model
-              um_version: 7.3
+        Dimension coordinates:
+            grid_latitude                             x                    -
+            grid_longitude                            -                    x
+        Auxiliary coordinates:
+            surface_altitude                          x                    x
+        Derived coordinates:
+            altitude                                  x                    x
+        Scalar coordinates:
+            forecast_period             6.0 hours
+            forecast_reference_time     2009-11-19 04:00:00
+            level_height                395.0 m, bound=(360.0, 433.3332) m
+            model_level_number          10
+            sigma                       0.9549927, bound=(0.9589389, 0.95068014)
+            time                        2009-11-19 10:00:00
+        Attributes:
+            STASH                       m01s00i004
+            source                      Data from Met Office Unified Model
+            um_version                  7.3
 
 
 Cube Iteration

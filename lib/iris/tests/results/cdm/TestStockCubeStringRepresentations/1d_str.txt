@@ -1,16 +1,16 @@
 air_potential_temperature / (K)     (grid_longitude: 100)
-     Dimension coordinates:
-          grid_longitude                           x
-     Auxiliary coordinates:
-          surface_altitude                         x
-     Derived coordinates:
-          altitude                                 x
-     Scalar coordinates:
-          forecast_period: 0.0 hours
-          grid_latitude: -0.1278 degrees, bound=(-0.12825, -0.12735) degrees
-          level_height: 5.0 m, bound=(0.0, 13.333332) m
-          model_level_number: 1
-          sigma: 0.9994238, bound=(1.0, 0.99846387)
-          time: 2009-09-09 17:10:00
-     Attributes:
-          source: Iris test case
+    Dimension coordinates:
+        grid_longitude                             x
+    Auxiliary coordinates:
+        surface_altitude                           x
+    Derived coordinates:
+        altitude                                   x
+    Scalar coordinates:
+        forecast_period             0.0 hours
+        grid_latitude               -0.1278 degrees, bound=(-0.12825, -0.12735) degrees
+        level_height                5.0 m, bound=(0.0, 13.333332) m
+        model_level_number          1
+        sigma                       0.9994238, bound=(1.0, 0.99846387)
+        time                        2009-09-09 17:10:00
+    Attributes:
+        source                      Iris test case

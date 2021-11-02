@@ -7,19 +7,17 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
 import numpy as np
 
+from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests
 import iris.tests.stock
-
-from iris.analysis.cartography import project
-
 
 ROBINSON = ccrs.Robinson()
 
@@ -33,7 +31,7 @@ def low_res_4d():
 
 class TestAll(tests.IrisTest):
     def setUp(self):
-        cs = iris.coord_systems.GeogCS(654321)
+        cs = iris.coord_systems.GeogCS(6371229)
         self.cube = iris.cube.Cube(np.zeros(25).reshape(5, 5))
         self.cube.add_dim_coord(
             iris.coords.DimCoord(
@@ -54,7 +52,7 @@ class TestAll(tests.IrisTest):
             1,
         )
 
-        self.tcs = iris.coord_systems.GeogCS(600000)
+        self.tcs = iris.coord_systems.GeogCS(6000000)
 
     def test_is_iris_coord_system(self):
         res, _ = project(self.cube, self.tcs)

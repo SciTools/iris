@@ -1,8 +1,8 @@
+import matplotlib.pyplot as plt
+
 import iris
 import iris.analysis
 import iris.plot as iplt
-import matplotlib.pyplot as plt
-
 
 global_air_temp = iris.load_cube(iris.sample_data_path("air_temp.pp"))
 rotated_psl = iris.load_cube(iris.sample_data_path("rotated_pole.nc"))

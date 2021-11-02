@@ -22,8 +22,8 @@ to the pp "as_pairs" functions.
 """
 
 from contextlib import contextmanager
-import threading
 import os.path
+import threading
 
 import numpy as np
 
@@ -173,14 +173,14 @@ def _convert_collation(collation):
         generic rules code, :meth:`iris.fileformats.rules.load_cubes`.
 
     """
-    from iris.fileformats.rules import ConversionMetadata
     from iris.fileformats.pp_load_rules import (
+        _all_other_rules,
+        _convert_scalar_pseudo_level_coords,
+        _convert_scalar_realization_coords,
         _convert_time_coords,
         _convert_vertical_coords,
-        _convert_scalar_realization_coords,
-        _convert_scalar_pseudo_level_coords,
-        _all_other_rules,
     )
+    from iris.fileformats.rules import ConversionMetadata
 
     # For all the scalar conversions, all fields in the collation will
     # give the same result, so the choice is arbitrary.

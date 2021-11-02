@@ -7,14 +7,16 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
+from iris.tests.stock import (
+    make_bounds_discontiguous_at_point,
+    sample_2d_latlons,
+)
 from iris.util import mask_cube
-from iris.tests.stock import sample_2d_latlons
-from iris.tests.stock import make_bounds_discontiguous_at_point
 
 
 def full2d_global():

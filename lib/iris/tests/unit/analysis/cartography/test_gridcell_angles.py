@@ -11,16 +11,15 @@ Unit tests for the function
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
-
-import numpy as np
+import iris.tests as tests  # isort:skip
 
 from cf_units import Unit
-from iris.cube import Cube
-from iris.coords import AuxCoord
+import numpy as np
 
 from iris.analysis.cartography import gridcell_angles
-from iris.tests.stock import sample_2d_latlons, lat_lon_cube
+from iris.coords import AuxCoord
+from iris.cube import Cube
+from iris.tests.stock import lat_lon_cube, sample_2d_latlons
 
 
 def _2d_multicells_testcube(cellsize_degrees=1.0):

@@ -5,17 +5,17 @@
 # licensing details.
 """Integration tests for cube html representation."""
 
-from html import escape
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris.cube import Cube
-import iris.tests.stock as stock
+from html import escape
+
 import numpy as np
 
+from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
+import iris.tests.stock as stock
 
 
 @tests.skip_data

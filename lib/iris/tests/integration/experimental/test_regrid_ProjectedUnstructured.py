@@ -7,7 +7,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
 from cf_units import Unit
@@ -16,11 +16,11 @@ import numpy as np
 import iris
 import iris.aux_factory
 from iris.coord_systems import GeogCS
-from iris.tests.stock import global_pp
 from iris.experimental.regrid import (
     ProjectedUnstructuredLinear,
     ProjectedUnstructuredNearest,
 )
+from iris.tests.stock import global_pp
 
 
 @tests.skip_data
@@ -68,16 +68,23 @@ class TestProjectedUnstructured(tests.IrisTest):
         res = self.src.regrid(uk_grid, ProjectedUnstructuredNearest(crs))
 
         self.assertArrayShapeStats(
-            res, (1, 6, 17, 11), 315.8873266, 11.0006664668, rtol=1e-8
+            res,
+            (1, 6, 17, 11),
+            315.8854720963427,
+            11.000539210625737,
+            rtol=1e-8,
         )
         self.assertArrayShapeStats(
-            res[:, 0], (1, 17, 11), 299.99993826, 4.1356150388e-5
+            res[:, 0],
+            (1, 17, 11),
+            299.9999985207442,
+            3.53574517015874e-05,
         )
         expected_subset = np.array(
             [
-                [318.936829, 318.936829, 318.936829],
-                [318.936829, 318.936829, 318.936829],
-                [318.935163, 318.935163, 318.935163],
+                [318.92881733, 318.92881733, 318.92881733],
+                [318.92881733, 318.92881733, 318.92881733],
+                [318.92881733, 318.92881733, 318.92881733],
             ]
         )
         self.assertArrayAlmostEqual(

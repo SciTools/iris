@@ -10,7 +10,7 @@ ABF and ABL files are satellite file formats defined by Boston University.
 Including this module adds ABF and ABL loading to the session's capabilities.
 
 The documentation for this file format can be found
-`here <http://cliveg.bu.edu/modismisr/lai3g-fpar3g.html>`_.
+`here <https://nasanex.s3.amazonaws.com/AVHRR/GIMMS/LAI3G/00README_V01.pdf>`_.
 
 """
 
@@ -23,11 +23,10 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
-from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import GeogCS
+from iris.coords import AuxCoord, DimCoord
 import iris.fileformats
 import iris.io.format_picker
-
 
 X_SIZE = 4320
 Y_SIZE = 2160

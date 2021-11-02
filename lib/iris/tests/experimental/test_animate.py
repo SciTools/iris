@@ -10,7 +10,7 @@ Test the animation of cubes within iris.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
@@ -59,8 +59,12 @@ class IntegrationTest(tests.GraphicsTest):
 
         ani = animate.animate(cube_iter, iplt.contourf)
 
-        # Disconnect the first draw callback to stop the animation
+        # Disconnect the first draw callback to stop the animation.
         ani._fig.canvas.mpl_disconnect(ani._first_draw_id)
+        # Update flag to indicate drawing happens.  Without this, a warning is
+        # thrown when the ani object is destroyed, and this warning sometimes
+        # interferes with unrelated tests (#4330).
+        ani._draw_was_started = True
 
         ani = [ani]
         # Extract frame data

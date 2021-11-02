@@ -9,23 +9,24 @@ Test the cube merging mechanism.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections.abc import Iterable
 import datetime
 import itertools
+
 import numpy as np
 import numpy.ma as ma
 
 import iris
 from iris._lazy_data import as_lazy_data
+from iris.coords import AuxCoord, DimCoord
 import iris.cube
-from iris.coords import DimCoord, AuxCoord
 import iris.exceptions
 import iris.tests.stock
 
 
-class TestMixin:
+class MergeMixin:
     """
     Mix-in class for attributes & utilities common to these test cases.
 
@@ -55,7 +56,7 @@ class TestMixin:
 
 
 @tests.skip_data
-class TestSingleCube(tests.IrisTest, TestMixin):
+class TestSingleCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(("PP", "globClim1", "theta.pp"))
         self._num_cubes = 1
@@ -63,7 +64,7 @@ class TestSingleCube(tests.IrisTest, TestMixin):
 
 
 @tests.skip_data
-class TestMultiCube(tests.IrisTest, TestMixin):
+class TestMultiCube(tests.IrisTest, MergeMixin):
     def setUp(self):
         self._data_path = tests.get_data_path(
             ("PP", "globClim1", "dec_subset.pp")

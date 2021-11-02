@@ -9,9 +9,9 @@ from coordinate points and bounds.
 
 """
 
+import cartopy.crs as ccrs
 import numpy as np
 
-import cartopy.crs as ccrs
 import iris
 
 

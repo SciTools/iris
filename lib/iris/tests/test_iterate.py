@@ -10,8 +10,9 @@ Test the iteration of cubes in step.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
+from functools import reduce
 import itertools
 import operator
 import random
@@ -23,7 +24,6 @@ import iris
 import iris.analysis
 import iris.iterate
 import iris.tests.stock
-from functools import reduce
 
 
 @tests.skip_data

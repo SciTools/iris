@@ -5,7 +5,7 @@
 # licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os
 import tempfile
@@ -14,13 +14,13 @@ from unittest import mock
 import cf_units
 import numpy as np
 
-import iris.coords
 import iris.coord_systems
+import iris.coords
 import iris.fileformats.pp
 from iris.fileformats.pp import PPField3
 import iris.tests.pp as pp
-import iris.util
 import iris.tests.stock as stock
+import iris.util
 
 
 def itab_callback(cube, field, filename):

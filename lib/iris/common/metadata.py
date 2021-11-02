@@ -13,7 +13,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from functools import wraps
+from functools import lru_cache, wraps
 import re
 
 import numpy as np
@@ -25,24 +25,27 @@ from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
 
-
 __all__ = [
-    "SERVICES_COMBINE",
-    "SERVICES_DIFFERENCE",
-    "SERVICES_EQUAL",
-    "SERVICES",
     "AncillaryVariableMetadata",
     "BaseMetadata",
     "CellMeasureMetadata",
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
+    "SERVICES",
+    "SERVICES_COMBINE",
+    "SERVICES_DIFFERENCE",
+    "SERVICES_EQUAL",
     "hexdigest",
+    "metadata_filter",
     "metadata_manager_factory",
 ]
 
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
+
+from ..util import guess_coord_axis
+
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
@@ -194,9 +197,19 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                     return result
 
                 # Note that, for strict we use "_fields" not "_members".
-                # The "circular" member does not participate in strict equivalence.
+                # TODO: refactor so that 'non-participants' can be held in their specific subclasses.
+                # Certain members never participate in strict equivalence, so
+                # are filtered out.
                 fields = filter(
-                    lambda field: field != "circular", self._fields
+                    lambda field: field
+                    not in (
+                        "circular",
+                        "src_dim",
+                        "node_dimension",
+                        "edge_dimension",
+                        "face_dimension",
+                    ),
+                    self._fields,
                 )
                 result = all([func(field) for field in fields])
 
@@ -1339,39 +1352,162 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_manager_factory(cls, **kwargs):
+def metadata_filter(
+    instances,
+    item=None,
+    standard_name=None,
+    long_name=None,
+    var_name=None,
+    attributes=None,
+    axis=None,
+):
     """
-    A class instance factory function responsible for manufacturing
-    metadata instances dynamically at runtime.
+    Filter a collection of objects by their metadata to fit the given metadata
+    criteria.
 
-    The factory instances returned by the factory are capable of managing
-    their metadata state, which can be proxied by the owning container.
+    Criteria can be either specific properties or other objects with metadata
+    to be matched.
 
     Args:
 
-    * cls:
-        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
-        the metadata to be managed.
+    * instances:
+        One or more objects to be filtered.
 
     Kwargs:
 
-    * kwargs:
-        Initial values for the manufactured metadata instance. Unspecified
-        fields will default to a value of 'None'.
+    * item:
+        Either,
+
+        * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+          :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+          :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is compared
+          against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+        * a coordinate or metadata instance equal to that of
+          the desired objects e.g., :class:`~iris.coords.DimCoord`
+          or :class:`CoordMetadata`.
+
+    * standard_name:
+        The CF standard name of the desired object. If ``None``, does not
+        check for ``standard_name``.
+
+    * long_name:
+        An unconstrained description of the object. If ``None``, does not
+        check for ``long_name``.
+
+    * var_name:
+        The NetCDF variable name of the desired object. If ``None``, does
+        not check for ``var_name``.
+
+    * attributes:
+        A dictionary of attributes desired on the object. If ``None``,
+        does not check for ``attributes``.
+
+    * axis:
+        The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
+        If ``None``, does not check for ``axis``. Accepts the values ``X``,
+        ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+    Returns:
+        A list of the objects supplied in the ``instances`` argument, limited
+        to only those that matched the given criteria.
 
     """
+    name = None
+    obj = None
 
+    if isinstance(item, str):
+        name = item
+    else:
+        obj = item
+
+    # apply de morgan's law for one less logical operation
+    if not (isinstance(instances, str) or isinstance(instances, Iterable)):
+        instances = [instances]
+
+    result = instances
+
+    if name is not None:
+        result = [instance for instance in result if instance.name() == name]
+
+    if standard_name is not None:
+        result = [
+            instance
+            for instance in result
+            if instance.standard_name == standard_name
+        ]
+
+    if long_name is not None:
+        result = [
+            instance for instance in result if instance.long_name == long_name
+        ]
+
+    if var_name is not None:
+        result = [
+            instance for instance in result if instance.var_name == var_name
+        ]
+
+    if attributes is not None:
+        if not isinstance(attributes, Mapping):
+            msg = (
+                "The attributes keyword was expecting a dictionary "
+                "type, but got a %s instead." % type(attributes)
+            )
+            raise ValueError(msg)
+
+        def attr_filter(instance):
+            return all(
+                k in instance.attributes
+                and hexdigest(instance.attributes[k]) == hexdigest(v)
+                for k, v in attributes.items()
+            )
+
+        result = [instance for instance in result if attr_filter(instance)]
+
+    if axis is not None:
+        axis = axis.upper()
+
+        def get_axis(instance):
+            if hasattr(instance, "axis"):
+                axis = instance.axis.upper()
+            else:
+                axis = guess_coord_axis(instance)
+            return axis
+
+        result = [
+            instance for instance in result if get_axis(instance) == axis
+        ]
+
+    if obj is not None:
+        if hasattr(obj, "__class__") and issubclass(
+            obj.__class__, BaseMetadata
+        ):
+            target_metadata = obj
+        else:
+            target_metadata = obj.metadata
+
+        result = [
+            instance
+            for instance in result
+            if instance.metadata == target_metadata
+        ]
+
+    return result
+
+
+@lru_cache(maxsize=None)
+def _factory_cache(cls):
     def __init__(self, cls, **kwargs):
-        # Restrict to only dealing with appropriate metadata classes.
-        if not issubclass(cls, BaseMetadata):
-            emsg = "Require a subclass of {!r}, got {!r}."
-            raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
         #: The metadata class to be manufactured by this factory.
         self.cls = cls
 
+        # Proxy for self.cls._fields for later internal use, as this
+        # saves on indirect property lookup via self.cls
+        self._fields = cls._fields
+
         # Initialise the metadata class fields in the instance.
-        for field in self.fields:
+        # Use cls directly here since it's available.
+        for field in cls._fields:
             setattr(self, field, None)
 
         # Populate with provided kwargs, which have already been verified
@@ -1390,7 +1526,7 @@ def metadata_manager_factory(cls, **kwargs):
 
     def __getstate__(self):
         """Return the instance state to be pickled."""
-        return {field: getattr(self, field) for field in self.fields}
+        return {field: getattr(self, field) for field in self._fields}
 
     def __ne__(self, other):
         match = self.__eq__(other)
@@ -1413,7 +1549,7 @@ def metadata_manager_factory(cls, **kwargs):
         args = ", ".join(
             [
                 "{}={!r}".format(field, getattr(self, field))
-                for field in self.fields
+                for field in self._fields
             ]
         )
         return "{}({})".format(self.__class__.__name__, args)
@@ -1427,27 +1563,14 @@ def metadata_manager_factory(cls, **kwargs):
     def fields(self):
         """Return the name of the metadata members."""
         # Proxy for built-in namedtuple._fields property.
-        return self.cls._fields
+        return self._fields
 
     @property
     def values(self):
-        fields = {field: getattr(self, field) for field in self.fields}
+        fields = {field: getattr(self, field) for field in self._fields}
         return self.cls(**fields)
 
-    # Restrict factory to appropriate metadata classes only.
-    if not issubclass(cls, BaseMetadata):
-        emsg = "Require a subclass of {!r}, got {!r}."
-        raise TypeError(emsg.format(BaseMetadata.__name__, cls))
-
-    # Check whether kwargs have valid fields for the specified metadata.
-    if kwargs:
-        extra = [field for field in kwargs.keys() if field not in cls._fields]
-        if extra:
-            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
-            emsg = "Invalid {!r} field parameters, got {}."
-            raise ValueError(emsg.format(cls.__name__, bad))
-
-    # Define the name, (inheritance) bases and namespace of the dynamic class.
+    # Define the name, (inheritance) bases, and namespace of the dynamic class.
     name = "MetadataManager"
     bases = ()
     namespace = {
@@ -1469,38 +1592,80 @@ def metadata_manager_factory(cls, **kwargs):
     if cls is CubeMetadata:
         namespace["_names"] = cls._names
 
-    # Dynamically create the class.
-    Metadata = type(name, bases, namespace)
-    # Now manufacture an instance of that class.
-    metadata = Metadata(cls, **kwargs)
+    # Dynamically create the metadata manager class.
+    MetadataManager = type(name, bases, namespace)
 
-    return metadata
+    return MetadataManager
+
+
+def metadata_manager_factory(cls, **kwargs):
+    """
+    A class instance factory function responsible for manufacturing
+    metadata instances dynamically at runtime.
+
+    The factory instances returned by the factory are capable of managing
+    their metadata state, which can be proxied by the owning container.
+
+    Args:
+
+    * cls:
+        A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
+        the metadata to be managed.
+
+    Kwargs:
+
+    * kwargs:
+        Initial values for the manufactured metadata instance. Unspecified
+        fields will default to a value of 'None'.
+
+    Returns:
+        A manager instance for the provided metadata ``cls``.
+
+    """
+    # Check whether kwargs have valid fields for the specified metadata.
+    if kwargs:
+        extra = [field for field in kwargs.keys() if field not in cls._fields]
+        if extra:
+            bad = ", ".join(map(lambda field: "{!r}".format(field), extra))
+            emsg = "Invalid {!r} field parameters, got {}."
+            raise ValueError(emsg.format(cls.__name__, bad))
+
+    # Dynamically create the metadata manager class at runtime or get a cached
+    # version of it.
+    MetadataManager = _factory_cache(cls)
+
+    # Now manufacture an instance of the metadata manager class.
+    manager = MetadataManager(cls, **kwargs)
+
+    return manager
 
 
 #: Convenience collection of lenient metadata combine services.
-SERVICES_COMBINE = (
+# TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
+# here (currently in experimental.ugrid).
+SERVICES_COMBINE = [
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
     DimCoordMetadata.combine,
-)
+]
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE = (
+SERVICES_DIFFERENCE = [
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
     DimCoordMetadata.difference,
-)
+]
 
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL = (
+SERVICES_EQUAL = [
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,
     BaseMetadata.__eq__,
@@ -1513,7 +1678,7 @@ SERVICES_EQUAL = (
     CubeMetadata.equal,
     DimCoordMetadata.__eq__,
     DimCoordMetadata.equal,
-)
+]
 
 
 #: Convenience collection of lenient metadata services.
