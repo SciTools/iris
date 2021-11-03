@@ -645,7 +645,7 @@ class Test_check_attribute_compliance__valid_range(
         self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data_dtpye = np.dtype("uint8")
+        self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array([1, 2], dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
