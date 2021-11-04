@@ -154,6 +154,9 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
    during :ref:`developer_running_tests`. (:pull:`4359`)
+   
+#. `@alastair-gemmell`_ fixed broken links to Cartopy's docs from within the :ref:`userguide creating maps
+   section <creating-maps>`. (:pull:`4399`)
 
 
 💼 Internal
