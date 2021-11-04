@@ -26,8 +26,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@wjbenfold`_, `@tinyendian`_ and `@larsbarring`_ who made their
-   first contributions to Iris.  The first of many we hope!
+#. Welcome to `@wjbenfold`_, `@tinyendian`_, `@larsbarring`_, and `@bsherratt`_
+   who made their first contributions to Iris.  The first of many we hope!
 
 
 ✨ Features
@@ -81,6 +81,9 @@ This document explains the changes made to Iris for this release
    :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
    `UGRID`_ model. (:pull:`4375`)
 
+#. `@bsherratt`_ added a `threshold` parameter to
+   :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
+
 
 🐛 Bugs Fixed
 =============
@@ -89,6 +92,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
    one cell's bounds align with the requested maximum and negative minimum, fixing
    :issue:`4221`. (:pull:`4278`)
+
+#. `@bsherratt`_ fixed further edge cases in
+   :meth:`~iris.cube.Cube.intersection`, including :issue:`3698` (:pull:`4363`)
 
 #. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
    when a cube list contains cubes with different names, which will no longer report
@@ -187,6 +193,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@tinyendian: https://github.com/tinyendian
 

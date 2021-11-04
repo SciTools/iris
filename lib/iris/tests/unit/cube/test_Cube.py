@@ -1910,6 +1910,71 @@ class Test_intersection__ModulusBounds(tests.IrisTest):
             result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
         )
 
+    def test_ignore_bounds_wrapped(self):
+        # Test `ignore_bounds` fully ignores bounds when wrapping
+        cube = create_cube(0, 360, bounds=True)
+        result = cube.intersection(
+            longitude=(10.25, 370.25), ignore_bounds=True
+        )
+        # Expect points 11..370 not bounds [9.5, 10.5] .. [368.5, 369.5]
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[0], [10.5, 11.5]
+        )
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [369.5, 370.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 11)
+        self.assertEqual(result.data[0, 0, -1], 10)
+
+    def test_within_cell(self):
+        # Test cell is included when it entirely contains the requested range
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(0.7, 0.8))
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [0.5, 1.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 1)
+
+    def test_threshold_half(self):
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(1, 6.999), threshold=0.5)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [5.5, 6.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 6)
+
+    def test_threshold_full(self):
+        cube = create_cube(0, 10, bounds=True)
+        result = cube.intersection(longitude=(0.5, 7.499), threshold=1)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(result.coord("longitude").bounds[-1], [5.5, 6.5])
+        self.assertEqual(result.data[0, 0, 0], 1)
+        self.assertEqual(result.data[0, 0, -1], 6)
+
+    def test_threshold_wrapped(self):
+        # Test that a cell is wrapped to `maximum` if required to exceed
+        # the threshold
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0.4, 360.4), threshold=0.2)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [359.5, 360.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
+
+    def test_threshold_wrapped_gap(self):
+        # Test that a cell is wrapped to `maximum` if required to exceed
+        # the threshold (even with a gap in the range)
+        cube = create_cube(-180, 180, bounds=True)
+        result = cube.intersection(longitude=(0.4, 360.35), threshold=0.2)
+        self.assertArrayEqual(result.coord("longitude").bounds[0], [0.5, 1.5])
+        self.assertArrayEqual(
+            result.coord("longitude").bounds[-1], [359.5, 360.5]
+        )
+        self.assertEqual(result.data[0, 0, 0], 181)
+        self.assertEqual(result.data[0, 0, -1], 180)
+
 
 def unrolled_cube():
     data = np.arange(5, dtype="f4")
