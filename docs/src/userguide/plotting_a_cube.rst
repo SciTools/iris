@@ -226,8 +226,8 @@ things.
 
 .. seealso::
 
-    :meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`,
-    :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
+    :meth:`cartopy's gridlines() <cartopy.mpl.geoaxes.GeoAxes.gridlines>`,
+    :meth:`cartopy's coastlines() <cartopy.mpl.geoaxes.GeoAxes.coastlines>`.
 
 
 Cube Contour
