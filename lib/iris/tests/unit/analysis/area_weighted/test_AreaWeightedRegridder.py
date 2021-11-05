@@ -50,7 +50,7 @@ class Test(tests.IrisTest):
                 src_grid, target_grid
             )
         )
-        self.assertEqual(len(_regrid_info), 9)
+        self.assertEqual(len(_regrid_info), 10)
         with mock.patch(
             "iris.experimental.regrid."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",
