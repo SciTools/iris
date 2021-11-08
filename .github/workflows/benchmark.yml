@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IRIS_TEST_DATA_DIR: benchmarks/iris-test-data
-      OVERRIDE_TEST_DATA_REPOSITORY: benchmarks/iris-test-data/test_data
+      IRIS_TEST_DATA_DIR: ${{ env.GITHUB_WORKSPACE }}/benchmarks/iris-test-data
+      OVERRIDE_TEST_DATA_REPOSITORY: ${{ env.GITHUB_WORKSPACE }}/benchmarks/iris-test-data/test_data
       IRIS_TEST_DATA_VERSION: "2.4"
 
     steps:
