@@ -1,6 +1,10 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
-This file currently exists as a simple demonstration of Airspeed Velocity
-performance testing. it is expected to be expanded/replaced in future.
+Regridding benchmark test
 
 """
 
