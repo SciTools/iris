@@ -12,7 +12,7 @@ jobs:
 
     env:
       IRIS_TEST_DATA_DIR: benchmarks/iris-test-data
-      OVERRIDE_TEST_DATA_REPOSITORY: ${IRIS_TEST_DATA_DIR}/test_data
+      OVERRIDE_TEST_DATA_REPOSITORY: benchmarks/iris-test-data/test_data
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
