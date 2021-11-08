@@ -33,7 +33,7 @@ class RegriddingTests:
         self.template_cube = iris.load_cube(template_file_path)
 
         # Chunked data makes the regridder run repeatedly
-        self.cube.data = self.cube.lazy_data().rechunk((1,-1,-1))
+        self.cube.data = self.cube.lazy_data().rechunk((1, -1, -1))
 
     def time_regrid_area_w(self):
         # Regrid the cube onto the template.
