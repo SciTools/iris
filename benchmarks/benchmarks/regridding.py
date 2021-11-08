@@ -16,14 +16,20 @@ from iris.analysis import AreaWeighted
 class RegriddingTests:
     def setup(self):
         # Prepare a cube and a regridding scheme.
-        file_path = tests.get_data_path(
-            ["NetCDF", "GloSea", "glosea_bm.nc"]
+        cube_file_path = tests.get_data_path(
+            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
-        self.cube = iris.load_cube(file_path)
+        # cube_file_path = tests.get_data_path(
+        #     ["NetCDF", "GloSea", "glosea_bm.nc"]
+        # )
+        self.cube = iris.load_cube(cube_file_path)
 
         template_file_path = tests.get_data_path(
-            ["NetCDF", "GloSea", "template_regrid.nc"]
+            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
+        # template_file_path = tests.get_data_path(
+        #     ["NetCDF", "GloSea", "template_regrid.nc"]
+        # )
         self.template_cube = iris.load_cube(template_file_path)
 
         # Chunked data makes the regridder run repeatedly
