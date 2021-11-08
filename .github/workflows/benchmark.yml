@@ -13,6 +13,7 @@ jobs:
     env:
       IRIS_TEST_DATA_DIR: benchmarks/iris-test-data
       OVERRIDE_TEST_DATA_REPOSITORY: benchmarks/iris-test-data/test_data
+      IRIS_TEST_DATA_VERSION: "2.4"
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -41,10 +42,6 @@ jobs:
           #  restoration still succeeds via the partial restore-key match.
           key: ${{ runner.os }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}
-
-      - name: Get test data version
-        run: |
-          echo "IRIS_TEST_DATA_VERSION=$(wget --quiet -O - https://raw.githubusercontent.com/SciTools/iris-test-data/master/version.txt)" >> $GITHUB_ENV
 
       # - name: Cache test data directory
       #   id: cache-test-data
