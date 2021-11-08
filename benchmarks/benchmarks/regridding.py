@@ -15,11 +15,11 @@ from iris import tests
 import iris
 from iris.analysis import AreaWeighted
 
-
 @tests.skip_data
 class RegriddingTests:
     def setup(self):
-        # Prepare a cube and a regridding scheme.
+        # Prepare a cube and a template
+        
         cube_file_path = tests.get_data_path(
             ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
         )
