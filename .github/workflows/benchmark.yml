@@ -69,7 +69,6 @@ jobs:
       - name: Run CI benchmarks
         run: |
           mkdir --parents benchmarks/.asv
-          echo $OVERRIDE_TEST_DATA_REPOSITORY
           nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
 
       - name: Archive asv results
