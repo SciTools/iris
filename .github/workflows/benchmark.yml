@@ -65,7 +65,6 @@ jobs:
       - name: Set test data var
         run: |
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
-          ls ${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data
 
       - name: Run CI benchmarks
         run: |
