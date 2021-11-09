@@ -9,13 +9,13 @@ metadata_manager_factory benchmark tests.
 """
 
 from iris.common import (
-    metadata_manager_factory,
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
     CoordMetadata,
     CubeMetadata,
     DimCoordMetadata,
+    metadata_manager_factory,
 )
 
 

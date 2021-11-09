@@ -13,12 +13,12 @@ from pathlib import Path
 from shutil import copy2, copytree
 from tempfile import TemporaryDirectory
 
+from asv import util as asv_util
 from asv.config import Config
 from asv.console import log
 from asv.environment import get_env_name
 from asv.plugins.conda import Conda, _find_conda
-from asv.repo import get_repo, Repo
-from asv import util as asv_util
+from asv.repo import Repo, get_repo
 
 
 class NoxConda(Conda):
