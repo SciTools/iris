@@ -387,6 +387,7 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
         standard_name=standard_name,
         long_name=long_name,
         bounds=bounds,
+        attributes={"positive": "up"},
     )
 
     return coord
