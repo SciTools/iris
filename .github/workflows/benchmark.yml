@@ -58,6 +58,8 @@ jobs:
           unzip -q iris-test-data.zip
           mkdir --parents ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
           mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
+          echo ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
+          ls ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
 
       - name: Set test data var
         run: |
