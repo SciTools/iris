@@ -9,7 +9,7 @@ Regridding benchmark test
 """
 
 # import iris tests first so that some things can be initialised before
-# importing anything else.
+# importing anything else
 from iris import tests  # isort:skip
 
 import iris
