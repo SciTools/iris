@@ -11,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IRIS_TEST_DATA_DIR: /benchmarks/iris-test-data
-      OVERRIDE_TEST_DATA_REPOSITORY: /benchmarks/iris-test-data/test_data
+      IRIS_TEST_DATA_PATH: /benchmarks/iris-test-data
       IRIS_TEST_DATA_VERSION: "2.4"
 
     steps:
@@ -48,7 +47,7 @@ jobs:
       #   uses: actions/cache@v2
       #   with:
       #     path: |
-      #       ${{ env.IRIS_TEST_DATA_DIR }}
+      #       ${{ env.IRIS_TEST_DATA_PATH }}
       #     key: 
       #       test-data-${{ env.IRIS_TEST_DATA_VERSION }}
 
@@ -57,12 +56,17 @@ jobs:
         run: |
           wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
           unzip -q iris-test-data.zip
-          mkdir --parents ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_DIR}
-          mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_DIR}
+          mkdir --parents ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
+          mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
+
+      - name: Set test data var
+        run: |
+          echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
 
       - name: Run CI benchmarks
         run: |
           mkdir --parents benchmarks/.asv
+          echo $OVERRIDE_TEST_DATA_REPOSITORY
           nox --session="benchmarks(ci compare)" | tee benchmarks/.asv/ci_compare.txt
 
       - name: Archive asv results
