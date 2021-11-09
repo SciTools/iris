@@ -311,12 +311,7 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
     session.run("asv", "machine", "--yes")
 
     def asv_exec(*sub_args: str) -> None:
-        run_args = [
-            "asv",
-            *sub_args,
-            "--show-stderr",
-            "--quick",
-        ]
+        run_args = ["asv", *sub_args]
         session.run(*run_args)
 
     if ci_mode:
