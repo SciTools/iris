@@ -6,7 +6,8 @@ files: |
         noxfile\.py|
         setup\.py|
         docs\/.+\.py|
-        lib\/.+\.py
+        lib\/.+\.py|
+        benchmarks\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
 
