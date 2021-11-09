@@ -57,7 +57,11 @@ jobs:
           wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
           unzip -q iris-test-data.zip
           mkdir --parents ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
-          mv iris-test-data-${IRIS_TEST_DATA_VERSION} ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
+          ls -l
+          mv iris-test-data-${IRIS_TEST_DATA_VERSION} iris-test-data
+          ls -l
+          mv iris-test-data ${GITHUB_WORKSPACE}/benchmarks
+          ls -l benchmarks
           echo ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
           ls ${GITHUB_WORKSPACE}${IRIS_TEST_DATA_PATH}
 
