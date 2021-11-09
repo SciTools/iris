@@ -10,12 +10,12 @@ Regridding benchmark test
 
 import sys
 
-import iris
-
 # import iris tests first so that some things can be initialised before
 # importing anything else.
-from iris import tests
-from iris.analysis import AreaWeighted
+from iris import tests  # isort:skip
+
+import iris  # isort:skip
+from iris.analysis import AreaWeighted  # isort:skip
 
 
 @tests.skip_data
@@ -23,7 +23,7 @@ class RegriddingTests:
     def setup(self):
         # Prepare a cube and a template
 
-        print(iris.config.TEST_DATA_PATH, file=sys.stderr)
+        print(iris.config.TEST_DATA_DIR, file=sys.stderr)
 
         cube_file_path = tests.get_data_path(
             ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
