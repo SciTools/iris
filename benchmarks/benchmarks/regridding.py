@@ -22,19 +22,13 @@ class RegriddingTests:
         # Prepare a cube and a template
 
         cube_file_path = tests.get_data_path(
-            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
+            ["NetCDF", "regrid", "regrid_xyt.nc"]
         )
-        # cube_file_path = tests.get_data_path(
-        #     ["NetCDF", "GloSea", "glosea_bm.nc"]
-        # )
         self.cube = iris.load_cube(cube_file_path)
 
         template_file_path = tests.get_data_path(
-            ["NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc"]
+            ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
         )
-        # template_file_path = tests.get_data_path(
-        #     ["NetCDF", "GloSea", "template_regrid.nc"]
-        # )
         self.template_cube = iris.load_cube(template_file_path)
 
         # Chunked data makes the regridder run repeatedly
