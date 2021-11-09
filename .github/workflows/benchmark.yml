@@ -52,7 +52,7 @@ jobs:
             test-data-${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: Fetch the test data
-        # if: steps.cache-test-data.outputs.cache-hit != 'true'
+        if: steps.cache-test-data.outputs.cache-hit != 'true'
         run: |
           wget --quiet https://github.com/SciTools/iris-test-data/archive/v${IRIS_TEST_DATA_VERSION}.zip -O iris-test-data.zip
           unzip -q iris-test-data.zip
