@@ -14,7 +14,7 @@ jobs:
       IRIS_TEST_DATA_PATH: /benchmarks/iris-test-data
       IRIS_TEST_DATA_VERSION: "2.5"
       # Lets us manually bump the cache to rebuild
-      TEST_DATA_CACHE_BUILD: "0"
+      TEST_DATA_CACHE_BUILD: "1"
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -49,9 +49,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ${{ env.IRIS_TEST_DATA_PATH }}
-          key: 
-            test-data-${{ env.IRIS_TEST_DATA_VERSION }}-${{ env.TEST_DATA_CACHE_BUILD}}
+            ${{ env.GITHUB_WORKSPACE }}${{ env.IRIS_TEST_DATA_PATH }}
+          key:
+            test-data-${{ env.IRIS_TEST_DATA_VERSION }}-${{ env.TEST_DATA_CACHE_BUILD }}
 
       - name: Fetch the test data
         if: steps.cache-test-data.outputs.cache-hit != 'true'
