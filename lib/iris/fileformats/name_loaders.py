@@ -160,27 +160,37 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
     the provided column_headings dictionary.
 
     """
-    pattern = re.compile(r"\-?[0-9]*\.[0-9]*")
-    new_Xlocation_column_header = []
-    for t in column_headings["X"]:
-        if "Lat-Long" in t:
-            matches = pattern.search(t)
-            new_Xlocation_column_header.append(float(matches.group(0)))
-        else:
-            new_Xlocation_column_header.append(t)
-    column_headings["X"] = new_Xlocation_column_header
+    # Pattern to match a number
+    pattern = re.compile(
+        r"""
+        [-+]?          # Optional sign
+        (?:
+            \d+\.\d*   # Float: integral part required
+        |
+            \d*\.\d+   # Float: fractional part required
+        |
+            \d+        # Integer
+        )
+        (?![0-9.])     # Not followed by a numeric character
+        """,
+        re.VERBOSE,
+    )
+
+    # Extract numbers from the X and Y column headings, which are currently
+    # strings of the form "X = -1.9 Lat-Long"
+    for key in ("X", "Y"):
+        new_headings = []
+        for heading in column_headings[key]:
+            match = pattern.search(heading)
+            if match and "Lat-Long" in heading:
+                new_headings.append(float(match.group(0)))
+            else:
+                new_headings.append(heading)
+        column_headings[key] = new_headings
+
     lon = NAMECoord(
         name="longitude", dimension=None, values=column_headings["X"]
     )
-
-    new_Ylocation_column_header = []
-    for t in column_headings["Y"]:
-        if "Lat-Long" in t:
-            matches = pattern.search(t)
-            new_Ylocation_column_header.append(float(matches.group(0)))
-        else:
-            new_Ylocation_column_header.append(t)
-    column_headings["Y"] = new_Ylocation_column_header
     lat = NAMECoord(
         name="latitude", dimension=None, values=column_headings["Y"]
     )
