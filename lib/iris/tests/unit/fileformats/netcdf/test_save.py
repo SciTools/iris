@@ -9,6 +9,9 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from pathlib import Path
+from shutil import rmtree
+from tempfile import mkdtemp
 from unittest import mock
 
 import netCDF4 as nc
@@ -209,6 +212,46 @@ class Test_fill_value(tests.IrisTest):
         with mock.patch("iris.fileformats.netcdf.Saver"):
             with self.assertRaises(ValueError):
                 save(cubes, "dummy.nc", fill_value=fill_values)
+
+
+class Test_HdfSaveBug(tests.IrisTest):
+    """
+    Check for a known problem with netcdf4.
+
+    If you create dimension with the same name as an existing variable, there
+    is a specific problem, relating to HDF so limited to netcdf-4 formats.
+    See : https://github.com/Unidata/netcdf-c/issues/1772
+
+    """
+
+    def test_problem_case(self):
+        n_x = 2
+        x_dim = DimCoord(
+            np.arange(n_x), long_name="dim_x", var_name="same_name"
+        )
+        cube_x = Cube(np.arange(n_x), long_name="cube_x", var_name="same_name")
+        cube_y = Cube(
+            np.arange(n_x), long_name="cube_y", var_name="different_name"
+        )
+        cube_y.add_dim_coord(x_dim, 0)
+        # In this case, a straightforward translation to the file will be able
+        # to save [cube_y, cube_x], but *not* [cube_x, cube_y], because the
+        # latter makes a dim of the same name as the 'cube_x' data variable.
+        # Here, we are testing the specific workaround in Iris netcdf save which
+        # avoids that problem.
+        tempdir = Path(mkdtemp())
+        filepath = tempdir / "tmp.nc"
+        try:
+            cubes = [cube_x, cube_y]
+            save(cubes, filepath)  # , netcdf_format='NETCDF3_CLASSIC')
+            # from subprocess import check_call
+            # check_call(f'ncdump -h {filepath}', shell=True)
+            loadback_cube_y = iris.load_cube(str(filepath), "cube_y")
+            self.assertEqual(
+                loadback_cube_y.coord("dim_x").var_name, "same_name_0"
+            )
+        finally:
+            rmtree(tempdir)
 
 
 if __name__ == "__main__":
