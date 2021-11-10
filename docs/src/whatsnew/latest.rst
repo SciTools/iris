@@ -104,6 +104,8 @@ This document explains the changes made to Iris for this release
 #. `@larsbarring`_ fixed :class:`~iris.coord_systems.GeoCS` to handle spherical ellipsoid
    parameter inverse_flattening = 0 (:issue: `4146`, :pull:`4348`)
 
+#. `@pdearnshaw`_ fixed an error in the call to :class:`cftime.datetime` in mod:`~iris.fileformats.pp_save_rules` that prevented the saving to PP of climate means for DJF (:pull:`4391`)
+
 
 💣 Incompatible Changes
 =======================
@@ -195,6 +197,7 @@ This document explains the changes made to Iris for this release
 
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
+.. _@pdearnshaw: https://github.com/pdearnshaw
 .. _@tinyendian: https://github.com/tinyendian
 
 .. comment
