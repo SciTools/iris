@@ -18,7 +18,7 @@ from iris.analysis import AreaWeighted
 
 @tests.skip_data
 class RegriddingTests:
-    def setup(self):
+    def setup(self) -> None:
         # Prepare a cube and a template
 
         cube_file_path = tests.get_data_path(
@@ -34,7 +34,7 @@ class RegriddingTests:
         # Chunked data makes the regridder run repeatedly
         self.cube.data = self.cube.lazy_data().rechunk((1, -1, -1))
 
-    def time_regrid_area_w(self):
+    def time_regrid_area_w(self) -> None:
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, AreaWeighted())
         # Realise the data
