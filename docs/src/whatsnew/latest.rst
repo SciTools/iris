@@ -106,6 +106,10 @@ This document explains the changes made to Iris for this release
 
 #. `@pdearnshaw`_ fixed an error in the call to :class:`cftime.datetime` in mod:`~iris.fileformats.pp_save_rules` that prevented the saving to PP of climate means for DJF (:pull:`4391`)
 
+#. `@wjbenfold`_ improved the error message for failure of :meth:`~iris.cube.CubeList.concatenate`
+   to indicate that the value of a scalar coordinate may be mismatched, rather than the metadata
+   (:issue:`4096`, :pull:`4387`)
+
 
 💣 Incompatible Changes
 =======================
