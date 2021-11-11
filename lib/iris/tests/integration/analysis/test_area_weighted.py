@@ -17,7 +17,7 @@ from iris.analysis import AreaWeighted
 
 @tests.skip_data
 class AreaWeightedTests(tests.IrisTest):
-    def setup(self):
+    def setUp(self):
         # Prepare a cube and a template
 
         cube_file_path = tests.get_data_path(
@@ -71,3 +71,7 @@ class AreaWeightedTests(tests.IrisTest):
         # Save the data
         with tempfile.TemporaryFile(suffix=".nc") as fp:
             iris.save(out, fp)
+
+
+if __name__ == "__main__":
+    tests.main()

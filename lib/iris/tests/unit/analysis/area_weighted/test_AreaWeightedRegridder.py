@@ -251,7 +251,7 @@ class Test(tests.IrisTest):
 @tests.skip_data
 class TestLazy(tests.IrisTest):
     # Setup
-    def setup(self) -> None:
+    def setUp(self) -> None:
         # Prepare a cube and a template
 
         cube_file_path = tests.get_data_path(

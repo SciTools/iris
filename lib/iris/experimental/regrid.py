@@ -896,8 +896,8 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
     # perform step and the indices we'll need to extract from the cube we're
     # regridding (src_data)
 
-    result_y_extent = len(cached_y_indices)
-    result_x_extent = len(cached_x_indices)
+    result_y_extent = len(grid_y_bounds)
+    result_x_extent = len(grid_x_bounds)
 
     # Total number of points
     num_target_pts = result_y_extent * result_x_extent
@@ -913,8 +913,11 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         (len(cached_y_indices), len(cached_x_indices)), False, dtype=np.bool_
     )
 
-    # To permit fancy indexing, we're going to store our data in an array of
-    # the size of the biggest. This means we need to track whether the data in
+    # To permit fancy indexing, we need to store our data in an array whose
+    # first two dimensions represent the indices needed for the target cell.
+    # Since target cells can require a different number of indices, the size of
+    # these dimensions should be the maximum of this number.
+    # This means we need to track whether the data in
     # that array is actually required and build those squared-off arrays
     # TODO: Consider if a proper mask would be better
     src_area_datas_required = np.full(
@@ -936,7 +939,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
             # Determine whether to mask element i, j based on whether
             # there are valid weights.
             weights = cached_weights[j][i]
-            if isinstance(weights, bool) and not weights:
+            if weights is False:
                 # Prepare for the src_data not being masked by storing the
                 # information that will let us fill the data with zeros and
                 # weights as one. The weighted average result will be the same,
@@ -967,7 +970,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(
                 else:
                     x_indices = list(x_indices)
 
-                # For the weights, we just need the lengths of these as we'd
+                # For the weights, we just need the lengths of these as we're
                 # dropping them into a pre-made array
 
                 len_y = len(y_indices)
