@@ -84,6 +84,9 @@ This document explains the changes made to Iris for this release
 #. `@bsherratt`_ added a `threshold` parameter to
    :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
 
+#. `@wjbenfold`_ added test data to ci benchmarks so that it is accessible to
+   benchmark scripts. (:pull:`4402`)
+
 
 🐛 Bugs Fixed
 =============
