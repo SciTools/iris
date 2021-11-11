@@ -85,7 +85,8 @@ This document explains the changes made to Iris for this release
    :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
 
 #. `@wjbenfold`_ added test data to ci benchmarks so that it is accessible to
-   benchmark scripts. (:pull:`4402`)
+   benchmark scripts. Also added a regridding benchmark that uses this data
+   (:pull:`4402`)
 
 
 🐛 Bugs Fixed
