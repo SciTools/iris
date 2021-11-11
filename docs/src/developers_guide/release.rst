@@ -11,6 +11,20 @@ The summary below is of the main areas that constitute the release.  The final
 section details the :ref:`iris_development_releases_steps` to take.
 
 
+.. _release-manager:
+
+Release Manager
+---------------
+A Release Manager will be nominated for each release of Iris. This role involves:
+
+* deciding which features and bug fixes should be included in the release
+* managing the project board for the release
+* updating the iris dev community via the discussion board
+
+The Release Manager will make the release, ensuring that all the steps outlined
+on this page are completed.
+
+
 Before Release
 --------------
 

@@ -168,6 +168,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
    during :ref:`developer_running_tests`. (:pull:`4359`)
 
+#. `@lbdreyer`_ added a section to the release documentation outlining the role
+   of the :ref:`release-manager`. (:pull:`4412`)
+
 
 💼 Internal
 ===========
