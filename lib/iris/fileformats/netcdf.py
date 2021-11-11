@@ -1936,7 +1936,8 @@ class Saver:
                             # existing dimension.
                             # OR if it matches the an existing file variable.
                             # NOTE: check against variable names is needed
-                            # because of a netcdf bug ... see note above.
+                            # because of a netcdf bug ... see note in the
+                            # mesh dimensions block above.
                             while (
                                 dim_name in self._existing_dim
                                 or dim_name in self._dataset.variables
@@ -1947,16 +1948,18 @@ class Saver:
                         # No CF-netCDF coordinates describe this data dimension.
                         # Make up a new, distinct dimension name
                         dim_name = f"dim{dim}"
-                        if dim_name in self._existing_dim:
-                            # Increment name if conflicted with one already existing.
-                            if self._existing_dim[dim_name] != cube.shape[dim]:
-                                while (
-                                    dim_name in self._existing_dim
-                                    and self._existing_dim[dim_name]
-                                    != cube.shape[dim]
-                                    or dim_name in self._dataset.variables
-                                ):
-                                    dim_name = self._increment_name(dim_name)
+                        # Increment name if conflicted with one already existing
+                        # (or planned)
+                        # NOTE: check against variable names is needed because
+                        # of a netcdf bug ... see note in the mesh dimensions
+                        # block above.
+                        while (
+                            dim_name in self._existing_dim
+                            and (
+                                self._existing_dim[dim_name] != cube.shape[dim]
+                            )
+                        ) or dim_name in self._dataset.variables:
+                            dim_name = self._increment_name(dim_name)
 
                 # Record the dimension.
                 record_dimension(
