@@ -16,8 +16,7 @@ import iris
 from iris.analysis import AreaWeighted
 
 
-@tests.skip_data
-class RegriddingTests:
+class HorizontalChunkedRegridding:
     def setup(self) -> None:
         # Prepare a cube and a template
 
