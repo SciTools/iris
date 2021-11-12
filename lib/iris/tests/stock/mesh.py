@@ -62,9 +62,8 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         long_name="long-name",
         var_name="var-name",
         attributes={
-            "a": np.int64(
-                1
-            ),  # Cast so that a save-load roundtrip preserves it
+            # N.B. cast this so that a save-load roundtrip preserves it
+            "a": np.int64(1),
             "b": "c",
         },
     )

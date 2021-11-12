@@ -235,7 +235,8 @@ class Test_HdfSaveBug(tests.IrisTest):
     code, there are several separate places where this had to be fixed.
 
     N.B. we also check that the data (mostly) survives a save-load roundtrip.
-    To make read-back objects compare, we need to assign var-names.
+    To identify the read-back cubes with the originals, we use var-names,
+    which works because the save code opts to adjust dimension names _instead_.
 
     """
 

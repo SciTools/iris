@@ -1934,7 +1934,7 @@ class Saver:
                             )
                             # Disambiguate if it has the same name as an
                             # existing dimension.
-                            # OR if it matches the an existing file variable.
+                            # OR if it matches an existing file variable name.
                             # NOTE: check against variable names is needed
                             # because of a netcdf bug ... see note in the
                             # mesh dimensions block above.
