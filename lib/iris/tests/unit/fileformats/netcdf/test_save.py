@@ -18,10 +18,12 @@ import netCDF4 as nc
 import numpy as np
 
 import iris
-from iris.coords import DimCoord
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, save
 from iris.tests.stock import lat_lon_cube
+from iris.tests.stock.mesh import sample_mesh_cube
 
 
 class Test_conventions(tests.IrisTest):
@@ -222,36 +224,138 @@ class Test_HdfSaveBug(tests.IrisTest):
     is a specific problem, relating to HDF so limited to netcdf-4 formats.
     See : https://github.com/Unidata/netcdf-c/issues/1772
 
+    In all these testcases, a straightforward translation to the file would be
+    able to save [cube_2, cube_1], but *not* [cube_1, cube_2],
+    because the latter creates a dim of the same name as the 'cube_1' data
+    variable.
+
+    Here, we are testing the specific workarounds in Iris netcdf save which
+    avoids that problem.
+    Unfortunately, owing to the complexity of the iris.fileformats.netcdf.Saver
+    code, there are several separate places where this had to be fixed.
+
+    N.B. we also check that the data (mostly) survives a save-load roundtrip.
+    To make read-back objects compare, we need to assign var-names.
+
     """
 
-    def test_problem_case(self):
-        n_x = 2
-        x_dim = DimCoord(
-            np.arange(n_x), long_name="dim_x", var_name="same_name"
-        )
-        cube_x = Cube(np.arange(n_x), long_name="cube_x", var_name="same_name")
-        cube_y = Cube(
-            np.arange(n_x), long_name="cube_y", var_name="different_name"
-        )
-        cube_y.add_dim_coord(x_dim, 0)
-        # In this case, a straightforward translation to the file will be able
-        # to save [cube_y, cube_x], but *not* [cube_x, cube_y], because the
-        # latter makes a dim of the same name as the 'cube_x' data variable.
-        # Here, we are testing the specific workaround in Iris netcdf save which
-        # avoids that problem.
+    def _check_save_and_reload(self, cubes):
         tempdir = Path(mkdtemp())
         filepath = tempdir / "tmp.nc"
         try:
-            cubes = [cube_x, cube_y]
-            save(cubes, filepath)  # , netcdf_format='NETCDF3_CLASSIC')
-            # from subprocess import check_call
-            # check_call(f'ncdump -h {filepath}', shell=True)
-            loadback_cube_y = iris.load_cube(str(filepath), "cube_y")
-            self.assertEqual(
-                loadback_cube_y.coord("dim_x").var_name, "same_name_0"
-            )
+            # Save the given cubes.
+            save(cubes, filepath)
+
+            # Load them back for roundtrip testing.
+            with PARSE_UGRID_ON_LOAD.context():
+                new_cubes = iris.load(str(filepath))
+
+            # There should definitely still be the same number of cubes.
+            self.assertEqual(len(new_cubes), len(cubes))
+
+            # Get results in the input order, matching by var_names.
+            result = [new_cubes.extract_cube(cube.var_name) for cube in cubes]
+
+            # Check that input + output match cube-for-cube.
+            # NB in this codeblock, before we destroy the temporary file.
+            for cube_in, cube_out in zip(cubes, result):
+                # Using special tolerant equivalence-check.
+                self.assertSameCubes(cube_in, cube_out)
+
         finally:
             rmtree(tempdir)
+
+        # Return result cubes for any additional checks.
+        return result
+
+    def assertSameCubes(self, cube1, cube2):
+        """
+        A special tolerant cube compare.
+
+        Either both are unstructured, or neither.
+        Strip off any Meshes (as we can't compare unstructured cubes).
+        Ignore any 'Conventions' attributes.
+        Ignore all var-names.
+
+        """
+        # Either they both have a mesh, or neither.
+        self.assertEqual(cube1.mesh is None, cube2.mesh is None)
+
+        def clean_cube(cube):
+            cube = cube.copy()  # dont modify the original
+            if cube.mesh:
+                # "Strip" off mesh, reducing MeshCoords to AuxCoords
+                cube = cube[..., 0:]  # magic "non-trivial" slice form
+            # Remove any 'Conventions' attributes
+            cube.attributes.pop("Conventions", None)
+            # Remove var-names (as original mesh components wouldn't have them)
+            cube.var_name = None
+            for coord in cube.coords():
+                coord.var_name = None
+
+            return cube
+
+        self.assertEqual(clean_cube(cube1), clean_cube(cube2))
+
+    def test_dimcoord_varname_collision(self):
+        cube_2 = Cube([0, 1], var_name="cube_2")
+        x_dim = DimCoord([0, 1], long_name="dim_x", var_name="dimco_name")
+        cube_2.add_dim_coord(x_dim, 0)
+        # First cube has a varname which collides with the dimcoord.
+        cube_1 = Cube([0, 1], long_name="cube_1", var_name="dimco_name")
+        # Test save + loadback
+        reload_1, reload_2 = self._check_save_and_reload([cube_1, cube_2])
+        # As re-loaded, the coord will have a different varname.
+        self.assertEqual(reload_2.coord("dim_x").var_name, "dimco_name_0")
+
+    def test_anonymous_dim_varname_collision(self):
+        # Second cube is going to name an anonymous dim.
+        cube_2 = Cube([0, 1], var_name="cube_2")
+        # cube_2 = Cube(0, var_name="cube_2")
+        # First cube has a varname which collides with the dim-name.
+        cube_1 = Cube([0, 1], long_name="cube_1", var_name="dim0")
+        # Add a dimcoord to prevent the *first* cube having an anonymous dim.
+        x_dim = DimCoord([0, 1], long_name="dim_x", var_name="dimco_name")
+        cube_1.add_dim_coord(x_dim, 0)
+        # Test save + loadback
+        self._check_save_and_reload([cube_1, cube_2])
+
+    def test_bounds_dim_varname_collision(self):
+        cube_2 = Cube([0, 1], var_name="cube_2")
+        x_dim = DimCoord([0, 1], long_name="dim_x", var_name="dimco_name")
+        x_dim.guess_bounds()
+        cube_2.add_dim_coord(x_dim, 0)
+        # First cube has a varname which collides with the bounds dimension.
+        cube_1 = Cube([0], long_name="cube_1", var_name="bnds")
+        # Test save + loadback
+        self._check_save_and_reload([cube_1, cube_2])
+
+    def test_string_dim_varname_collision(self):
+        cube_2 = Cube([0, 1], var_name="cube_2")
+        # NOTE: it *should* be possible for a cube with string data to cause
+        # this collision, but cubes with string data are currently not working.
+        # See : https://github.com/SciTools/iris/issues/4412
+        x_dim = AuxCoord(
+            ["this", "that"], long_name="dim_x", var_name="string_auxco"
+        )
+        cube_2.add_aux_coord(x_dim, 0)
+        cube_1 = Cube([0], long_name="cube_1", var_name="string4")
+        # Test save + loadback
+        self._check_save_and_reload([cube_1, cube_2])
+
+    def test_mesh_location_dim_varname_collision(self):
+        cube_2 = sample_mesh_cube()
+        cube_2.var_name = "cube_2"  # Make it identifiable
+        cube_1 = Cube([0], long_name="cube_1", var_name="Mesh2d_node")
+        # Test save + loadback
+        self._check_save_and_reload([cube_1, cube_2])
+
+    def test_connectivity_dim_varname_collision(self):
+        cube_2 = sample_mesh_cube()
+        cube_2.var_name = "cube_2"  # Make it identifiable
+        cube_1 = Cube([0], long_name="cube_1", var_name="Mesh_2d_face_N_nodes")
+        # Test save + loadback
+        self._check_save_and_reload([cube_1, cube_2])
 
 
 if __name__ == "__main__":
