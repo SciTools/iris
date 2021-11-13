@@ -2666,6 +2666,9 @@ class DimCoord(Coord):
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
 
+        #: Whether the coordinate wraps by ``coord.units.modulus``.
+        self.circular = circular
+
         super().__init__(
             points,
             standard_name=standard_name,
@@ -2677,9 +2680,6 @@ class DimCoord(Coord):
             coord_system=coord_system,
             climatological=climatological,
         )
-
-        #: Whether the coordinate wraps by ``coord.units.modulus``.
-        self.circular = circular
 
     def __deepcopy__(self, memo):
         """
@@ -2866,6 +2866,18 @@ class DimCoord(Coord):
             self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
+
+            if bounds.ndim == 2:
+                # If swapping the bounds would make them contiguous, do so.
+                if self.circular:
+                    diffs = (
+                        np.roll(bounds[:, 1], -1) - bounds[:, 0]
+                    ) % self.units.modulus
+                else:
+                    diffs = bounds[1:, 1] - bounds[:-1, 0]
+
+                if np.allclose(diffs, 0):
+                    bounds = np.flip(bounds, axis=1)
 
         # Call the parent bounds setter.
         super(DimCoord, self.__class__).bounds.fset(self, bounds)
