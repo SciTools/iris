@@ -49,7 +49,7 @@ class TestCoordSlicing(tests.IrisTest):
     def test_slice_reverse(self):
         b = self.lat[::-1]
         np.testing.assert_array_equal(b.points, self.lat.points[::-1])
-        np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, :])
+        np.testing.assert_array_equal(b.bounds, self.lat.bounds[::-1, ::-1])
 
         c = b[::-1]
         self.assertEqual(self.lat, c)
@@ -469,12 +469,12 @@ class TestDimCoordCreation(tests.IrisTest):
 
     def test_Dim_to_Aux(self):
         a = iris.coords.DimCoord(
-            np.arange(10),
-            standard_name="air_temperature",
-            long_name="custom air temp",
-            units="kelvin",
+            np.arange(0, 360, 30),
+            standard_name="longitude",
+            long_name="custom lon",
+            units="degrees",
             attributes={"monty": "python"},
-            bounds=np.arange(20).reshape(10, 2),
+            bounds=np.arange(24).reshape(12, 2),
             circular=True,
         )
         b = iris.coords.AuxCoord.from_coord(a)

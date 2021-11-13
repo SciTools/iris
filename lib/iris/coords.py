@@ -2867,7 +2867,11 @@ class DimCoord(Coord):
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
 
-            if bounds.ndim == 2:
+            if (
+                bounds.ndim == 2
+                and bounds.shape[1] == 2
+                and bounds.shape[0] > 1
+            ):
                 # If swapping the bounds would make them contiguous, do so.
                 if self.circular:
                     diffs = (
