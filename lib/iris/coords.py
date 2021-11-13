@@ -2867,6 +2867,7 @@ class DimCoord(Coord):
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
 
+            # Extra check to enforce contiguity where possible.
             if (
                 bounds.ndim == 2
                 and bounds.shape[1] == 2
