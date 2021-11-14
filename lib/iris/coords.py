@@ -2854,6 +2854,16 @@ class DimCoord(Coord):
                         emsg.format(self.name(), self.__class__.__name__)
                     )
 
+                if n_bounds == 2:
+                    # Make ordering of bounds consistent with coord's direction
+                    # if possible.
+                    (direction,) = directions
+                    diffs = bounds[:, 0] - bounds[:, 1]
+                    if np.all(np.sign(diffs) == direction):
+                        bounds = np.flip(bounds, axis=1)
+
+        return bounds
+
     @Coord.bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
@@ -2863,26 +2873,9 @@ class DimCoord(Coord):
             bounds = np.asanyarray(bounds)
 
             # Check validity requirements for dimension-coordinate bounds.
-            self._new_bounds_requirements(bounds)
+            bounds = self._new_bounds_requirements(bounds)
             # Cast to a numpy array for masked arrays with no mask.
             bounds = np.array(bounds)
-
-            # Extra check to enforce contiguity where possible.
-            if (
-                bounds.ndim == 2
-                and bounds.shape[1] == 2
-                and bounds.shape[0] > 1
-            ):
-                # If swapping the bounds would make them contiguous, do so.
-                if self.circular:
-                    diffs = (
-                        np.roll(bounds[:, 1], -1) - bounds[:, 0]
-                    ) % self.units.modulus
-                else:
-                    diffs = bounds[1:, 1] - bounds[:-1, 0]
-
-                if np.allclose(diffs, 0):
-                    bounds = np.flip(bounds, axis=1)
 
         # Call the parent bounds setter.
         super(DimCoord, self.__class__).bounds.fset(self, bounds)
