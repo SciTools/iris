@@ -2666,9 +2666,6 @@ class DimCoord(Coord):
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(DimCoordMetadata)
 
-        #: Whether the coordinate wraps by ``coord.units.modulus``.
-        self.circular = circular
-
         super().__init__(
             points,
             standard_name=standard_name,
@@ -2680,6 +2677,9 @@ class DimCoord(Coord):
             coord_system=coord_system,
             climatological=climatological,
         )
+
+        #: Whether the coordinate wraps by ``coord.units.modulus``.
+        self.circular = circular
 
     def __deepcopy__(self, memo):
         """

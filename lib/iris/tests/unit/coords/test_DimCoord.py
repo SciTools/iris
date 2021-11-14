@@ -621,18 +621,6 @@ class Test_bounds__setter(tests.IrisTest, DimCoordTestMixin):
         coord = DimCoord(pts, bounds=bnds)
         self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
 
-    def test_flip_contiguous_circular(self):
-        pts = np.arange(0, 360, 30)
-        bnds = np.transpose([np.arange(30, 361, 30), np.arange(0, 360, 30)])
-        coord = DimCoord(pts, bounds=bnds, units="degrees", circular=True)
-        self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
-
-    def test_flip_contiguous_circular_decreasing(self):
-        pts = np.arange(360, 0, -30)
-        bnds = np.transpose([np.arange(330, -1, -30), np.arange(360, 0, -30)])
-        coord = DimCoord(pts, bounds=bnds, units="degrees", circular=True)
-        self.assertArrayEqual(coord.bounds, bnds[:, ::-1])
-
 
 if __name__ == "__main__":
     tests.main()
