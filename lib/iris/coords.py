@@ -1360,7 +1360,9 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
             else:
                 return self.point == other
         elif isinstance(other, Cell):
-            return (self.point == other.point) and (self.bound == other.bound)
+            return (self.point == other.point) and (
+                self.bound == other.bound or self.bound == other.bound[::-1]
+            )
         elif (
             isinstance(other, str)
             and self.bound is None
