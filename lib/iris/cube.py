@@ -2579,6 +2579,10 @@ class Cube(CFVariableMixin):
                 coord, return_indices=True
             )
 
+            if coord_indices.size == 0:
+                # No matches found.
+                return
+
             # Build up a slice which spans the whole of the cube
             full_slice = [slice(None, None)] * len(self.shape)
             # Update the full slice to only extract specific indices which
