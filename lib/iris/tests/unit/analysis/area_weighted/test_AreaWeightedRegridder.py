@@ -271,7 +271,7 @@ class TestLazy(tests.IrisTest):
         cube = self.cube.copy()
         # Regrid the cube onto the template.
         regridder = AreaWeightedRegridder(cube, self.template_cube)
-        regridder.regrid(cube)
+        regridder(cube)
         # Base cube stays lazy
         self.assertTrue(cube.has_lazy_data())
 
@@ -279,7 +279,7 @@ class TestLazy(tests.IrisTest):
         cube = self.cube.copy()
         # Regrid the cube onto the template.
         regridder = AreaWeightedRegridder(cube, self.template_cube)
-        out = regridder.regrid(cube)
+        out = regridder(cube)
         # Lazy base cube means lazy output
         self.assertTrue(out.has_lazy_data())
 
