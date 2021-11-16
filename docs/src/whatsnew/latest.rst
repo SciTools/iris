@@ -169,7 +169,7 @@ This document explains the changes made to Iris for this release
    during :ref:`developer_running_tests`. (:pull:`4359`)
 
 #. `@lbdreyer`_ added a section to the release documentation outlining the role
-   of the :ref:`release-manager`. (:pull:`4412`)
+   of the :ref:`release_manager`. (:pull:`4413`)
 
 
 💼 Internal
