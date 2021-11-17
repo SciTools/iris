@@ -258,7 +258,7 @@ Post Release Steps
 
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
-.. _GitHub Discussions forum: https://github.com/SciTools/iris/discussions/categories/releases
+.. _GitHub Releases Discussion Forum: https://github.com/SciTools/iris/discussions/categories/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
 .. _conda-forge iris-feedstock: https://github.com/conda-forge/iris-feedstock
 .. _CFEP-05: https://github.com/conda-forge/cfep/blob/master/cfep-05.md
