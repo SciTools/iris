@@ -71,6 +71,7 @@ class AreaWeightedRegridder:
             self.meshgrid_x,
             self.meshgrid_y,
             self.weights_info,
+            self.index_info,
         ) = _regrid_info
 
     def __call__(self, cube):
@@ -124,6 +125,7 @@ class AreaWeightedRegridder:
             self.meshgrid_x,
             self.meshgrid_y,
             self.weights_info,
+            self.index_info,
         )
         return _regrid_area_weighted_rectilinear_src_and_grid__perform(
             cube, _regrid_info, mdtol=self._mdtol
