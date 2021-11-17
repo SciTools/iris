@@ -61,8 +61,9 @@ Type Hinting
 ------------
 Iris is gradually adding
 `type hints <https://docs.python.org/3/library/typing.html>`_ into the
-codebase. Where possible please include/add type hints in code that you are
-working on.
+codebase. The reviewer will look for type hints in a pull request; if you're
+not confident with these, feel free to work together with the reviewer to
+add/improve them.
 
 
 .. _pre-commit: https://pre-commit.com/
