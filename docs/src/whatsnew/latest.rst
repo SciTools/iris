@@ -117,6 +117,9 @@ This document explains the changes made to Iris for this release
    as well as some long-standing bugs with vertical coordinates and number
    formats. (:pull:`4411`)
 
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if 
+   no value match is found.  (:pull:`4417`)
+
 #. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
    data to take significantly longer than with real data. Relevant benchmark
    shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)

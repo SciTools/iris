@@ -2585,6 +2585,15 @@ class TestSubset(tests.IrisTest):
         result = cube.subset(different_coord)
         self.assertEqual(result, None)
 
+    def test_different_coordinate_vector(self):
+        cube = Cube([0, 1], long_name="raspberry", units="1")
+        cube.add_dim_coord(
+            DimCoord([0, 1], long_name="loganberry", units="1"), 0
+        )
+        different_coord = DimCoord([2], long_name="loganberry", units="1")
+        result = cube.subset(different_coord)
+        self.assertEqual(result, None)
+
     def test_not_coordinate(self):
         cube = Cube(0, long_name="peach", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="crocodile", units="1"))
