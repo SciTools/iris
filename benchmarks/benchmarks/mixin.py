@@ -14,7 +14,6 @@ from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import coords
 from iris.common.metadata import AncillaryVariableMetadata
 
-
 LONG_NAME = "air temperature"
 STANDARD_NAME = "air_temperature"
 VAR_NAME = "air_temp"

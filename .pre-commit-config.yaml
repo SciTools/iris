@@ -6,7 +6,8 @@ files: |
         noxfile\.py|
         setup\.py|
         docs\/.+\.py|
-        lib\/.+\.py
+        lib\/.+\.py|
+        benchmarks\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
 
@@ -28,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/psf/black
-    rev: 21.9b0
+    rev: 21.10b0
     hooks:
     -   id: black
         pass_filenames: false
@@ -42,7 +43,7 @@ repos:
         args: [--config=./setup.cfg]
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
     -   id: isort
         types: [file, python]

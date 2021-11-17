@@ -281,7 +281,7 @@ def _general_time_rules(cube, pp):
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
         if pp.t1.month == 12:
-            pp.t1 = cftime.datetime(pp.t1.year)
+            pp.t1 = cftime.datetime(pp.t1.year, 12, 1, 0, 0, 0)
         else:
             pp.t1 = cftime.datetime(pp.t1.year - 1, 12, 1, 0, 0, 0)
         pp.t2 = cftime.datetime(pp.t2.year, 3, 1, 0, 0, 0)

@@ -2605,14 +2605,12 @@ class Cube(CFVariableMixin):
 
         Coordinate ranges can be specified as:
 
-        (a) instances of :class:`iris.coords.CoordExtent`.
+        (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,
+            or equivalent tuples of 3-5 items:
 
-        (b) keyword arguments, where the keyword name specifies the name
-            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
-            and the value defines the corresponding range of coordinate
-            values as a tuple. The tuple must contain two, three, or four
-            items corresponding to: (minimum, maximum, min_inclusive,
-            max_inclusive). Where the items are defined as:
+            * coord
+                Either a :class:`iris.coords.Coord`, or coordinate name
+                (as defined in :meth:`iris.cube.Cube.coords()`)
 
             * minimum
                 The minimum value of the range to select.
@@ -2628,15 +2626,28 @@ class Cube(CFVariableMixin):
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
-        To perform an intersection that ignores any bounds on the coordinates,
-        set the optional keyword argument *ignore_bounds* to True. Defaults to
-        False.
+        (b) keyword arguments, where the keyword name specifies the name
+            of the coordinate, and the value defines the corresponding range of
+            coordinate values as a tuple. The tuple must contain two, three, or
+            four items, corresponding to `(minimum, maximum, min_inclusive,
+            max_inclusive)` as defined above.
+
+        Kwargs:
+
+        * ignore_bounds:
+            Intersect based on points only. Default False.
+
+        * threshold:
+            Minimum proportion of a bounded cell that must overlap with the
+            specified range. Default 0.
 
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
             where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where necessary.
+            will be "rolled" to fit where necessary.  When requesting a
+            range that covers the entire modulus, a split cell will
+            preferentially be placed at the ``minimum`` end.
 
         .. warning::
 
@@ -2666,11 +2677,14 @@ class Cube(CFVariableMixin):
         """
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
+        threshold = kwargs.pop("threshold", 0)
         for arg in args:
-            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
+            result = result._intersect(
+                *arg, ignore_bounds=ignore_bounds, threshold=threshold
+            )
         for name, value in kwargs.items():
             result = result._intersect(
-                name, *value, ignore_bounds=ignore_bounds
+                name, *value, ignore_bounds=ignore_bounds, threshold=threshold
             )
         return result
 
@@ -2682,6 +2696,7 @@ class Cube(CFVariableMixin):
         min_inclusive=True,
         max_inclusive=True,
         ignore_bounds=False,
+        threshold=0,
     ):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
@@ -2693,7 +2708,7 @@ class Cube(CFVariableMixin):
         modulus = coord.units.modulus
         if modulus is None:
             raise ValueError(
-                "coordinate units with no modulus are not yet" " supported"
+                "coordinate units with no modulus are not yet supported"
             )
         subsets, points, bounds = self._intersect_modulus(
             coord,
@@ -2702,6 +2717,7 @@ class Cube(CFVariableMixin):
             min_inclusive,
             max_inclusive,
             ignore_bounds,
+            threshold,
         )
 
         # By this point we have either one or two subsets along the relevant
@@ -2882,87 +2898,92 @@ class Cube(CFVariableMixin):
         min_inclusive,
         max_inclusive,
         ignore_bounds,
+        threshold,
     ):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError(
-                "requested range greater than coordinate's" " unit's modulus"
+                "requested range greater than coordinate's unit's modulus"
             )
         if coord.has_bounds():
             values = coord.bounds
         else:
+            ignore_bounds = True
             values = coord.points
         if values.max() > values.min() + modulus:
             raise ValueError(
-                "coordinate's range greater than coordinate's"
-                " unit's modulus"
+                "coordinate's range greater than coordinate's unit's modulus"
             )
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
 
-        if coord.has_bounds():
-            bounds = wrap_lons(coord.bounds, minimum, modulus)
-            if ignore_bounds:
-                points = wrap_lons(coord.points, minimum, modulus)
-                (inside_indices,) = np.where(
-                    np.logical_and(
-                        min_comp(minimum, points), max_comp(points, maximum)
-                    )
-                )
-            else:
-                inside = np.logical_and(
-                    min_comp(minimum, bounds), max_comp(bounds, maximum)
-                )
-                (inside_indices,) = np.where(np.any(inside, axis=1))
-
-            # To ensure that bounds (and points) of matching cells aren't
-            # "scrambled" by the wrap operation we detect split cells that
-            # straddle the wrap point and choose a new wrap point which avoids
-            # split cells.
-            # For example: the cell [349.875, 350.4375] wrapped at -10 would
-            # become [349.875, -9.5625] which is no longer valid. The lower
-            # cell bound value (and possibly associated point) are
-            # recalculated so that they are consistent with the extended
-            # wrapping scheme which moves the wrap point to the correct lower
-            # bound value (-10.125) thus resulting in the cell no longer
-            # being split. For bounds which may extend exactly the length of
-            # the modulus, we simply preserve the point to bound difference,
-            # and call the new bounds = the new points + the difference.
-            pre_wrap_delta = np.diff(coord.bounds[inside_indices])
-            post_wrap_delta = np.diff(bounds[inside_indices])
-            split_cell_indices, _ = np.where(
-                ~np.isclose(pre_wrap_delta, post_wrap_delta)
-            )
-            if split_cell_indices.size:
-                indices = inside_indices[split_cell_indices]
-                cells = bounds[indices]
-                if maximum - modulus not in cells:
-                    # Recalculate the extended minimum only if the output bounds
-                    # do not span the requested (minimum, maximum) range.  If
-                    # they do span that range, this adjustment would give unexpected
-                    # results (see #3391).
-                    cells_delta = np.diff(coord.bounds[indices])
-
-                    # Watch out for ascending/descending bounds.
-                    if cells_delta[0, 0] > 0:
-                        cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                        minimum = np.min(cells[:, 0])
-                    else:
-                        cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
-                        minimum = np.min(cells[:, 1])
-
+        if ignore_bounds:
             points = wrap_lons(coord.points, minimum, modulus)
+            bounds = coord.bounds
+            if bounds is not None:
+                # To avoid splitting any cells (by wrapping only one of its
+                # bounds), apply exactly the same wrapping as the points.
+                # Note that the offsets should be exact multiples of the
+                # modulus, but may initially be slightly off and need rounding.
+                wrap_offset = points - coord.points
+                wrap_offset = np.round(wrap_offset / modulus) * modulus
+                bounds = coord.bounds + wrap_offset[:, np.newaxis]
 
-            bound_diffs = coord.points[:, np.newaxis] - coord.bounds
-            bounds = points[:, np.newaxis] - bound_diffs
-        else:
-            points = wrap_lons(coord.points, minimum, modulus)
-            bounds = None
+            # Check points only
             (inside_indices,) = np.where(
                 np.logical_and(
                     min_comp(minimum, points), max_comp(points, maximum)
                 )
             )
+
+        else:
+            # Set up slices to account for ascending/descending bounds
+            if coord.bounds[0, 0] < coord.bounds[0, 1]:
+                ilower = (slice(None), 0)
+                iupper = (slice(None), 1)
+            else:
+                ilower = (slice(None), 1)
+                iupper = (slice(None), 0)
+
+            # Initially wrap such that upper bounds are in [min, min + modulus]
+            # As with the ignore_bounds case, need to round to modulus due to
+            # floating point precision
+            upper = wrap_lons(coord.bounds[iupper], minimum, modulus)
+            wrap_offset = upper - coord.bounds[iupper]
+            wrap_offset = np.round(wrap_offset / modulus) * modulus
+            lower = coord.bounds[ilower] + wrap_offset
+
+            # Scale threshold for each bound
+            thresholds = (upper - lower) * threshold
+
+            # For a range that covers the whole modulus, there may be a
+            # cell that is "split" and could appear at either side of
+            # the range.  Choose lower, unless there is not enough overlap.
+            if minimum + modulus == maximum and threshold == 0:
+                # Special case: overlapping in a single point
+                # (ie `minimum` itself) is always unintuitive
+                is_split = np.isclose(upper, minimum)
+            else:
+                is_split = upper - minimum < thresholds
+            wrap_offset += is_split * modulus
+
+            # Apply wrapping
+            points = coord.points + wrap_offset
+            bounds = coord.bounds + wrap_offset[:, np.newaxis]
+
+            # Interval [min, max] intersects [a, b] iff min <= b and a <= max
+            # (or < for non-inclusive min/max respectively).
+            # In this case, its length is L = min(max, b) - max(min, a)
+            upper = bounds[iupper]
+            lower = bounds[ilower]
+            overlap = np.where(
+                np.logical_and(
+                    min_comp(minimum, upper), max_comp(lower, maximum)
+                ),
+                np.minimum(maximum, upper) - np.maximum(minimum, lower),
+                np.nan,
+            )
+            (inside_indices,) = np.where(overlap >= thresholds)
 
         # Determine the subsets
         subsets = self._intersect_derive_subset(

@@ -29,6 +29,7 @@ class TestAll(tests.IrisTest):
             bounds=None,
             standard_name=None,
             long_name="z",
+            attributes={"positive": "up"},
         )
 
 
@@ -43,6 +44,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name="height",
             long_name="height above ground level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -55,6 +57,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name=None,
             long_name="flight_level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -67,6 +70,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name="altitude",
             long_name="altitude above sea level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -104,6 +108,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name="height",
             long_name="height above ground level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -117,6 +122,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name=None,
             long_name="flight_level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -130,6 +136,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name="altitude",
             long_name="altitude above sea level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -151,6 +158,7 @@ class TestAll_NAMEII(TestAll):
             bounds=np.array([0.0, 100.0]),
             standard_name="air_pressure",
             long_name=None,
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -166,6 +174,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="height",
             long_name="height above ground level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -178,6 +187,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name=None,
             long_name="flight_level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -190,6 +200,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="altitude",
             long_name="altitude above sea level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -227,6 +238,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="height",
             long_name="height above ground level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -240,6 +252,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name=None,
             long_name="flight_level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -253,6 +266,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="altitude",
             long_name="altitude above sea level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -266,6 +280,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="height",
             long_name="height above ground level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -279,6 +294,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="altitude",
             long_name="altitude above sea level",
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 
@@ -292,6 +308,7 @@ class TestAll_NAMEIII(TestAll):
             bounds=None,
             standard_name="air_pressure",
             long_name=None,
+            attributes={"positive": "up"},
         )
         self.assertEqual(com, res)
 

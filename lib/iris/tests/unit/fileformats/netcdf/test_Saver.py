@@ -612,7 +612,7 @@ class _Common__check_attribute_compliance:
 
     def setUp(self):
         self.container = mock.Mock(name="container", attributes={})
-        self.data = self.array_lib.array(1, dtype="int32")
+        self.data_dtype = np.dtype("int32")
 
         patch = mock.patch("netCDF4.Dataset")
         _ = patch.start()
@@ -629,7 +629,7 @@ class _Common__check_attribute_compliance:
     def check_attribute_compliance_call(self, value):
         self.set_attribute(value)
         with Saver(mock.Mock(), "NETCDF4") as saver:
-            saver.check_attribute_compliance(self.container, self.data)
+            saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
 class Test_check_attribute_compliance__valid_range(
@@ -642,10 +642,10 @@ class Test_check_attribute_compliance__valid_range(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array([1, 2], dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
+        self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array([1, 2], dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
@@ -658,7 +658,7 @@ class Test_check_attribute_compliance__valid_range(
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = [1, 2]
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
@@ -674,10 +674,10 @@ class Test_check_attribute_compliance__valid_min(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(1, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
+        self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(1, dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
@@ -690,7 +690,7 @@ class Test_check_attribute_compliance__valid_min(
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = 1
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
@@ -706,10 +706,10 @@ class Test_check_attribute_compliance__valid_max(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(2, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
+        self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(2, dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
@@ -722,7 +722,7 @@ class Test_check_attribute_compliance__valid_max(
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = 2
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
@@ -733,13 +733,15 @@ class Test_check_attribute_compliance__exception_handling(
 ):
     def test_valid_range_and_valid_min_valid_max_provided(self):
         # Conflicting attributes should raise a suitable exception.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         self.container.attributes["valid_range"] = [1, 2]
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
         with Saver(mock.Mock(), "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
-                saver.check_attribute_compliance(self.container, self.data)
+                saver.check_attribute_compliance(
+                    self.container, self.data_dtype
+                )
 
 
 class Test__cf_coord_identity(tests.IrisTest):

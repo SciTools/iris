@@ -15,6 +15,7 @@ from unittest import mock
 
 import numpy as np
 
+from iris import load_cube
 from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
@@ -50,7 +51,7 @@ class Test(tests.IrisTest):
                 src_grid, target_grid
             )
         )
-        self.assertEqual(len(_regrid_info), 9)
+        self.assertEqual(len(_regrid_info), 10)
         with mock.patch(
             "iris.experimental.regrid."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",
@@ -245,6 +246,42 @@ class Test(tests.IrisTest):
         self.assertArrayShapeStats(
             result, (9, 8, 5), expected_mean, expected_std
         )
+
+
+@tests.skip_data
+class TestLazy(tests.IrisTest):
+    # Setup
+    def setUp(self) -> None:
+        # Prepare a cube and a template
+
+        cube_file_path = tests.get_data_path(
+            ["NetCDF", "regrid", "regrid_xyt.nc"]
+        )
+        self.cube = load_cube(cube_file_path)
+
+        template_file_path = tests.get_data_path(
+            ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
+        )
+        self.template_cube = load_cube(template_file_path)
+
+        # Chunked data makes the regridder run repeatedly
+        self.cube.data = self.cube.lazy_data().rechunk((1, -1, -1))
+
+    def test_src_stays_lazy(self) -> None:
+        cube = self.cube.copy()
+        # Regrid the cube onto the template.
+        regridder = AreaWeightedRegridder(cube, self.template_cube)
+        regridder(cube)
+        # Base cube stays lazy
+        self.assertTrue(cube.has_lazy_data())
+
+    def test_output_lazy(self) -> None:
+        cube = self.cube.copy()
+        # Regrid the cube onto the template.
+        regridder = AreaWeightedRegridder(cube, self.template_cube)
+        out = regridder(cube)
+        # Lazy base cube means lazy output
+        self.assertTrue(out.has_lazy_data())
 
 
 if __name__ == "__main__":

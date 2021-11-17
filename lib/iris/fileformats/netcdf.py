@@ -1190,9 +1190,9 @@ class Saver:
 
         # Ensure that attributes are CF compliant and if possible to make them
         # compliant.
-        self.check_attribute_compliance(cube, cube.lazy_data())
+        self.check_attribute_compliance(cube, cube.dtype)
         for coord in cube.coords():
-            self.check_attribute_compliance(coord, coord.points)
+            self.check_attribute_compliance(coord, coord.dtype)
 
         # Get suitable dimension names.
         mesh_dimensions, cube_dimensions = self._get_dim_names(cube)
@@ -1280,15 +1280,13 @@ class Saver:
                 warnings.warn(msg)
 
     @staticmethod
-    def check_attribute_compliance(container, data):
+    def check_attribute_compliance(container, data_dtype):
         def _coerce_value(val_attr, val_attr_value, data_dtype):
             val_attr_tmp = np.array(val_attr_value, dtype=data_dtype)
             if (val_attr_tmp != val_attr_value).any():
                 msg = '"{}" is not of a suitable value ({})'
                 raise ValueError(msg.format(val_attr, val_attr_value))
             return val_attr_tmp
-
-        data_dtype = data.dtype
 
         # Ensure that conflicting attributes are not provided.
         if (

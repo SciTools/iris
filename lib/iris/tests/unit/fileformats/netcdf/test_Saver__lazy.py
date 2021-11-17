@@ -122,3 +122,7 @@ class TestStreamed(tests.IrisTest):
         self.cube.replace_coord(lazy_coord)
         self.save_common(self.cube)
         self.assertTrue(self.store_watch.called)
+
+
+if __name__ == "__main__":
+    tests.main()

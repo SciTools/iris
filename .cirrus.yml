@@ -38,7 +38,7 @@ env:
   # Conda packages to be installed.
   CONDA_CACHE_PACKAGES: "nox pip"
   # Git commit hash for iris test data.
-  IRIS_TEST_DATA_VERSION: "2.4"
+  IRIS_TEST_DATA_VERSION: "2.5"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
 
