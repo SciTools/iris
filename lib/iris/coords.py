@@ -14,12 +14,14 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
+from typing import Sequence, Union
 import warnings
 import zlib
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import numpy.typing as npt
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -254,7 +256,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._values_dm.lazy_data()
 
-    def _core_values(self):
+    def _core_values(self) -> Union[npt.NDArray, "da.Array"]:
         """
         The values array of this dimensional metadata which may be a NumPy
         array or a dask array.
@@ -805,7 +807,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.dtype
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """
         Return the number of dimensions of the current dimensional metadata
         object.
@@ -1671,7 +1673,7 @@ class Coord(_DimensionalMetadata):
         self._values = points
 
     @property
-    def bounds(self):
+    def bounds(self) -> npt.NDArray:
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -1815,7 +1817,7 @@ class Coord(_DimensionalMetadata):
         """
         return super()._core_values()
 
-    def core_bounds(self):
+    def core_bounds(self) -> Union[npt.NDArray, "da.Array"]:
         """
         The points array at the core of this coord, which may be a NumPy array
         or a dask array.
@@ -2214,7 +2216,9 @@ class Coord(_DimensionalMetadata):
 
         return Cell(point, bound)
 
-    def collapsed(self, dims_to_collapse=None):
+    def collapsed(
+        self, dims_to_collapse: Union[int, Sequence[int], None] = None
+    ) -> "Coord":
         """
         Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
@@ -2232,7 +2236,9 @@ class Coord(_DimensionalMetadata):
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            def serialize(x, axis):
+            def serialize(
+                x: npt.NDArray, axis: Union[Sequence[int], None]
+            ) -> Union[npt.NDArray, str]:
                 if axis is None:
                     return "|".join(str(i) for i in x.flatten())
 
