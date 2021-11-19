@@ -11,12 +11,14 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
+from typing import Sequence, Union
 import warnings
 import zlib
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import numpy.typing as npt
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -238,8 +240,24 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """Return a lazy array representing the dimensional metadata values."""
         return self._values_dm.lazy_data()
 
+<<<<<<< HEAD
     def _core_values(self):
         """Value array of this dimensional metadata which may be a NumPy array or a dask array."""
+||||||| constructed merge base
+    def _core_values(self):
+        """
+        The values array of this dimensional metadata which may be a NumPy
+        array or a dask array.
+
+        """
+=======
+    def _core_values(self) -> Union[npt.NDArray, "da.Array"]:
+        """
+        The values array of this dimensional metadata which may be a NumPy
+        array or a dask array.
+
+        """
+>>>>>>> add type hints
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
             result = result.view()
@@ -771,8 +789,24 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.dtype
 
     @property
+<<<<<<< HEAD
     def ndim(self):
         """Return the number of dimensions of the current dimensional metadata object."""
+||||||| constructed merge base
+    def ndim(self):
+        """
+        Return the number of dimensions of the current dimensional metadata
+        object.
+
+        """
+=======
+    def ndim(self) -> int:
+        """
+        Return the number of dimensions of the current dimensional metadata
+        object.
+
+        """
+>>>>>>> add type hints
         return self._values_dm.ndim
 
     def has_bounds(self):
@@ -1585,9 +1619,17 @@ class Coord(_DimensionalMetadata):
         self._values = points
 
     @property
+<<<<<<< HEAD
     def bounds(self):
         """Coordinate bounds values.
 
+||||||| constructed merge base
+    def bounds(self):
+        """
+=======
+    def bounds(self) -> npt.NDArray:
+        """
+>>>>>>> add type hints
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
 
@@ -1721,8 +1763,24 @@ class Coord(_DimensionalMetadata):
         """Core points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
+<<<<<<< HEAD
     def core_bounds(self):
         """Core bounds. The points array at the core of this coord, which may be a NumPy array or a dask array."""
+||||||| constructed merge base
+    def core_bounds(self):
+        """
+        The points array at the core of this coord, which may be a NumPy array
+        or a dask array.
+
+        """
+=======
+    def core_bounds(self) -> Union[npt.NDArray, "da.Array"]:
+        """
+        The points array at the core of this coord, which may be a NumPy array
+        or a dask array.
+
+        """
+>>>>>>> add type hints
         result = None
         if self.has_bounds():
             result = self._bounds_dm.core_data()
@@ -2100,8 +2158,11 @@ class Coord(_DimensionalMetadata):
 
         return Cell(point, bound)
 
-    def collapsed(self, dims_to_collapse=None):
-        """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
+    def collapsed(
+        self, dims_to_collapse: Union[int, Sequence[int], None] = None
+    ) -> "Coord":
+        """
+        Returns a copy of this coordinate, which has been collapsed along the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
         """
@@ -2115,7 +2176,9 @@ class Coord(_DimensionalMetadata):
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            def serialize(x, axis):
+            def serialize(
+                x: npt.NDArray, axis: Union[Sequence[int], None]
+            ) -> Union[npt.NDArray, str]:
                 if axis is None:
                     return "|".join(str(i) for i in x.flatten())
 
