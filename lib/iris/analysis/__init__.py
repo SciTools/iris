@@ -2696,6 +2696,10 @@ class Linear:
             dimensions in the result cube caused by scalar values in
             `sample_points`.
 
+            The N arrays of values within `sample_points` will be used to
+            create an N-d grid of points that will then be sampled (rather than
+            just N points)
+
             The values for coordinates that correspond to date/times
             may optionally be supplied as datetime.datetime or
             cftime.datetime instances.

@@ -4359,6 +4359,8 @@ x            -               -
             interpolate. The values for coordinates that correspond to
             dates or times may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
+            The N pairs supplied will be used to create an N-d grid of points
+            that will then be sampled (rather than just N points).
         * scheme:
             An instance of the type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
