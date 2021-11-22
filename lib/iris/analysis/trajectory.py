@@ -360,9 +360,13 @@ def interpolate(cube, sample_points, method=None):
                     not new_cube.coord(columns_coord.name()).points.shape
                     == new_coord_points.shape
                 ):
-                    msg = "Expected to have new points of shape {}. Found shape of {}."
-                    raise Exception(
+                    msg = (
+                        "Coord {} was expected to have new points of shape {}. "
+                        "Found shape of {}."
+                    )
+                    raise ValueError(
                         msg.format(
+                            columns_coord.name(),
                             new_cube.coord(columns_coord.name()).points.shape,
                             new_coord_points.shape,
                         )
