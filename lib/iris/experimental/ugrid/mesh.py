@@ -486,7 +486,10 @@ class Connectivity(_DimensionalMetadata):
                 if eq:
                     eq = (
                         self.shape == other.shape
-                        or self.shape == other.shape[::-1]
+                        and self.src_dim == other.src_dim
+                    ) or (
+                        self.shape == other.shape[::-1]
+                        and self.src_dim == other.tgt_dim
                     )
                 if eq:
                     eq = np.array_equal(
