@@ -160,18 +160,6 @@ class Test_merge_cube(tests.IrisTest):
         with self.assertRaises(iris.exceptions.MergeError):
             CubeList([self.cube1, self.cube1]).merge_cube()
 
-    def test_form_contiguous_dimcoord(self):
-        coord1 = DimCoord([3, 2, 1], long_name="spam")
-        coord1.guess_bounds()
-        self.cube1.add_dim_coord(coord1, 0)
-        cubes = CubeList(self.cube1.slices_over("spam"))
-        cube2 = cubes.merge_cube()
-        coord2 = cube2.coord("spam")
-
-        self.assertTrue(coord2.is_contiguous())
-        self.assertArrayEqual(coord2.points, [1, 2, 3])
-        self.assertArrayEqual(coord2.bounds, coord1.bounds[::-1, ::-1])
-
 
 class Test_merge__time_triple(tests.IrisTest):
     @staticmethod
