@@ -220,6 +220,8 @@ This document explains the changes made to Iris for this release
    using assertArrayAllClose following :issue:`3993`.
    (:pull:`4421`)
 
+#. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
