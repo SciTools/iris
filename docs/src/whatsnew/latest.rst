@@ -222,6 +222,8 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
 
+#. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
