@@ -23,7 +23,7 @@ class TestStandard(tests.IrisTest):
         # Crete an instance, with non-default arguments to allow testing of
         # correct property setting.
         self.kwargs = {
-            "indices": np.linspace(1, 9, 9, dtype=int).reshape((3, -1)),
+            "indices": np.linspace(1, 12, 12, dtype=int).reshape((4, -1)),
             "cf_role": "face_node_connectivity",
             "long_name": "my_face_nodes",
             "var_name": "face_nodes",
@@ -91,7 +91,7 @@ class TestStandard(tests.IrisTest):
         self.assertTrue(is_lazy_data(self.connectivity.lazy_src_lengths()))
 
     def test_src_lengths(self):
-        expected = [3, 3, 3]
+        expected = [4, 4, 4]
         self.assertArrayEqual(expected, self.connectivity.src_lengths())
 
     def test___str__(self):
@@ -102,7 +102,7 @@ class TestStandard(tests.IrisTest):
 
     def test___repr__(self):
         expected = (
-            "Connectivity(array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), "
+            "Connectivity(array([[ 1,  2,  3], [ 4,  5,  6], [ 7,  8,  9], [10, 11, 12]]), "
             "cf_role='face_node_connectivity', long_name='my_face_nodes', "
             "var_name='face_nodes', attributes={'notes': 'this is a test'}, "
             "start_index=1, src_dim=1)"
@@ -122,7 +122,7 @@ class TestStandard(tests.IrisTest):
         equivalent_kwargs["src_dim"] = 1 - self.kwargs["src_dim"]
         equivalent = Connectivity(**equivalent_kwargs)
         self.assertFalse(
-            (equivalent.indices == self.connectivity.indices).all()
+            np.array_equal(equivalent.indices, self.connectivity.indices)
         )
         self.assertEqual(equivalent, self.connectivity)
 

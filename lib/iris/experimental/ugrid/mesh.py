@@ -484,11 +484,14 @@ class Connectivity(_DimensionalMetadata):
                 # metadata comparison
                 eq = self.metadata == other.metadata
                 if eq:
-                    eq = self.shape == other.shape
-                if eq:
                     eq = (
-                        self.indices_by_src() == other.indices_by_src()
-                    ).all()
+                        self.shape == other.shape
+                        or self.shape == other.shape[::-1]
+                    )
+                if eq:
+                    eq = np.array_equal(
+                        self.indices_by_src(), other.indices_by_src()
+                    )
         return eq
 
     def transpose(self):
@@ -939,8 +942,12 @@ class Mesh(CFVariableMixin):
         return cls(**mesh_kwargs)
 
     def __eq__(self, other):
-        # TBD: this is a minimalist implementation and requires to be revisited
-        return id(self) == id(other)
+        result = NotImplemented
+
+        if isinstance(other, Mesh):
+            result = self.metadata == other.metadata
+
+        return result
 
     def __hash__(self):
         # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
