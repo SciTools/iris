@@ -9,8 +9,6 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import tempfile
-
 import iris
 from iris.analysis import AreaWeighted
 
@@ -37,8 +35,8 @@ class AreaWeightedTests(tests.IrisTest):
         self.assertTrue(self.cube.has_lazy_data())
         self.assertTrue(out.has_lazy_data())
         # Save the data
-        with tempfile.TemporaryFile(suffix=".nc") as fp:
-            iris.save(out, fp)
+        with self.temp_filename(suffix=".nc") as fname:
+            iris.save(out, fname)
 
     def test_regrid_area_w_lazy_chunked(self):
         # Chunked data makes the regridder run repeatedly
@@ -49,8 +47,8 @@ class AreaWeightedTests(tests.IrisTest):
         self.assertTrue(self.cube.has_lazy_data())
         self.assertTrue(out.has_lazy_data())
         # Save the data
-        with tempfile.TemporaryFile(suffix=".nc") as fp:
-            iris.save(out, fp)
+        with self.temp_filename(suffix=".nc") as fname:
+            iris.save(out, fname)
 
     def test_regrid_area_w_real_save(self):
         real_cube = self.cube.copy()
@@ -60,8 +58,8 @@ class AreaWeightedTests(tests.IrisTest):
         # Realise the data
         out.data
         # Save the data
-        with tempfile.TemporaryFile(suffix=".nc") as fp:
-            iris.save(out, fp)
+        with self.temp_filename(suffix=".nc") as fname:
+            iris.save(out, fname)
 
     def test_regrid_area_w_real_start(self):
         real_cube = self.cube.copy()
@@ -69,8 +67,8 @@ class AreaWeightedTests(tests.IrisTest):
         # Regrid the cube onto the template.
         out = real_cube.regrid(self.template_cube, AreaWeighted())
         # Save the data
-        with tempfile.TemporaryFile(suffix=".nc") as fp:
-            iris.save(out, fp)
+        with self.temp_filename(suffix=".nc") as fname:
+            iris.save(out, fname)
 
 
 if __name__ == "__main__":

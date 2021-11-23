@@ -1662,11 +1662,8 @@ class Test_intersection__GlobalSrcModulus(tests.IrisTest):
         cube = create_cube(0, 360)
         cube.coord("longitude").convert_units("radians")
         result = cube.intersection(longitude=(-1, 0.5))
-        self.assertEqual(
-            result.coord("longitude").points[0], -0.99483767363676634
-        )
-        self.assertEqual(
-            result.coord("longitude").points[-1], 0.48869219055841207
+        self.assertArrayAllClose(
+            result.coord("longitude").points, np.arange(-57, 29) * np.pi / 180
         )
         self.assertEqual(result.data[0, 0, 0], 303)
         self.assertEqual(result.data[0, 0, -1], 28)
@@ -2581,6 +2578,15 @@ class TestSubset(tests.IrisTest):
     def test_different_coordinate(self):
         cube = Cube(0, long_name="raspberry", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="loganberry", units="1"))
+        different_coord = DimCoord([2], long_name="loganberry", units="1")
+        result = cube.subset(different_coord)
+        self.assertEqual(result, None)
+
+    def test_different_coordinate_vector(self):
+        cube = Cube([0, 1], long_name="raspberry", units="1")
+        cube.add_dim_coord(
+            DimCoord([0, 1], long_name="loganberry", units="1"), 0
+        )
         different_coord = DimCoord([2], long_name="loganberry", units="1")
         result = cube.subset(different_coord)
         self.assertEqual(result, None)

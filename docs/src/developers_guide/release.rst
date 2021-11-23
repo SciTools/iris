@@ -11,6 +11,21 @@ The summary below is of the main areas that constitute the release.  The final
 section details the :ref:`iris_development_releases_steps` to take.
 
 
+.. _release_manager:
+
+Release Manager
+---------------
+A Release Manager will be nominated for each release of Iris. This role involves:
+
+* deciding which features and bug fixes should be included in the release
+* managing the project board for the release
+* using a `GitHub Releases Discussion Forum`_ for documenting intent and capturing any 
+  discussion about the release
+
+The Release Manager will make the release, ensuring that all the steps outlined
+on this page are completed.
+
+
 Before Release
 --------------
 
@@ -243,6 +258,7 @@ Post Release Steps
 
 .. _SciTools/iris: https://github.com/SciTools/iris
 .. _tag on the SciTools/Iris: https://github.com/SciTools/iris/releases
+.. _GitHub Releases Discussion Forum: https://github.com/SciTools/iris/discussions/categories/releases
 .. _conda-forge Anaconda channel: https://anaconda.org/conda-forge/iris
 .. _conda-forge iris-feedstock: https://github.com/conda-forge/iris-feedstock
 .. _CFEP-05: https://github.com/conda-forge/cfep/blob/master/cfep-05.md
