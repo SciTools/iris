@@ -181,6 +181,9 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ added a section to the release documentation outlining the role
    of the :ref:`release_manager`. (:pull:`4413`)
 
+#. `@trexfeathers`_ encouraged contributors to include type hinting in code
+   they are working on - :ref:`code_formatting`. (:pull:`4390`)
+
 
 💼 Internal
 ===========
