@@ -41,6 +41,20 @@ class Test(tests.IrisTest):
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
+    def test_multiple_axes(self):
+        cell_method_strings = [
+            "lat: lon: standard_deviation",
+            "lat: lon : standard_deviation",
+            "lat : lon: standard_deviation",
+            "lat : lon : standard_deviation",
+        ]
+        expected = (
+            CellMethod(method="standard_deviation", coords=["lat", "lon"]),
+        )
+        for cell_method_str in cell_method_strings:
+            res = parse_cell_methods(cell_method_str)
+            self.assertEqual(res, expected)
+
     def test_multiple(self):
         cell_method_strings = [
             "time: maximum (interval: 1 hr) time: mean (interval: 1 day)",
@@ -87,7 +101,8 @@ class Test(tests.IrisTest):
 
     def test_comment_brackets(self):
         cell_method_strings = [
-            "time: minimum within days (comment: 18h(day-1)-18h)"
+            "time: minimum within days (comment: 18h(day-1)-18h)",
+            "time : minimum within days (comment: 18h(day-1)-18h)",
         ]
         expected = (
             CellMethod(
