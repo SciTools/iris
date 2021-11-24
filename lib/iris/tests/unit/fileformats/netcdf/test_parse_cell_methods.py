@@ -93,7 +93,7 @@ class Test(tests.IrisTest):
             CellMethod(
                 method="minimum within days",
                 coords="time",
-                intervals="",
+                intervals=None,
                 comments="18h(day-1)-18h",
             ),
         )
