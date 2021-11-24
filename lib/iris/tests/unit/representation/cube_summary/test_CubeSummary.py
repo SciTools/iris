@@ -20,6 +20,7 @@ from iris.coords import (
     DimCoord,
 )
 from iris.cube import Cube
+from iris.tests.stock.mesh import sample_mesh_cube
 
 
 def example_cube():
@@ -56,6 +57,7 @@ class Test_CubeSummary(tests.IrisTest):
 
         expected_vector_sections = [
             "Dimension coordinates:",
+            "Mesh coordinates:",
             "Auxiliary coordinates:",
             "Derived coordinates:",
             "Cell measures:",
@@ -211,7 +213,7 @@ class Test_CubeSummary(tests.IrisTest):
         self.assertEqual(rep.header.dimension_header.dim_names, [])
         self.assertEqual(rep.header.dimension_header.shape, [])
         self.assertEqual(rep.header.dimension_header.contents, ["scalar cube"])
-        self.assertEqual(len(rep.vector_sections), 5)
+        self.assertEqual(len(rep.vector_sections), 6)
         self.assertTrue(
             all(sect.is_empty() for sect in rep.vector_sections.values())
         )
@@ -302,6 +304,17 @@ class Test_CubeSummary(tests.IrisTest):
         co3a_summ, co3b_summ = co_summs[4:6]
         self.assertEqual(co3a_summ.extra, "arr1=array([5, 6])")
         self.assertEqual(co3b_summ.extra, "arr1=array([[5], [6]])")
+
+    def test_unstructured_cube(self):
+        cube = sample_mesh_cube()
+        rep = CubeSummary(cube)
+        # Just check that coordinates appear in the expected sections
+        dim_section = rep.vector_sections["Dimension coordinates:"]
+        mesh_section = rep.vector_sections["Mesh coordinates:"]
+        aux_section = rep.vector_sections["Auxiliary coordinates:"]
+        self.assertEqual(len(dim_section.contents), 2)
+        self.assertEqual(len(mesh_section.contents), 2)
+        self.assertEqual(len(aux_section.contents), 1)
 
 
 if __name__ == "__main__":

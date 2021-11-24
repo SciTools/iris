@@ -9,6 +9,7 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import collections
 from contextlib import contextmanager
 from unittest import mock
 
@@ -17,7 +18,6 @@ import numpy as np
 from numpy import ma
 
 import iris
-from iris._lazy_data import as_lazy_data
 from iris.coord_systems import (
     AlbersEqualArea,
     GeogCS,
@@ -41,8 +41,12 @@ class Test_write(tests.IrisTest):
     # It is not considered necessary to have integration tests for saving
     # EVERY coordinate system. A subset are tested below.
     # -------------------------------------------------------------------------
+
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
     def _transverse_mercator_cube(self, ellipsoid=None):
-        data = np.arange(12).reshape(3, 4)
+        data = self.array_lib.arange(12).reshape(3, 4)
         cube = Cube(data, "air_pressure_anomaly")
         trans_merc = TransverseMercator(
             49.0, -2.0, -400000.0, 100000.0, 0.9996012717, ellipsoid
@@ -64,7 +68,7 @@ class Test_write(tests.IrisTest):
         return cube
 
     def _mercator_cube(self, ellipsoid=None):
-        data = np.arange(12).reshape(3, 4)
+        data = self.array_lib.arange(12).reshape(3, 4)
         cube = Cube(data, "air_pressure_anomaly")
         merc = Mercator(49.0, ellipsoid)
         coord = DimCoord(
@@ -84,7 +88,7 @@ class Test_write(tests.IrisTest):
         return cube
 
     def _stereo_cube(self, ellipsoid=None):
-        data = np.arange(12).reshape(3, 4)
+        data = self.array_lib.arange(12).reshape(3, 4)
         cube = Cube(data, "air_pressure_anomaly")
         stereo = Stereographic(
             -10.0, 20.0, 500000.0, -200000.0, None, ellipsoid
@@ -157,7 +161,7 @@ class Test_write(tests.IrisTest):
             self.assertCDL(nc_path)
 
     def _simple_cube(self, dtype):
-        data = np.arange(12, dtype=dtype).reshape(3, 4)
+        data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
         points = np.arange(3, dtype=dtype)
         bounds = np.arange(6, dtype=dtype).reshape(3, 2)
         cube = Cube(data, "air_pressure_anomaly")
@@ -186,6 +190,8 @@ class Test_write(tests.IrisTest):
     def test_zlib(self):
         cube = self._simple_cube(">f4")
         api = self.patch("iris.fileformats.netcdf.netCDF4")
+        # Define mocked default fill values to prevent deprecation warning (#4374).
+        api.default_fillvals = collections.defaultdict(lambda: -99.0)
         with Saver("/dummy/path", "NETCDF4") as saver:
             saver.write(cube, zlib=True)
         dataset = api.Dataset.return_value
@@ -207,7 +213,7 @@ class Test_write(tests.IrisTest):
 
     def test_least_significant_digit(self):
         cube = Cube(
-            np.array([1.23, 4.56, 7.89]),
+            self.array_lib.array([1.23, 4.56, 7.89]),
             standard_name="surface_temperature",
             long_name=None,
             var_name="temp",
@@ -295,9 +301,14 @@ class Test_write(tests.IrisTest):
 
 
 class Test__create_cf_bounds(tests.IrisTest):
+    # Method is substituted in test_Saver__lazy.
+    @staticmethod
+    def climatology_3d():
+        return stock.climatology_3d()
+
     def _check_bounds_setting(self, climatological=False):
         # Generic test that can run with or without a climatological coord.
-        cube = stock.climatology_3d()
+        cube = self.climatology_3d()
         coord = cube.coord("time").copy()
         # Over-write original value from stock.climatology_3d with test value.
         coord.climatological = climatological
@@ -351,11 +362,14 @@ class Test__create_cf_bounds(tests.IrisTest):
 class Test_write__valid_x_cube_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
-        vrange = np.array([1, 2], dtype="int32")
+        vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.attributes["valid_range"] = vrange
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
@@ -392,11 +406,14 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
 class Test_write__valid_x_coord_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
-        vrange = np.array([1, 2], dtype="int32")
+        vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.coord(axis="x").attributes["valid_range"] = vrange
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
@@ -433,17 +450,16 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
 
 
 class Test_write_fill_value(tests.IrisTest):
-    def _make_cube(
-        self, dtype, lazy=False, masked_value=None, masked_index=None
-    ):
-        data = np.arange(12, dtype=dtype).reshape(3, 4)
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
+    def _make_cube(self, dtype, masked_value=None, masked_index=None):
+        data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
         if masked_value is not None:
             data = ma.masked_equal(data, masked_value)
         if masked_index is not None:
-            data = np.ma.masked_array(data)
+            data = self.array_lib.ma.masked_array(data)
             data[masked_index] = ma.masked
-        if lazy:
-            data = as_lazy_data(data)
         lat = DimCoord(np.arange(3), "latitude", units="degrees")
         lon = DimCoord(np.arange(4), "longitude", units="degrees")
         return Cube(
@@ -495,24 +511,6 @@ class Test_write_fill_value(tests.IrisTest):
         # Test that masked data saves correctly using the default fill value.
         index = (1, 1)
         cube = self._make_cube(">f4", masked_index=index)
-        with self._netCDF_var(cube) as var:
-            self.assertNotIn("_FillValue", var.ncattrs())
-            self.assertTrue(var[index].mask)
-
-    def test_mask_lazy_fill_value(self):
-        # Test that masked lazy data saves correctly when given a fill value.
-        index = (1, 1)
-        fill_value = 12345.0
-        cube = self._make_cube(">f4", masked_index=index, lazy=True)
-        with self._netCDF_var(cube, fill_value=fill_value) as var:
-            self.assertEqual(var._FillValue, fill_value)
-            self.assertTrue(var[index].mask)
-
-    def test_mask_lazy_default_fill_value(self):
-        # Test that masked lazy data saves correctly using the default fill
-        # value.
-        index = (1, 1)
-        cube = self._make_cube(">f4", masked_index=index, lazy=True)
         with self._netCDF_var(cube) as var:
             self.assertNotIn("_FillValue", var.ncattrs())
             self.assertTrue(var[index].mask)
@@ -609,9 +607,12 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
 
 class _Common__check_attribute_compliance:
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
     def setUp(self):
         self.container = mock.Mock(name="container", attributes={})
-        self.data = np.array(1, dtype="int32")
+        self.data_dtype = np.dtype("int32")
 
         patch = mock.patch("netCDF4.Dataset")
         _ = patch.start()
@@ -628,7 +629,7 @@ class _Common__check_attribute_compliance:
     def check_attribute_compliance_call(self, value):
         self.set_attribute(value)
         with Saver(mock.Mock(), "NETCDF4") as saver:
-            saver.check_attribute_compliance(self.container, self.data)
+            saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
 class Test_check_attribute_compliance__valid_range(
@@ -639,25 +640,25 @@ class Test_check_attribute_compliance__valid_range(
         return "valid_range"
 
     def test_valid_range_type_coerce(self):
-        value = np.array([1, 2], dtype="float")
+        value = self.array_lib.array([1, 2], dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
-        value = np.array([1, 2], dtype="int8")
+        self.data_dtype = np.dtype("uint8")
+        value = self.array_lib.array([1, 2], dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
-        value = np.array([1.5, 2.5], dtype="float64")
+        value = self.array_lib.array([1.5, 2.5], dtype="float64")
         msg = '"valid_range" is not of a suitable value'
         with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = [1, 2]
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
@@ -671,25 +672,25 @@ class Test_check_attribute_compliance__valid_min(
         return "valid_min"
 
     def test_valid_range_type_coerce(self):
-        value = np.array(1, dtype="float")
+        value = self.array_lib.array(1, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
-        value = np.array(1, dtype="int8")
+        self.data_dtype = np.dtype("uint8")
+        value = self.array_lib.array(1, dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
-        value = np.array(1.5, dtype="float64")
+        value = self.array_lib.array(1.5, dtype="float64")
         msg = '"valid_min" is not of a suitable value'
         with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = 1
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
@@ -703,42 +704,44 @@ class Test_check_attribute_compliance__valid_max(
         return "valid_max"
 
     def test_valid_range_type_coerce(self):
-        value = np.array(2, dtype="float")
+        value = self.array_lib.array(2, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data.dtype)
+        self.assertAttribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
-        self.data = self.data.astype("uint8")
-        value = np.array(2, dtype="int8")
+        self.data_dtype = np.dtype("uint8")
+        value = self.array_lib.array(2, dtype="int8")
         self.check_attribute_compliance_call(value)
         self.assertAttribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
-        value = np.array(2.5, dtype="float64")
+        value = self.array_lib.array(2.5, dtype="float64")
         msg = '"valid_max" is not of a suitable value'
         with self.assertRaisesRegex(ValueError, msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
         # Ensure we handle the case when not a numpy array is provided.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         value = 2
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
 
 
-class Test_check_attribute_compliance__exception_handlng(
+class Test_check_attribute_compliance__exception_handling(
     _Common__check_attribute_compliance, tests.IrisTest
 ):
     def test_valid_range_and_valid_min_valid_max_provided(self):
         # Conflicting attributes should raise a suitable exception.
-        self.data = self.data.astype("int8")
+        self.data_dtype = np.dtype("int8")
         self.container.attributes["valid_range"] = [1, 2]
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
         with Saver(mock.Mock(), "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
-                saver.check_attribute_compliance(self.container, self.data)
+                saver.check_attribute_compliance(
+                    self.container, self.data_dtype
+                )
 
 
 class Test__cf_coord_identity(tests.IrisTest):
@@ -746,10 +749,8 @@ class Test__cf_coord_identity(tests.IrisTest):
         coord = iris.coords.DimCoord(
             [30, 45], coord_name, units=units, coord_system=coord_system
         )
-        result = Saver._cf_coord_identity(coord)
-        self.assertEqual(
-            result, (coord.standard_name, coord.long_name, expected_units)
-        )
+        result = Saver._cf_coord_standardised_units(coord)
+        self.assertEqual(result, expected_units)
 
     def test_geogcs_latitude(self):
         crs = iris.coord_systems.GeogCS(60, 0)
@@ -1018,10 +1019,16 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
 class Test__create_cf_cell_measure_variable(tests.IrisTest):
     # Saving of masked data is disallowed.
+
+    # Attribute is substituted in test_Saver__lazy.
+    array_lib = np
+
     def setUp(self):
         self.cube = stock.lat_lon_cube()
         self.names_map = ["latitude", "longitude"]
-        masked_array = np.ma.masked_array([0, 1, 2], mask=[True, False, True])
+        masked_array = self.array_lib.ma.masked_array(
+            [0, 1, 2], mask=[True, False, True]
+        )
         self.cm = iris.coords.CellMeasure(masked_array, var_name="cell_area")
         self.cube.add_cell_measure(self.cm, data_dims=0)
         self.exp_emsg = "Cell measures with missing data are not supported."
@@ -1031,7 +1038,7 @@ class Test__create_cf_cell_measure_variable(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             saver = Saver(nc_path, "NETCDF4")
             with self.assertRaisesRegex(ValueError, self.exp_emsg):
-                saver._create_cf_cell_measure_variable(
+                saver._create_generic_cf_array_var(
                     self.cube, self.names_map, self.cm
                 )
 

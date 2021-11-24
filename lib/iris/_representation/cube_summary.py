@@ -259,8 +259,17 @@ class CubeSummary:
         vector_dim_coords = [
             coord for coord in dim_coords if id(coord) not in scalar_coord_ids
         ]
+        if cube.mesh is None:
+            mesh_coords = []
+        else:
+            mesh_coords = [
+                coord for coord in aux_coords if hasattr(coord, "mesh")
+            ]
+
         vector_aux_coords = [
-            coord for coord in aux_coords if id(coord) not in scalar_coord_ids
+            coord
+            for coord in aux_coords
+            if (id(coord) not in scalar_coord_ids and coord not in mesh_coords)
         ]
         vector_derived_coords = [
             coord
@@ -300,6 +309,7 @@ class CubeSummary:
             )
 
         add_vector_section("Dimension coordinates:", vector_dim_coords)
+        add_vector_section("Mesh coordinates:", mesh_coords)
         add_vector_section("Auxiliary coordinates:", vector_aux_coords)
         add_vector_section("Derived coordinates:", vector_derived_coords)
         add_vector_section("Cell measures:", vector_cell_measures, False)

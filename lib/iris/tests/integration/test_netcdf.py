@@ -35,6 +35,41 @@ import iris.tests.stock as stock
 
 
 @tests.skip_data
+class TestAtmosphereSigma(tests.IrisTest):
+    def setUp(self):
+        # Modify stock cube so it is suitable to have a atmosphere sigma
+        # factory added to it.
+        cube = stock.realistic_4d_no_derived()
+        cube.coord("surface_altitude").rename("surface_air_pressure")
+        cube.coord("surface_air_pressure").units = "Pa"
+        cube.coord("sigma").units = "1"
+        ptop_coord = iris.coords.AuxCoord(1000.0, var_name="ptop", units="Pa")
+        cube.add_aux_coord(ptop_coord, ())
+        cube.remove_coord("level_height")
+        # Construct and add atmosphere sigma factory.
+        factory = iris.aux_factory.AtmosphereSigmaFactory(
+            cube.coord("ptop"),
+            cube.coord("sigma"),
+            cube.coord("surface_air_pressure"),
+        )
+        cube.add_aux_factory(factory)
+        self.cube = cube
+
+    def test_save(self):
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            self.assertCDL(filename)
+
+    def test_save_load_loop(self):
+        # Ensure that the AtmosphereSigmaFactory is automatically loaded
+        # when loading the file.
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(self.cube, filename)
+            cube = iris.load_cube(filename, "air_potential_temperature")
+            assert cube.coords("air_pressure")
+
+
+@tests.skip_data
 class TestHybridPressure(tests.IrisTest):
     def setUp(self):
         # Modify stock cube so it is suitable to have a
@@ -238,10 +273,16 @@ class TestLazySave(tests.IrisTest):
         )
         acube = iris.load_cube(fpath, "air_temperature")
         self.assertTrue(acube.has_lazy_data())
+        # Also check a coord with lazy points + bounds.
+        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(acube)
+        # Check that cube data is not realised, also coord points + bounds.
         self.assertTrue(acube.has_lazy_data())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
+        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
 
 
 @tests.skip_data
@@ -672,6 +713,7 @@ data:
         self.assertEqual(cs.false_northing, 0.0)
 
 
+@tests.skip_data
 class TestConstrainedLoad(tests.IrisTest):
     filename = tests.get_data_path(
         ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")

@@ -2,6 +2,7 @@
     Common resources in alphabetical order:
 
 .. _black: https://black.readthedocs.io/en/stable/
+.. _cartopy: https://github.com/SciTools/cartopy
 .. _.cirrus.yml: https://github.com/SciTools/iris/blob/main/.cirrus.yml
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
@@ -9,6 +10,7 @@
 .. _conda: https://docs.conda.io/en/latest/
 .. _contributor: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
 .. _core developers: https://github.com/SciTools/scitools.org.uk/blob/master/contributors.json
+.. _discussions: https://github.com/SciTools/iris/discussions
 .. _generating sss keys for GitHub: https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account
 .. _GitHub Help Documentation: https://docs.github.com/en/github
 .. _Iris GitHub Discussions: https://github.com/SciTools/iris/discussions
@@ -34,6 +36,7 @@
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
 .. _using git: https://docs.github.com/en/github/using-git
+.. _requirements/ci/: https://github.com/SciTools/iris/tree/main/requirements/ci
 
 
 .. comment
@@ -62,4 +65,5 @@
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
+.. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus

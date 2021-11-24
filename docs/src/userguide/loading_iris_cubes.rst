@@ -215,6 +215,18 @@ constraint to ``load``::
     level_10 = iris.Constraint(model_level_number=10)
     cubes = iris.load(filename, forecast_6 & level_10)
 
+.. note::
+
+    Whilst ``&`` is supported, the ``|`` that might reasonably be expected is
+    not. Explanation as to why is in the :class:`iris.Constraint` reference
+    documentation.
+
+    For an example of constraining to multiple ranges of the same coordinate to
+    generate one cube, see the :class:`iris.Constraint` reference documentation.
+
+    To generate multiple cubes, each constrained to a different range of the
+    same coordinate, use :py:func:`iris.load_cubes`.
+
 As well as being able to combine constraints using ``&``,
 the :class:`iris.Constraint` class can accept multiple arguments,
 and a list of values can be given to constrain a coordinate to one of

@@ -39,6 +39,12 @@ class AncillaryVariableNotFoundError(KeyError):
     pass
 
 
+class ConnectivityNotFoundError(KeyError):
+    """Raised when a search yields no connectivities."""
+
+    pass
+
+
 class CoordinateMultiDimError(ValueError):
     """Raised when a routine doesn't support multi-dimensional coordinates."""
 

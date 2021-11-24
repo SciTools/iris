@@ -7,7 +7,7 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` Release Highlights
+.. dropdown:: :opticon:`report` |iris_version| Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -16,7 +16,8 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've dropped support for `Python 3.6`_
+   * We've added support for `UGRID`_ meshes which can now be loaded and attached
+     to a cube.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -25,87 +26,116 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Congratulations to `@jamesp`_ who recently became an Iris core developer
-   after joining the Iris development team at the `Met Office`_. 🎉
-
-#. A special thanks goes to `@akuhnregnier`_, `@gcaria`_, `@jamesp`_, `@MHBalsmeier`_
-   and `@Badboy-16`_ all of whom made their first contributions to Iris, which
-   were gratefully received and included in this release. Keep up the awesome
-   work! 🍻
+#. Welcome to `@wjbenfold`_, `@tinyendian`_, `@larsbarring`_, `@akuhnregnier`_
+   and `@bsherratt`_ who made their first contributions to Iris.  The first of many we hope!
+#. Congratulations to `@wjbenfold`_ who has become a core developer for Iris! 🎉
 
 
 ✨ Features
 ===========
 
-#. `@pelson`_ and `@trexfeathers`_ enhanced :meth:`iris.plot.plot` and
-   :meth:`iris.quickplot.plot` to automatically place the cube on the x axis if
-   the primary coordinate being plotted against is a vertical coordinate. E.g.
-   ``iris.plot.plot(z_cube)`` will produce a z-vs-phenomenon plot, where before
-   it would have produced a phenomenon-vs-z plot. (:pull:`3906`)
-#. `@jonseddon`_ added :meth:`iris.plot.barbs` to provide a convenient way to
-   use :func:`matplotlib.pyplot.barbs` with Iris cubes. A gallery example was
-   included to illustrate the new method's use. (:pull:`3710`)
+#. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
+   meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
+   :pull:`4014`, :pull:`4027`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`,
+   :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) of
+   data on meshes.
+   Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
+   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
+   :class:`iris.experimental.ugrid.mesh.MeshCoord` and
+   :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
+   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
+   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
+   on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
+   property :attr:`~iris.cube.Cube.mesh` which returns a
+   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
+   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
-#. `@bjlittle`_ introduced :func:`iris.common.metadata.hexdigest` to the
-   public API. Previously it was a private function introduced in ``v3.0.0``.
-   Given any object, :func:`~iris.common.metadata.hexdigest` returns a string
-   representation of the 64-bit non-cryptographic hash of the object using the
-   extremely fast `xxhash`_ hashing algorithm. (:pull:`4020`)
+#. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
+   for files using the `UGRID`_ conventions.
+   The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
+   provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
+   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
+   (:pull:`4058`).
 
-#. `@rcomer`_ implemented a ``__str__`` method for metadata classes, so
-   printing these objects skips metadata elements that are set to None or an
-   empty string or dictionary. (:pull:`4040`)
+#. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
+   `UGRID`_ conventions.
+   The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
+   A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
+   :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
+   (i.e. not attached to cubes).
+   (:pull:`4318` and :pull:`4339`).
 
-#. `@Badboy-16`_ implemented a ``CubeList.copy()`` method to return a
-   ``CubeList`` object instead of a ``list``. (:pull:`4094`)
+#. `@trexfeathers`_ added :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`
+   for inferring a :class:`~iris.experimental.ugrid.mesh.Mesh` from an
+   appropriate collection of :class:`iris.coords.Coord`\ s.
 
-#. `@pp-mo`_ and `@trexfeathers`_ reformatted :meth:`iris.cube.Cube.summary`,
-   (which is used for ``print(Cube)``); putting
-   :attr:`~iris.cube.Cube.cell_methods` before
-   :attr:`~iris.cube.Cube.attributes`, and improving spacing throughout.
-   (:pull:`4206`)
+#. `@larsbarring`_ updated :func:`~iris.util.equalise_attributes` to return a list of dictionaries
+   containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
 
-#. `@pp-mo`_ and `@lbdreyer`_ optimised loading netcdf files, resulting in a
-   speed up when loading with a single :func:`~iris.NameConstraint`. Note, this
-   optimisation only applies when matching on standard name, long name or
-   NetCDF variable name, not when matching on STASH.
-   (:pull:`4176`)
+#. `@trexfeathers`_ enabled streaming of **all** lazy arrays when saving to
+   NetCDF files (was previously just :class:`~iris.cube.Cube`
+   :attr:`~iris.cube.Cube.data`). This is
+   important given the much greater size of
+   :class:`~iris.coords.AuxCoord` :attr:`~iris.coords.AuxCoord.points` and
+   :class:`~iris.experimental.ugrid.mesh.Connectivity`
+   :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
+   `UGRID`_ model. (:pull:`4375`)
+
+#. `@bsherratt`_ added a `threshold` parameter to
+   :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
+
+#. `@wjbenfold`_ added test data to ci benchmarks so that it is accessible to
+   benchmark scripts. Also added a regridding benchmark that uses this data
+   (:pull:`4402`)
 
 
 🐛 Bugs Fixed
 =============
 
-#. `@gcaria`_ fixed :class:`~iris.coords.Cell` comparison with
-   0-dimensional arrays and 1-dimensional arrays with len=1. (:pull:`4083`)
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
+   one cell's bounds align with the requested maximum and negative minimum, fixing
+   :issue:`4221`. (:pull:`4278`)
 
-#. `@gcaria`_ fixed :meth:`~iris.cube.Cube.cell_measure_dims` to also accept the
-   string name of a :class:`~iris.coords.CellMeasure`. (:pull:`3931`)
+#. `@bsherratt`_ fixed further edge cases in
+   :meth:`~iris.cube.Cube.intersection`, including :issue:`3698` (:pull:`4363`)
 
-#. `@gcaria`_ fixed :meth:`~iris.cube.Cube.ancillary_variable_dims` to also accept
-   the string name of a :class:`~iris.coords.AncillaryVariable`. (:pull:`3931`)
+#. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
+   when a cube list contains cubes with different names, which will no longer report
+   "Cube names differ: var1 != var1" if var1 appears multiple times in the list
+   (:issue:`4342`, :pull:`4345`)
 
-#. `@rcomer`_ modified :func:`~iris.plot.contourf` to skip the special handling for
-   antialiasing when data values are too low for it to have an effect.  This caused
-   unexpected artifacts in some edge cases, as shown at :issue:`4086`. (:pull:`4150`)
+#. `@larsbarring`_ fixed :class:`~iris.coord_systems.GeoCS` to handle spherical ellipsoid
+   parameter inverse_flattening = 0 (:issue: `4146`, :pull:`4348`)
 
-#. `@MHBalsmeier`_ modified :func:`~iris.plot.contourf` to generalize :pull:`4150`
-   for the cases where NaN values occur in the plot array (:pull:`4263`)
+#. `@pdearnshaw`_ fixed an error in the call to :class:`cftime.datetime` in
+   :mod:`~iris.fileformats.pp_save_rules` that prevented the saving to PP of climate
+   means for DJF (:pull:`4391`)
 
-🚀 Performance Enhancements
-===========================
+#. `@wjbenfold`_ improved the error message for failure of :meth:`~iris.cube.CubeList.concatenate`
+   to indicate that the value of a scalar coordinate may be mismatched, rather than the metadata
+   (:issue:`4096`, :pull:`4387`)
 
-#. `@bjlittle`_ added support for automated ``import`` linting with `isort`_, which
-   also includes significant speed-ups for Iris imports. (:pull:`4174`)
+#. `@bsherratt`_ fixed a regression to the NAME file loader introduced in 3.0.4,
+   as well as some long-standing bugs with vertical coordinates and number
+   formats. (:pull:`4411`)
 
-#. `@bjlittle`_ Optimised the creation of dynamic metadata manager classes within the
-   :func:`~iris.common.metadata.metadata_manager_factory`, resulting in a significant
-   speed-up in the creation of Iris :class:`~iris.coords.AncillaryVariable`,
-   :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure`, and
-   :class:`~iris.cube.Cube` instances. (:pull:`4227`)
+#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if
+   no value match is found.  (:pull:`4417`)
+
+#. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
+   data to take significantly longer than with real data. Relevant benchmark
+   shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
 
 💣 Incompatible Changes
 =======================
+
+#. N/A
+
+
+🚀 Performance Enhancements
+===========================
 
 #. N/A
 
@@ -119,156 +149,96 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@bjlittle`_ dropped both `black`_ and `flake8`_ package dependencies
-   from our `conda`_ YAML and ``setup.cfg`` PyPI requirements. (:pull:`4181`)
+#. `@bjlittle`_ introduced the ``cartopy >=0.20`` minimum pin.
+   (:pull:`4331`)
+
+#. `@trexfeathers`_ introduced the ``cf-units >=3`` and ``nc-time-axis >=1.3``
+   minimum pins. (:pull:`4356`)
+
+#. `@bjlittle`_ introduced the ``numpy >=1.19`` minimum pin, in
+   accordance with `NEP-29`_ deprecation policy. (:pull:`4386`)
 
 
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Seasonal ensemble model plots" and "Global average
-   annual temperature maps" Gallery examples. (:pull:`3933` and :pull:`3934`)
+#. `@rcomer`_ updated the "Plotting Wind Direction Using Quiver" Gallery
+   example. (:pull:`4120`)
 
-#. `@MHBalsmeier`_ described non-conda installation on Debian-based distros.
-   (:pull:`3958`)
+#. `@trexfeathers`_ included `Iris GitHub Discussions`_ in
+   :ref:`get involved <development_where_to_start>`. (:pull:`4307`)
 
-#. `@bjlittle`_ clarified in the doc-string that :class:`~iris.coords.Coord`
-   is now an `abstract base class`_ since Iris ``3.0.0``, and it is **not**
-   possible to create an instance of it. (:pull:`3971`)
+#. `@wjbenfold`_ improved readability in :ref:`userguide interpolation
+   section <interpolation>`. (:pull:`4314`)
 
-#. `@bjlittle`_ added automated Iris version discovery for the ``latest.rst``
-   in the ``whatsnew`` documentation. (:pull:`3981`)
+#. `@wjbenfold`_ added explanation about the absence of | operator for
+   :class:`iris.Constraint` to :ref:`userguide loading section
+   <constrained-loading>` and to api reference documentation. (:pull:`4321`)
 
-#. `@tkknight`_ stated the Python version used to build the documentation
-   on :ref:`installing_iris` and to the footer of all pages.  Also added the
-   copyright years to the footer. (:pull:`3989`)
+#. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
+   during :ref:`developer_running_tests`. (:pull:`4359`)
 
-#. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
-   to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`)
+#. `@lbdreyer`_ added a section to the release documentation outlining the role
+   of the :ref:`release_manager`. (:pull:`4413`)
 
-#. `@bjlittle`_ added the |PyPI|_ badge to the `README.md`_. (:pull:`4004`)
-
-#. `@tkknight`_ added a banner at the top of every page of the unreleased
-   development documentation if being viewed on `Read the Docs`_.
-   (:pull:`3999`)
-
-#. `@bjlittle`_ added post-release instructions on how to :ref:`update_pypi`
-   with `scitools-iris`_. (:pull:`4038`)
-
-#. `@bjlittle`_ added the |pre-commit.ci|_ badge to the `README.md`_.
-   See :ref:`pre_commit_ci` for further details. (:pull:`4061`)
-
-#. `@rcomer`_ tweaked docstring layouts in the :mod:`iris.plot` module, so
-   they render better in the published documentation.  See :issue:`4085`.
-   (:pull:`4100`)
-
-#. `@tkknight`_ documented the ``--force`` command line option when creating
-   a conda development environment. See :ref:`installing_from_source`.
-   (:pull:`4240`)
-
-#. `@MHBalsmeier`_ updated and simplified non-conda installation on Debian-based distros.
-   (:pull:`4260`)
+#. `@trexfeathers`_ encouraged contributors to include type hinting in code
+   they are working on - :ref:`code_formatting`. (:pull:`4390`)
 
 
 💼 Internal
 ===========
 
-#. `@rcomer`_ removed an old unused test file. (:pull:`3913`)
+#. `@trexfeathers`_ set the linkcheck to ignore
+   http://www.nationalarchives.gov.uk/doc/open-government-licence since this
+   always works locally, but never within CI. (:pull:`4307`)
 
-#. `@tkknight`_ moved the ``docs/iris`` directory to be in the parent
-   directory ``docs``.  (:pull:`3975`)
+#. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
+   test data is missing (:pull:`4319`)
 
-#. `@jamesp`_ updated a test for `numpy`_ ``1.20.0``. (:pull:`3977`)
+#. `@wjbenfold`_ excluded ``Good First Issue`` labelled issues from being
+   marked stale. (:pull:`4317`)
 
-#. `@bjlittle`_ and `@jamesp`_ extended the `cirrus-ci`_ testing and `nox`_
-   testing automation to support `Python 3.8`_. (:pull:`3976`)
+#. `@tkknight`_ added additional make targets for reducing the time of the
+   documentation build including ``html-noapi`` and ``html-quick``.
+   Useful for development purposes only.  For more information see
+   :ref:`contributing.documentation.building` the documentation. (:pull:`4333`)
 
-#. `@bjlittle`_ rationalised the ``noxfile.py``, and added the ability for
-   each ``nox`` session to list its ``conda`` environment packages and
-   environment info. (:pull:`3990`)
+#. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
+   that sometimes interferes with unrelated tests. (:pull:`4330`)
 
-#. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
-   from collaborators targeting the Iris ``main`` branch. (:pull:`4007`)
+#. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
+   (:pull:`4349`)
 
-#. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
-   (:pull:`3997`)
+#. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
+   (:pull:`4347`).
 
-#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+#. `@bjlittle`_ enabled the `sort-all`_ `pre-commit`_ hook to automatically
+   sort ``__all__`` entries into alphabetical order. (:pull:`4353`)
 
-#. `@bjlittle`_ and `@jamesp`_ addressed a regression in behaviour when using
-   `conda`_ 4.10.0 within `cirrus-ci`_. (:pull:`4084`)
+#. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
+   deprecation warning.  (:issue:`4374`, :pull:`4376`)
 
-#. `@bjlittle`_ updated the perceptual imagehash graphical test support for
-   `matplotlib`_ 3.4.1. (:pull:`4087`)
+#. `@akuhnregnier`_ removed addition of period from
+   :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
+   using assertArrayAllClose following :issue:`3993`.
+   (:pull:`4421`)
 
-#. `@jamesp`_ switched `cirrus-ci`_ testing and `nox`_
-   testing to use `conda-lock`_ files for static test environments. (:pull:`4108`)
-
-#. `@bjlittle`_ updated the ``bug-report`` and ``feature-request`` GitHub issue
-   templates to remove an external URL reference that caused un-posted user issue
-   content to be lost in the browser when followed. (:pull:`4147`)
-
-#. `@bjlittle`_ dropped `Python 3.6`_ support, and automated the discovery of
-   supported Python versions tested by `cirrus-ci`_ for documentation.
-   (:pull:`4163`)
-
-#. `@bjlittle`_ refactored ``setup.py`` into ``setup.cfg``. (:pull:`4168`)
-
-#. `@bjlittle`_ consolidated the ``.flake8`` configuration into ``setup.cfg``.
-   (:pull:`4200`)
-
-#. `@bjlittle`_ renamed ``iris/master`` branch to ``iris/main`` and migrated
-   references of ``master`` to ``main`` within codebase. (:pull:`4202`)
-
-#. `@bjlittle`_ added the `blacken-docs`_ ``pre-commit`` hook to automate
-   ``black`` linting of documentation code blocks. (:pull:`4205`)
-
-#. `@bjlittle`_ consolidated `nox`_ ``black``, ``flake8`` and ``isort`` sessions
-   into one ``lint`` session using ``pre-commit``. (:pull:`4181`)
-
-#. `@bjlittle`_ streamlined the `cirrus-ci`_ testing by removing the ``minimal``
-   tests, which are a subset of the ``full`` tests. (:pull:`4218`)
-
-#. `@bjlittle`_ consolidated the `cirrus-ci`_ documentation ``doctest`` and
-   ``gallery`` tasks into a single task and associated `nox`_ session.
-   (:pull:`4219`)
-
-#. `@jamesp`_ and `@trexfeathers`_ implemented a benchmarking CI check
-   using `asv`_. (:pull:`4253`)
-
-#. `@pp-mo`_ refactored almost all of :meth:`iris.cube.Cube.summary` into the
-   new private module: :mod:`iris._representation`; rewritten with a more
-   modular approach, resulting in more readable and extensible code.
-   (:pull:`4206`)
+#. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@akuhnregnier: https://github.com/akuhnregnier
-.. _@Badboy-16: https://github.com/Badboy-16
-.. _@gcaria: https://github.com/gcaria
-.. _@MHBalsmeier: https://github.com/MHBalsmeier
-
+.. _@bsherratt: https://github.com/bsherratt
+.. _@larsbarring: https://github.com/larsbarring
+.. _@pdearnshaw: https://github.com/pdearnshaw
+.. _@tinyendian: https://github.com/tinyendian
 
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _abstract base class: https://docs.python.org/3/library/abc.html
-.. _blacken-docs: https://github.com/asottile/blacken-docs
-.. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
-.. _Met Office: https://www.metoffice.gov.uk/
-.. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
-.. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
-.. _pre-commit.ci: https://results.pre-commit.ci/latest/github/SciTools/iris/main
-.. |PyPI| image:: https://img.shields.io/pypi/v/scitools-iris?color=orange&label=pypi%7Cscitools-iris
-.. _PyPI: https://pypi.org/project/scitools-iris/
-.. _Python 3.8: https://www.python.org/downloads/release/python-380/
-.. _Python 3.6: https://www.python.org/downloads/release/python-360/
-.. _README.md: https://github.com/SciTools/iris#-----
-.. _xxhash: http://cyan4973.github.io/xxHash/
-.. _conda-lock: https://github.com/conda-incubator/conda-lock
-.. _asv: https://asv.readthedocs.io/en/stable/
+.. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
+.. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
+.. _sort-all: https://github.com/aio-libs/sort-all

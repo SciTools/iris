@@ -35,8 +35,10 @@ def autolog(message):
     print("[{}] {}".format(ntpath.basename(__file__), message))
 
 
-# -- Are we running on the readthedocs server, if so do some setup -----------
+# -- Check for dev make options to build quicker
+skip_api = os.environ.get("SKIP_API")
 
+# -- Are we running on the readthedocs server, if so do some setup -----------
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 
 if on_rtd:
@@ -156,11 +158,16 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
-    # better api documentation (custom)
-    "custom_class_autodoc",
-    "custom_data_autodoc",
-    "generate_package_rst",
 ]
+
+if skip_api == "1":
+    autolog("Skipping the API docs generation (SKIP_API=1)")
+else:
+    # better api documentation (custom)
+    extensions.extend(
+        ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
+    )
+
 # -- panels extension ---------------------------------------------------------
 # See https://sphinx-panels.readthedocs.io/en/latest/
 
@@ -304,6 +311,7 @@ linkcheck_ignore = [
     "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
     "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "http://www.nationalarchives.gov.uk/doc/open-government-licence",
 ]
 
 # list of sources to exclude from the build.

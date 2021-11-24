@@ -20,10 +20,12 @@ import sys
 import tempfile
 
 import cf_units
+from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import is_lazy_data
 import iris.exceptions
 
 
@@ -1853,20 +1855,28 @@ def equalise_attributes(cubes):
     """
     Delete cube attributes that are not identical over all cubes in a group.
 
-    This function simply deletes any attributes which are not the same for
-    all the given cubes.  The cubes will then have identical attributes.  The
-    given cubes are modified in-place.
+    This function deletes any attributes which are not the same for all the
+    given cubes.  The cubes will then have identical attributes, and the
+    removed attributes are returned.  The given cubes are modified in-place.
 
     Args:
 
     * cubes (iterable of :class:`iris.cube.Cube`):
         A collection of cubes to compare and adjust.
 
+    Returns:
+
+    * removed (list):
+        A list of dicts holding the removed attributes.
+
     """
+    removed = []
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cubes[0].attributes.keys())
+    keys_to_remove = set(common_keys)
     for cube in cubes[1:]:
         cube_keys = list(cube.attributes.keys())
+        keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
@@ -1875,12 +1885,39 @@ def equalise_attributes(cubes):
                 and np.all(cube.attributes[key] == cubes[0].attributes[key])
             )
         ]
+    keys_to_remove.difference_update(common_keys)
 
     # Remove all the other attributes.
     for cube in cubes:
-        for key in list(cube.attributes.keys()):
-            if key not in common_keys:
-                del cube.attributes[key]
+        deleted_attributes = {
+            key: cube.attributes.pop(key)
+            for key in keys_to_remove
+            if key in cube.attributes
+        }
+        removed.append(deleted_attributes)
+    return removed
+
+
+def is_masked(array):
+    """
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or `dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the array has any masks.
+
+    """
+    if is_lazy_data(array):
+        result = da.ma.getmaskarray(array).any().compute()
+    else:
+        result = ma.is_masked(array)
+    return result
 
 
 def _strip_metadata_from_dims(cube, dims):

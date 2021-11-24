@@ -25,11 +25,13 @@ from iris.common.metadata import (
     CubeMetadata,
     metadata_manager_factory,
 )
+from iris.experimental.ugrid.metadata import ConnectivityMetadata
 
 BASES = [
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
 ]

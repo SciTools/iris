@@ -20,10 +20,13 @@ A separate repository under the `SciTools`_ organisation is used, see
 https://github.com/SciTools/iris-test-data.
 
 In order to run the tests with **all** the test data you must clone the
-``iris-test-data`` repository and then configure your shell to ensure the Iris
-tests can find it by using the shell environment variable named
-**OVERRIDE_TEST_DATA_REPOSITORY**.  The example command below uses
-``~/projects`` as the parent directory::
+``iris-test-data`` repository and then ensure the Iris tests can access
+``iris-test-data/test_data``, using one of two methods:
+
+* Store the path in a shell environment variable named **OVERRIDE_TEST_DATA_REPOSITORY**.
+* Store the path in ``lib/iris/etc/site.cfg`` (see :mod:`iris.config` for more).
+
+The example command below uses ``~/projects`` as the parent directory::
 
    cd ~/projects
    git clone git@github.com:SciTools/iris-test-data.git

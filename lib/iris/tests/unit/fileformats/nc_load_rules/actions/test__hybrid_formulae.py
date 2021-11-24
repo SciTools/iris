@@ -245,6 +245,7 @@ variables:
 # support all of them.
 _SUPPORTED_FORMULA_TYPES = (
     # NOTE: omit "atmosphere_hybrid_height_coordinate" : our basic testcase
+    "atmosphere_sigma_coordinate",
     "atmosphere_hybrid_sigma_pressure_coordinate",
     "ocean_sigma_z_coordinate",
     "ocean_sigma_coordinate",
