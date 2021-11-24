@@ -186,6 +186,7 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
 _CM_PARSE = re.compile(
     r"""
                            (?P<name>([\w_]+\s*?:\s+)+)
@@ -223,8 +224,12 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     being laid out in the expected format is left to the calling function.
     """
 
-    # Find indices of spaces that precede a name: method pair
-    break_indices = []
+    # Find name candidates
+    name_start_inds = []
+    for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
+        name_start_inds.append(m.start())
+
+    # Remove those that fall inside brackets
     bracket_depth = 0
     for ind, cha in enumerate(nc_cell_methods):
         if cha == "(":
@@ -234,32 +239,20 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             if bracket_depth < 0:
                 pass
                 # TODO: Raise meaningful warning or error to indicate badly formatted cell method
-        elif cha == ":" and bracket_depth == 0:
-            candidate_ind = ind - 1
-            while nc_cell_methods[candidate_ind] == " " and candidate_ind > 0:
-                candidate_ind -= 1
-            while nc_cell_methods[candidate_ind] != " " and candidate_ind > 0:
-                candidate_ind -= 1
-            if candidate_ind != 0:
-                break_indices.append(candidate_ind)
+        if bracket_depth > 0 and ind in name_start_inds:
+            name_start_inds.remove(ind)
 
     # List tuples of indices of starts and ends of the cell methods in the string
     method_indices = []
-    if not break_indices:
-        method_indices.append((0, len(nc_cell_methods)))
-    else:
-        method_indices.append((0, break_indices[0]))
-        for ii in range(len(break_indices) - 1):
-            method_indices.append(
-                (break_indices[ii] + 1, break_indices[ii + 1])
-            )
-        method_indices.append((break_indices[-1] + 1, len(nc_cell_methods)))
+    for ii in range(len(name_start_inds) - 1):
+        method_indices.append((name_start_inds[ii], name_start_inds[ii + 1]))
+    method_indices.append((name_start_inds[-1], len(nc_cell_methods)))
 
     # Index the string and match against each substring
     nc_cell_methods_matches = []
     for start_ind, end_ind in method_indices:
         nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
-        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str)
+        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
         if not nc_cell_method_match:
             pass
             # TODO: Raise meaningful warning or error to indicate badly formatted cell method
