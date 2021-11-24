@@ -19,6 +19,7 @@ import os
 import os.path
 import re
 import string
+from typing import List
 import warnings
 
 import cf_units
@@ -191,7 +192,7 @@ _CM_PARSE = re.compile(
                            (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
-                               (?P<extra>[^\)]+)
+                               (?P<extra>.+)
                                \)\s*
                            )?
                        """,
@@ -201,6 +202,70 @@ _CM_PARSE = re.compile(
 
 class UnknownCellMethodWarning(Warning):
     pass
+
+
+def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
+    """
+    Split a CF cell_methods attribute string into a list of zero or more cell
+    methods, each of which is then parsed with a regex to return a list of match
+    objects.
+
+    Args:
+
+    * nc_cell_methods: The value of the cell methods attribute to be split.
+
+    Returns:
+
+    * nc_cell_methods_matches: The original string split into strings that each
+        describe one cell method
+
+    Splitting is done based on colons outside of any brackets. Validation past
+    being laid out in the expected format is left to the calling function.
+    """
+
+    # Find indices of spaces that precede a name: method pair
+    break_indices = []
+    bracket_depth = 0
+    for ind, cha in enumerate(nc_cell_methods):
+        if cha == "(":
+            bracket_depth += 1
+        elif cha == ")":
+            bracket_depth -= 1
+            if bracket_depth < 0:
+                pass
+                # TODO: Raise meaningful warning or error to indicate badly formatted cell method
+        elif cha == ":" and bracket_depth == 0:
+            candidate_ind = ind - 1
+            while nc_cell_methods[candidate_ind] == " " and candidate_ind > 0:
+                candidate_ind -= 1
+            while nc_cell_methods[candidate_ind] != " " and candidate_ind > 0:
+                candidate_ind -= 1
+            if candidate_ind != 0:
+                break_indices.append(candidate_ind)
+
+    # List tuples of indices of starts and ends of the cell methods in the string
+    method_indices = []
+    if not break_indices:
+        method_indices.append((0, len(nc_cell_methods)))
+    else:
+        method_indices.append((0, break_indices[0]))
+        for ii in range(len(break_indices) - 1):
+            method_indices.append(
+                (break_indices[ii] + 1, break_indices[ii + 1])
+            )
+        method_indices.append((break_indices[-1] + 1, len(nc_cell_methods)))
+
+    # Index the string and match against each substring
+    nc_cell_methods_matches = []
+    for start_ind, end_ind in method_indices:
+        nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
+        nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str)
+        if not nc_cell_method_match:
+            pass
+            # TODO: Raise meaningful warning or error to indicate badly formatted cell method
+        nc_cell_methods_matches.append(nc_cell_method_match)
+
+    return nc_cell_methods_matches
 
 
 def parse_cell_methods(nc_cell_methods):
@@ -226,7 +291,7 @@ def parse_cell_methods(nc_cell_methods):
 
     cell_methods = []
     if nc_cell_methods is not None:
-        for m in _CM_PARSE.finditer(nc_cell_methods):
+        for m in _split_cell_methods(nc_cell_methods):
             d = m.groupdict()
             method = d[_CM_METHOD]
             method = method.strip()
