@@ -85,6 +85,22 @@ class Test(tests.IrisTest):
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
+    def test_comment_brackets(self):
+        cell_method_strings = [
+            "time: minimum within days (comment: 18h(day-1)-18h)"
+        ]
+        expected = (
+            CellMethod(
+                method="minimum within days",
+                coords="time",
+                intervals="",
+                comments="18h(day-1)-18h",
+            ),
+        )
+        for cell_method_str in cell_method_strings:
+            res = parse_cell_methods(cell_method_str)
+            self.assertEqual(res, expected)
+
     def test_portions_of_cells(self):
         cell_method_strings = [
             "area: mean where sea_ice over sea",
