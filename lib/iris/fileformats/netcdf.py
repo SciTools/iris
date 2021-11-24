@@ -217,11 +217,12 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
 
     Returns:
 
-    * nc_cell_methods_matches: The original string split into strings that each
-        describe one cell method
+    * nc_cell_methods_matches: A list of the re.Match objects associated with
+      each parsed cell method
 
-    Splitting is done based on colons outside of any brackets. Validation past
-    being laid out in the expected format is left to the calling function.
+    Splitting is done based on words followed by colons outside of any brackets.
+    Validation of anything other than being laid out in the expected format is
+    left to the calling function.
     """
 
     # Find name candidates
