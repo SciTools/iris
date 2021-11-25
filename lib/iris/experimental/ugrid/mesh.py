@@ -27,7 +27,7 @@ from ...common import (
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...util import guess_coord_axis
+from ...util import array_equal, guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -492,8 +492,9 @@ class Connectivity(_DimensionalMetadata):
                         and self.src_dim == other.tgt_dim
                     )
                 if eq:
-                    eq = np.array_equal(
-                        self.indices_by_src(), other.indices_by_src()
+                    eq = array_equal(
+                        self.indices_by_src(self.core_indices()),
+                        other.indices_by_src(other.core_indices()),
                     )
         return eq
 

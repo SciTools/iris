@@ -3507,6 +3507,8 @@ class Cube(CFVariableMixin):
 
             # Having checked everything else, check approximate data equality.
             if result:
+                # TODO: why do we use allclose() here, but strict equality in
+                #  _DimensionalMetadata (via util.array_equal())?
                 result = da.allclose(
                     self.core_data(), other.core_data()
                 ).compute()

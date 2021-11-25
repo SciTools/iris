@@ -343,19 +343,19 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     def __eq__(self, other):
         # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
+        #  within Coord type instances, as only these allow bounds to be set.
 
         eq = NotImplemented
         # If the other object has a means of getting its definition, then do
-        # the  comparison, otherwise return a NotImplemented to let Python try
-        # to resolve the operator elsewhere.
+        #  the comparison, otherwise return a NotImplemented to let Python try
+        #  to resolve the operator elsewhere.
         if hasattr(other, "metadata"):
             # metadata comparison
             eq = self.metadata == other.metadata
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
-                    self._values, other._values, withnans=True
+                    self._core_values(), other._core_values(), withnans=True
                 )
 
             # Also consider bounds, if we have them.
@@ -363,7 +363,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(
-                        self.bounds, other.bounds, withnans=True
+                        self.core_bounds(), other.core_bounds(), withnans=True
                     )
                 else:
                     eq = not self.has_bounds() and not other.has_bounds()

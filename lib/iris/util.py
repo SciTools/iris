@@ -346,7 +346,7 @@ def array_equal(array1, array2, withnans=False):
     Args:
 
     * array1, array2 (arraylike):
-        args to be compared, after normalising with :func:`np.asarray`.
+        args to be compared, normalised if necessary with :func:`np.asarray`.
 
     Kwargs:
 
@@ -360,7 +360,14 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     """
-    array1, array2 = np.asarray(array1), np.asarray(array2)
+
+    def normalise_array(array):
+        if not is_lazy_data(array):
+            array = np.asarray(array)
+        # (All other np operations in array_equal() preserve array laziness).
+        return array
+
+    array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
