@@ -42,28 +42,12 @@ def common_test_setup(self):
     # Also construct an array to match the expected result.
     # basic layer showing region allocation (large -ve values for missing)
     expected = np.array(
-        [
-            1.0,
-            1,
-            1,
-            1,
-            1,
-            4,
-            4,
-            2,
-            2,
-            2,
-            3,
-            3,
-            3,
-            -99999,
-            -99999,  # missing points
-            4,
-            4,
-            4,
-            4,
-            4,
-        ]
+        [1.0, 1, 1, 1, 1]
+        + [4, 4]
+        + [2, 2, 2]  # points in #1 overlapped by #3
+        + [3, 3, 3]
+        + [-99999, -99999]
+        + [4, 4, 4, 4, 4]  # missing points
     )
     # second layer should be same but +1000.
     expected = np.stack([expected, expected + 1000])
