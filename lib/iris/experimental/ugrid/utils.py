@@ -35,8 +35,6 @@ def recombine_regions(
         Describes the full mesh and mesh-location to which the region data
         refers, and acts as a template for the result.
         Must have a :class:`~iris.experimental.ugrid.mesh.Mesh`.
-        Its mesh dimension must have a dimension coordinate, containing a
-        simple sequence of index values == "np.arange(n_mesh)".
 
     * region_cubes
         Contain data on a subset of the 'full_mesh_cube' mesh locations.
@@ -62,8 +60,8 @@ def recombine_regions(
 
     * result_cube
         An unstructured region_cube identical to 'full_mesh_cube', and with the
-        same mesh and location, but with its data replaced by that from the
-        'region_cubes'.
+        same mesh and location, but with its data and ".metadata" replaced by
+        that from the 'region_cubes'.
         Where regions overlap, the result data comes from the last-listed of the
         original region cubes which contain that location.
         Where no region contains a datapoint, it will be masked in the result.

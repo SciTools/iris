@@ -64,6 +64,7 @@ class TestRecombine__data(tests.IrisTest):
         result = recombine_regions(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
+        self.assertTrue(result.has_lazy_data())
         self.assertMaskedArrayEqual(result.data, self.expected_result)
 
     def test_single_region(self):
