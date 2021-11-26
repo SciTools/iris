@@ -140,6 +140,10 @@ This document explains the changes made to Iris for this release
    coordinate bounds using minimum and maximum for unordered coordinates,
    fixing :issue:`1528`. (:pull:`4315`)
 
+#. `@wjbenfold`_ changed how a delayed unit conversion is performed on a cube
+   so that a cube with lazy data awaiting a unit conversion can be pickled.
+   (:issue:`4354 `, :pull:`4377`)
+
 
 💣 Incompatible Changes
 =======================
@@ -150,7 +154,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
+   data to take significantly longer than with real data. Relevant benchmark
+   shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
 
 🔥 Deprecations
