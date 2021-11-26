@@ -229,12 +229,12 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@aaronspring: https://github.com/aaronspring
 .. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
 .. _@tinyendian: https://github.com/tinyendian
-.. _@aaronspring: https://github.com/aaronspring
 
 .. comment
     Whatsnew resources in alphabetical order:
