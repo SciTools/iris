@@ -127,6 +127,11 @@ This document explains the changes made to Iris for this release
    data to take significantly longer than with real data. Relevant benchmark
    shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
+#. `@trexfeathers`_ changed :class:`~iris.coords._DimensionalMetadata` and
+   :class:`~iris.experimental.ugrid.Connectivity` equality methods to preserve
+   array laziness, allowing efficient comparisons even with larger-than-memory
+   objects.
+
 
 💣 Incompatible Changes
 =======================
