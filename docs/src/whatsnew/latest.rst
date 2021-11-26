@@ -222,8 +222,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
 
-#. `@aaronspring`_ exchanged `dask` with `dask-core` in testing environments
-   reducing the number of dependencies installed for testing (:pull:`4434`).
+#. `@aaronspring <https://github.com/aaronspring>`_ exchanged `dask` with
+   `dask-core` in testing environments reducing the number of dependencies
+   installed for testing. (:pull:`4434`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
