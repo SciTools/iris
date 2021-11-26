@@ -950,6 +950,10 @@ class Mesh(CFVariableMixin):
 
         if isinstance(other, Mesh):
             result = self.metadata == other.metadata
+            if result:
+                result = self.all_coords == other.all_coords
+            if result:
+                result = self.all_connectivities == other.all_connectivities
 
         return result
 
