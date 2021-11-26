@@ -127,6 +127,9 @@ This document explains the changes made to Iris for this release
    data to take significantly longer than with real data. Relevant benchmark
    shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
+#. `@wjbenfold`_ changed :meth:`iris.util.points_step` to stop it from warning
+   when applied to a single point (:issue:`4250`, :pull:`4367`)
+
 
 💣 Incompatible Changes
 =======================
