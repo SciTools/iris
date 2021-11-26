@@ -2898,9 +2898,7 @@ class MeshCoord(AuxCoord):
         """
         # Override Coord.copy, so that we can ensure it does not duplicate the
         # Mesh object (via deepcopy).
-        # This avoids copying Meshes.  It is also required to allow a copied
-        # MeshCoord to be == the original, since for now Mesh == is only true
-        # for the same identical object.
+        # This avoids copying Meshes.
 
         # FOR NOW: also disallow changing points/bounds at all.
         if points is not None or bounds is not None:
