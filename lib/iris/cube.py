@@ -1051,10 +1051,6 @@ class Cube(CFVariableMixin):
             old_unit = self.units
             new_unit = unit
 
-            # Define a delayed conversion operation (i.e. a callback).
-            # def pointwise_convert(values):
-            #     return old_unit.convert(values, new_unit)
-
             pointwise_convert = partial(old_unit.convert, other=new_unit)
 
             new_data = _lazy.lazy_elementwise(
