@@ -116,6 +116,36 @@ class Test(tests.IrisTest):
             res = parse_cell_methods(cell_method_str)
             self.assertEqual(res, expected)
 
+    def test_comment_bracket_mismatch_warning(self):
+        cell_method_strings = [
+            "time: minimum within days (comment: 18h day-1)-18h)",
+            "time : minimum within days (comment: 18h day-1)-18h)",
+        ]
+        for cell_method_str in cell_method_strings:
+            with mock.patch("warnings.warn") as warn:
+                _ = parse_cell_methods(cell_method_str)
+                self.assertIn(
+                    "Cell methods may be incorrectly parsed due to mismatched brackets",
+                    warn.call_args[0][0],
+                )
+
+    def test_badly_formatted_warning(self):
+        cell_method_strings = [
+            # "time: maximum (interval: 1 hr comment: first bit "
+            # "time: mean (interval: 1 day comment: second bit)",
+            "time: (interval: 1 hr comment: first bit) "
+            "time: mean (interval: 1 day comment: second bit)",
+            "time: maximum (interval: 1 hr comment: first bit) "
+            "time: (interval: 1 day comment: second bit)",
+        ]
+        for cell_method_str in cell_method_strings:
+            with mock.patch("warnings.warn") as warn:
+                _ = parse_cell_methods(cell_method_str)
+                self.assertIn(
+                    f"Failed to fully parse cell method string: {cell_method_str}",
+                    warn.call_args[0][0],
+                )
+
     def test_portions_of_cells(self):
         cell_method_strings = [
             "area: mean where sea_ice over sea",

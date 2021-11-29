@@ -238,8 +238,11 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
         elif cha == ")":
             bracket_depth -= 1
             if bracket_depth < 0:
-                pass
-                # TODO: Raise meaningful warning or error to indicate badly formatted cell method
+                msg = (
+                    "Cell methods may be incorrectly parsed due to mismatched "
+                    "brackets"
+                )
+                warnings.warn(msg, UserWarning, stacklevel=2)
         if bracket_depth > 0 and ind in name_start_inds:
             name_start_inds.remove(ind)
 
@@ -255,8 +258,11 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
         nc_cell_method_str = nc_cell_methods[start_ind:end_ind]
         nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
         if not nc_cell_method_match:
-            pass
-            # TODO: Raise meaningful warning or error to indicate badly formatted cell method
+            msg = (
+                f"Failed to fully parse cell method string: {nc_cell_methods}"
+            )
+            warnings.warn(msg, UserWarning, stacklevel=2)
+            continue
         nc_cell_methods_matches.append(nc_cell_method_match)
 
     return nc_cell_methods_matches
