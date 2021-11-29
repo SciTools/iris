@@ -487,7 +487,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(v_a[_VAR_DIMS], [face_dim])
         self.assertEqual(v_b[_VAR_DIMS], [node_dim])
 
-    def test_multi_cubes_identical_meshes(self):
+    def test_multi_cubes_equal_meshes(self):
         # Make 2 identical meshes
         # NOTE: *can't* name these explicitly, as it stops them being identical.
         mesh1 = make_mesh()
@@ -499,34 +499,27 @@ class TestSaveUgrid__cube(tests.IrisTest):
         tempfile_path = self.check_save_cubes([cube1, cube2])
         dims, vars = scan_dataset(tempfile_path)
 
-        # there are exactly 2 meshes in the file
+        # there is exactly 1 mesh in the file
         mesh_names = vars_meshnames(vars)
-        self.assertEqual(sorted(mesh_names), ["Mesh2d", "Mesh2d_0"])
+        self.assertEqual(sorted(mesh_names), ["Mesh2d"])
 
-        # they use different dimensions
+        # same dimensions
         self.assertEqual(
             vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
         )
         self.assertEqual(
             vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
         )
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d_0"), "Mesh2d_nodes_0"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d_0"), "Mesh2d_faces_0"
-        )
 
         # there are exactly two data-variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
         self.assertEqual(["a", "b"], list(mesh_datavars))
 
-        # the data variables reference the two separate meshes
+        # the data variables reference the same mesh
         a_props, b_props = vars["a"], vars["b"]
-        self.assertEqual(a_props["mesh"], "Mesh2d")
-        self.assertEqual(a_props["location"], "face")
-        self.assertEqual(b_props["mesh"], "Mesh2d_0")
-        self.assertEqual(b_props["location"], "face")
+        for props in a_props, b_props:
+            self.assertEqual(props["mesh"], "Mesh2d")
+            self.assertEqual(props["location"], "face")
 
         # the data variables map the appropriate node dimensions
         self.assertEqual(a_props[_VAR_DIMS], ["Mesh2d_faces"])
@@ -1234,22 +1227,12 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 ["Mesh2d_edge_0", "Mesh2d_0_edge_N_nodes"],
             )
 
-    def test_multiple_identical_meshes(self):
+    def test_multiple_equal_mesh(self):
         mesh1 = make_mesh()
         mesh2 = make_mesh()
 
         # Save and snapshot the result
         tempfile_path = self.check_save_mesh([mesh1, mesh2])
-        dims, vars = scan_dataset(tempfile_path)
-
-        # Check there are two independent meshes
-        self._check_two_different_meshes(vars)
-
-    def test_multiple_same_mesh(self):
-        mesh = make_mesh()
-
-        # Save and snapshot the result
-        tempfile_path = self.check_save_mesh([mesh, mesh])
         dims, vars = scan_dataset(tempfile_path)
 
         # In this case there should be only *one* mesh.
@@ -1264,7 +1247,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         self.assertEqual(2, len(coord_vars_y))
 
         # Check the connectivities are all present: _only_ 1 var of each type.
-        for conn in mesh.all_connectivities:
+        for conn in mesh1.all_connectivities:
             if conn is not None:
                 conn_vars = vars_w_props(vars, cf_role=conn.cf_role)
                 self.assertEqual(1, len(conn_vars))

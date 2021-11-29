@@ -183,19 +183,24 @@ class Test___eq__(tests.IrisTest):
     def _create_common_mesh(self, **kwargs):
         return sample_meshcoord(mesh=self.mesh, **kwargs)
 
-    def test_same_mesh(self):
+    def test_identical_mesh(self):
         meshcoord1 = self._create_common_mesh()
         meshcoord2 = self._create_common_mesh()
         self.assertEqual(meshcoord2, meshcoord1)
 
-    def test_different_identical_mesh(self):
-        # For equality, must have the SAME mesh (at present).
+    def test_equal_mesh(self):
         mesh1 = sample_mesh()
-        mesh2 = sample_mesh()  # Presumably identical, but not the same
+        mesh2 = sample_mesh()
         meshcoord1 = sample_meshcoord(mesh=mesh1)
         meshcoord2 = sample_meshcoord(mesh=mesh2)
-        # These should NOT compare, because the Meshes are not identical : at
-        # present, Mesh equality is not implemented (i.e. limited to identity)
+        self.assertEqual(meshcoord2, meshcoord1)
+
+    def test_different_mesh(self):
+        mesh1 = sample_mesh()
+        mesh2 = sample_mesh()
+        mesh2.long_name = "new_name"
+        meshcoord1 = sample_meshcoord(mesh=mesh1)
+        meshcoord2 = sample_meshcoord(mesh=mesh2)
         self.assertNotEqual(meshcoord2, meshcoord1)
 
     def test_different_location(self):
