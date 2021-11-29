@@ -130,7 +130,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ changed :class:`~iris.coords._DimensionalMetadata` and
    :class:`~iris.experimental.ugrid.Connectivity` equality methods to preserve
    array laziness, allowing efficient comparisons even with larger-than-memory
-   objects.
+   objects. (:pull:`4439`)
 
 
 💣 Incompatible Changes
