@@ -132,9 +132,10 @@ class TestProperties1D(TestMeshCommon):
         self.assertEqual(equivalent, self.mesh)
 
     def test_different(self):
-        # 2021-11-26 currently not possible to have a metadata-only difference
-        #  - only topology_dimension makes a difference and that also mandates
-        #  different connectivities.
+        different_kwargs = self.kwargs.copy()
+        different_kwargs["long_name"] = "new_name"
+        different = mesh.Mesh(**different_kwargs)
+        self.assertNotEqual(different, self.mesh)
 
         different_kwargs = self.kwargs.copy()
         ncaa = self.kwargs["node_coords_and_axes"]
