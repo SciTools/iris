@@ -389,8 +389,7 @@ def array_equal(array1, array2, withnans=False):
                     eqs[idxs] = True
 
         if eq:
-            eqs = as_concrete_data(eqs)
-            eq = np.all(eqs)  # check equal at all points
+            eq = as_concrete_data(np.all(eqs))  # check equal at all points
 
     return eq
 
