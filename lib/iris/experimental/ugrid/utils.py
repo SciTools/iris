@@ -36,7 +36,8 @@ def recombine_submeshes(
         Must have a :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
     submesh_cubes : iterable of Cube, or Cube
-        Cubes, each with data on a _subset_ of the ``mesh_cube`` mesh locations.
+        Cubes, each with data on a _subset_ of the ``mesh_cube`` datapoints
+        (within the mesh dimension).
         The submesh cubes do not need to have a mesh.
         There must be at least 1 of them, to determine the result phenomenon.
         Their metadata (names, units and attributes) must all be the same,
@@ -167,7 +168,7 @@ def recombine_submeshes(
                 if full_coord and not sub_coord:
                     err = (
                         f"{sub_str} has no dim-coord for dimension "
-                        "{i_dim}, to match the 'mesh_cube' dimension "
+                        f"{i_dim}, to match the 'mesh_cube' dimension "
                         f'"{full_dimname}".'
                     )
                 elif sub_coord and not full_coord:
@@ -194,27 +195,27 @@ def recombine_submeshes(
                     err = (
                         f"{sub_str} has an index coord "
                         f'"{index_coord_name}" whose ".metadata" does not '
-                        "match that on 'mesh_cube' :  "
+                        f"match that of the same name in 'mesh_cube' :  "
                         f"{sub_metadata} != {full_metadata}."
                     )
+                else:
+                    # At this point, we know we *have* an index coord, and it does
+                    # not conflict with the one on 'mesh_cube' (if any).
+                    # Now check for matches between the region cubes.
+                    if indexcoord_metadata is None:
+                        # Store first occurrence (from first region-cube)
+                        indexcoord_metadata = sub_metadata
+                    elif sub_metadata != indexcoord_metadata:
+                        # Compare subsequent occurrences (from other region-cubes)
+                        err = (
+                            f"{sub_str} has an index coord "
+                            f'"{index_coord_name}" whose ".metadata" does not '
+                            f"match that of the other submesh-cubes :  "
+                            f"{sub_metadata} != {indexcoord_metadata}."
+                        )
 
             if err:
                 raise ValueError(err)
-
-            # At this point, we know we *have* an index coord, and it does
-            # not conflict with the one on 'mesh_cube' (if any).
-            # Now check for matches between the region cubes.
-            if indexcoord_metadata is None:
-                # Store first occurrence (from first region-cube)
-                indexcoord_metadata = sub_metadata
-            elif sub_metadata != indexcoord_metadata:
-                # Compare subsequent occurrences (from other region-cubes)
-                err = (
-                    f"{sub_str} has an index coord "
-                    f'"{index_coord_name}" whose ".metadata" does not '
-                    f"match that of the first region-cube :  "
-                    f"{sub_metadata} != {indexcoord_metadata}."
-                )
 
     # Use the mesh_dim to transpose inputs + outputs, if required, as it is
     # simpler for all the array operations to always have the mesh dim *last*.
