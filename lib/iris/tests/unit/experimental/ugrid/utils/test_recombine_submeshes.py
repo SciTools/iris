@@ -4,7 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 """
-Unit tests for :func:`iris.experimental.ugrid.utils.recombine_regions`.
+Unit tests for :func:`iris.experimental.ugrid.utils.recombine_submeshes`.
 
 """
 # Import iris.tests first so that some things can be initialised before
@@ -16,7 +16,7 @@ import numpy as np
 
 from iris.coords import AuxCoord
 from iris.cube import CubeList
-from iris.experimental.ugrid.utils import recombine_regions
+from iris.experimental.ugrid.utils import recombine_submeshes
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 
 
@@ -84,7 +84,7 @@ class TestRecombine__data(tests.IrisTest):
         common_test_setup(self)
 
     def test_basic(self):
-        result = recombine_regions(
+        result = recombine_submeshes(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
         self.assertTrue(result.has_lazy_data())
@@ -93,7 +93,7 @@ class TestRecombine__data(tests.IrisTest):
     def test_chunking(self):
         # Make non-standard testcube with higher dimensions + specific chunking
         common_test_setup(self, shape_3d=(10, 3), data_chunks=(3, 2, -1))
-        result = recombine_regions(
+        result = recombine_submeshes(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
         # Check that the result chunking matches the input.
@@ -101,7 +101,7 @@ class TestRecombine__data(tests.IrisTest):
 
     def test_single_region(self):
         region = self.region_cubes[1]
-        result = recombine_regions(
+        result = recombine_submeshes(
             self.mesh_cube, [region], index_coord_name="i_mesh_face"
         )
         # Construct a snapshot of the expected result.
@@ -119,13 +119,13 @@ class TestRecombine__data(tests.IrisTest):
         region2 = region1.copy()
         region2.data[:] = 202.0
         # check that result values all come from the second.
-        result1 = recombine_regions(
+        result1 = recombine_submeshes(
             self.mesh_cube, [region1, region2], index_coord_name="i_mesh_face"
         )
         result1 = result1[..., inds].data
         self.assertArrayEqual(result1, 202.0)
         # swap the region order, and it should resolve the other way.
-        result2 = recombine_regions(
+        result2 = recombine_submeshes(
             self.mesh_cube, [region2, region1], index_coord_name="i_mesh_face"
         )
         result2 = result2[..., inds].data
@@ -136,7 +136,7 @@ class TestRecombine__data(tests.IrisTest):
         region2 = self.region_cubes[2]
         inds = region2.coord("i_mesh_face").points
         # With all regions, no points in reg1 are masked
-        result_all = recombine_regions(
+        result_all = recombine_submeshes(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
         self.assertTrue(np.all(~result_all[..., inds].data.mask))
@@ -144,7 +144,7 @@ class TestRecombine__data(tests.IrisTest):
         regions_not2 = [
             cube for cube in self.region_cubes if cube is not region2
         ]
-        result_not2 = recombine_regions(
+        result_not2 = recombine_submeshes(
             self.mesh_cube, regions_not2, index_coord_name="i_mesh_face"
         )
         self.assertTrue(np.all(result_not2[..., inds].data.mask))
@@ -156,9 +156,9 @@ class TestRecombine__checks(tests.IrisTest):
 
     def test_no_regions(self):
         with self.assertRaisesRegex(
-            ValueError, "'region_cubes' must be non-empty"
+            ValueError, "'submesh_cubes' must be non-empty"
         ):
-            recombine_regions(self.mesh_cube, [])
+            recombine_submeshes(self.mesh_cube, [])
 
 
 if __name__ == "__main__":
