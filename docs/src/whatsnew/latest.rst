@@ -34,11 +34,11 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
-   meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
-   :pull:`4014`, :pull:`4027`, :pull:`4036`, :pull:`4053`, :pull:`4439`) and
-   API (:pull:`4063`, :pull:`4064`), and supporting representation
-   (:pull:`4033`, :pull:`4054`) of data on meshes.
+#. `@bjlittle`_, `@pp-mo`_, `@trexfeathers`_ and `@stephenworsley`_ added
+   support for unstructured meshes, as described by `UGRID`_. This involved
+   adding a data model (:pull:`3968`, :pull:`4014`, :pull:`4027`, :pull:`4036`,
+   :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
+   supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
    objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
    :class:`iris.experimental.ugrid.mesh.MeshCoord` and
