@@ -94,6 +94,18 @@ class Test_points_step(tests.IrisTest):
         self.assertEqual(exp_avdiff, result_avdiff)
         self.assertFalse(result)
 
+    def test_single_point(self):
+        lone_point = np.array([4])
+        result_avdiff, result = points_step(lone_point)
+        self.assertTrue(np.isnan(result_avdiff))
+        self.assertTrue(result)
+
+    def test_no_points(self):
+        no_points = np.array([])
+        result_avdiff, result = points_step(no_points)
+        self.assertTrue(np.isnan(result_avdiff))
+        self.assertTrue(result)
+
 
 if __name__ == "__main__":
     tests.main()
