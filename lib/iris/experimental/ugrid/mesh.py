@@ -27,7 +27,7 @@ from ...common import (
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...util import guess_coord_axis
+from ...util import array_equal, guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -484,11 +484,18 @@ class Connectivity(_DimensionalMetadata):
                 # metadata comparison
                 eq = self.metadata == other.metadata
                 if eq:
-                    eq = self.shape == other.shape
-                if eq:
                     eq = (
-                        self.indices_by_src() == other.indices_by_src()
-                    ).all()
+                        self.shape == other.shape
+                        and self.src_dim == other.src_dim
+                    ) or (
+                        self.shape == other.shape[::-1]
+                        and self.src_dim == other.tgt_dim
+                    )
+                if eq:
+                    eq = array_equal(
+                        self.indices_by_src(self.core_indices()),
+                        other.indices_by_src(other.core_indices()),
+                    )
         return eq
 
     def transpose(self):
@@ -939,8 +946,16 @@ class Mesh(CFVariableMixin):
         return cls(**mesh_kwargs)
 
     def __eq__(self, other):
-        # TBD: this is a minimalist implementation and requires to be revisited
-        return id(self) == id(other)
+        result = NotImplemented
+
+        if isinstance(other, Mesh):
+            result = self.metadata == other.metadata
+            if result:
+                result = self.all_coords == other.all_coords
+            if result:
+                result = self.all_connectivities == other.all_connectivities
+
+        return result
 
     def __hash__(self):
         # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
@@ -2883,9 +2898,7 @@ class MeshCoord(AuxCoord):
         """
         # Override Coord.copy, so that we can ensure it does not duplicate the
         # Mesh object (via deepcopy).
-        # This avoids copying Meshes.  It is also required to allow a copied
-        # MeshCoord to be == the original, since for now Mesh == is only true
-        # for the same identical object.
+        # This avoids copying Meshes.
 
         # FOR NOW: also disallow changing points/bounds at all.
         if points is not None or bounds is not None:

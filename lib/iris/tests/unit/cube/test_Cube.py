@@ -2351,13 +2351,19 @@ class Test__init__mesh(tests.IrisTest):
                 aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
             )
 
+    def test_meshcoords_equal_meshes(self):
+        meshco_x = sample_meshcoord(axis="x")
+        meshco_y = sample_meshcoord(axis="y")
+        n_faces = meshco_x.shape[0]
+        Cube(
+            np.zeros(n_faces),
+            aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],
+        )
+
     def test_fail_meshcoords_different_meshes(self):
-        # Same as successful 'multi_mesh', but not sharing the same mesh.
-        # This one *is* an error.
-        # But that could relax in future, if we allow mesh equality testing
-        # (i.e. "mesh_a == mesh_b" when not "mesh_a is mesh_b")
         meshco_x = sample_meshcoord(axis="x")
         meshco_y = sample_meshcoord(axis="y")  # Own (different) mesh
+        meshco_y.mesh.long_name = "new_name"
         n_faces = meshco_x.shape[0]
         with self.assertRaisesRegex(ValueError, "Mesh.* does not match"):
             Cube(
@@ -2412,11 +2418,20 @@ class Test__add_aux_coord__mesh(tests.IrisTest):
         cube.add_aux_coord(new_meshco_y, 1)
         self.assertEqual(len(cube.coords(mesh_coords=True)), 3)
 
+    def test_add_equal_mesh(self):
+        # Make a duplicate y-meshco, and rename so it can add into the cube.
+        cube = self.cube
+        # Create 'meshco_y' duplicate, but a new mesh
+        meshco_y = sample_meshcoord(axis="y")
+        cube.add_aux_coord(meshco_y, 1)
+        self.assertIn(meshco_y, cube.coords(mesh_coords=True))
+
     def test_fail_different_mesh(self):
         # Make a duplicate y-meshco, and rename so it can add into the cube.
         cube = self.cube
         # Create 'meshco_y' duplicate, but a new mesh
         meshco_y = sample_meshcoord(axis="y")
+        meshco_y.mesh.long_name = "new_name"
         msg = "does not match existing cube mesh"
         with self.assertRaisesRegex(ValueError, msg):
             cube.add_aux_coord(meshco_y, 1)
@@ -2481,17 +2496,18 @@ class Test__eq__mesh(tests.IrisTest):
         cube2 = cube.copy()
         self.assertEqual(cube, cube2)
 
-    def test_same_mesh_match(self):
+    def test_equal_mesh_match(self):
         cube1 = self.cube
         # re-create an identical cube, using the same mesh.
-        _add_test_meshcube(self, mesh=self.mesh)
+        _add_test_meshcube(self)
         cube2 = self.cube
         self.assertEqual(cube1, cube2)
 
     def test_new_mesh_different(self):
         cube1 = self.cube
-        # re-create an identical cube, using the same mesh.
+        # re-create an identical cube, using a different mesh.
         _add_test_meshcube(self)
+        self.cube.mesh.long_name = "new_name"
         cube2 = self.cube
         self.assertNotEqual(cube1, cube2)
 
