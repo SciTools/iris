@@ -270,7 +270,7 @@ def recombine_submeshes(
     result_array = da.ma.masked_array(
         da.zeros(
             input_data.shape,
-            dtype=input_data.dtype,
+            dtype=result_dtype,
             chunks=input_data.chunksize,
         ),
         True,
@@ -314,7 +314,7 @@ def recombine_submeshes(
     result_cube.data = result_array
     # Copy names, units + attributes from region data (N.B. but not var_name)
     result_cube.metadata = result_metadata
-    if untranspose_dims:
+    if untranspose_dims is not None:
         # Re-order dims as in the original input
         result_cube.transpose(untranspose_dims)
 

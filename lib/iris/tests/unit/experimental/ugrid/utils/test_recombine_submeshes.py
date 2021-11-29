@@ -20,12 +20,12 @@ from iris.experimental.ugrid.utils import recombine_submeshes
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 
 
-def common_test_setup(self, shape_3d=None, data_chunks=None):
+def common_test_setup(self, shape_3d=(0, 2), data_chunks=None):
+    # Construct a basic testcase with all-lazy mesh_cube and submesh_cubes
+    # full-mesh cube shape is 'shape_3d'
+    # data_chunks sets chunking of source cube, (else all-1-chunk)
+    n_outer, n_z = shape_3d
     n_mesh = 20
-    if shape_3d:
-        n_outer, n_z = shape_3d
-    else:
-        n_outer, n_z = 0, 2
     mesh = sample_mesh(n_nodes=20, n_edges=0, n_faces=n_mesh)
     mesh_cube = sample_mesh_cube(n_z=n_z, mesh=mesh)
     if n_outer:
@@ -38,9 +38,9 @@ def common_test_setup(self, shape_3d=None, data_chunks=None):
             meshcubes_2d.append(cube)
         mesh_cube = CubeList(meshcubes_2d).merge_cube()
 
-    if data_chunks:
-        # Replace data to get a specified chunking setup.
-        mesh_cube.data = da.zeros(mesh_cube.shape, chunks=data_chunks)
+    if not data_chunks:
+        data_chunks = mesh_cube.shape[:-1] + (-1,)
+    mesh_cube.data = da.zeros(mesh_cube.shape, chunks=data_chunks)
 
     n_regions = 4  # it doesn't divide neatly
     region_len = n_mesh // n_regions
@@ -60,16 +60,17 @@ def common_test_setup(self, shape_3d=None, data_chunks=None):
         for i_z in range(n_z):
             # Set data='z' ; don't vary over other dimensions.
             cube.data[..., i_z, :] = i_cube + 1000 * i_z + 1
+            cube.data = cube.lazy_data()
 
     # Also construct an array to match the expected result (2d cases only).
     # basic layer showing region allocation (large -ve values for missing)
     expected = np.array(
         [1.0, 1, 1, 1, 1]
-        + [4, 4]
-        + [2, 2, 2]  # points in #1 overlapped by #3
+        + [4, 4]  # points in #1 overlapped by #3
+        + [2, 2, 2]
         + [3, 3, 3]
-        + [-99999, -99999]
-        + [4, 4, 4, 4, 4]  # missing points
+        + [-99999, -99999]  # missing points
+        + [4, 4, 4, 4, 4]
     )
     # second layer should be same but +1000.
     # NOTE: only correct if shape_3d=None; no current need to generalise this.
@@ -84,6 +85,9 @@ class TestRecombine__data(tests.IrisTest):
         common_test_setup(self)
 
     def test_basic(self):
+        # Just confirm that all source data is lazy (by default)
+        for cube in self.region_cubes + [self.mesh_cube]:
+            self.assertTrue(cube.has_lazy_data())
         result = recombine_submeshes(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
@@ -93,6 +97,7 @@ class TestRecombine__data(tests.IrisTest):
     def test_chunking(self):
         # Make non-standard testcube with higher dimensions + specific chunking
         common_test_setup(self, shape_3d=(10, 3), data_chunks=(3, 2, -1))
+        self.assertEqual(self.mesh_cube.lazy_data().chunksize, (3, 2, 20))
         result = recombine_submeshes(
             self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
         )
@@ -148,6 +153,144 @@ class TestRecombine__data(tests.IrisTest):
             self.mesh_cube, regions_not2, index_coord_name="i_mesh_face"
         )
         self.assertTrue(np.all(result_not2[..., inds].data.mask))
+
+    def test_transposed(self):
+        self.mesh_cube.transpose()
+        self.assertEqual(self.mesh_cube.mesh_dim(), 0)
+        for cube in self.region_cubes:
+            cube.transpose()
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertTrue(result.has_lazy_data())
+        self.assertEqual(result.mesh_dim(), 0)
+        self.assertMaskedArrayEqual(
+            result.data.transpose(), self.expected_result
+        )
+
+    def test_dtype(self):
+        self.assertEqual(self.mesh_cube.dtype, np.float64)
+        self.assertTrue(
+            all(cube.dtype == np.float64 for cube in self.region_cubes)
+        )
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertEqual(result.dtype, np.float64)
+        region_cubes2 = [
+            cube.copy(data=cube.lazy_data().astype(np.int16))
+            for cube in self.region_cubes
+        ]
+        result2 = recombine_submeshes(
+            self.mesh_cube, region_cubes2, index_coord_name="i_mesh_face"
+        )
+        self.assertEqual(result2.dtype, np.int16)
+
+    def test_meshcube_real(self):
+        # Real data in reference 'mesh_cube' makes no difference.
+        self.mesh_cube.data
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertTrue(result.has_lazy_data())
+        self.assertMaskedArrayEqual(result.data, self.expected_result)
+
+    def test_regions_real(self):
+        # Real data in reference 'mesh_cube' makes no difference.
+        for cube in self.region_cubes:
+            cube.data
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertTrue(result.has_lazy_data())
+        self.assertMaskedArrayEqual(result.data, self.expected_result)
+
+    def test_allinput_real(self):
+        # Real data in reference AND regions still makes no difference.
+        self.mesh_cube.data
+        for cube in self.region_cubes:
+            cube.data
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertTrue(result.has_lazy_data())
+        self.assertMaskedArrayEqual(result.data, self.expected_result)
+
+    def test_meshcube_masking(self):
+        # Masked points in the reference 'mesh_cube' should make no difference.
+        # get real data : copy as default is not writeable
+        data = self.mesh_cube.data.copy()
+        # mask all
+        data[:] = np.ma.masked  # all masked
+        # put back
+        self.mesh_cube.data = data  # put back real array
+        # recast as lazy
+        self.mesh_cube.data = self.mesh_cube.lazy_data()  # remake as lazy
+        # result should show no difference
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        self.assertMaskedArrayEqual(result.data, self.expected_result)
+
+    def test_no_missing_results(self):
+        # For a result with no missing points, result array is still masked
+        # get real data : copy as default is not writeable
+        data = self.mesh_cube.data.copy()
+        # set all
+        data[:] = 7.777
+        # put back
+        self.mesh_cube.data = data  # put back real array
+        # recast as lazy
+        self.mesh_cube.data = self.mesh_cube.lazy_data()  # remake as lazy
+
+        # get result including original full-mesh
+        region_cubes = [self.mesh_cube] + self.region_cubes
+        result = recombine_submeshes(
+            self.mesh_cube, region_cubes, index_coord_name="i_mesh_face"
+        )
+        result = result.data
+        expected = self.expected_result
+        expected_missing = expected.mask
+        expected[expected_missing] = 7.777
+        # result is as "normal" expected, except at the usually-missing points.
+        self.assertArrayEqual(result, expected)
+        # the actual result array is still masked, though with no masked points
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        self.assertIsInstance(result.mask, np.ndarray)
+        self.assertArrayEqual(result.mask, False)
+
+    def test_maskeddata(self):
+        # Check that masked points within regions behave like ordinary values.
+        # NB use overlap points
+        # reg[1][0:2] == reg[3][5:7], but points in reg[3] dominate
+        for cube in self.region_cubes:
+            cube.data = np.ma.masked_array(cube.data)  # ensure masked arrays
+        self.region_cubes[0].data[:, 0] = np.ma.masked  # result-index =5
+        self.region_cubes[1].data[:, 0] = np.ma.masked  # result-index =5
+        self.region_cubes[3].data[:, 6] = np.ma.masked  # result-index =6
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        result = result.data
+        expected = self.expected_result
+        expected[:, 0] = np.ma.masked
+        expected[:, 6] = np.ma.masked
+        self.assertArrayEqual(result.mask, expected.mask)
+
+    def test_nandata(self):
+        # Check that NaN points within regions behave like ordinary values.
+        # Duplicate of previous test, replacing masks with NaNs
+        self.region_cubes[0].data[:, 0] = np.nan
+        self.region_cubes[1].data[:, 0] = np.nan
+        self.region_cubes[3].data[:, 6] = np.nan
+        result = recombine_submeshes(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        result = result.data
+        expected = self.expected_result
+        expected[:, 0] = np.nan
+        expected[:, 6] = np.nan
+        self.assertArrayEqual(np.isnan(result), np.isnan(expected))
 
 
 class TestRecombine__checks(tests.IrisTest):
