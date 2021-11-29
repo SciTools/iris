@@ -11,16 +11,37 @@ Unit tests for :func:`iris.experimental.ugrid.utils.recombine_regions`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 
+from iris.coords import AuxCoord
+from iris.cube import CubeList
 from iris.experimental.ugrid.utils import recombine_regions
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 
 
-def common_test_setup(self):
+def common_test_setup(self, shape_3d=None, data_chunks=None):
     n_mesh = 20
+    if shape_3d:
+        n_outer, n_z = shape_3d
+    else:
+        n_outer, n_z = 0, 2
     mesh = sample_mesh(n_nodes=20, n_edges=0, n_faces=n_mesh)
-    mesh_cube = sample_mesh_cube(n_z=2, mesh=mesh)
+    mesh_cube = sample_mesh_cube(n_z=n_z, mesh=mesh)
+    if n_outer:
+        # Crudely merge a set of copies to build an outer dimension.
+        mesh_cube.add_aux_coord(AuxCoord([0], long_name="outer"))
+        meshcubes_2d = []
+        for i_outer in range(n_outer):
+            cube = mesh_cube.copy()
+            cube.coord("outer").points = np.array([i_outer])
+            meshcubes_2d.append(cube)
+        mesh_cube = CubeList(meshcubes_2d).merge_cube()
+
+    if data_chunks:
+        # Replace data to get a specified chunking setup.
+        mesh_cube.data = da.zeros(mesh_cube.shape, chunks=data_chunks)
+
     n_regions = 4  # it doesn't divide neatly
     region_len = n_mesh // n_regions
     i_points = np.arange(n_mesh)
@@ -36,10 +57,11 @@ def common_test_setup(self):
     self.region_inds = region_inds
     self.region_cubes = [mesh_cube[..., inds] for inds in region_inds]
     for i_cube, cube in enumerate(self.region_cubes):
-        cube.data[0] = i_cube + 1
-        cube.data[1] = i_cube + 1001
+        for i_z in range(n_z):
+            # Set data='z' ; don't vary over other dimensions.
+            cube.data[..., i_z, :] = i_cube + 1000 * i_z + 1
 
-    # Also construct an array to match the expected result.
+    # Also construct an array to match the expected result (2d cases only).
     # basic layer showing region allocation (large -ve values for missing)
     expected = np.array(
         [1.0, 1, 1, 1, 1]
@@ -50,6 +72,7 @@ def common_test_setup(self):
         + [4, 4, 4, 4, 4]  # missing points
     )
     # second layer should be same but +1000.
+    # NOTE: only correct if shape_3d=None; no current need to generalise this.
     expected = np.stack([expected, expected + 1000])
     # convert to masked array with missing points.
     expected = np.ma.masked_less(expected, 0)
@@ -66,6 +89,15 @@ class TestRecombine__data(tests.IrisTest):
         )
         self.assertTrue(result.has_lazy_data())
         self.assertMaskedArrayEqual(result.data, self.expected_result)
+
+    def test_chunking(self):
+        # Make non-standard testcube with higher dimensions + specific chunking
+        common_test_setup(self, shape_3d=(10, 3), data_chunks=(3, 2, -1))
+        result = recombine_regions(
+            self.mesh_cube, self.region_cubes, index_coord_name="i_mesh_face"
+        )
+        # Check that the result chunking matches the input.
+        self.assertEqual(result.lazy_data().chunksize, (3, 2, 20))
 
     def test_single_region(self):
         region = self.region_cubes[1]
