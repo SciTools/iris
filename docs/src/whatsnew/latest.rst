@@ -235,10 +235,15 @@ This document explains the changes made to Iris for this release
 
 #. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
 
+#. `@aaronspring <https://github.com/aaronspring>`_ exchanged `dask` with
+   `dask-core` in testing environments reducing the number of dependencies
+   installed for testing. (:pull:`4434`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@aaronspring: https://github.com/aaronspring
 .. _@akuhnregnier: https://github.com/akuhnregnier
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring

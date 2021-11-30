@@ -13,7 +13,7 @@ dependencies:
   - cartopy >=0.20
   - cf-units >=3
   - cftime >=1.5
-  - dask >=2
+  - dask-core >=2
   - matplotlib
   - netcdf4
   - numpy >=1.19
