@@ -81,7 +81,7 @@ class TestProperties1D(TestMeshCommon):
         cls.kwargs = {
             "topology_dimension": 1,
             "node_coords_and_axes": ((cls.NODE_LON, "x"), (cls.NODE_LAT, "y")),
-            "connectivities": cls.EDGE_NODE,
+            "connectivities": [cls.EDGE_NODE],
             "long_name": "my_topology_mesh",
             "var_name": "mesh",
             "attributes": {"notes": "this is a test"},
@@ -123,6 +123,34 @@ class TestProperties1D(TestMeshCommon):
             "node_dimension='NodeDim', edge_dimension='EdgeDim')"
         )
         self.assertEqual(expected, self.mesh.__repr__())
+
+    def test___eq__(self):
+        # The dimension names do not participate in equality.
+        equivalent_kwargs = self.kwargs.copy()
+        equivalent_kwargs["node_dimension"] = "something_else"
+        equivalent = mesh.Mesh(**equivalent_kwargs)
+        self.assertEqual(equivalent, self.mesh)
+
+    def test_different(self):
+        different_kwargs = self.kwargs.copy()
+        different_kwargs["long_name"] = "new_name"
+        different = mesh.Mesh(**different_kwargs)
+        self.assertNotEqual(different, self.mesh)
+
+        different_kwargs = self.kwargs.copy()
+        ncaa = self.kwargs["node_coords_and_axes"]
+        new_lat = ncaa[1][0].copy(points=ncaa[1][0].points + 1)
+        new_ncaa = (ncaa[0], (new_lat, "y"))
+        different_kwargs["node_coords_and_axes"] = new_ncaa
+        different = mesh.Mesh(**different_kwargs)
+        self.assertNotEqual(different, self.mesh)
+
+        different_kwargs = self.kwargs.copy()
+        conns = self.kwargs["connectivities"]
+        new_conn = conns[0].copy(conns[0].indices + 1)
+        different_kwargs["connectivities"] = new_conn
+        different = mesh.Mesh(**different_kwargs)
+        self.assertNotEqual(different, self.mesh)
 
     def test_all_connectivities(self):
         expected = mesh.Mesh1DConnectivities(self.EDGE_NODE)

@@ -34,11 +34,11 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@bjlittle`_, `@pp-mo`_ and `@trexfeathers`_ added support for unstructured
-   meshes, as described by `UGRID`_. This involved adding a data model (:pull:`3968`,
-   :pull:`4014`, :pull:`4027`, :pull:`4036`, :pull:`4053`) and API (:pull:`4063`,
-   :pull:`4064`), and supporting representation (:pull:`4033`, :pull:`4054`) of
-   data on meshes.
+#. `@bjlittle`_, `@pp-mo`_, `@trexfeathers`_ and `@stephenworsley`_ added
+   support for unstructured meshes, as described by `UGRID`_. This involved
+   adding a data model (:pull:`3968`, :pull:`4014`, :pull:`4027`, :pull:`4036`,
+   :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
+   supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
    objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
    :class:`iris.experimental.ugrid.mesh.MeshCoord` and
@@ -127,6 +127,14 @@ This document explains the changes made to Iris for this release
    data to take significantly longer than with real data. Relevant benchmark
    shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
+#. `@wjbenfold`_ changed :meth:`iris.util.points_step` to stop it from warning
+   when applied to a single point (:issue:`4250`, :pull:`4367`)
+
+#. `@trexfeathers`_ changed :class:`~iris.coords._DimensionalMetadata` and
+   :class:`~iris.experimental.ugrid.Connectivity` equality methods to preserve
+   array laziness, allowing efficient comparisons even with larger-than-memory
+   objects. (:pull:`4439`)
+
 
 💣 Incompatible Changes
 =======================
@@ -181,6 +189,9 @@ This document explains the changes made to Iris for this release
 #. `@lbdreyer`_ added a section to the release documentation outlining the role
    of the :ref:`release_manager`. (:pull:`4413`)
 
+#. `@trexfeathers`_ encouraged contributors to include type hinting in code
+   they are working on - :ref:`code_formatting`. (:pull:`4390`)
+
 
 💼 Internal
 ===========
@@ -221,6 +232,8 @@ This document explains the changes made to Iris for this release
    (:pull:`4421`)
 
 #. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
+
+#. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
 
 #. `@aaronspring <https://github.com/aaronspring>`_ exchanged `dask` with
    `dask-core` in testing environments reducing the number of dependencies

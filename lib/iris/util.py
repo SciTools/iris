@@ -25,7 +25,7 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
 
 
@@ -346,7 +346,7 @@ def array_equal(array1, array2, withnans=False):
     Args:
 
     * array1, array2 (arraylike):
-        args to be compared, after normalising with :func:`np.asarray`.
+        args to be compared, normalised if necessary with :func:`np.asarray`.
 
     Kwargs:
 
@@ -360,7 +360,13 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     """
-    array1, array2 = np.asarray(array1), np.asarray(array2)
+
+    def normalise_array(array):
+        if not is_lazy_data(array):
+            array = np.asarray(array)
+        return array
+
+    array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
@@ -368,13 +374,22 @@ def array_equal(array1, array2, withnans=False):
 
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
-            if not np.all(nans1 == nans2):
-                eq = False  # simply fail
-            else:
-                eqs[nans1] = True  # fix NaNs; check all the others
+            eq = as_concrete_data(np.all(nans1 == nans2))
+
+            if eq:
+                eqs = as_concrete_data(eqs)
+                if not is_lazy_data(nans1):
+                    idxs = nans1
+                elif not is_lazy_data(nans2):
+                    idxs = nans2
+                else:
+                    idxs = as_concrete_data(nans1)
+
+                if np.any(idxs):
+                    eqs[idxs] = True
 
         if eq:
-            eq = np.all(eqs)  # check equal at all points
+            eq = as_concrete_data(np.all(eqs))  # check equal at all points
 
     return eq
 
@@ -1397,11 +1412,28 @@ def regular_step(coord):
 
 
 def points_step(points):
-    """Determine whether a NumPy array has a regular step."""
-    diffs = np.diff(points)
-    avdiff = np.mean(diffs)
-    # TODO: This value for `rtol` is set for test_analysis to pass...
-    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    """Determine whether `points` has a regular step.
+
+    Parameters
+    ----------
+    points : numeric, array-like
+        The sequence of values to check for a regular difference.
+
+    Returns
+    -------
+    numeric, bool
+        A tuple containing the average difference between values, and whether the difference is regular.
+    """
+    # Calculations only make sense with multiple points
+    points = np.asanyarray(points)
+    if points.size >= 2:
+        diffs = np.diff(points)
+        avdiff = np.mean(diffs)
+        # TODO: This value for `rtol` is set for test_analysis to pass...
+        regular = np.allclose(diffs, avdiff, rtol=0.001)
+    else:
+        avdiff = np.nan
+        regular = True
     return avdiff, regular
 
 
