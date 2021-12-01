@@ -7,7 +7,6 @@ on:
   pull_request:
 
 jobs:
-
   benchmark:
     if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
