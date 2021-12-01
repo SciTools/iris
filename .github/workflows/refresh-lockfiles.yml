@@ -26,6 +26,8 @@ on:
 
 
 jobs:
+
+  if: "github.repository == 'SciTools/iris'"
   
   no_clobber:
     runs-on: ubuntu-latest
