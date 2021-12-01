@@ -6,9 +6,7 @@ on:
     - cron: 0 0 * * *
 
 jobs:
-
   if: "github.repository == 'SciTools/iris'"
-
   stale:
     runs-on: ubuntu-latest
     steps:

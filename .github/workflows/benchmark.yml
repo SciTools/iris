@@ -8,9 +8,8 @@ on:
 
 jobs:
 
-  if: "github.repository == 'SciTools/iris'"
-
   benchmark:
+    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
 
     env:
