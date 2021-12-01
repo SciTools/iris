@@ -240,6 +240,9 @@ This document explains the changes made to Iris for this release
    `dask-core` in testing environments reducing the number of dependencies
    installed for testing. (:pull:`4434`)
 
+#. `@wjbenfold`_ prevented github action runs in forks (:issue:`4441`,
+   :pull:`4444`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:

@@ -28,6 +28,7 @@ on:
 jobs:
   
   no_clobber:
+    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     steps:
       # check if the auto-update-lockfiles branch exists.  If it does, and someone other than
@@ -64,6 +65,7 @@ jobs:
     # this list below should be changed when covering more python versions
     # TODO: generate this matrix automatically from the list of available py**.yml files
     #       ref: https://tomasvotruba.com/blog/2020/11/16/how-to-make-dynamic-matrix-in-github-actions/
+    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     needs: no_clobber
     
@@ -89,6 +91,7 @@ jobs:
   create_pr:
     # once the matrix job has completed all the lock files will have been uploaded as artifacts.
     # Download the artifacts, add them to the repo, and create a PR.
+    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     needs: gen_lockfiles
     
