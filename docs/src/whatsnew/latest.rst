@@ -26,7 +26,7 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Welcome to `@wjbenfold`_, `@tinyendian`_, `@larsbarring`_, `@akuhnregnier`_
+#. Welcome to `@wjbenfold`_, `@tinyendian`_, `@larsbarring`_, `@akuhnregnier`_,
    `@bsherratt`_ and `@aaronspring`_ who made their first contributions to Iris.
    The first of many we hope!
 #. Congratulations to `@wjbenfold`_ who has become a core developer for Iris! 🎉
