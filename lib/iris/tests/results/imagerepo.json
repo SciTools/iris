@@ -61,7 +61,8 @@
     "gallery_tests.test_plot_deriving_phenomena.TestDerivingPhenomena.test_plot_deriving_phenomena.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/b9993986866952e6c9464639c4766bd9c669916e7b99c1663f99768990763e81.png",
         "https://scitools.github.io/test-iris-imagehash/images/v4/b99139de866952e6c946c639c47e6bd18769d16e7a9981662e813699d0763e89.png",
-        "https://scitools.github.io/test-iris-imagehash/images/v4/ec97681793689768943c97e8926669d186e8c33f6c99c32e6b936c83d33e2c98.png"
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ec97681793689768943c97e8926669d186e8c33f6c99c32e6b936c83d33e2c98.png",
+        "https://scitools.github.io/test-iris-imagehash/images/v4/ec97681793689768943c96e890666bc586e1c33f2c99c33e6f956c93d23e2c98.png"
     ],
     "gallery_tests.test_plot_global_map.TestGlobalMap.test_plot_global_map.0": [
         "https://scitools.github.io/test-iris-imagehash/images/v4/fa9979468566857ef07e3e8978566b91cb0179883c89946686a96b9d83766f81.png",

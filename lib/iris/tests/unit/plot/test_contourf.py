@@ -11,7 +11,6 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -89,16 +88,10 @@ class TestAntialias(tests.IrisTest):
         levels = [5, 15, 20, 200]
         colors = ["b", "r", "y"]
 
-        iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
+        with mock.patch("matplotlib.pyplot.contour") as mocked_contour:
+            iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
 
-        ax = plt.gca()
-        # Expect 3 PathCollection objects (one for each colour) and no LineCollection
-        # objects.
-        for collection in ax.collections:
-            self.assertIsInstance(
-                collection, matplotlib.collections.PathCollection
-            )
-        self.assertEqual(len(ax.collections), 3)
+        mocked_contour.assert_not_called()
 
     def test_apply_contour_nans(self):
         # Presence of nans should not prevent contours being added.
@@ -109,13 +102,10 @@ class TestAntialias(tests.IrisTest):
         levels = [2, 4, 6, 8]
         colors = ["b", "r", "y"]
 
-        iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
+        with mock.patch("matplotlib.pyplot.contour") as mocked_contour:
+            iplt.contourf(cube, levels=levels, colors=colors, antialiased=True)
 
-        ax = plt.gca()
-        # If contour has been called, last collection will be a LineCollection.
-        self.assertIsInstance(
-            ax.collections[-1], matplotlib.collections.LineCollection
-        )
+        mocked_contour.assert_called_once()
 
     def tearDown(self):
         plt.close(self.fig)

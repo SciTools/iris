@@ -222,6 +222,8 @@ This document explains the changes made to Iris for this release
    :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
    using assertArrayAllClose following :issue:`3993`.
    (:pull:`4421`)
+   
+#. `@rcomer`_ updated some tests to work with Matplotlib v3.5. (:pull:`4428`)
 
 #. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
 
