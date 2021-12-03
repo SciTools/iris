@@ -122,12 +122,11 @@ class Test(tests.IrisTest):
             "time : minimum within days (comment: 18h day-1)-18h)",
         ]
         for cell_method_str in cell_method_strings:
-            with mock.patch("warnings.warn") as warn:
+            with self.assertWarns(
+                UserWarning,
+                msg="Cell methods may be incorrectly parsed due to mismatched brackets",
+            ):
                 _ = parse_cell_methods(cell_method_str)
-                self.assertIn(
-                    "Cell methods may be incorrectly parsed due to mismatched brackets",
-                    warn.call_args[0][0],
-                )
 
     def test_badly_formatted_warning(self):
         cell_method_strings = [
@@ -139,12 +138,11 @@ class Test(tests.IrisTest):
             "time: (interval: 1 day comment: second bit)",
         ]
         for cell_method_str in cell_method_strings:
-            with mock.patch("warnings.warn") as warn:
+            with self.assertWarns(
+                UserWarning,
+                msg=f"Failed to fully parse cell method string: {cell_method_str}",
+            ):
                 _ = parse_cell_methods(cell_method_str)
-                self.assertIn(
-                    f"Failed to fully parse cell method string: {cell_method_str}",
-                    warn.call_args[0][0],
-                )
 
     def test_portions_of_cells(self):
         cell_method_strings = [
