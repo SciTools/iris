@@ -223,25 +223,6 @@ class IrisTest_nometa(unittest.TestCase):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
-    def assertStringEqual(
-        self, reference_str, test_str, type_comparison_name="strings"
-    ):
-        if reference_str != test_str:
-            diff = "\n".join(
-                difflib.unified_diff(
-                    reference_str.splitlines(),
-                    test_str.splitlines(),
-                    "Reference",
-                    "Test result",
-                    "",
-                    "",
-                    0,
-                )
-            )
-            self.fail(
-                "{} do not match:\n{}".format(type_comparison_name, diff)
-            )
-
     def result_path(self, basename=None, ext=""):
         """
         Return the full path to a test result, generated from the \
