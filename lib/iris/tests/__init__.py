@@ -561,16 +561,6 @@ class IrisTest_nometa(unittest.TestCase):
         matches.extend(message for message in messages if expr.search(message))
 
     @contextlib.contextmanager
-    def assertWarnsRegexp(self, expected_regexp=""):
-        # Check that a warning is raised matching a given expression.
-        with self._recordWarningMatches(expected_regexp) as matches:
-            yield
-
-        msg = "Warning matching '{}' not raised."
-        msg = msg.format(expected_regexp)
-        self.assertTrue(matches, msg)
-
-    @contextlib.contextmanager
     def assertLogs(self, logger=None, level=None, msg_regex=None):
         """
         An extended version of the usual :meth:`unittest.TestCase.assertLogs`,

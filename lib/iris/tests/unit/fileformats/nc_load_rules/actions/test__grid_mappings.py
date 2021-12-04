@@ -407,7 +407,9 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # Notes:
         #     * behaviours all the same as 'test_bad_gridmapping_nameproperty'
         warning = "Missing.*grid mapping variable 'grid'"
-        result = self.run_testcase(warning=warning, gridmapvar_name="grid_2")
+        result = self.run_testcase(
+            warning_regex=warning, gridmapvar_name="grid_2"
+        )
         self.check_result(result, cube_no_cs=True)
 
     def test_latlon_bad_latlon_unit(self):
@@ -503,6 +505,30 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             mapping_type_name=hh.CF_GRID_MAPPING_MERCATOR
         )
         self.check_result(result, cube_cstype=ics.Mercator)
+
+    def test_mapping_mercator__fail_unsupported(self):
+        # Provide a mercator grid-mapping with a non-unity scale factor, which
+        # we cannot handle.
+        # Result : fails to convert into a coord-system, and emits a warning.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(mercator) --(FAILED check has_supported_mercator_parameters)
+        #     003 : fc_provides_coordinate_(projection_y)
+        #     004 : fc_provides_coordinate_(projection_x)
+        #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
+        #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
+        # Notes:
+        #     * grid-mapping identified : NONE
+        #     * dim-coords identified : proj-x and -y
+        #     * coords built : NONE  (no dim or aux coords: cube has no coords)
+        warning = "not yet supported for Mercator"
+        result = self.run_testcase(
+            warning_regex=warning,
+            mapping_type_name=hh.CF_GRID_MAPPING_MERCATOR,
+            mapping_scalefactor=2.0,
+        )
+        self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     def test_mapping_stereographic(self):
         result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_STEREO)
@@ -633,7 +659,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * coords built : lat + lon, with no coord-system (see above)
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="longitude",
             xco_units="degrees_east",
@@ -690,7 +716,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * coords built : rotated lat + lon, with no coord-system (see above)
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="grid_longitude",
             xco_units="degrees",
@@ -752,7 +778,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * effectively, just like previous 2 cases
         warning = "Missing.*grid mapping variable 'grid'"
         result = self.run_testcase(
-            warning=warning,
+            warning_regex=warning,
             gridmapvar_name="moved",
             xco_name="projection_x",
             xco_units="m",
@@ -872,7 +898,9 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
         warning = "must be.* monotonic"
-        result = self.run_testcase(warning=warning, yco_values=[0.0, 0.0])
+        result = self.run_testcase(
+            warning_regex=warning, yco_values=[0.0, 0.0]
+        )
         self.check_result(result, yco_is_aux=True)
 
 
