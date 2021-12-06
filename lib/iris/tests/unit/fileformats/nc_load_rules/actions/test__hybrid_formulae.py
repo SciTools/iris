@@ -238,44 +238,75 @@ variables:
             formula_terms=["a", "b", "depth", "eta", "orog", "sigma"],
         )
 
-
-# Add in tests methods to exercise each (supported) vertical coordinate type
-# individually.
-# NOTE: hh.CF_COORD_VERTICAL lists all the valid types, but we don't yet
-# support all of them.
-_SUPPORTED_FORMULA_TYPES = (
-    # NOTE: omit "atmosphere_hybrid_height_coordinate" : our basic testcase
-    "atmosphere_sigma_coordinate",
-    "atmosphere_hybrid_sigma_pressure_coordinate",
-    "ocean_sigma_z_coordinate",
-    "ocean_sigma_coordinate",
-    "ocean_s_coordinate",
-    "ocean_s_coordinate_g1",
-    "ocean_s_coordinate_g2",
-)
-for hybrid_type in _SUPPORTED_FORMULA_TYPES:
-
-    def construct_inner_func(hybrid_type):
+    def test_atmosphere_sigma_coordinate(self):
+        hybrid_type = "atmosphere_sigma_coordinate"
         term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
 
-        def inner(self):
-            result = self.run_testcase(
-                formula_root_name=hybrid_type, term_names=term_names
-            )
-            self.check_result(
-                result, factory_type=hybrid_type, formula_terms=term_names
-            )
+    def test_atmosphere_hybrid_sigma_pressure_coordinate(self):
+        hybrid_type = "atmosphere_hybrid_sigma_pressure_coordinate"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
 
-        return inner
+    def test_ocean_sigma_z_coordinate(self):
+        hybrid_type = "ocean_sigma_z_coordinate"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
 
-    # Note: use an intermediate function to generate each test method, simply to
-    # generate a new local variable for 'hybrid_type' on each iteration.
-    # Otherwise all the test methods will refer to the *same* 'hybrid_type'
-    # variable, i.e. the loop variable, which does not work !
-    method_name = f"test_{hybrid_type}_coord"
-    setattr(
-        Test__formulae_tests, method_name, construct_inner_func(hybrid_type)
-    )
+    def test_ocean_sigma_coordinate(self):
+        hybrid_type = "ocean_sigma_coordinate"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
+
+    def test_ocean_s_coordinate(self):
+        hybrid_type = "ocean_s_coordinate"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
+
+    def test_ocean_s_coordinate_g1(self):
+        hybrid_type = "ocean_s_coordinate_g1"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
+
+    def test_ocean_s_coordinate_g2(self):
+        hybrid_type = "ocean_s_coordinate_g2"
+        term_names = hh.CF_COORD_VERTICAL[hybrid_type]
+        result = self.run_testcase(
+            formula_root_name=hybrid_type, term_names=term_names
+        )
+        self.check_result(
+            result, factory_type=hybrid_type, formula_terms=term_names
+        )
 
 
 if __name__ == "__main__":
