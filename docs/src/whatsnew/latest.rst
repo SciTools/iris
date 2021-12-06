@@ -245,6 +245,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ prevented github action runs in forks (:issue:`4441`,
    :pull:`4444`)
 
+#. `@wjbenfold`_ fixed tests for hybrid formulae that weren't being found by
+   nose (:issue:`4431`, :pull:`4450`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
