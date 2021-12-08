@@ -28,6 +28,8 @@ from ._grid_angles import gridcell_angles, rotate_grid_vectors
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
 __all__ = [
+    "DistanceDifferential",
+    "PartialDifferential",
     "area_weights",
     "cosine_latitude_weights",
     "get_xy_contiguous_bounded_grids",
@@ -39,8 +41,6 @@ __all__ = [
     "rotate_winds",
     "unrotate_pole",
     "wrap_lons",
-    "DistanceDifferential",
-    "PartialDifferential",
 ]
 
 # This value is used as a fall-back if the cube does not define the earth
@@ -70,7 +70,7 @@ def wrap_lons(lons, base, period):
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
     lons = lons.astype(np.float64)
-    return ((lons - base + period * 2) % period) + base
+    return ((lons - base) % period) + base
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):

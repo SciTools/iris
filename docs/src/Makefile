@@ -49,7 +49,17 @@ html:
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
-	@echo "Build finished. The HTML (no gallery) pages are in $(BUILDDIR)/html"
+	@echo "Build finished. The HTML (no gallery docs) pages are in $(BUILDDIR)/html"
+
+html-noapi:
+	export SKIP_API=1; $(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML (no api docs) pages are in $(BUILDDIR)/html"
+
+html-quick:
+	export SKIP_API=1; $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML (no gallery or api docs) pages are in $(BUILDDIR)/html"
 
 spelling:
 	$(SPHINXBUILD) -b spelling $(SRCDIR) $(BUILDDIR)

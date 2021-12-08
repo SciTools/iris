@@ -56,29 +56,29 @@ import iris.coords
 from iris.exceptions import LazyAggregatorError
 
 __all__ = (
+    "Aggregator",
+    "AreaWeighted",
     "COUNT",
     "GMEAN",
     "HMEAN",
+    "Linear",
     "MAX",
     "MEAN",
     "MEDIAN",
     "MIN",
+    "Nearest",
     "PEAK",
     "PERCENTILE",
     "PROPORTION",
+    "PointInCell",
     "RMS",
     "STD_DEV",
     "SUM",
+    "UnstructuredNearest",
     "VARIANCE",
     "WPERCENTILE",
-    "Aggregator",
     "WeightedAggregator",
     "clear_phenomenon_identity",
-    "Linear",
-    "AreaWeighted",
-    "Nearest",
-    "UnstructuredNearest",
-    "PointInCell",
 )
 
 

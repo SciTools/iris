@@ -7,6 +7,7 @@ on:
 
 jobs:
   stale:
+    if: "github.repository == 'SciTools/iris'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/stale@v4.0.0
@@ -59,11 +60,11 @@ jobs:
 
           # Labels on issues exempted from stale.
           exempt-issue-labels: |
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue"
 
           # Labels on prs exempted from stale.
           exempt-pr-labels: |
-            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️"
+            "Status: Blocked,Status: Decision Required,Peloton 🚴‍♂️,Good First Issue"
 
           # Max number of operations per run.
           operations-per-run: 300

@@ -6,8 +6,7 @@ v3.0 (25 Jan 2021)
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
-
-.. dropdown:: :opticon:`report` Release Highlights
+.. dropdown:: :opticon:`report` v3.0.0 Release Highlights
    :container: + shadow
    :title: text-primary text-center font-weight-bold
    :body: bg-light
@@ -38,6 +37,132 @@ This document explains the changes made to Iris for this release
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
+
+
+v3.0.1 (27 Jan 2021)
+====================
+
+.. dropdown:: :opticon:`alert` v3.0.1 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   💼 **Internal**
+
+   #. `@bjlittle`_ gracefully promote formula terms within :mod:`~iris.aux_factory` that have ``units`` of ``unknown``
+      to ``units`` of ``1`` (dimensionless), where the formula term **must** have dimensionless ``units``. Without this
+      graceful treatment of ``units`` the resulting :class:`~iris.cube.Cube` will **not** contain the expected auxiliary
+      factory, and the associated derived coordinate will be missing. (:pull:`3965`)
+
+
+v3.0.2 (27 May 2021)
+====================
+
+.. dropdown:: :opticon:`alert` v3.0.2 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@jonseddon`_ handled a malformed ``um_stash_source`` CF variable attribute in
+      a netCDF file rather than raising a ``ValueError``. (:pull:`4035`)
+
+   #. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases
+      where one cell's bounds align with the requested maximum and minimum, as
+      reported in :issue:`3391`. (:pull:`4059`)
+
+   #. `@bjlittle`_ resolved a regression in arithmetic behaviour between a coordinate
+      and a cube which resulted in a ``NotYetImplementedError`` being raised, as reported
+      in :issue:`4000`. This fix supports ``+``, ``-``, ``*``, and ``/`` operations
+      between a coordinate and a cube, and for convenience additionally includes
+      :meth:`iris.cube.Cube.__neg__` support. (:pull:`4159`)
+
+   📚 **Documentation**
+
+   #. `@bjlittle`_ updated the ``intersphinx_mapping`` and fixed documentation
+      to use ``stable`` URLs for `matplotlib`_. (:pull:`4003`) [``pre-v3.1.0``]
+
+   💼 **Internal**
+
+   #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`) [``pre-v3.1.0``]
+
+   #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
+      from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
+      [``pre-v3.1.0``]
+
+   #. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
+      developers to easily disable `cirrus-ci`_ tasks. See
+      :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`) [``pre-v3.1.0``]
+
+   #. `@pp-mo`_ adjusted the use of :func:`dask.array.from_array` in :func:`iris._lazy_data.as_lazy_data`,
+      to avoid the dask 'test access'. This makes loading of netcdf files with a
+      large number of variables significantly faster. (:pull:`4135`)
+
+   #. `@pp-mo`_ reverted a change made previously in (:pull:`3659`) to
+      :meth:`iris.fileformats.pp.PPDataProxy.__getitem__`. The check for empty slicings
+      is no longer needed since (:pull:`4135`) was added. (:pull:`4141`)
+
+   Note that, the above contributions labelled with ``pre-v3.1.0`` are part of the forthcoming
+   Iris v3.1.0 release, but require to be included in this patch release.
+
+
+v3.0.3 (07 July 2021)
+=====================
+
+.. dropdown:: :opticon:`alert` v3.0.3 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@lbdreyer`_ modified :meth:`~iris.cube.Cube.intersection` to use a tolerant
+      equality check, when looking for cells that straddle the wrapping point.
+      (:pull:`4220`)
+
+
+v3.0.4 (22 July 2021)
+=====================
+
+.. dropdown:: :opticon:`alert` v3.0.4 Patches
+   :container: + shadow
+   :title: text-primary text-center font-weight-bold
+   :body: bg-light
+   :animate: fade-in
+
+   The patches included in this release include:
+
+   🐛 **Bugs Fixed**
+
+   #. `@pp-mo`_ fixed 2 bugs in cube printout:
+      Firstly, ancillary-variables or cell-measures with long names can now widen the cube "dimensions map" to fit,
+      whereas previously printing these cases caused an Exception.
+      Secondly, cube units are now always printed, whereas previously they were missed out any time that the
+      "dimensions map" was widened to accomodate long coordinate names.
+      (:pull:`4233`)(:pull:`4238`)
+
+   💼 **Internal**
+
+   #. `@bjlittle`_ Unpinned the `cftime`_ package dependency within Iris in order
+      to allow use of the latest versions of `cftime`_, `cf-units`_ and `nc-time-axis`_.
+      (:pull:`4222`)
+
+   #. `@rcomer`_ modified test modules so they run consistently under ``pytest`` and
+      ``nose``, and also fixed some minor issues with :class:`~iris.time.PartialDateTime`.
+      (:pull:`4249`)
+
+   Note that, we are forced to drop support for ``Python 3.6`` in this patch due to
+   the third-party package dependencies required by (:pull:`4222`).
 
 
 📢 Announcements
@@ -458,7 +583,7 @@ This document explains the changes made to Iris for this release
 .. _Quality Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
 .. _iris-grib: https://github.com/SciTools/iris-grib
 .. _Cartopy: https://github.com/SciTools/cartopy
-.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
+.. _Cartopy's coastlines: https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.mpl.geoaxes.GeoAxes.html?highlight=coastlines#cartopy.mpl.geoaxes.GeoAxes.coastlines
 .. _Cartopy#1105: https://github.com/SciTools/cartopy/pull/1105
 .. _Cartopy#1117: https://github.com/SciTools/cartopy/pull/1117
 .. _Dask: https://github.com/dask/dask
@@ -500,3 +625,6 @@ This document explains the changes made to Iris for this release
 .. _Title Case Capitalization: https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
 .. _travis-ci: https://travis-ci.org/github/SciTools/iris
 .. _stickler-ci: https://stickler-ci.com/
+.. _cf-units: https://github.com/SciTools/cf-units
+.. _cftime: https://github.com/Unidata/cftime
+.. _nc-time-axis: https://github.com/SciTools/nc-time-axis

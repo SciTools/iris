@@ -1,0 +1,38 @@
+// Tolerant loading test example : the mesh has the wrong 'mesh_topology'
+// NOTE: *not* truly minimal, as we cannot (yet) handle data with no face coords.
+netcdf ${DATASET_NAME} {
+dimensions:
+	NODES = ${NUM_NODES} ;
+	FACES = ${NUM_FACES} ;
+	FACE_CORNERS = 4 ;
+variables:
+	int mesh_var ;
+		${CF_ROLE_DEFINITION}
+		mesh_var:topology_dimension = 2 ;
+		mesh_var:node_coordinates = "mesh_node_x mesh_node_y" ;
+		mesh_var:face_node_connectivity = "mesh_face_nodes" ;
+		mesh_var:face_coordinates = "mesh_face_x mesh_face_y" ;
+	float mesh_node_x(NODES) ;
+		mesh_node_x:standard_name = "longitude" ;
+		mesh_node_x:long_name = "Longitude of mesh nodes." ;
+		mesh_node_x:units = "degrees_east" ;
+	float mesh_node_y(NODES) ;
+		mesh_node_y:standard_name = "latitude" ;
+		mesh_node_y:long_name = "Latitude of mesh nodes." ;
+		mesh_node_y:units = "degrees_north" ;
+	float mesh_face_x(FACES) ;
+		mesh_face_x:standard_name = "longitude" ;
+		mesh_face_x:long_name = "Longitude of mesh nodes." ;
+		mesh_face_x:units = "degrees_east" ;
+	float mesh_face_y(FACES) ;
+		mesh_face_y:standard_name = "latitude" ;
+		mesh_face_y:long_name = "Latitude of mesh nodes." ;
+		mesh_face_y:units = "degrees_north" ;
+	int mesh_face_nodes(FACES, FACE_CORNERS) ;
+		mesh_face_nodes:cf_role = "face_node_connectivity" ;
+		mesh_face_nodes:long_name = "Maps every face to its corner nodes." ;
+		mesh_face_nodes:start_index = 0 ;
+	float data_var(FACES) ;
+	    data_var:mesh = "mesh_var" ;
+	    data_var:location = "face" ;
+}

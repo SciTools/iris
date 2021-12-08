@@ -45,16 +45,16 @@ except ImportError:
 
 
 __all__ = [
-    "load",
-    "save",
-    "load_cubes",
-    "PPField",
-    "as_fields",
-    "load_pairs_from_fields",
-    "save_pairs_from_cube",
-    "save_fields",
-    "STASH",
     "EARTH_RADIUS",
+    "PPField",
+    "STASH",
+    "as_fields",
+    "load",
+    "load_cubes",
+    "load_pairs_from_fields",
+    "save",
+    "save_fields",
+    "save_pairs_from_cube",
 ]
 
 

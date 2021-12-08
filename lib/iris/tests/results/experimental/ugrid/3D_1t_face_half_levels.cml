@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" long_name="air potential temperature on W3 points" standard_name="air_potential_temperature" units="K" var_name="theta_in_w3">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="21600 s"/>
+      <attribute name="name" value="lfric_ngvat_3D_1t_half_level_face_grid_derived_theta_in_w3"/>
+      <attribute name="online_operation" value="instant"/>
+      <attribute name="timeStamp" value="2020-Oct-18 21:20:19 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="412ffe9b-6a55-420e-940b-051e7d9f24bb"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="f5e322b2" points="[0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5,
+		9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5,
+		17.5, 18.5, 19.5, 20.5, 21.5, 22.5, 23.5, 24.5,
+		25.5, 26.5, 27.5, 28.5, 29.5, 30.5, 31.5, 32.5,
+		33.5, 34.5, 35.5, 36.5, 37.5]" shape="(38,)" units="Unit('unknown')" value_type="float32" var_name="half_levels">
+          <attributes>
+            <attribute name="name" value="half_levels"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[2]">
+        <meshCoord bounds="[[28.4835, 31.3314, 38.4268, 35.2644],
+		[31.3314, 33.605, 40.8934, 38.4268],
+		[33.605, 35.3335, 42.7342, 40.8934],
+		..., 
+		[-42.7342, -40.8934, -46.161, -48.912],
+		[-40.8934, -38.4268, -42.6612, -46.161],
+		[-38.4268, -35.2644, -38.4268, -42.6612]]" id="21594c35" long_name="Latitude of mesh nodes." points="[33.4328, 36.1226, 38.2012, ..., -44.791,
+		-42.1583, -38.815]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[2]">
+        <meshCoord bounds="[[-45.0, -37.5, -37.5, -45.0],
+		[-37.5, -30.0, -30.0, -37.5],
+		[-30.0, -22.5, -22.5, -30.0],
+		..., 
+		[-112.5, -120.0, -126.958, -118.361],
+		[-120.0, -127.5, -135.0, -126.958],
+		[-127.5, -135.0, -142.5, -135.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[-41.3152, -33.8068, -26.296, ..., -119.377,
+		-127.321, -135.0]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[21600.0, 21600.0]]" id="17a27d05" long_name="Time axis" points="[21600.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='gregorian')" value_type="float64" var_name="time_instant">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="point">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xd652c62c" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 38, 864)"/>
+  </cube>
+</cubes>

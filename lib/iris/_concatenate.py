@@ -437,7 +437,7 @@ class _CubeSignature:
             av_and_dims = _CoordAndDims(av, tuple(dims))
             self.ancillary_variables_and_dims.append(av_and_dims)
 
-    def _coordinate_differences(self, other, attr):
+    def _coordinate_differences(self, other, attr, reason="metadata"):
         """
         Determine the names of the coordinates that differ between `self` and
         `other` for a coordinate attribute on a _CubeSignature.
@@ -451,12 +451,16 @@ class _CubeSignature:
             The _CubeSignature attribute within which differences exist
             between `self` and `other`.
 
+        * reason (string):
+            The reason to give for mismatch (function is normally, but not
+            always, testing metadata)
+
         Returns:
-            Tuple of a descriptive error message and the names of coordinates
+            Tuple of a descriptive error message and the names of attributes
             that differ between `self` and `other`.
 
         """
-        # Set up {name: coord_metadata} dictionaries.
+        # Set up {name: attribute} dictionaries.
         self_dict = {x.name(): x for x in getattr(self, attr)}
         other_dict = {x.name(): x for x in getattr(other, attr)}
         if len(self_dict) == 0:
@@ -466,7 +470,7 @@ class _CubeSignature:
         self_names = sorted(self_dict.keys())
         other_names = sorted(other_dict.keys())
 
-        # Compare coord metadata.
+        # Compare coord attributes.
         if len(self_names) != len(other_names) or self_names != other_names:
             result = ("", ", ".join(self_names), ", ".join(other_names))
         else:
@@ -476,7 +480,7 @@ class _CubeSignature:
                 if self_value != other_value:
                     diff_names.append(self_key)
             result = (
-                " metadata",
+                " " + reason,
                 ", ".join(diff_names),
                 ", ".join(diff_names),
             )
@@ -542,7 +546,9 @@ class _CubeSignature:
             )
         # Check scalar coordinates.
         if self.scalar_coords != other.scalar_coords:
-            differences = self._coordinate_differences(other, "scalar_coords")
+            differences = self._coordinate_differences(
+                other, "scalar_coords", reason="values or metadata"
+            )
             msgs.append(
                 msg_template.format("Scalar coordinates", *differences)
             )

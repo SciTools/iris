@@ -20,10 +20,12 @@ import sys
 import tempfile
 
 import cf_units
+from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
 
 
@@ -344,7 +346,7 @@ def array_equal(array1, array2, withnans=False):
     Args:
 
     * array1, array2 (arraylike):
-        args to be compared, after normalising with :func:`np.asarray`.
+        args to be compared, normalised if necessary with :func:`np.asarray`.
 
     Kwargs:
 
@@ -358,7 +360,13 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     """
-    array1, array2 = np.asarray(array1), np.asarray(array2)
+
+    def normalise_array(array):
+        if not is_lazy_data(array):
+            array = np.asarray(array)
+        return array
+
+    array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
@@ -366,13 +374,22 @@ def array_equal(array1, array2, withnans=False):
 
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
-            if not np.all(nans1 == nans2):
-                eq = False  # simply fail
-            else:
-                eqs[nans1] = True  # fix NaNs; check all the others
+            eq = as_concrete_data(np.all(nans1 == nans2))
+
+            if eq:
+                eqs = as_concrete_data(eqs)
+                if not is_lazy_data(nans1):
+                    idxs = nans1
+                elif not is_lazy_data(nans2):
+                    idxs = nans2
+                else:
+                    idxs = as_concrete_data(nans1)
+
+                if np.any(idxs):
+                    eqs[idxs] = True
 
         if eq:
-            eq = np.all(eqs)  # check equal at all points
+            eq = as_concrete_data(np.all(eqs))  # check equal at all points
 
     return eq
 
@@ -1395,11 +1412,28 @@ def regular_step(coord):
 
 
 def points_step(points):
-    """Determine whether a NumPy array has a regular step."""
-    diffs = np.diff(points)
-    avdiff = np.mean(diffs)
-    # TODO: This value for `rtol` is set for test_analysis to pass...
-    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    """Determine whether `points` has a regular step.
+
+    Parameters
+    ----------
+    points : numeric, array-like
+        The sequence of values to check for a regular difference.
+
+    Returns
+    -------
+    numeric, bool
+        A tuple containing the average difference between values, and whether the difference is regular.
+    """
+    # Calculations only make sense with multiple points
+    points = np.asanyarray(points)
+    if points.size >= 2:
+        diffs = np.diff(points)
+        avdiff = np.mean(diffs)
+        # TODO: This value for `rtol` is set for test_analysis to pass...
+        regular = np.allclose(diffs, avdiff, rtol=0.001)
+    else:
+        avdiff = np.nan
+        regular = True
     return avdiff, regular
 
 
@@ -1853,20 +1887,28 @@ def equalise_attributes(cubes):
     """
     Delete cube attributes that are not identical over all cubes in a group.
 
-    This function simply deletes any attributes which are not the same for
-    all the given cubes.  The cubes will then have identical attributes.  The
-    given cubes are modified in-place.
+    This function deletes any attributes which are not the same for all the
+    given cubes.  The cubes will then have identical attributes, and the
+    removed attributes are returned.  The given cubes are modified in-place.
 
     Args:
 
     * cubes (iterable of :class:`iris.cube.Cube`):
         A collection of cubes to compare and adjust.
 
+    Returns:
+
+    * removed (list):
+        A list of dicts holding the removed attributes.
+
     """
+    removed = []
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cubes[0].attributes.keys())
+    keys_to_remove = set(common_keys)
     for cube in cubes[1:]:
         cube_keys = list(cube.attributes.keys())
+        keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
@@ -1875,12 +1917,39 @@ def equalise_attributes(cubes):
                 and np.all(cube.attributes[key] == cubes[0].attributes[key])
             )
         ]
+    keys_to_remove.difference_update(common_keys)
 
     # Remove all the other attributes.
     for cube in cubes:
-        for key in list(cube.attributes.keys()):
-            if key not in common_keys:
-                del cube.attributes[key]
+        deleted_attributes = {
+            key: cube.attributes.pop(key)
+            for key in keys_to_remove
+            if key in cube.attributes
+        }
+        removed.append(deleted_attributes)
+    return removed
+
+
+def is_masked(array):
+    """
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or `dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the array has any masks.
+
+    """
+    if is_lazy_data(array):
+        result = da.ma.getmaskarray(array).any().compute()
+    else:
+        result = ma.is_masked(array)
+    return result
 
 
 def _strip_metadata_from_dims(cube, dims):
