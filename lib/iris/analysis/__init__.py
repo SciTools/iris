@@ -2170,15 +2170,20 @@ class _Groupby:
     def _compute_shared_coords(self):
         """Create the new shared coordinates given the group slices."""
 
+        groupby_indices = []
         groupby_bounds = []
 
-        # Iterate over the ordered dictionary in order to construct
-        # a list of tuple group boundary indexes.
+        # Iterate over the ordered dictionary in order to construct a list of
+        # tuple group indices, and a list of the respective bounds of those
+        # indices.
         for key_slice in self._slices_by_key.values():
             if isinstance(key_slice, tuple):
-                groupby_bounds.append((key_slice[0], key_slice[-1]))
+                indices = key_slice
             else:
-                groupby_bounds.append((key_slice.start, key_slice.stop - 1))
+                indices = tuple(range(*key_slice.indices(self._stop)))
+
+            groupby_indices.append(indices)
+            groupby_bounds.append((indices[0], indices[-1]))
 
         # Create new shared bounded coordinates.
         for coord, dim in self._shared_coords:
@@ -2197,15 +2202,9 @@ class _Groupby:
                         new_shape += shape[:-1]
                     work_arr = work_arr.reshape(work_shape)
 
-                    for key_slice in self._slices_by_key.values():
-                        if isinstance(key_slice, slice):
-                            indices = key_slice.indices(
-                                coord.points.shape[dim]
-                            )
-                            key_slice = range(*indices)
-
+                    for indices in groupby_indices:
                         for arr in work_arr:
-                            new_points.append("|".join(arr.take(key_slice)))
+                            new_points.append("|".join(arr.take(indices)))
 
                     # Reinstate flattened dimensions. Aggregated dim now leads.
                     new_points = np.array(new_points).reshape(new_shape)
@@ -2220,48 +2219,54 @@ class _Groupby:
                     raise ValueError(msg)
             else:
                 new_bounds = []
+                if coord.has_bounds():
+                    # Derive new coord's bounds from bounds.
+                    item = coord.bounds
+                    maxmin_axis = (dim, -1)
+                    first_choices = coord.bounds.take(0, -1)
+                    last_choices = coord.bounds.take(1, -1)
+                else:
+                    # Derive new coord's bounds from points.
+                    item = coord.points
+                    maxmin_axis = dim
+                    first_choices = last_choices = coord.points
+
+                # Check whether item is monotonic along the dimension of interest.
+                deltas = np.diff(item, 1, dim)
+                monotonic = np.all(deltas >= 0) or np.all(deltas <= 0)
 
                 # Construct list of coordinate group boundary pairs.
-                for start, stop in groupby_bounds:
-                    if coord.has_bounds():
-                        # Collapse group bounds into bounds.
+                if monotonic:
+                    # Use first and last bound or point for new bounds.
+                    for start, stop in groupby_bounds:
                         if (
                             getattr(coord, "circular", False)
-                            and (stop + 1) == coord.shape[dim]
+                            and (stop + 1) == self._stop
                         ):
                             new_bounds.append(
                                 [
-                                    coord.bounds.take(start, dim).take(0, -1),
-                                    coord.bounds.take(0, dim).take(0, -1)
+                                    first_choices.take(start, dim),
+                                    first_choices.take(0, dim)
                                     + coord.units.modulus,
                                 ]
                             )
                         else:
                             new_bounds.append(
                                 [
-                                    coord.bounds.take(start, dim).take(0, -1),
-                                    coord.bounds.take(stop, dim).take(1, -1),
+                                    first_choices.take(start, dim),
+                                    last_choices.take(stop, dim),
                                 ]
                             )
-                    else:
-                        # Collapse group points into bounds.
-                        if getattr(coord, "circular", False) and (
-                            stop + 1
-                        ) == len(coord.points):
-                            new_bounds.append(
-                                [
-                                    coord.points.take(start, dim),
-                                    coord.points.take(0, dim)
-                                    + coord.units.modulus,
-                                ]
-                            )
-                        else:
-                            new_bounds.append(
-                                [
-                                    coord.points.take(start, dim),
-                                    coord.points.take(stop, dim),
-                                ]
-                            )
+                else:
+                    # Use min and max bound or point for new bounds.
+                    for indices in groupby_indices:
+                        item_slice = item.take(indices, dim)
+                        new_bounds.append(
+                            [
+                                item_slice.min(axis=maxmin_axis),
+                                item_slice.max(axis=maxmin_axis),
+                            ]
+                        )
 
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its

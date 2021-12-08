@@ -136,6 +136,10 @@ This document explains the changes made to Iris for this release
    array laziness, allowing efficient comparisons even with larger-than-memory
    objects. (:pull:`4439`)
 
+#. `@rcomer`_ modified :meth:`~iris.cube.Cube.aggregated_by` to calculate new
+   coordinate bounds using minimum and maximum for unordered coordinates,
+   fixing :issue:`1528`. (:pull:`4315`)
+
 
 💣 Incompatible Changes
 =======================
