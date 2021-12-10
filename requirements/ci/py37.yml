@@ -31,7 +31,6 @@ dependencies:
   - python-stratify
 
 # Test dependencies.
-  - asv
   - filelock
   - imagehash >=4.0
   - nose
