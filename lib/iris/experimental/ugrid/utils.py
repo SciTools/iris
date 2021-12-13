@@ -176,12 +176,18 @@ def recombine_submeshes(
                         f'{sub_str} has a dim-coord "{sub_dimname}" for '
                         f"dimension {i_dim}, but 'mesh_cube' has none."
                     )
-                elif sub_coord != full_coord:
-                    err = (
-                        f'{sub_str} has a dim-coord "{sub_dimname}" for '
-                        f"dimension {i_dim}, which does not match that "
-                        f"of 'mesh_cube', \"{full_dimname}\"."
-                    )
+                else:
+                    # Use a varname-tolerant whole-coord comparison here.
+                    sub_coord = sub_coord.copy()
+                    full_coord = full_coord.copy()
+                    sub_coord.var_name = None
+                    full_coord.var_name = None
+                    if sub_coord != full_coord:
+                        err = (
+                            f'{sub_str} has a dim-coord "{sub_dimname}" for '
+                            f"dimension {i_dim}, which does not match that "
+                            f"of 'mesh_cube', \"{full_dimname}\"."
+                        )
             else:
                 # i_dim == mesh_dim :  different rules for this one
                 if not sub_coord:
