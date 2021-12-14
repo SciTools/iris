@@ -203,6 +203,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ migrated readthedocs to use mambaforge for `faster documentation building`_.
    (:pull:`4476`)
 
+#. `@wjbenfold`_ contributed `@alastair-gemmell`_'s step-by-step guide to
+   contributing to the docs to the docs. (:pull:`4461`)
+
 
 💼 Internal
 ===========
