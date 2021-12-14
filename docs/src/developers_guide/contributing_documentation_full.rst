@@ -6,7 +6,7 @@ Contributing to the Documentation
 
 This guide is for those comfortable with the development process, looking for
 the specifics of how to apply that knowledge to Iris. You may instead find it
-easier to use the :ref:`How to contribute to Iris documentation (the easy way)`.
+easier to use the :ref:`contributing.documentation_easy`.
 
 Any change to the Iris project whether it is a bugfix, new feature or
 documentation update must use the :ref:`development-workflow`.
