@@ -218,7 +218,7 @@ Plotting 2-Dimensional Cubes
 Creating Maps
 -------------
 Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem`,
-a cartopy :class:`~cartopy.mpl.GeoAxes` instance is created, which can be
+a cartopy :class:`~cartopy.mpl.geoaxes.GeoAxes` instance is created, which can be
 accessed with the :func:`matplotlib.pyplot.gca` function.
 
 Given the current map, you can draw gridlines and coastlines amongst other 
@@ -226,8 +226,8 @@ things.
 
 .. seealso::
 
-    :meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`,
-    :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
+    :meth:`cartopy's gridlines() <cartopy.mpl.geoaxes.GeoAxes.gridlines>`,
+    :meth:`cartopy's coastlines() <cartopy.mpl.geoaxes.GeoAxes.coastlines>`.
 
 
 Cube Contour
