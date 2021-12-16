@@ -51,15 +51,14 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
 
 .. note::
 
-     The result of :func:`iris.load` is **always** a
-     :class:`list of cubes <iris.cube.CubeList>`.
-     Anything that can be done with a Python :class:`list` can be done
-     with the resultant list of cubes. It is worth noting, however, that
-     there is no inherent order to this
-     :class:`list of cubes <iris.cube.CubeList>`.
-     Because of this, indexing may be inconsistent. A more consistent way to
-     extract a cube is by using the :class:`iris.Constraint` class as
-     described in :ref:`constrained-loading`.
+     The result of :func:`iris.load` is **always** a :class:`iris.cube.CubeList`
+     (even if it only contains one :class:`iris.cube.Cube` - see
+     :ref:`strict-loading`). Anything that can be done with a Python
+     :class:`list` can be done with an :class:`iris.cube.CubeList`.
+     
+     The order of this list should not be relied upon. Ways of extracting a
+     specific cube or cubes are covered in :ref:`constrained-loading` and
+     :ref:`strict-loading`.
 
 .. hint::
 
@@ -414,6 +413,7 @@ PartialDateTime this becomes simple:
 Notice how the dates printed are between the range specified in the ``st_swithuns_daterange``
 and that they span multiple years.
 
+.. _strict-loading:
 
 Strict Loading
 --------------
