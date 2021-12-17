@@ -280,7 +280,7 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER[-1], venv_backend="conda")
+@nox.session(python=PY_VER, venv_backend="conda")
 @nox.parametrize(
     ["ci_mode"],
     [True, False],
@@ -288,7 +288,7 @@ def linkcheck(session: nox.sessions.Session):
 )
 def benchmarks(session: nox.sessions.Session, ci_mode: bool):
     """
-    Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
+    Perform Iris performance benchmarks (using Airspeed Velocity).
 
     Parameters
     ----------
@@ -306,6 +306,43 @@ def benchmarks(session: nox.sessions.Session, ci_mode: bool):
 
     """
     session.install("asv", "nox")
+
+    data_gen_var = "DATA_GEN_PYTHON"
+    if data_gen_var in os.environ:
+        print("Using existing data generation environment.")
+    else:
+        print("Setting up the data generation environment...")
+        session.run_always(
+            "nox",
+            "--session=tests",
+            "--install-only",
+            f"--python={session.python}",
+        )
+        data_gen_python = next(
+            Path(".nox").rglob(f"tests*/bin/python{session.python}")
+        ).resolve()
+        session.env[data_gen_var] = data_gen_python
+
+        print("Installing Mule into data generation environment...")
+        mule_dir = data_gen_python.parents[1] / "resources" / "mule"
+        if not mule_dir.is_dir():
+            session.run_always(
+                "git",
+                "clone",
+                "https://github.com/metomi/mule.git",
+                str(mule_dir),
+                external=True,
+            )
+        session.run_always(
+            str(data_gen_python),
+            "-m",
+            "pip",
+            "install",
+            str(mule_dir / "mule"),
+            external=True,
+        )
+
+    print("Running ASV...")
     session.cd("benchmarks")
     # Skip over setup questions for a new machine.
     session.run("asv", "machine", "--yes")
