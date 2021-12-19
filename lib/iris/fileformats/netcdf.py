@@ -48,7 +48,7 @@ import iris.io
 import iris.util
 
 # Show actions activation statistics.
-DEBUG = False
+DEBUG = True
 
 # Configure the logger.
 logger = iris.config.get_logger(__name__)
