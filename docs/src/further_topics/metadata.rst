@@ -63,8 +63,9 @@ For example, the collective metadata used to define an
 ``var_name``, ``units``, and ``attributes`` members. Note that, these are the
 actual `data attribute`_ names of the metadata members on the Iris class.
 
+
 .. _metadata members table:
-.. table:: - Iris classes that model `CF Conventions`_ metadata
+.. table:: Iris classes that model `CF Conventions`_ metadata
    :widths: auto
    :align: center
 

@@ -1,0 +1,14 @@
+
+{% if on_rtd %}
+    {% if rtd_version == 'latest' %}
+        <div id="slim-version-box">
+            <b>{{version}} (latest)</b>
+        </div>
+    {% elif rtd_version == 'stable' %}
+        <b>{{version}} (stable)</b>
+    {% else %}
+        <b>{{version}}</b>
+    {%- endif %}
+{%- else %}
+    <b>{{version}}</b>
+{%- endif %}

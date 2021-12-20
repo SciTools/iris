@@ -16,8 +16,8 @@ is merged.  Before submitting a pull request please consider this list.
 
 #. **Provide a helpful description** of the Pull Request.  This should include:
 
-  * The aim of the change / the problem addressed / a link to the issue.
-  * How the change has been delivered.
+   * The aim of the change / the problem addressed / a link to the issue.
+   * How the change has been delivered.
 
 #. **Include a "What's New" entry**, if appropriate.
    See :ref:`whats_new_contributions`.

@@ -1,16 +1,16 @@
-{% extends "!layout.html" %}
+{% extends "pydata_sphinx_theme/layout.html" %}
 
-{# This uses blocks.  See: 
+{# This uses blocks.  See:
      https://www.sphinx-doc.org/en/master/templating.html
 #}
 
-/*---------------------------------------------------------------------------*/
 
-{%- block document %}
-    {% if READTHEDOCS and rtd_version == 'latest' %}
+    {%- block docs_body %}
+
+    {% if on_rtd and rtd_version == 'latest' %}
         <div id="slim-red-box-message">
             You are viewing the <b>latest</b> unreleased documentation
-            <b>v{{ version }}</b>.  You may prefer a 
+            <b>v{{ version }}</b>.  You may prefer a
             <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
             version.
         </div>
@@ -19,29 +19,3 @@
 
     {{ super() }}
 {%- endblock %}
-
-/*-----------------------------------------------------z----------------------*/
-
-{% block menu %}
-    {{ super() }}
-
-    {# menu_links and menu_links_name are set in conf.py (html_context) #}
-    
-    {% if menu_links %}
-        <p class="caption">
-            <span class="caption-text">
-            {% if menu_links_name %}
-                {{ menu_links_name }}
-            {% else %}
-                External links
-            {% endif %}
-            </span>
-        </p>
-        <ul>
-            {% for text, link in menu_links %}
-                <li class="toctree-l1"><a href="{{ link }}">{{ text }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-{% endblock %}
-

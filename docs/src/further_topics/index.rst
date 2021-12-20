@@ -1,7 +1,7 @@
 .. _further topics:
 
-Introduction
-============
+Further Topics
+==============
 
 Some specific areas of Iris may require further explanation or a deep dive
 into additional detail above and beyond that offered by the
@@ -17,10 +17,12 @@ that may be of interest to the more advanced or curious user.
    on `SciTools/Iris`_.
 
 
-* :doc:`metadata`
-* :doc:`lenient_metadata`
-* :doc:`lenient_maths`
+.. toctree::
+   :maxdepth: 2
 
+   ../further_topics/metadata
+   ../further_topics/lenient_metadata
+   ../further_topics/lenient_maths
 
 .. _GitHub Documentation Issue: https://github.com/SciTools/iris/issues/new?assignees=&labels=New%3A+Documentation%2C+Type%3A+Documentation&template=documentation.md&title=
 .. _SciTools/iris: https://github.com/SciTools/iris

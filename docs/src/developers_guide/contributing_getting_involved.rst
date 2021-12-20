@@ -1,8 +1,9 @@
 .. include:: ../common_links.inc
 
 .. _development_where_to_start:
+.. _developers_guide:
 
-Getting Involved
+Developers Guide
 ----------------
 
 Iris_ is an Open Source project hosted on Github and as such anyone with a
@@ -36,5 +37,30 @@ If you are new to using GitHub we recommend reading the
           `Governance <https://scitools.org.uk/organisation.html#governance>`_
           section of the `SciTools`_ ogranization web site.
 
+.. _GitHub getting started: https://docs.github.com/en/github/getting-started-with-github          
 
-.. _GitHub getting started: https://docs.github.com/en/github/getting-started-with-github
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developers Guide
+   :name: development_index
+   :hidden:
+
+   gitwash/index
+   contributing_documentation
+   contributing_codebase_index
+   contributing_changes
+   release   
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reference
+   :hidden:
+
+   ../generated/api/iris
+   ../whatsnew/index
+   ../techpapers/index
+   ../copyright
+
+
