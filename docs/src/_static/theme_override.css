@@ -18,16 +18,6 @@
   text-decoration: underline;
 }
 
-/* higlight the version */
-#slim-version-bo {
-  background: #ff0000;
-  box-sizing: border-box;
-  color: #ffffff;
-  font-weight: normal;
-  padding: 0.5em;
-}
-
-
 /* bullet point list with green ticks */
 ul.squarelist {
   /* https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type */
@@ -41,12 +31,12 @@ ul.squarelist {
 /* TREMTEST - NONE of this works.... */
 /* add extra spacing around numfig numbering */
 
-span.caption-number {
+/*span.caption-number {*/
   /* color: #green; !important */
   /*padding-bottom: 100px; !important */
   /*line-height: 0.5; !important*/
-   background: #ff0000; !important
-}
+  /* background: #ff0000; !important*/
+/*}*/
 
 /*
 span.caption-text::before{
