@@ -18,6 +18,16 @@
   text-decoration: underline;
 }
 
+/* higlight the version */
+#slim-version-bo {
+  background: #ff0000;
+  box-sizing: border-box;
+  color: #ffffff;
+  font-weight: normal;
+  padding: 0.5em;
+}
+
+
 /* bullet point list with green ticks */
 ul.squarelist {
   /* https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type */
@@ -26,7 +36,6 @@ ul.squarelist {
   text-indent: 1em;
   padding-left: 5em;
 }
-
 
 /* -------------------------------------------------------------------------*/
 /* TREMTEST - NONE of this works.... */
@@ -39,11 +48,12 @@ span.caption-number {
    background: #ff0000; !important
 }
 
+/*
 span.caption-text::before{
   content: "\a";
   white-space: pre;
 }
-
+*/
 /*
 span.caption-text {
   padding-top: 100px; !important

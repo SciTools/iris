@@ -44,9 +44,10 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 # This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
 rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
-# For local testing purposes we can force bneing on RTD and the version
-# on_rtd = True           # useful for testing
-# rtd_version = "latest"  # useful for testing
+# For local testing purposes we can force being on RTD and the rtd_version,
+# use "latest" or "stable"
+on_rtd = True
+rtd_version = "latest"
 
 if on_rtd:
     autolog("Build running on READTHEDOCS server")

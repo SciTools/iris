@@ -65,7 +65,7 @@ actual `data attribute`_ names of the metadata members on the Iris class.
 
 
 .. _metadata members table:
-.. table:: Iris classes that model `CF Conventions`_ metadata
+.. table:: - Iris classes that model `CF Conventions`_ metadata
    :widths: auto
    :align: center
 
