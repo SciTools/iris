@@ -19,15 +19,26 @@ from iris.tests.unit.fileformats.nc_load_rules.actions import (
 )
 
 
-class Test__lon_dimcoords(Mixin__nc_load_actions, tests.IrisTest):
-    # Tests for handling of the special UM-specific data-var attributes.
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+class Mixin_latlon_dimcoords(Mixin__nc_load_actions):
+    # Tests for the recognition and construction of latitude/longitude coords.
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
+    # Control to test either longitude or latitude coords.
+    # Set by inheritor classes, which are actual TestCases.
+    lat_1_or_lon_0 = None
+
+    def setUp(self):
+        super().setUp()
+        # Generate some useful settings : just to generalise operation over
+        # both latitude and longitude.
+        islat = self.lat_1_or_lon_0
+        assert islat in (0, 1)
+        self.unrotated_name = "latitude" if islat else "longitude"
+        self.rotated_name = "grid_latitude" if islat else "grid_longitude"
+        self.unrotated_units = "degrees_north" if islat else "degrees_east"
+        # Note: there are many alternative valid forms for the rotated units,
+        # but we are not testing that here.
+        self.rotated_units = "degrees"  # NB this one is actually constant
+        self.axis = "y" if islat else "x"
 
     def _make_testcase_cdl(
         self,
@@ -38,7 +49,8 @@ class Test__lon_dimcoords(Mixin__nc_load_actions, tests.IrisTest):
         axis=None,
         grid_mapping=None,
     ):
-
+        # Inner routine called by 'run_testcase' (in Mixin__nc_load_actions),
+        # to generate CDL which is then translated into a testfile and loaded.
         if var_name is None:
             # Can't have *no* var-name
             # N.B. it is also the name of the dimension.
@@ -109,12 +121,17 @@ netcdf test {{
         crs=None,
         context_message="",
     ):
-        # Check the standard-name, long-name and units of the resulting coord.
-        # NOTE: there is no "axis" arg, as this aspect does *not* appear as
-        # a property (or attribute) of the resulting coord.  It *does* affect
-        # the "identification process" though (what we are testing here).
+        # Check the existence, standard-name, long-name, units and coord-system
+        # of the resulting coord.  Also that it is always a dim-coord.
+        # NOTE: there is no "axis" arg, as this information does *not* appear
+        # as a separate property (or attribute) of the resulting coord.
+        # However, whether the file variable has an axis attribute *does*
+        # affect the results here, in some cases.
         coords = cube.coords()
-        self.assertEqual(len(coords), 1)
+        # There should be one and only one coord.
+        self.assertEqual(1, len(coords))
+        # It should also be a dim-coord
+        self.assertEqual(1, len(cube.coords(dim_coords=True)))
         (coord,) = coords
         if self.debug:
             print("")
@@ -130,231 +147,190 @@ netcdf test {{
         self.assertEqual(units, coord_units, context_message)
         assert crs in (None, "latlon", "rotated")
         if crs is None:
-            self.assertEqual(None, coord_crs)
+            self.assertEqual(None, coord_crs, context_message)
         elif crs == "latlon":
-            self.assertIsInstance(coord_crs, GeogCS)
+            self.assertIsInstance(coord_crs, GeogCS, context_message)
         elif crs == "rotated":
-            self.assertIsInstance(coord_crs, RotatedGeogCS)
+            self.assertIsInstance(coord_crs, RotatedGeogCS, context_message)
 
     #
     # Testcase routines
     #
+    # NOTE: all these testcases have been verified against the older behaviour
+    # in v3.0.4, based on Pyke rules.
+    #
 
     def test_minimal(self):
-        result = self.run_testcase()  # Nothing but the var-name.
+        # Nothing but a var-name --> unrecognised dim-coord.
+        result = self.run_testcase()
         self.check_result(result, None, None, "unknown")
 
+    def test_fullinfo_unrotated(self):
+        # Check behaviour with all normal info elements for 'unrotated' case.
+        # Includes a grid-mapping, but no axis (should not be needed).
+        result = self.run_testcase(
+            standard_name=self.unrotated_name,
+            units=self.unrotated_units,
+            grid_mapping="latlon",
+        )
+        self.check_result(
+            result, self.unrotated_name, None, "degrees", "latlon"
+        )
+
+    def test_fullinfo_rotated(self):
+        # Check behaviour with all normal info elements for 'rotated' case.
+        # Includes a grid-mapping, but no axis (should not be needed).
+        result = self.run_testcase(
+            standard_name=self.rotated_name,
+            units=self.rotated_units,
+            grid_mapping="rotated",
+        )
+        self.check_result(
+            result, self.rotated_name, None, "degrees", "rotated"
+        )
+
     def test_axis(self):
-        result = self.run_testcase(axis="x")
-        self.check_result(result, "longitude", None, "unknown")
+        # A suitable axis --> unrotated lat/lon coord, but unknown units.
+        result = self.run_testcase(axis=self.axis)
+        self.check_result(result, self.unrotated_name, None, "unknown")
 
-    def test_axis_units_unrotated(self):
-        result = self.run_testcase(units="degrees_east", axis="x")
-        self.check_result(result, "longitude", None, "degrees")
+    def test_units_unrotated(self):
+        # With a unit like 'degrees_east', we automatically identify this as a
+        # latlon coord, *and* convert units to plain 'degrees' on loading.
+        result = self.run_testcase(units=self.unrotated_units)
+        self.check_result(result, self.unrotated_name, None, "degrees")
 
-    def test_unrotated_units(self):
-        # With a unit of 'degrees_east', we automatically identify as longitude
-        # *And* units are converted to plain 'degrees' on loading.
-        result = self.run_testcase(units="degrees_east")
-        self.check_result(result, "longitude", None, "degrees")
-
-    def test_rotated_units(self):
-        # With just a "degrees" unit, we don't identify as latlon
+    def test_units_rotated(self):
+        # With no info except a "degrees" unit, we **don't** identify a latlon,
+        # i.e. we do not set the standard-name
         result = self.run_testcase(units="degrees")
         self.check_result(result, None, None, "degrees")
 
-    def test_varname_longitude(self):
-        # With a recognised var-name, we do identify a longitude
-        # But the units are not determined
-        result = self.run_testcase(var_name="longitude")
-        self.check_result(result, "longitude", None, "unknown")
-
-    def test_varname_lons(self):
-        # A var-name that matches a regexp, but is not exact.
-        result = self.run_testcase(var_name="lons")
-        self.check_result(result, None, None, "unknown")
-
-    def test_longname_lons(self):
-        # This does not match.
-        result = self.run_testcase(long_name="lons")
-        self.check_result(result, None, "lons", "unknown")
-
-    def test_longname_longitude(self):
-        # A var-name that matches a regexp, but is not exact.
-        result = self.run_testcase(long_name="longitude")
-        self.check_result(result, None, "longitude", "unknown")
-
-    def test_longname_gridlongitude(self):
-        # This is not recognised
-        result = self.run_testcase(long_name="grid_longitude")
-        self.check_result(result, None, "grid_longitude", "unknown")
-
-    def test_rotated_units_name(self):
-        # With a "degrees" unit and a suitable long-name, we do identify
-        # N.B. this is *not* interpreted as rotated
-        result = self.run_testcase(units="degrees", var_name="longitude")
-        self.check_result(result, "longitude", None, "degrees")
-
-    def test_rotated_units_name_gridmapping(self):
-        # With a "degrees" unit and a suitable long-name, *AND* a suitable
-        # grid-mapping, we do identify as rotated.
+    def test_units_unrotated_gridmapping(self):
+        # With an unrotated unit *AND* a suitable grid-mapping, we identify a
+        # rotated latlon coordinate + assign it the coord-system.
         result = self.run_testcase(
-            standard_name="grid_longitude",
+            units=self.unrotated_units, grid_mapping="latlon"
+        )
+        self.check_result(
+            result, self.unrotated_name, None, "degrees", "latlon"
+        )
+
+    def test_units_rotated_gridmapping_noname(self):
+        # Rotated units and grid-mapping, but *without* the expected name.
+        # Does not translate, no coord-system (i.e. grid-mapping is discarded).
+        result = self.run_testcase(
             units="degrees",
             grid_mapping="rotated",
         )
-        self.check_result(result, "grid_longitude", None, "degrees", "rotated")
+        self.check_result(result, None, None, "degrees", None)
 
-    def test_rotated_units_name_wrong_gridmapping(self):
-        # With a "degrees" unit and a suitable long-name, *AND* a suitable
-        # grid-mapping, we do identify as rotated.
+    def test_units_rotated_gridmapping_withname(self):
+        # With a "degrees" unit, a rotated grid-mapping *AND* a suitable
+        # standard-name, it recognises a rotated dimcoord.
         result = self.run_testcase(
-            units="degrees", var_name="xxx", grid_mapping="latlon"
+            standard_name=self.rotated_name,
+            units="degrees",
+            grid_mapping="rotated",
         )
-        self.check_result(result, None, None, "degrees")
+        self.check_result(
+            result, self.rotated_name, None, "degrees", "rotated"
+        )
 
-    def test_unrotated_units_name(self):
-        # With a "degrees_east" unit and a suitable long-name, we identify
-        result = self.run_testcase(units="degrees_east")
-        self.check_result(result, "longitude", None, "degrees")
-
-    def test_unrotated_units_name_gridmapping(self):
-        # With a "degrees_east" unit and a suitable long-name, we identify
-        result = self.run_testcase(units="degrees_east", grid_mapping="latlon")
-        self.check_result(result, "longitude", None, "degrees", "latlon")
-
-    def test_units_wrongaxis(self):
-        result = self.run_testcase(units="degrees_east", axis="y")
-        self.check_result(result, "longitude", None, "degrees")
-
-    def test_axis_units_rotated(self):
-        # This *might* have been interpreted as rotated
-        # - but it is not (in the absence of a grid-mapping)
-        result = self.run_testcase(units="degrees", axis="x")
-        self.check_result(result, "longitude", None, "degrees")
-
-    def test_axis_units_rotated_gridmapping(self):
-        # Extension to the previous..
+    def test_units_rotated_gridmapping_varname(self):
+        # Same but with var-name containing the standard-name : in this case we
+        # get NO COORDINATE-SYSTEM (which is a bit weird).
         result = self.run_testcase(
-            units="degrees", axis="x", grid_mapping="rotated"
+            var_name=self.rotated_name,
+            units="degrees",
+            grid_mapping="rotated",
         )
-        self.check_result(result, "grid_longitude", None, "degrees", "rotated")
+        self.check_result(result, self.rotated_name, None, "degrees", None)
 
-    def test_multifactor(self):
-        # Check combinations of the key metadata elements
-        # -- that is : standard_name; units; axis
-        # We omit both 'long_name' and 'var_name' because, from inspection of
-        # the rules code, they are not involved in latlon identification.
+    def test_varname_unrotated(self):
+        # With a recognised name in the var-name, we set standard-name.
+        # But units are left undetermined.
+        result = self.run_testcase(var_name=self.unrotated_name)
+        self.check_result(result, self.unrotated_name, None, "unknown")
 
-        # Function which encodes our expectation of the relevant "rules".
-        # TODO: incomplete : need to add 'grid_mapping' as a factor here
-        # Note : this logic has been validated against the original Pyke-rules
-        # implementation, since we want to preserve all that behaviour.
-        def expected_results(standard_name, units, axis):
-            """
-            Encode our understanding of the longitude indentifying logic.
-            NOTE: we don't include long_name in this.  The rules can set
-            long_name, when provided with an invalid standard_name, but we have
-            no need to test that behavour here.
+    def test_varname_rotated(self):
+        # With a *rotated* name in the var-name, we set standard-name.
+        # But units are left undetermined.
+        result = self.run_testcase(var_name=self.rotated_name)
+        self.check_result(result, self.rotated_name, None, "unknown")
 
-            Returns:
-                (expected_coord_standard_name, expected_coord_units)
+    def test_varname_unrotated_units_rotated(self):
+        # With a "degrees" unit and a suitable var-name, we do identify
+        # (= set standard-name).
+        # N.B. this accepts "degrees" as a generic term, and so does *not*
+        # interpret it as a rotated coordinate.
+        result = self.run_testcase(
+            var_name=self.unrotated_name, units="degrees"
+        )
+        self.check_result(result, self.unrotated_name, None, "degrees")
 
-            """
-            expected_stdname = standard_name
-            expected_units = units
-            valid = False
-            rotated = False
+    def test_longname(self):
+        # A recognised form in long-name is *not* translated into standard-name.
+        result = self.run_testcase(long_name=self.unrotated_name)
+        self.check_result(result, None, self.unrotated_name, "unknown")
 
-            # First simulate action of 'is_longitude' routine
-            if units is not None:
-                if units == "degrees":
-                    # This one (alone) indicates *rotated* longitudes
-                    if standard_name is None:
-                        # No standard name, is OK only if we have an axis too.
-                        valid = axis == "x"
-                    else:
-                        # With standard name, only the rotated form is OK.
-                        valid = standard_name == "grid_longitude"
-                else:
-                    # Extended units are all "true" longitude,
-                    # i.e. non-rotated, e.g. "degrees_east"
-                    valid = units.startswith("degree")
-            else:
-                if standard_name is not None:
-                    # No units, but we do have a standard-name.
-                    if "latitude" in standard_name:
-                        valid = True
-                elif axis == "x":
-                    valid = True
+    def test_stdname_unrotated(self):
+        # Only an (unrotated) standard name : units is not specified
+        result = self.run_testcase(standard_name=self.unrotated_name)
+        self.check_result(result, self.unrotated_name, None, None)
 
-            # Next simulate the operation of the 'is_rotated' check.
-            if valid:
-                if standard_name is not None:
-                    rotated = standard_name == "grid_longitude"
-                else:
-                    rotated = units == "degrees"  # i.e. *not* "_north" et al
+    def test_stdname_rotated(self):
+        # Only a (rotated) standard name : units is not specified
+        result = self.run_testcase(standard_name=self.rotated_name)
+        self.check_result(result, self.rotated_name, None, None)
 
-            # Now implement in the result : in some circumstances, this will
-            # reset either the standard-name or units of the result
-            if valid:
-                if not rotated:
-                    expected_stdname = "longitude"
-                elif axis == "x":
-                    # If standard name is missing, we don't identify a (rotated)
-                    # longitude coord, unless confirmed by the 'axis' setting.
-                    expected_stdname = "grid_longitude"
+    def test_stdname_unrotated_gridmapping(self):
+        # An unrotated standard-name and grid-mapping, translates into a
+        # coordinate system.
+        result = self.run_testcase(
+            standard_name=self.unrotated_name, grid_mapping="latlon"
+        )
+        self.check_result(
+            result, self.unrotated_name, None, "unknown", "latlon"
+        )
 
-                if expected_units is not None and expected_units.startswith(
-                    "degree"
-                ):
-                    expected_units = "degrees"
+    def test_stdname_rotated_gridmapping(self):
+        # An *rotated* standard-name and grid-mapping, translates into a
+        # coordinate system.
+        result = self.run_testcase(
+            standard_name=self.rotated_name, grid_mapping="rotated"
+        )
+        self.check_result(result, self.rotated_name, None, None, "rotated")
 
-            return expected_stdname, expected_units
 
-        # list test options for each factor
-        std_name_opts = [
-            None,
-            "air_temperature",
-            "longitude",
-            "grid_longitude",
-        ]
-        units_opts = [None, "degrees", "degrees_east", "K"]
-        axis_opts = [None, "x", "z"]
-        std_name_opts = [None]
-        units_opts = ["degrees"]
-        axis_opts = ["x"]
+class Test__longitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+    lat_1_or_lon_0 = 0
 
-        for std in std_name_opts:
-            for units in units_opts:
-                for axis in axis_opts:
-                    expect_stdname, expect_units = expected_results(
-                        std, units, axis
-                    )
-                    result = self.run_testcase(
-                        standard_name=std,
-                        long_name=None,
-                        var_name=None,
-                        units=units,
-                        axis=axis,
-                    )
-                    (coord,) = result.coords()
-                    context_message = (
-                        "\nTesting with : "
-                        f"stdname={std!r}, longname=None, varname=None, units={units!r}, axis={axis!r}"
-                        "\n  expected coord with : "
-                        f'stdname={expect_stdname!r}, longname=None, varname="dim", units={expect_units!r}'
-                        "\n  got : "
-                        f"\nstdname={coord.standard_name!r}, longname={coord.long_name!r}, "
-                        f"varname={coord.var_name!r}, units={coord.units!r}"
-                    )
-                    self.check_result(
-                        result,
-                        expect_stdname,
-                        None,
-                        expect_units,
-                        context_message=context_message,
-                    )
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
+
+
+class Test__latitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+    lat_1_or_lon_0 = 1
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
 
 
 if __name__ == "__main__":
