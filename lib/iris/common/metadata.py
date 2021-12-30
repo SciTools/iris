@@ -44,8 +44,6 @@ __all__ = [
 
 # https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
 
-from ..util import guess_coord_axis
-
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
@@ -1413,6 +1411,8 @@ def metadata_filter(
         to only those that matched the given criteria.
 
     """
+    from ..util import guess_coord_axis
+
     name = None
     obj = None
 

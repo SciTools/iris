@@ -26,7 +26,6 @@ from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
-import iris.coords
 import iris.exceptions
 
 
