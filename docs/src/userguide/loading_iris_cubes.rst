@@ -56,7 +56,7 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
      :ref:`strict-loading`). Anything that can be done with a Python
      :class:`list` can be done with an :class:`iris.cube.CubeList`.
      
-     The order of this list should not be relied upon. Ways of extracting a
+     The order of this list should not be relied upon. Ways of loading a
      specific cube or cubes are covered in :ref:`constrained-loading` and
      :ref:`strict-loading`.
 
