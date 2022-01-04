@@ -5,10 +5,9 @@ Plotting a Cube
 ===============
 
 Iris utilises the power of Python's 
-`Matplotlib <http://matplotlib.sourceforge.net/>`_ package in order to generate 
+`Matplotlib <https://matplotlib.org/>`_ package in order to generate 
 high quality, production ready 1D and 2D plots. 
-The functionality of the Matplotlib 
-`pyplot <http://matplotlib.sourceforge.net/api/pyplot_api.html>`_ module has 
+The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
 

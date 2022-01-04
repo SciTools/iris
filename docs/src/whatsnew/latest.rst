@@ -200,6 +200,9 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ updated Cartopy documentation links to point to the renamed
    :class:`cartopy.mpl.geoaxes.GeoAxes`. (:pull:`4464`)
 
+#. `@wjbenfold`_ clarified behaviour of :func:`iris.load` in :ref:`userguide
+   loading section <loading_iris_cubes>`. (:pull:`4462`)
+
 
 💼 Internal
 ===========
