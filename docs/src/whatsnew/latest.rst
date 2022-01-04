@@ -197,6 +197,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ encouraged contributors to include type hinting in code
    they are working on - :ref:`code_formatting`. (:pull:`4390`)
 
+#. `@wjbenfold`_ clarified behaviour of :func:`iris.load` in :ref:`userguide loading section
+   <loading_iris_cubes>`. (:pull:`4462`)
+
 
 💼 Internal
 ===========
