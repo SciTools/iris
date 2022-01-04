@@ -63,6 +63,8 @@ This consists of:
    developer to easily compare proposed new **acceptable** result images
    against the existing accepted reference images, for each failing test.
 
+The acceptable images for each test can be viewed online. The :ref:`testing.imagehash_index` lists all the graphical tests in the test suite and
+shows the known acceptable result images for comparison.
 
 Reviewing Failing Tests
 =======================
