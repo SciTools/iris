@@ -14,7 +14,7 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
-from typing import Sequence, Union
+from typing import Iterable, Optional, Union
 import warnings
 import zlib
 
@@ -40,6 +40,11 @@ import iris.util
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
 DEFAULT_IGNORE_AXIS = False
+
+# Define some typing aliases.
+Dims = Union[int, Iterable[int]]
+RealData = Union[np.ndarray, ma.MaskedArray]
+RealOrLazyData = Union[RealData, da.Array]
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -256,7 +261,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._values_dm.lazy_data()
 
-    def _core_values(self) -> Union[npt.NDArray, "da.Array"]:
+    def _core_values(self) -> RealOrLazyData:
         """
         The values array of this dimensional metadata which may be a NumPy
         array or a dask array.
@@ -1673,7 +1678,7 @@ class Coord(_DimensionalMetadata):
         self._values = points
 
     @property
-    def bounds(self) -> npt.NDArray:
+    def bounds(self) -> RealData:
         """
         The coordinate bounds values, as a NumPy array,
         or None if no bound values are defined.
@@ -1809,7 +1814,7 @@ class Coord(_DimensionalMetadata):
             lazy_bounds = self._bounds_dm.lazy_data()
         return lazy_bounds
 
-    def core_points(self):
+    def core_points(self) -> RealOrLazyData:
         """
         The points array at the core of this coord, which may be a NumPy array
         or a dask array.
@@ -1817,7 +1822,7 @@ class Coord(_DimensionalMetadata):
         """
         return super()._core_values()
 
-    def core_bounds(self) -> Union[npt.NDArray, "da.Array"]:
+    def core_bounds(self) -> RealOrLazyData:
         """
         The points array at the core of this coord, which may be a NumPy array
         or a dask array.
@@ -2216,9 +2221,7 @@ class Coord(_DimensionalMetadata):
 
         return Cell(point, bound)
 
-    def collapsed(
-        self, dims_to_collapse: Union[int, Sequence[int], None] = None
-    ) -> "Coord":
+    def collapsed(self, dims_to_collapse: Optional[Dims] = None) -> "Coord":
         """
         Returns a copy of this coordinate, which has been collapsed along
         the specified dimensions.
@@ -2237,8 +2240,8 @@ class Coord(_DimensionalMetadata):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
             def serialize(
-                x: npt.NDArray, axis: Union[Sequence[int], None]
-            ) -> Union[npt.NDArray, str]:
+                x: npt.NDArray[np.str_], axis: Optional[Iterable[int]]
+            ) -> Union[npt.NDArray[np.str_], str]:
                 if axis is None:
                     return "|".join(str(i) for i in x.flatten())
 
