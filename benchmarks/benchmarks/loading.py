@@ -17,6 +17,7 @@ Where applicable benchmarks should be parameterised for two sizes of input data:
 
 from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
+from iris.fileformats.um import structured_um_loading
 
 from .generate_data import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
 from .generate_data.um_files import create_um_files
@@ -145,3 +146,41 @@ class ManyVars:
 
     def time_many_var_load(self) -> None:
         _ = load(str(self.file_path))
+
+
+class StructuredFF:
+    """
+    Test structured loading of a large-ish fieldsfile.
+
+    Structured load of the larger size should show benefit over standard load,
+    avoiding the cost of merging.
+    """
+
+    params = [[(2, 2, 2), (1280, 960, 5)], [False, True]]
+    param_names = ["xyz", "structured_loading"]
+
+    def setup_cache(self) -> dict:
+        file_path_dict = {}
+        for xyz in self.params[0]:
+            x, y, z = xyz
+            file_path_dict[xyz] = create_um_files(x, y, z, 1, False, ["FF"])
+        return file_path_dict
+
+    def setup(self, file_path_dict, xyz, structured_load):
+        self.file_path = file_path_dict[xyz]["FF"]
+        self.structured_load = structured_load
+
+    def load(self):
+        """Load the whole file (in fact there is only 1 cube)."""
+
+        def _load():
+            _ = load(self.file_path)
+
+        if self.structured_load:
+            with structured_um_loading():
+                _load()
+        else:
+            _load()
+
+    def time_structured_load(self, _, __, ___):
+        self.load()
