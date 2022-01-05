@@ -2116,7 +2116,7 @@ class Coord(_DimensionalMetadata):
         # through to numpy
         if isinstance(dims_to_collapse, (int, np.integer)):
             dims_to_collapse = (dims_to_collapse,)
-        if isinstance(dims_to_collapse, list):
+        if isinstance(dims_to_collapse, Iterable):
             dims_to_collapse = tuple(dims_to_collapse)
 
         if np.issubdtype(self.dtype, np.str_):
