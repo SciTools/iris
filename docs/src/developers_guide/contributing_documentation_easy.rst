@@ -82,7 +82,8 @@ Describing what you've changed and why will help the person who reviews your cha
 
    If you're not sure that you're making your pull request right, or have a
    question, then make it anyway! You can then comment on it tagging
-   ``@SciTools/iris-devs`` to ask your question.
+   ``@SciTools/iris-devs`` to ask your question (then edit your pull request if
+   you need to).
 
 What Happens Next?
 ^^^^^^^^^^^^^^^^^^
