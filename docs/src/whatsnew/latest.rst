@@ -197,8 +197,11 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ encouraged contributors to include type hinting in code
    they are working on - :ref:`code_formatting`. (:pull:`4390`)
 
-#. `@wjbenfold`_ clarified behaviour of :func:`iris.load` in :ref:`userguide loading section
-   <loading_iris_cubes>`. (:pull:`4462`)
+#. `@wjbenfold`_ updated Cartopy documentation links to point to the renamed
+   :class:`cartopy.mpl.geoaxes.GeoAxes`. (:pull:`4464`)
+
+#. `@wjbenfold`_ clarified behaviour of :func:`iris.load` in :ref:`userguide
+   loading section <loading_iris_cubes>`. (:pull:`4462`)
 
 #. `@bjlittle`_ migrated readthedocs to use mambaforge for `faster documentation building`_.
    (:pull:`4476`)

@@ -858,9 +858,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
 def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     """
-    Replace the current non-cartopy axes with :class:`cartopy.mpl.GeoAxes`
-    and return the appropriate kwargs dict based on the provided coordinates
-    and kwargs.
+    Replace the current non-cartopy axes with
+    :class:`cartopy.mpl.geoaxes.GeoAxes` and return the appropriate kwargs dict
+    based on the provided coordinates and kwargs.
 
     """
     # Determine projection.
@@ -874,7 +874,7 @@ def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
     else:
         cartopy_proj = ccrs.PlateCarree()
 
-    # Ensure the current axes are a cartopy.mpl.GeoAxes instance.
+    # Ensure the current axes are a cartopy.mpl.geoaxes.GeoAxes instance.
     axes = kwargs.get("axes")
     if axes is None:
         if (
@@ -1430,7 +1430,8 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
-        :meth:`cartopy.crs.CRS.transform_points`.
+        the :meth:`~cartopy.crs.CRS.transform_points` method of
+        :class:`cartopy.crs.CRS`.
 
     Kwargs:
 
@@ -1478,7 +1479,8 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         :func:`iris.analysis.cartography.rotate_grid_vectors`.
         To transform coordinate grid points, you will need to create
         2-dimensional arrays of x and y values.  These can be transformed with
-        :meth:`cartopy.crs.CRS.transform_points`.
+        the :meth:`~cartopy.crs.CRS.transform_points` method of
+        :class:`cartopy.crs.CRS`.
 
     Kwargs:
 
