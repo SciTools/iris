@@ -197,6 +197,12 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ encouraged contributors to include type hinting in code
    they are working on - :ref:`code_formatting`. (:pull:`4390`)
 
+#. `@wjbenfold`_ clarified behaviour of :func:`iris.load` in :ref:`userguide loading section
+   <loading_iris_cubes>`. (:pull:`4462`)
+
+#. `@bjlittle`_ migrated readthedocs to use mambaforge for `faster documentation building`_.
+   (:pull:`4476`)
+
 
 💼 Internal
 ===========
@@ -270,3 +276,4 @@ This document explains the changes made to Iris for this release
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
+.. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
