@@ -1,5 +1,5 @@
 
-.. _contributing.documentation:
+.. _contributing.documentation_full:
 
 Contributing to the Documentation
 ---------------------------------
