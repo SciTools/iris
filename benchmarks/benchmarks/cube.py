@@ -10,11 +10,12 @@ Cube benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
+from benchmarks import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
 from iris import analysis, aux_factory, coords, cube
+from iris.tests.stock import mesh as stock_mesh
 
 
-def setup():
+def setup(*params):
     """General variables needed by multiple benchmark classes."""
     global data_1d
     global data_2d
@@ -168,6 +169,44 @@ class AncillaryVariable(ComponentCommon):
         self.add_args = (ancillary_variable, 0)
 
         self.setup_common()
+
+
+class MeshCoord:
+    params = [
+        6,  # minimal cube-sphere
+        int(1e6),  # realistic cube-sphere size
+        ARTIFICIAL_DIM_SIZE,  # To match size in :class:`AuxCoord`
+    ]
+    param_names = ["number of faces"]
+
+    def setup(self, n_faces):
+        n_nodes = n_faces + 2
+        n_edges = n_faces * 2
+        mesh = stock_mesh.sample_mesh(n_nodes, n_faces, n_edges)
+
+        self.mesh_coord = stock_mesh.sample_meshcoord(mesh=mesh)
+        self.data = np.zeros(n_faces)
+        self.cube_blank = cube.Cube(data=self.data)
+        self.cube = self.create()
+
+    def create(self):
+        return cube.Cube(
+            data=self.data, aux_coords_and_dims=[(self.mesh_coord, 0)]
+        )
+
+    def time_create(self, n_faces):
+        _ = self.create()
+
+    @disable_repeat_between_setup
+    def time_add(self, n_faces):
+        self.cube_blank.add_aux_coord(self.mesh_coord, 0)
+
+    @disable_repeat_between_setup
+    def time_remove(self, n_faces):
+        self.cube.remove_coord(self.mesh_coord)
+
+    def time_return(self, n_faces):
+        _ = self.cube
 
 
 class Merge:
