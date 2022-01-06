@@ -17,6 +17,7 @@ jobs:
       IRIS_TEST_DATA_VERSION: "2.5"
       # Lets us manually bump the cache to rebuild
       TEST_DATA_CACHE_BUILD: "2"
+      GEN_DATA_CACHE_BUILD: "1"
       PY_VER: 3.8
 
     steps:
@@ -53,13 +54,8 @@ jobs:
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
-          # Make sure GHA never gets an exact cache match by using the unique
-          #  github.sha. This means it will always store this run as a new
-          #  cache (any changes happen DURING the run, and I don't _think_ GHA
-          #  caching has anything native to support this). Cache restoration
-          #  still succeeds via the partial restore-key match.
-          key: ${{ runner.os }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}
+          key:
+            test-data-${{ env.IRIS_TEST_DATA_VERSION }}-${{ env.TEST_DATA_CACHE_BUILD }}
 
       - name: Cache generated data directory
         id: cache-generated-data
