@@ -1,6 +1,6 @@
 
-Contributing to the Documentation
----------------------------------
+How to Contribute to the Documentation
+--------------------------------------
 
 Documentation is important and we encourage any improvements that can be made.
 If you believe the documentation is not clear please contribute a change to
