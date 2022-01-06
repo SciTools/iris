@@ -33,7 +33,7 @@ Steps to Complete Each Time You Propose Changes
 .. image:: edit_on_github.png
 
 3. In the resulting GitHub page select **main** from the ``Switch
-   branches/tags`` drop-down menu near the ``top left`` of the page (to the left
+   branches/tags`` drop-down menu near the **top left** of the page (to the left
    of the ``iris / docs / src / ...`` links) if it isn't already. This changes
    the branch to **main**.
 
