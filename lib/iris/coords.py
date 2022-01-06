@@ -1591,7 +1591,7 @@ class Coord(_DimensionalMetadata):
         self._values = points
 
     @property
-    def bounds(self) -> RealData:
+    def bounds(self) -> Optional[RealData]:
         """Coordinate bounds values.
 
         The coordinate bounds values, as a NumPy array,
@@ -1727,7 +1727,7 @@ class Coord(_DimensionalMetadata):
         """Core points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
-    def core_bounds(self) -> RealOrLazyData:
+    def core_bounds(self) -> Optional[RealOrLazyData]:
         """Core bounds. The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
