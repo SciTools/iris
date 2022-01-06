@@ -152,7 +152,7 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
    data to take significantly longer than with real data. Benchmark
-   :class:`HorizontalChunkedRegridding.time_regrid_area_w` shows a time decrease
+   :class:`benchmarks.HorizontalChunkedRegridding` shows a time decrease
    from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
 
 
