@@ -16,8 +16,8 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've added support for `UGRID`_ meshes which can now be loaded and attached
-     to a cube.
+   * We've added experimental support for `UGRID`_ meshes which can now be loaded
+     and attached to a cube.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
