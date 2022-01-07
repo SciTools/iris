@@ -140,6 +140,11 @@ This document explains the changes made to Iris for this release
    so that a cube with lazy data awaiting a unit conversion can be pickled.
    (:issue:`4354 `, :pull:`4377`)
 
+#. `@pp-mo`_ fixed a bug in netcdf loading, whereby *any* rotated latlon coordinate
+   was mistakenly interpreted as a latitude, usually resulting in two 'latitude's
+   instead of one latitude and one longitude.
+   (:issue:`4460 `, :pull:`4470`)
+
 
 💣 Incompatible Changes
 =======================
