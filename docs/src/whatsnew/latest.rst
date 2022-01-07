@@ -90,6 +90,9 @@ This document explains the changes made to Iris for this release
    benchmark scripts. Also added a regridding benchmark that uses this data
    (:pull:`4402`)
 
+#. `@pp-mo`_ updated the CF standard_names table to version 78.
+   (:issue: `4479`, :pull:`4483`)
+
 
 🐛 Bugs Fixed
 =============
