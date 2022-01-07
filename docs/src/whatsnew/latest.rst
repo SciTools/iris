@@ -18,6 +18,7 @@ This document explains the changes made to Iris for this release
 
    * We've added experimental support for `UGRID`_ meshes which can now be loaded
      and attached to a cube.
+   * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -164,7 +165,8 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@bjlittle`_ dropped support for ``Python 3.7``, as per the `NEP-29`_
+   deprecation policy schedule. (:pull:`4481`)
 
 
 🔗 Dependencies
