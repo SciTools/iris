@@ -94,6 +94,10 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ updated to the latest CF Standard Names Table ``v78`` (21 Sept 2021).
    (:issue:`4479`, :pull:`4483`)
 
+#. `@pp-mo`_ removed broken tooling for deriving Iris metadata translations
+   from `Metarelate`_.  From now we intend to manage phenonemon translation
+   in Iris itself.  (:pull:`4484`)
+
 
 🐛 Bugs Fixed
 =============
@@ -303,3 +307,4 @@ This document explains the changes made to Iris for this release
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
 .. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
+.. _Metarelate: http://www.metarelate.net/
