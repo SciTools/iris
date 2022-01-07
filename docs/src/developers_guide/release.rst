@@ -36,6 +36,14 @@ Ensure that any behaviour which has been deprecated for the correct number of
 previous releases is now finally changed. More detail, including the correct
 number of releases, is in :ref:`iris_development_deprecations`.
 
+Standard Names
+~~~~~~~~~~~~~~
+
+Update the file ``etc/cf-standard-name-table.xml`` to the latest CF standard names,
+from the `latest CF standard names`_.
+( This is used during build to automatically generate the sourcefile
+``lib/iris/std_names.py``. )
+
 
 Release Branch
 --------------
@@ -268,3 +276,4 @@ Post Release Steps
 .. _rc_iris: https://anaconda.org/conda-forge/iris/labels
 .. _Generating Distribution Archives: https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives
 .. _Packaging Your Project: https://packaging.python.org/guides/distributing-packages-using-setuptools/#packaging-your-project
+.. _latest CF standard names: http://cfconventions.org/standard-names.html
