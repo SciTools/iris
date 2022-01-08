@@ -165,8 +165,7 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. `@bjlittle`_ dropped support for ``Python 3.7``, as per the `NEP-29`_
-   deprecation policy schedule. (:pull:`4481`)
+#. N/A
 
 
 🔗 Dependencies
@@ -180,6 +179,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ introduced the ``numpy >=1.19`` minimum pin, in
    accordance with `NEP-29`_ deprecation policy. (:pull:`4386`)
+
+#. `@bjlittle`_ dropped support for ``Python 3.7``, as per the `NEP-29`_
+   backwards compatibility and deprecation policy schedule. (:pull:`4481`)
 
 
 📚 Documentation
