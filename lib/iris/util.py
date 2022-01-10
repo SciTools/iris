@@ -1059,13 +1059,14 @@ def format_array(arr):
     ffunc = str
     max_line_len = 50
 
-    formatArray = np.core.arrayprint._formatArray
-    format_options = np.core.arrayprint._format_options
+    # Format the array with version 1.13 legacy behaviour
+    with np.printoptions(legacy="1.13"):
+        # Use this (private) routine for more control.
+        formatArray = np.core.arrayprint._formatArray
+        # N.B. the 'legacy' arg had different forms in different numpy versions
+        # -- fetch the required form from the internal options dict
+        legacy_key = np.core.arrayprint._format_options["legacy"]
 
-    options = np.get_printoptions()
-    options["legacy"] = "1.13"
-
-    with np.printoptions(**options):
         result = formatArray(
             arr,
             ffunc,
@@ -1074,7 +1075,7 @@ def format_array(arr):
             separator=", ",
             edge_items=edge_items,
             summary_insert=summary_insert,
-            legacy=format_options["legacy"],
+            legacy=legacy_key,
         )
 
     return result
