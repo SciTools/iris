@@ -35,10 +35,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyGithub
       # run the python scripts passing in the github token
-      # TODO: this seems to run ok without any API token?
       - name: Run the python
         run: |
           export GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
           python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py
           ls -al $GITHUB_WORKSPACE
-          
+      # update the reop with the new file, try https://github.com/marketplace/actions/update-files-on-github
