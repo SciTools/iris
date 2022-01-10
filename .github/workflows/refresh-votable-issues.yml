@@ -10,14 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout
+      - name: echo test
         run: echo "Hello World!"
 
+      - name: chekcout iris
         uses: actions/checkout@v2
         with:
           repository: tkknight/iris
           path: iris
-          
+
+      - name: chekcout the file to update
         uses: actions/checkout@v2
         with:
           repository: SciTools-incubator/scitools-cla-checker
