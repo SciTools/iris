@@ -26,35 +26,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub
-
+      # run the python scripts passing in the github token
+      # TODO: this seems to run ok without any API token?
       - name: Run the python
         run: |
+          ls -al ls -al $GITHUB_WORKSPACE/iris/docs/src
           python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
-
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: Set up Python 3.9
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: 3.9
-#    - name: Install dependencies
-#      run: |
-#        python -m pip install --upgrade pip
-#        pip install PyGithub
-#    - name: Run the python
-#      run: |
-#        python ${{ github.action_path }}/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
-
-
-
-#      - uses: actions/script@v4
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#          script: |
-#            echo "hello world"
-#            python iris/docs/src/query_gh_votable_issues.py ${{ secrets.GITHUB_TOKEN }}
-#            cat votable-issues.json
-#
-      - name: echo test
-        run: echo "Hello World!";ls -al $GITHUB_WORKSPACE/iris/docs/src
+          ls -al ls -al $GITHUB_WORKSPACE/iris/docs/src
+          
