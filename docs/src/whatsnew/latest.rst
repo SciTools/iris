@@ -91,7 +91,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4402`)
 
 #. `@pp-mo`_ updated to the latest CF Standard Names Table ``v78`` (21 Sept 2021).
-   (:issue: `4479`, :pull:`4483`)
+   (:issue:`4479`, :pull:`4483`)
 
 
 🐛 Bugs Fixed
