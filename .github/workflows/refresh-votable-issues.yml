@@ -44,4 +44,4 @@ jobs:
 #            cat votable-issues.json
 #
       - name: echo test
-        run: echo "Hello World!";ls -al $GITHUB_WORKSPACE/iris
+        run: echo "Hello World!";ls -al $GITHUB_WORKSPACE/iris/docs/src
