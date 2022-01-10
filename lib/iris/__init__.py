@@ -89,8 +89,8 @@ import contextlib
 import glob
 import itertools
 import os.path
-import threading
 import pathlib
+import threading
 
 import iris._constraints
 from iris._deprecation import IrisDeprecation, warn_deprecated

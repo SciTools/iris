@@ -12,8 +12,8 @@ import collections
 from collections import OrderedDict
 import glob
 import os.path
-import re
 import pathlib
+import re
 
 import iris.exceptions
 
