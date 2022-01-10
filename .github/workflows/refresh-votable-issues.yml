@@ -13,9 +13,15 @@ jobs:
       - name: Checkout
         run: echo "Hello World!"
 
-#        uses: actions/checkout@v2
-#        with:
-#          path: main
+        uses: actions/checkout@v2
+        with:
+          repository: tkknight/iris
+          path: iris
+          
+        uses: actions/checkout@v2
+        with:
+          repository: SciTools-incubator/scitools-cla-checker
+          path: scitools-cla-checker
 
 #      - uses: actions/script@v4
 #        with:
