@@ -22,7 +22,7 @@ jobs:
         with:
           # TODO: use the proper repo!
           repository: SciTools-incubator/scitools-cla-checker
-          ref: main
+          ref: master
           path: scitools-cla-checker
 
       # setup python
