@@ -1,0 +1,26 @@
+# Uses Github API to get a list of issues that have votes on and then
+# update a gist with the results in json
+
+name: Refresh Votable Issues
+on:
+  workflow_dispatch:
+    branches: [ votable_issues ]
+jobs:
+  votable_main:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        run: echo "Hello World!"
+
+#        uses: actions/checkout@v2
+#        with:
+#          path: main
+
+#      - uses: actions/script@v4
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          script: |
+#            echo "hello world"
+#            docs/src/query_gh_votable_issues.py ${{ secrets.GITHUB_TOKEN }}
+#            cat votable-issues.json
