@@ -9,14 +9,22 @@ jobs:
   votable_main:
     runs-on: ubuntu-latest
     steps:      
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-out your repositories under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout iris
         uses: actions/checkout@v2
         with:
           repository: tkknight/iris
           ref: votable_issues
           path: iris
-      
+
+      - name: checkout the repo with the json to update
+        uses: actions/checkout@v2
+        with:
+          # TODO: use the proper repo!
+          repository: SciTools-incubator/scitools-cla-checker
+          ref: main
+          path: scitools-cla-checker
+
       # setup python
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
