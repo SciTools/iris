@@ -18,6 +18,7 @@ This document explains the changes made to Iris for this release
 
    * We've added experimental support for `UGRID`_ meshes which can now be loaded
      and attached to a cube.
+   * We've also dropped support for ``Python 3.7``.
 
    And finally, get in touch with us on `GitHub`_ if you have any issues or
    feature requests for improving Iris. Enjoy!
@@ -181,6 +182,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bjlittle`_ introduced the ``numpy >=1.19`` minimum pin, in
    accordance with `NEP-29`_ deprecation policy. (:pull:`4386`)
+
+#. `@bjlittle`_ dropped support for ``Python 3.7``, as per the `NEP-29`_
+   backwards compatibility and deprecation policy schedule. (:pull:`4481`)
 
 
 📚 Documentation

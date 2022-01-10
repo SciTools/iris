@@ -142,8 +142,6 @@ task:
   << : *CREDITS_TEMPLATE
   matrix:
     env:
-      PY_VER: 3.7
-    env:
       PY_VER: 3.8
   name: "${CIRRUS_OS}: py${PY_VER} tests"
   container:
