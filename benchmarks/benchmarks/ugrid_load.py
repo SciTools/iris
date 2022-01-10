@@ -15,30 +15,17 @@ Where possible benchmarks should be parameterised for two sizes of input data:
 
 """
 
-from pathlib import Path
-from shutil import rmtree
-
 from iris import load_cube as iris_load_cube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid import load_mesh as iris_load_mesh
-from iris.tests.stock.netcdf import create_file__xios_2d_face_half_levels
 
-SYNTH_DATA_DIR = Path().cwd() / "tmp_data"
-
-
-def setup(*args):
-    SYNTH_DATA_DIR.mkdir(exist_ok=True)
-
-
-def teardown(*args):
-    rmtree(SYNTH_DATA_DIR)
+from .generate_data.stock import create_file__xios_2d_face_half_levels
 
 
 def synthetic_data(**kwargs):
     # Ensure all uses of the synthetic data function use the common directory.
-    return create_file__xios_2d_face_half_levels(
-        temp_file_dir=SYNTH_DATA_DIR, **kwargs
-    )
+    # File location is controlled by :mod:`generate_data`, hence temp_file_dir=None.
+    return create_file__xios_2d_face_half_levels(temp_file_dir=None, **kwargs)
 
 
 def load_cube(*args, **kwargs):
@@ -62,10 +49,10 @@ class BasicLoading:
         self.setup_common(dataset_name="Loading", n_faces=args[0])
 
     def time_load_file(self, *args):
-        _ = load_cube(self.data_path)
+        _ = load_cube(str(self.data_path))
 
     def time_load_mesh(self, *args):
-        _ = load_mesh(self.data_path)
+        _ = load_mesh(str(self.data_path))
 
 
 class BasicLoadingTime(BasicLoading):
@@ -93,7 +80,7 @@ class DataRealisation:
 
     def setup_common(self, **kwargs):
         data_path = synthetic_data(**kwargs)
-        self.cube = load_cube(data_path)
+        self.cube = load_cube(str(data_path))
 
     def setup(self, *args):
         self.setup_common(dataset_name="Realisation", n_faces=args[0])
@@ -129,7 +116,7 @@ class Callback:
         self.setup_common(dataset_name="Loading", n_faces=args[0])
 
     def time_load_file_callback(self, *args):
-        _ = load_cube(self.data_path, callback=self.callback)
+        _ = load_cube(str(self.data_path), callback=self.callback)
 
 
 class CallbackTime(Callback):

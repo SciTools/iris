@@ -13,9 +13,9 @@ from copy import deepcopy
 import numpy as np
 
 from iris.experimental import ugrid
-from iris.tests.stock import mesh as stock_mesh
 
 from .. import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
+from ..generate_data.stock import sample_mesh, sample_meshcoord
 
 
 class UGridCommon:
@@ -106,7 +106,7 @@ class Mesh(UGridCommon):
         self.eq_object = deepcopy(self.object)
 
     def create(self):
-        return stock_mesh.sample_mesh(**self.mesh_kwargs)
+        return sample_mesh(**self.mesh_kwargs)
 
     def time_add_connectivities(self, n_faces):
         self.object.add_connectivities(self.face_node)
@@ -143,16 +143,17 @@ class MeshCoord(UGridCommon):
     params = UGridCommon.params + [ARTIFICIAL_DIM_SIZE]
 
     def setup(self, n_faces, lazy=False):
-        n_nodes = n_faces + 2
-        n_edges = n_faces * 2
-        self.mesh = stock_mesh.sample_mesh(
-            n_nodes, n_faces, n_edges, lazy_values=lazy
+        self.mesh_kwargs = dict(
+            n_nodes=n_faces + 2,
+            n_edges=n_faces * 2,
+            n_faces=n_faces,
+            lazy_values=lazy,
         )
 
         super().setup(n_faces)
 
     def create(self):
-        return stock_mesh.sample_meshcoord(mesh=self.mesh)
+        return sample_meshcoord(sample_mesh_kwargs=self.mesh_kwargs)
 
     def time_points(self, n_faces):
         _ = self.object.points

@@ -10,8 +10,9 @@ Coord benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
 from iris import coords
+
+from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
 
 
 def setup():

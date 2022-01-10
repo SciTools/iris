@@ -10,8 +10,9 @@ AuxFactory benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import aux_factory, coords
+
+from . import ARTIFICIAL_DIM_SIZE
 
 
 class FactoryCommon:

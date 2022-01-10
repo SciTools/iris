@@ -10,8 +10,9 @@ Plot benchmark tests.
 import matplotlib
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE
 from iris import coords, cube, plot
+
+from . import ARTIFICIAL_DIM_SIZE
 
 matplotlib.use("agg")
 

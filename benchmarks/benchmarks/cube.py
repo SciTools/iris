@@ -10,9 +10,10 @@ Cube benchmark tests.
 
 import numpy as np
 
-from benchmarks import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
 from iris import analysis, aux_factory, coords, cube
-from iris.tests.stock import mesh as stock_mesh
+
+from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
+from .generate_data.stock import sample_mesh, sample_meshcoord
 
 
 def setup(*params):
@@ -180,11 +181,11 @@ class MeshCoord:
     param_names = ["number of faces"]
 
     def setup(self, n_faces):
-        n_nodes = n_faces + 2
-        n_edges = n_faces * 2
-        mesh = stock_mesh.sample_mesh(n_nodes, n_faces, n_edges)
+        mesh_kwargs = dict(
+            n_nodes=n_faces + 2, n_edges=n_faces * 2, n_faces=n_faces
+        )
 
-        self.mesh_coord = stock_mesh.sample_meshcoord(mesh=mesh)
+        self.mesh_coord = sample_meshcoord(sample_mesh_kwargs=mesh_kwargs)
         self.data = np.zeros(n_faces)
         self.cube_blank = cube.Cube(data=self.data)
         self.cube = self.create()
