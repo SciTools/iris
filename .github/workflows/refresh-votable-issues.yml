@@ -30,8 +30,6 @@ jobs:
       # TODO: this seems to run ok without any API token?
       - name: Run the python
         run: |
-          ls -al $GITHUB_WORKSPACE/iris/docs/src
           python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
-          ls -al $GITHUB_WORKSPACE/iris/docs/src
           ls -al $GITHUB_WORKSPACE
           
