@@ -11,13 +11,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: echo test
-        run: echo "Hello World!"
+        run: echo "Hello World!";ls -al
 
-      - name: checkout iris
-        uses: actions/checkout@v2
-        with:
-          repository: tkknight/iris
-          path: iris
+#      - name: checkout iris
+#        uses: actions/checkout@v2
+#        with:
+#          repository: tkknight/iris
+#          path: iris
 
 #      - uses: actions/script@v4
 #        with:
