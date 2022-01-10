@@ -9,9 +9,7 @@ jobs:
   votable_main:
     runs-on: ubuntu-latest
     steps:
-      - name: echo test
-        run: echo "ls command";ls -al
-        
+       
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout iris
         uses: actions/checkout@v2
@@ -46,4 +44,4 @@ jobs:
 #            cat votable-issues.json
 #
       - name: echo test
-        run: echo "Hello World!";ls -al $GITHUB_WORKSPACE
+        run: echo "Hello World!";ls -al $GITHUB_WORKSPACE/iris
