@@ -29,7 +29,7 @@ jobs:
 
       - name: Run the python
         run: |
-          python ${{ github.action_path }}/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
+          python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
 
 #  build:
 #    runs-on: ubuntu-latest
