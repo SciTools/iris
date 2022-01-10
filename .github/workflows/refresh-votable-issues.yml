@@ -41,3 +41,4 @@ jobs:
           python $GITHUB_WORKSPACE/iris/docs/src/query_gh_votable_issues.py
           ls -al $GITHUB_WORKSPACE
       # update the reop with the new file, try https://github.com/marketplace/actions/update-files-on-github
+      # JP suggests: https://github.com/MetOffice/ssstack/blob/main/.github/workflows/publish-docs.yml
