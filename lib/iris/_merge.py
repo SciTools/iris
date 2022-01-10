@@ -11,19 +11,19 @@ Typically the cube merge process is handled by
 
 """
 
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict, namedtuple
 from copy import deepcopy
 
 import numpy as np
 
 from iris._lazy_data import (
-    as_lazy_data,
     as_concrete_data,
+    as_lazy_data,
     is_lazy_data,
     multidim_lazy_stack,
 )
-import iris.coords
 from iris.common import CoordMetadata, CubeMetadata
+import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util

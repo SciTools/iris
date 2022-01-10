@@ -10,7 +10,7 @@ Unit tests for the `iris.fileformats.pp._data_bytes_to_shaped_array` function.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import io
 from unittest import mock
@@ -32,7 +32,7 @@ class Test__data_bytes_to_shaped_array__lateral_boundary_compression(
         decompressed = np.arange(data_len).reshape(*self.data_shape)
         decompressed *= np.arange(self.data_shape[1]) % 3 + 1
 
-        decompressed_mask = np.zeros(self.data_shape, np.bool)
+        decompressed_mask = np.zeros(self.data_shape, np.bool_)
         decompressed_mask[
             y_halo + rim : -(y_halo + rim), x_halo + rim : -(x_halo + rim)
         ] = True
@@ -81,7 +81,7 @@ class Test__data_bytes_to_shaped_array__land_packed(tests.IrisTest):
         self.land = np.array(
             [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]], dtype=np.float64
         )
-        sea = ~self.land.astype(np.bool)
+        sea = ~self.land.astype(np.bool_)
         self.land_masked_data = np.array([1, 3, 4.5])
         self.sea_masked_data = np.array([1, 3, 4.5, -4, 5, 0, 1, 2, 3])
 

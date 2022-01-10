@@ -8,8 +8,8 @@ Miscellaneous utility functions.
 
 """
 
-from collections.abc import Hashable
 from abc import ABCMeta, abstractmethod
+from collections.abc import Hashable, Iterable
 from contextlib import contextmanager
 import copy
 import functools
@@ -20,14 +20,13 @@ import sys
 import tempfile
 
 import cf_units
+from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
-import iris
 from iris._deprecation import warn_deprecated
-import iris.coords
+from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
-import iris.cube
 
 
 def broadcast_to_shape(array, shape, dim_map):
@@ -347,7 +346,7 @@ def array_equal(array1, array2, withnans=False):
     Args:
 
     * array1, array2 (arraylike):
-        args to be compared, after normalising with :func:`np.asarray`.
+        args to be compared, normalised if necessary with :func:`np.asarray`.
 
     Kwargs:
 
@@ -361,7 +360,13 @@ def array_equal(array1, array2, withnans=False):
     with additional support for arrays of strings and NaN-tolerant operation.
 
     """
-    array1, array2 = np.asarray(array1), np.asarray(array2)
+
+    def normalise_array(array):
+        if not is_lazy_data(array):
+            array = np.asarray(array)
+        return array
+
+    array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
@@ -369,13 +374,22 @@ def array_equal(array1, array2, withnans=False):
 
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             nans1, nans2 = np.isnan(array1), np.isnan(array2)
-            if not np.all(nans1 == nans2):
-                eq = False  # simply fail
-            else:
-                eqs[nans1] = True  # fix NaNs; check all the others
+            eq = as_concrete_data(np.all(nans1 == nans2))
+
+            if eq:
+                eqs = as_concrete_data(eqs)
+                if not is_lazy_data(nans1):
+                    idxs = nans1
+                elif not is_lazy_data(nans2):
+                    idxs = nans2
+                else:
+                    idxs = as_concrete_data(nans1)
+
+                if np.any(idxs):
+                    eqs[idxs] = True
 
         if eq:
-            eq = np.all(eqs)  # check equal at all points
+            eq = as_concrete_data(np.all(eqs))  # check equal at all points
 
     return eq
 
@@ -483,15 +497,19 @@ def reverse(cube_or_array, coords_or_dims):
           [15 14 13 12]]]
 
     """
+    from iris.cube import Cube
+
     index = [slice(None, None)] * cube_or_array.ndim
 
-    if isinstance(coords_or_dims, iris.cube.Cube):
+    if isinstance(coords_or_dims, Cube):
         raise TypeError(
             "coords_or_dims must be int, str, coordinate or "
             "sequence of these.  Got cube."
         )
 
-    if iris.cube._is_single_item(coords_or_dims):
+    if isinstance(coords_or_dims, str) or not isinstance(
+        coords_or_dims, Iterable
+    ):
         coords_or_dims = [coords_or_dims]
 
     axes = set()
@@ -960,67 +978,6 @@ class _OrderedHashable(Hashable, metaclass=_MetaOrderedHashable):
             return NotImplemented
 
 
-def _array_slice_ifempty(keys, shape, dtype):
-    """
-    Detect cases where an array slice will contain no data, as it contains a
-    zero-length dimension, and produce an equivalent result for those cases.
-
-    The function indicates 'empty' slicing cases, by returning an array equal
-    to the slice result in those cases.
-
-    Args:
-
-    * keys (indexing key, or tuple of keys):
-        The argument from an array __getitem__ call.
-        Only tuples of integers and slices are supported, in particular no
-        newaxis, ellipsis or array keys.
-        These are the types of array access usage we expect from Dask.
-    * shape (tuple of int):
-        The shape of the array being indexed.
-    * dtype (numpy.dtype):
-        The dtype of the array being indexed.
-
-    Returns:
-        result (np.ndarray or None):
-            If 'keys' contains a slice(0, 0), this is an ndarray of the correct
-            resulting shape and provided dtype.
-            Otherwise it is None.
-
-    .. note::
-
-        This is used to prevent DataProxy arraylike objects from fetching their
-        file data when wrapped as Dask arrays.
-        This is because, for Dask >= 2.0, the "dask.array.from_array" call
-        performs a fetch like [0:0, 0:0, ...], to 'snapshot' array metadata.
-        This function enables us to avoid triggering a file data fetch in those
-        cases :  This is consistent because the result will not contain any
-        actual data content.
-
-    """
-    # Convert a single key into a 1-tuple, so we always have a tuple of keys.
-    if isinstance(keys, tuple):
-        keys_tuple = keys
-    else:
-        keys_tuple = (keys,)
-
-    if any(key == slice(0, 0) for key in keys_tuple):
-        # An 'empty' slice is present :  Return a 'fake' array instead.
-        target_shape = list(shape)
-        for i_dim, key in enumerate(keys_tuple):
-            if key == slice(0, 0):
-                # Reduce dims with empty slicing to length 0.
-                target_shape[i_dim] = 0
-        # Create a prototype result : no memory usage, as some dims are 0.
-        result = np.zeros(target_shape, dtype=dtype)
-        # Index with original keys to produce the desired result shape.
-        # Note : also ok in 0-length dims, as the slice is always '0:0'.
-        result = result[keys]
-    else:
-        result = None
-
-    return result
-
-
 def create_temp_filename(suffix=""):
     """Return a temporary file name.
 
@@ -1168,6 +1125,9 @@ def new_axis(src_cube, scalar_coord=None):
         (1, 360, 360)
 
     """
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+
     if scalar_coord is not None:
         scalar_coord = src_cube.coord(scalar_coord)
 
@@ -1176,19 +1136,19 @@ def new_axis(src_cube, scalar_coord=None):
     # If the source cube is a Masked Constant, it is changed here to a Masked
     # Array to allow the mask to gain an extra dimension with the data.
     if src_cube.has_lazy_data():
-        new_cube = iris.cube.Cube(src_cube.lazy_data()[None])
+        new_cube = Cube(src_cube.lazy_data()[None])
     else:
         if isinstance(src_cube.data, ma.core.MaskedConstant):
             new_data = ma.array([np.nan], mask=[True])
         else:
             new_data = src_cube.data[None]
-        new_cube = iris.cube.Cube(new_data)
+        new_cube = Cube(new_data)
 
     new_cube.metadata = src_cube.metadata
 
     for coord in src_cube.aux_coords:
         if scalar_coord and scalar_coord == coord:
-            dim_coord = iris.coords.DimCoord.from_coord(coord)
+            dim_coord = DimCoord.from_coord(coord)
             new_cube.add_dim_coord(dim_coord, 0)
         else:
             dims = np.array(src_cube.coord_dims(coord)) + 1
@@ -1243,6 +1203,8 @@ def as_compatible_shape(src_cube, target_cube):
         suitably reshaped to fit.
 
     """
+    from iris.cube import Cube
+
     wmsg = (
         "iris.util.as_compatible_shape has been deprecated and will be "
         "removed, please use iris.common.resolve.Resolve instead."
@@ -1285,7 +1247,7 @@ def as_compatible_shape(src_cube, target_cube):
         new_order = [order.index(i) for i in range(len(order))]
         new_data = np.transpose(new_data, new_order).copy()
 
-    new_cube = iris.cube.Cube(new_data.reshape(new_shape))
+    new_cube = Cube(new_data.reshape(new_shape))
     new_cube.metadata = copy.deepcopy(src_cube.metadata)
 
     # Record a mapping from old coordinate IDs to new coordinates,
@@ -1450,11 +1412,28 @@ def regular_step(coord):
 
 
 def points_step(points):
-    """Determine whether a NumPy array has a regular step."""
-    diffs = np.diff(points)
-    avdiff = np.mean(diffs)
-    # TODO: This value for `rtol` is set for test_analysis to pass...
-    regular = np.allclose(diffs, avdiff, rtol=0.001)
+    """Determine whether `points` has a regular step.
+
+    Parameters
+    ----------
+    points : numeric, array-like
+        The sequence of values to check for a regular difference.
+
+    Returns
+    -------
+    numeric, bool
+        A tuple containing the average difference between values, and whether the difference is regular.
+    """
+    # Calculations only make sense with multiple points
+    points = np.asanyarray(points)
+    if points.size >= 2:
+        diffs = np.diff(points)
+        avdiff = np.mean(diffs)
+        # TODO: This value for `rtol` is set for test_analysis to pass...
+        regular = np.allclose(diffs, avdiff, rtol=0.001)
+    else:
+        avdiff = np.nan
+        regular = True
     return avdiff, regular
 
 
@@ -1577,31 +1556,48 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.AuxCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
-             Auxiliary coordinates:
-                  year                    x      -              -
-        >>> promote_aux_coord_to_dim_coord(cube, 'year')
-        >>> print cube
-        air_temperature / (K)       (year: 12; latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  year                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
-             Auxiliary coordinates:
-                  time                    x      -              -
+    .. testsetup:: promote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: promote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
+        >>> promote_aux_coord_to_dim_coord(cube, "year")
+        >>> print(cube)
+        air_temperature / (K)               (year: 240; latitude: 37; longitude: 49)
+            Dimension coordinates:
+                year                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                time                             x              -              -
 
     """
+    from iris.coords import Coord, DimCoord
 
     if isinstance(name_or_coord, str):
         aux_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         aux_coord = name_or_coord
     else:
         # Don't know how to handle this type
@@ -1636,7 +1632,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         raise ValueError(msg)
 
     try:
-        dim_coord = iris.coords.DimCoord.from_coord(aux_coord)
+        dim_coord = DimCoord.from_coord(aux_coord)
     except ValueError as valerr:
         msg = (
             "Attempt to promote an AuxCoord ({}) fails "
@@ -1686,31 +1682,48 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
         :attr:`var_name` of an instance of an instance of
         :class:`iris.coords.DimCoord`.
 
-    For example::
+    For example,
 
-        >>> print cube
-        air_temperature / (K)       (time: 12; latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  time                    x      -              -
-                  latitude                -      x              -
-                  longitude               -      -              x
-             Auxiliary coordinates:
-                  year                    x      -              -
-        >>> demote_dim_coord_to_aux_coord(cube, 'time')
-        >>> print cube
-        air_temperature / (K)        (-- : 12; latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  latitude                -      x              -
-                  longitude               -      -              x
-             Auxiliary coordinates:
-                  time                    x      -              -
-                  year                    x      -              -
+    .. testsetup:: demote
+
+        import iris
+        from iris.coord_categorisation import add_year
+        from iris.util import demote_dim_coord_to_aux_coord, promote_aux_coord_to_dim_coord
+        cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+        cube.remove_coord("forecast_reference_time")
+        cube.remove_coord("height")
+        cube.attributes = {}
+        cube.cell_methods = ()
+        add_year(cube, "time")
+
+    .. doctest:: demote
+
+        >>> print(cube)
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+            Dimension coordinates:
+                time                             x              -              -
+                latitude                         -              x              -
+                longitude                        -              -              x
+            Auxiliary coordinates:
+                forecast_period                  x              -              -
+                year                             x              -              -
+        >>> demote_dim_coord_to_aux_coord(cube, "time")
+        >>> print(cube)
+        air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
+            Dimension coordinates:
+                latitude                        -              x              -
+                longitude                       -              -              x
+            Auxiliary coordinates:
+                forecast_period                 x              -              -
+                time                            x              -              -
+                year                            x              -              -
 
     """
+    from iris.coords import Coord
 
     if isinstance(name_or_coord, str):
         dim_coord = cube.coord(name_or_coord)
-    elif isinstance(name_or_coord, iris.coords.Coord):
+    elif isinstance(name_or_coord, Coord):
         dim_coord = name_or_coord
     else:
         # Don't know how to handle this type
@@ -1874,20 +1887,28 @@ def equalise_attributes(cubes):
     """
     Delete cube attributes that are not identical over all cubes in a group.
 
-    This function simply deletes any attributes which are not the same for
-    all the given cubes.  The cubes will then have identical attributes.  The
-    given cubes are modified in-place.
+    This function deletes any attributes which are not the same for all the
+    given cubes.  The cubes will then have identical attributes, and the
+    removed attributes are returned.  The given cubes are modified in-place.
 
     Args:
 
     * cubes (iterable of :class:`iris.cube.Cube`):
         A collection of cubes to compare and adjust.
 
+    Returns:
+
+    * removed (list):
+        A list of dicts holding the removed attributes.
+
     """
+    removed = []
     # Work out which attributes are identical across all the cubes.
     common_keys = list(cubes[0].attributes.keys())
+    keys_to_remove = set(common_keys)
     for cube in cubes[1:]:
         cube_keys = list(cube.attributes.keys())
+        keys_to_remove.update(cube_keys)
         common_keys = [
             key
             for key in common_keys
@@ -1896,12 +1917,39 @@ def equalise_attributes(cubes):
                 and np.all(cube.attributes[key] == cubes[0].attributes[key])
             )
         ]
+    keys_to_remove.difference_update(common_keys)
 
     # Remove all the other attributes.
     for cube in cubes:
-        for key in list(cube.attributes.keys()):
-            if key not in common_keys:
-                del cube.attributes[key]
+        deleted_attributes = {
+            key: cube.attributes.pop(key)
+            for key in keys_to_remove
+            if key in cube.attributes
+        }
+        removed.append(deleted_attributes)
+    return removed
+
+
+def is_masked(array):
+    """
+    Equivalent to :func:`numpy.ma.is_masked`, but works for both lazy AND realised arrays.
+
+    Parameters
+    ----------
+    array : :class:`numpy.Array` or `dask.array.Array`
+            The array to be checked for masks.
+
+    Returns
+    -------
+    bool
+        Whether or not the array has any masks.
+
+    """
+    if is_lazy_data(array):
+        result = da.ma.getmaskarray(array).any().compute()
+    else:
+        result = ma.is_masked(array)
+    return result
 
 
 def _strip_metadata_from_dims(cube, dims):

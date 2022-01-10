@@ -11,14 +11,15 @@ Other types of UM file may fail to load correctly (or at all).
 
 """
 
+from ._fast_load import FieldCollation, structured_um_loading
+
 # Publish the FF-replacement features here, and include documentation.
-from ._ff_replacement import um_to_pp, load_cubes, load_cubes_32bit_ieee
-from ._fast_load import structured_um_loading, FieldCollation
+from ._ff_replacement import load_cubes, load_cubes_32bit_ieee, um_to_pp
 
 __all__ = [
-    "um_to_pp",
+    "FieldCollation",
     "load_cubes",
     "load_cubes_32bit_ieee",
     "structured_um_loading",
-    "FieldCollation",
+    "um_to_pp",
 ]

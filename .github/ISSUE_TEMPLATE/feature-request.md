@@ -20,8 +20,7 @@ assignees: ''
 <summary>Click to expand <b>this section...</b></summary>
 
 ```
-Add additional verbose information in a collapsible section.
+Please add additional verbose information in this section e.g., references, screenshots, listings etc
 ```
-See [here](https://gist.github.com/pierrejoubert73/902cc94d79424356a8d20be2b382e1ab) for further details.
 </details>
 

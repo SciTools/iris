@@ -10,9 +10,10 @@ Unit tests for the :class:`iris.common.mixin.LimitedAttributeDict`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
+
 import numpy as np
 
 from iris.common.mixin import LimitedAttributeDict

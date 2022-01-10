@@ -1,0 +1,73 @@
+v1.13 (17 May 2017)
+*******************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+
+Features
+========
+
+* Allow the reading of NAME trajectories stored by time instead of by particle
+  number.
+
+* An experimental link to python-stratify via :mod:`iris.experimental.stratify`.
+
+* Data arrays may be shared between cubes, and subsets of cubes, by using the
+  :meth:`iris.cube.share_data` flag.
+
+
+Bug Fixes
+=========
+
+* The bounds are now set correctly on the longitude coordinate if a zonal mean
+  diagnostic has been loaded from a PP file as per the CF Standard.
+
+* NetCDF loading will now determine whether there is a string-valued scalar
+  label, i.e. a character variable that only has one dimension (the length of
+  the string), and interpret this correctly.
+
+* A line plot of geographic coordinates (e.g. drawing a trajectory) wraps
+  around the edge of the map cleanly, rather than plotting a segment straight
+  across the map.
+
+* When saving to PP, lazy data is preserved when generating PP fields from
+  cubes so that a list of cubes can be saved to PP without excessive memory
+  requirements.
+
+* An error is now correctly raised if a user tries to perform an arithmetic
+  operation on two cubes with mismatching coordinates. Previously these cases
+  were caught by the add and subtract operators, and now it is also caught by
+  the multiply and divide operators.
+
+* Limited area Rotated Pole datasets where the data range is
+  ``0 <= lambda < 360``, for example as produced in New Zealand, are plotted
+  over a sensible map extent by default.
+
+* Removed the potential for a RuntimeWarning: overflow encountered in
+  ``int_scalars`` which was missed during collapsed calculations. This could
+  trip up unwary users of limited data types, such as int32 for very large
+  numbers (e.g. seconds since 1970).
+
+* The CF conventions state that certain ``formula_terms`` terms may be omitted
+  and assumed to be zero 
+  (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#dimensionless-v-coord)
+  so Iris now allows factories to be constructed with missing terms.
+
+* In the User Guide's contour plot example, clabel inline is set to be False
+  so that it renders correctly, avoiding spurious horizontal lines across
+  plots, although this does make labels a little harder to see.
+
+* The computation of area weights has been changed to a more numerically
+  stable form. The previous form converted latitude to colatitude and used
+  difference of cosines in the cell area computation. This formulation uses
+  latitude and difference of sines. The conversion from latitude to colatitude
+  at lower precision causes errors when computing the cell areas.
+
+
+Testing
+=======
+
+* Iris has adopted conda-forge to provide environments for continuous
+  integration testing.
+

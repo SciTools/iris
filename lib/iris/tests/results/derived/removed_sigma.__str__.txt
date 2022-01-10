@@ -1,15 +1,15 @@
 air_potential_temperature / (K)     (time: 6; model_level_number: 70; grid_latitude: 100; grid_longitude: 100)
-     Dimension coordinates:
-          time                           x                      -                  -                    -
-          model_level_number             -                      x                  -                    -
-          grid_latitude                  -                      -                  x                    -
-          grid_longitude                 -                      -                  -                    x
-     Auxiliary coordinates:
-          level_height                   -                      x                  -                    -
-          surface_altitude               -                      -                  x                    x
-     Derived coordinates:
-          altitude                       -                      x                  x                    x
-     Scalar coordinates:
-          forecast_period: 0.0 hours
-     Attributes:
-          source: Iris test case
+    Dimension coordinates:
+        time                             x                      -                  -                    -
+        model_level_number               -                      x                  -                    -
+        grid_latitude                    -                      -                  x                    -
+        grid_longitude                   -                      -                  -                    x
+    Auxiliary coordinates:
+        level_height                     -                      x                  -                    -
+        surface_altitude                 -                      -                  x                    x
+    Derived coordinates:
+        altitude                         -                      x                  x                    x
+    Scalar coordinates:
+        forecast_period             0.0 hours
+    Attributes:
+        source                      Iris test case

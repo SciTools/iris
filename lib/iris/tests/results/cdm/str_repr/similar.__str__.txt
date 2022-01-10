@@ -1,18 +1,18 @@
-air_temperature / (K)               (latitude: 73; longitude: 96)
-     Dimension coordinates:
-          latitude                           x              -
-          longitude                          -              x
-             sensor_id=808, status=2
-     Auxiliary coordinates:
-          latitude                           x              -
-             test='True'
-          longitude                          -              x
-             ref='A8T-22', sensor_id=810
-     Scalar coordinates:
-          forecast_period: 6477.0 hours
-          forecast_reference_time: 1998-03-06 03:00:00
-          pressure: 1000.0 hPa
-          time: 1998-12-01 00:00:00
-     Attributes:
-          STASH: m01s16i203
-          source: Data from Met Office Unified Model
+air_temperature / (K)                   (latitude: 73; longitude: 96)
+    Dimension coordinates:
+        latitude                                 x              -
+        longitude                                -              x
+            sensor_id=808, status=2
+    Auxiliary coordinates:
+        latitude                                 x              -
+            test='True'
+        longitude                                -              x
+            ref='A8T-22', sensor_id=810
+    Scalar coordinates:
+        forecast_period                 6477.0 hours
+        forecast_reference_time         1998-03-06 03:00:00
+        pressure                        1000.0 hPa
+        time                            1998-12-01 00:00:00
+    Attributes:
+        STASH                           m01s16i203
+        source                          Data from Met Office Unified Model

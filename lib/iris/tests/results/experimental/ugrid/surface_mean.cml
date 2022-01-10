@@ -1,0 +1,921 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" long_name="Boundary layer depth" standard_name="atmosphere_boundary_layer_thickness" units="m" var_name="zh">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xbd09b69e" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="convective_precipitation_rate" standard_name="convective_precipitation_flux" units="kg m-2 s-1" var_name="conv_prec">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x0991ed96" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="surface_convective_rainfall_rate" standard_name="convective_rainfall_flux" units="kg m-2 s-1" var_name="conv_rain">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x0991ed96" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="surface_convective_snowfall_rate" standard_name="convective_snowfall_flux" units="kg m-2 s-1" var_name="conv_snow">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x92b0a3ba" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="precipitation_rate" standard_name="precipitation_flux" units="kg m-2 s-1" var_name="total_prec">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xceafecdf" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="rainfall_rate" standard_name="rainfall_flux" units="kg m-2 s-1" var_name="total_rain">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x561366eb" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Sea Surface temperature" standard_name="sea_surface_temperature" units="K" var_name="tstar_sea">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x8c014ce8" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="snowfall_rate" standard_name="snowfall_flux" units="kg m-2 s-1" var_name="total_snow">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x38172d52" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="stratiform_precipitation_rate" standard_name="stratiform_precipitation_flux" units="kg m-2 s-1" var_name="ls_prec">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x2b5edd89" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="surface_stratiform_rainfall_rate" standard_name="stratiform_rainfall_flux" units="kg m-2 s-1" var_name="ls_rain">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xe39648f1" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="surface_stratiform_snowfall_rate" standard_name="stratiform_snowfall_flux" units="kg m-2 s-1" var_name="ls_snow">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x38172d52" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Surface downward longwave flux" standard_name="surface_downwelling_longwave_flux_in_air" units="W m-2" var_name="lw_down_surf">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x10cadd44" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Surface downward shortwave flux" standard_name="surface_downwelling_shortwave_flux_in_air" units="W m-2" var_name="sw_down_surf">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x06f89d8a" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Momentum roughness length" standard_name="surface_roughness_length_for_momentum_in_air" units="m" var_name="z0msea">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x5efd5c91" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Surface temperature" standard_name="surface_temperature" units="K" var_name="tstar">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x92b0a3ba" dtype="float64" mask_checksum="0xd14ff9c1" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Sea latent heat flux" standard_name="surface_upward_latent_heat_flux" units="W m-2" var_name="lh_sea">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x04fb1750" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Sea sensible heat flux" standard_name="surface_upward_sensible_heat_flux" units="W m-2" var_name="ftl_sea">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x47c8e8a8" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+  <cube dtype="float64" long_name="Sea moisture flux" standard_name="surface_upward_water_flux" units="kg m-2 s-1" var_name="fqw_sea">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="1 d"/>
+      <attribute name="name" value="lfric_surface"/>
+      <attribute name="online_operation" value="average"/>
+      <attribute name="timeStamp" value="2020-Feb-07 16:23:14 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="489bcef5-3d1c-4529-be42-4ab5f8c8497b"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[33.5156, 34.3562, 36.1244, 35.2644],
+		[34.3562, 35.1522, 36.9373, 36.1244],
+		[35.1522, 35.9047, 37.7044, 36.9373],
+		..., 
+		[-37.7044, -36.9373, -37.9318, -38.7655],
+		[-36.9373, -36.1244, -37.0517, -37.9318],
+		[-36.1244, -35.2644, -36.1244, -37.0517]]" id="21594c35" long_name="Latitude of mesh nodes." points="[34.8187, 35.6462, 36.4283, ..., -37.8421,
+		-37.0187, -36.1485]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[1]">
+        <meshCoord bounds="[[315.0, 316.875, 316.875, 315.0],
+		[316.875, 318.75, 318.75, 316.875],
+		[318.75, 320.625, 320.625, 318.75],
+		..., 
+		[230.625, 228.75, 226.883, 228.774],
+		[228.75, 226.875, 225.0, 226.883],
+		[226.875, 225.0, 223.125, 225.0]]" id="fac9555b" long_name="Longitude of mesh nodes." points="[315.933, 317.808, 319.683, ..., 228.759,
+		226.878, 225.0]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[[15508800.0, 15595200.0]]" id="17a27d05" long_name="Time axis" points="[15552000.0]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="mean">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+      <cellMethod method="mean">
+        <coord name="time_counter"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0x6a9f8383" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 13824)"/>
+  </cube>
+</cubes>

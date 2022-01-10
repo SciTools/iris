@@ -10,14 +10,14 @@ Unit tests for the :class:`iris.common.metadata.BaseMetadata`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from collections import OrderedDict
 import unittest.mock as mock
 from unittest.mock import sentinel
 
-import numpy.ma as ma
 import numpy as np
+import numpy.ma as ma
 
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, CubeMetadata
@@ -52,6 +52,19 @@ class Test(tests.IrisTest):
             self.attributes,
         )
         self.assertEqual(expected, repr(metadata))
+
+    def test_str(self):
+        metadata = self.cls(
+            standard_name="",
+            long_name=None,
+            var_name=self.var_name,
+            units=self.units,
+            attributes={},
+        )
+        expected = (
+            f"BaseMetadata(var_name={self.var_name!r}, units={self.units!r})"
+        )
+        self.assertEqual(expected, str(metadata))
 
     def test__fields(self):
         expected = (
@@ -1074,8 +1087,8 @@ class Test__difference_lenient_attributes(tests.IrisTest):
         self.values = OrderedDict(
             one=sentinel.one,
             two=sentinel.two,
-            three=np.float(3.14),
-            four=np.arange(10, dtype=np.float),
+            three=np.float64(3.14),
+            four=np.arange(10, dtype=np.float64),
             five=ma.arange(10, dtype=np.int16),
         )
         self.cls = BaseMetadata

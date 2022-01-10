@@ -10,9 +10,8 @@ Test the fast loading of structured Fieldsfiles.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 from iris.cube import CubeList
-
 from iris.fileformats.um import load_cubes as load
 
 

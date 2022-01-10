@@ -11,7 +11,7 @@ Unit tests for the
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
@@ -59,6 +59,12 @@ class Test___init__(tests.IrisTest):
         with self.assertRaises(ValueError):
             OceanSigmaFactory(**self.kwargs)
 
+    def test_promote_sigma_units_unknown_to_dimensionless(self):
+        sigma = mock.Mock(units=Unit("unknown"), nbounds=0)
+        self.kwargs["sigma"] = sigma
+        factory = OceanSigmaFactory(**self.kwargs)
+        self.assertEqual("1", factory.dependencies["sigma"].units)
+
 
 class Test_dependencies(tests.IrisTest):
     def setUp(self):
@@ -96,12 +102,12 @@ class Test_make_coord(tests.IrisTest):
             np.linspace(-0.05, -1, 5), long_name="sigma", units="1"
         )
         self.eta = AuxCoord(
-            np.arange(-1, 3, dtype=np.float).reshape(2, 2),
+            np.arange(-1, 3, dtype=np.float64).reshape(2, 2),
             long_name="eta",
             units="m",
         )
         self.depth = AuxCoord(
-            np.arange(4, dtype=np.float).reshape(2, 2) * 1e3,
+            np.arange(4, dtype=np.float64).reshape(2, 2) * 1e3,
             long_name="depth",
             units="m",
         )

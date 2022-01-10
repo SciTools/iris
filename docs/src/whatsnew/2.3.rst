@@ -1,0 +1,259 @@
+v2.3 (19 Dec 2019)
+******************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+
+Features
+========
+
+.. _showcase:
+
+.. admonition:: Support for CF 1.7
+
+  We have introduced several changes that contribute to Iris's support for
+  the CF Conventions, including some CF 1.7 additions. We are now able to
+  support:
+
+  * :ref:`Climatological Coordinates<climatological>`
+  * :ref:`Standard name modifiers<standard_name>`
+  * :ref:`Geostationary projection<geostationary>`
+
+  You can read more about each of these below.
+
+  Additionally, the conventions attribute, added by Iris when saving to
+  NetCDF, has been updated to ``CF-1.7``, accordingly.
+
+.. _climatological:
+.. admonition:: Climatological Coordinate Support
+
+  Iris can now load, store and save `NetCDF climatological coordinates
+  <http://cfconventions.org/Data/cf-conventions/cf-conventions-1
+  .7/cf-conventions.html#climatological-statistics>`_. Any cube time
+  coordinate can be marked as a climatological time axis using the boolean
+  property: ``climatological``. The climatological bounds are stored in the
+  coordinate's ``bounds`` property.
+
+  When an Iris climatological coordinate is saved in NetCDF, the NetCDF
+  coordinate variable will be given a 'climatology' attribute, and the
+  contents of the
+  coordinate's ``bounds`` property are written to a NetCDF boundary variable
+  called '<coordinate-name>_bounds'.  These are in place of a standard
+  'bounds' attribute and accompanying boundary variable. See below
+  for an `example adapted from CF conventions <http://cfconventions
+  .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
+  .html#climatological-statistics>`_:
+
+    .. code-block:: none
+
+        dimensions:
+          time=4;
+          bnds=2;
+        variables:
+          float temperature(time,lat,lon);
+            temperature:long_name="surface air temperature";
+            temperature:cell_methods="time: minimum within years time: mean over years";
+            temperature:units="K";
+          double time(time);
+            time:climatology="time_climatology";
+            time:units="days since 1960-1-1";
+          double time_climatology(time,bnds);
+        data:  // time coordinates translated to date/time format
+          time="1960-4-16", "1960-7-16", "1960-10-16", "1961-1-16" ;
+          time_climatology="1960-3-1",  "1990-6-1",
+                           "1960-6-1",  "1990-9-1",
+                           "1960-9-1",  "1990-12-1",
+                           "1960-12-1", "1991-3-1" ;
+
+  If a climatological time axis is detected when loading NetCDF -
+  indicated by the format described above - the ``climatological`` property
+  of the Iris coordinate will be set to ``True``.
+
+.. admonition:: New Chunking Strategy
+
+  Iris now makes better choices of Dask chunk sizes when loading from NetCDF
+  files: If a file variable has small, specified chunks, Iris will now choose
+  Dask chunks which are a multiple of these up to a default target size.
+
+  This is particularly relevant to files with an unlimited dimension, which
+  previously could produce a large number of small chunks. This had an adverse
+  effect on performance.
+
+  In addition, Iris now takes its default chunk size from the default configured
+  in Dask itself, i.e. ``dask.config.get('array.chunk-size')``.
+
+.. admonition:: Lazy Statistics
+
+  Several statistical operations can now be done lazily, taking advantage of the
+  performance improvements offered by Dask:
+
+  * :meth:`~iris.cube.Cube.aggregated_by`
+  * :class:`~iris.analysis.RMS` (more detail below)
+  * :class:`~iris.analysis.MEAN`
+
+----
+
+.. _geostationary:
+.. _standard_name:
+.. _conventions_1.7:
+
+* Cube data equality testing (and hence cube equality) now uses a more
+  relaxed
+  tolerance : This means that some cubes may now test 'equal' that previously
+  did not.
+  Previously, Iris compared cube data arrays using
+  ``abs(a - b) < 1.e-8``
+
+  We now apply the default operation of :func:`numpy.allclose` instead,
+  which is equivalent to
+  ``abs(a - b) < (1.e-8 + 1.e-5 * b)``
+
+* Added support to render HTML for :class:`~iris.cube.CubeList` in Jupyter
+  Notebooks and JupyterLab.
+
+* Loading CellMeasures with integer values is now supported.
+
+* New coordinate system: :class:`iris.coord_systems.Geostationary`,
+  including load and save support, based on the `CF Geostationary projection
+  definition <http://cfconventions
+  .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
+
+* :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
+  loaded from NetCDF files.
+
+* :class:`iris.experimental.regrid.PointInCell` moved to
+  :class:`iris.analysis.PointInCell` to make this regridding scheme public
+
+* Iris now supports standard name modifiers. See
+  `Appendix C, Standard Name Modifiers <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_ 
+  for more information.
+
+* :meth:`iris.cube.Cube.remove_cell_measure` now also allows removal of a cell
+  measure by its name (previously only accepted a CellMeasure object).
+
+* The :data:`iris.analysis.RMS` aggregator now supports a lazy calculation.
+  However, the "weights" keyword is not currently supported by this, so a
+  *weighted* calculation will still return a realised result, *and* force
+  realisation of the original cube data.
+
+* Iris now supports NetCDF Climate and Forecast (CF) Metadata Conventions 1.7
+  (see `CF 1.7 Conventions Document <http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html>`_ for more information)
+
+* Updated standard name support to
+  `CF standard name table version 70, 2019-12-10 <http://cfconventions.org/Data/cf-standard-names/70/build/cf-standard-name-table.html>`_
+
+* Updated UM STASH translations to
+  `metarelate/metOcean commit 448f2ef, 2019-11-29 <https://github.com/metarelate/metOcean/tree/448f2ef5e676edaaa27408b9f3ddbecbf05e3289>`_
+
+
+Bugs Fixed
+==========
+
+* Cube equality of boolean data is now handled correctly.
+
+* Fixed a bug where cell measures were incorrect after a cube
+  :meth:`~iris.cube.Cube.transpose` operation.  Previously, this resulted in
+  cell-measures that were no longer correctly mapped to the cube dimensions.
+
+* The :class:`~iris.coords.AuxCoord` disregarded masked points and bounds, as
+  did the :class:`~iris.coords.DimCoord`.  Fix permits an
+  :class:`~iris.coords.AuxCoord` to contain masked points/bounds, and a
+  TypeError exception is now raised when attempting to create or set the
+  points/bounds of a :class:`~iris.coords.DimCoord` with arrays with missing
+  points.
+
+* :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
+  the `CF Vertical perspective definition <http://cfconventions
+  .org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
+  erroneously using Geostationary.
+
+* :class:`~iris.coords.CellMethod` will now only use valid 
+  `NetCDF name tokens`_ to reference the coordinates involved in the
+  statistical operation.
+
+* The following var_name properties will now only allow valid 
+  `NetCDF name tokens`_
+  to reference the said NetCDF variable name. Note that names with a leading
+  underscore are not permitted.
+
+.. _NetCDF name tokens: https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_data_set_components.html#object_name
+
+    * :attr:`iris.aux_factory.AuxCoordFactory.var_name`
+    * :attr:`iris.coords.CellMeasure.var_name`
+    * :attr:`iris.coords.Coord.var_name`
+    * :attr:`iris.coords.AuxCoord.var_name`
+    * :attr:`iris.cube.Cube.var_name`
+    
+* Rendering a cube in Jupyter will no longer crash for a cube with
+  attributes containing ``\n``.
+
+* NetCDF variables which reference themselves in their ``cell_measures``
+  attribute can now be read.
+
+* :func:`~iris.plot.quiver` now handles circular coordinates.
+
+* The names of cubes loaded from abf/abl files have been corrected.
+
+* Fixed a bug in UM file loading, where any landsea-mask-compressed fields
+  (i.e. with LBPACK=x2x) would cause an error later, when realising the data.
+
+* :meth:`iris.cube.Cube.collapsed` now handles partial collapsing of
+  multidimensional coordinates that have bounds.
+
+* Fixed a bug in the :data:`~iris.analysis.PROPORTION` aggregator, where cube
+  data in the form of a masked array with ``array.mask=False`` would cause an
+  error, but possibly only later when the values are actually realised.
+  ( Note: since netCDF4 version 1.4.0, this is now a common form for data
+  loaded from netCDF files ).
+
+* Fixed a bug where plotting a cube with a
+  :class:`iris.coord_systems.LambertConformal` coordinate system would result
+  in an error.  This would happen if the coordinate system was defined with one
+  standard parallel, rather than two.
+  In these cases, a call to
+  :meth:`~iris.coord_systems.LambertConformal.as_cartopy_crs` would fail.
+
+* :meth:`iris.cube.Cube.aggregated_by` now gives correct values in points and
+  bounds when handling multidimensional coordinates.
+
+* Fixed a bug in the :meth:`iris.cube.Cube.collapsed` operation, which caused
+  the unexpected realization of any attached auxiliary coordinates that were
+  *bounded*.  It now correctly produces a lazy result and does not realise
+  the original attached AuxCoords.
+
+
+Internal
+========
+
+* Iris now supports Proj4 up to version 5, but not yet 6 or beyond, pending
+  `fixes to some cartopy tests <https://github
+  .com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
+
+* Iris now requires Dask >= 1.2 to allow for improved coordinate equality
+  checks.
+
+
+Documentation
+=============
+
+* Adopted a
+  `new colour logo for Iris <https://github.com/SciTools/iris/blob/main/docs/src/_static/Iris7_1_trim_100.png>`_
+
+* Added a gallery example showing how to concatenate NEMO ocean model data,
+  see :ref:`sphx_glr_generated_gallery_oceanography_plot_load_nemo.py`.
+
+* Added an example for loading Iris cubes for :ref:`using-time-constraints`
+  in the user guide, demonstrating how to load data within a specified date
+  range.
+
+* Added notes to the :func:`iris.load` documentation, and the user guide
+  :ref:`loading_iris_cubes` chapter, emphasizing that the *order* of the cubes
+  returned by an iris load operation is effectively random and unstable, and
+  should not be relied on.
+
+* Fixed references in the documentation of
+  :func:`iris.util.find_discontiguities` to a non existent
+  "mask_discontiguities" routine : these now refer to
+  :func:`~iris.util.mask_cube`.
+

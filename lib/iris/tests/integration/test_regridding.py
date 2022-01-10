@@ -7,17 +7,17 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 import iris
+from iris.analysis import UnstructuredNearest
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.tests.stock import global_pp, simple_3d
-from iris.analysis import UnstructuredNearest
 
 
 @tests.skip_data

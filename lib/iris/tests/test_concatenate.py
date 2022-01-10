@@ -10,13 +10,13 @@ Test the cube concatenate mechanism.
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import numpy as np
 import numpy.ma as ma
 
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
-from iris.coords import DimCoord, AuxCoord, CellMeasure, AncillaryVariable
 import iris.tests.stock as stock
 
 
@@ -415,7 +415,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (2, 4))
         mask = np.array(
             [[True, False, False, True], [False, True, True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -436,7 +436,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -458,7 +458,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 
@@ -480,7 +480,7 @@ class Test2D(tests.IrisTest):
         self.assertEqual(result[0].shape, (4, 2))
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
-            dtype=np.bool,
+            dtype=np.bool_,
         )
         self.assertArrayEqual(result[0].data.mask, mask)
 

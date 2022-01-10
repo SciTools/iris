@@ -9,14 +9,14 @@ Tests the high-level plotting interface.
 """
 
 # import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests
-import iris.tests.test_plot as test_plot
-
+import iris.tests as tests  # isort:skip
 import iris
+import iris.tests.test_plot as test_plot
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
+
     import iris.plot as iplt
     import iris.quickplot as qplt
 
@@ -198,6 +198,13 @@ class TestLabels(tests.GraphicsTest):
 
         # cube = self._small()
         # iplt.orography_at_bounds(cube)
+
+        self.check_graphic()
+
+    def test_pcolormesh_str_symbol(self):
+        pcube = self._small().copy()
+        pcube.coords("level_height")[0].units = "centimeters"
+        qplt.pcolormesh(pcube)
 
         self.check_graphic()
 

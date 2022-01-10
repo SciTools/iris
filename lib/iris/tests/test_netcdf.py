@@ -10,7 +10,7 @@ Test CF-NetCDF file loading and saving.
 
 # Import iris tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import os
 import os.path
@@ -20,22 +20,20 @@ from subprocess import check_call
 import tempfile
 from unittest import mock
 
-from cf_units import as_unit
 import netCDF4 as nc
 import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
-import iris.fileformats._pyke_rules.compiled_krb.fc_rules_cf_fc as pyke_rules
+import iris.coord_systems as icoord_systems
+from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import load_cubes as nc_load_cubes
 import iris.std_names
-import iris.util
-from iris.coords import AncillaryVariable, CellMeasure
-import iris.coord_systems as icoord_systems
 import iris.tests.stock as stock
-from iris._lazy_data import is_lazy_data
+import iris.util
 
 
 @tests.skip_data
@@ -251,153 +249,6 @@ class TestNetCDFLoad(tests.IrisTest):
 
         self.assertCML(cubes, ("netcdf", "netcdf_cell_methods.cml"))
 
-    def test_ancillary_variables(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-            variables:
-                int64 qqv(axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:ancillary_variables = "my_av" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                double my_av(axv) ;
-                    my_av:units = "1" ;
-                    my_av:long_name = "refs" ;
-                    my_av:custom = "extra-attribute";
-            data:
-                axv = 1, 2, 3;
-                my_av = 11., 12., 13.;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
-        expected = AncillaryVariable(
-            np.ma.array([11.0, 12.0, 13.0]),
-            long_name="refs",
-            var_name="my_av",
-            units="1",
-            attributes={"custom": "extra-attribute"},
-        )
-        self.assertEqual(avs[0], expected)
-
-    def test_status_flags(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-            variables:
-                int64 qqv(axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:ancillary_variables = "my_av" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                byte my_av(axv) ;
-                    my_av:long_name = "qq status_flag" ;
-                    my_av:flag_values = 1b, 2b ;
-                    my_av:flag_meanings = "a b" ;
-            data:
-                axv = 11, 21, 31;
-                my_av = 1b, 1b, 2b;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
-        expected = AncillaryVariable(
-            np.ma.array([1, 1, 2], dtype=np.int8),
-            long_name="qq status_flag",
-            var_name="my_av",
-            units="no_unit",
-            attributes={
-                "flag_values": np.array([1, 2], dtype=np.int8),
-                "flag_meanings": "a b",
-            },
-        )
-        self.assertEqual(avs[0], expected)
-
-    def test_cell_measures(self):
-        # Note: using a CDL string as a test data reference, rather than a binary file.
-        ref_cdl = """
-            netcdf cm_attr {
-            dimensions:
-                axv = 3 ;
-                ayv = 2 ;
-            variables:
-                int64 qqv(ayv, axv) ;
-                    qqv:long_name = "qq" ;
-                    qqv:units = "1" ;
-                    qqv:cell_measures = "area: my_areas" ;
-                int64 ayv(ayv) ;
-                    ayv:units = "1" ;
-                    ayv:long_name = "y" ;
-                int64 axv(axv) ;
-                    axv:units = "1" ;
-                    axv:long_name = "x" ;
-                double my_areas(ayv, axv) ;
-                    my_areas:units = "m2" ;
-                    my_areas:long_name = "standardised cell areas" ;
-                    my_areas:custom = "extra-attribute";
-            data:
-                axv = 11, 12, 13;
-                ayv = 21, 22;
-                my_areas = 110., 120., 130., 221., 231., 241.;
-            }
-            """
-        self.tmpdir = tempfile.mkdtemp()
-        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
-        nc_path = os.path.join(self.tmpdir, "tst.nc")
-        # Write CDL string into a temporary CDL file.
-        with open(cdl_path, "w") as f_out:
-            f_out.write(ref_cdl)
-        # Use ncgen to convert this into an actual (temporary) netCDF file.
-        command = "ncgen -o {} {}".format(nc_path, cdl_path)
-        check_call(command, shell=True)
-        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
-        cubes = list(nc_load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        cms = cubes[0].cell_measures()
-        self.assertEqual(len(cms), 1)
-        expected = CellMeasure(
-            np.ma.array([[110.0, 120.0, 130.0], [221.0, 231.0, 241.0]]),
-            measure="area",
-            var_name="my_areas",
-            long_name="standardised cell areas",
-            units="m2",
-            attributes={"custom": "extra-attribute"},
-        )
-        self.assertEqual(cms[0], expected)
-
     def test_deferred_loading(self):
         # Test exercising CF-netCDF deferred loading and deferred slicing.
         # shape (31, 161, 320)
@@ -450,7 +301,8 @@ class TestNetCDFLoad(tests.IrisTest):
             cube[0][(0, 2), (1, 3)], ("netcdf", "netcdf_deferred_mix_1.cml")
         )
 
-    def test_default_units(self):
+    def test_um_stash_source(self):
+        """Test that um_stash_source is converted into a STASH code"""
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -462,6 +314,7 @@ class TestNetCDFLoad(tests.IrisTest):
                     qqv:long_name = "qq" ;
                     qqv:ancillary_variables = "my_av" ;
                     qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
                 int64 ayv(ayv) ;
                     ayv:long_name = "y" ;
                 int64 axv(axv) ;
@@ -489,14 +342,103 @@ class TestNetCDFLoad(tests.IrisTest):
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(nc_load_cubes(nc_path))
         self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("x").units, as_unit(1))
         self.assertEqual(
-            cubes[0].ancillary_variable("refs").units, as_unit("unknown")
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(1, 2, 3)
         )
+
+    def test_ukmo__um_stash_source_priority(self):
+        """
+        Test that ukmo__um_stash_source is converted into a STASH code with a
+        higher priority than um_stash_source.
+        """
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "m01s02i003" ;
+                    qqv:ukmo__um_stash_source = "m09s08i007" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
         self.assertEqual(
-            cubes[0].cell_measure("areas").units, as_unit("unknown")
+            cubes[0].attributes["STASH"], iris.fileformats.pp.STASH(9, 8, 7)
+        )
+
+    def test_bad_um_stash_source(self):
+        """Test that um_stash_source not in strict MSI form is kept"""
+        # Note: using a CDL string as a test data reference, rather than a binary file.
+        ref_cdl = """
+            netcdf cm_attr {
+            dimensions:
+                axv = 3 ;
+                ayv = 2 ;
+            variables:
+                int64 qqv(ayv, axv) ;
+                    qqv:long_name = "qq" ;
+                    qqv:ancillary_variables = "my_av" ;
+                    qqv:cell_measures = "area: my_areas" ;
+                    qqv:um_stash_source = "10*m01s02i003" ;
+                int64 ayv(ayv) ;
+                    ayv:long_name = "y" ;
+                int64 axv(axv) ;
+                    axv:units = "1" ;
+                    axv:long_name = "x" ;
+                double my_av(axv) ;
+                    my_av:long_name = "refs" ;
+                double my_areas(ayv, axv) ;
+                    my_areas:long_name = "areas" ;
+            data:
+                axv = 11, 12, 13;
+                ayv = 21, 22;
+                my_areas = 110., 120., 130., 221., 231., 241.;
+            }
+            """
+        self.tmpdir = tempfile.mkdtemp()
+        cdl_path = os.path.join(self.tmpdir, "tst.cdl")
+        nc_path = os.path.join(self.tmpdir, "tst.nc")
+        # Write CDL string into a temporary CDL file.
+        with open(cdl_path, "w") as f_out:
+            f_out.write(ref_cdl)
+        # Use ncgen to convert this into an actual (temporary) netCDF file.
+        command = "ncgen -o {} {}".format(nc_path, cdl_path)
+        check_call(command, shell=True)
+        # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
+        cubes = list(nc_load_cubes(nc_path))
+        self.assertEqual(len(cubes), 1)
+        self.assertFalse(hasattr(cubes[0].attributes, "STASH"))
+        self.assertEqual(
+            cubes[0].attributes["um_stash_source"], "10*m01s02i003"
         )
 
     def test_units(self):
@@ -522,13 +464,19 @@ class TestNetCDFCRS(tests.IrisTest):
         minor = 63567523
         self.grid.semi_major_axis = major
         self.grid.semi_minor_axis = minor
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(major, minor))
 
     def test_lat_lon_earth_radius(self):
         earth_radius = 63700000
         self.grid.earth_radius = earth_radius
-        crs = pyke_rules.build_coordinate_system(self.grid)
+        # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
+        # so that it has the same signature as other coord builder routines.
+        engine = None
+        crs = ncload_helpers.build_coordinate_system(engine, self.grid)
         self.assertEqual(crs, icoord_systems.GeogCS(earth_radius))
 
 
@@ -543,17 +491,20 @@ class SaverPermissions(tests.IrisTest):
                 pass
 
     def test_bad_permissions(self):
-        # Non-exhaustive check that wrong permissions results in a suitable
-        # exception being raised.
-        dir_name = tempfile.mkdtemp()
-        fnme = os.path.join(dir_name, "tmp.nc")
-        try:
-            os.chmod(dir_name, stat.S_IREAD)
-            with self.assertRaises(IOError):
-                iris.fileformats.netcdf.Saver(fnme, "NETCDF4")
-            self.assertFalse(os.path.exists(fnme))
-        finally:
-            os.rmdir(dir_name)
+        # Skip this test for the root user. This is applicable to
+        # running within a Docker container and/or CIaaS hosted testing.
+        if os.getuid():
+            # Non-exhaustive check that wrong permissions results in a suitable
+            # exception being raised.
+            dir_name = tempfile.mkdtemp()
+            fname = os.path.join(dir_name, "tmp.nc")
+            try:
+                os.chmod(dir_name, stat.S_IREAD)
+                with self.assertRaises(PermissionError):
+                    iris.fileformats.netcdf.Saver(fname, "NETCDF4")
+                self.assertFalse(os.path.exists(fname))
+            finally:
+                shutil.rmtree(dir_name)
 
 
 @tests.skip_data

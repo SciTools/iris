@@ -1,9 +1,9 @@
 test 2d dimensional cube / (meters) (dim1: 5; dim2: 10)
-     Dimension coordinates:
-          dim1                           x        -
-          dim2                           -        x
-     Auxiliary coordinates:
-          my_multi_dim_coord             x        x
-     Scalar coordinates:
-          air_temperature: 23.3 K
-          an_other: 3.0 meters
+    Dimension coordinates:
+        dim1                             x        -
+        dim2                             -        x
+    Auxiliary coordinates:
+        my_multi_dim_coord               x        x
+    Scalar coordinates:
+        air_temperature             23.3 K
+        an_other                    3.0 meters

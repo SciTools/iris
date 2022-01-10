@@ -15,7 +15,6 @@ from functools import wraps
 from inspect import getmodule
 import threading
 
-
 __all__ = [
     "LENIENT",
     "Lenient",

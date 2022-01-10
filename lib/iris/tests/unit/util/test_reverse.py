@@ -7,13 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import unittest
 
+import numpy as np
+
 import iris
 from iris.util import reverse
-import numpy as np
 
 
 class Test_array(tests.IrisTest):
@@ -172,7 +173,9 @@ class Test_cube(tests.IrisTest):
             cube1_reverse_spanning.coord("spanning").points,
         )
 
-        msg = "Expected to find exactly 1 latitude coordinate, but found none."
+        msg = (
+            "Expected to find exactly 1 'latitude' coordinate, but found none."
+        )
         with self.assertRaisesRegex(
             iris.exceptions.CoordinateNotFoundError, msg
         ):

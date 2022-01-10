@@ -10,16 +10,10 @@ Classes for representing multi-dimensional data with metadata.
 """
 
 from collections import OrderedDict
-from collections.abc import (
-    Iterable,
-    Container,
-    Mapping,
-    MutableMapping,
-    Iterator,
-)
+from collections.abc import Container, Iterable, Iterator, MutableMapping
 import copy
 from copy import deepcopy
-from functools import reduce, partial
+from functools import partial, reduce
 import operator
 import warnings
 from xml.dom.minidom import Document
@@ -29,7 +23,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
-import iris._concatenate
 import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -38,18 +31,12 @@ import iris.analysis
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.common import (
-    CFVariableMixin,
-    CoordMetadata,
-    CubeMetadata,
-    DimCoordMetadata,
-    metadata_manager_factory,
-)
+from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
+from iris.common.metadata import metadata_filter
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
 import iris.util
-
 
 __all__ = ["Cube", "CubeList"]
 
@@ -225,6 +212,7 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
+
         doc = Document()
         cubes_xml_element = doc.createElement("cubes")
         cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -239,6 +227,7 @@ class CubeList(list):
         doc.appendChild(cubes_xml_element)
 
         # return our newly created XML string
+        doc = Cube._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def extract(self, constraints):
@@ -537,13 +526,15 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
+        from iris._concatenate import concatenate
+
         if not self:
             raise ValueError("can't concatenate an empty CubeList")
 
         names = [cube.metadata.name() for cube in self]
         unique_names = list(OrderedDict.fromkeys(names))
         if len(unique_names) == 1:
-            res = iris._concatenate.concatenate(
+            res = concatenate(
                 self,
                 error_on_mismatch=True,
                 check_aux_coords=check_aux_coords,
@@ -564,7 +555,9 @@ class CubeList(list):
         else:
             msgs = []
             msgs.append(
-                "Cube names differ: {} != {}".format(names[0], names[1])
+                "Cube names differ: {} != {}".format(
+                    unique_names[0], unique_names[1]
+                )
             )
             raise iris.exceptions.ConcatenateError(msgs)
 
@@ -671,7 +664,9 @@ class CubeList(list):
             Concatenation cannot occur along an anonymous dimension.
 
         """
-        return iris._concatenate.concatenate(
+        from iris._concatenate import concatenate
+
+        return concatenate(
             self,
             check_aux_coords=check_aux_coords,
             check_cell_measures=check_cell_measures,
@@ -705,6 +700,13 @@ class CubeList(list):
         """
         _lazy.co_realise_cubes(*self)
 
+    def copy(self):
+        """
+        Return a CubeList when CubeList.copy() is called.
+        """
+        if type(self) == CubeList:
+            return deepcopy(self)
+
 
 def _is_single_item(testee):
     """
@@ -728,21 +730,22 @@ class Cube(CFVariableMixin):
         >>> cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         >>> print(cube)
         air_temperature / (K)               (latitude: 73; longitude: 96)
-             Dimension coordinates:
-                  latitude                           x              -
-                  longitude                          -              x
-             Scalar coordinates:
-                  forecast_period: 6477 hours, bound=(-28083.0, 6477.0) hours
-                  forecast_reference_time: 1998-03-01 03:00:00
-                  pressure: 1000.0 hPa
-                  time: 1998-12-01 00:00:00, \
-bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
-             Attributes:
-                  STASH: m01s16i203
-                  source: Data from Met Office Unified Model
-             Cell methods:
-                  mean within years: time
-                  mean over years: time
+            Dimension coordinates:
+                latitude                             x              -
+                longitude                            -              x
+            Scalar coordinates:
+                forecast_period             \
+6477 hours, bound=(-28083.0, 6477.0) hours
+                forecast_reference_time     1998-03-01 03:00:00
+                pressure                    1000.0 hPa
+                time                        \
+1998-12-01 00:00:00, bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
+            Cell methods:
+                mean within years           time
+                mean over years             time
+            Attributes:
+                STASH                       m01s16i203
+                source                      Data from Met Office Unified Model
 
 
     See the :doc:`user guide</userguide/index>` for more information.
@@ -754,6 +757,59 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     #: or lists slice along each dimension independently. This behavior
     #: is similar to Fortran or Matlab, but different than numpy.
     __orthogonal_indexing__ = True
+
+    @classmethod
+    def _sort_xml_attrs(cls, doc):
+        """
+        Takes an xml document and returns a copy with all element
+        attributes sorted in alphabetical order.
+
+        This is a private utility method required by iris to maintain
+        legacy xml behaviour beyond python 3.7.
+
+        Args:
+
+        * doc:
+            The :class:`xml.dom.minidom.Document`.
+
+        Returns:
+            The :class:`xml.dom.minidom.Document` with sorted element
+            attributes.
+
+        """
+        from xml.dom.minidom import Document
+
+        def _walk_nodes(node):
+            """Note: _walk_nodes is called recursively on child elements."""
+
+            # we don't want to copy the children here, so take a shallow copy
+            new_node = node.cloneNode(deep=False)
+
+            # Versions of python <3.8 order attributes in alphabetical order.
+            # Python >=3.8 order attributes in insert order.  For consistent behaviour
+            # across both, we'll go with alphabetical order always.
+            # Remove all the attribute nodes, then add back in alphabetical order.
+            attrs = [
+                new_node.getAttributeNode(attr_name).cloneNode(deep=True)
+                for attr_name in sorted(node.attributes.keys())
+            ]
+            for attr in attrs:
+                new_node.removeAttributeNode(attr)
+            for attr in attrs:
+                new_node.setAttributeNode(attr)
+
+            if node.childNodes:
+                children = [_walk_nodes(x) for x in node.childNodes]
+                for c in children:
+                    new_node.appendChild(c)
+
+            return new_node
+
+        nodes = _walk_nodes(doc.documentElement)
+        new_doc = Document()
+        new_doc.appendChild(nodes)
+
+        return new_doc
 
     def __init__(
         self,
@@ -795,7 +851,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         * long_name
             An unconstrained description of the cube.
         * var_name
-            The netCDF variable name for the cube.
+            The NetCDF variable name for the cube.
         * units
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
         * attributes
@@ -852,7 +908,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         #: The "long name" for the Cube's phenomenon.
         self.long_name = long_name
 
-        #: The netCDF variable name for the Cube.
+        #: The NetCDF variable name for the Cube.
         self.var_name = var_name
 
         self.cell_methods = cell_methods
@@ -981,9 +1037,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         celsius and subtract 273.15 from each value in
         :attr:`~iris.cube.Cube.data`.
 
-        .. warning::
-            Calling this method will trigger any deferred loading, causing
-            the cube's data array to be loaded into memory.
+        This operation preserves lazy data.
 
         """
         # If the cube has units convert the data.
@@ -997,9 +1051,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             old_unit = self.units
             new_unit = unit
 
-            # Define a delayed conversion operation (i.e. a callback).
-            def pointwise_convert(values):
-                return old_unit.convert(values, new_unit)
+            pointwise_convert = partial(old_unit.convert, other=new_unit)
 
             new_data = _lazy.lazy_elementwise(
                 self.lazy_data(), pointwise_convert
@@ -1081,6 +1133,44 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
     def _add_unique_aux_coord(self, coord, data_dims):
         data_dims = self._check_multi_dim_metadata(coord, data_dims)
+        if hasattr(coord, "mesh"):
+            mesh = self.mesh
+            if mesh:
+                msg = (
+                    "{item} of Meshcoord {coord!r} is "
+                    "{thisval!r}, which does not match existing "
+                    "cube {item} of {ownval!r}."
+                )
+                if coord.mesh != mesh:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh",
+                            coord=coord,
+                            thisval=coord.mesh,
+                            ownval=mesh,
+                        )
+                    )
+                location = self.location
+                if coord.location != location:
+                    raise ValueError(
+                        msg.format(
+                            item="location",
+                            coord=coord,
+                            thisval=coord.location,
+                            ownval=location,
+                        )
+                    )
+                mesh_dims = (self.mesh_dim(),)
+                if data_dims != mesh_dims:
+                    raise ValueError(
+                        msg.format(
+                            item="mesh dimension",
+                            coord=coord,
+                            thisval=data_dims,
+                            ownval=mesh_dims,
+                        )
+                    )
+
         self._aux_coords_and_dims.append((coord, data_dims))
 
     def add_aux_factory(self, aux_factory):
@@ -1400,10 +1490,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns a tuple of the data dimensions relevant to the given
         CellMeasure.
 
-        * cell_measure
-            The CellMeasure to look for.
+        * cell_measure (string or CellMeasure)
+            The (name of the) cell measure to look for.
 
         """
+        cell_measure = self.cell_measure(cell_measure)
+
         # Search for existing cell measure (object) on the cube, faster lookup
         # than equality - makes no functional difference.
         matches = [
@@ -1422,10 +1514,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Returns a tuple of the data dimensions relevant to the given
         AncillaryVariable.
 
-        * ancillary_variable
-            The AncillaryVariable to look for.
+        * ancillary_variable (string or AncillaryVariable)
+            The (name of the) AncillaryVariable to look for.
 
         """
+        ancillary_variable = self.ancillary_variable(ancillary_variable)
+
         # Search for existing ancillary variable (object) on the cube, faster
         # lookup than equality - makes no functional difference.
         matches = [
@@ -1459,7 +1553,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
         * var_name
-            The netCDF variable name of the desired coordinate factory.
+            The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
         .. note::
@@ -1527,69 +1621,82 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
-        Return a list of coordinates in this cube fitting the given criteria.
+        Return a list of coordinates from the :class:`Cube` that match the
+        provided criteria.
+
+        .. seealso::
+
+            :meth:`Cube.coord` for matching exactly one coordinate.
 
         Kwargs:
 
-        * name_or_coord
-            Either
+        * name_or_coord:
+            Either,
 
-            (a) a :attr:`standard_name`, :attr:`long_name`, or
-            :attr:`var_name`. Defaults to value of `default`
-            (which itself defaults to `unknown`) as defined in
-            :class:`iris.common.CFVariableMixin`.
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-            (b) a coordinate instance with metadata equal to that of
-            the desired coordinates. Accepts either a
-            :class:`iris.coords.DimCoord`, :class:`iris.coords.AuxCoord`,
-            :class:`iris.aux_factory.AuxCoordFactory`,
-            :class:`iris.common.CoordMetadata` or
-            :class:`iris.common.DimCoordMetadata`.
-        * standard_name
-            The CF standard name of the desired coordinate. If None, does not
-            check for standard name.
-        * long_name
-            An unconstrained description of the coordinate. If None, does not
-            check for long_name.
-        * var_name
-            The netCDF variable name of the desired coordinate. If None, does
-            not check for var_name.
-        * attributes
-            A dictionary of attributes desired on the coordinates. If None,
-            does not check for attributes.
-        * axis
-            The desired coordinate axis, see
-            :func:`iris.util.guess_coord_axis`. If None, does not check for
-            axis. Accepts the values 'X', 'Y', 'Z' and 'T' (case-insensitive).
-        * contains_dimension
-            The desired coordinate contains the data dimension. If None, does
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        * dimensions
-            The exact data dimensions of the desired coordinate. Coordinates
-            with no data dimension can be found with an empty tuple or list
-            (i.e. ``()`` or ``[]``). If None, does not check for dimensions.
-        * coord_system
-            Whether the desired coordinates have coordinate systems equal to
-            the given coordinate system. If None, no check is done.
-        * dim_coords
-            Set to True to only return coordinates that are the cube's
-            dimension coordinates. Set to False to only return coordinates
-            that are the cube's auxiliary and derived coordinates. If None,
-            returns all coordinates.
 
-        See also :meth:`Cube.coord()<iris.cube.Cube.coord>`.
+        * dimensions:
+            The exact data dimensions of the desired coordinate. Coordinates
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
+
+        Returns:
+            A list containing zero or more coordinates matching the provided
+            criteria.
 
         """
-        name = None
-        coord = None
-
-        if isinstance(name_or_coord, str):
-            name = name_or_coord
-        else:
-            coord = name_or_coord
-
         coords_and_factories = []
 
         if dim_coords in [True, None]:
@@ -1599,82 +1706,41 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             coords_and_factories += list(self.aux_coords)
             coords_and_factories += list(self.aux_factories)
 
-        if name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.name() == name
-            ]
+        if mesh_coords is not None:
+            # Select on mesh or non-mesh.
+            mesh_coords = bool(mesh_coords)
+            # Use duck typing to avoid importing from iris.experimental.ugrid,
+            # which could be a circular import.
+            if mesh_coords:
+                # *only* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if hasattr(item, "mesh")
+                ]
+            else:
+                # *not* MeshCoords
+                coords_and_factories = [
+                    item
+                    for item in coords_and_factories
+                    if not hasattr(item, "mesh")
+                ]
 
-        if standard_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.standard_name == standard_name
-            ]
-
-        if long_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.long_name == long_name
-            ]
-
-        if var_name is not None:
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.var_name == var_name
-            ]
-
-        if axis is not None:
-            axis = axis.upper()
-            guess_axis = iris.util.guess_coord_axis
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if guess_axis(coord_) == axis
-            ]
-
-        if attributes is not None:
-            if not isinstance(attributes, Mapping):
-                msg = (
-                    "The attributes keyword was expecting a dictionary "
-                    "type, but got a %s instead." % type(attributes)
-                )
-                raise ValueError(msg)
-
-            def attr_filter(coord_):
-                return all(
-                    k in coord_.attributes and coord_.attributes[k] == v
-                    for k, v in attributes.items()
-                )
-
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if attr_filter(coord_)
-            ]
+        coords_and_factories = metadata_filter(
+            coords_and_factories,
+            item=name_or_coord,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+        )
 
         if coord_system is not None:
             coords_and_factories = [
                 coord_
                 for coord_ in coords_and_factories
                 if coord_.coord_system == coord_system
-            ]
-
-        if coord is not None:
-            if hasattr(coord, "__class__") and coord.__class__ in (
-                CoordMetadata,
-                DimCoordMetadata,
-            ):
-                target_metadata = coord
-            else:
-                target_metadata = coord.metadata
-            coords_and_factories = [
-                coord_
-                for coord_ in coords_and_factories
-                if coord_.metadata == target_metadata
             ]
 
         if contains_dimension is not None:
@@ -1727,20 +1793,84 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         dimensions=None,
         coord_system=None,
         dim_coords=None,
+        mesh_coords=None,
     ):
         """
-        Return a single coord given the same arguments as :meth:`Cube.coords`.
+        Return a single coordinate from the :class:`Cube` that matches the
+        provided criteria.
 
         .. note::
 
-            If the arguments given do not result in precisely 1 coordinate
-            being matched, an :class:`iris.exceptions.CoordinateNotFoundError`
-            is raised.
+            If the arguments given do not result in **precisely one** coordinate,
+            then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
 
         .. seealso::
 
-            :meth:`Cube.coords()<iris.cube.Cube.coords>` for full keyword
-            documentation.
+            :meth:`Cube.coords` for matching zero or more coordinates.
+
+        Kwargs:
+
+        * name_or_coord:
+            Either,
+
+            * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
+              :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
+              :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is
+              compared against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * a coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        * standard_name:
+            The CF standard name of the desired coordinate. If ``None``, does not
+            check for ``standard name``.
+
+        * long_name:
+            An unconstrained description of the coordinate. If ``None``, does not
+            check for ``long_name``.
+
+        * var_name:
+            The NetCDF variable name of the desired coordinate. If ``None``, does
+            not check for ``var_name``.
+
+        * attributes:
+            A dictionary of attributes desired on the coordinates. If ``None``,
+            does not check for ``attributes``.
+
+        * axis:
+            The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
+            If ``None``, does not check for ``axis``. Accepts the values ``X``,
+            ``Y``, ``Z`` and ``T`` (case-insensitive).
+
+        * contains_dimension:
+            The desired coordinate contains the data dimension. If ``None``, does
+            not check for the dimension.
+
+        * dimensions:
+            The exact data dimensions of the desired coordinate. Coordinates
+            with no data dimension can be found with an empty ``tuple`` or
+            ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
+            dimensions.
+
+        * coord_system:
+            Whether the desired coordinates have a coordinate system equal to
+            the given coordinate system. If ``None``, no check is done.
+
+        * dim_coords:
+            Set to ``True`` to only return coordinates that are the cube's
+            dimension coordinates. Set to ``False`` to only return coordinates
+            that are the cube's auxiliary, mesh and derived coordinates.
+            If ``None``, returns all coordinates.
+
+        * mesh_coords:
+            Set to ``True`` to return only coordinates which are
+            :class:`~iris.experimental.ugrid.MeshCoord`\\ s.
+            Set to ``False`` to return only non-mesh coordinates.
+            If ``None``, returns all coordinates.
+
+        Returns:
+            The coordinate that matches the provided criteria.
 
         """
         coords = self.coords(
@@ -1757,23 +1887,22 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         )
 
         if len(coords) > 1:
-            msg = (
-                "Expected to find exactly 1 coordinate, but found %s. "
-                "They were: %s."
-                % (len(coords), ", ".join(coord.name() for coord in coords))
+            emsg = (
+                f"Expected to find exactly 1 coordinate, but found {len(coords)}. "
+                f"They were: {', '.join(coord.name() for coord in coords)}."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
         elif len(coords) == 0:
             _name = name_or_coord
             if name_or_coord is not None:
                 if not isinstance(name_or_coord, str):
                     _name = name_or_coord.name()
             bad_name = _name or standard_name or long_name or ""
-            msg = (
-                "Expected to find exactly 1 %s coordinate, but found "
-                "none." % bad_name
+            emsg = (
+                f"Expected to find exactly 1 {bad_name!r} coordinate, "
+                "but found none."
             )
-            raise iris.exceptions.CoordinateNotFoundError(msg)
+            raise iris.exceptions.CoordinateNotFoundError(emsg)
 
         return coords[0]
 
@@ -1826,6 +1955,76 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         else:
             result = coord_systems.get(spec_name)
 
+        return result
+
+    def _any_meshcoord(self):
+        """Return a MeshCoord if there are any, else None."""
+        mesh_coords = self.coords(mesh_coords=True)
+        if mesh_coords:
+            result = mesh_coords[0]
+        else:
+            result = None
+        return result
+
+    @property
+    def mesh(self):
+        """
+        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        associated with the cube, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
+            The mesh of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.mesh
+        return result
+
+    @property
+    def location(self):
+        """
+        Return the mesh "location" of the cube data, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * location (str or None):
+            The mesh location of the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s
+            (i.e. one of 'face' / 'edge' / 'node'),
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            result = result.location
+        return result
+
+    def mesh_dim(self):
+        """
+        Return the cube dimension of the mesh, if the cube has any
+        :class:`~iris.experimental.ugrid.MeshCoord`\\ s,
+        or ``None`` if it has none.
+
+        Returns:
+
+        * mesh_dim (int, or None):
+            the cube dimension which the cube
+            :class:`~iris.experimental.ugrid.MeshCoord`\\s map to,
+            or ``None``.
+
+        """
+        result = self._any_meshcoord()
+        if result is not None:
+            (result,) = self.coord_dims(result)  # result is a 1-tuple
         return result
 
     def cell_measures(self, name_or_cell_measure=None):
@@ -2074,7 +2273,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         .. note::
 
-            Cubes obtained from netCDF, PP, and FieldsFile files will only
+            Cubes obtained from NetCDF, PP, and FieldsFile files will only
             populate this attribute on its first use.
 
             To obtain the shape of the data without causing it to be loaded,
@@ -2176,429 +2375,29 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """Return a tuple of all the coordinate factories."""
         return tuple(self._aux_factories)
 
-    def _summary_coord_extra(self, coord, indent):
-        # Returns the text needed to ensure this coordinate can be
-        # distinguished from all others with the same name.
-        extra = ""
-        similar_coords = self.coords(coord.name())
-        if len(similar_coords) > 1:
-            # Find all the attribute keys
-            keys = set()
-            for similar_coord in similar_coords:
-                keys.update(similar_coord.attributes.keys())
-            # Look for any attributes that vary
-            vary = set()
-            attributes = {}
-            for key in keys:
-                for similar_coord in similar_coords:
-                    if key not in similar_coord.attributes:
-                        vary.add(key)
-                        break
-                    value = similar_coord.attributes[key]
-                    if attributes.setdefault(key, value) != value:
-                        vary.add(key)
-                        break
-            keys = sorted(vary & set(coord.attributes.keys()))
-            bits = [
-                "{}={!r}".format(key, coord.attributes[key]) for key in keys
-            ]
-            if bits:
-                extra = indent + ", ".join(bits)
-        return extra
-
-    def _summary_extra(self, coords, summary, indent):
-        # Where necessary, inserts extra lines into the summary to ensure
-        # coordinates can be distinguished.
-        new_summary = []
-        for coord, summary in zip(coords, summary):
-            new_summary.append(summary)
-            extra = self._summary_coord_extra(coord, indent)
-            if extra:
-                new_summary.append(extra)
-        return new_summary
-
     def summary(self, shorten=False, name_padding=35):
         """
-        Unicode string summary of the Cube with name, a list of dim coord names
-        versus length and optionally relevant coordinate information.
+        String summary of the Cube with name+units, a list of dim coord names
+        versus length and, optionally, a summary of all other components.
+
+        Kwargs:
+
+        * shorten (bool):
+            If set, produce a one-line summary of minimal width, showing only
+            the cube name, units and dimensions.
+            When not set (default), produces a full multi-line summary string.
+        * name_padding (int):
+            Control the *minimum* width of the cube name + units,
+            i.e. the indent of the dimension map section.
 
         """
-        # Create a set to contain the axis names for each data dimension.
-        dim_names = [set() for dim in range(len(self.shape))]
+        from iris._representation.cube_printout import CubePrinter
 
-        # Add the dim_coord names that participate in the associated data
-        # dimensions.
-        for dim in range(len(self.shape)):
-            dim_coords = self.coords(contains_dimension=dim, dim_coords=True)
-            if dim_coords:
-                dim_names[dim].add(dim_coords[0].name())
-            else:
-                dim_names[dim].add("-- ")
-
-        # Convert axes sets to lists and sort.
-        dim_names = [sorted(names, key=sorted_axes) for names in dim_names]
-
-        # Generate textual summary of the cube dimensionality.
-        if self.shape == ():
-            dimension_header = "scalar cube"
-        else:
-            dimension_header = "; ".join(
-                [
-                    ", ".join(dim_names[dim]) + ": %d" % dim_shape
-                    for dim, dim_shape in enumerate(self.shape)
-                ]
-            )
-
-        nameunit = "{name} / ({units})".format(
-            name=self.name(), units=self.units
-        )
-        cube_header = "{nameunit!s:{length}} ({dimension})".format(
-            length=name_padding, nameunit=nameunit, dimension=dimension_header
-        )
-        summary = ""
-
-        # Generate full cube textual summary.
-        if not shorten:
-            indent = 10
-            extra_indent = " " * 13
-
-            # Cache the derived coords so we can rely on consistent
-            # object IDs.
-            derived_coords = self.derived_coords
-            # Determine the cube coordinates that are scalar (single-valued)
-            # AND non-dimensioned.
-            dim_coords = self.dim_coords
-            aux_coords = self.aux_coords
-            all_coords = dim_coords + aux_coords + derived_coords
-            scalar_coords = [
-                coord
-                for coord in all_coords
-                if not self.coord_dims(coord) and coord.shape == (1,)
-            ]
-            # Determine the cube coordinates that are not scalar BUT
-            # dimensioned.
-            scalar_coord_ids = set(map(id, scalar_coords))
-            vector_dim_coords = [
-                coord
-                for coord in dim_coords
-                if id(coord) not in scalar_coord_ids
-            ]
-            vector_aux_coords = [
-                coord
-                for coord in aux_coords
-                if id(coord) not in scalar_coord_ids
-            ]
-            vector_derived_coords = [
-                coord
-                for coord in derived_coords
-                if id(coord) not in scalar_coord_ids
-            ]
-
-            # cell measures
-            vector_cell_measures = [
-                cm for cm in self.cell_measures() if cm.shape != (1,)
-            ]
-
-            # Ancillary Variables
-            vector_ancillary_variables = [
-                av for av in self.ancillary_variables()
-            ]
-
-            # Sort scalar coordinates by name.
-            scalar_coords.sort(key=lambda coord: coord.name())
-            # Sort vector coordinates by data dimension and name.
-            vector_dim_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-            vector_aux_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-            vector_derived_coords.sort(
-                key=lambda coord: (self.coord_dims(coord), coord.name())
-            )
-
-            #
-            # Generate textual summary of cube vector coordinates.
-            #
-            def vector_summary(
-                vector_coords,
-                cube_header,
-                max_line_offset,
-                cell_measures=None,
-                ancillary_variables=None,
-            ):
-                """
-                Generates a list of suitably aligned strings containing coord
-                names and dimensions indicated by one or more 'x' symbols.
-
-                .. note::
-
-                    The function may need to update the cube header so this is
-                    returned with the list of strings.
-
-                """
-                if cell_measures is None:
-                    cell_measures = []
-                if ancillary_variables is None:
-                    ancillary_variables = []
-                vector_summary = []
-                vectors = []
-
-                # Identify offsets for each dimension text marker.
-                alignment = np.array(
-                    [
-                        index
-                        for index, value in enumerate(cube_header)
-                        if value == ":"
-                    ]
-                )
-
-                # Generate basic textual summary for each vector coordinate
-                # - WITHOUT dimension markers.
-                for dim_meta in (
-                    vector_coords + cell_measures + ancillary_variables
-                ):
-                    vector_summary.append(
-                        "%*s%s"
-                        % (indent, " ", iris.util.clip_string(dim_meta.name()))
-                    )
-                min_alignment = min(alignment)
-
-                # Determine whether the cube header requires realignment
-                # due to one or more longer vector coordinate summaries.
-                if max_line_offset >= min_alignment:
-                    delta = max_line_offset - min_alignment + 5
-                    cube_header = "%-*s (%s)" % (
-                        int(name_padding + delta),
-                        self.name() or "unknown",
-                        dimension_header,
-                    )
-                    alignment += delta
-
-                if vector_coords:
-                    # Generate full textual summary for each vector coordinate
-                    # - WITH dimension markers.
-                    for index, coord in enumerate(vector_coords):
-                        dims = self.coord_dims(coord)
-
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + vector_coords
-                if cell_measures:
-                    # Generate full textual summary for each vector cell
-                    # measure - WITH dimension markers.
-                    for index, cell_measure in enumerate(cell_measures):
-                        dims = self.cell_measure_dims(cell_measure)
-
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + cell_measures
-                if ancillary_variables:
-                    # Generate full textual summary for each vector ancillary
-                    # variable - WITH dimension markers.
-                    for index, av in enumerate(ancillary_variables):
-                        dims = self.ancillary_variable_dims(av)
-
-                        for dim in range(len(self.shape)):
-                            width = alignment[dim] - len(vector_summary[index])
-                            char = "x" if dim in dims else "-"
-                            line = "{pad:{width}}{char}".format(
-                                pad=" ", width=width, char=char
-                            )
-                            vector_summary[index] += line
-                    vectors = vectors + ancillary_variables
-                # Interleave any extra lines that are needed to distinguish
-                # the coordinates.
-                vector_summary = self._summary_extra(
-                    vectors, vector_summary, extra_indent
-                )
-
-                return vector_summary, cube_header
-
-            # Calculate the maximum line offset.
-            max_line_offset = 0
-            for coord in all_coords:
-                max_line_offset = max(
-                    max_line_offset,
-                    len(
-                        "%*s%s"
-                        % (
-                            indent,
-                            " ",
-                            iris.util.clip_string(str(coord.name())),
-                        )
-                    ),
-                )
-
-            if vector_dim_coords:
-                dim_coord_summary, cube_header = vector_summary(
-                    vector_dim_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Dimension coordinates:\n" + "\n".join(
-                    dim_coord_summary
-                )
-
-            if vector_aux_coords:
-                aux_coord_summary, cube_header = vector_summary(
-                    vector_aux_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Auxiliary coordinates:\n" + "\n".join(
-                    aux_coord_summary
-                )
-
-            if vector_derived_coords:
-                derived_coord_summary, cube_header = vector_summary(
-                    vector_derived_coords, cube_header, max_line_offset
-                )
-                summary += "\n     Derived coordinates:\n" + "\n".join(
-                    derived_coord_summary
-                )
-
-            #
-            # Generate summary of cube cell measures attribute
-            #
-            if vector_cell_measures:
-                cell_measure_summary, cube_header = vector_summary(
-                    [],
-                    cube_header,
-                    max_line_offset,
-                    cell_measures=vector_cell_measures,
-                )
-                summary += "\n     Cell measures:\n"
-                summary += "\n".join(cell_measure_summary)
-
-            #
-            # Generate summary of cube ancillary variables attribute
-            #
-            if vector_ancillary_variables:
-                ancillary_variable_summary, cube_header = vector_summary(
-                    [],
-                    cube_header,
-                    max_line_offset,
-                    ancillary_variables=vector_ancillary_variables,
-                )
-                summary += "\n     Ancillary variables:\n"
-                summary += "\n".join(ancillary_variable_summary)
-
-            #
-            # Generate textual summary of cube scalar coordinates.
-            #
-            scalar_summary = []
-
-            if scalar_coords:
-                for coord in scalar_coords:
-                    if (
-                        coord.units in ["1", "no_unit", "unknown"]
-                        or coord.units.is_time_reference()
-                    ):
-                        unit = ""
-                    else:
-                        unit = " {!s}".format(coord.units)
-
-                    # Format cell depending on type of point and whether it
-                    # has a bound.
-                    coord_cell = coord.cell(0)
-                    if isinstance(coord_cell.point, str):
-                        # Indent string type coordinates
-                        coord_cell_split = [
-                            iris.util.clip_string(str(item))
-                            for item in coord_cell.point.split("\n")
-                        ]
-                        line_sep = "\n{pad:{width}}".format(
-                            pad=" ", width=indent + len(coord.name()) + 2
-                        )
-                        coord_cell_str = line_sep.join(coord_cell_split) + unit
-                    else:
-                        coord_cell_cpoint = coord_cell.point
-                        coord_cell_cbound = coord_cell.bound
-
-                        coord_cell_str = "{!s}{}".format(
-                            coord_cell_cpoint, unit
-                        )
-                        if coord_cell_cbound is not None:
-                            bound = "({})".format(
-                                ", ".join(
-                                    str(val) for val in coord_cell_cbound
-                                )
-                            )
-                            coord_cell_str += ", bound={}{}".format(
-                                bound, unit
-                            )
-
-                    scalar_summary.append(
-                        "{pad:{width}}{name}: {cell}".format(
-                            pad=" ",
-                            width=indent,
-                            name=coord.name(),
-                            cell=coord_cell_str,
-                        )
-                    )
-
-                # Interleave any extra lines that are needed to distinguish
-                # the coordinates.
-                scalar_summary = self._summary_extra(
-                    scalar_coords, scalar_summary, extra_indent
-                )
-
-                summary += "\n     Scalar coordinates:\n" + "\n".join(
-                    scalar_summary
-                )
-
-            # cell measures
-            scalar_cell_measures = [
-                cm for cm in self.cell_measures() if cm.shape == (1,)
-            ]
-            if scalar_cell_measures:
-                summary += "\n     Scalar cell measures:\n"
-                scalar_cms = [
-                    "          {}".format(cm.name())
-                    for cm in scalar_cell_measures
-                ]
-                summary += "\n".join(scalar_cms)
-
-            #
-            # Generate summary of cube attributes.
-            #
-            if self.attributes:
-                attribute_lines = []
-                for name, value in sorted(self.attributes.items()):
-                    value = iris.util.clip_string(str(value))
-                    line = "{pad:{width}}{name}: {value}".format(
-                        pad=" ", width=indent, name=name, value=value
-                    )
-                    attribute_lines.append(line)
-                summary += "\n     Attributes:\n" + "\n".join(attribute_lines)
-
-            #
-            # Generate summary of cube cell methods
-            #
-            if self.cell_methods:
-                summary += "\n     Cell methods:\n"
-                cm_lines = []
-
-                for cm in self.cell_methods:
-                    cm_lines.append("%*s%s" % (indent, " ", str(cm)))
-                summary += "\n".join(cm_lines)
-
-        # Construct the final cube summary.
-        summary = cube_header + summary
-
+        printer = CubePrinter(self)
+        summary = printer.to_string(oneline=shorten, name_padding=name_padding)
         return summary
 
     def __str__(self):
-        return self.summary()
-
-    def __unicode__(self):
         return self.summary()
 
     def __repr__(self):
@@ -2778,6 +2577,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 coord, return_indices=True
             )
 
+            if coord_indices.size == 0:
+                # No matches found.
+                return
+
             # Build up a slice which spans the whole of the cube
             full_slice = [slice(None, None)] * len(self.shape)
             # Update the full slice to only extract specific indices which
@@ -2804,14 +2607,12 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
         Coordinate ranges can be specified as:
 
-        (a) instances of :class:`iris.coords.CoordExtent`.
+        (a) positional arguments: instances of :class:`iris.coords.CoordExtent`,
+            or equivalent tuples of 3-5 items:
 
-        (b) keyword arguments, where the keyword name specifies the name
-            of the coordinate (as defined in :meth:`iris.cube.Cube.coords()`)
-            and the value defines the corresponding range of coordinate
-            values as a tuple. The tuple must contain two, three, or four
-            items corresponding to: (minimum, maximum, min_inclusive,
-            max_inclusive). Where the items are defined as:
+            * coord
+                Either a :class:`iris.coords.Coord`, or coordinate name
+                (as defined in :meth:`iris.cube.Cube.coords()`)
 
             * minimum
                 The minimum value of the range to select.
@@ -2827,15 +2628,28 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
                 If True, coordinate values equal to `maximum` will be included
                 in the selection. Default is True.
 
-        To perform an intersection that ignores any bounds on the coordinates,
-        set the optional keyword argument *ignore_bounds* to True. Defaults to
-        False.
+        (b) keyword arguments, where the keyword name specifies the name
+            of the coordinate, and the value defines the corresponding range of
+            coordinate values as a tuple. The tuple must contain two, three, or
+            four items, corresponding to `(minimum, maximum, min_inclusive,
+            max_inclusive)` as defined above.
+
+        Kwargs:
+
+        * ignore_bounds:
+            Intersect based on points only. Default False.
+
+        * threshold:
+            Minimum proportion of a bounded cell that must overlap with the
+            specified range. Default 0.
 
         .. note::
 
             For ranges defined over "circular" coordinates (i.e. those
             where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where necessary.
+            will be "rolled" to fit where necessary.  When requesting a
+            range that covers the entire modulus, a split cell will
+            preferentially be placed at the ``minimum`` end.
 
         .. warning::
 
@@ -2865,11 +2679,14 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         """
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
+        threshold = kwargs.pop("threshold", 0)
         for arg in args:
-            result = result._intersect(*arg, ignore_bounds=ignore_bounds)
+            result = result._intersect(
+                *arg, ignore_bounds=ignore_bounds, threshold=threshold
+            )
         for name, value in kwargs.items():
             result = result._intersect(
-                name, *value, ignore_bounds=ignore_bounds
+                name, *value, ignore_bounds=ignore_bounds, threshold=threshold
             )
         return result
 
@@ -2881,6 +2698,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         min_inclusive=True,
         max_inclusive=True,
         ignore_bounds=False,
+        threshold=0,
     ):
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
@@ -2892,7 +2710,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         modulus = coord.units.modulus
         if modulus is None:
             raise ValueError(
-                "coordinate units with no modulus are not yet" " supported"
+                "coordinate units with no modulus are not yet supported"
             )
         subsets, points, bounds = self._intersect_modulus(
             coord,
@@ -2901,6 +2719,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             min_inclusive,
             max_inclusive,
             ignore_bounds,
+            threshold,
         )
 
         # By this point we have either one or two subsets along the relevant
@@ -3081,85 +2900,92 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         min_inclusive,
         max_inclusive,
         ignore_bounds,
+        threshold,
     ):
         modulus = coord.units.modulus
         if maximum > minimum + modulus:
             raise ValueError(
-                "requested range greater than coordinate's" " unit's modulus"
+                "requested range greater than coordinate's unit's modulus"
             )
         if coord.has_bounds():
             values = coord.bounds
         else:
+            ignore_bounds = True
             values = coord.points
         if values.max() > values.min() + modulus:
             raise ValueError(
-                "coordinate's range greater than coordinate's"
-                " unit's modulus"
+                "coordinate's range greater than coordinate's unit's modulus"
             )
         min_comp = np.less_equal if min_inclusive else np.less
         max_comp = np.less_equal if max_inclusive else np.less
 
-        if coord.has_bounds():
-            bounds = wrap_lons(coord.bounds, minimum, modulus)
-            if ignore_bounds:
-                points = wrap_lons(coord.points, minimum, modulus)
-                (inside_indices,) = np.where(
-                    np.logical_and(
-                        min_comp(minimum, points), max_comp(points, maximum)
-                    )
-                )
-            else:
-                inside = np.logical_and(
-                    min_comp(minimum, bounds), max_comp(bounds, maximum)
-                )
-                (inside_indices,) = np.where(np.any(inside, axis=1))
-
-            # To ensure that bounds (and points) of matching cells aren't
-            # "scrambled" by the wrap operation we detect split cells that
-            # straddle the wrap point and choose a new wrap point which avoids
-            # split cells.
-            # For example: the cell [349.875, 350.4375] wrapped at -10 would
-            # become [349.875, -9.5625] which is no longer valid. The lower
-            # cell bound value (and possibly associated point) are
-            # recalculated so that they are consistent with the extended
-            # wrapping scheme which moves the wrap point to the correct lower
-            # bound value (-10.125) thus resulting in the cell no longer
-            # being split. For bounds which may extend exactly the length of
-            # the modulus, we simply preserve the point to bound difference,
-            # and call the new bounds = the new points + the difference.
-            pre_wrap_delta = np.diff(coord.bounds[inside_indices])
-            post_wrap_delta = np.diff(bounds[inside_indices])
-            close_enough = np.allclose(pre_wrap_delta, post_wrap_delta)
-            if not close_enough:
-                split_cell_indices, _ = np.where(
-                    pre_wrap_delta != post_wrap_delta
-                )
-
-                # Recalculate the extended minimum.
-                indices = inside_indices[split_cell_indices]
-                cells = bounds[indices]
-                cells_delta = np.diff(coord.bounds[indices])
-
-                # Watch out for ascending/descending bounds
-                if cells_delta[0, 0] > 0:
-                    cells[:, 0] = cells[:, 1] - cells_delta[:, 0]
-                    minimum = np.min(cells[:, 0])
-                else:
-                    cells[:, 1] = cells[:, 0] + cells_delta[:, 0]
-                    minimum = np.min(cells[:, 1])
-
+        if ignore_bounds:
             points = wrap_lons(coord.points, minimum, modulus)
+            bounds = coord.bounds
+            if bounds is not None:
+                # To avoid splitting any cells (by wrapping only one of its
+                # bounds), apply exactly the same wrapping as the points.
+                # Note that the offsets should be exact multiples of the
+                # modulus, but may initially be slightly off and need rounding.
+                wrap_offset = points - coord.points
+                wrap_offset = np.round(wrap_offset / modulus) * modulus
+                bounds = coord.bounds + wrap_offset[:, np.newaxis]
 
-            bound_diffs = coord.points[:, np.newaxis] - coord.bounds
-            bounds = points[:, np.newaxis] - bound_diffs
-        else:
-            points = wrap_lons(coord.points, minimum, modulus)
-            bounds = None
+            # Check points only
             (inside_indices,) = np.where(
                 np.logical_and(
                     min_comp(minimum, points), max_comp(points, maximum)
                 )
             )
+
+        else:
+            # Set up slices to account for ascending/descending bounds
+            if coord.bounds[0, 0] < coord.bounds[0, 1]:
+                ilower = (slice(None), 0)
+                iupper = (slice(None), 1)
+            else:
+                ilower = (slice(None), 1)
+                iupper = (slice(None), 0)
+
+            # Initially wrap such that upper bounds are in [min, min + modulus]
+            # As with the ignore_bounds case, need to round to modulus due to
+            # floating point precision
+            upper = wrap_lons(coord.bounds[iupper], minimum, modulus)
+            wrap_offset = upper - coord.bounds[iupper]
+            wrap_offset = np.round(wrap_offset / modulus) * modulus
+            lower = coord.bounds[ilower] + wrap_offset
+
+            # Scale threshold for each bound
+            thresholds = (upper - lower) * threshold
+
+            # For a range that covers the whole modulus, there may be a
+            # cell that is "split" and could appear at either side of
+            # the range.  Choose lower, unless there is not enough overlap.
+            if minimum + modulus == maximum and threshold == 0:
+                # Special case: overlapping in a single point
+                # (ie `minimum` itself) is always unintuitive
+                is_split = np.isclose(upper, minimum)
+            else:
+                is_split = upper - minimum < thresholds
+            wrap_offset += is_split * modulus
+
+            # Apply wrapping
+            points = coord.points + wrap_offset
+            bounds = coord.bounds + wrap_offset[:, np.newaxis]
+
+            # Interval [min, max] intersects [a, b] iff min <= b and a <= max
+            # (or < for non-inclusive min/max respectively).
+            # In this case, its length is L = min(max, b) - max(min, a)
+            upper = bounds[iupper]
+            lower = bounds[ilower]
+            overlap = np.where(
+                np.logical_and(
+                    min_comp(minimum, upper), max_comp(lower, maximum)
+                ),
+                np.minimum(maximum, upper) - np.maximum(minimum, lower),
+                np.nan,
+            )
+            (inside_indices,) = np.where(overlap >= thresholds)
 
         # Determine the subsets
         subsets = self._intersect_derive_subset(
@@ -3344,7 +3170,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         Example usage::
 
             # put the second dimension first, followed by the third dimension,
-            and finally put the first dimension third::
+            # and finally put the first dimension third::
 
                 >>> cube.transpose([1, 2, 0])
 
@@ -3404,6 +3230,7 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
         doc.appendChild(cube_xml_element)
 
         # Print our newly created XML
+        doc = self._sort_xml_attrs(doc)
         return doc.toprettyxml(indent="  ")
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
@@ -3678,6 +3505,8 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
 
             # Having checked everything else, check approximate data equality.
             if result:
+                # TODO: why do we use allclose() here, but strict equality in
+                #  _DimensionalMetadata (via util.array_equal())?
                 result = da.allclose(
                     self.core_data(), other.core_data()
                 ).compute()
@@ -3699,37 +3528,49 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
     def __hash__(self):
         return hash(id(self))
 
-    def __add__(self, other):
-        return iris.analysis.maths.add(self, other)
+    __add__ = iris.analysis.maths.add
 
     def __iadd__(self, other):
         return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
-    def __sub__(self, other):
-        return iris.analysis.maths.subtract(self, other)
+    __sub__ = iris.analysis.maths.subtract
 
     def __isub__(self, other):
         return iris.analysis.maths.subtract(self, other, in_place=True)
 
+    def __rsub__(self, other):
+        return (-self) + other
+
     __mul__ = iris.analysis.maths.multiply
-    __rmul__ = iris.analysis.maths.multiply
 
     def __imul__(self, other):
         return iris.analysis.maths.multiply(self, other, in_place=True)
+
+    __rmul__ = __mul__
 
     __div__ = iris.analysis.maths.divide
 
     def __idiv__(self, other):
         return iris.analysis.maths.divide(self, other, in_place=True)
 
-    __truediv__ = iris.analysis.maths.divide
+    def __rdiv__(self, other):
+        data = 1 / self.core_data()
+        reciprocal = self.copy(data=data)
+        return iris.analysis.maths.multiply(reciprocal, other)
 
-    def __itruediv__(self, other):
-        return iris.analysis.maths.divide(self, other, in_place=True)
+    __truediv__ = __div__
+
+    __itruediv__ = __idiv__
+
+    __rtruediv__ = __rdiv__
 
     __pow__ = iris.analysis.maths.exponentiate
+
+    def __neg__(self):
+        return self.copy(data=-self.core_data())
+
     # END OPERATOR OVERLOADS
 
     def collapsed(self, coords, aggregator, **kwargs):
@@ -3782,20 +3623,21 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
             >>> print(new_cube)
             surface_temperature / (K)           (time: 54; latitude: 18)
-                 Dimension coordinates:
-                      time                           x             -
-                      latitude                       -             x
-                 Auxiliary coordinates:
-                      forecast_reference_time        x             -
-                 Scalar coordinates:
-                      forecast_period: 0 hours
-                      longitude: 180.0 degrees, bound=(0.0, 360.0) degrees
-                 Attributes:
-                      Conventions: CF-1.5
-                      STASH: m01s00i024
-                 Cell methods:
-                      mean: month, year
-                      mean: longitude
+                Dimension coordinates:
+                    time                             x             -
+                    latitude                         -             x
+                Auxiliary coordinates:
+                    forecast_reference_time          x             -
+                Scalar coordinates:
+                    forecast_period             0 hours
+                    longitude                   \
+180.0 degrees, bound=(0.0, 360.0) degrees
+                Cell methods:
+                    mean                        month, year
+                    mean                        longitude
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
 
 
         .. note::
@@ -3919,10 +3761,15 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             # on the cube lazy array.
             # NOTE: do not reform the data in this case, as 'lazy_aggregate'
             # accepts multiple axes (unlike 'aggregate').
-            collapse_axis = list(dims_to_collapse)
+            collapse_axes = list(dims_to_collapse)
+            if len(collapse_axes) == 1:
+                # Replace a "list of 1 axes" with just a number :  This single-axis form is *required* by functions
+                # like da.average (and np.average), if a 1d weights array is specified.
+                collapse_axes = collapse_axes[0]
+
             try:
                 data_result = aggregator.lazy_aggregate(
-                    self.lazy_data(), axis=collapse_axis, **kwargs
+                    self.lazy_data(), axis=collapse_axes, **kwargs
                 )
             except TypeError:
                 # TypeError - when unexpected keywords passed through (such as
@@ -3946,8 +3793,10 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             unrolled_data = np.transpose(self.data, dims).reshape(new_shape)
 
             # Perform the same operation on the weights if applicable
-            if kwargs.get("weights") is not None:
-                weights = kwargs["weights"].view()
+            weights = kwargs.get("weights")
+            if weights is not None and weights.ndim > 1:
+                # Note: *don't* adjust 1d weights arrays, these have a special meaning for statistics functions.
+                weights = weights.view()
                 kwargs["weights"] = np.transpose(weights, dims).reshape(
                     new_shape
                 )
@@ -4004,26 +3853,26 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> print(new_cube)
             surface_temperature / (K)           \
 (time: 5; latitude: 18; longitude: 432)
-                 Dimension coordinates:
-                      time                      \
-     x            -              -
-                      latitude                  \
-     -            x              -
-                      longitude                 \
-     -            -              x
-                 Auxiliary coordinates:
-                      forecast_reference_time   \
-     x            -              -
-                      year                      \
-     x            -              -
-                 Scalar coordinates:
-                      forecast_period: 0 hours
-                 Attributes:
-                      Conventions: CF-1.5
-                      STASH: m01s00i024
-                 Cell methods:
-                      mean: month, year
-                      mean: year
+                Dimension coordinates:
+                    time                             \
+x            -              -
+                    latitude                         \
+-            x              -
+                    longitude                        \
+-            -              x
+                Auxiliary coordinates:
+                    forecast_reference_time          \
+x            -              -
+                    year                             \
+x            -              -
+                Scalar coordinates:
+                    forecast_period             0 hours
+                Cell methods:
+                    mean                        month, year
+                    mean                        year
+                Attributes:
+                    Conventions                 CF-1.5
+                    STASH                       m01s00i024
 
         """
         groupby_coords = []
@@ -4209,51 +4058,52 @@ bound=(1994-12-01 00:00:00, 1998-12-01 00:00:00)
             >>> print(air_press)
             surface_temperature / (K)           \
 (time: 6; latitude: 145; longitude: 192)
-                 Dimension coordinates:
-                      time                      \
-     x            -               -
-                      latitude                  \
-     -            x               -
-                      longitude                 \
-     -            -               x
-                 Auxiliary coordinates:
-                      forecast_period           \
-     x            -               -
-                 Scalar coordinates:
-                      forecast_reference_time: 2011-07-23 00:00:00
-                      realization: 10
-                 Attributes:
-                      STASH: m01s00i024
-                      source: Data from Met Office Unified Model
-                      um_version: 7.6
-                 Cell methods:
-                      mean: time (1 hour)
+                Dimension coordinates:
+                    time                             \
+x            -               -
+                    latitude                         \
+-            x               -
+                    longitude                        \
+-            -               x
+                Auxiliary coordinates:
+                    forecast_period                  \
+x            -               -
+                Scalar coordinates:
+                    forecast_reference_time     2011-07-23 00:00:00
+                    realization                 10
+                Cell methods:
+                    mean                        time (1 hour)
+                Attributes:
+                    STASH                       m01s00i024
+                    source                      \
+Data from Met Office Unified Model
+                    um_version                  7.6
 
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
             surface_temperature / (K)           \
 (time: 4; latitude: 145; longitude: 192)
-                 Dimension coordinates:
-                      time                      \
-     x            -               -
-                      latitude                  \
-     -            x               -
-                      longitude                 \
-     -            -               x
-                 Auxiliary coordinates:
-                      forecast_period           \
-     x            -               -
-                 Scalar coordinates:
-                      forecast_reference_time: 2011-07-23 00:00:00
-                      realization: 10
-                 Attributes:
-                      STASH: m01s00i024
-                      source: Data from Met Office Unified Model
-                      um_version: 7.6
-                 Cell methods:
-                      mean: time (1 hour)
-                      mean: time
-
+                Dimension coordinates:
+                    time                             \
+x            -               -
+                    latitude                         \
+-            x               -
+                    longitude                        \
+-            -               x
+                Auxiliary coordinates:
+                    forecast_period                  \
+x            -               -
+                Scalar coordinates:
+                    forecast_reference_time     2011-07-23 00:00:00
+                    realization                 10
+                Cell methods:
+                    mean                        time (1 hour)
+                    mean                        time
+                Attributes:
+                    STASH                       m01s00i024
+                    source                      \
+Data from Met Office Unified Model
+                    um_version                  7.6
 
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.

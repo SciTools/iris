@@ -11,7 +11,7 @@ Test function
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import copy
 
@@ -19,15 +19,14 @@ import numpy as np
 import numpy.ma as ma
 
 import iris
+from iris.coord_systems import GeogCS, LambertConformal
 import iris.coords
 from iris.coords import AuxCoord, DimCoord
-from iris.coord_systems import GeogCS, LambertConformal
-from iris.fileformats.pp import EARTH_RADIUS
 import iris.cube
 from iris.experimental.regrid import (
     regrid_weighted_curvilinear_to_rectilinear as regrid,
 )
-
+from iris.fileformats.pp import EARTH_RADIUS
 
 PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 
@@ -37,7 +36,7 @@ class Test(tests.IrisTest):
         # Source cube.
         self.test_src_name = "air_temperature"
         self.test_src_units = "K"
-        self.test_src_data = ma.arange(1, 13, dtype=np.float).reshape(3, 4)
+        self.test_src_data = ma.arange(1, 13, dtype=np.float64).reshape(3, 4)
         self.test_src_attributes = dict(wibble="wobble")
         self.test_scalar_coord = iris.coords.DimCoord(
             [1], long_name="test_scalar_coord"
@@ -135,7 +134,7 @@ class Test(tests.IrisTest):
         )
 
     def _weighted_mean(self, points):
-        points = np.asarray(points, dtype=np.float)
+        points = np.asarray(points, dtype=np.float64)
         weights = points * self.weight_factor
         numerator = denominator = 0
         for point, weight in zip(points, weights):

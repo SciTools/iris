@@ -13,7 +13,6 @@ import operator
 
 import numpy as np
 
-import iris.coords
 import iris.exceptions
 
 
@@ -73,6 +72,27 @@ class Constraint:
                        coord_values={'latitude':lambda cell: 0 < cell < 90},
                        model_level_number=[10, 12])
                        & Constraint(ensemble_member=2)
+
+        .. note::
+            Whilst ``&`` is supported, the ``|`` that might reasonably be expected
+            is not. This is because each constraint describes a boxlike region, and
+            thus the intersection of these constraints (obtained with ``&``) will
+            also describe a boxlike region. Allowing the union of two constraints
+            (with the ``|`` symbol) would allow the description of a non-boxlike
+            region. These are difficult to describe with cubes and so it would be
+            ambiguous what should be extracted.
+
+            To generate multiple cubes, each constrained to a different range of
+            the same coordinate, use :py:func:`iris.load_cubes` or
+            :py:func:`iris.cube.CubeList.extract_cubes`.
+
+            A cube can be constrained to multiple ranges within the same coordinate
+            using something like the following constraint::
+
+                def latitude_bands(cell):
+                    return (0 < cell < 30) or (60 < cell < 90)
+
+                Constraint(cube_func=latitude_bands)
 
         Constraint filtering is performed at the cell level.
         For further details on how cell comparisons are performed see
@@ -247,6 +267,8 @@ class _CoordConstraint:
         match the constraint.
 
         """
+        from iris.coords import Cell, DimCoord
+
         # Cater for scalar cubes by setting the dimensionality to 1
         # when cube.ndim is 0.
         cube_cim = _ColumnIndexManager(cube.ndim or 1)
@@ -264,7 +286,7 @@ class _CoordConstraint:
         if callable(self._coord_thing):
             call_func = self._coord_thing
         elif isinstance(self._coord_thing, Iterable) and not isinstance(
-            self._coord_thing, (str, iris.coords.Cell)
+            self._coord_thing, (str, Cell)
         ):
             desired_values = list(self._coord_thing)
             # A dramatic speedup can be had if we don't have bounds.
@@ -283,9 +305,9 @@ class _CoordConstraint:
             def call_func(c):
                 return c == self._coord_thing
 
-            try_quick = isinstance(
-                coord, iris.coords.DimCoord
-            ) and not isinstance(self._coord_thing, iris.coords.Cell)
+            try_quick = isinstance(coord, DimCoord) and not isinstance(
+                self._coord_thing, Cell
+            )
 
         # Simple, yet dramatic, optimisation for the monotonic case.
         if try_quick:
@@ -294,7 +316,7 @@ class _CoordConstraint:
             except TypeError:
                 try_quick = False
         if try_quick:
-            r = np.zeros(coord.shape, dtype=np.bool)
+            r = np.zeros(coord.shape, dtype=np.bool_)
             if coord.cell(i) == self._coord_thing:
                 r[i] = True
         else:

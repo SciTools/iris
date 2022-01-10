@@ -11,16 +11,16 @@ Unit tests for the class
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris._lazy_data import as_lazy_data
 from cftime import datetime
 import numpy as np
 
+from iris._lazy_data import as_lazy_data
+import iris.fileformats.pp
 from iris.fileformats.um._fast_load_structured_fields import (
     BasicFieldCollation,
 )
-import iris.fileformats.pp
 
 
 class Test___init__(tests.IrisTest):

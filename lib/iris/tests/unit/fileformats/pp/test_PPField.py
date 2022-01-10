@@ -7,15 +7,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import numpy as np
 
 import iris.fileformats.pp as pp
-from iris.fileformats.pp import PPField
-from iris.fileformats.pp import SplittableInt
+from iris.fileformats.pp import PPField, SplittableInt
 
 # The PPField class is abstract, so to test we define a minimal,
 # concrete subclass with the `t1` and `t2` properties.
@@ -199,8 +198,8 @@ class Test_coord_system(tests.IrisTest):
 
 class Test__init__(tests.IrisTest):
     def setUp(self):
-        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int)
-        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float)
+        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
+        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
 
     def test_no_headers(self):
@@ -232,8 +231,8 @@ class Test__init__(tests.IrisTest):
 
 class Test__getattr__(tests.IrisTest):
     def setUp(self):
-        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int)
-        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float)
+        header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
+        header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
 
     def test_attr_singular_long(self):

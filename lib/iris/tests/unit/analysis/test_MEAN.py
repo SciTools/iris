@@ -7,14 +7,13 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from iris._lazy_data import as_lazy_data
 import numpy as np
 import numpy.ma as ma
 
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import MEAN
-from iris._lazy_data import as_concrete_data
 
 
 class Test_lazy_aggregate(tests.IrisTest):

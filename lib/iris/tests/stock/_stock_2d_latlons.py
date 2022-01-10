@@ -13,9 +13,9 @@ import numpy as np
 import numpy.ma as ma
 
 from iris.analysis.cartography import unrotate_pole
-from iris.cube import Cube
-from iris.coords import AuxCoord, DimCoord
 from iris.coord_systems import RotatedGeogCS
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
 
 
 def expand_1d_x_and_y_bounds_to_2d_xy(x_bounds_1d, y_bounds_1d):

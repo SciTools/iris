@@ -7,7 +7,7 @@
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
@@ -154,7 +154,7 @@ class TestMessages(tests.IrisTest):
         cube_1 = self.cube
         cube_2 = cube_1.copy()
         cube_2.coord("height").long_name = "alice"
-        exc_regexp = "Scalar coordinates metadata differ: .* != .*"
+        exc_regexp = "Scalar coordinates values or metadata differ: .* != .*"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 

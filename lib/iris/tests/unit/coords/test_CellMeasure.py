@@ -7,15 +7,15 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import numpy as np
 
+from iris._lazy_data import as_lazy_data
 from iris.coords import CellMeasure
 from iris.cube import Cube
-from iris._lazy_data import as_lazy_data
 
 
 class Tests(tests.IrisTest):

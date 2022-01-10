@@ -10,7 +10,7 @@ Unit tests for the :class:`iris.common.metadata.CubeMetadata`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from copy import deepcopy
 import unittest.mock as mock
@@ -339,8 +339,8 @@ class Test_combine(tests.IrisTest):
         expected = right.copy()
 
         with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertTrue(expected, rmetadata.combine(lmetadata)._asdict())
+            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
+            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
 
     def test_op_lenient_different(self):
         lmetadata = self.cls(**self.values)

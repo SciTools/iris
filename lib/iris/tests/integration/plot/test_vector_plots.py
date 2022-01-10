@@ -10,29 +10,30 @@ Test some key usages of :func:`iris.plot.quiver`.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
-import iris.tests as tests
-
-import numpy as np
+import iris.tests as tests  # isort:skip
 
 import cartopy.crs as ccrs
-from iris.coords import AuxCoord, DimCoord
+import numpy as np
+
 from iris.coord_systems import Mercator
+from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests.stock import sample_2d_latlons
 
 # Run tests in no graphics mode if matplotlib is not available.
 if tests.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
-    from iris.plot import quiver
+
+    from iris.plot import barbs, quiver
 
 
 @tests.skip_plot
 class MixinVectorPlotCases:
     """
-    Test examples mixin, used by separate quiver + streamplot classes.
+    Test examples mixin, used by separate barb, quiver + streamplot classes.
 
-    NOTE: at present for quiver only, as streamplot does not support arbitrary
-    coordinates.
+    NOTE: at present for barb and quiver only, as streamplot does not support
+    arbitrary coordinates.
 
     """
 
@@ -154,8 +155,8 @@ class MixinVectorPlotCases:
             for coord in cube.coords():
                 coord.coord_system = patch_coord_system
         re_msg = (
-            "Can only plot .* lat-lon projection, .* "
-            "This .* translates as Cartopy.*Mercator"
+            r"Can only plot .* lat-lon projection, .* "
+            r"This .* translates as Cartopy \+proj=merc .*"
         )
         with self.assertRaisesRegex(ValueError, re_msg):
             self.plot(
@@ -190,6 +191,34 @@ class MixinVectorPlotCases:
         )
 
         self.plot("circular", u_cube, v_cube, coords=("longitude", "latitude"))
+
+
+class TestBarbs(MixinVectorPlotCases, tests.GraphicsTest):
+    def setUp(self):
+        super().setUp()
+
+    @staticmethod
+    def _nonlatlon_xyuv():
+        # Increase the range of wind speeds used in the barbs test to test more
+        # barbs shapes than just circles
+        x, y, u, v = MixinVectorPlotCases._nonlatlon_xyuv()
+        scale_factor = 50
+        u *= scale_factor
+        v *= scale_factor
+        return x, y, u, v
+
+    @staticmethod
+    def _latlon_uv_cubes(grid_cube):
+        # Increase the range of wind speeds used in the barbs test to test all
+        # barbs shapes
+        u_cube, v_cube = MixinVectorPlotCases._latlon_uv_cubes(grid_cube)
+        scale_factor = 30
+        u_cube.data *= scale_factor
+        v_cube.data *= scale_factor
+        return u_cube, v_cube
+
+    def plot_function_to_test(self):
+        return barbs
 
 
 class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):

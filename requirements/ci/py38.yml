@@ -1,0 +1,47 @@
+name: iris-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python =3.8
+
+# Setup dependencies.
+  - setuptools >=40.8.0
+
+# Core dependencies.
+  - cartopy >=0.20
+  - cf-units >=3
+  - cftime >=1.5
+  - dask-core >=2
+  - matplotlib
+  - netcdf4
+  - numpy >=1.19
+  - python-xxhash
+  - scipy
+
+# Optional dependencies.
+  - esmpy >=7.0
+  - graphviz
+  - iris-sample-data >=2.4.0
+  - mo_pack
+  - nc-time-axis >=1.3
+  - pandas
+  - pip
+  - python-stratify
+
+# Test dependencies.
+  - filelock
+  - imagehash >=4.0
+  - nose
+  - pillow <7
+  - pre-commit
+  - requests
+
+# Documentation dependencies.
+  - sphinx
+  - sphinxcontrib-napoleon
+  - sphinx-copybutton
+  - sphinx-gallery
+  - sphinx-panels
+  - sphinx_rtd_theme

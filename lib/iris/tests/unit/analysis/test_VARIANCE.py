@@ -7,17 +7,17 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
 import numpy as np
 import numpy.ma as ma
 
-from iris._lazy_data import as_lazy_data, as_concrete_data
+from iris._lazy_data import as_concrete_data, as_lazy_data
 from iris.analysis import VARIANCE
-import iris.cube
 from iris.coords import DimCoord
+import iris.cube
 
 
 class Test_units_func(tests.IrisTest):

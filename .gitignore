@@ -15,6 +15,7 @@ var
 sdist
 develop-eggs
 .installed.cfg
+.nox
 
 # Installer logs
 pip-log.txt
@@ -34,7 +35,6 @@ pip-cache
 # Created by Iris build
 *.so
 lib/iris/etc/site.cfg
-lib/iris/fileformats/_pyke_rules/compiled_krb/
 lib/iris/std_names.py
 
 # Iris test result files
@@ -55,11 +55,11 @@ lib/iris/tests/results/imagerepo.lock
 *.cover
 
 # Auto generated documentation files
-docs/iris/src/_build/*
-docs/iris/src/generated
+docs/src/_build/*
+docs/src/generated
 
 # Example test results
-docs/iris/iris_image_test_output/
+docs/iris_image_test_output/
 
 # Created by editiors
 *~
@@ -67,3 +67,7 @@ docs/iris/iris_image_test_output/
 \.\#*
 *.swp
 .ipynb_checkpoints
+
+# Files generated during test runs.
+lib/iris/tests/results/**/*.dot
+lib/iris/tests/results/PP/extra_char_data.w_data_loaded.pp.txt

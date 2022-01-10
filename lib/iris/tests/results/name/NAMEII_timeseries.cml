@@ -39,7 +39,11 @@
 		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods/>
@@ -84,7 +88,11 @@
 		370475.0, 370476.0]" shape="(132,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='gregorian')" value_type="float64"/>
       </coord>
       <coord>
-        <auxCoord id="457ac36d" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string"/>
+        <auxCoord id="e92ff7b7" long_name="z" points="[Boundary layer]" shape="(1,)" units="Unit('no_unit')" value_type="string">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </auxCoord>
       </coord>
     </coords>
     <cellMethods/>

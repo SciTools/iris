@@ -11,16 +11,16 @@ Unit tests for the function
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
-from unittest.mock import Mock, call as mock_call
+from unittest.mock import Mock
+from unittest.mock import call as mock_call
 
 import numpy as np
 
+from iris.analysis.cartography import rotate_grid_vectors
 from iris.cube import Cube
 from iris.tests.stock import sample_2d_latlons
-
-from iris.analysis.cartography import rotate_grid_vectors
 
 
 class TestRotateGridVectors(tests.IrisTest):

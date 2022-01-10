@@ -16,7 +16,6 @@ from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder
 from iris.util import _meshgrid
 
-
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
 _CRS_TRUELATLON = ccrs.Geodetic()
 

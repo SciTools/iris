@@ -7,22 +7,21 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import iris.tests as tests  # isort:skip
+
 import collections
-
-import iris.tests as tests
-import iris.tests.stock
-
 from unittest import mock
 
 from cf_units import Unit
 import numpy as np
 
 from iris import Constraint
-from iris.cube import Cube, CubeList
-from iris.coords import AuxCoord, DimCoord
 import iris.coord_systems
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube, CubeList
 import iris.exceptions
 from iris.fileformats.pp import STASH
+import iris.tests.stock
 
 
 class Test_concatenate_cube(tests.IrisTest):
@@ -49,6 +48,21 @@ class Test_concatenate_cube(tests.IrisTest):
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
         with self.assertRaises(iris.exceptions.ConcatenateError):
             CubeList([self.cube1, cube2]).concatenate_cube()
+
+    def test_names_differ_fail(self):
+        self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
+        self.cube2.add_dim_coord(
+            DimCoord([3, 4, 5], "time", units=self.units), 0
+        )
+        self.cube3 = Cube([1, 2, 3], "air_pressure", units="Pa")
+        self.cube3.add_dim_coord(
+            DimCoord([3, 4, 5], "time", units=self.units), 0
+        )
+        exc_regexp = "Cube names differ: air_temperature != air_pressure"
+        with self.assertRaisesRegex(
+            iris.exceptions.ConcatenateError, exc_regexp
+        ):
+            CubeList([self.cube1, self.cube2, self.cube3]).concatenate_cube()
 
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
@@ -600,6 +614,15 @@ class TestRealiseData(tests.IrisTest):
         self.assertEqual(
             call_patch.call_args_list, [mock.call(*mock_cubes_list)]
         )
+
+
+class Test_CubeList_copy(tests.IrisTest):
+    def setUp(self):
+        self.cube_list = iris.cube.CubeList()
+        self.copied_cube_list = self.cube_list.copy()
+
+    def test_copy(self):
+        self.assertIsInstance(self.copied_cube_list, iris.cube.CubeList)
 
 
 if __name__ == "__main__":

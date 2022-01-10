@@ -29,8 +29,8 @@ import filecmp
 import functools
 import gzip
 import inspect
-import json
 import io
+import json
 import math
 import os
 import os.path
@@ -38,9 +38,10 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
+from typing import Dict, List
 import unittest
 from unittest import mock
-import threading
 import warnings
 import xml.dom.minidom
 import zlib
@@ -50,8 +51,8 @@ import numpy as np
 import numpy.ma as ma
 import requests
 
-import iris.cube
 import iris.config
+import iris.cube
 import iris.util
 
 # Test for availability of matplotlib.
@@ -483,26 +484,26 @@ class IrisTest_nometa(unittest.TestCase):
                         stats.get("max", 0.0),
                         stats.get("min", 0.0),
                     ),
-                    dtype=np.float_,
+                    dtype=np.float64,
                 )
                 if math.isnan(stats.get("mean", 0.0)):
                     self.assertTrue(math.isnan(data.mean()))
                 else:
                     data_stats = np.array(
                         (data.mean(), data.std(), data.max(), data.min()),
-                        dtype=np.float_,
+                        dtype=np.float64,
                     )
                     self.assertArrayAllClose(nstats, data_stats, **kwargs)
         else:
             self._ensure_folder(reference_path)
             stats = collections.OrderedDict(
                 [
-                    ("std", np.float_(data.std())),
-                    ("min", np.float_(data.min())),
-                    ("max", np.float_(data.max())),
+                    ("std", np.float64(data.std())),
+                    ("min", np.float64(data.min())),
+                    ("max", np.float64(data.max())),
                     ("shape", data.shape),
                     ("masked", ma.is_masked(data)),
-                    ("mean", np.float_(data.mean())),
+                    ("mean", np.float64(data.mean())),
                 ]
             )
             with open(reference_path, "w") as reference_file:
@@ -573,6 +574,10 @@ class IrisTest_nometa(unittest.TestCase):
         """
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
+        # sort the attributes on xml elements before testing against known good state.
+        # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
+        # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
+        doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
         self._check_same(
@@ -602,6 +607,42 @@ class IrisTest_nometa(unittest.TestCase):
         msg = "Warning matching '{}' not raised."
         msg = msg.format(expected_regexp)
         self.assertTrue(matches, msg)
+
+    @contextlib.contextmanager
+    def assertLogs(self, logger=None, level=None, msg_regex=None):
+        """
+        An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
+        which also exercises the logger's message formatting.
+
+        Also adds the ``msg_regex`` kwarg:
+        If used, check that the result is a single message of the specified
+        level, and that it matches this regex.
+
+        The inherited version of this method temporarily *replaces* the logger
+        in order to capture log records generated within the context.
+        However, in doing so it prevents any messages from being formatted
+        by the original logger.
+        This version first calls the original method, but then *also* exercises
+        the message formatters of all the logger's handlers, just to check that
+        there are no formatting errors.
+
+        """
+        # Invoke the standard assertLogs behaviour.
+        assertlogging_context = super().assertLogs(logger, level)
+        with assertlogging_context as watcher:
+            # Run the caller context, as per original method.
+            yield watcher
+        # Check for any formatting errors by running all the formatters.
+        for record in watcher.records:
+            for handler in assertlogging_context.logger.handlers:
+                handler.format(record)
+
+        # Check message, if requested.
+        if msg_regex:
+            self.assertEqual(len(watcher.records), 1)
+            rec = watcher.records[0]
+            self.assertEqual(level, rec.levelname)
+            self.assertRegex(rec.msg, msg_regex)
 
     @contextlib.contextmanager
     def assertNoWarningsRegexp(self, expected_regexp=""):
@@ -831,14 +872,16 @@ class IrisTest_nometa(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
-        import imagehash
         from PIL import Image
+        import imagehash
 
         dev_mode = os.environ.get("IRIS_TEST_CREATE_MISSING")
         unique_id = self._unique_id()
         repo_fname = os.path.join(_RESULT_PATH, "imagerepo.json")
         with open(repo_fname, "rb") as fi:
-            repo = json.load(codecs.getreader("utf-8")(fi))
+            repo: Dict[str, List[str]] = json.load(
+                codecs.getreader("utf-8")(fi)
+            )
 
         try:
             #: The path where the images generated by the tests should go.
@@ -909,13 +952,16 @@ class IrisTest_nometa(unittest.TestCase):
             phash = imagehash.phash(Image.open(buffer), hash_size=_HASH_SIZE)
 
             if unique_id not in repo:
-                if dev_mode:
-                    _create_missing()
-                else:
-                    figure.savefig(result_fname)
-                    emsg = "Missing image test result: {}."
-                    raise AssertionError(emsg.format(unique_id))
-            else:
+                # The unique id might not be fully qualified, e.g.
+                # expects iris.tests.test_quickplot.TestLabels.test_contour.0,
+                # but got test_quickplot.TestLabels.test_contour.0
+                # if we find single partial match from end of the key
+                # then use that, else fall back to the unknown id state.
+                matches = [key for key in repo if key.endswith(unique_id)]
+                if len(matches) == 1:
+                    unique_id = matches[0]
+
+            if unique_id in repo:
                 uris = repo[unique_id]
                 # Extract the hex basename strings from the uris.
                 hexes = [
@@ -944,6 +990,13 @@ class IrisTest_nometa(unittest.TestCase):
                         else:
                             emsg = "Image comparison failed: {}"
                             raise AssertionError(emsg.format(msg))
+            else:
+                if dev_mode:
+                    _create_missing()
+                else:
+                    figure.savefig(result_fname)
+                    emsg = "Missing image test result: {}."
+                    raise AssertionError(emsg.format(unique_id))
 
             if _DISPLAY_FIGURES:
                 plt.show()

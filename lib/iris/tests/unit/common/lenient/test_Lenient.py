@@ -10,11 +10,11 @@ Unit tests for the :class:`iris.common.lenient.Lenient`.
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
 
 from unittest.mock import sentinel
 
-from iris.common.lenient import Lenient, _LENIENT
+from iris.common.lenient import _LENIENT, Lenient
 
 
 class Test___init__(tests.IrisTest):
@@ -39,10 +39,10 @@ class Test___contains__(tests.IrisTest):
         self.lenient = Lenient()
 
     def test_in(self):
-        self.assertTrue("maths", self.lenient)
+        self.assertIn("maths", self.lenient)
 
     def test_not_in(self):
-        self.assertTrue(("concatenate", self.lenient))
+        self.assertNotIn("concatenate", self.lenient)
 
 
 class Test___getitem__(tests.IrisTest):
@@ -180,3 +180,7 @@ class Test_context(tests.IrisTest):
         # still synchronised
         self.assertFalse(_LENIENT.enable)
         self.assertFalse(self.lenient["maths"])
+
+
+if __name__ == "__main__":
+    tests.main()

@@ -15,8 +15,8 @@ import numpy as np
 
 from iris.exceptions import NotYetImplementedError
 from iris.fileformats._ff_cross_references import STASH_TRANS
-from . import pp
 
+from . import pp
 
 IMDI = -32768
 
@@ -816,7 +816,7 @@ class FF2PP:
         return pp._interpret_fields(self._extract_field())
 
 
-def _parse_binary_stream(file_like, dtype=np.float, count=-1):
+def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
     """
     Replacement :func:`numpy.fromfile` due to python3 performance issues.
 
