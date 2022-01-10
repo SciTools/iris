@@ -8,8 +8,7 @@ on:
 jobs:
   votable_main:
     runs-on: ubuntu-latest
-    steps:
-       
+    steps:      
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout iris
         uses: actions/checkout@v2
@@ -17,7 +16,8 @@ jobs:
           repository: tkknight/iris
           ref: votable_issues
           path: iris
-
+      
+      # setup python
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
@@ -27,9 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyGithub
 
-#    - name: Run the python
-#      run: |
-#        python ${{ github.action_path }}/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
+      - name: Run the python
+        run: |
+          python ${{ github.action_path }}/iris/docs/src/query_gh_votable_issues.py ${{ secrets.gh_token }}
 
 #  build:
 #    runs-on: ubuntu-latest
