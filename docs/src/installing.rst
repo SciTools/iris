@@ -87,10 +87,10 @@ local copy of Iris::
 
 .. note::
 
-  The ``--force`` option is used when creating the environment, but first
-  removes any previously existing ``iris-dev`` environment of the same name
-  beforehand.  This is particularly useful when rebuilding your environment
-  due to a change in requirements.
+  The ``--force`` option, used when creating the environment, first removes
+  any previously existing ``iris-dev`` environment of the same name. This is
+  particularly useful when rebuilding your environment due to a change in
+  requirements.
 
 The ``requirements/ci/iris.yml`` file defines the Iris development conda
 environment *name* and all the relevant *top level* `conda-forge` package
