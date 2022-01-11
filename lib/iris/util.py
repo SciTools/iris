@@ -1065,7 +1065,7 @@ def format_array(arr):
         formatArray = np.core.arrayprint._formatArray
         # N.B. the 'legacy' arg had different forms in different numpy versions
         # -- fetch the required form from the internal options dict
-        legacy_key = np.core.arrayprint._format_options["legacy"]
+        format_options_legacy = np.core.arrayprint._format_options["legacy"]
 
         result = formatArray(
             arr,
@@ -1075,7 +1075,7 @@ def format_array(arr):
             separator=", ",
             edge_items=edge_items,
             summary_insert=summary_insert,
-            legacy=legacy_key,
+            legacy=format_options_legacy,
         )
 
     return result
