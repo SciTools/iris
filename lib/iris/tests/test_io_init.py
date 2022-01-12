@@ -59,9 +59,7 @@ class TestDecodeUri(tests.IrisTest):
                 "file",
                 r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
             ),
-            pathlib.Path(
-                "/data/local/someDir/2013-11-25T13:49:17.632797"
-            ): (
+            pathlib.Path("/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
                 "/data/local/someDir/2013-11-25T13:49:17.632797",
             ),
