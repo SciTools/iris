@@ -140,10 +140,8 @@ class TestSavePP(TestSaveMethods):
                 binary_mode=False,
             )
 
-
     def test_filehandle_path_object(self):
-        # Save using iris.save and pp.save, passing filenames as
-        # pathlib.Path
+        # Save using iris.save and pp.save
         save_by_filehandle(
             pathlib.Path(self.temp_filename1),
             pathlib.Path(self.temp_filename2),
