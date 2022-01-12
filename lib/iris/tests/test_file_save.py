@@ -102,8 +102,8 @@ class TestSavePP(TestSaveMethods):
         # Save using iris.save and pp.save, passing filenames as
         # pathlib.Path
         save_by_filename(
-            pathlib.Path(self.temp_filename1),
-            pathlib.Path(self.temp_filename2), self.cube1, pp.save
+            self.temp_filename1, pathlib.Path(self.temp_filename2), self.cube1,
+            pp.save
         )
 
         # Compare files
