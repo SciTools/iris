@@ -13,8 +13,8 @@ import iris.tests as tests  # isort:skip
 
 from io import StringIO
 import os
-import unittest
 import pathlib
+import unittest
 
 import iris
 import iris.cube
@@ -103,7 +103,9 @@ class TestSavePP(TestSaveMethods):
         # pathlib.Path
         save_by_filename(
             pathlib.Path(self.temp_filename1),
-            pathlib.Path(self.temp_filename2), self.cube1, pp.save
+            pathlib.Path(self.temp_filename2),
+            self.cube1,
+            pp.save,
         )
 
         # Compare files
@@ -139,7 +141,6 @@ class TestSavePP(TestSaveMethods):
                 pp.save,
                 binary_mode=False,
             )
-
 
     def test_filehandle_path_object(self):
         # Save using iris.save and pp.save, passing filenames as

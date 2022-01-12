@@ -12,10 +12,10 @@ Test the io/__init__.py module.
 import iris.tests as tests  # isort:skip
 
 from io import BytesIO
+import pathlib
 
 import iris.fileformats as iff
 import iris.io
-import pathlib
 
 
 class TestDecodeUri(tests.IrisTest):
@@ -48,32 +48,28 @@ class TestDecodeUri(tests.IrisTest):
     def test_decode_uri_path_object(self):
         tests = {
             pathlib.Path(
-                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"):
-            (
+                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
+            ): (
                 "file",
                 "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
             ),
             pathlib.Path(
-                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"):
-            (
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"
+            ): (
                 "file",
                 r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
             ),
             pathlib.Path(
-                "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"):
-            (
+                "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
+            ): (
                 "file",
                 "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
             ),
-            pathlib.Path(
-                "http://www.somehost.com:8080/resource/thing.grib"):
-            (
+            pathlib.Path("http://www.somehost.com:8080/resource/thing.grib"): (
                 "http",
                 "//www.somehost.com:8080/resource/thing.grib",
             ),
-            pathlib.Path(
-                "/data/local/someDir/2013-11-25T13:49:17.632797"):
-            (
+            pathlib.Path("/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
                 "/data/local/someDir/2013-11-25T13:49:17.632797",
             ),
