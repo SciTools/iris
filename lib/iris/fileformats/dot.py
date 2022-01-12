@@ -9,7 +9,6 @@ Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
 """
 
 import os
-import pathlib
 import subprocess
 
 import iris
@@ -61,7 +60,7 @@ def save(cube, target):
     See also :func:`iris.io.save`.
 
     """
-    if isinstance(target, (str, pathlib.PurePath)):
+    if isinstance(target, str):
         dot_file = open(target, "wt")
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" in target.mode:
@@ -73,7 +72,7 @@ def save(cube, target):
     try:
         dot_file.write(cube_text(cube))
     finally:
-        if isinstance(target, (str, pathlib.PurePath)):
+        if isinstance(target, str):
             dot_file.close()
 
 
@@ -111,7 +110,7 @@ def save_png(source, target, launch=False):
             "Review dot_path setting in site.cfg."
         )
     # To filename or open file handle?
-    if isinstance(target, (str, pathlib.PurePath)):
+    if isinstance(target, str)
         subprocess.call(
             [_dot_path(), "-T", "png", "-o", target, dot_file_path]
         )

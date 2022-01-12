@@ -17,7 +17,6 @@ import collections.abc
 from itertools import repeat, zip_longest
 import os
 import os.path
-import pathlib
 import re
 import string
 import warnings
@@ -987,7 +986,7 @@ class Saver:
 
         Args:
 
-        * filename (string or :class:`pathlib.Path`):
+        * filename (string):
             Name of the netCDF file to save the cube.
 
         * netcdf_format (string):
@@ -1031,8 +1030,6 @@ class Saver:
         #: A dictionary, mapping formula terms to owner cf variable name
         self._formula_terms_cache = {}
         #: NetCDF dataset
-        if isinstance(filename, pathlib.PurePath):
-            filename = str(filename)
         try:
             self._dataset = netCDF4.Dataset(
                 filename, mode="w", format=netcdf_format
@@ -2962,7 +2959,7 @@ def save(
         A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or other
         iterable of cubes to be saved to a netCDF file.
 
-    * filename (string or :class:`pathlib.Path`):
+    * filename (string):
         Name of the netCDF file to save the cube(s).
 
     Kwargs:

@@ -13,12 +13,35 @@ import iris.tests as tests  # isort:skip
 
 import iris
 import iris.io
+import pathlib
+
+
+@tests.skip_data
+class TestGenerateCubes(tests.IrisTest):
+    def test_normal(self):
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = list(iris._generate_cubes(paths, None, None))
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (
+            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
+        cubes = list(iris._generate_cubes(paths, None, None))
+        self.assertEqual(len(cubes), 1)
 
 
 @tests.skip_data
 class TestLoad(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load(paths)
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (
+            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -71,6 +94,12 @@ class TestLoadCube(tests.IrisTest):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         _ = iris.load_cube(paths)
 
+    def test_path_object(self):
+        paths = (
+            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
+        _ = iris.load_cube(paths)
+
     def test_not_enough(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
@@ -89,6 +118,13 @@ class TestLoadCube(tests.IrisTest):
 class TestLoadCubes(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load_cubes(paths)
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (
+            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 

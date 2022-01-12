@@ -286,7 +286,7 @@ def load(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -314,7 +314,7 @@ def load_cube(uris, constraint=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -353,7 +353,7 @@ def load_cubes(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -398,7 +398,7 @@ def load_raw(uris, constraints=None, callback=None):
     Args:
 
     * uris:
-        One or more filenames/URIs.
+        One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
 
     Kwargs:
 

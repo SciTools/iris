@@ -365,7 +365,8 @@ def save(source, target, saver=None, **kwargs):
     * target:
         A filename (or writeable, depending on file format).
         When given a filename or file, Iris can determine the
-        file format.
+        file format. Filename can be given as a string or
+        :class:`pathlib.PurePath`.
 
     Kwargs:
 
@@ -420,11 +421,13 @@ def save(source, target, saver=None, **kwargs):
     from iris.cube import Cube, CubeList
 
     # Determine format from filename
-    if isinstance(target, (str, pathlib.PurePath)) and saver is None:
+    if isinstance(target, pathlib.PurePath):
+        target = str(target)
+    if isinstance(target, str) and saver is None:
         saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
-    elif isinstance(saver, (str, pathlib.PurePath)):
+    elif isinstance(saver, str):
         saver = find_saver(saver)
     if saver is None:
         raise ValueError("Cannot save; no saver")

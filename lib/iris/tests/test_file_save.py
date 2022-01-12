@@ -14,6 +14,7 @@ import iris.tests as tests  # isort:skip
 from io import StringIO
 import os
 import unittest
+import pathlib
 
 import iris
 import iris.cube
@@ -97,6 +98,21 @@ class TestSavePP(TestSaveMethods):
             CHKSUM_ERR.format(self.ext),
         )
 
+    def test_filename_path_object(self):
+        # Save using iris.save and pp.save, passing filenames as
+        # pathlib.Path
+        save_by_filename(
+            pathlib.Path(self.temp_filename1),
+            pathlib.Path(self.temp_filename2), self.cube1, pp.save
+        )
+
+        # Compare files
+        self.assertEqual(
+            self.file_checksum(self.temp_filename2),
+            self.file_checksum(self.temp_filename1),
+            CHKSUM_ERR.format(self.ext),
+        )
+
     def test_filehandle(self):
         # Save using iris.save and pp.save
         save_by_filehandle(
@@ -119,6 +135,35 @@ class TestSavePP(TestSaveMethods):
             save_by_filehandle(
                 self.temp_filename1,
                 self.temp_filename2,
+                self.cube1,
+                pp.save,
+                binary_mode=False,
+            )
+
+
+    def test_filehandle_path_object(self):
+        # Save using iris.save and pp.save, passing filenames as
+        # pathlib.Path
+        save_by_filehandle(
+            pathlib.Path(self.temp_filename1),
+            pathlib.Path(self.temp_filename2),
+            self.cube1,
+            pp.save,
+            binary_mode=True,
+        )
+
+        # Compare files
+        self.assertEqual(
+            self.file_checksum(self.temp_filename2),
+            self.file_checksum(self.temp_filename1),
+            CHKSUM_ERR.format(self.ext),
+        )
+
+        # Check we can't save when file handle is not binary
+        with self.assertRaises(ValueError):
+            save_by_filehandle(
+                pathlib.Path(self.temp_filename1),
+                pathlib.Path(self.temp_filename2),
                 self.cube1,
                 pp.save,
                 binary_mode=False,
