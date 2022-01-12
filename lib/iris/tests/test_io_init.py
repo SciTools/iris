@@ -60,18 +60,6 @@ class TestDecodeUri(tests.IrisTest):
                 r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
             ),
             pathlib.Path(
-                "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"):
-            (
-                "file",
-                "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
-            ),
-            pathlib.Path(
-                "http://www.somehost.com:8080/resource/thing.grib"):
-            (
-                "http",
-                "//www.somehost.com:8080/resource/thing.grib",
-            ),
-            pathlib.Path(
                 "/data/local/someDir/2013-11-25T13:49:17.632797"):
             (
                 "file",

@@ -110,7 +110,7 @@ def save_png(source, target, launch=False):
             "Review dot_path setting in site.cfg."
         )
     # To filename or open file handle?
-    if isinstance(target, str)
+    if isinstance(target, str):
         subprocess.call(
             [_dot_path(), "-T", "png", "-o", target, dot_file_path]
         )
