@@ -188,6 +188,23 @@ class Test_GeogCS_as_cartopy_globe(tests.IrisTest):
         self.assertEqual(res, expected)
 
 
+class Test_GeogCS_as_cartopy_projection(tests.IrisTest):
+    def test_as_cartopy_projection(self):
+        geogcs_args = {
+            "semi_major_axis": 6543210,
+            "semi_minor_axis": 6500000,
+            "longitude_of_prime_meridian": 30,
+        }
+        cs = GeogCS(**geogcs_args)
+        cs_projection = cs.as_cartopy_projection()
+        res = {
+            "semi_major_axis": cs_projection.globe.semimajor_axis,
+            "semi_minor_axis": cs_projection.globe.semiminor_axis,
+            "longitude_of_prime_meridian": cs_projection.prime_meridian.longitude,
+        }
+        self.assertEqual(res, geogcs_args)
+
+
 class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
     def test_as_cartopy_crs(self):
         cs = GeogCS(6543210, 6500000)
