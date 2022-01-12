@@ -92,7 +92,7 @@ Mesh2DConnectivities = namedtuple(
 class Connectivity(_DimensionalMetadata):
     """
     A CF-UGRID topology connectivity, describing the topological relationship
-    between two lists of dimensional locations. One or more connectivities
+    between two lists of dimensional elements. One or more connectivities
     make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
 
     See: https://ugrid-conventions.github.io/ugrid-conventions
@@ -122,7 +122,7 @@ class Connectivity(_DimensionalMetadata):
         units=None,
         attributes=None,
         start_index=0,
-        src_dim=0,
+        location_axis=0,
     ):
         """
         Constructs a single connectivity.
@@ -131,16 +131,16 @@ class Connectivity(_DimensionalMetadata):
 
         * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
             The index values describing a topological relationship. Constructed
-            of 2 dimensions - the list of locations, and within each location:
-            the indices of the 'target locations' it relates to.
-            Use a :class:`numpy.ma.core.MaskedArray` if :attr:`src_location`
+            of 2 dimensions - the list of 'location elements', and within each:
+            the indices of the 'connected elements' it relates to.
+            Use a :class:`numpy.ma.core.MaskedArray` if :attr:`location_element`
             lengths vary - mask unused index 'slots' within each
-            :attr:`src_location`. Use a :class:`dask.array.Array` to keep
+            :attr:`location_element`. Use a :class:`dask.array.Array` to keep
             indices 'lazy'.
         * cf_role (str):
             Denotes the topological relationship that this connectivity
-            describes. Made up of this array's locations, and the indexed
-            'target location' within each location.
+            describes. Made up of this array's 'location element', and the
+            'connected element' indexed by the array.
             See :attr:`UGRID_CF_ROLES` for valid arguments.
 
         Kwargs:
@@ -164,14 +164,14 @@ class Connectivity(_DimensionalMetadata):
             Either ``0`` or ``1``. Default is ``0``. Denotes whether
             :attr:`indices` uses 0-based or 1-based indexing (allows support
             for Fortran and legacy NetCDF files).
-        * src_dim (int):
-            Either ``0`` or ``1``. Default is ``0``. Denotes which dimension
-            of :attr:`indices` varies over the :attr:`src_location`\\ s (the
-            alternate dimension therefore varying within individual
-            :attr:`src_location`\\ s). (This parameter allows support for fastest varying index being
+        * location_axis (int):
+            Either ``0`` or ``1``. Default is ``0``. Denotes which axis
+            of :attr:`indices` varies over the :attr:`location_element`\\ s (the
+            alternate axis therefore varying within individual
+            :attr:`location_element`\\ s). (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
-            ``indices.shape[src_dim] = 10``.
+            ``indices.shape[location_axis] = 10``.
 
         """
 
@@ -188,15 +188,17 @@ class Connectivity(_DimensionalMetadata):
 
         validate_arg_vs_list("start_index", start_index, [0, 1])
         # indices array will be 2-dimensional, so must be either 0 or 1.
-        validate_arg_vs_list("src_dim", src_dim, [0, 1])
+        validate_arg_vs_list("location_axis", location_axis, [0, 1])
         validate_arg_vs_list("cf_role", cf_role, Connectivity.UGRID_CF_ROLES)
 
         self._metadata_manager.start_index = start_index
-        self._metadata_manager.src_dim = src_dim
+        self._metadata_manager.location_axis = location_axis
         self._metadata_manager.cf_role = cf_role
 
-        self._tgt_dim = 1 - src_dim
-        self._src_location, self._tgt_location = cf_role.split("_")[:2]
+        self._connected_axis = 1 - location_axis
+        self._location_element, self._connected_element = cf_role.split("_")[
+            :2
+        ]
 
         super().__init__(
             values=indices,
@@ -283,25 +285,25 @@ class Connectivity(_DimensionalMetadata):
         return self._metadata_manager.cf_role
 
     @property
-    def src_location(self):
+    def location_element(self):
         """
         Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
-        ``face`` in ``face_node_connectivity``. Refers to the locations
-        listed by the :attr:`src_dim` of the connectivity's :attr:`indices`
+        ``face`` in ``face_node_connectivity``. Refers to the elements
+        listed by the :attr:`location_axis` of the connectivity's :attr:`indices`
         array.
 
         """
-        return self._src_location
+        return self._location_element
 
     @property
-    def tgt_location(self):
+    def connected_element(self):
         """
         Derived from the connectivity's :attr:`cf_role` - the second part, e.g.
-        ``node`` in ``face_node_connectivity``. Refers to the locations indexed
+        ``node`` in ``face_node_connectivity``. Refers to the elements indexed
         by the values in the connectivity's :attr:`indices` array.
 
         """
-        return self._tgt_location
+        return self._connected_element
 
     @property
     def start_index(self):
@@ -316,47 +318,47 @@ class Connectivity(_DimensionalMetadata):
         return self._metadata_manager.start_index
 
     @property
-    def src_dim(self):
+    def location_axis(self):
         """
-        The dimension of the connectivity's :attr:`indices` array that varies
-        over the connectivity's :attr:`src_location`\\ s. Either ``0`` or ``1``.
+        The axis of the connectivity's :attr:`indices` array that varies
+        over the connectivity's :attr:`location_element`\\ s. Either ``0`` or ``1``.
         **Read-only** - validity of :attr:`indices` is dependent on
-        :attr:`src_dim`. Use :meth:`transpose` to create a new, transposed
-        :class:`Connectivity` if a different :attr:`src_dim` is needed.
+        :attr:`location_axis`. Use :meth:`transpose` to create a new, transposed
+        :class:`Connectivity` if a different :attr:`location_axis` is needed.
 
         """
-        return self._metadata_manager.src_dim
+        return self._metadata_manager.location_axis
 
     @property
-    def tgt_dim(self):
+    def connected_axis(self):
         """
-        Derived as the alternate value of :attr:`src_dim` - each must equal
+        Derived as the alternate value of :attr:`location_axis` - each must equal
         either ``0`` or ``1``.
-        The dimension of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`src_location`\\ s.
+        The axis of the connectivity's :attr:`indices` array that varies
+        within the connectivity's individual :attr:`location_element`\\ s.
 
         """
-        return self._tgt_dim
+        return self._connected_axis
 
     @property
     def indices(self):
         """
         The index values describing the topological relationship of the
         connectivity, as a NumPy array. Masked points indicate a
-        :attr:`src_location` shorter than the longest :attr:`src_location`
+        :attr:`location_element` shorter than the longest :attr:`location_element`
         described in this array - unused index 'slots' are masked.
         **Read-only** - index values are only meaningful when combined with
         an appropriate :attr:`cf_role`, :attr:`start_index` and
-        :attr:`src_dim`. A new :class:`Connectivity` must therefore be
+        :attr:`location_axis`. A new :class:`Connectivity` must therefore be
         defined if different indices are needed.
 
         """
         return self._values
 
-    def indices_by_src(self, indices=None):
+    def indices_by_location(self, indices=None):
         """
-        Return a view of the indices array with :attr:`src_dim` **always** as
-        the first index - transposed if necessary. Can optionally pass in an
+        Return a view of the indices array with :attr:`location_axis` **always** as
+        the first axis - transposed if necessary. Can optionally pass in an
         identically shaped array on which to perform this operation (e.g. the
         output from :meth:`core_indices` or :meth:`lazy_indices`).
 
@@ -368,7 +370,7 @@ class Connectivity(_DimensionalMetadata):
 
         Returns:
             A view of the indices array, transposed - if necessary - to put
-            :attr:`src_dim` first.
+            :attr:`location_axis` first.
 
         """
         if indices is None:
@@ -380,19 +382,19 @@ class Connectivity(_DimensionalMetadata):
                 f"got shape={indices.shape} ."
             )
 
-        if self.src_dim == 0:
+        if self.location_axis == 0:
             result = indices
-        elif self.src_dim == 1:
+        elif self.location_axis == 1:
             result = indices.transpose()
         else:
-            raise ValueError("Invalid src_dim.")
+            raise ValueError("Invalid location_axis.")
 
         return result
 
     def _validate_indices(self, indices, shapes_only=False):
         # Use shapes_only=True for a lower resource, less thorough validation
         # of indices by just inspecting the array shape instead of inspecting
-        # individual masks. So will not catch individual src_locations being
+        # individual masks. So will not catch individual location_elements being
         # unacceptably small.
 
         def indices_error(message):
@@ -422,34 +424,34 @@ class Connectivity(_DimensionalMetadata):
 
         len_req_fail = False
         if shapes_only:
-            src_shape = indices_shape[self.tgt_dim]
+            location_shape = indices_shape[self.connected_axis]
             # Wrap as lazy to allow use of the same operations below
             # regardless of shapes_only.
-            src_lengths = _lazy.as_lazy_data(np.asarray(src_shape))
+            location_lengths = _lazy.as_lazy_data(np.asarray(location_shape))
         else:
             # Wouldn't be safe to use during __init__ validation, since
-            # lazy_src_lengths requires self.indices to exist. Safe here since
+            # lazy_location_lengths requires self.indices to exist. Safe here since
             # shapes_only==False is only called manually, i.e. after
             # initialisation.
-            src_lengths = self.lazy_src_lengths()
-        if self.src_location in ("edge", "boundary"):
-            if (src_lengths != 2).any().compute():
+            location_lengths = self.lazy_location_lengths()
+        if self.location_element in ("edge", "boundary"):
+            if (location_lengths != 2).any().compute():
                 len_req_fail = "len=2"
         else:
-            if self.src_location == "face":
+            if self.location_element == "face":
                 min_size = 3
-            elif self.src_location == "volume":
-                if self.tgt_location == "edge":
+            elif self.location_element == "volume":
+                if self.connected_element == "edge":
                     min_size = 6
                 else:
                     min_size = 4
             else:
                 raise NotImplementedError
-            if (src_lengths < min_size).any().compute():
+            if (location_lengths < min_size).any().compute():
                 len_req_fail = f"len>={min_size}"
         if len_req_fail:
             indices_error(
-                f"Not all src_locations meet requirement: {len_req_fail} - "
+                f"Not all location_elements meet requirement: {len_req_fail} - "
                 f"needed to describe '{self.cf_role}' ."
             )
 
@@ -457,7 +459,7 @@ class Connectivity(_DimensionalMetadata):
         """
         Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the sizes of individual
-        :attr:`src_location`\\ s (specified using masks on the
+        :attr:`location_element`\\ s (specified using masks on the
         :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
@@ -476,8 +478,8 @@ class Connectivity(_DimensionalMetadata):
         if isinstance(other, Connectivity):
             # Account for the fact that other could be the transposed equivalent
             # of self, which we consider 'safe' since the recommended
-            # interaction with the indices array is via indices_by_src, which
-            # corrects for this difference. (To enable this, src_dim does
+            # interaction with the indices array is via indices_by_location, which
+            # corrects for this difference. (To enable this, location_axis does
             # not participate in ConnectivityMetadata to ConnectivityMetadata
             # equivalence).
             if hasattr(other, "metadata"):
@@ -486,22 +488,22 @@ class Connectivity(_DimensionalMetadata):
                 if eq:
                     eq = (
                         self.shape == other.shape
-                        and self.src_dim == other.src_dim
+                        and self.location_axis == other.location_axis
                     ) or (
                         self.shape == other.shape[::-1]
-                        and self.src_dim == other.tgt_dim
+                        and self.location_axis == other.connected_axis
                     )
                 if eq:
                     eq = array_equal(
-                        self.indices_by_src(self.core_indices()),
-                        other.indices_by_src(other.core_indices()),
+                        self.indices_by_location(self.core_indices()),
+                        other.indices_by_location(other.core_indices()),
                     )
         return eq
 
     def transpose(self):
         """
         Create a new :class:`Connectivity`, identical to this one but with the
-        :attr:`indices` array transposed and the :attr:`src_dim` value flipped.
+        :attr:`indices` array transposed and the :attr:`location_axis` value flipped.
 
         Returns:
             A new :class:`Connectivity` that is the transposed equivalent of
@@ -517,7 +519,7 @@ class Connectivity(_DimensionalMetadata):
             units=self.units,
             attributes=self.attributes,
             start_index=self.start_index,
-            src_dim=self.tgt_dim,
+            location_axis=self.connected_axis,
         )
         return new_connectivity
 
@@ -560,10 +562,10 @@ class Connectivity(_DimensionalMetadata):
         """
         return super()._has_lazy_values()
 
-    def lazy_src_lengths(self):
+    def lazy_location_lengths(self):
         """
         Return a lazy array representing the lengths of each
-        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
+        :attr:`location_element` in the :attr:`location_axis` of the connectivity's
         :attr:`indices` array, accounting for masks if present.
 
         Accessing this method will never cause the :attr:`indices` values to be
@@ -574,26 +576,26 @@ class Connectivity(_DimensionalMetadata):
         :attr:`indices` have already been loaded.
 
         Returns:
-            A lazy array, representing the lengths of each :attr:`src_location`.
+            A lazy array, representing the lengths of each :attr:`location_element`.
 
         """
-        src_mask_counts = da.sum(
-            da.ma.getmaskarray(self.indices), axis=self.tgt_dim
+        location_mask_counts = da.sum(
+            da.ma.getmaskarray(self.indices), axis=self.connected_axis
         )
-        max_src_size = self.indices.shape[self.tgt_dim]
-        return max_src_size - src_mask_counts
+        max_location_size = self.indices.shape[self.connected_axis]
+        return max_location_size - location_mask_counts
 
-    def src_lengths(self):
+    def location_lengths(self):
         """
         Return a NumPy array representing the lengths of each
-        :attr:`src_location` in the :attr:`src_dim` of the connectivity's
+        :attr:`location_element` in the :attr:`location_axis` of the connectivity's
         :attr:`indices` array, accounting for masks if present.
 
         Returns:
-            A NumPy array, representing the lengths of each :attr:`src_location`.
+            A NumPy array, representing the lengths of each :attr:`location_element`.
 
         """
-        return self.lazy_src_lengths().compute()
+        return self.lazy_location_lengths().compute()
 
     def cube_dims(self, cube):
         """Not available on :class:`Connectivity`."""
@@ -606,7 +608,7 @@ class Connectivity(_DimensionalMetadata):
 
         element.setAttribute("cf_role", self.cf_role)
         element.setAttribute("start_index", self.start_index)
-        element.setAttribute("src_dim", self.src_dim)
+        element.setAttribute("location_axis", self.location_axis)
 
         return element
 
@@ -632,8 +634,8 @@ class Mesh(CFVariableMixin):
     AXES = ("x", "y")
     #: Valid range of values for ``topology_dimension``.
     TOPOLOGY_DIMENSIONS = (1, 2)
-    #: Valid mesh locations.
-    LOCATIONS = ("edge", "node", "face")
+    #: Valid mesh elements.
+    ELEMENTS = ("edge", "node", "face")
 
     def __init__(
         self,
@@ -684,12 +686,12 @@ class Mesh(CFVariableMixin):
         self.attributes = attributes
 
         # based on the topology_dimension, create the appropriate coordinate manager
-        def normalise(location, axis):
+        def normalise(element, axis):
             result = str(axis).lower()
             if result not in self.AXES:
-                emsg = f"Invalid axis specified for {location} coordinate {coord.name()!r}, got {axis!r}."
+                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
                 raise ValueError(emsg)
-            return f"{location}_{result}"
+            return f"{element}_{result}"
 
         if not isinstance(node_coords_and_axes, Iterable):
             node_coords_and_axes = [node_coords_and_axes]
@@ -1375,17 +1377,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
@@ -1476,17 +1478,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
@@ -1743,17 +1745,17 @@ class Mesh(CFVariableMixin):
             :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         * contains_node (bool):
-            Contains the ``node`` location as part of the
+            Contains the ``node`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
         * contains_edge (bool):
-            Contains the ``edge`` location as part of the
+            Contains the ``edge`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
         * contains_face (bool):
-            Contains the ``face`` location as part of the
+            Contains the ``face`` element as part of the
             :attr:`~iris.experimental.ugrid.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
@@ -2089,12 +2091,12 @@ class _Mesh1DCoordinateManager:
 
         return result
 
-    def _setter(self, location, axis, coord, shape):
+    def _setter(self, element, axis, coord, shape):
         axis = axis.lower()
-        member = f"{location}_{axis}"
+        member = f"{element}_{axis}"
 
         # enforce the UGRID minimum coordinate requirement
-        if location == "node" and coord is None:
+        if element == "node" and coord is None:
             emsg = (
                 f"{member!r} is a required coordinate, cannot set to 'None'."
             )
@@ -2121,22 +2123,22 @@ class _Mesh1DCoordinateManager:
 
         self._members[member] = coord
 
-    def _shape(self, location):
-        coord = getattr(self, f"{location}_x")
+    def _shape(self, element):
+        coord = getattr(self, f"{element}_x")
         shape = coord.shape if coord is not None else None
         if shape is None:
-            coord = getattr(self, f"{location}_y")
+            coord = getattr(self, f"{element}_y")
             if coord is not None:
                 shape = coord.shape
         return shape
 
     @property
     def _edge_shape(self):
-        return self._shape(location="edge")
+        return self._shape(element="edge")
 
     @property
     def _node_shape(self):
-        return self._shape(location="node")
+        return self._shape(element="node")
 
     @property
     def all_members(self):
@@ -2153,7 +2155,7 @@ class _Mesh1DCoordinateManager:
     @edge_x.setter
     def edge_x(self, coord):
         self._setter(
-            location="edge", axis="x", coord=coord, shape=self._edge_shape
+            element="edge", axis="x", coord=coord, shape=self._edge_shape
         )
 
     @property
@@ -2163,7 +2165,7 @@ class _Mesh1DCoordinateManager:
     @edge_y.setter
     def edge_y(self, coord):
         self._setter(
-            location="edge", axis="y", coord=coord, shape=self._edge_shape
+            element="edge", axis="y", coord=coord, shape=self._edge_shape
         )
 
     @property
@@ -2177,7 +2179,7 @@ class _Mesh1DCoordinateManager:
     @node_x.setter
     def node_x(self, coord):
         self._setter(
-            location="node", axis="x", coord=coord, shape=self._node_shape
+            element="node", axis="x", coord=coord, shape=self._node_shape
         )
 
     @property
@@ -2187,7 +2189,7 @@ class _Mesh1DCoordinateManager:
     @node_y.setter
     def node_y(self, coord):
         self._setter(
-            location="node", axis="y", coord=coord, shape=self._node_shape
+            element="node", axis="y", coord=coord, shape=self._node_shape
         )
 
     def _add(self, coords):
@@ -2363,7 +2365,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
 
     @property
     def _face_shape(self):
-        return self._shape(location="face")
+        return self._shape(element="face")
 
     @property
     def all_members(self):
@@ -2380,7 +2382,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
     @face_x.setter
     def face_x(self, coord):
         self._setter(
-            location="face", axis="x", coord=coord, shape=self._face_shape
+            element="face", axis="x", coord=coord, shape=self._face_shape
         )
 
     @property
@@ -2390,7 +2392,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
     @face_y.setter
     def face_y(self, coord):
         self._setter(
-            location="face", axis="y", coord=coord, shape=self._face_shape
+            element="face", axis="y", coord=coord, shape=self._face_shape
         )
 
     def add(
@@ -2510,24 +2512,24 @@ class _MeshConnectivityManagerBase(ABC):
 
         # Validate shapes.
         proposed_members = {**self._members, **add_dict}
-        locations = set(
+        elements = set(
             [
-                c.src_location
+                c.location_element
                 for c in proposed_members.values()
                 if c is not None
             ]
         )
-        for location in locations:
+        for element in elements:
             counts = [
-                len(c.indices_by_src(c.lazy_indices()))
+                len(c.indices_by_location(c.lazy_indices()))
                 for c in proposed_members.values()
-                if c is not None and c.src_location == location
+                if c is not None and c.location_element == element
             ]
             # Check is list values are identical.
             if not counts.count(counts[0]) == len(counts):
                 message = (
                     f"Invalid Connectivities provided - inconsistent "
-                    f"{location} counts."
+                    f"{element} counts."
                 )
                 raise ValueError(message)
 
@@ -2582,13 +2584,16 @@ class _MeshConnectivityManagerBase(ABC):
                 instance for instance in members if instance.cf_role == cf_role
             ]
 
-        def location_filter(instances, loc_arg, loc_name):
+        def element_filter(instances, loc_arg, loc_name):
             if loc_arg is False:
                 filtered = [
                     instance
                     for instance in instances
                     if loc_name
-                    not in (instance.src_location, instance.tgt_location)
+                    not in (
+                        instance.location_element,
+                        instance.connected_element,
+                    )
                 ]
             elif loc_arg is None:
                 filtered = instances
@@ -2598,7 +2603,7 @@ class _MeshConnectivityManagerBase(ABC):
                     instance
                     for instance in instances
                     if loc_name
-                    in (instance.src_location, instance.tgt_location)
+                    in (instance.location_element, instance.connected_element)
                 ]
 
             return filtered
@@ -2608,7 +2613,7 @@ class _MeshConnectivityManagerBase(ABC):
             (contains_edge, "edge"),
             (contains_face, "face"),
         ):
-            members = location_filter(members, arg, loc)
+            members = element_filter(members, arg, loc)
 
         # No need to actually modify filtering behaviour - already won't return
         # any face cf-roles if none are present.
@@ -2790,10 +2795,10 @@ class MeshCoord(AuxCoord):
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
 
-        if location not in Mesh.LOCATIONS:
+        if location not in Mesh.ELEMENTS:
             msg = (
                 f"'location' of {location} is not a valid Mesh location', "
-                f"must be one of {Mesh.LOCATIONS}."
+                f"must be one of {Mesh.ELEMENTS}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
@@ -3035,7 +3040,7 @@ class MeshCoord(AuxCoord):
             # Data can be real or lazy, so operations must work in Dask, too.
             indices = bounds_connectivity.core_indices()
             # Normalise indices dimension order to [faces/edges, bounds]
-            indices = bounds_connectivity.indices_by_src(indices)
+            indices = bounds_connectivity.indices_by_location(indices)
             # Normalise the start index
             indices = indices - bounds_connectivity.start_index
 

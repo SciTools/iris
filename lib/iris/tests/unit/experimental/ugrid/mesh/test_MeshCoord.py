@@ -60,7 +60,7 @@ class Test___init__(tests.IrisTest):
             sample_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
-        for loc in Mesh.LOCATIONS:
+        for loc in Mesh.ELEMENTS:
             meshcoord = sample_meshcoord(location=loc)
             self.assertEqual(meshcoord.location, loc)
 
@@ -461,12 +461,12 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         lazy_sources=False,
         location="face",
         inds_start_index=0,
-        inds_src_dim=0,
+        inds_location_axis=0,
         facenodes_changes=None,
     ):
         # Construct a miniature face-nodes mesh for testing.
         # NOTE: we will make our connectivity arrays with standard
-        # start_index=0 and src_dim=0 :  We only adjust that (if required) when
+        # start_index=0 and location_axis=0 :  We only adjust that (if required) when
         # creating the actual connectivities.
         face_nodes_array = np.array(
             [
@@ -551,26 +551,26 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             inds_start_index
             + (
                 face_nodes_array.transpose()
-                if inds_src_dim == 1
+                if inds_location_axis == 1
                 else face_nodes_array
             ),
             cf_role="face_node_connectivity",
             long_name="face_nodes",
             start_index=inds_start_index,
-            src_dim=inds_src_dim,
+            location_axis=inds_location_axis,
         )
 
         edge_node_conn = Connectivity(
             inds_start_index
             + (
                 edge_nodes_array.transpose()
-                if inds_src_dim == 1
+                if inds_location_axis == 1
                 else edge_nodes_array
             ),
             cf_role="edge_node_connectivity",
             long_name="edge_nodes",
             start_index=inds_start_index,
-            src_dim=inds_src_dim,
+            location_axis=inds_location_axis,
         )
 
         self.mesh = Mesh(
@@ -654,9 +654,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # NB simpler than faces : no possibility of missing points
         self.assertArrayAlmostEqual(result, expected)
 
-    def test_bounds_connectivity__src_dim_1(self):
+    def test_bounds_connectivity__location_axis_1(self):
         # Test with a transposed indices array.
-        self._make_test_meshcoord(inds_src_dim=1)
+        self._make_test_meshcoord(inds_location_axis=1)
         self._check_expected_bounds_values()
 
     def test_bounds_connectivity__start_index_1(self):

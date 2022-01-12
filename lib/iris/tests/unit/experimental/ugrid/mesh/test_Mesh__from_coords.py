@@ -217,7 +217,7 @@ class Test2Dim(Test1Dim):
 
         mesh = self.create()
         self.assertArrayEqual(
-            mesh.face_node_connectivity.src_lengths(), [4, 4, 3]
+            mesh.face_node_connectivity.location_lengths(), [4, 4, 3]
         )
         self.assertEqual(mesh.node_coords.node_x.points[-1], 0.0)
         self.assertEqual(mesh.node_coords.node_y.points[-1], 0.0)

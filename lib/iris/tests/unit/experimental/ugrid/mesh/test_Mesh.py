@@ -201,7 +201,7 @@ class TestProperties1D(TestMeshCommon):
         for kwargs in negative_kwargs:
             self.assertEqual([], func(**kwargs))
 
-    def test_connectivities_locations(self):
+    def test_connectivities_elements(self):
         # topology_dimension-specific results. Method intended to be overridden.
         positive_kwargs = (
             {"contains_node": True},
@@ -261,7 +261,7 @@ class TestProperties1D(TestMeshCommon):
         for kwargs in negative_kwargs:
             self.assertNotIn(self.NODE_LON, func(**kwargs))
 
-    def test_coords_locations(self):
+    def test_coords_elements(self):
         # topology_dimension-specific results. Method intended to be overridden.
         all_expected = {
             "node_x": self.NODE_LON,
@@ -445,7 +445,7 @@ class TestProperties2D(TestProperties1D):
             contains_face=False,
         )
 
-    def test_connectivities_locations(self):
+    def test_connectivities_elements(self):
         kwargs_expected = (
             (
                 {"contains_node": True},
@@ -501,7 +501,7 @@ class TestProperties2D(TestProperties1D):
             for item in expected:
                 self.assertIn(item, result)
 
-    def test_coords_locations(self):
+    def test_coords_elements(self):
         all_expected = {
             "node_x": self.NODE_LON,
             "node_y": self.NODE_LAT,
@@ -582,7 +582,7 @@ class TestOperations1D(TestMeshCommon):
     @staticmethod
     def new_connectivity(connectivity, new_len=False):
         """Provide a new connectivity recognisably different from the original."""
-        # NOTE: assumes non-transposed connectivity (src_dim=0).
+        # NOTE: assumes non-transposed connectivity (location_axis=0).
         if new_len:
             shape = (connectivity.shape[0] + 1, connectivity.shape[1])
         else:
