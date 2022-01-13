@@ -289,9 +289,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     def summary(
         self,
         shorten=False,
-        max_values=10,
+        max_values=None,
         fetch_lazy=False,
         convert_dates=True,
+        max_array_width=60,
     ):
         """
         Make a printable text summary of a dimensional cube component.
@@ -300,44 +301,43 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         ----------
         shorten : bool, default = False
             If True, produce an abbreviated one-line summary.
-            If False, produce a multi-line summary, with embedded '\n's.
+            If False, produce a multi-line summary, with embedded newlines.
         max_values : int or None, default = None
             If more than this many data values, print truncated data arrays.
             If 0, print only the shape.
             If None, print the entire data arrays.
-            Defaults to 5 if `shorten` is True, else 10.
-        fetch_lazy : bool, default = None
+            Defaults to 5 if `shorten` is True, else 20.
+        fetch_lazy : bool, default = False
             Whether to calculate values from lazy content.
             When `fetch_lazy=False`, set max_values=0 if data is lazy.
         convert_dates : bool, default = True
             Print values in date form, if the units has a calendar.
             If not, print raw number values.
+        max_array_width : int, default = 60
+            Character-width controlling line splitting of array outputs.
 
         Returns
         -------
             result : str
 
         """
-        is_lazy = self._has_lazy_values()
-        if self._bounds_dm and _lazy.is_lazy_data(self._bounds_dm.core_data()):
-            # No distinction here: either lazy points *or* bounds means no data.
-            is_lazy = True
+        if fetch_lazy:
+            keep_lazy = False
+        else:
+            # N.B. no distinction here: lazy points *or* bounds means no data.
+            keep_lazy = self._has_lazy_values() or (
+                self._bounds_dm
+                and _lazy.is_lazy_data(self._bounds_dm.core_data())
+            )
 
         def array_summary(
             data, n_max=10, n_edge=2, linewidth=50, precision=None
         ):
-            # Return a text summary of the data, or "" for unfetched lazy data.
-            # Take account of lazy control, strings, dates and masked points.
+            # Return a text summary of an array.
+            # Take account of strings, dates and masked points.
             result = ""
             formatter = None
-            # if _lazy.is_lazy_data(data):
-            #     # Either fetch lazy data, or disable values printout.
-            #     if not fetch_lazy:
-            #         data = None
-            #     else:
-            #         data = _lazy.as_concrete_data(data)
-            # if data is not None:
-            if self.units.is_time_reference():
+            if convert_dates and self.units.is_time_reference():
                 # Account for dates, if enabled.
                 # N.B. a time unit with a long time interval ("months"
                 # or "years") cannot be converted to a date using
@@ -355,9 +355,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     if mask is not None:
                         data = np.ma.masked_array(data, mask)
 
-            # if data is None:
-            #     result = ""
-            # else:
             if ma.is_masked(data):
                 # Masks are not handled by np.array2string, whereas
                 # MaskedArray.__str__ is using a private method to convert to
@@ -367,7 +364,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 # with a common numeric format, but there is no *public* logic
                 # in numpy to arrange that, so let's not overcomplicate.
                 # It happens that array2string *also* does not use a common
-                # format (width) for strings, but fix that below...
+                # format (width) for strings, but we fix that below...
                 data = data.astype(str).filled("--")
 
             if data.dtype.kind == "U":
@@ -393,25 +390,24 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         cls_str = type(self).__name__
         shape_str = str(self.shape)
 
+        # Implement conditional defaults for control args.
+        if max_values is None:
+            max_values = 5 if shorten else 15
+        precision = 3 if shorten else None
+
         # Make a printout of the main data array (or maybe not, if lazy).
-        max_data_strlen = 60
-        n_max = 15
-        precision = None
-        if shorten:
-            precision = 3
-            n_max = 5
-        if is_lazy:
+        if keep_lazy:
             data_str = "<lazy>"
         else:
             data_str = array_summary(
                 self._core_values(),
-                n_max=n_max,
-                linewidth=max_data_strlen,
+                n_max=max_values,
+                linewidth=max_array_width,
                 precision=precision,
             )
 
         if shorten:
-            if is_lazy:
+            if keep_lazy:
                 # Data summary is invalid due to being lazy : show shape.
                 data_str += f", shape={shape_str}"
             else:
@@ -421,7 +417,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 while "  " in data_str:
                     data_str = data_str.replace("  ", " ")
                 # Work out whether to include a summary of the data values
-                if len(data_str) > max_data_strlen:
+                if len(data_str) > max_array_width:
                     # Data summary is still too long : show shape instead.
                     data_str = f"shape={shape_str}"
                 if "..." in data_str:
@@ -450,11 +446,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             result += addline + reindent_data_string(data_str, n_indent + 1)
 
-            if not is_lazy and self.has_bounds():
+            if not keep_lazy and self.has_bounds():
                 bounds_str = array_summary(
                     self._bounds_dm.core_data(),
-                    n_max=n_max,
-                    linewidth=max_data_strlen,
+                    n_max=max_values,
+                    linewidth=max_array_width,
                     precision=precision,
                 )
                 bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
@@ -486,10 +482,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return result
 
     def __str__(self):
-        return self.summary(max_values=10)
+        return self.summary()
 
     def __repr__(self):
-        return self.summary(shorten=True, max_values=5)
+        return self.summary(shorten=True)
 
     def _old__str__(self):
         # Note: this method includes bounds handling code, but it only runs
