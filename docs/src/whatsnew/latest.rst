@@ -16,7 +16,7 @@ This document explains the changes made to Iris for this release
 
    The highlights for this minor release of Iris include:
 
-   * We've added experimental support for `UGRID`_ meshes which can now be loaded
+   * We've added experimental support for `CF-UGRID`_ meshes which can now be loaded
      and attached to a cube.
    * We've also dropped support for ``Python 3.7``.
 
@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@bjlittle`_, `@pp-mo`_, `@trexfeathers`_ and `@stephenworsley`_ added
-   support for unstructured meshes, as described by `UGRID`_. This involved
+   support for unstructured meshes, as described by `CF-UGRID`_. This involved
    adding a data model (:pull:`3968`, :pull:`4014`, :pull:`4027`, :pull:`4036`,
    :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
    supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
@@ -54,14 +54,14 @@ This document explains the changes made to Iris for this release
    :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
 #. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
-   for files using the `UGRID`_ conventions.
+   for files using the `CF-UGRID`_ conventions.
    The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
    provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
    returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
    (:pull:`4058`).
 
 #. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
-   `UGRID`_ conventions.
+   `CF-UGRID`_ conventions.
    The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
    A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
    :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
@@ -82,7 +82,7 @@ This document explains the changes made to Iris for this release
    :class:`~iris.coords.AuxCoord` :attr:`~iris.coords.AuxCoord.points` and
    :class:`~iris.experimental.ugrid.mesh.Connectivity`
    :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
-   `UGRID`_ model. (:pull:`4375`)
+   `CF-UGRID`_ model. (:pull:`4375`)
 
 #. `@bsherratt`_ added a `threshold` parameter to
    :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
@@ -271,7 +271,7 @@ This document explains the changes made to Iris for this release
    :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
    using assertArrayAllClose following :issue:`3993`.
    (:pull:`4421`)
-   
+
 #. `@rcomer`_ updated some tests to work with Matplotlib v3.5. (:pull:`4428`)
 
 #. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
@@ -304,7 +304,6 @@ This document explains the changes made to Iris for this release
 
 .. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
-.. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
 .. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
 .. _Metarelate: http://www.metarelate.net/
