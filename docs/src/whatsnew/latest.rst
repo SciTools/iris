@@ -168,7 +168,11 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@wjbenfold`_ removed :mod:`iris.experimental.equalise_cubes`. In ``v3.0``
+   the experimental `equalise_attributes` functionality was moved to the
+   :mod:`iris.util.equalise_attributes` function. Since then, calling the
+   :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
+   an exception. (:issue:`3528`, :pull:`4496`)
 
 
 🔗 Dependencies
@@ -279,12 +283,6 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ fixed tests for hybrid formulae that weren't being found by
    nose (:issue:`4431`, :pull:`4450`)
-
-#. `@wjbenfold`_ removed :mod:`iris.experimental.equalise_cubes`. In ``v3.0``
-   the experimental `equalise_attributes` functionality was moved to the
-   :mod:`iris.util.equalise_attributes` function. Since then, calling the
-   :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
-   an exception. (:issue:`3528`, :pull:`4496`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
