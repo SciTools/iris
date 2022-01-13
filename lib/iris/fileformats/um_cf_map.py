@@ -3,14 +3,6 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-#
-# DO NOT EDIT: AUTO-GENERATED
-# Created on 29 November 2019 14:11 from 
-# http://www.metarelate.net/metOcean
-# at commit 448f2ef5e676edaaa27408b9f3ddbecbf05e3289
-#
-# https://github.com/metarelate/metOcean/commit/448f2ef5e676edaaa27408b9f3ddbecbf05e3289
-
 """
 Provides UM/CF phenomenon translations.
 

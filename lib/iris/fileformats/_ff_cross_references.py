@@ -3,11 +3,9 @@
 # This file is part of Iris and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-#
-# DO NOT EDIT: AUTO-GENERATED
 """
-Auto-generated from iris/tools/gen_stash_refs.py
-Relates grid code and field code to the stash code.
+Table providing UM grid-code, field-code and pseudolevel-type for (some)
+stash codes.  Used in UM file i/o.
 
 """
 
