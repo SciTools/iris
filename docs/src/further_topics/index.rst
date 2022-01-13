@@ -20,6 +20,7 @@ that may be of interest to the more advanced or curious user.
 * :doc:`metadata`
 * :doc:`lenient_metadata`
 * :doc:`lenient_maths`
+* :doc:`ugrid`
 
 
 .. _GitHub Documentation Issue: https://github.com/SciTools/iris/issues/new?assignees=&labels=New%3A+Documentation%2C+Type%3A+Documentation&template=documentation.md&title=

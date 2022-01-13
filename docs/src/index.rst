@@ -123,7 +123,7 @@ For **Iris 2.4** and earlier documentation please see the
 .. _developers_guide:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Further Topics
    :hidden:
 
@@ -131,6 +131,7 @@ For **Iris 2.4** and earlier documentation please see the
    further_topics/metadata
    further_topics/lenient_metadata
    further_topics/lenient_maths
+   further_topics/ugrid/index
 
 
 .. toctree::
