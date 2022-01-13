@@ -286,7 +286,212 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             date_obj_array, formatter={"all": str}, **kwargs
         )
 
+    def summary(
+        self,
+        shorten=False,
+        max_values=10,
+        fetch_lazy=False,
+        convert_dates=True,
+    ):
+        """
+        Make a printable text summary of a dimensional cube component.
+
+        Parameters
+        ----------
+        shorten : bool, default = False
+            If True, produce an abbreviated one-line summary.
+            If False, produce a multi-line summary, with embedded '\n's.
+        max_values : int or None, default = None
+            If more than this many data values, print truncated data arrays.
+            If 0, print only the shape.
+            If None, print the entire data arrays.
+            Defaults to 5 if `shorten` is True, else 10.
+        fetch_lazy : bool, default = None
+            Whether to calculate values from lazy content.
+            When `fetch_lazy=False`, set max_values=0 if data is lazy.
+        convert_dates : bool, default = True
+            Print values in date form, if the units has a calendar.
+            If not, print raw number values.
+
+        Returns
+        -------
+            result : str
+
+        """
+        is_lazy = self._has_lazy_values()
+        if self._bounds_dm and _lazy.is_lazy_data(self._bounds_dm.core_data()):
+            # No distinction here: either lazy points *or* bounds means no data.
+            is_lazy = True
+
+        def array_summary(
+            data, n_max=10, n_edge=2, linewidth=50, precision=None
+        ):
+            # Return a text summary of the data, or "" for unfetched lazy data.
+            # Take account of lazy control, strings, dates and masked points.
+            result = ""
+            formatter = None
+            # if _lazy.is_lazy_data(data):
+            #     # Either fetch lazy data, or disable values printout.
+            #     if not fetch_lazy:
+            #         data = None
+            #     else:
+            #         data = _lazy.as_concrete_data(data)
+            # if data is not None:
+            if self.units.is_time_reference():
+                # Account for dates, if enabled.
+                # N.B. a time unit with a long time interval ("months"
+                # or "years") cannot be converted to a date using
+                # `num2date`, so gracefully fall back to printing
+                # values as numbers.
+                if not self.units.is_long_time_interval():
+                    # Otherwise ... replace all with strings.
+                    if ma.is_masked(data):
+                        mask = data.mask
+                    else:
+                        mask = None
+                    data = np.array(self.units.num2date(data))
+                    data = data.astype(str)
+                    # Masked points do not survive num2date.
+                    if mask is not None:
+                        data = np.ma.masked_array(data, mask)
+
+            # if data is None:
+            #     result = ""
+            # else:
+            if ma.is_masked(data):
+                # Masks are not handled by np.array2string, whereas
+                # MaskedArray.__str__ is using a private method to convert to
+                # objects.
+                # Our preferred solution is to convert to strings *and* fill
+                # with '--'.   This is not ideal because numbers will not align
+                # with a common numeric format, but there is no *public* logic
+                # in numpy to arrange that, so let's not overcomplicate.
+                # It happens that array2string *also* does not use a common
+                # format (width) for strings, but fix that below...
+                data = data.astype(str).filled("--")
+
+            if data.dtype.kind == "U":
+                # Strings : N.B. includes all missing data
+                # find the longest.
+                length = max(len(str(x)) for x in data.flatten())
+                # Pre-apply a common formatting width.
+                formatter = {"all": lambda x: str(x).ljust(length)}
+
+            result = np.array2string(
+                data,
+                separator=", ",
+                edgeitems=n_edge,
+                threshold=n_max,
+                max_line_width=linewidth,
+                formatter=formatter,
+                precision=precision,
+            )
+
+            return result
+
+        title_str = f"{self.name()} / ({self.units})"
+        cls_str = type(self).__name__
+        shape_str = str(self.shape)
+
+        # Make a printout of the main data array (or maybe not, if lazy).
+        max_data_strlen = 60
+        n_max = 15
+        precision = None
+        if shorten:
+            precision = 3
+            n_max = 5
+        if is_lazy:
+            data_str = "<lazy>"
+        else:
+            data_str = array_summary(
+                self._core_values(),
+                n_max=n_max,
+                linewidth=max_data_strlen,
+                precision=precision,
+            )
+
+        if shorten:
+            if is_lazy:
+                # Data summary is invalid due to being lazy : show shape.
+                data_str += f", shape={shape_str}"
+            else:
+                # Flatten to a single line, reducing repeated spaces.
+                data_str = data_str.replace("\n", " ")
+                data_str = data_str.replace("\t", " ")
+                while "  " in data_str:
+                    data_str = data_str.replace("  ", " ")
+                # Work out whether to include a summary of the data values
+                if len(data_str) > max_data_strlen:
+                    # Data summary is still too long : show shape instead.
+                    data_str = f"shape={shape_str}"
+                if "..." in data_str:
+                    # Truncated form : show shape *as well*.
+                    data_str += f", shape={shape_str}"
+
+            # (N.B. in the oneline case, we *ignore* any bounds)
+
+            result = f"<{cls_str}: {title_str}  {data_str}>"
+        else:
+            # Long (multi-line) form.
+            result = f"{cls_str} :  {title_str}"
+
+            def reindent_data_string(text, n_indent):
+                lines = [line for line in text.split("\n")]
+                indent = " " * (n_indent - 1)  # allow 1 for the initial '['
+                # Indent all but the *first* line.
+                line_1, rest_lines = lines[0], lines[1:]
+                rest_lines = ["\n" + indent + line for line in rest_lines]
+                result = line_1 + "".join(rest_lines)
+                return result
+
+            n_indent = 4
+            indent = " " * n_indent
+            addline = "\n" + indent
+
+            result += addline + reindent_data_string(data_str, n_indent + 1)
+
+            if not is_lazy and self.has_bounds():
+                bounds_str = array_summary(
+                    self._bounds_dm.core_data(),
+                    n_max=n_max,
+                    linewidth=max_data_strlen,
+                    precision=precision,
+                )
+                bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
+                if "\n" in bounds_str:
+                    # Place on subsequent lines
+                    result += addline + "bounds=["
+                    result += addline + indent + bounds_str[1:]
+                else:
+                    result += bounds_str
+
+            # Add shape declaration (always)
+            result += addline + f"shape: {shape_str}"
+
+            if self.has_bounds():
+                # line = f'bounds_shape: {self._bounds_dm.shape}'
+                # result += addline + line
+                result += f" ; bounds={self._bounds_dm.shape}"
+
+            # Add dtype declaration (always)
+            result += addline + f"dtype: {self.dtype}"
+
+            names = ("standard_name", "long_name", "var_name", "attributes")
+            for name in names:
+                val = getattr(self, name)
+                if val:
+                    line = f"{name}: {val!r}"
+                    result += addline + line
+
+        return result
+
     def __str__(self):
+        return self.summary(max_values=10)
+
+    def __repr__(self):
+        return self.summary(shorten=True, max_values=5)
+
+    def _old__str__(self):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
         if self.units.is_time_reference():
@@ -317,11 +522,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 other_metadata=self._repr_other_metadata(),
             )
         else:
-            result = repr(self)
+            result = self._old__repr__()  # repr(self)
 
         return result
 
-    def __repr__(self):
+    def _old__repr__(self):
         # Note: this method includes bounds handling code, but it only runs
         # within Coord type instances, as only these allow bounds to be set.
         fmt = (
