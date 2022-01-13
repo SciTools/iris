@@ -169,7 +169,7 @@ This document explains the changes made to Iris for this release
 ===============
 
 #. `@wjbenfold`_ removed :mod:`iris.experimental.equalise_cubes`. In ``v3.0``
-   the experimental `equalise_attributes` functionality was moved to the
+   the experimental ``equalise_attributes`` functionality was moved to the
    :mod:`iris.util.equalise_attributes` function. Since then, calling the
    :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
    an exception. (:issue:`3528`, :pull:`4496`)
