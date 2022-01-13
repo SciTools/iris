@@ -5,7 +5,25 @@
      opportunity to explain UGRID at an Iris user's level - doesn't need to be
      exhaustive, just get across what is needed for the user to understand why
      their experience will be different to 'normal'.
-    * Describe what is different about the UGRID model.
-    * Relate to the objects in Iris' model.
-    * Relate to the printout of a Cube-with-Mesh. Possibly also the printout
-       of a Mesh, if that has been fixed to not be enormous.
+
+
+The UGRID Data Model
+********************
+
+What's Different?
+=================
+
+..
+    IDEA: The unstructured mesh format maximises flexibility, but means that no
+     spatial information can be inferred from a structured data array. Much
+     less is implicit, much more information has to be stored explicitly.
+
+    Diagram(s) - SVG so editable later.
+
+How Iris Represents This
+========================
+
+..
+    Include API links to the various classes
+
+    Include Cube/Mesh printout(s)

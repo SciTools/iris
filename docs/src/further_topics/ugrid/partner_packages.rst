@@ -6,3 +6,12 @@
        them.
     * Brief description of each, and when you might use it.
     * Link to docs if applicable (intersphinx?).
+
+Iris' UGRID Partner Packages
+****************************
+
+GeoVista
+========
+
+iris-esmf-regrid
+================
