@@ -421,6 +421,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     # Data summary is still too long : show shape instead.
                     data_str = f"shape={shape_str}"
                 if "..." in data_str:
+                    # TODO: 'truncation' test not safe for string data ?
                     # Truncated form : show shape *as well*.
                     data_str += f", shape={shape_str}"
 
@@ -444,20 +445,36 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             indent = " " * n_indent
             addline = "\n" + indent
 
-            result += addline + reindent_data_string(data_str, n_indent + 1)
+            # result += addline + reindent_data_string(data_str, n_indent + 1)
 
-            if not keep_lazy and self.has_bounds():
-                bounds_str = array_summary(
-                    self._bounds_dm.core_data(),
-                    n_max=max_values,
-                    linewidth=max_array_width,
-                    precision=precision,
-                )
-                bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
+            if keep_lazy:
+                data_str = str(self._core_values())
+
+            # TODO: boilerplate here !!
+            # TODO: 'points' could be 'data', 'values', 'indices'
+            data_str = reindent_data_string(data_str, 2 * n_indent)
+            result += addline + "points: "
+            if "\n" in data_str:
+                # Place on subsequent lines
+                result += "[" + addline + indent + data_str[1:]
+            else:
+                result += data_str
+
+            if self.has_bounds():
+                if keep_lazy:
+                    bounds_str = str(self._bounds_dm.core_data())
+                else:
+                    bounds_str = array_summary(
+                        self._bounds_dm.core_data(),
+                        n_max=max_values,
+                        linewidth=max_array_width,
+                        precision=precision,
+                    )
+                    bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
+                result += addline + "bounds: "
                 if "\n" in bounds_str:
                     # Place on subsequent lines
-                    result += addline + "bounds=["
-                    result += addline + indent + bounds_str[1:]
+                    result += "[" + addline + indent + bounds_str[1:]
                 else:
                     result += bounds_str
 

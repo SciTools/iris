@@ -36,6 +36,9 @@ test(co[:5])
 print("\nLonger section co[:5] with bounds")
 test(co_b[:5])
 
+print("\nShort co[:1] -->  one-line bounds")
+test(co_b[:1])
+
 print("\nStill longer co[-15:] with bounds")
 test(co_b[-15:])
 
