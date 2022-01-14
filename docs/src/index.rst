@@ -123,7 +123,7 @@ For **Iris 2.4** and earlier documentation please see the
 .. _developers_guide:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Further Topics
    :hidden:
 

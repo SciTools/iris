@@ -1,4 +1,4 @@
-.. _ugrid_partners:
+.. _ugrid partners:
 
 ..
     * Explain the optional GeoVista and iris-esmf-regrid dependencies, which

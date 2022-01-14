@@ -1,10 +1,10 @@
-.. _ugrid_operations:
+.. _ugrid operations:
 
 Working with UGRID Data
 ***********************
 
 .. note:: Several of the operations below rely on the optional dependencies
-          mentioned in :ref:`ugrid_partners`.
+          mentioned in :doc:`partner_packages`.
 
 ..
     Have a table here that lists the headings below, including a small note

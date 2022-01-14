@@ -1,4 +1,4 @@
-.. _ugrid_model:
+.. _ugrid model:
 
 ..
     The conventions page is [necessarily] not for a layperson. This is an

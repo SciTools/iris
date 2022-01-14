@@ -11,8 +11,6 @@ represented in Iris' data model, worked with, and saved as a UGRID-conformant
 file. More detail is in this section and in the :mod:`iris.experimental.ugrid`
 API documentation.
 
-The Headlines
-~~~~~~~~~~~~~
 
 UGRID is different
   UGRID's mesh-located data is fundamentally different to grid-located data.
@@ -28,13 +26,19 @@ Iris' UGRID support is experimental
   there are a lot of you with new files/ideas/wishlists, and we'd love to hear
   more 🙂.
 
-More Detail
-~~~~~~~~~~~
+.. toctree::
+   :hidden:
+   :maxdepth: 1
 
-* :doc:`ugrid_model` - learn why the mesh experience is so different.
-* :doc:`ugrid_partners` - meet Iris' partner packages providing powerful mesh
-operations.
-* :doc:`ugrid_operations` - experience how your workflows will look when
-written for UGRID data.
+   data_model
+   partner_packages
+   operations
+
+* :doc:`data_model` - learn why the mesh experience is so different.
+* :doc:`partner_packages` - meet Iris' partner packages providing powerful mesh operations.
+* :doc:`operations` - experience how your workflows will look when written for UGRID data.
+
+
+
 
 __ CF-UGRID_
