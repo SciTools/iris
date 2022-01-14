@@ -11,6 +11,7 @@ represented in Iris' data model, worked with, and saved as a UGRID-conformant
 file. More detail is in this section and in the :mod:`iris.experimental.ugrid`
 API documentation.
 
+----
 
 UGRID is different
   UGRID's mesh-located data is fundamentally different to grid-located data.
@@ -26,6 +27,18 @@ Iris' UGRID support is experimental
   there are a lot of you with new files/ideas/wishlists, and we'd love to hear
   more 🙂.
 
+----
+
+Read on to find out more...
+
+* :doc:`data_model` - learn why the mesh experience is so different.
+* :doc:`partner_packages` - meet some optional dependencies that provide powerful mesh operations.
+* :doc:`operations` - experience how your workflows will look when written for UGRID data.
+
+..
+    Need an actual TOC to get Sphinx working properly, but have hidden it in
+     favour of the custom bullets above.
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -33,12 +46,5 @@ Iris' UGRID support is experimental
    data_model
    partner_packages
    operations
-
-* :doc:`data_model` - learn why the mesh experience is so different.
-* :doc:`partner_packages` - meet Iris' partner packages providing powerful mesh operations.
-* :doc:`operations` - experience how your workflows will look when written for UGRID data.
-
-
-
 
 __ CF-UGRID_
