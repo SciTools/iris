@@ -90,21 +90,43 @@ co = AuxCoord(pts, long_name="integer_points", var_name="qq")
 test(co)
 
 print("\ndates with bounds")
-co = AuxCoord(
+co_t = AuxCoord(
     np.linspace(0, 100, 10),
     units="days since 2015-05-17",
     var_name="x",
     attributes={"a": 14, "b": None},
 )
-co.guess_bounds()
-test(co)
+co_tb = co_t.copy()
+co_tb.guess_bounds()
+test(co_tb)
+
+print("\ndates with bounds AS DIMCOORD")
+co_tb2 = DimCoord(
+    np.linspace(0, 100, 10),
+    units="days since 2015-05-17",
+    standard_name="time",
+    var_name="x",
+    attributes={"a": 14, "b": None},
+)
+co_tb2.guess_bounds()
+test(co_tb2)
 
 print("\ndates with masked points")
+co = co_t.copy()
 pts = co.points
 pts = np.ma.masked_array(pts)
 pts[[2, 5]] = np.ma.masked
 co.points = pts
 test(co)
+
+print("\nsingle date (nonscalar)")
+test(co_t[2:3])
+
+print("\nsingle date (scalar)")
+test(co_t[2])
+
+print("\ntwo dates")
+test(co_t[2:4])
 
 print("\nmultidimensional")
 bigdata = np.exp(np.random.uniform(-3, 6, size=(7, 5, 4)))
