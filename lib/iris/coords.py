@@ -379,9 +379,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             return result
 
         units_str = str(self.units)
-        calendar = self.units.calendar
-        if calendar:
-            units_str += f", {calendar} calendar"
+        if self.units.calendar and not shorten:
+            units_str += f", {self.units.calendar} calendar"
         title_str = f"{self.name()} / ({units_str})"
         cls_str = type(self).__name__
         shape_str = str(self.shape)
