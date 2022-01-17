@@ -281,7 +281,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len=2",
+            "Not all location elements meet requirement: len=2",
             Connectivity,
             **kwargs,
         )
@@ -293,7 +293,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len>=3",
+            "Not all location elements meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )
@@ -305,7 +305,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len>=4",
+            "Not all location elements meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -317,7 +317,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len>=6",
+            "Not all location elements meet requirement: len>=6",
             Connectivity,
             **kwargs,
         )
@@ -331,7 +331,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len>=4",
+            "Not all location elements meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -348,6 +348,6 @@ class TestValidations(tests.IrisTest):
         connectivity = Connectivity(**kwargs)
         self.assertRaisesRegex(
             ValueError,
-            "Not all locations meet requirement: len>=3",
+            "Not all location elements meet requirement: len>=3",
             connectivity.validate_indices,
         )
