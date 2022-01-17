@@ -480,12 +480,12 @@ def _build_mesh_coords(mesh, cf_var):
     """
     # TODO: integrate with standard saving API when no longer 'experimental'.
     # Identify the cube's mesh dimension, for attaching MeshCoords.
-    elements_dimensions = {
+    element_dimensions = {
         "node": mesh.node_dimension,
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    mesh_dim_name = elements_dimensions[cf_var.location]
+    mesh_dim_name = element_dimensions[cf_var.location]
     # (Only expecting 1 mesh dimension per cf_var).
     mesh_dim = cf_var.dimensions.index(mesh_dim_name)
 

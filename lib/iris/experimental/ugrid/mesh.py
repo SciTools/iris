@@ -92,8 +92,8 @@ Mesh2DConnectivities = namedtuple(
 class Connectivity(_DimensionalMetadata):
     """
     A CF-UGRID topology connectivity, describing the topological relationship
-    between two lists of dimensional elements. One or more connectivities
-    make up a CF-UGRID topology - a constituent of a CF-UGRID mesh.
+    between two types of mesh element. One or more connectivities make up a
+    CF-UGRID topology - a constituent of a CF-UGRID mesh.
 
     See: https://ugrid-conventions.github.io/ugrid-conventions
 
@@ -130,17 +130,23 @@ class Connectivity(_DimensionalMetadata):
         Args:
 
         * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
-            The index values describing a topological relationship. Constructed
-            of 2 dimensions - the list of 'location elements', and within each:
-            the indices of the 'connected elements' it relates to.
-            Use a :class:`numpy.ma.core.MaskedArray` if :attr:`location`
-            element lengths vary - mask unused index 'slots' within each
-            :attr:`location` element. Use a :class:`dask.array.Array` to keep
-            indices 'lazy'.
+            2D array giving the topological connection relationship between
+            ' :attr:`location` elements ' and ' :attr:`connected` elements '.
+            The :attr:`location_axis` dimension indexes over the
+            :attr:`location` dimension of the mesh - i.e. its length matches
+            the total number of that :attr:`location`.
+            The :attr:`connected_axis` dimension can be any length,
+            corresponding to the highest number of :attr:`connected` elements
+            in a :attr:`location` element. The array values are indices into
+            the :attr:`connected` dimension of the mesh. Use a
+            :class:`numpy.ma.core.MaskedArray` if the number of
+            :attr:`connected` elements varies between :attr:`location` elements
+             - mask a :attr:`location` element's unused index 'slots'.
+             Use a :class:`dask.array.Array` to keep indices 'lazy'.
         * cf_role (str):
             Denotes the topological relationship that this connectivity
-            describes. Made up of this array's 'location', and the 'connected'
-            that is indexed by the array.
+            describes. Made up of this array's :attr:`location`, and the
+            :attr:`connected` that is indexed by the array.
             See :attr:`UGRID_CF_ROLES` for valid arguments.
 
         Kwargs:
@@ -167,9 +173,9 @@ class Connectivity(_DimensionalMetadata):
         * location_axis (int):
             Either ``0`` or ``1``. Default is ``0``. Denotes which axis
             of :attr:`indices` varies over the :attr:`location` elements (the
-            alternate axis therefore varying within individual :attr:`location`
-            elements). (This parameter allows support for fastest varying index
-            being either first or last).
+            alternate axis therefore varying over :attr:`connected` elements).
+            (This parameter allows support for fastest varying index being
+            either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
             ``indices.shape[location_axis] = 10``.
 
@@ -286,9 +292,9 @@ class Connectivity(_DimensionalMetadata):
     def location(self):
         """
         Derived from the connectivity's :attr:`cf_role` - the first part, e.g.
-        ``face`` in ``face_node_connectivity``. Refers to the elements
-        listed by the :attr:`location_axis` of the connectivity's :attr:`indices`
-        array.
+        ``face`` in ``face_node_connectivity``. Refers to the elements that
+        vary along the :attr:`location_axis` of the connectivity's
+        :attr:`indices` array.
 
         """
         return self._location
@@ -343,8 +349,9 @@ class Connectivity(_DimensionalMetadata):
         """
         The index values describing the topological relationship of the
         connectivity, as a NumPy array. Masked points indicate a
-        :attr:`location` element shorter than the longest :attr:`location`
-        element described in this array - unused index 'slots' are masked.
+        :attr:`location` element  with fewer :attr:`connected` elements than
+        other :attr:`location` elements described in this array - unused index
+        'slots' are masked.
         **Read-only** - index values are only meaningful when combined with
         an appropriate :attr:`cf_role`, :attr:`start_index` and
         :attr:`location_axis`. A new :class:`Connectivity` must therefore be
@@ -393,7 +400,7 @@ class Connectivity(_DimensionalMetadata):
         # Use shapes_only=True for a lower resource, less thorough validation
         # of indices by just inspecting the array shape instead of inspecting
         # individual masks. So will not catch individual location elements
-        # being unacceptably small.
+        # having unacceptably low numbers of associated connected elements.
 
         def indices_error(message):
             raise ValueError("Invalid indices provided. " + message)
@@ -449,16 +456,16 @@ class Connectivity(_DimensionalMetadata):
                 len_req_fail = f"len>={min_size}"
         if len_req_fail:
             indices_error(
-                f"Not all location elements meet requirement: {len_req_fail} - "
+                f"Not all {self.location}s meet requirement: {len_req_fail} - "
                 f"needed to describe '{self.cf_role}' ."
             )
 
     def validate_indices(self):
         """
         Perform a thorough validity check of this connectivity's
-        :attr:`indices`. Includes checking the sizes of individual
-        :attr:`location` elements (specified using masks on the
-        :attr:`indices` array) against the :attr:`cf_role`.
+        :attr:`indices`. Includes checking the number of :attr:`connected`
+        elements within each :attr:`location` element (specified using masks on
+        the :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
         passes silently.
@@ -562,9 +569,9 @@ class Connectivity(_DimensionalMetadata):
 
     def lazy_location_lengths(self):
         """
-        Return a lazy array representing the lengths of each
-        :attr:`location` element in the :attr:`location_axis` of the connectivity's
-        :attr:`indices` array, accounting for masks if present.
+        Return a lazy array representing the number of :attr:`connected`
+        elements within each of the connectivity's :attr:`location` elements,
+        accounting for masks if present.
 
         Accessing this method will never cause the :attr:`indices` values to be
         loaded. Similarly, calling methods on, or indexing, the returned Array
@@ -585,9 +592,9 @@ class Connectivity(_DimensionalMetadata):
 
     def location_lengths(self):
         """
-        Return a NumPy array representing the lengths of each
-        :attr:`location` element in the :attr:`location_axis` of the connectivity's
-        :attr:`indices` array, accounting for masks if present.
+        Return a NumPy array representing the number of :attr:`connected`
+        elements within each of the connectivity's :attr:`location` elements,
+        accounting for masks if present.
 
         Returns:
             A NumPy array, representing the lengths of each :attr:`location` element.
