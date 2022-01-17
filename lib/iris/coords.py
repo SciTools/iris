@@ -433,13 +433,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         # "placeholder" representation.
                         data_str = "[...]"
 
-                if "..." in data_str:
-                    # TODO: this 'truncation' test not safe for string data ?
-                    # Truncated array form : show shape *as well*.
+                if self.shape != (1,):
+                    # Anything non-scalar : show shape as well.
                     data_str += f"  shape{shape_str}"
 
             # (N.B. in the oneline case, we *ignore* any bounds)
-
             result = f"<{cls_str}: {title_str}  {data_str}>"
         else:
             # Long (multi-line) form.
