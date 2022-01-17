@@ -434,9 +434,9 @@ def _build_mesh(cf, mesh_var, file_path):
 
         # If the mesh_var has not supplied the dimension name, it is safe to
         # fall back on the connectivity's first dimension's name.
-        if edge_dimension is None and connectivity.location_element == "edge":
+        if edge_dimension is None and connectivity.location == "edge":
             edge_dimension = first_dim_name
-        if face_dimension is None and connectivity.location_element == "face":
+        if face_dimension is None and connectivity.location == "face":
             face_dimension = first_dim_name
 
     standard_name, long_name, var_name = get_names(mesh_var, None, attributes)

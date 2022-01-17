@@ -36,13 +36,13 @@ class TestStandard(tests.IrisTest):
     def test_cf_role(self):
         self.assertEqual(self.kwargs["cf_role"], self.connectivity.cf_role)
 
-    def test_location_element(self):
+    def test_location(self):
         expected = self.kwargs["cf_role"].split("_")[0]
-        self.assertEqual(expected, self.connectivity.location_element)
+        self.assertEqual(expected, self.connectivity.location)
 
-    def test_connected_element(self):
+    def test_connected(self):
         expected = self.kwargs["cf_role"].split("_")[1]
-        self.assertEqual(expected, self.connectivity.connected_element)
+        self.assertEqual(expected, self.connectivity.connected)
 
     def test_start_index(self):
         self.assertEqual(
@@ -281,7 +281,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len=2",
+            "Not all locations meet requirement: len=2",
             Connectivity,
             **kwargs,
         )
@@ -293,7 +293,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len>=3",
+            "Not all locations meet requirement: len>=3",
             Connectivity,
             **kwargs,
         )
@@ -305,7 +305,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len>=4",
+            "Not all locations meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -317,7 +317,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len>=6",
+            "Not all locations meet requirement: len>=6",
             Connectivity,
             **kwargs,
         )
@@ -331,7 +331,7 @@ class TestValidations(tests.IrisTest):
         }
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len>=4",
+            "Not all locations meet requirement: len>=4",
             Connectivity,
             **kwargs,
         )
@@ -348,6 +348,6 @@ class TestValidations(tests.IrisTest):
         connectivity = Connectivity(**kwargs)
         self.assertRaisesRegex(
             ValueError,
-            "Not all location_elements meet requirement: len>=3",
+            "Not all locations meet requirement: len>=3",
             connectivity.validate_indices,
         )
