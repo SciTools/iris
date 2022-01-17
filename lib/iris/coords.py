@@ -321,14 +321,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             result : str
 
         """
-        # if fetch_lazy:
-        #     keep_lazy = False
-        # # else:
-        # #     # N.B. no distinction here: lazy points *or* bounds means no data.
-        # #     keep_lazy = self._has_lazy_values() or (
-        # #         self._bounds_dm
-        # #         and _lazy.is_lazy_data(self._bounds_dm.core_data())
-        # #     )
 
         def array_summary(
             data, n_max=10, n_edge=2, linewidth=50, precision=None
@@ -387,10 +379,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             return result
 
         units_str = str(self.units)
-        # if not shorten:
         calendar = self.units.calendar
         if calendar:
-            # units_str += ', {calendar}'
             units_str += f", {calendar} calendar"
         title_str = f"{self.name()} / ({units_str})"
         cls_str = type(self).__name__
@@ -415,7 +405,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if shorten:
             if data_str == "<lazy>":
                 # Data summary is invalid due to being lazy : show shape.
-                # data_str += f", shape={shape_str}"
                 data_str += f"  shape{shape_str}"
             else:
                 # Flatten to a single line, reducing repeated spaces.
@@ -442,13 +431,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     if len(data_str) > max_array_width:
                         # Data summary is still too long : replace with array
                         # "placeholder" representation.
-                        # data_str = f"shape={shape_str}"
                         data_str = "[...]"
 
                 if "..." in data_str:
                     # TODO: this 'truncation' test not safe for string data ?
-                    # Truncated form : show shape *as well*.
-                    # data_str += f", shape={shape_str}"
+                    # Truncated array form : show shape *as well*.
                     data_str += f"  shape{shape_str}"
 
             # (N.B. in the oneline case, we *ignore* any bounds)
@@ -471,13 +458,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             indent = " " * n_indent
             addline = "\n" + indent
 
-            # result += addline + reindent_data_string(data_str, n_indent + 1)
-
-            # MISTAKE to do this again ??
-            # if keep_lazy:
-            #     # data_str = str(self._core_values())
-            #     data_str = '<lazy>'
-
             # TODO: boilerplate here !!
             # TODO: 'points' could be 'data', 'values', 'indices'
             data_str = reindent_data_string(data_str, 2 * n_indent)
@@ -490,7 +470,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             if self.has_bounds():
                 if self._bounds_dm.has_lazy_data() and not fetch_lazy:
-                    # bounds_str = str(self._bounds_dm.core_data())
                     bounds_str = "<lazy>"
                 else:
                     bounds_str = array_summary(
@@ -512,28 +491,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             if self.has_bounds():
                 # line = f'bounds_shape: {self._bounds_dm.shape}'
-                # result += addline + line
-                # result += f" ; bounds={self._bounds_dm.shape}"
                 result += f"  bounds{self._bounds_dm.shape}"
 
             # Add dtype declaration (always)
             result += addline + f"dtype: {self.dtype}"
 
-            # names = ("standard_name", "long_name", "var_name",
-            #          "calendar", "circular", "climatogical",
-            #          "coord_system", "attributes")
-            names = self._metadata_manager._fields
-            # # Omit these properties
-            # skip_names = ["units"]
-            # # Also print 'calendar', though it is really an aspect of the units
-            # names += ("calendar",)
-            for name in names:
-                # if name in skip_names:
-                #     continue
-                # if name == "calendar":
-                #     val = self.units.calendar
+            for name in self._metadata_manager._fields:
                 if name == "units":
-                    # This is printed as standard in the header line
+                    # This was already included in the header line
                     continue
                 val = getattr(self, name, None)
                 if val:
