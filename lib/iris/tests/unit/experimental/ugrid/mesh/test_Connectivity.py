@@ -95,18 +95,28 @@ class TestStandard(tests.IrisTest):
         self.assertArrayEqual(expected, self.connectivity.src_lengths())
 
     def test___str__(self):
-        expected = (
-            "Connectivity(cf_role='face_node_connectivity', start_index=1)"
+        expected = "\n".join(
+            [
+                "Connectivity :  my_face_nodes / (unknown)",
+                "    data: [",
+                "        [ 1,  2,  3],",
+                "        [ 4,  5,  6],",
+                "        [ 7,  8,  9],",
+                "        [10, 11, 12]]",
+                "    shape: (4, 3)",
+                "    dtype: int64",
+                "    long_name: 'my_face_nodes'",
+                "    var_name: 'face_nodes'",
+                "    attributes: {'notes': 'this is a test'}",
+                "    cf_role: 'face_node_connectivity'",
+                "    start_index: 1",
+                "    src_dim: 1",
+            ]
         )
         self.assertEqual(expected, self.connectivity.__str__())
 
     def test___repr__(self):
-        expected = (
-            "Connectivity(array([[ 1,  2,  3], [ 4,  5,  6], [ 7,  8,  9], [10, 11, 12]]), "
-            "cf_role='face_node_connectivity', long_name='my_face_nodes', "
-            "var_name='face_nodes', attributes={'notes': 'this is a test'}, "
-            "start_index=1, src_dim=1)"
-        )
+        expected = "<Connectivity: my_face_nodes / (unknown)  [[1, 2, 3], ...]  shape(4, 3)>"
         self.assertEqual(expected, self.connectivity.__repr__())
 
     def test_xml_element(self):
@@ -345,3 +355,7 @@ class TestValidations(tests.IrisTest):
             "Not all src_locations meet requirement: len>=3",
             connectivity.validate_indices,
         )
+
+
+if __name__ == "__main__":
+    tests.main()
