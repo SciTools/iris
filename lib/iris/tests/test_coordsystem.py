@@ -197,12 +197,13 @@ class Test_GeogCS_as_cartopy_projection(tests.IrisTest):
         }
         cs = GeogCS(**geogcs_args)
         cs_projection = cs.as_cartopy_projection()
-        res = {
-            "semi_major_axis": cs_projection.globe.semimajor_axis,
-            "semi_minor_axis": cs_projection.globe.semiminor_axis,
-            "longitude_of_prime_meridian": cs_projection.prime_meridian.longitude,
-        }
-        self.assertEqual(res, geogcs_args)
+        exps = [
+            f"a={geogcs_args['semi_major_axis']}",
+            f"b={geogcs_args['semi_minor_axis']}",
+            f"lon_0={geogcs_args['longitude_of_prime_meridian']}",
+        ]
+        for exp in exps:
+            self.assertTrue(exp in cs_projection.srs)
 
 
 class Test_GeogCS_as_cartopy_crs(tests.IrisTest):
