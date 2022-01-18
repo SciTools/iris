@@ -10,7 +10,7 @@ Definitions of coordinates and other dimensional metadata.
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from collections.abc import Iterator
+from collections.abc import Container, Iterator
 import copy
 from itertools import chain, zip_longest
 import operator
@@ -56,6 +56,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         _MODE_DIV: "/",
         _MODE_RDIV: "/",
     }
+
+    # Used by printout methods : __str__ and __repr__
+    # Overridden in subclasses : Coord->'points', Connectivity->'indices'
+    _values_array_name = "data"
 
     @abstractmethod
     def __init__(
@@ -292,7 +296,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         max_values=None,
         fetch_lazy=False,
         convert_dates=True,
-        max_array_width=60,
+        max_array_width=None,
     ):
         """
         Make a printable text summary of a dimensional cube component.
@@ -313,8 +317,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         convert_dates : bool, default = True
             Print values in date form, if the units has a calendar.
             If not, print raw number values.
-        max_array_width : int, default = 60
+        max_array_width : int, default = None
             Character-width controlling line splitting of array outputs.
+            If None, set to "numpy.get_printoptions()['linewidth']"
 
         Returns
         -------
@@ -326,7 +331,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             data, n_max=10, n_edge=2, linewidth=50, precision=None
         ):
             # Return a text summary of an array.
-            # Take account of strings, dates and masked points.
+            # Take account of strings, dates and masked data.
             result = ""
             formatter = None
             if convert_dates and self.units.is_time_reference():
@@ -343,7 +348,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         mask = None
                     data = np.array(self.units.num2date(data))
                     data = data.astype(str)
-                    # Masked points do not survive num2date.
+                    # Masked datapoints do not survive num2date.
                     if mask is not None:
                         data = np.ma.masked_array(data, mask)
 
@@ -389,7 +394,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if max_values is None:
             max_values = 5 if shorten else 15
         precision = 3 if shorten else None
-
+        n_indent = 4
+        indent = " " * n_indent
+        addline = "\n" + indent
+        if max_array_width is None:
+            # Base this on the numpy printoption config, with an allowance for
+            # the indent.
+            # Note: for oneline output, we will need to shrink this further.
+            max_array_width = np.get_printoptions()["linewidth"] - n_indent * 2
         # Make a printout of the main data array (or maybe not, if lazy).
         if self._has_lazy_values() and not fetch_lazy:
             data_str = "<lazy>"
@@ -402,6 +414,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             )
 
         if shorten:
+            result = f"<{cls_str}: {title_str}  "
             if data_str == "<lazy>":
                 # Data summary is invalid due to being lazy : show shape.
                 data_str += f"  shape{shape_str}"
@@ -415,6 +428,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     return array_str
 
                 data_str = flatten_array_str(data_str)
+                # Recalculate maximum-width allowing for the initial part.
+                max_array_width = np.get_printoptions()["linewidth"] - len(
+                    result
+                )
                 # Work out whether to include a summary of the data values
                 if len(data_str) > max_array_width:
                     # Make one more attempt, printing just the *first* point,
@@ -437,7 +454,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     data_str += f"  shape{shape_str}"
 
             # (N.B. in the oneline case, we *ignore* any bounds)
-            result = f"<{cls_str}: {title_str}  {data_str}>"
+            result += f"{data_str}>"
         else:
             # Long (multi-line) form.
             result = f"{cls_str} :  {title_str}"
@@ -451,14 +468,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 result = line_1 + "".join(rest_lines)
                 return result
 
-            n_indent = 4
-            indent = " " * n_indent
-            addline = "\n" + indent
-
             # TODO: boilerplate here !!
-            # TODO: 'points' could be 'data', 'values', 'indices'
             data_str = reindent_data_string(data_str, 2 * n_indent)
-            result += addline + "points: "
+            result += addline + f"{self._values_array_name}: "
             if "\n" in data_str:
                 # Place on subsequent lines
                 result += "[" + addline + indent + data_str[1:]
@@ -498,7 +510,17 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     # This was already included in the header line
                     continue
                 val = getattr(self, name, None)
-                if val:
+                if isinstance(val, Container):
+                    # Don't print empty containers, like attributes={}
+                    show = bool(val)
+                else:
+                    # Don't print properties when not present, or set to None,
+                    # or False.
+                    # This works OK as long as we are happy to treat all
+                    # boolean properties as 'off' when False :  Which happens to
+                    # work for all those defined so far.
+                    show = val is not None and val is not False
+                if show:
                     line = f"{name}: {val!r}"
                     result += addline + line
 
@@ -1526,6 +1548,8 @@ class Coord(_DimensionalMetadata):
     Abstract base class for coordinates.
 
     """
+
+    _values_array_name = "points"
 
     @abstractmethod
     def __init__(

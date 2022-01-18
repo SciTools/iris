@@ -12,7 +12,6 @@ Eventual destination: dedicated module in :mod:`iris` root.
 """
 from abc import ABC, abstractmethod
 from collections import namedtuple
-import re
 from typing import Iterable
 
 from dask import array as da
@@ -206,58 +205,6 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
-
-    def __repr__(self):
-        def kwargs_filter(k, v):
-            result = False
-            if k != "cf_role":
-                if v is not None:
-                    result = True
-                    if (
-                        not isinstance(v, str)
-                        and isinstance(v, Iterable)
-                        and not v
-                    ):
-                        result = False
-                    elif k == "units" and v == "unknown":
-                        result = False
-            return result
-
-        def array2repr(array):
-            if self.has_lazy_indices():
-                result = repr(array)
-            else:
-                with np.printoptions(
-                    threshold=NP_PRINTOPTIONS_THRESHOLD,
-                    edgeitems=NP_PRINTOPTIONS_EDGEITEMS,
-                ):
-                    result = re.sub("\n  *", " ", repr(array))
-            return result
-
-        # positional arguments
-        args = ", ".join(
-            [
-                f"{array2repr(self.core_indices())}",
-                f"cf_role={self.cf_role!r}",
-            ]
-        )
-
-        # optional arguments (metadata)
-        kwargs = ", ".join(
-            [
-                f"{k}={v!r}"
-                for k, v in self.metadata._asdict().items()
-                if kwargs_filter(k, v)
-            ]
-        )
-
-        return f"{self.__class__.__name__}({', '.join([args, kwargs])})"
-
-    def __str__(self):
-        args = ", ".join(
-            [f"cf_role={self.cf_role!r}", f"start_index={self.start_index!r}"]
-        )
-        return f"{self.__class__.__name__}({args})"
 
     @property
     def _values(self):
@@ -2943,61 +2890,61 @@ class MeshCoord(AuxCoord):
     def __hash__(self):
         return hash(id(self))
 
-    def _string_summary(self, repr_style):
-        # Note: bypass the immediate parent here, which is Coord, because we
-        # have no interest in reporting coord_system or climatological, or in
-        # printing out our points/bounds.
-        # We also want to list our defining properties, i.e. mesh/location/axis
-        # *first*, before names/units etc, so different from other Coord types.
+    def summary(self, *args, **kwargs):
+        # We need to specialise _DimensionalMetadata.summary, so that we always
+        # print the mesh+location of a MeshCoord.
+        if len(args) > 0:
+            shorten = args[0]
+        else:
+            shorten = kwargs.get("shorten", False)
 
-        # First construct a shortform text summary to identify the Mesh.
-        # IN 'str-mode', this attempts to use Mesh.name() if it is set,
-        # otherwise uses an object-id style (as also for 'repr-mode').
-        # TODO: use a suitable method provided by Mesh, e.g. something like
-        #  "Mesh.summary(shorten=True)", when it is available.
-        mesh_name = None
-        if not repr_style:
-            mesh_name = self.mesh.name()
-            if mesh_name in (None, "", "unknown"):
-                mesh_name = None
+        # We need a short one-line printout to identify the mesh, but at
+        # present this is tricky, because the Mesh class itself doesn't
+        # provide one.
+        # So for now we "fake" it, in a rather preliminary way...
+        mesh_name = self.mesh.name()
+        if mesh_name in (None, "", "unknown"):
+            mesh_name = None
         if mesh_name:
             # Use a more human-readable form
-            mesh_string = f"Mesh({mesh_name!r})"
+            mesh_string = mesh_name
         else:
             # Mimic the generic object.__str__ style.
             mesh_id = id(self.mesh)
             mesh_string = f"<Mesh object at {hex(mesh_id)}>"
-        result = (
-            f"mesh={mesh_string}"
-            f", location={self.location!r}"
-            f", axis={self.axis!r}"
-        )
-        # Add 'other' metadata that is drawn from the underlying node-coord.
-        # But put these *afterward*, unlike other similar classes.
-        for item in (
-            "shape",
-            "standard_name",
-            "units",
-            "long_name",
-            "attributes",
-        ):
-            # NOTE: order of these matches Coord.summary, but omit var_name.
-            val = getattr(self, item, None)
-            if item == "attributes":
-                is_blank = len(val) == 0  # an empty dict is as good as none
-            else:
-                is_blank = val is None
-            if not is_blank:
-                result += f", {item}={val!r}"
 
-        result = f"MeshCoord({result})"
+        # Get the default-form result.
+        result = super().summary(*args, **kwargs)
+        if shorten:
+            # Single-line form : insert the mesh+location before the array part
+            i_array = result.index("[")
+            extra_str = f"mesh({mesh_string}) location({self.location})  "
+            result = result[:i_array] + extra_str + result[i_array:]
+            # NOTE: this invalidates the original width calculation and may
+            # easily extend the result beyond the intended maximum linewidth.
+            # We do treat that as an advisory control over array printing, not
+            # an absolute contract, so just ignore the problem for now.
+        else:
+            # Multiline form : find the line with " location: ... " in it
+            lines = result.split("\n")
+            (i_location,) = [
+                i
+                for i, line in enumerate(lines)
+                if line.strip().startswith("location:")
+            ]
+            location_line = lines[i_location]
+            # find the start of the 'location:' to copy the indent spacing
+            i_namestart = location_line.index("location:")
+            indent = location_line[:i_namestart]
+            # Construct a suitable 'mesh' line
+            mesh_line = f"{indent}mesh: '{mesh_string}'"
+            # Move the 'location' line, putting it and the 'mesh' line
+            # immediately after the header
+            del lines[i_location]
+            lines[1:1] = [mesh_line, location_line]
+            # Re-join lines to give the result
+            result = "\n".join(lines)
         return result
-
-    def __str__(self):
-        return self._string_summary(repr_style=False)
-
-    def __repr__(self):
-        return self._string_summary(repr_style=True)
 
     def _construct_access_arrays(self):
         """
