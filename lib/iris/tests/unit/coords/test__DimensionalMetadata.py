@@ -898,7 +898,7 @@ class Test__cfvariable_other_subclasses(
             (
                 "<MeshCoord: longitude / (degrees_east)  "
                 "mesh(test_mesh) location(face)  "
-                "[3100, ...]  shape(3,)>"
+                "[...]  shape(3,)>"
             ),
             "MeshCoord :  longitude / (degrees_east)",
             "    mesh: 'test_mesh'",

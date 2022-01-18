@@ -11,6 +11,7 @@ Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import re
 import unittest.mock as mock
 
 import dask.array as da
@@ -268,42 +269,76 @@ class Test__str_repr(tests.IrisTest):
 
     def _expected_elements_regexp(
         self,
-        mesh_strstyle=True,
-        standard_name=True,
-        long_name=True,
+        mesh_reprstyle=False,
+        standard_name="longitude",
+        long_name="long-name",
         attributes=True,
+        location="face",
+        axis="x",
     ):
-        regexp = r"^MeshCoord\(mesh="
-        if mesh_strstyle:
-            regexp += r"Mesh\('test_mesh'\)"
+        # Printed name is standard or long -- we don't have a case with neither
+        coord_name = standard_name or long_name
+        if mesh_reprstyle:
+            regexp = f"^<MeshCoord: {coord_name} / .*>$"
         else:
-            regexp += "<Mesh object at .*>"
-        regexp += r", location='face', axis='x', shape=\(3,\)"
-        if standard_name:
-            regexp += ", standard_name='longitude'"
-        regexp += r", units=Unit\('degrees_east'\)"
-        if long_name:
-            regexp += ", long_name='long-name'"
-        if attributes:
-            regexp += r", attributes={'a': 1, 'b': 'c'}"
-        regexp += r"\)$"
+            # Construct regexp in 'sections'
+            # NB each consumes upto first non-space in the next line
+            regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
+            regexp += "mesh: 'test_mesh'\n *"
+            regexp += f"location: '{location}'\n *"
+            # Now some optional sections : whichever comes first will match
+            # arbitrary content leading up to it.
+            matched_any_upto = False
+            if standard_name:
+                regexp += ".*"
+                matched_any_upto = True
+                regexp += f"standard_name: '{standard_name}'\n *"
+            if long_name:
+                if not matched_any_upto:
+                    regexp += ".*"
+                    matched_any_upto = True
+                regexp += f"long_name: '{long_name}'\n *"
+            if attributes:
+                # if we expected attributes, they should come next
+                # TODO: change this when each attribute goes on a new line
+                if not matched_any_upto:
+                    regexp += ".*"
+                    matched_any_upto = True
+                regexp += "attributes: {[^}]*}\n *"
+            # After those items, expect 'axis' next
+            # N.B. this FAILS if we had attributes when we didn't expect them
+            regexp += f"axis: '{axis}'$"  # N.B. this is always the end
+
+        # Compile regexp, also allowing matches across newlines
+        regexp = re.compile(regexp, flags=re.DOTALL)
         return regexp
 
     def test_repr(self):
+        # One simple check for the condensed form.
         result = repr(self.meshcoord)
-        re_expected = self._expected_elements_regexp(mesh_strstyle=False)
+        re_expected = self._expected_elements_regexp(mesh_reprstyle=True)
         self.assertRegex(result, re_expected)
 
     def test__str__(self):
+        # Basic output contains mesh, location, standard_name, long_name,
+        # attributes, mesh, location and axis
         result = str(self.meshcoord)
-        re_expected = self._expected_elements_regexp(mesh_strstyle=True)
+        re_expected = self._expected_elements_regexp()
         self.assertRegex(result, re_expected)
 
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
         result = str(meshcoord)
-        re_expected = r", location='edge', axis='y'"
+        # re_expected = r", location='edge', axis='y'"
+        re_expected = self._expected_elements_regexp(
+            standard_name="latitude",
+            long_name=None,
+            location="edge",
+            axis="y",
+            attributes=None,
+        )
         self.assertRegex(result, re_expected)
+        # Basic output contains standard_name, long_name, attributes
 
     def test_str_no_long_name(self):
         mesh = self.mesh

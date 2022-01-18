@@ -2914,6 +2914,11 @@ class MeshCoord(AuxCoord):
             mesh_string = f"<Mesh object at {hex(mesh_id)}>"
 
         # Get the default-form result.
+        if shorten:
+            # NOTE: we simply aren't interested in the values for the repr,
+            # so fix linewidth to suppress them
+            kwargs["max_array_width"] = 1
+
         result = super().summary(*args, **kwargs)
         if shorten:
             # Single-line form : insert the mesh+location before the array part

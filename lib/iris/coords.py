@@ -401,7 +401,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             # Base this on the numpy printoption config, with an allowance for
             # the indent.
             # Note: for oneline output, we will need to shrink this further.
-            max_array_width = np.get_printoptions()["linewidth"] - n_indent * 2
+            given_array_width = np.get_printoptions()["linewidth"]
+        else:
+            given_array_width = max_array_width
+        using_array_width = given_array_width - n_indent * 2
         # Make a printout of the main data array (or maybe not, if lazy).
         if self._has_lazy_values() and not fetch_lazy:
             data_str = "<lazy>"
@@ -409,7 +412,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             data_str = array_summary(
                 self._values,
                 n_max=max_values,
-                linewidth=max_array_width,
+                linewidth=using_array_width,
                 precision=precision,
             )
 
@@ -428,23 +431,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     return array_str
 
                 data_str = flatten_array_str(data_str)
-                # Recalculate maximum-width allowing for the initial part.
-                max_array_width = np.get_printoptions()["linewidth"] - len(
-                    result
-                )
+                # Adjust maximum-width to allow for the title width in the
+                # repr form.
+                using_array_width = given_array_width - len(result)
                 # Work out whether to include a summary of the data values
-                if len(data_str) > max_array_width:
+                if len(data_str) > using_array_width:
                     # Make one more attempt, printing just the *first* point,
                     # as this is useful for dates.
                     data_str = data_str = array_summary(
                         self._values[:1],
                         n_max=max_values,
-                        linewidth=max_array_width,
+                        linewidth=using_array_width,
                         precision=precision,
                     )
                     data_str = flatten_array_str(data_str)
                     data_str = data_str[:-1] + ", ...]"
-                    if len(data_str) > max_array_width:
+                    if len(data_str) > using_array_width:
                         # Data summary is still too long : replace with array
                         # "placeholder" representation.
                         data_str = "[...]"
@@ -484,7 +486,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     bounds_str = array_summary(
                         self._bounds_dm.data,
                         n_max=max_values,
-                        linewidth=max_array_width,
+                        linewidth=using_array_width,
                         precision=precision,
                     )
                     bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
