@@ -213,7 +213,7 @@ class TestBoundedCube(tests.GraphicsTest):
         self.assertEqual(
             iplt.default_projection(self.cube),
             ccrs.PlateCarree(
-                self.cube.coord_system("CoordSystem").as_cartopy_globe()
+                globe=self.cube.coord_system("CoordSystem").as_cartopy_globe()
             ),
         )
         np_testing.assert_array_almost_equal(
