@@ -925,7 +925,34 @@ class Mesh(CFVariableMixin):
             result = not result
         return result
 
+    def summary(self, shorten=False):
+        """
+        Return a string representation of the Mesh.
+
+        Parameters
+        ----------
+        shorten : bool, default = False
+            If True, produce a oneline string form of the form <Mesh: ...>.
+            If False, produce a multi-line detailed print output.
+
+        Returns
+        -------
+        result : str
+
+        """
+        if shorten:
+            result = self._summary_oneline()
+        else:
+            result = self._summary_multiline()
+        return result
+
     def __repr__(self):
+        return self.summary(shorten=True)
+
+    def __str__(self):
+        return self.summary(shorten=False)
+
+    def _summary_oneline(self):
         # We use the repr output to produce short one-line identity summary,
         # similar to the object.__str__ output "<object at xxx>".
         # This form also used in other str() constructions, like MeshCoord.
@@ -943,7 +970,7 @@ class Mesh(CFVariableMixin):
 
         return mesh_string
 
-    def __str__(self):
+    def _summary_multiline(self):
         # Produce a readable multi-line summary of the Mesh content.
         lines = []
         n_indent = 4

@@ -272,29 +272,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """
         return self._values_dm.has_lazy_data()
 
-    def _repr_other_metadata(self):
-        fmt = ""
-        if self.long_name:
-            fmt = ", long_name={self.long_name!r}"
-        if self.var_name:
-            fmt += ", var_name={self.var_name!r}"
-        if len(self.attributes) > 0:
-            fmt += ", attributes={self.attributes}"
-        result = fmt.format(self=self)
-        return result
-
-    def _str_dates(self, dates_as_numbers):
-        date_obj_array = self.units.num2date(dates_as_numbers)
-        kwargs = {"separator": ", ", "prefix": "      "}
-        return np.core.arrayprint.array2string(
-            date_obj_array, formatter={"all": str}, **kwargs
-        )
-
     def summary(
         self,
         shorten=False,
         max_values=None,
-        fetch_lazy=False,
         convert_dates=True,
         max_array_width=None,
     ):
@@ -309,21 +290,17 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         max_values : int or None, default = None
             If more than this many data values, print truncated data arrays.
             If 0, print only the shape.
-            If None, print the entire data arrays.
             Defaults to 5 if `shorten` is True, else 20.
-        fetch_lazy : bool, default = False
-            Whether to calculate values from lazy content.
-            When `fetch_lazy=False`, set max_values=0 if data is lazy.
         convert_dates : bool, default = True
             Print values in date form, if the units has a calendar.
             If not, print raw number values.
         max_array_width : int, default = None
             Character-width controlling line splitting of array outputs.
-            If None, set to "numpy.get_printoptions()['linewidth']"
+            If None, set to "numpy.get_printoptions()['linewidth']".
 
         Returns
         -------
-            result : str
+        result : str
 
         """
 
@@ -406,8 +383,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             given_array_width = max_array_width
         using_array_width = given_array_width - n_indent * 2
         # Make a printout of the main data array (or maybe not, if lazy).
-        if self._has_lazy_values() and not fetch_lazy:
+        if self._has_lazy_values():
             data_str = "<lazy>"
+        elif max_values == 0:
+            data_str = "[...]"
         else:
             data_str = array_summary(
                 self._values,
@@ -470,7 +449,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 result = line_1 + "".join(rest_lines)
                 return result
 
-            # TODO: boilerplate here !!
             data_str = reindent_data_string(data_str, 2 * n_indent)
             result += addline + f"{self._values_array_name}: "
             if "\n" in data_str:
@@ -480,8 +458,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 result += data_str
 
             if self.has_bounds():
-                if self._bounds_dm.has_lazy_data() and not fetch_lazy:
+                if self._bounds_dm.has_lazy_data():
                     bounds_str = "<lazy>"
+                elif max_values == 0:
+                    bounds_str = "[...]"
                 else:
                     bounds_str = array_summary(
                         self._bounds_dm.data,
@@ -533,61 +513,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     def __repr__(self):
         return self.summary(shorten=True)
-
-    def _old__str__(self):
-        # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
-        if self.units.is_time_reference():
-            fmt = (
-                "{cls}({values}{bounds}"
-                ", standard_name={self.standard_name!r}"
-                ", calendar={self.units.calendar!r}{other_metadata})"
-            )
-            if self.units.is_long_time_interval():
-                # A time unit with a long time interval ("months" or "years")
-                # cannot be converted to a date using `num2date` so gracefully
-                # fall back to printing points as numbers, not datetimes.
-                values = self._values
-            else:
-                values = self._str_dates(self._values)
-            bounds = ""
-            if self.has_bounds():
-                if self.units.is_long_time_interval():
-                    bounds_vals = self.bounds
-                else:
-                    bounds_vals = self._str_dates(self.bounds)
-                bounds = ", bounds={vals}".format(vals=bounds_vals)
-            result = fmt.format(
-                self=self,
-                cls=type(self).__name__,
-                values=values,
-                bounds=bounds,
-                other_metadata=self._repr_other_metadata(),
-            )
-        else:
-            result = self._old__repr__()  # repr(self)
-
-        return result
-
-    def _old__repr__(self):
-        # Note: this method includes bounds handling code, but it only runs
-        # within Coord type instances, as only these allow bounds to be set.
-        fmt = (
-            "{cls}({self._values!r}{bounds}"
-            ", standard_name={self.standard_name!r}, units={self.units!r}"
-            "{other_metadata})"
-        )
-        bounds = ""
-        # if coordinate, handle the bounds
-        if self.has_bounds():
-            bounds = ", bounds=" + repr(self.bounds)
-        result = fmt.format(
-            self=self,
-            cls=type(self).__name__,
-            bounds=bounds,
-            other_metadata=self._repr_other_metadata(),
-        )
-        return result
 
     def __eq__(self, other):
         # Note: this method includes bounds handling code, but it only runs
@@ -1108,23 +1033,6 @@ class CellMeasure(AncillaryVariable):
             emsg = f"measure must be 'area' or 'volume', got {measure!r}"
             raise ValueError(emsg)
         self._metadata_manager.measure = measure
-
-    # def __str__(self):
-    #     result = repr(self)
-    #     return result
-    #
-    # def __repr__(self):
-    #     fmt = (
-    #         "{cls}({self.data!r}, "
-    #         "measure={self.measure!r}, standard_name={self.standard_name!r}, "
-    #         "units={self.units!r}{other_metadata})"
-    #     )
-    #     result = fmt.format(
-    #         self=self,
-    #         cls=type(self).__name__,
-    #         other_metadata=self._repr_other_metadata(),
-    #     )
-    #     return result
 
     def cube_dims(self, cube):
         """
@@ -1851,14 +1759,6 @@ class Coord(_DimensionalMetadata):
         result = False
         if self.has_bounds():
             result = self._bounds_dm.has_lazy_data()
-        return result
-
-    def _repr_other_metadata(self):
-        result = super()._repr_other_metadata()
-        if self.coord_system:
-            result += ", coord_system={}".format(self.coord_system)
-        if self.climatological:
-            result += ", climatological={}".format(self.climatological)
         return result
 
     # Must supply __hash__ as Python 3 does not enable it if __eq__ is defined.
@@ -2761,12 +2661,6 @@ class DimCoord(Coord):
         # XXX This isn't actually correct, but is ported from the old world.
         coord.circular = False
         return coord
-
-    def _repr_other_metadata(self):
-        result = Coord._repr_other_metadata(self)
-        if self.circular:
-            result += ", circular=%r" % self.circular
-        return result
 
     def _new_points_requirements(self, points):
         """

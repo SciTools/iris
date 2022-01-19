@@ -93,13 +93,6 @@ class Tests(tests.IrisTest):
         copy_measure = self.measure.copy(new_vals)
         self.assertArrayEqual(copy_measure.data, new_vals)
 
-    def test_repr_other_metadata(self):
-        expected = (
-            ", long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'}"
-        )
-        self.assertEqual(self.measure._repr_other_metadata(), expected)
-
     def test___str__(self):
         expected = "\n".join(
             [
