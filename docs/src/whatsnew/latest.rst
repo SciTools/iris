@@ -150,7 +150,7 @@ This document explains the changes made to Iris for this release
    (:issue:`4460 `, :pull:`4470`)
 
 #. `@wjbenfold`_ stopped :meth:`iris.coord_systems.GeogCS.as_cartopy_projection`
-   from assuming the globe to be the earth (:issue:`4408`, :pull:`4497`)
+   from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
 
 💣 Incompatible Changes
