@@ -187,10 +187,11 @@ class Mixin__string_representations:
         self.assertEqual(list_of_expected_lines, string_result.split("\n"))
 
 
-class Test__cfvariable_common(Mixin__string_representations, tests.IrisTest):
+class Test__print_common(Mixin__string_representations, tests.IrisTest):
     """
-    Test aspects common to all _DimensionalMetadata instances,
-    that is the CFVariableMixin inheritance, plus values array (data-manager).
+    Test aspects of __str__ and __repr__ output common to all
+    _DimensionalMetadata instances.
+    I.E. those from CFVariableMixin, plus values array (data-manager).
 
     Aspects :
     * standard_name:
@@ -689,9 +690,9 @@ class Test__cfvariable_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
 
-class Test__cfvariable_Coord(Mixin__string_representations, tests.IrisTest):
+class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
     """
-    Test Coord=specific aspects.
+    Test Coord-specific aspects of __str__ and __repr__ output.
 
     Aspects :
     * DimCoord / AuxCoord
@@ -759,9 +760,7 @@ class Test__cfvariable_Coord(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
 
-class Test__cfvariable_other_subclasses(
-    Mixin__string_representations, tests.IrisTest
-):
+class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
     """
     Limited testing of other _DimensionalMetadata subclasses.
 
@@ -914,6 +913,148 @@ class Test__cfvariable_other_subclasses(
             "    long_name: 'long-name'",
             "    attributes: {'a': 1, 'b': 'c'}",
             "    axis: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+
+class Test_summary(Mixin__string_representations, tests.IrisTest):
+    """
+    Test the controls of the 'summary' method.
+    """
+
+    def test_shorten(self):
+        coord = self.sample_coord()
+        expected = self.repr_str_strings(coord)
+        result = coord.summary(shorten=True) + "\n" + coord.summary()
+        self.assertEqual(expected, result)
+
+    def test_max_values__default(self):
+        coord = self.sample_coord()
+        result = coord.summary()
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [0., 1., 2., 3., 4.]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+    def test_max_values__2(self):
+        coord = self.sample_coord()
+        result = coord.summary(max_values=2)
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [0., 1., ..., 3., 4.]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+    def test_max_values__bounded__2(self):
+        coord = self.sample_coord(bounded=True)
+        result = coord.summary(max_values=2)
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [0., 1., ..., 3., 4.]",
+            "    bounds: [",
+            "        [-0.5,  0.5],",
+            "        [ 0.5,  1.5],",
+            "        ...,",
+            "        [ 2.5,  3.5],",
+            "        [ 3.5,  4.5]]",
+            "    shape: (5,)  bounds(5, 2)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+    def test_max_values__0(self):
+        coord = self.sample_coord(bounded=True)
+        result = coord.summary(max_values=0)
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [...]",
+            "    bounds: [...]",
+            "    shape: (5,)  bounds(5, 2)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+    def test_max_array_width__default(self):
+        coord = self.sample_coord()
+        coord.points = coord.points + 1000.003  # Make the output numbers wider
+        result = coord.summary()
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [1000.003, 1001.003, 1002.003, 1003.003, 1004.003]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+        with np.printoptions(linewidth=35):
+            result = coord.summary()
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [",
+            "        1000.003, 1001.003,",
+            "        1002.003, 1003.003,",
+            "        1004.003]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+    def test_max_array_width__set(self):
+        coord = self.sample_coord()
+        coord.points = coord.points + 1000.003  # Make the output numbers wider
+        expected = [
+            "AuxCoord :  x / (m)",
+            "    points: [",
+            "        1000.003, 1001.003,",
+            "        1002.003, 1003.003,",
+            "        1004.003]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        result = coord.summary(max_array_width=35)
+        self.assertLines(expected, result)
+
+        with np.printoptions(linewidth=999):
+            # Show that when set, it ignores the numpy setting
+            result = coord.summary(max_array_width=35)
+        self.assertLines(expected, result)
+
+    def test_convert_dates(self):
+        coord = self.sample_coord(dates=True)
+        result = coord.summary()
+        expected = [
+            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "    points: [",
+            (
+                "        1970-03-05 00:00:00, 1970-03-06 00:00:00, "
+                "1970-03-07 00:00:00,"
+            ),
+            "        1970-03-08 00:00:00, 1970-03-09 00:00:00]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
+        ]
+        self.assertLines(expected, result)
+
+        result = coord.summary(convert_dates=False)
+        expected = [
+            "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
+            "    points: [0., 1., 2., 3., 4.]",
+            "    shape: (5,)",
+            "    dtype: float64",
+            "    long_name: 'x'",
         ]
         self.assertLines(expected, result)
 
