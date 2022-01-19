@@ -290,7 +290,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         max_values : int or None, default = None
             If more than this many data values, print truncated data arrays.
             If 0, print only the shape.
-            Defaults to 5 if `shorten` is True, else 20.
+            Defaults to 5 if `shorten` is True, else 15.
         convert_dates : bool, default = True
             Print values in date form, if the units has a calendar.
             If not, print raw number values.

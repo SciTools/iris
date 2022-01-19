@@ -997,6 +997,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
         with np.printoptions(linewidth=35):
+            # Show that, when unset, it follows the numpy setting
             result = coord.summary()
         expected = [
             "AuxCoord :  x / (m)",
@@ -1027,7 +1028,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
         with np.printoptions(linewidth=999):
-            # Show that when set, it ignores the numpy setting
+            # Show that, when set, it ignores the numpy setting
             result = coord.summary(max_array_width=35)
         self.assertLines(expected, result)
 
