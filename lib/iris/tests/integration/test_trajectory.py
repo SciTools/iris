@@ -216,8 +216,10 @@ class TestTriPolar(tests.IrisTest):
         cube.coord("depth").bounds = b32
         self.cube = cube
         # define a latitude trajectory (put coords in a different order
-        # to the cube, just to be awkward)
-        latitudes = list(range(-90, 90, 2))
+        # to the cube, just to be awkward) although avoid south pole
+        # singularity as a sample point and the issue of snapping to
+        # multi-equidistant closest points from within orca antarctic hole
+        latitudes = list(range(-80, 90, 2))
         longitudes = [-90] * len(latitudes)
         self.sample_points = [
             ("longitude", longitudes),
@@ -226,7 +228,9 @@ class TestTriPolar(tests.IrisTest):
 
     def test_tri_polar(self):
         # extract
-        sampled_cube = traj_interpolate(self.cube, self.sample_points)
+        sampled_cube = traj_interpolate(
+            self.cube, self.sample_points, method="nearest"
+        )
         self.assertCML(
             sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml")
         )
@@ -329,8 +333,12 @@ class TestLazyData(tests.IrisTest):
         # Put a lazy array into the cube so we can test deferred loading.
         cube.data = as_lazy_data(cube.data)
 
+        # Use opionated grid-latitudes to avoid the issue of platform
+        # specific behaviour within SciPy cKDTree choosing a different
+        # equi-distant nearest neighbour point when there are multiple
+        # valid candidates.
         traj = (
-            ("grid_latitude", [20.5, 21.5, 22.5, 23.5]),
+            ("grid_latitude", [20.4, 21.6, 22.6, 23.6]),
             ("grid_longitude", [31, 32, 33, 34]),
         )
         xsec = traj_interpolate(cube, traj, method="nearest")
