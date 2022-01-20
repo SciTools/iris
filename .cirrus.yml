@@ -41,9 +41,6 @@ env:
   IRIS_TEST_DATA_VERSION: "2.5"
   # Base directory for the iris-test-data.
   IRIS_TEST_DATA_DIR: ${HOME}/iris-test-data
-  # https://github.com/numpy/numpy/pull/19478
-  # https://github.com/matplotlib/matplotlib/pull/22099
-  NPY_DISABLE_CPU_FEATURES: "AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
 
 
 #

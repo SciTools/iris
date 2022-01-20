@@ -28,6 +28,13 @@ PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 
+# https://github.com/numpy/numpy/pull/19478
+# https://github.com/matplotlib/matplotlib/pull/22099
+#: Common session environment variables.
+ENV = dict(
+    NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512VL,AVX512BW,AVX512DQ,AVX512_SKX"
+)
+
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
@@ -210,6 +217,7 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.run(
         "python",
         "-m",
@@ -232,6 +240,7 @@ def doctest(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.cd("docs")
     session.run(
         "make",
