@@ -183,7 +183,7 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ deprecated :func:`iris.util.approx_equal` in preference for
    :func:`math.isclose`. The :func:`~iris.util.approx_equal` function will be
-   removed in a future release of Iris. (:pull:`XXXX`)
+   removed in a future release of Iris. (:pull:`4514`)
 
 
 🔗 Dependencies
