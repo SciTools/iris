@@ -199,4 +199,102 @@ How Iris Represents This
 
     Include Cube/Mesh printout(s)
 
+.. note::
+
+        At time of writing (``Jan 2022``), neither 3D meshes nor 3D elements
+        (volumes) are supported.
+
+The Basics
+----------
+The Iris :class:`~iris.cube.Cube` has two new attributes:
+
+* | :attr:`~iris.cube.Cube.mesh`
+  | The :class:`iris.experimental.ugrid.Mesh` that defines this
+    :class:`~iris.cube.Cube`\'s horizontal geography.
+* | :attr:`~iris.cube.Cube.location`
+  | ``node``/``edge``/``face`` - the mesh element type with which this
+    :class:`~iris.cube.Cube`\'s :attr:`~iris.cube.Cube.data` is associated.
+
+These attributes will be ``None`` for a :class:`~iris.cube.Cube` with no
+associated :class:`~iris.experimental.ugrid.Mesh`.
+
+A :class:`~iris.cube.Cube` with a :class:`~iris.experimental.ugrid.Mesh` will
+have a single dimension for its horizontal geography - the **unstructured
+dimension**. This dimension is the one that has multiple attached
+:class:`iris.experimental.ugrid.MeshCoord`\s.
+
+.. todo: Cube printout
+
+The Detail
+----------
+How UGRID information is stored
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. todo: Mesh printout?
+
+* | :class:`iris.experimental.ugrid.Mesh`
+  | Contains all information about the mesh.
+  | Includes:
+
+  * 1-3 collections of :class:`iris.coords.AuxCoord`\s:
+
+    * | **Required**: :attr:`~iris.experimental.ugrid.Mesh.node_coords`
+      | The nodes that are the basis for the mesh.
+    * | Optional: :attr:`~iris.experimental.ugrid.Mesh.edge_coords`,
+        :attr:`~iris.experimental.ugrid.Mesh.face_coords`
+      | For indicating the 'centres' of the edges/faces.
+
+  * 1 or more :class:`iris.experimental.ugrid.Connectivity`\s:
+
+    * | **Required for 1D (edge) elements**:
+        :attr:`~iris.experimental.ugrid.Mesh.edge_node_connectivity`
+      | Define the edges by connecting nodes.
+    * | **Required for 2D (face) elements**:
+        :attr:`~iris.experimental.ugrid.Mesh.face_node_connectivity`
+      | Define the faces by connecting nodes.
+    * Optional: any other connectivity type. See
+      :attr:`iris.experimental.ugrid.mesh.Connectivity.UGRID_CF_ROLES` for the
+      full list of types.
+
+.. todo: MeshCoord printout?
+
+* | :class:`iris.experimental.ugrid.MeshCoord`
+  | Described in detail in `MeshCoords`_.
+  | Stores the following information:
+
+    * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
+      | The :class:`~iris.experimental.ugrid.Mesh` associated with this
+        :class:`~iris.experimental.ugrid.MeshCoord`. Mirrored by the
+        :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
+        this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+        `The Basics`_)
+
+    * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
+      | ``node``/``edge``/``face`` - the element detailed by this
+        :class:`~iris.experimental.ugrid.MeshCoord`. Mirrored by the
+        :attr:`~iris.cube.Cube.location` attribute of any
+        :class:`~iris.cube.Cube` this
+        :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+        `The Basics`_).
+
+MeshCoords
+~~~~~~~~~~
+Links a :class:`~iris.cube.Cube` to a :class:`~iris.experimental.ugrid.Mesh` by
+attaching to the :class:`~iris.cube.Cube` like any other
+:class:`~iris.coords.Coord`. This allows :class:`~iris.cube.Cube`\s to exist
+as they always have, with the management of structured dimensions unchanged.
+
+:class:`~iris.experimental.ugrid.MeshCoord`\s are generated using the
+:meth:`iris.experimental.ugrid.Mesh.to_MeshCoords` method. Requiring a
+``location`` argument, this interprets the
+:class:`~iris.experimental.ugrid.Mesh`\'s
+:attr:`~iris.experimental.ugrid.Mesh.node_coords` and if appropriate the
+:attr:`~iris.experimental.ugrid.Mesh.edge_node_connectivity`/
+:attr:`~iris.experimental.ugrid.Mesh.face_node_connectivity`,
+:attr:`~iris.experimental.ugrid.Mesh.edge_coords`/
+:attr:`~iris.experimental.ugrid.Mesh.face_coords`
+to produce a :attr:`~iris.coords.Coord.points` array and a
+:attr:`~iris.coords.Coord.bounds` array, creating this special
+:class:`~iris.coords.Coord` instance.
+
+
 __ CF-UGRID_
