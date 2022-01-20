@@ -134,7 +134,7 @@ class Connectivity(_DimensionalMetadata):
             ' :attr:`location` elements ' and ' :attr:`connected` elements '.
             The :attr:`location_axis` dimension indexes over the
             :attr:`location` dimension of the mesh - i.e. its length matches
-            the total number of that :attr:`location` elements in the mesh. The
+            the total number of :attr:`location` elements in the mesh. The
             :attr:`connected_axis` dimension can be any length, corresponding
             to the highest number of :attr:`connected` elements connected to a
             :attr:`location` element. The array values are indices into the
