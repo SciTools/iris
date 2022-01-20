@@ -12,7 +12,16 @@ import os
 import subprocess
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.util
+
+wmsg = (
+    "iris.fileformats.dot has been deprecated and will be removed in a "
+    "future release. If you make use of this functionality, please contact "
+    "the Iris Developers to discuss how to retain it (which may involve "
+    "reversing the deprecation)."
+)
+warn_deprecated(wmsg)
 
 _GRAPH_INDENT = " " * 4
 _SUBGRAPH_INDENT = " " * 8
