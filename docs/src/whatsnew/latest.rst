@@ -204,7 +204,7 @@ This document explains the changes made to Iris for this release
    which was deprecated in ``v3.0``. Instead use
    :class:`iris.common.resolve.Resolve`. For example, rather than calling
    ``as_compatible_shape(src_cube, target_cube)`` replace with
-   ``Resolve(src_cube, target_cube)(target_cube.core_data())``. (:pull:`XXXX`)
+   ``Resolve(src_cube, target_cube)(target_cube.core_data())``. (:pull:`4513`)
 
 
 🔗 Dependencies
