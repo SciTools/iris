@@ -2553,10 +2553,8 @@ class Saver:
                     cf_var_grid.longitude_of_projection_origin = (
                         cs.longitude_of_projection_origin
                     )
-                    # The Mercator class has implicit defaults for certain
-                    # parameters
-                    cf_var_grid.false_easting = 0.0
-                    cf_var_grid.false_northing = 0.0
+                    cf_var_grid.false_easting = cs.false_easting
+                    cf_var_grid.false_northing = cs.false_northing
                     cf_var_grid.scale_factor_at_projection_origin = 1.0
 
                 # lcc

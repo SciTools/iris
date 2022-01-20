@@ -1083,6 +1083,8 @@ class Mercator(CoordSystem):
         longitude_of_projection_origin=None,
         ellipsoid=None,
         standard_parallel=None,
+        false_easting=None,
+        false_northing=None,
     ):
         """
         Constructs a Mercator coord system.
@@ -1098,6 +1100,12 @@ class Mercator(CoordSystem):
         * standard_parallel:
             The latitude where the scale is 1. Defaults to 0.0 .
 
+        * false_easting:
+            X offset from the planar origin in metres. Defaults to 0.0.
+
+        * false_northing:
+            Y offset from the planar origin in metres. Defaults to 0.0.
+
         """
         #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = _arg_default(
@@ -1110,12 +1118,20 @@ class Mercator(CoordSystem):
         #: The latitude where the scale is 1.
         self.standard_parallel = _arg_default(standard_parallel, 0)
 
+        #: X offset from the planar origin in metres.
+        self.false_easting = _arg_default(false_easting, 0)
+
+        #: Y offset from the planar origin in metres.
+        self.false_northing = _arg_default(false_northing, 0)
+
     def __repr__(self):
         res = (
             "Mercator(longitude_of_projection_origin="
             "{self.longitude_of_projection_origin!r}, "
             "ellipsoid={self.ellipsoid!r}, "
-            "standard_parallel={self.standard_parallel!r})"
+            "standard_parallel={self.standard_parallel!r}, "
+            "false_easting={self.false_easting!r}, "
+            "false_northing={self.false_northing!r})"
         )
         return res.format(self=self)
 
@@ -1126,6 +1142,8 @@ class Mercator(CoordSystem):
             central_longitude=self.longitude_of_projection_origin,
             globe=globe,
             latitude_true_scale=self.standard_parallel,
+            false_easting=self.false_easting,
+            false_northing=self.false_northing,
         )
 
     def as_cartopy_projection(self):
