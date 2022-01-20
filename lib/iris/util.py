@@ -10,7 +10,6 @@ Miscellaneous utility functions.
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
-import copy
 import functools
 import inspect
 import os
@@ -23,7 +22,6 @@ from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
-from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
 
@@ -1163,133 +1161,6 @@ def new_axis(src_cube, scalar_coord=None):
     for factory in src_cube.aux_factories:
         new_factory = factory.updated(coord_mapping)
         new_cube.add_aux_factory(new_factory)
-
-    return new_cube
-
-
-def as_compatible_shape(src_cube, target_cube):
-    """
-    Return a cube with added length one dimensions to match the dimensionality
-    and dimension ordering of `target_cube`.
-
-    This function can be used to add the dimensions that have been collapsed,
-    aggregated or sliced out, promoting scalar coordinates to length one
-    dimension coordinates where necessary. It operates by matching coordinate
-    metadata to infer the dimensions that need modifying, so the provided
-    cubes must have coordinates with the same metadata
-    (see :class:`iris.common.CoordMetadata`).
-
-    .. note:: This function will load and copy the data payload of `src_cube`.
-
-    .. deprecated:: 3.0.0
-
-       Instead use :class:`~iris.common.resolve.Resolve`. For example, rather
-       than calling ``as_compatible_shape(src_cube, target_cube)`` replace
-       with ``Resolve(src_cube, target_cube)(target_cube.core_data())``.
-
-    Args:
-
-    * src_cube:
-        An instance of :class:`iris.cube.Cube` with missing dimensions.
-
-    * target_cube:
-        An instance of :class:`iris.cube.Cube` with the desired dimensionality.
-
-    Returns:
-        A instance of :class:`iris.cube.Cube` with the same dimensionality as
-        `target_cube` but with the data and coordinates from `src_cube`
-        suitably reshaped to fit.
-
-    """
-    from iris.cube import Cube
-
-    wmsg = (
-        "iris.util.as_compatible_shape has been deprecated and will be "
-        "removed, please use iris.common.resolve.Resolve instead."
-    )
-    warn_deprecated(wmsg)
-
-    dim_mapping = {}
-    for coord in target_cube.aux_coords + target_cube.dim_coords:
-        dims = target_cube.coord_dims(coord)
-        try:
-            collapsed_dims = src_cube.coord_dims(coord)
-        except iris.exceptions.CoordinateNotFoundError:
-            continue
-        if collapsed_dims:
-            if len(collapsed_dims) == len(dims):
-                for dim_from, dim_to in zip(dims, collapsed_dims):
-                    dim_mapping[dim_from] = dim_to
-        elif dims:
-            for dim_from in dims:
-                dim_mapping[dim_from] = None
-
-    if len(dim_mapping) != target_cube.ndim:
-        raise ValueError(
-            "Insufficient or conflicting coordinate "
-            "metadata. Cannot infer dimension mapping "
-            "to restore cube dimensions."
-        )
-
-    new_shape = [1] * target_cube.ndim
-    for dim_from, dim_to in dim_mapping.items():
-        if dim_to is not None:
-            new_shape[dim_from] = src_cube.shape[dim_to]
-
-    new_data = src_cube.data.copy()
-
-    # Transpose the data (if necessary) to prevent assignment of
-    # new_shape doing anything except adding length one dims.
-    order = [v for k, v in sorted(dim_mapping.items()) if v is not None]
-    if order != sorted(order):
-        new_order = [order.index(i) for i in range(len(order))]
-        new_data = np.transpose(new_data, new_order).copy()
-
-    new_cube = Cube(new_data.reshape(new_shape))
-    new_cube.metadata = copy.deepcopy(src_cube.metadata)
-
-    # Record a mapping from old coordinate IDs to new coordinates,
-    # for subsequent use in creating updated aux_factories.
-    coord_mapping = {}
-
-    reverse_mapping = {v: k for k, v in dim_mapping.items() if v is not None}
-
-    def add_coord(coord):
-        """Closure used to add a suitably reshaped coord to new_cube."""
-        all_dims = target_cube.coord_dims(coord)
-        src_dims = [
-            dim
-            for dim in src_cube.coord_dims(coord)
-            if src_cube.shape[dim] > 1
-        ]
-        mapped_dims = [reverse_mapping[dim] for dim in src_dims]
-        length1_dims = [dim for dim in all_dims if new_cube.shape[dim] == 1]
-        dims = length1_dims + mapped_dims
-        shape = [new_cube.shape[dim] for dim in dims]
-        if not shape:
-            shape = [1]
-        points = coord.points.reshape(shape)
-        bounds = None
-        if coord.has_bounds():
-            bounds = coord.bounds.reshape(shape + [coord.nbounds])
-        new_coord = coord.copy(points=points, bounds=bounds)
-        # If originally in dim_coords, add to dim_coords, otherwise add to
-        # aux_coords.
-        if target_cube.coords(coord, dim_coords=True):
-            try:
-                new_cube.add_dim_coord(new_coord, dims)
-            except ValueError:
-                # Catch cases where the coord is an AuxCoord and therefore
-                # cannot be added to dim_coords.
-                new_cube.add_aux_coord(new_coord, dims)
-        else:
-            new_cube.add_aux_coord(new_coord, dims)
-        coord_mapping[id(coord)] = new_coord
-
-    for coord in src_cube.aux_coords + src_cube.dim_coords:
-        add_coord(coord)
-    for factory in src_cube.aux_factories:
-        new_cube.add_aux_factory(factory.updated(coord_mapping))
 
     return new_cube
 
