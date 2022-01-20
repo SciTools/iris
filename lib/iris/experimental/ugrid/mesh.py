@@ -134,9 +134,9 @@ class Connectivity(_DimensionalMetadata):
             ' :attr:`location` elements ' and ' :attr:`connected` elements '.
             The :attr:`location_axis` dimension indexes over the
             :attr:`location` dimension of the mesh - i.e. its length matches
-            the total number of that :attr:`location`. The
+            the total number of that :attr:`location` elements in the mesh. The
             :attr:`connected_axis` dimension can be any length, corresponding
-            to the highest number of :attr:`connected` elements in a
+            to the highest number of :attr:`connected` elements connected to a
             :attr:`location` element. The array values are indices into the
             :attr:`connected` dimension of the mesh. Use a
             :class:`numpy.ma.core.MaskedArray` if the number of
@@ -146,7 +146,7 @@ class Connectivity(_DimensionalMetadata):
         * cf_role (str):
             Denotes the topological relationship that this connectivity
             describes. Made up of this array's :attr:`location`, and the
-            :attr:`connected` that is indexed by the array.
+            :attr:`connected` element type that is indexed by the array.
             See :attr:`UGRID_CF_ROLES` for valid arguments.
 
         Kwargs:
@@ -336,10 +336,10 @@ class Connectivity(_DimensionalMetadata):
     @property
     def connected_axis(self):
         """
-        Derived as the alternate value of :attr:`location_axis` - each must equal
-        either ``0`` or ``1``.
-        The axis of the connectivity's :attr:`indices` array that varies
-        within the connectivity's individual :attr:`location` elements.
+        Derived as the alternate value of :attr:`location_axis` - each must
+        equal either ``0`` or ``1``. The axis of the connectivity's
+        :attr:`indices` array that varies over the :attr:`connected` elements
+        associated with each :attr:`location` element.
 
         """
         return self._connected_axis
@@ -464,8 +464,8 @@ class Connectivity(_DimensionalMetadata):
         """
         Perform a thorough validity check of this connectivity's
         :attr:`indices`. Includes checking the number of :attr:`connected`
-        elements within each :attr:`location` element (specified using masks on
-        the :attr:`indices` array) against the :attr:`cf_role`.
+        elements associated with each :attr:`location` element (specified using
+        masks on the :attr:`indices` array) against the :attr:`cf_role`.
 
         Raises a ``ValueError`` if any problems are encountered, otherwise
         passes silently.
@@ -570,8 +570,8 @@ class Connectivity(_DimensionalMetadata):
     def lazy_location_lengths(self):
         """
         Return a lazy array representing the number of :attr:`connected`
-        elements within each of the connectivity's :attr:`location` elements,
-        accounting for masks if present.
+        elements associated with each of the connectivity's :attr:`location`
+        elements, accounting for masks if present.
 
         Accessing this method will never cause the :attr:`indices` values to be
         loaded. Similarly, calling methods on, or indexing, the returned Array
@@ -581,7 +581,8 @@ class Connectivity(_DimensionalMetadata):
         :attr:`indices` have already been loaded.
 
         Returns:
-            A lazy array, representing the lengths of each :attr:`location` element.
+            A lazy array, representing the number of :attr:`connected`
+             elements associated with each :attr:`location` element.
 
         """
         location_mask_counts = da.sum(
@@ -593,11 +594,12 @@ class Connectivity(_DimensionalMetadata):
     def location_lengths(self):
         """
         Return a NumPy array representing the number of :attr:`connected`
-        elements within each of the connectivity's :attr:`location` elements,
-        accounting for masks if present.
+        elements associated with each of the connectivity's :attr:`location`
+        elements, accounting for masks if present.
 
         Returns:
-            A NumPy array, representing the lengths of each :attr:`location` element.
+            A NumPy array, representing the number of :attr:`connected`
+             elements associated with each :attr:`location` element.
 
         """
         return self.lazy_location_lengths().compute()
