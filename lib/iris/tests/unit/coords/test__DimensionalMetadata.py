@@ -983,7 +983,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         ]
         self.assertLines(expected, result)
 
-    def test_max_array_width__default(self):
+    def test_linewidth__default(self):
         coord = self.sample_coord()
         coord.points = coord.points + 1000.003  # Make the output numbers wider
         result = coord.summary()
@@ -996,8 +996,8 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         ]
         self.assertLines(expected, result)
 
+        # Show that, when unset, it follows the numpy setting
         with np.printoptions(linewidth=35):
-            # Show that, when unset, it follows the numpy setting
             result = coord.summary()
         expected = [
             "AuxCoord :  x / (m)",
@@ -1011,7 +1011,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         ]
         self.assertLines(expected, result)
 
-    def test_max_array_width__set(self):
+    def test_linewidth__set(self):
         coord = self.sample_coord()
         coord.points = coord.points + 1000.003  # Make the output numbers wider
         expected = [
@@ -1024,12 +1024,12 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        result = coord.summary(max_array_width=35)
+        result = coord.summary(linewidth=35)
         self.assertLines(expected, result)
 
         with np.printoptions(linewidth=999):
             # Show that, when set, it ignores the numpy setting
-            result = coord.summary(max_array_width=35)
+            result = coord.summary(linewidth=35)
         self.assertLines(expected, result)
 
     def test_convert_dates(self):

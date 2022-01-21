@@ -276,11 +276,13 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         self,
         shorten=False,
         max_values=None,
+        edgeitems=2,
+        linewidth=None,
+        precision=None,
         convert_dates=True,
-        max_array_width=None,
     ):
         """
-        Make a printable text summary of a dimensional cube component.
+        Make a printable text summary of a :class:.
 
         Parameters
         ----------
@@ -288,25 +290,40 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             If True, produce an abbreviated one-line summary.
             If False, produce a multi-line summary, with embedded newlines.
         max_values : int or None, default = None
-            If more than this many data values, print truncated data arrays.
+            If more than this many data values, print truncated data arrays
+            instead of full contents.
             If 0, print only the shape.
-            Defaults to 5 if `shorten` is True, else 15.
-        convert_dates : bool, default = True
-            Print values in date form, if the units has a calendar.
-            If not, print raw number values.
-        max_array_width : int, default = None
+            The default is 5 if 'shorten'=True, or 15 otherwise.
+            This overrides "numpy.getprintoptions['threshold']".
+        linewidth : int or None, default = None
             Character-width controlling line splitting of array outputs.
-            If None, set to "numpy.get_printoptions()['linewidth']".
+            If unset, defaults to "numpy.getprintoptions['linewidth']".
+        edgeitems : int = 2
+            Controls truncated array output.
+            Overrides "numpy.getprintoptions['edgeitems']".
+        precision : int or None, default = None
+            Controls number decimal formatting.
+            When 'shorten'=True this is defaults to 3, in which case it
+            overrides "numpy.get_printoptions()['precision']".
+        convert_dates : bool, default = True
+            If the units has a calendar, then print array values as date
+            strings instead of the actual numbers.
 
         Returns
         -------
         result : str
 
+        .. note::
+
+            Arrays are formatted using numpy.array2string.  Some aspects of the
+            array formatting are controllable in the usual way by
+            numpy.printoptions, but others are overridden as detailed above.
+            Control of those aspects is still available, but only via the call
+            arguments.
+
         """
 
-        def array_summary(
-            data, n_max=10, n_edge=2, linewidth=50, precision=None
-        ):
+        def array_summary(data, n_max, n_edge, linewidth, precision):
             # Return a text summary of an array.
             # Take account of strings, dates and masked data.
             result = ""
@@ -374,13 +391,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         n_indent = 4
         indent = " " * n_indent
         addline = "\n" + indent
-        if max_array_width is None:
-            # Base this on the numpy printoption config, with an allowance for
-            # the indent.
-            # Note: for oneline output, we will need to shrink this further.
-            given_array_width = np.get_printoptions()["linewidth"]
+        if linewidth is not None:
+            given_array_width = linewidth
         else:
-            given_array_width = max_array_width
+            given_array_width = np.get_printoptions()["linewidth"]
         using_array_width = given_array_width - n_indent * 2
         # Make a printout of the main data array (or maybe not, if lazy).
         if self._has_lazy_values():
@@ -391,6 +405,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             data_str = array_summary(
                 self._values,
                 n_max=max_values,
+                n_edge=edgeitems,
                 linewidth=using_array_width,
                 precision=precision,
             )
@@ -420,6 +435,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     data_str = data_str = array_summary(
                         self._values[:1],
                         n_max=max_values,
+                        n_edge=edgeitems,
                         linewidth=using_array_width,
                         precision=precision,
                     )
@@ -466,6 +482,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     bounds_str = array_summary(
                         self._bounds_dm.data,
                         n_max=max_values,
+                        n_edge=edgeitems,
                         linewidth=using_array_width,
                         precision=precision,
                     )

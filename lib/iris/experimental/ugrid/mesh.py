@@ -999,7 +999,7 @@ class Mesh(CFVariableMixin):
                 # Print defining connectivity (except node)
                 if element != "node":
                     main_conn_string = main_conn.summary(
-                        shorten=True, max_array_width=0
+                        shorten=True, linewidth=0
                     )
                     line(f"{main_conn_name}: {main_conn_string}", 2)
                 # Print coords
@@ -1008,9 +1008,7 @@ class Mesh(CFVariableMixin):
                 if coords:
                     line(f"{element} coordinates", 2)
                     for coord in coords:
-                        coord_string = coord.summary(
-                            shorten=True, max_array_width=0
-                        )
+                        coord_string = coord.summary(shorten=True, linewidth=0)
                         line(coord_string, 3)
 
         # Having dealt with essential info, now add any optional connectivities
@@ -2974,7 +2972,7 @@ class MeshCoord(AuxCoord):
         if shorten:
             # NOTE: we simply aren't interested in the values for the repr,
             # so fix linewidth to suppress them
-            kwargs["max_array_width"] = 1
+            kwargs["linewidth"] = 1
 
         result = super().summary(*args, **kwargs)
         if shorten:
