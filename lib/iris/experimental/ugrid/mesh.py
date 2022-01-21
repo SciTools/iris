@@ -1030,7 +1030,7 @@ class Mesh(CFVariableMixin):
             if conn is not None
         }
         if optional_conns:
-            line("extra connectivities", 1)
+            line("optional connectivities", 1)
             for name, conn in optional_conns.items():
                 conn_string = conn.summary(shorten=True, max_array_width=0)
                 line(f"{name}: {conn_string}", 2)

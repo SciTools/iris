@@ -412,7 +412,7 @@ class TestProperties2D(TestProperties1D):
             "        face coordinates",
             "            <AuxCoord: longitude / (unknown)  [...]>",
             "            <AuxCoord: latitude / (unknown)  [...]>",
-            "    extra connectivities",
+            "    optional connectivities",
             (
                 "        face_face_connectivity: "
                 "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
@@ -459,7 +459,7 @@ class TestProperties2D(TestProperties1D):
             "        face coordinates",
             "            <AuxCoord: longitude / (unknown)  [...]>",
             "            <AuxCoord: latitude / (unknown)  [...]>",
-            "    extra connectivities",
+            "    optional connectivities",
             (
                 "        face_face_connectivity: "
                 "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
