@@ -1,6 +1,6 @@
 .. _ugrid partners:
 
-Iris' UGRID Partner Packages
+Iris' Mesh Partner Packages
 ****************************
 Python is an easy to use language and has formed a very strong collaborative
 scientific community, which is why Iris is written in Python. But it is not as

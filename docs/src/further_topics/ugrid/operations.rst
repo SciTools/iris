@@ -1,6 +1,6 @@
 .. _ugrid operations:
 
-Working with UGRID Data
+Working with Mesh Data
 ***********************
 
 .. note:: Several of the operations below rely on the optional dependencies
