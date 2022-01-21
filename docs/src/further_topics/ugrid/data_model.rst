@@ -33,6 +33,14 @@ mesh**. This has significant pros and cons when compared to a structured grid.
 
 The Detail
 ----------
+..
+    The diagram images are SVG's, so editable by any graphical software
+     (e.g. Inkscape). They were originally made in MS PowerPoint.
+
+    Uses the IBM Colour Blind Palette (see
+     http://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
+     )
+
 Structured Grids
 ~~~~~~~~~~~~~~~~
 Assigning data to locations using a structured grid is essentially an act of
