@@ -138,11 +138,11 @@ UGRID can represent much more varied spatial arrangements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UGRID's highly specific way of recording location (geometry) and shape
 (topology) allows it to represent essentially **any** spatial arrangement of
-data. There are therefore many applications that wouldn't be possible using a
+data. There are therefore many new applications that aren't possible using a
 structured grid, including:
 
 * `The UK Met Office's LFRic cubed-sphere <https://hps.vi4io.org/_media/events/2018/sig-io-uk-adams.pdf>`_
-* `Oceanic model outputs <https://www.researchgate.net/publication/276039140_Advances_in_a_Distributed_Approach_for_Ocean_Model_Data_Interoperability>`_
+* `Oceanic model outputs <https://doi.org/10.3390/jmse2010194>`_
 
 .. todo:
         a third example!
@@ -172,6 +172,8 @@ using packages such as Dask.
 
 Spatial operations on UGRID data are more complex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Detail: :doc:`operations`
+
 Indexing a UGRID data array cannot be used for:
 
 #. Region selection
@@ -186,9 +188,6 @@ for mesh analysis such as VTK.
 Such calculations can still be optimised to avoid them slowing workflows, but
 the important take-away here is that **adaptation is needed when working UGRID
 data**.
-
-.. todo:
-        mention GeoVista here
 
 
 How Iris Represents This
@@ -206,22 +205,25 @@ How Iris Represents This
 
 The Basics
 ----------
-The Iris :class:`~iris.cube.Cube` has two new attributes:
+The Iris :class:`~iris.cube.Cube` has several new members:
 
 * | :attr:`~iris.cube.Cube.mesh`
-  | The :class:`iris.experimental.ugrid.Mesh` that defines this
+  | The :class:`iris.experimental.ugrid.Mesh` that describes the
     :class:`~iris.cube.Cube`\'s horizontal geography.
 * | :attr:`~iris.cube.Cube.location`
   | ``node``/``edge``/``face`` - the mesh element type with which this
     :class:`~iris.cube.Cube`\'s :attr:`~iris.cube.Cube.data` is associated.
+* | :meth:`~iris.cube.Cube.mesh_dim`
+  | The :class:`~iris.cube.Cube`\'s **unstructured dimension** - the one that
+    indexes over the horizontal :attr:`~iris.cube.Cube.data` positions.
 
-These attributes will be ``None`` for a :class:`~iris.cube.Cube` with no
+These members will all be ``None`` for a :class:`~iris.cube.Cube` with no
 associated :class:`~iris.experimental.ugrid.Mesh`.
 
-A :class:`~iris.cube.Cube` with a :class:`~iris.experimental.ugrid.Mesh` will
-have a single dimension for its horizontal geography - the **unstructured
-dimension**. This dimension is the one that has multiple attached
-:class:`iris.experimental.ugrid.MeshCoord`\s.
+This :class:`~iris.cube.Cube`\'s unstructured dimension has multiple attached
+:class:`iris.experimental.ugrid.MeshCoord`\s (one for each axis e.g.
+``x``/``y``), which can be used to infer the points and bounds of any index on
+the :class:`~iris.cube.Cube`\'s unstructured dimension.
 
 .. todo: Cube printout
 
@@ -279,22 +281,32 @@ How UGRID information is stored
 MeshCoords
 ~~~~~~~~~~
 Links a :class:`~iris.cube.Cube` to a :class:`~iris.experimental.ugrid.Mesh` by
-attaching to the :class:`~iris.cube.Cube` like any other
-:class:`~iris.coords.Coord`. This allows :class:`~iris.cube.Cube`\s to exist
-as they always have, with the management of structured dimensions unchanged.
+attaching to the :class:`~iris.cube.Cube`\'s unstructured dimension, in the
+same way that all :class:`~iris.coords.Coord`\s attach to
+:class:`~iris.cube.Cube` dimensions. This allows a single
+:class:`~iris.cube.Cube` to have a combination of unstructured and structured
+dimensions (e.g. horizontal mesh plus vertical levels and a time series),
+using the same logic for every dimension.
 
-:class:`~iris.experimental.ugrid.MeshCoord`\s are generated using the
-:meth:`iris.experimental.ugrid.Mesh.to_MeshCoords` method. Requiring a
-``location`` argument, this interprets the
+:class:`~iris.experimental.ugrid.MeshCoord`\s are instantiated using a given
+:class:`~iris.experimental.ugrid.Mesh`, ``location``
+("node"/"edge"/"face") and ``axis``. The process interprets the
 :class:`~iris.experimental.ugrid.Mesh`\'s
 :attr:`~iris.experimental.ugrid.Mesh.node_coords` and if appropriate the
 :attr:`~iris.experimental.ugrid.Mesh.edge_node_connectivity`/
-:attr:`~iris.experimental.ugrid.Mesh.face_node_connectivity`,
+:attr:`~iris.experimental.ugrid.Mesh.face_node_connectivity` and
 :attr:`~iris.experimental.ugrid.Mesh.edge_coords`/
 :attr:`~iris.experimental.ugrid.Mesh.face_coords`
-to produce a :attr:`~iris.coords.Coord.points` array and a
-:attr:`~iris.coords.Coord.bounds` array, creating this special
-:class:`~iris.coords.Coord` instance.
+to produce a :class:`~iris.coords.Coord`
+:attr:`~iris.coords.Coord.points` and :attr:`~iris.coords.Coord.bounds`
+representation of all the :class:`~iris.experimental.ugrid.Mesh`\'s
+nodes/edges/faces for the given axis.
+
+A :class:`~iris.experimental.ugrid.Mesh`
+method is available to create a :class:`~iris.experimental.ugrid.MeshCoord` for
+every axis represented by that :class:`~iris.experimental.ugrid.Mesh`,
+requiring only the ``location`` argument:
+:meth:`~iris.experimental.ugrid.Mesh.to_MeshCoords`.
 
 
 __ CF-UGRID_
