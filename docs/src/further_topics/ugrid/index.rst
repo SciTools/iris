@@ -2,23 +2,27 @@
 
 .. _ugrid:
 
-UGRID Support
-*************
+Mesh Support
+************
 
-Iris includes specialised handling of data that follows the
-`CF-UGRID Conventions`__. UGRID-conformant data can be loaded from a file,
-represented in Iris' data model, worked with, and saved as a UGRID-conformant
-file. More detail is in this section and in the :mod:`iris.experimental.ugrid`
-API documentation.
+Iris includes specialised handling of mesh-located data (as opposed to
+grid-located data). Iris and its :ref:`partner packages <ugrid partners>` are
+designed to make working with mesh-located data as simple as possible, with new
+capabilities being added all the time. More detail is in this section and in
+the :mod:`iris.experimental.ugrid` API documentation.
+
+This mesh support is based on the `CF-UGRID Conventions`__; UGRID-conformant
+meshes + data can be loaded from a file into Iris' data model, and meshes +
+data represented in Iris' data model can be saved as a UGRID-conformant file.
 
 ----
 
-UGRID is different
-  UGRID's mesh-located data is fundamentally different to grid-located data.
+Meshes are different
+  Mesh-located data is fundamentally different to grid-located data.
   Many of Iris' existing operations need adapting before they can work with
   mesh-located data, and in some cases entirely new concepts are needed.
-  **Read the detail here before jumping into your own code.**
-Iris' UGRID support is experimental
+  **Read the detail in these pages before jumping into your own code.**
+Iris' mesh support is experimental
   This is a rapidly evolving part of the codebase at time of writing
   (``Jan 2021``), as we continually expand the operations that work with mesh
   data. **Be prepared for breaking changes even in minor releases.**
@@ -33,7 +37,7 @@ Read on to find out more...
 
 * :doc:`data_model` - learn why the mesh experience is so different.
 * :doc:`partner_packages` - meet some optional dependencies that provide powerful mesh operations.
-* :doc:`operations` - experience how your workflows will look when written for UGRID data.
+* :doc:`operations` - experience how your workflows will look when written for mesh data.
 
 ..
     Need an actual TOC to get Sphinx working properly, but have hidden it in
