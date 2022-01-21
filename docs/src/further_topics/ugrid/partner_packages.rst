@@ -12,10 +12,10 @@ Iris' UGRID Partner Packages
 Python is an easy to use language and has formed a very strong collaborative
 scientific community, which is why Iris is written in Python. But it is not as
 computationally strong as other languages, and this is a problem for working
-with unstructured meshes where computations are higher in volume (more data)
-and complexity (less consistency). So there are operations - which Python
-can perform acceptably on a structured grids - but which would need too much
-time/resource to perform on an unstructured mesh. New approaches are needed...
+with unstructured meshes where computations are higher in volume and complexity
+(see :doc:`data_model`). So there are operations - which Python can perform
+acceptably on a structured grids - which would need too much time/resource to
+perform on an unstructured mesh. New approaches are needed...
 
 Python packages already exist that enable the use of powerful mesh analysis
 tools originally written in faster languages such as C. And the Iris team are
@@ -40,6 +40,13 @@ reasons:
 Below you can learn more about the partner packages and how they are useful.
 Specifics of what operations would require their installation can be found in:
 :doc:`operations`.
+
+.. important:: **Experimental**
+
+        As with Iris' mesh support, these packages are still in the
+        experimental stages. They would love your feedback, but as immature
+        packages their API, documentation, test coverage and CI are still
+        'under construction'.
 
 
 `GeoVista`_
@@ -75,11 +82,11 @@ Applications
 .. rubric:: "A collection of structured and unstructured ESMF regridding schemes for Iris"
 
 ESMF provide a sophisticated, performant regridding utility that supports a
-variety of regridding types with both structured grids and unstructured meshes.
-A Python interface does exist - ESMPy - however working with Iris
-:class:`~iris.cube.Cube`\s and :class:`~iris.experimental.ugrid.Mesh`\es is
-sub-optimal. iris-esmf-regrid provides easy Iris-ESMPy interoperability, as
-well as a number of performance optimisations for this specific use case.
+variety of regridding types with both structured grids and unstructured meshes,
+and this also has a flexible Python interface - ESMPy. iris-esmf-regrid takes
+advantage of having a specific use-case - regridding Iris
+:class:`~iris.cube.Cube`\s - to provide ESMPy-Iris wrappers that make the
+process as easy as possible, with highly optimised performance.
 
 Applications
 ------------
