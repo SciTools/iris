@@ -282,7 +282,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         convert_dates=True,
     ):
         """
-        Make a printable text summary of a :class:.
+        Make a printable text summary.
 
         Parameters
         ----------
@@ -445,6 +445,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         # Data summary is still too long : replace with array
                         # "placeholder" representation.
                         data_str = "[...]"
+
+                if self.has_bounds():
+                    data_str += "+bnds"
 
                 if self.shape != (1,):
                     # Anything non-scalar : show shape as well.

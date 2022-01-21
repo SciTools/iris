@@ -269,7 +269,6 @@ class Test__str_repr(tests.IrisTest):
 
     def _expected_elements_regexp(
         self,
-        mesh_reprstyle=False,
         standard_name="longitude",
         long_name="long-name",
         attributes=True,
@@ -278,45 +277,56 @@ class Test__str_repr(tests.IrisTest):
     ):
         # Printed name is standard or long -- we don't have a case with neither
         coord_name = standard_name or long_name
-        if mesh_reprstyle:
-            regexp = f"^<MeshCoord: {coord_name} / .*>$"
-        else:
-            # Construct regexp in 'sections'
-            # NB each consumes upto first non-space in the next line
-            regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
-            regexp += "mesh: 'test_mesh'\n *"
-            regexp += f"location: '{location}'\n *"
-            # Now some optional sections : whichever comes first will match
-            # arbitrary content leading up to it.
-            matched_any_upto = False
-            if standard_name:
+        # Construct regexp in 'sections'
+        # NB each consumes upto first non-space in the next line
+        regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
+        regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
+        regexp += f"location: '{location}'\n *"
+        # Now some optional sections : whichever comes first will match
+        # arbitrary content leading up to it.
+        matched_any_upto = False
+        if standard_name:
+            regexp += ".*"
+            matched_any_upto = True
+            regexp += f"standard_name: '{standard_name}'\n *"
+        if long_name:
+            if not matched_any_upto:
                 regexp += ".*"
                 matched_any_upto = True
-                regexp += f"standard_name: '{standard_name}'\n *"
-            if long_name:
-                if not matched_any_upto:
-                    regexp += ".*"
-                    matched_any_upto = True
-                regexp += f"long_name: '{long_name}'\n *"
-            if attributes:
-                # if we expected attributes, they should come next
-                # TODO: change this when each attribute goes on a new line
-                if not matched_any_upto:
-                    regexp += ".*"
-                    matched_any_upto = True
-                regexp += "attributes: {[^}]*}\n *"
-            # After those items, expect 'axis' next
-            # N.B. this FAILS if we had attributes when we didn't expect them
-            regexp += f"axis: '{axis}'$"  # N.B. this is always the end
+            regexp += f"long_name: '{long_name}'\n *"
+        if attributes:
+            # if we expected attributes, they should come next
+            # TODO: change this when each attribute goes on a new line
+            if not matched_any_upto:
+                regexp += ".*"
+                matched_any_upto = True
+            regexp += "attributes: {[^}]*}\n *"
+        # After those items, expect 'axis' next
+        # N.B. this FAILS if we had attributes when we didn't expect them
+        regexp += f"axis: '{axis}'$"  # N.B. this is always the end
 
         # Compile regexp, also allowing matches across newlines
         regexp = re.compile(regexp, flags=re.DOTALL)
         return regexp
 
     def test_repr(self):
-        # One simple check for the condensed form.
+        # A simple check for the condensed form.
         result = repr(self.meshcoord)
-        re_expected = self._expected_elements_regexp(mesh_reprstyle=True)
+        expected = (
+            "<MeshCoord: longitude / (degrees_east)  "
+            "mesh(test_mesh) location(face)  [...]+bnds  shape(3,)>"
+        )
+        self.assertEqual(expected, result)
+
+    def test_repr__nameless_mesh(self):
+        # Check what it does when the Mesh doesn't have a name.
+        self.mesh.long_name = None
+        assert self.mesh.name() == "unknown"
+        result = repr(self.meshcoord)
+        re_expected = (
+            r".MeshCoord: longitude / \(degrees_east\)  "
+            r"mesh\(.Mesh object at 0x[^>]+.\) location\(face\) "
+        )
         self.assertRegex(result, re_expected)
 
     def test__str__(self):

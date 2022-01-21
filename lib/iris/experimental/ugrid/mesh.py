@@ -1030,7 +1030,7 @@ class Mesh(CFVariableMixin):
         if optional_conns:
             line("optional connectivities", 1)
             for name, conn in optional_conns.items():
-                conn_string = conn.summary(shorten=True, max_array_width=0)
+                conn_string = conn.summary(shorten=True, linewidth=0)
                 line(f"{name}: {conn_string}", 2)
 
         # Output the detail properties, basically those from CFVariableMixin
@@ -2953,21 +2953,6 @@ class MeshCoord(AuxCoord):
         else:
             shorten = kwargs.get("shorten", False)
 
-        # We need a short one-line printout to identify the mesh, but at
-        # present this is tricky, because the Mesh class itself doesn't
-        # provide one.
-        # So for now we "fake" it, in a rather preliminary way...
-        mesh_name = self.mesh.name()
-        if mesh_name in (None, "", "unknown"):
-            mesh_name = None
-        if mesh_name:
-            # Use a more human-readable form
-            mesh_string = mesh_name
-        else:
-            # Mimic the generic object.__str__ style.
-            mesh_id = id(self.mesh)
-            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
-
         # Get the default-form result.
         if shorten:
             # NOTE: we simply aren't interested in the values for the repr,
@@ -2975,9 +2960,15 @@ class MeshCoord(AuxCoord):
             kwargs["linewidth"] = 1
 
         result = super().summary(*args, **kwargs)
+
+        # Modify the generic 'default-form' result to produce what we want.
         if shorten:
             # Single-line form : insert the mesh+location before the array part
             i_array = result.index("[")
+            mesh_string = self.mesh.name()
+            if mesh_string == "unknown":
+                # If no name, replace with the one-line summary
+                mesh_string = self.mesh.summary(shorten=True)
             extra_str = f"mesh({mesh_string}) location({self.location})  "
             result = result[:i_array] + extra_str + result[i_array:]
             # NOTE: this invalidates the original width calculation and may
@@ -2997,7 +2988,8 @@ class MeshCoord(AuxCoord):
             i_namestart = location_line.index("location:")
             indent = location_line[:i_namestart]
             # Construct a suitable 'mesh' line
-            mesh_line = f"{indent}mesh: '{mesh_string}'"
+            mesh_string = self.mesh.summary(shorten=True)
+            mesh_line = f"{indent}mesh: {mesh_string}"
             # Move the 'location' line, putting it and the 'mesh' line
             # immediately after the header
             del lines[i_location]

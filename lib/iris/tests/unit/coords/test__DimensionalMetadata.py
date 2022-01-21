@@ -248,7 +248,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_bounded(self):
         result = self.coord_representations(shape=(3,), bounded=True)
         expected = [
-            "<AuxCoord: x / (m)  [0., 1., 2.]  shape(3,)>",
+            "<AuxCoord: x / (m)  [0., 1., 2.]+bnds  shape(3,)>",
             "AuxCoord :  x / (m)",
             "    points: [0., 1., 2.]",
             "    bounds: [",
@@ -360,7 +360,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_lazy_bounds(self):
         result = self.coord_representations(lazy_bounds=True)
         expected = [
-            "<AuxCoord: x / (m)  [0., 1., 2., 3., 4.]  shape(5,)>",
+            "<AuxCoord: x / (m)  [0., 1., 2., 3., 4.]+bnds  shape(5,)>",
             "AuxCoord :  x / (m)",
             "    points: [0., 1., 2., 3., 4.]",
             "    bounds: <lazy>",
@@ -386,7 +386,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_scalar(self):
         result = self.coord_representations(shape=(1,), bounded=True)
         expected = [
-            "<AuxCoord: x / (m)  [0.]>",
+            "<AuxCoord: x / (m)  [0.]+bnds>",
             "AuxCoord :  x / (m)",
             "    points: [0.]",
             "    bounds: [[-10.,  10.]]",
@@ -401,7 +401,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             shape=(1,), bounded=True, masked=True
         )
         expected = [
-            "<AuxCoord: x / (m)  [--]>",
+            "<AuxCoord: x / (m)  [--]+bnds>",
             "AuxCoord :  x / (m)",
             "    points: [--]",
             "    bounds: [[--, --]]",
@@ -414,7 +414,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_length_short(self):
         result = self.coord_representations(shape=(2,), bounded=True)
         expected = [
-            "<AuxCoord: x / (m)  [0., 1.]  shape(2,)>",
+            "<AuxCoord: x / (m)  [0., 1.]+bnds  shape(2,)>",
             "AuxCoord :  x / (m)",
             "    points: [0., 1.]",
             "    bounds: [",
@@ -430,7 +430,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         # Where bounds are truncated, but points not.
         result = self.coord_representations(shape=(14,), bounded=True)
         expected = [
-            "<AuxCoord: x / (m)  [ 0., 1., ..., 12., 13.]  shape(14,)>",
+            "<AuxCoord: x / (m)  [ 0., 1., ..., 12., 13.]+bnds  shape(14,)>",
             "AuxCoord :  x / (m)",
             "    points: [",
             "         0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,",
@@ -451,7 +451,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         # Completely truncated representations
         result = self.coord_representations(shape=(150,), bounded=True)
         expected = [
-            "<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]  shape(150,)>",
+            "<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]+bnds  shape(150,)>",
             "AuxCoord :  x / (m)",
             "    points: [  0.,   1., ..., 148., 149.]",
             "    bounds: [",
@@ -542,7 +542,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_dates_bounds(self):
         result = self.coord_representations(dates=True, bounded=True)
         expected = [
-            "<AuxCoord: x / (days since 1970-03-5)  [...]  shape(5,)>",
+            "<AuxCoord: x / (days since 1970-03-5)  [...]+bnds  shape(5,)>",
             "AuxCoord :  x / (days since 1970-03-5, gregorian calendar)",
             "    points: [",
             "        1970-03-05 00:00:00, 1970-03-06 00:00:00,",
@@ -582,7 +582,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         coord.bounds = bounds
         result = self.repr_str_strings(coord)
         expected = [
-            "<AuxCoord: x / (m)  [0., 1., 2., 3., 4.]  shape(5,)>",
+            "<AuxCoord: x / (m)  [0., 1., 2., 3., 4.]+bnds  shape(5,)>",
             "AuxCoord :  x / (m)",
             "    points: [0., 1., 2., 3., 4.]",
             "    bounds: [",
@@ -733,7 +733,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
         coord = coord[:1]  # Just to make it a bit shorter
         result = self.repr_str_strings(coord)
         expected = [
-            "<DimCoord: time / (days since 1970-01-01 00:00:00-00)  [...]>",
+            "<DimCoord: time / (days since 1970-01-01 00:00:00-00)  [...]+bnds>",
             "DimCoord :  time / (days since 1970-01-01 00:00:00-00, gregorian calendar)",
             "    points: [2001-01-10 00:00:00]",
             "    bounds: [[2001-01-10 00:00:00, 2011-01-10 00:00:00]]",
@@ -897,10 +897,10 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             (
                 "<MeshCoord: longitude / (degrees_east)  "
                 "mesh(test_mesh) location(face)  "
-                "[...]  shape(3,)>"
+                "[...]+bnds  shape(3,)>"
             ),
             "MeshCoord :  longitude / (degrees_east)",
-            "    mesh: 'test_mesh'",
+            "    mesh: <Mesh: 'test_mesh'>",
             "    location: 'face'",
             "    points: [3100, 3101, 3102]",
             "    bounds: [",

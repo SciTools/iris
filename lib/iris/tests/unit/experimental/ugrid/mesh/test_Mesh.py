@@ -673,6 +673,10 @@ class Test__str__various(TestMeshCommon):
         }
         self.mesh = mesh.Mesh(**self.kwargs)
 
+    def test___repr__basic(self):
+        expected = "<Mesh: 'my_topology_mesh'>"
+        self.assertEqual(expected, repr(self.mesh))
+
     def test___repr__varname(self):
         self.mesh.long_name = None
         expected = "<Mesh: 'mesh'>"
