@@ -37,7 +37,7 @@ All the load functions share very similar arguments:
 
     * uris:
         Either a single filename/URI expressed as a string or
-        :class:`pathlib.Path`, or an iterable of filenames/URIs.
+        :class:`pathlib.PurePath`, or an iterable of filenames/URIs.
 
         Filenames can contain `~` or `~user` abbreviations, and/or
         Unix shell-style wildcards (e.g. `*` and `?`). See the

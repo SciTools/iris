@@ -316,15 +316,13 @@ def find_saver(filespec):
     Args:
 
         * filespec
-            A string such as "my_file.pp" or "PP", or :class:`pathlib.Path`.
+            A string such as "my_file.pp" or "PP".
 
     Returns:
         A save function or None.
         Save functions can be passed to :func:`iris.io.save`.
 
     """
-    if isinstance(filespec, pathlib.PurePath):
-        filespec = str(filespec)
     _check_init_savers()
     matches = [
         ext
