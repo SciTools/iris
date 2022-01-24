@@ -87,7 +87,7 @@ def decode_uri(uri, default="file"):
     Decodes a single URI into scheme and scheme-specific parts.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
-    or :class:`pathlib.PurePath`s. Both Windows and UNIX style paths are
+    or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
     accepted.
 
     .. testsetup::
