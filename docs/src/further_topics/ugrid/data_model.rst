@@ -292,6 +292,8 @@ How UGRID information is stored
         :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
         `The Basics`_).
 
+.. _ugrid MeshCoords:
+
 MeshCoords
 ~~~~~~~~~~
 Links a :class:`~iris.cube.Cube` to a :class:`~iris.experimental.ugrid.Mesh` by
