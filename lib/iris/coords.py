@@ -281,7 +281,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         precision=None,
         convert_dates=True,
     ):
-        """
+        r"""
         Make a printable text summary.
 
         Parameters
@@ -293,18 +293,18 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             If more than this many data values, print truncated data arrays
             instead of full contents.
             If 0, print only the shape.
-            The default is 5 if 'shorten'=True, or 15 otherwise.
-            This overrides "numpy.getprintoptions['threshold']".
+            The default is 5 if :attr:`shorten`\ =True, or 15 otherwise.
+            This overrides ``numpy.get_printoptions['threshold']``\ .
         linewidth : int or None, default = None
             Character-width controlling line splitting of array outputs.
-            If unset, defaults to "numpy.getprintoptions['linewidth']".
+            If unset, defaults to ``numpy.get_printoptions['linewidth']``\ .
         edgeitems : int = 2
             Controls truncated array output.
-            Overrides "numpy.getprintoptions['edgeitems']".
+            Overrides ``numpy.getprintoptions['edgeitems']``\ .
         precision : int or None, default = None
             Controls number decimal formatting.
-            When 'shorten'=True this is defaults to 3, in which case it
-            overrides "numpy.get_printoptions()['precision']".
+            When :attr:`shorten`\ =True this is defaults to 3, in which case it
+            overrides ``numpy.get_printoptions()['precision']``\ .
         convert_dates : bool, default = True
             If the units has a calendar, then print array values as date
             strings instead of the actual numbers.
@@ -312,12 +312,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         Returns
         -------
         result : str
+            Output text, with embedded newlines when :attr:`shorten`\ =False.
+
 
         .. note::
-
-            Arrays are formatted using numpy.array2string.  Some aspects of the
-            array formatting are controllable in the usual way by
-            numpy.printoptions, but others are overridden as detailed above.
+            Arrays are formatted using :meth:`numpy.array2string`. Some aspects
+            of the array formatting are controllable in the usual way, via
+            :meth:`numpy.printoptions`, but others are overridden as detailed
+            above.
             Control of those aspects is still available, but only via the call
             arguments.
 
