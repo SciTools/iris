@@ -395,10 +395,24 @@ def array_equal(array1, array2, withnans=False):
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     """
-    Returns whether two numbers are almost equal, allowing for the
-    finite precision of floating point numbers.
+    Returns whether two numbers are almost equal, allowing for the finite
+    precision of floating point numbers.
+
+    .. deprecated:: 3.2.0
+
+       Instead use :func:`math.isclose`. For example, rather than calling
+       ``approx_equal(a, b, max_abs, max_rel)`` replace with ``math.isclose(a,
+       b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
+       if the actual error equals the maximum, whereas :func:`util.approx_equal`
+       will return False.
 
     """
+    wmsg = (
+        "iris.util.approx_equal has been deprecated and will be removed, "
+        "please use math.isclose instead."
+    )
+    warn_deprecated(wmsg)
+
     # Deal with numbers close to zero
     if abs(a - b) < max_absolute_error:
         return True

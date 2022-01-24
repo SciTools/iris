@@ -181,6 +181,10 @@ This document explains the changes made to Iris for this release
    :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
    an exception. (:issue:`3528`, :pull:`4496`)
 
+#. `@wjbenfold`_ deprecated :func:`iris.util.approx_equal` in preference for
+   :func:`math.isclose`. The :func:`~iris.util.approx_equal` function will be
+   removed in a future release of Iris. (:pull:`4514`)
+
 
 🔗 Dependencies
 ===============
