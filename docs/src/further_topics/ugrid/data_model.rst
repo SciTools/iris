@@ -139,6 +139,8 @@ Here are the main examples:
 
    Data can be assigned to mesh edges
 
+.. _ugrid implications:
+
 What does this mean?
 --------------------
 Meshes can represent much more varied spatial arrangements
@@ -204,6 +206,11 @@ How Iris Represents This
     Include API links to the various classes
 
     Include Cube/Mesh printout(s)
+
+.. seealso::
+
+        Remember this is a prose summary. Precise documentation is at:
+        :mod:`iris.experimental.ugrid`.
 
 .. note::
 
