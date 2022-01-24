@@ -185,6 +185,10 @@ This document explains the changes made to Iris for this release
    :func:`math.isclose`. The :func:`~iris.util.approx_equal` function will be
    removed in a future release of Iris. (:pull:`4514`)
 
+#. `@wjbenfold`_ deprecated :mod:`iris.experimental.raster` as it is not
+   believed to still be in use. The deprecation warnings invite users to contact
+   the Iris Developers if this isn't the case. (:pull:`XXXX`)
+
 
 🔗 Dependencies
 ===============
