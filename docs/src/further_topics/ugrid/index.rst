@@ -24,7 +24,7 @@ Meshes are different
   **Read the detail in these pages before jumping into your own code.**
 Iris' mesh support is experimental
   This is a rapidly evolving part of the codebase at time of writing
-  (``Jan 2021``), as we continually expand the operations that work with mesh
+  (``Jan 2022``), as we continually expand the operations that work with mesh
   data. **Be prepared for breaking changes even in minor releases.**
 :ref:`Get involved! <development_where_to_start>`
   We know meshes are an exciting new area for much of Earth science, so we hope

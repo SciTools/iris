@@ -16,7 +16,7 @@ Evolution, not revolution
 Mesh support has been designed wherever possible to fit within the existing
 Iris model. Meshes concern only the spatial location of data, and can
 optionally be limited to just the horizontal location (e.g. X and Y). Other
-dimensions such as time or experimental re-runs (and often vertical levels)
+dimensions such as time or ensemble member (and often vertical levels)
 retain their familiar structured format.
 
 The UGRID conventions themselves are designed as an addition to the existing CF
