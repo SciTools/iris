@@ -295,6 +295,7 @@ This document explains the changes made to Iris for this release
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
+.. _@SimonPeatman: https://github.com/SimonPeatman
 .. _@tinyendian: https://github.com/tinyendian
 
 .. comment
