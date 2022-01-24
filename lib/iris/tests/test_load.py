@@ -133,6 +133,21 @@ class TestLoadCubes(tests.IrisTest):
             iris.load_cube(paths)
 
 
+@tests.skip_data
+class TestLoadRaw(tests.IrisTest):
+    def test_normal(self):
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load_raw(paths)
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (
+            pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
+        cubes = iris.load_raw(paths)
+        self.assertEqual(len(cubes), 1)
+
+
 class TestOpenDAP(tests.IrisTest):
     def test_load(self):
         # Check that calling iris.load_* with a http URI triggers a call to
