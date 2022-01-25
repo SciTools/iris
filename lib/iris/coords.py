@@ -280,6 +280,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         linewidth=None,
         precision=None,
         convert_dates=True,
+        _section_indices=None,
     ):
         r"""
         Make a printable text summary.
@@ -324,6 +325,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             arguments.
 
         """
+        # NOTE: the *private* key "_section_indices" can be set to a dict, to
+        # return details of which (line, character) each particular section of
+        # the output text begins at.
+        # Currently only used by MeshCoord.summary(), which needs this info to
+        # modify the result string, for idiosyncratic reasons.
 
         def array_summary(data, n_max, n_edge, linewidth, precision):
             # Return a text summary of an array.
@@ -412,12 +418,30 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 precision=precision,
             )
 
+        #
+        # Routines to track output lines and the locations of named 'sections'
+        #
+        output_lines = []
+        line_text = ""
+
+        def add_output_line():
+            output_lines.append(line_text)
+
+        def record_section_index(section_name):
+            if _section_indices is not None:
+                # record the current line number and character position
+                i_line = len(output_lines)
+                i_char = len(line_text)
+                _section_indices[section_name] = (i_line, i_char)
+
         if shorten:
-            result = f"<{cls_str}: {title_str}  "
-            if data_str == "<lazy>":
-                # Data summary is invalid due to being lazy : show shape.
-                data_str += f"  shape{shape_str}"
-            else:
+            # One-line output format.
+            line_text = f"<{cls_str}: "
+            record_section_index("title")
+            line_text += title_str + "  "
+            record_section_index("data")  # this is where the data text begins
+
+            if data_str != "<lazy>":
                 # Flatten to a single line, reducing repeated spaces.
                 def flatten_array_str(array_str):
                     array_str = array_str.replace("\n", " ")
@@ -429,7 +453,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 data_str = flatten_array_str(data_str)
                 # Adjust maximum-width to allow for the title width in the
                 # repr form.
-                using_array_width = given_array_width - len(result)
+                using_array_width = given_array_width - len(line_text)
                 # Work out whether to include a summary of the data values
                 if len(data_str) > using_array_width:
                     # Make one more attempt, printing just the *first* point,
@@ -448,18 +472,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         # "placeholder" representation.
                         data_str = "[...]"
 
-                if self.has_bounds():
-                    data_str += "+bnds"
+            if self.has_bounds():
+                data_str += "+bounds"
 
-                if self.shape != (1,):
-                    # Anything non-scalar : show shape as well.
-                    data_str += f"  shape{shape_str}"
+            if self.shape != (1,):
+                # Anything non-scalar : show shape as well.
+                data_str += f"  shape{shape_str}"
 
-            # (N.B. in the oneline case, we *ignore* any bounds)
-            result += f"{data_str}>"
+            line_text += f"{data_str}>"
+            # single-line output in 'shorten' mode
+            add_output_line()
         else:
-            # Long (multi-line) form.
-            result = f"{cls_str} :  {title_str}"
+            # Long (multi-line) output format.
+            line_text = f"{cls_str} :  "
+            record_section_index("title")
+            line_text += title_str
+            add_output_line()
 
             def reindent_data_string(text, n_indent):
                 lines = [line for line in text.split("\n")]
@@ -471,14 +499,26 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 return result
 
             data_str = reindent_data_string(data_str, 2 * n_indent)
-            result += addline + f"{self._values_array_name}: "
+            line_text = indent
+            record_section_index("data")
+            # start the 'data_text' from 'line_text', to preserve any indent
+            # : it may cover multiple lines
+            # NOTE: actual section name is variable here : data/points/indices
+            data_text = line_text + f"{self._values_array_name}: "
             if "\n" in data_str:
-                # Place on subsequent lines
-                result += "[" + addline + indent + data_str[1:]
+                # Put initial '[' here, and the rest on subsequent lines
+                data_text += "[" + addline + indent + data_str[1:]
             else:
-                result += data_str
+                # All on one line
+                data_text += data_str
+
+            # split the 'data_text' and output each line
+            for data_line in data_text.split("\n"):
+                line_text = data_line
+                add_output_line()
 
             if self.has_bounds():
+                # Add a bounds section : basically just like the 'data'.
                 if self._bounds_dm.has_lazy_data():
                     bounds_str = "<lazy>"
                 elif max_values == 0:
@@ -492,22 +532,39 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         precision=precision,
                     )
                     bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
-                result += addline + "bounds: "
-                if "\n" in bounds_str:
-                    # Place on subsequent lines
-                    result += "[" + addline + indent + bounds_str[1:]
-                else:
-                    result += bounds_str
 
-            # Add shape declaration (always)
-            result += addline + f"shape: {shape_str}"
+                line_text = indent
+                record_section_index("bounds")
+                # start the 'bounds_text' from 'line_text', to preserve any
+                # indent : it may cover multiple lines
+                bounds_text = line_text + "bounds: "
+                if "\n" in bounds_str:
+                    # Put initial '[' here, and the rest on subsequent lines
+                    bounds_text += "[" + addline + indent + bounds_str[1:]
+                else:
+                    # All on one line
+                    bounds_text += bounds_str
+
+                # split the 'bounds_text' and output each line
+                for bounds_line in bounds_text.split("\n"):
+                    line_text = bounds_line
+                    add_output_line()
+
+            # Add shape section (always)
+            line_text = indent
+            record_section_index("shape")
+            line_text += f"shape: {shape_str}"
 
             if self.has_bounds():
-                # line = f'bounds_shape: {self._bounds_dm.shape}'
-                result += f"  bounds{self._bounds_dm.shape}"
+                line_text += f"  bounds{self._bounds_dm.shape}"
 
-            # Add dtype declaration (always)
-            result += addline + f"dtype: {self.dtype}"
+            add_output_line()
+
+            # Add dtype section (always)
+            line_text = indent
+            record_section_index("dtype")
+            line_text += f"dtype: {self.dtype}"
+            add_output_line()
 
             for name in self._metadata_manager._fields:
                 if name == "units":
@@ -525,10 +582,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     # work for all those defined so far.
                     show = val is not None and val is not False
                 if show:
-                    line = f"{name}: {val!r}"
-                    result += addline + line
+                    # add a section for this property (metadata item)
+                    # TODO: modify to do multi-line attribute output
+                    line_text = indent
+                    record_section_index(name)
+                    line_text += f"{name}: {val!r}"
+                    add_output_line()
 
-        return result
+        return "\n".join(output_lines)
 
     def __str__(self):
         return self.summary()

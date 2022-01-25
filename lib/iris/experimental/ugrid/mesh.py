@@ -2959,39 +2959,42 @@ class MeshCoord(AuxCoord):
             # so fix linewidth to suppress them
             kwargs["linewidth"] = 1
 
+        # Plug private key, to get back the section structure info
+        section_indices = {}
+        kwargs["_section_indices"] = section_indices
         result = super().summary(*args, **kwargs)
 
         # Modify the generic 'default-form' result to produce what we want.
         if shorten:
-            # Single-line form : insert the mesh+location before the array part
-            i_array = result.index("[")
+            # Single-line form : insert mesh+location before the array part
+            # Construct a text detailing the mesh + location
             mesh_string = self.mesh.name()
             if mesh_string == "unknown":
                 # If no name, replace with the one-line summary
                 mesh_string = self.mesh.summary(shorten=True)
             extra_str = f"mesh({mesh_string}) location({self.location})  "
+            # find where in the line the data-array text begins
+            i_line, i_array = section_indices["data"]
+            assert i_line == 0
+            # insert the extra text there
             result = result[:i_array] + extra_str + result[i_array:]
             # NOTE: this invalidates the original width calculation and may
             # easily extend the result beyond the intended maximum linewidth.
             # We do treat that as an advisory control over array printing, not
             # an absolute contract, so just ignore the problem for now.
         else:
-            # Multiline form : find the line with " location: ... " in it
+            # Multiline form
+            # find where the "location: ... " section is
+            i_location, i_namestart = section_indices["location"]
             lines = result.split("\n")
-            (i_location,) = [
-                i
-                for i, line in enumerate(lines)
-                if line.strip().startswith("location:")
-            ]
             location_line = lines[i_location]
-            # find the start of the 'location:' to copy the indent spacing
-            i_namestart = location_line.index("location:")
+            # copy the indent spacing
             indent = location_line[:i_namestart]
-            # Construct a suitable 'mesh' line
+            # use that to construct a suitable 'mesh' line
             mesh_string = self.mesh.summary(shorten=True)
             mesh_line = f"{indent}mesh: {mesh_string}"
-            # Move the 'location' line, putting it and the 'mesh' line
-            # immediately after the header
+            # Move the 'location' line, putting it and the 'mesh' line right at
+            # the top, immediately after the header line.
             del lines[i_location]
             lines[1:1] = [mesh_line, location_line]
             # Re-join lines to give the result

@@ -1,1 +1,1 @@
-<DimCoord: grid_latitude / (degrees)  [-0.128, -0.127, ..., -0.121, -0.12 ]+bnds  shape(10,)>
+<DimCoord: grid_latitude / (degrees)  [-0.128, -0.127, ..., -0.121, -0.12 ]+bounds  shape(10,)>

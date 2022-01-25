@@ -1,1 +1,1 @@
-<DimCoord: time / (hours since 1970-01-01 00:00:00)  [...]  shape(6,)>
+<DimCoord: forecast_period / (hours)  [0.]>

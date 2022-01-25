@@ -178,7 +178,9 @@ class TestXML(tests.IrisTest):
 @tests.skip_data
 class TestCoord_ReprStr_nontime(tests.IrisTest):
     def setUp(self):
-        self.lat = iris.tests.stock.realistic_4d().coord("grid_latitude")[:10]
+        cube = iris.tests.stock.realistic_4d()
+        self.lat = cube.coord("grid_latitude")[:10]
+        self.height = cube.coord("level_height")[:10]
 
     def test_DimCoord_repr(self):
         self.assertRepr(
@@ -187,7 +189,7 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
 
     def test_AuxCoord_repr(self):
         self.assertRepr(
-            self.lat, ("coord_api", "str_repr", "aux_nontime_repr.txt")
+            self.height, ("coord_api", "str_repr", "aux_nontime_repr.txt")
         )
 
     def test_DimCoord_str(self):
@@ -197,14 +199,16 @@ class TestCoord_ReprStr_nontime(tests.IrisTest):
 
     def test_AuxCoord_str(self):
         self.assertString(
-            str(self.lat), ("coord_api", "str_repr", "aux_nontime_str.txt")
+            str(self.height), ("coord_api", "str_repr", "aux_nontime_str.txt")
         )
 
 
 @tests.skip_data
 class TestCoord_ReprStr_time(tests.IrisTest):
     def setUp(self):
-        self.time = iris.tests.stock.realistic_4d().coord("time")
+        cube = iris.tests.stock.realistic_4d()
+        self.time = cube.coord("time")
+        self.fp = cube.coord("forecast_period")
 
     def test_DimCoord_repr(self):
         self.assertRepr(
@@ -213,7 +217,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
 
     def test_AuxCoord_repr(self):
         self.assertRepr(
-            self.time, ("coord_api", "str_repr", "aux_time_repr.txt")
+            self.fp, ("coord_api", "str_repr", "aux_time_repr.txt")
         )
 
     def test_DimCoord_str(self):
@@ -223,7 +227,7 @@ class TestCoord_ReprStr_time(tests.IrisTest):
 
     def test_AuxCoord_str(self):
         self.assertString(
-            str(self.time), ("coord_api", "str_repr", "aux_time_str.txt")
+            str(self.fp), ("coord_api", "str_repr", "aux_time_str.txt")
         )
 
 

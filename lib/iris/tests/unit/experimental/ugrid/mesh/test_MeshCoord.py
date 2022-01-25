@@ -17,7 +17,7 @@ import unittest.mock as mock
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.common.metadata import BaseMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
@@ -314,7 +314,24 @@ class Test__str_repr(tests.IrisTest):
         result = repr(self.meshcoord)
         expected = (
             "<MeshCoord: longitude / (degrees_east)  "
-            "mesh(test_mesh) location(face)  [...]+bnds  shape(3,)>"
+            "mesh(test_mesh) location(face)  [...]+bounds  shape(3,)>"
+        )
+        self.assertEqual(expected, result)
+
+    def test_repr_lazy(self):
+        # Displays lazy content (and does not realise!).
+        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
+        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        result = repr(self.meshcoord)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        expected = (
+            "<MeshCoord: longitude / (degrees_east)  "
+            "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
         )
         self.assertEqual(expected, result)
 
@@ -336,10 +353,23 @@ class Test__str_repr(tests.IrisTest):
         re_expected = self._expected_elements_regexp()
         self.assertRegex(result, re_expected)
 
+    def test__str__lazy(self):
+        # Displays lazy content (and does not realise!).
+        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
+        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
+
+        result = str(self.meshcoord)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        self.assertIn("points: <lazy>", result)
+        self.assertIn("bounds: <lazy>", result)
+        re_expected = self._expected_elements_regexp()
+        self.assertRegex(result, re_expected)
+
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
         result = str(meshcoord)
-        # re_expected = r", location='edge', axis='y'"
         re_expected = self._expected_elements_regexp(
             standard_name="latitude",
             long_name=None,
