@@ -398,7 +398,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         precision = 3 if shorten else None
         n_indent = 4
         indent = " " * n_indent
-        addline = "\n" + indent
+        newline_indent = "\n" + indent
         if linewidth is not None:
             given_array_width = linewidth
         else:
@@ -418,28 +418,28 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 precision=precision,
             )
 
-        #
-        # Routines to track output lines and the locations of named 'sections'
-        #
-        output_lines = []
-        line_text = ""
+        # The output under construction, divided into lines for convenience.
+        output_lines = [""]
 
-        def add_output_line():
-            output_lines.append(line_text)
-
-        def record_section_index(section_name):
-            if _section_indices is not None:
-                # record the current line number and character position
-                i_line = len(output_lines)
-                i_char = len(line_text)
-                _section_indices[section_name] = (i_line, i_char)
+        def add_output(text, section=None):
+            # Append output text and record locations of named 'sections'
+            if section and _section_indices is not None:
+                # defined a named 'section', recording the current line number
+                # and character position as its start position
+                i_line = len(output_lines) - 1
+                i_char = len(output_lines[-1])
+                _section_indices[section] = (i_line, i_char)
+            # Split the text-to-add into lines
+            lines = text.split("\n")
+            # Add initial text (before first '\n') to the current line
+            output_lines[-1] += lines[0]
+            # Add subsequent lines as additional output lines
+            for line in lines[1:]:
+                output_lines.append(line)  # Add new lines
 
         if shorten:
-            # One-line output format.
-            line_text = f"<{cls_str}: "
-            record_section_index("title")
-            line_text += title_str + "  "
-            record_section_index("data")  # this is where the data text begins
+            add_output(f"<{cls_str}: ")
+            add_output(f"{title_str}  ", section="title")
 
             if data_str != "<lazy>":
                 # Flatten to a single line, reducing repeated spaces.
@@ -453,7 +453,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 data_str = flatten_array_str(data_str)
                 # Adjust maximum-width to allow for the title width in the
                 # repr form.
-                using_array_width = given_array_width - len(line_text)
+                current_line_len = len(output_lines[-1])
+                using_array_width = given_array_width - current_line_len
                 # Work out whether to include a summary of the data values
                 if len(data_str) > using_array_width:
                     # Make one more attempt, printing just the *first* point,
@@ -479,15 +480,13 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 # Anything non-scalar : show shape as well.
                 data_str += f"  shape{shape_str}"
 
-            line_text += f"{data_str}>"
             # single-line output in 'shorten' mode
-            add_output_line()
+            add_output(f"{data_str}>", section="data")
+
         else:
             # Long (multi-line) output format.
-            line_text = f"{cls_str} :  "
-            record_section_index("title")
-            line_text += title_str
-            add_output_line()
+            add_output(f"{cls_str} :  ")
+            add_output(f"{title_str}", section="title")
 
             def reindent_data_string(text, n_indent):
                 lines = [line for line in text.split("\n")]
@@ -498,73 +497,65 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 result = line_1 + "".join(rest_lines)
                 return result
 
-            data_str = reindent_data_string(data_str, 2 * n_indent)
-            line_text = indent
-            record_section_index("data")
-            # start the 'data_text' from 'line_text', to preserve any indent
-            # : it may cover multiple lines
+            data_array_str = reindent_data_string(data_str, 2 * n_indent)
+
             # NOTE: actual section name is variable here : data/points/indices
-            data_text = line_text + f"{self._values_array_name}: "
-            if "\n" in data_str:
+            data_text = f"{self._values_array_name}: "
+            if "\n" in data_array_str:
                 # Put initial '[' here, and the rest on subsequent lines
-                data_text += "[" + addline + indent + data_str[1:]
+                data_text += "[" + newline_indent + indent + data_array_str[1:]
             else:
                 # All on one line
-                data_text += data_str
+                data_text += data_array_str
 
-            # split the 'data_text' and output each line
-            for data_line in data_text.split("\n"):
-                line_text = data_line
-                add_output_line()
+            # N.B. indent section and record section start after that
+            add_output(newline_indent)
+            add_output(data_text, section="data")
 
             if self.has_bounds():
                 # Add a bounds section : basically just like the 'data'.
                 if self._bounds_dm.has_lazy_data():
-                    bounds_str = "<lazy>"
+                    bounds_array_str = "<lazy>"
                 elif max_values == 0:
-                    bounds_str = "[...]"
+                    bounds_array_str = "[...]"
                 else:
-                    bounds_str = array_summary(
+                    bounds_array_str = array_summary(
                         self._bounds_dm.data,
                         n_max=max_values,
                         n_edge=edgeitems,
                         linewidth=using_array_width,
                         precision=precision,
                     )
-                    bounds_str = reindent_data_string(bounds_str, 2 * n_indent)
+                    bounds_array_str = reindent_data_string(
+                        bounds_array_str, 2 * n_indent
+                    )
 
-                line_text = indent
-                record_section_index("bounds")
                 # start the 'bounds_text' from 'line_text', to preserve any
                 # indent : it may cover multiple lines
-                bounds_text = line_text + "bounds: "
-                if "\n" in bounds_str:
+                bounds_text = "bounds: "
+                if "\n" in bounds_array_str:
                     # Put initial '[' here, and the rest on subsequent lines
-                    bounds_text += "[" + addline + indent + bounds_str[1:]
+                    bounds_text += (
+                        "[" + newline_indent + indent + bounds_array_str[1:]
+                    )
                 else:
                     # All on one line
-                    bounds_text += bounds_str
+                    bounds_text += bounds_array_str
 
-                # split the 'bounds_text' and output each line
-                for bounds_line in bounds_text.split("\n"):
-                    line_text = bounds_line
-                    add_output_line()
-
-            # Add shape section (always)
-            line_text = indent
-            record_section_index("shape")
-            line_text += f"shape: {shape_str}"
+                # N.B. indent section and record section start after that
+                add_output(newline_indent)
+                add_output(bounds_text, section="bounds")
 
             if self.has_bounds():
-                line_text += f"  bounds{self._bounds_dm.shape}"
+                shape_str += f"  bounds{self._bounds_dm.shape}"
 
-            add_output_line()
+            # Add shape section (always)
+            add_output(newline_indent)
+            add_output(f"shape: {shape_str}", section="shape")
 
             # Add dtype section (always)
-            line_text = indent
-            record_section_index("dtype")
-            line_text += f"dtype: {self.dtype}"
-            add_output_line()
+            add_output(newline_indent)
+            add_output(f"dtype: {self.dtype}", section="dtype")
 
             for name in self._metadata_manager._fields:
                 if name == "units":
@@ -584,10 +575,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 if show:
                     # add a section for this property (metadata item)
                     # TODO: modify to do multi-line attribute output
-                    line_text = indent
-                    record_section_index(name)
-                    line_text += f"{name}: {val!r}"
-                    add_output_line()
+                    add_output(newline_indent)
+                    add_output(f"{name}: {val!r}", section=name)
 
         return "\n".join(output_lines)
 
