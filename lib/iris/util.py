@@ -22,6 +22,7 @@ from dask import array as da
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_concrete_data, is_lazy_data
 import iris.exceptions
 
