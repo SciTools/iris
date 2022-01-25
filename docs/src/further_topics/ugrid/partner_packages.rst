@@ -7,7 +7,7 @@ scientific community, which is why Iris is written in Python. But it is not as
 computationally strong as other languages, and this is a problem for working
 with unstructured meshes where computations are higher in volume and complexity
 (:ref:`see the data model detail <ugrid implications>`). So there are
-operations - which Python can perform acceptably on a structured grids - which
+operations - which Python can perform acceptably on structured grids - which
 need unworkably large time/resource to perform on an unstructured mesh. New
 approaches are needed...
 

@@ -14,8 +14,8 @@ The Mesh Data Model
 Evolution, not revolution
 =========================
 Mesh support has been designed wherever possible to fit within the existing
-Iris model. Meshes concern only the spatial location of data, and can
-optionally be limited to just the horizontal location (e.g. X and Y). Other
+Iris model. Meshes concern only the spatial geography of data, and can
+optionally be limited to just the horizontal geography (e.g. X and Y). Other
 dimensions such as time or ensemble member (and often vertical levels)
 retain their familiar structured format.
 
@@ -25,7 +25,7 @@ conventions, which are at the core of Iris' philosophy.
 What's Different?
 =================
 
-The mesh format represents data's geographic location using an **unstructured
+The mesh format represents data's geography using an **unstructured
 mesh**. This has significant pros and cons when compared to a structured grid.
 
 .. contents::
@@ -41,8 +41,8 @@ The Detail
      http://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
      )
 
-Structured Grids
-~~~~~~~~~~~~~~~~
+Structured Grids (the old world)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Assigning data to locations using a structured grid is essentially an act of
 matching coordinate arrays to each dimension of the data array. The data can
 also be represented as an area (instead of a point) by including a bounds array
@@ -55,37 +55,64 @@ for each coordinate array.
 
    :download:`full size image <images/data_structured_grid.svg>`
 
-Unstructured Meshes
-~~~~~~~~~~~~~~~~~~~
-The most basic element in a mesh is the 0-dimensional **node**: a single
-location in space. Every node in the mesh is defined by indexing the
-1-dimensional X and Y (and optionally Z) coordinate arrays (the
-``node_coordinates``) - e.g. ``(x[3], y[3])`` gives the position of the fourth
-node. Note that this means each node has its own coordinates, independent of
-every other node. Since nodes can be anywhere in the space - **unstructured** -
-the position in the array has nothing to do with spatial position.
+Unstructured Meshes (the new world)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A mesh is made up of different types of **element**:
 
-If data is assigned to node location it must be stored in a 1D array of equal
-length to the number of nodes in the mesh. So for an example data array called
-``data``: ``data[3]`` is at the position ``(x[3], y[3])``.
+.. list-table::
+    :widths: 15, 15, 70
 
-Data can also be assigned to higher dimensional elements - **edges**, **faces**
-or **volumes**. These elements are constructed by connecting nodes together
-using a 2-dimensional **connectivity** array. One dimension varies over each
-element, while the other dimension varies over each node that makes up that
-element; the values in the array are the node indices. E.g. we could make 2
-square faces from 6 nodes using this ``face_node_connectivity``:
-``[[0, 1, 3, 2], [2, 3, 5, 4]]``. Remember that meshes are **unstructured**, so
-there is no significance to the order of the faces in the array. Data assigned
-to a higher dimensional location must be stored in a 1D array of equal length
-to the number of elements in the mesh, e.g. ``my_data = [0.33, 4.02]`` for our
-example.
+    * - 0D
+      - ``node``
+      - The 'core' of the mesh. A point position in space, constructed from
+        2 or 3 coordinates (2D or 3D space).
+    * - 1D
+      - ``edge``
+      - Constructed by connecting 2 nodes.
+    * - 2D
+      - ``face``
+      - Constructed by connecting 3 or more nodes.
+    * - 3D
+      - ``volume``
+      - Constructed by connecting 4 or more nodes (which must each have 3
+        coordinates - 3D space).
 
-.. note::
+Every node in the mesh is defined by indexing the 1-dimensional X and Y (and
+optionally Z) coordinate arrays (the ``node_coordinates``) - e.g.
+``(x[3], y[3])`` gives the position of the fourth node. Note that this means
+each node has its own coordinates, independent of every other node.
 
-        Connectivities also exist to connect the higher dimensional elements,
-        e.g. ``face_edge_connectivity``. These are optional conveniences to
-        speed up certain operations and will not be discussed here.
+Any higher dimensional element - an edge/face/volume - is described by a
+sequence of the indices of the nodes that make up that element. E.g. a
+triangular face made from connecting the first, third and fourth nodes:
+``[0, 2, 3]``. These 1D sequences combine into a 2D array enumerating **all**
+the elements of that type - edge/face/volume - called a **connectivity**.
+E.g. we could make a mesh of 4 nodes, with 2 triangles described using this
+``face_node_connectivity``: ``[[0, 2, 3], [3, 2, 1]]`` (note the shared nodes).
+
+.. note:: More on Connectivities:
+
+        * The element type described by a connectivity is known as its
+          **location**; ``edge`` in ``edge_node_connectivity``.
+        * According to the UGRID conventions, the nodes in a face should be
+          listed in "anti-clockwise order from above".
+        * Connectivities also exist to connect the higher dimensional elements,
+          e.g. ``face_edge_connectivity``. These are optional conveniences to
+          speed up certain operations and will not be discussed here.
+
+.. important::
+
+        **Meshes are unstructured**. Elements are enumerated along a single
+        **unstructured dimension** represented by either the coordinate or
+        connectivity arrays detailed above - and an element's position within
+        its respective array has nothing to do with its spatial position.
+
+A data variable associated with a mesh has a **location** of either ``node``,
+``edge``, ``face`` or ``volume``. The data is stored in a 1D array with one
+datum per element, matched to its element by matching the datum index with the
+coordinate or connectivity index. So for an example data array called ``foo``:
+``foo[3]`` would be at position ``(x[3], y[3])`` if it were node-located, or at
+``faces[3]`` if it were face-located.
 
 .. figure:: images/data_ugrid_mesh.svg
    :alt: Diagram of how data is represented on an unstructured mesh
@@ -107,7 +134,7 @@ elements.
    Data can be assigned to mesh edge/face/volume 'centres'
 
 Mesh Flexibility
-~~~~~~~~~~~~~~~~
+++++++++++++++++
 Above we have seen how one could replicate data on a structured grid using
 a mesh instead. But the utility of a mesh is the extra flexibility it offers.
 Here are the main examples:
@@ -145,7 +172,7 @@ What does this mean?
 --------------------
 Meshes can represent much more varied spatial arrangements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The highly specific way of recording location (geometry) and shape
+The highly specific way of recording position (geometry) and shape
 (topology) allows meshes to represent essentially **any** spatial arrangement
 of data. There are therefore many new applications that aren't possible using a
 structured grid, including:
