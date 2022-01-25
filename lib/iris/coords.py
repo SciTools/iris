@@ -530,8 +530,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         bounds_array_str, 2 * n_indent
                     )
 
-                # start the 'bounds_text' from 'line_text', to preserve any
-                # indent : it may cover multiple lines
                 bounds_text = "bounds: "
                 if "\n" in bounds_array_str:
                     # Put initial '[' here, and the rest on subsequent lines
