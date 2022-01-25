@@ -571,10 +571,23 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     # work for all those defined so far.
                     show = val is not None and val is not False
                 if show:
-                    # add a section for this property (metadata item)
-                    # TODO: modify to do multi-line attribute output
-                    add_output(newline_indent)
-                    add_output(f"{name}: {val!r}", section=name)
+                    if name == "attributes":
+                        # Use a multi-line form for this.
+                        add_output(newline_indent)
+                        add_output("attributes:", section="attributes")
+                        max_attname_len = max(len(attr) for attr in val.keys())
+                        for attrname, attrval in val.items():
+                            attrname = attrname.ljust(max_attname_len)
+                            if isinstance(attrval, str):
+                                # quote strings
+                                attrval = repr(attrval)
+                            attr_string = f"{attrname}  {attrval}"
+                            add_output(newline_indent + indent + attr_string)
+                    else:
+                        # add a one-line section for this property
+                        # (aka metadata field)
+                        add_output(newline_indent)
+                        add_output(f"{name}: {val!r}", section=name)
 
         return "\n".join(output_lines)
 

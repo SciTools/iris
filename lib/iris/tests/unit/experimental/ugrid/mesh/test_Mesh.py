@@ -129,7 +129,8 @@ class TestProperties1D(TestMeshCommon):
             "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(self.mesh).split("\n"))
 
@@ -427,7 +428,8 @@ class TestProperties2D(TestProperties1D):
             ),
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(self.mesh).split("\n"))
 
@@ -474,7 +476,8 @@ class TestProperties2D(TestProperties1D):
             ),
             "    long_name: 'my_topology_mesh'",
             "    var_name: 'mesh'",
-            "    attributes: {'notes': 'this is a test'}",
+            "    attributes:",
+            "        notes  'this is a test'",
         ]
         self.assertEqual(expected, str(alt_mesh).split("\n"))
 
@@ -713,7 +716,8 @@ class Test__str__various(TestMeshCommon):
                 "    long_name: 'my_topology_mesh'",
                 "    var_name: 'mesh'",
                 "    units: Unit('m')",
-                "    attributes: {'notes': 'this is a test'}",
+                "    attributes:",
+                "        notes  'this is a test'",
             ]
         )
         self.assertTrue(result.endswith(expected))

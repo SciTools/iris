@@ -300,7 +300,8 @@ class Test__str_repr(tests.IrisTest):
             if not matched_any_upto:
                 regexp += ".*"
                 matched_any_upto = True
-            regexp += "attributes: {[^}]*}\n *"
+            # match 'attributes:' followed by N*lines with larger indent
+            regexp += "attributes:(\n        [^ \n]+ +[^ \n]+)+\n    "
         # After those items, expect 'axis' next
         # N.B. this FAILS if we had attributes when we didn't expect them
         regexp += f"axis: '{axis}'$"  # N.B. this is always the end

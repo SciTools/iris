@@ -320,7 +320,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
                 "empty": [],
                 "None": None,
                 "string": "this",
-                "long_long_long_long_long_long_name": 3,
+                "long_long_long_long_long_name": 3,
                 "other": "long_long_long_long_long_long_value",
                 "float": 4.3,
             }
@@ -333,15 +333,18 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    shape: (5,)",
             "    dtype: float64",
             "    long_name: 'x'",
-            # At present, some nasty long lines...
+            "    attributes:",
+            "        array                          [0. 1. 2. 3. 4. 5. 6.]",
+            "        list                           [1, 2, 3]",
+            "        empty                          []",
+            "        None                           None",
+            "        string                         'this'",
+            "        long_long_long_long_long_name  3",
             (
-                "    attributes: {'array': array([0., 1., 2., 3., 4., 5., "
-                "6.]), 'list': [1, 2, 3], 'empty': [], "
-                "'None': None, 'string': 'this', "
-                "'long_long_long_long_long_long_name': 3, "
-                "'other': 'long_long_long_long_long_long_value', "
-                "'float': 4.3}"
+                "        other                          "
+                "'long_long_long_long_long_long_value'"
             ),
+            "        float                          4.3",
         ]
         self.assertLines(expected, result)
 
@@ -920,7 +923,9 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    dtype: int64",
             "    standard_name: 'longitude'",
             "    long_name: 'long-name'",
-            "    attributes: {'a': 1, 'b': 'c'}",
+            "    attributes:",
+            "        a  1",
+            "        b  'c'",
             "    axis: 'x'",
         ]
         self.assertLines(expected, result)

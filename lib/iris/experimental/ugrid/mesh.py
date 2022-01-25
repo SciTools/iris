@@ -1044,7 +1044,19 @@ class Mesh(CFVariableMixin):
                 else:
                     show = val is not None
                 if show:
-                    line(f"{name}: {val!r}", 1)
+                    if name == "attributes":
+                        # Use a multi-line form for this.
+                        line("attributes:", 1)
+                        max_attname_len = max(len(attr) for attr in val.keys())
+                        for attrname, attrval in val.items():
+                            attrname = attrname.ljust(max_attname_len)
+                            if isinstance(attrval, str):
+                                # quote strings
+                                attrval = repr(attrval)
+                            attr_string = f"{attrname}  {attrval}"
+                            line(attr_string, 2)
+                    else:
+                        line(f"{name}: {val!r}", 1)
 
         result = "\n".join(lines)
         return result
