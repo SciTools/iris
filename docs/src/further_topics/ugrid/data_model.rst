@@ -104,7 +104,7 @@ E.g. we could make a mesh of 4 nodes, with 2 triangles described using this
 
         **Meshes are unstructured**. Elements are enumerated along a single
         **unstructured dimension** represented by either the coordinate or
-        connectivity arrays detailed above - and an element's position within
+        connectivity arrays detailed above, and an element's position within
         its respective array has nothing to do with its spatial position.
 
 A data variable associated with a mesh has a **location** of either ``node``,
@@ -145,6 +145,7 @@ Here are the main examples:
 .. figure:: images/ugrid_node_independence.svg
    :alt: Diagram demonstrating the independence of each mesh node
    :align: center
+   :width: 300
 
    Every mesh node is completely independent
 
@@ -154,6 +155,7 @@ Here are the main examples:
 .. figure:: images/ugrid_variable_faces.svg
    :alt: Diagram demonstrating mesh faces with variable node counts
    :align: center
+   :width: 300
 
    Mesh faces can have different node counts (using masking)
 
@@ -163,6 +165,7 @@ Here are the main examples:
 .. figure:: images/ugrid_edge_data.svg
    :alt: Diagram demonstrating data assigned to mesh edges
    :align: center
+   :width: 300
 
    Data can be assigned to mesh edges
 
