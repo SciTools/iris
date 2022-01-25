@@ -200,6 +200,12 @@ This document explains the changes made to Iris for this release
    deprecation warnings invite users to contact the Iris Developers if this
    isn't the case. (:pull:`4515`)
 
+#. `@wjbenfold`_ removed the :func:`iris.util.as_compatible_shape` function,
+   which was deprecated in ``v3.0``. Instead use
+   :class:`iris.common.resolve.Resolve`. For example, rather than calling
+   ``as_compatible_shape(src_cube, target_cube)`` replace with
+   ``Resolve(src_cube, target_cube)(target_cube.core_data())``. (:pull:`4513`)
+
 
 🔗 Dependencies
 ===============
