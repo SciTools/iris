@@ -104,6 +104,16 @@ This document explains the changes made to Iris for this release
    from `Metarelate`_.  From now we intend to manage phenonemon translation
    in Iris itself.  (:pull:`4484`)
 
+#. `@pp-mo`_ improved printout of various cube data component objects :
+   :class:`~iris.coords.Coord`, :class:`~iris.coords.CellMeasure`,
+   :class:`~iris.coords.AncillaryVariable`,
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
+   :class:`~iris.experimental.ugrid.mesh.Mesh`.
+   These now all provide a more controllable ``summary()`` method, and
+   more convenient and readable ``str()`` and ``repr()`` output in the style of
+   the :class:`iris.cube.Cube`.
+   They also no longer realise lazy data.  (:pull:`4499`).
+
 
 🐛 Bugs Fixed
 =============

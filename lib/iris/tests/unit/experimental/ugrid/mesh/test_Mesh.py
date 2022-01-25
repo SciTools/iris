@@ -106,23 +106,32 @@ class TestProperties1D(TestMeshCommon):
         self.assertEqual(expected, self.mesh.__getstate__())
 
     def test___repr__(self):
-        expected = (
-            "Mesh(topology_dimension=1, node_coords_and_axes=[(AuxCoord("
-            "array([0, 2, 1]), standard_name='longitude', units=Unit("
-            "'unknown'), long_name='long_name', var_name='node_lon', "
-            "attributes={'test': 1}), 'x'), (AuxCoord(array([0, 0, 1]), "
-            "standard_name='latitude', units=Unit('unknown'), "
-            "var_name='node_lat'), 'y')], connectivities=Connectivity("
-            "cf_role='edge_node_connectivity', start_index=0), "
-            "edge_coords_and_axes=[(AuxCoord(array([1. , 1.5, 0.5]), "
-            "standard_name='longitude', units=Unit('unknown'), "
-            "var_name='edge_lon'), 'x'), (AuxCoord(array([0. , 0.5, 0.5]), "
-            "standard_name='latitude', units=Unit('unknown'), "
-            "var_name='edge_lat'), 'y')], long_name='my_topology_mesh', "
-            "var_name='mesh', attributes={'notes': 'this is a test'}, "
-            "node_dimension='NodeDim', edge_dimension='EdgeDim')"
-        )
-        self.assertEqual(expected, self.mesh.__repr__())
+        expected = "<Mesh: 'my_topology_mesh'>"
+        self.assertEqual(expected, repr(self.mesh))
+
+    def test___str__(self):
+        expected = [
+            "Mesh : 'my_topology_mesh'",
+            "    topology_dimension: 1",
+            "    node",
+            "        node_dimension: 'NodeDim'",
+            "        node coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+            "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+            "    edge",
+            "        edge_dimension: 'EdgeDim'",
+            (
+                "        edge_node_connectivity: "
+                "<Connectivity: long_name / (unknown)  [...]  shape(3, 2)>"
+            ),
+            "        edge coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+            "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+            "    long_name: 'my_topology_mesh'",
+            "    var_name: 'mesh'",
+            "    attributes: {'notes': 'this is a test'}",
+        ]
+        self.assertEqual(expected, str(self.mesh).split("\n"))
 
     def test___eq__(self):
         # The dimension names do not participate in equality.
@@ -373,33 +382,101 @@ class TestProperties2D(TestProperties1D):
         cls.mesh = mesh.Mesh(**cls.kwargs)
 
     def test___repr__(self):
-        expected = (
-            "Mesh(topology_dimension=2, node_coords_and_axes=[(AuxCoord("
-            "array([0, 2, 1]), standard_name='longitude', units=Unit("
-            "'unknown'), long_name='long_name', var_name='node_lon', "
-            "attributes={'test': 1}), 'x'), (AuxCoord(array([0, 0, 1]), "
-            "standard_name='latitude', units=Unit('unknown'), "
-            "var_name='node_lat'), 'y')], connectivities=[Connectivity("
-            "cf_role='face_node_connectivity', start_index=0), Connectivity("
-            "cf_role='edge_node_connectivity', start_index=0), Connectivity("
-            "cf_role='face_edge_connectivity', start_index=0), Connectivity("
-            "cf_role='face_face_connectivity', start_index=0), Connectivity("
-            "cf_role='edge_face_connectivity', start_index=0), Connectivity("
-            "cf_role='boundary_node_connectivity', start_index=0)], "
-            "edge_coords_and_axes=[(AuxCoord(array([1. , 1.5, 0.5]), "
-            "standard_name='longitude', units=Unit('unknown'), "
-            "var_name='edge_lon'), 'x'), (AuxCoord(array([0. , 0.5, 0.5]), "
-            "standard_name='latitude', units=Unit('unknown'), "
-            "var_name='edge_lat'), 'y')], face_coords_and_axes=[(AuxCoord("
-            "array([0.5]), standard_name='longitude', units=Unit('unknown'), "
-            "var_name='face_lon'), 'x'), (AuxCoord(array([0.5]), "
-            "standard_name='latitude', units=Unit('unknown'), "
-            "var_name='face_lat'), 'y')], long_name='my_topology_mesh', "
-            "var_name='mesh', attributes={'notes': 'this is a test'}, "
-            "node_dimension='NodeDim', edge_dimension='EdgeDim', "
-            "face_dimension='FaceDim')"
-        )
-        self.assertEqual(expected, self.mesh.__repr__())
+        expected = "<Mesh: 'my_topology_mesh'>"
+        self.assertEqual(expected, repr(self.mesh))
+
+    def test___str__(self):
+        expected = [
+            "Mesh : 'my_topology_mesh'",
+            "    topology_dimension: 2",
+            "    node",
+            "        node_dimension: 'NodeDim'",
+            "        node coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+            "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+            "    edge",
+            "        edge_dimension: 'EdgeDim'",
+            (
+                "        edge_node_connectivity: "
+                "<Connectivity: long_name / (unknown)  [...]  shape(3, 2)>"
+            ),
+            "        edge coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+            "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+            "    face",
+            "        face_dimension: 'FaceDim'",
+            (
+                "        face_node_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            "        face coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]>",
+            "            <AuxCoord: latitude / (unknown)  [...]>",
+            "    optional connectivities",
+            (
+                "        face_face_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            (
+                "        face_edge_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            (
+                "        edge_face_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(3, 2)>"
+            ),
+            "    long_name: 'my_topology_mesh'",
+            "    var_name: 'mesh'",
+            "    attributes: {'notes': 'this is a test'}",
+        ]
+        self.assertEqual(expected, str(self.mesh).split("\n"))
+
+    # Test some different options of the str() operation here.
+    def test___str__noedgecoords(self):
+        mesh_kwargs = self.kwargs.copy()
+        del mesh_kwargs["edge_coords_and_axes"]
+        alt_mesh = mesh.Mesh(**mesh_kwargs)
+        expected = [
+            "Mesh : 'my_topology_mesh'",
+            "    topology_dimension: 2",
+            "    node",
+            "        node_dimension: 'NodeDim'",
+            "        node coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+            "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+            "    edge",
+            "        edge_dimension: 'EdgeDim'",
+            (
+                "        edge_node_connectivity: "
+                "<Connectivity: long_name / (unknown)  [...]  shape(3, 2)>"
+            ),
+            "    face",
+            "        face_dimension: 'FaceDim'",
+            (
+                "        face_node_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            "        face coordinates",
+            "            <AuxCoord: longitude / (unknown)  [...]>",
+            "            <AuxCoord: latitude / (unknown)  [...]>",
+            "    optional connectivities",
+            (
+                "        face_face_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            (
+                "        face_edge_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(1, 3)>"
+            ),
+            (
+                "        edge_face_connectivity: "
+                "<Connectivity: unknown / (unknown)  [...]  shape(3, 2)>"
+            ),
+            "    long_name: 'my_topology_mesh'",
+            "    var_name: 'mesh'",
+            "    attributes: {'notes': 'this is a test'}",
+        ]
+        self.assertEqual(expected, str(alt_mesh).split("\n"))
 
     def test_all_connectivities(self):
         expected = mesh.Mesh2DConnectivities(
@@ -567,6 +644,79 @@ class TestProperties2D(TestProperties1D):
 
     def test_face_node(self):
         self.assertEqual(self.FACE_NODE, self.mesh.face_node_connectivity)
+
+
+class Test__str__various(TestMeshCommon):
+    # Some extra testing for the str() operation : based on 1D meshes as simpler
+    def setUp(self):
+        # All the tests here want modified meshes, so use standard setUp to
+        # create afresh for each test, allowing them to modify it.
+        super().setUp()
+        # Mesh kwargs with topology_dimension=1 and all applicable
+        # arguments populated - this tests correct property setting.
+        self.kwargs = {
+            "topology_dimension": 1,
+            "node_coords_and_axes": (
+                (self.NODE_LON, "x"),
+                (self.NODE_LAT, "y"),
+            ),
+            "connectivities": [self.EDGE_NODE],
+            "long_name": "my_topology_mesh",
+            "var_name": "mesh",
+            "attributes": {"notes": "this is a test"},
+            "node_dimension": "NodeDim",
+            "edge_dimension": "EdgeDim",
+            "edge_coords_and_axes": (
+                (self.EDGE_LON, "x"),
+                (self.EDGE_LAT, "y"),
+            ),
+        }
+        self.mesh = mesh.Mesh(**self.kwargs)
+
+    def test___repr__basic(self):
+        expected = "<Mesh: 'my_topology_mesh'>"
+        self.assertEqual(expected, repr(self.mesh))
+
+    def test___repr__varname(self):
+        self.mesh.long_name = None
+        expected = "<Mesh: 'mesh'>"
+        self.assertEqual(expected, repr(self.mesh))
+
+    def test___repr__noname(self):
+        self.mesh.long_name = None
+        self.mesh.var_name = None
+        expected = "<Mesh object at 0x[0-9a-f]+>"
+        self.assertRegex(repr(self.mesh), expected)
+
+    def test___str__noattributes(self):
+        self.mesh.attributes = None
+        self.assertNotIn("attributes", str(self.mesh))
+
+    def test___str__emptyattributes(self):
+        self.mesh.attributes.clear()
+        self.assertNotIn("attributes", str(self.mesh))
+
+    def test___str__units_stdname(self):
+        # These are usually missing, but they *can* be present.
+        mesh_kwargs = self.kwargs.copy()
+        mesh_kwargs["standard_name"] = "height"  # Odd choice !
+        mesh_kwargs["units"] = "m"
+        alt_mesh = mesh.Mesh(**mesh_kwargs)
+        result = str(alt_mesh)
+        # We expect these to appear at the end.
+        expected = "\n".join(
+            [
+                "        edge coordinates",
+                "            <AuxCoord: longitude / (unknown)  [...]  shape(3,)>",
+                "            <AuxCoord: latitude / (unknown)  [...]  shape(3,)>",
+                "    standard_name: 'height'",
+                "    long_name: 'my_topology_mesh'",
+                "    var_name: 'mesh'",
+                "    units: Unit('m')",
+                "    attributes: {'notes': 'this is a test'}",
+            ]
+        )
+        self.assertTrue(result.endswith(expected))
 
 
 class TestOperations1D(TestMeshCommon):
@@ -1175,3 +1325,7 @@ class InitValidation(TestMeshCommon):
             mesh.Mesh,
             **kwargs,
         )
+
+
+if __name__ == "__main__":
+    tests.main()

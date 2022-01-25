@@ -1,2 +1,5 @@
-DimCoord([2009-09-09 17:10:00, 2009-09-09 17:20:00, 2009-09-09 17:30:00,
-       2009-09-09 17:40:00, 2009-09-09 17:50:00, 2009-09-09 18:00:00], standard_name='time', calendar='gregorian')
+DimCoord :  forecast_period / (hours)
+    points: [0.]
+    shape: (1,)
+    dtype: float64
+    standard_name: 'forecast_period'
