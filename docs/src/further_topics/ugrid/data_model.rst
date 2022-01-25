@@ -66,8 +66,8 @@ every other node. Since nodes can be anywhere in the space - **unstructured** -
 the position in the array has nothing to do with spatial position.
 
 If data is assigned to node location it must be stored in a 1D array of equal
-length to the number of nodes in the mesh. ``data[3]`` is at the position:
-``(x[3], y[3])``.
+length to the number of nodes in the mesh. So for an example data array called
+``data``: ``data[3]`` is at the position ``(x[3], y[3])``.
 
 Data can also be assigned to higher dimensional elements - **edges**, **faces**
 or **volumes**. These elements are constructed by connecting nodes together
@@ -258,6 +258,10 @@ How UGRID information is stored
     * | Optional: :attr:`~iris.experimental.ugrid.Mesh.edge_coords`,
         :attr:`~iris.experimental.ugrid.Mesh.face_coords`
       | For indicating the 'centres' of the edges/faces.
+      | **NOTE:** generating a :class:`~iris.experimental.ugrid.MeshCoord` from
+        a :class:`~iris.experimental.ugrid.Mesh` currently (``Jan 2022``)
+        requires centre coordinates for the given ``location``; to be rectified
+        in future.
 
   * 1 or more :class:`iris.experimental.ugrid.Connectivity`\s:
 
@@ -318,11 +322,10 @@ to produce a :class:`~iris.coords.Coord`
 representation of all the :class:`~iris.experimental.ugrid.Mesh`\'s
 nodes/edges/faces for the given axis.
 
-A :class:`~iris.experimental.ugrid.Mesh`
-method is available to create a :class:`~iris.experimental.ugrid.MeshCoord` for
+The method :meth:`iris.experimental.ugrid.Mesh.to_MeshCoords` is available to
+create a :class:`~iris.experimental.ugrid.MeshCoord` for
 every axis represented by that :class:`~iris.experimental.ugrid.Mesh`,
-requiring only the ``location`` argument:
-:meth:`~iris.experimental.ugrid.Mesh.to_MeshCoords`.
+given only the ``location`` argument
 
 
 __ CF-UGRID_
