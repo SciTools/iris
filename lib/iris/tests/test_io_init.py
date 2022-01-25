@@ -12,6 +12,7 @@ Test the io/__init__.py module.
 import iris.tests as tests  # isort:skip
 
 from io import BytesIO
+import pathlib
 
 import iris.fileformats as iff
 import iris.io
@@ -43,6 +44,31 @@ class TestDecodeUri(tests.IrisTest):
         }
         for uri, pair in tests.items():
             self.assertEqual(pair, iris.io.decode_uri(uri))
+
+    def test_decode_uri_path_object(self):
+        tests = {
+            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (
+                uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
+            ): (uri[:4], uri[7:]),
+            (uri := "http://www.somehost.com:8080/resource/thing.grib"): (
+                uri[:4],
+                uri[6:],
+            ),
+            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
+                "file",
+                uri,
+            ),
+        }
+        for uri, expected in tests.items():
+            self.assertEqual(expected, iris.io.decode_uri(pathlib.Path(uri)))
 
 
 class TestFileFormatPicker(tests.IrisTest):

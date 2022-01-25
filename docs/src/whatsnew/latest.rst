@@ -94,6 +94,12 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ updated to the latest CF Standard Names Table ``v78`` (21 Sept 2021).
    (:issue:`4479`, :pull:`4483`)
 
+#. `@SimonPeatman`_ added support for filenames in the form of a :class:`~pathlib.PurePath`
+   in :func:`~iris.load`, :func:`~iris.load_cube`, :func:`~iris.load_cubes`,
+   :func:`~iris.load_raw` and :func:`~iris.save` (:issue:`3411`, :pull:`3917`).
+   Support for :class:`~pathlib.PurePath` is yet to be implemented across the rest
+   of Iris (:issue:`4523`).
+
 #. `@pp-mo`_ removed broken tooling for deriving Iris metadata translations
    from `Metarelate`_.  From now we intend to manage phenonemon translation
    in Iris itself.  (:pull:`4484`)
@@ -308,6 +314,7 @@ This document explains the changes made to Iris for this release
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
+.. _@SimonPeatman: https://github.com/SimonPeatman
 .. _@tinyendian: https://github.com/tinyendian
 
 .. comment
