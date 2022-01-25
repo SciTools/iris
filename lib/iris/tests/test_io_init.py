@@ -19,7 +19,7 @@ import iris.io
 
 
 class TestDecodeUri(tests.IrisTest):
-    def test_decode_uri(self):
+    def test_decode_uri__str(self):
         tests = {
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
@@ -33,11 +33,11 @@ class TestDecodeUri(tests.IrisTest):
                 uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
             ): (
                 uri[:4],
-                uri[7:],
+                uri[5:],
             ),
             (uri := "http://www.somehost.com:8080/resource/thing.grib"): (
                 uri[:4],
-                uri[6:],
+                uri[5:],
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
@@ -45,9 +45,9 @@ class TestDecodeUri(tests.IrisTest):
             ),
         }
         for uri, expected in tests.items():
-            self.assertEqual(expected, iris.io.decode_uri(Path(uri)))
+            self.assertEqual(expected, iris.io.decode_uri(uri))
 
-    def test_decode_uri_path_object(self):
+    def test_decode_uri__path_object(self):
         tests = {
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
@@ -56,13 +56,6 @@ class TestDecodeUri(tests.IrisTest):
             (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
                 "file",
                 uri,
-            ),
-            (
-                uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"
-            ): (uri[:4], uri[7:]),
-            (uri := "http://www.somehost.com:8080/resource/thing.grib"): (
-                uri[:4],
-                uri[6:],
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
