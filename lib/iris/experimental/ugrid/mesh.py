@@ -131,18 +131,18 @@ class Connectivity(_DimensionalMetadata):
 
         * indices (numpy.ndarray or numpy.ma.core.MaskedArray or dask.array.Array):
             2D array giving the topological connection relationship between
-            ' :attr:`location` elements ' and ' :attr:`connected` elements '.
+            :attr:`location` elements and :attr:`connected` elements.
             The :attr:`location_axis` dimension indexes over the
             :attr:`location` dimension of the mesh - i.e. its length matches
             the total number of :attr:`location` elements in the mesh. The
             :attr:`connected_axis` dimension can be any length, corresponding
             to the highest number of :attr:`connected` elements connected to a
             :attr:`location` element. The array values are indices into the
-            :attr:`connected` dimension of the mesh. Use a
-            :class:`numpy.ma.core.MaskedArray` if the number of
+            :attr:`connected` dimension of the mesh. If the number of
             :attr:`connected` elements varies between :attr:`location`
-            elements - mask a :attr:`location` element's unused index 'slots'.
-            Use a :class:`dask.array.Array` to keep indices 'lazy'.
+            elements: use a :class:`numpy.ma.core.MaskedArray` and mask the
+            :attr:`location` elements' unused index 'slots'. Use a
+            :class:`dask.array.Array` to keep indices 'lazy'.
         * cf_role (str):
             Denotes the topological relationship that this connectivity
             describes. Made up of this array's :attr:`location`, and the
@@ -177,7 +177,7 @@ class Connectivity(_DimensionalMetadata):
             (This parameter allows support for fastest varying index being
             either first or last).
             E.g. for ``face_node_connectivity``, for 10 faces:
-            ``indices.shape[location_axis] = 10``.
+            ``indices.shape[location_axis] == 10``.
 
         """
 
