@@ -183,7 +183,11 @@ class Test_CubeSummary(tests.IrisTest):
 
         attribute_section = rep.scalar_sections["Attributes:"]
         attribute_contents = attribute_section.contents
-        expected_contents = ["a: 1", "b: two", "c: ' this \\n   that\\tand.'"]
+        expected_contents = [
+            "a: 1",
+            "b: 'two'",
+            "c: ' this \\n   that\\tand.'",
+        ]
         # Note: a string with \n or \t in it gets "repr-d".
         # Other strings don't (though in coord 'extra' lines, they do.)
 

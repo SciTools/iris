@@ -12,4 +12,4 @@ air_potential_temperature / (K)     (time: 6; model_level_number: 70; grid_latit
     Scalar coordinates:
         forecast_period             0.0 hours
     Attributes:
-        source                      Iris test case
+        source                      'Iris test case'
