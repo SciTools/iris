@@ -4234,7 +4234,7 @@ Data from Met Office Unified Model
             dates or times may optionally be supplied as datetime.datetime or
             cftime.datetime instances.
         * scheme:
-            The type of interpolation to use to interpolate from this
+            An instance of the type of interpolation to use to interpolate from this
             :class:`~iris.cube.Cube` to the given sample points. The
             interpolation schemes currently available in Iris are:
 
@@ -4307,7 +4307,7 @@ calendar='gregorian')
         * grid:
             A :class:`~iris.cube.Cube` that defines the target grid.
         * scheme:
-            The type of regridding to use to regrid this cube onto the
+            An instance of the type of regridding to use to regrid this cube onto the
             target grid. The regridding schemes in Iris currently include:
 
                 * :class:`iris.analysis.Linear`\*,

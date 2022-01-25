@@ -10,7 +10,6 @@ Miscellaneous utility functions.
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
-from contextlib import contextmanager
 import copy
 import functools
 import inspect
@@ -396,10 +395,24 @@ def array_equal(array1, array2, withnans=False):
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     """
-    Returns whether two numbers are almost equal, allowing for the
-    finite precision of floating point numbers.
+    Returns whether two numbers are almost equal, allowing for the finite
+    precision of floating point numbers.
+
+    .. deprecated:: 3.2.0
+
+       Instead use :func:`math.isclose`. For example, rather than calling
+       ``approx_equal(a, b, max_abs, max_rel)`` replace with ``math.isclose(a,
+       b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
+       if the actual error equals the maximum, whereas :func:`util.approx_equal`
+       will return False.
 
     """
+    wmsg = (
+        "iris.util.approx_equal has been deprecated and will be removed, "
+        "please use math.isclose instead."
+    )
+    warn_deprecated(wmsg)
+
     # Deal with numbers close to zero
     if abs(a - b) < max_absolute_error:
         return True
@@ -1054,18 +1067,20 @@ def format_array(arr):
 
     """
 
-    summary_insert = ""
     summary_threshold = 85
+    summary_insert = "..." if arr.size > summary_threshold else ""
     edge_items = 3
     ffunc = str
-    formatArray = np.core.arrayprint._formatArray
     max_line_len = 50
-    legacy = "1.13"
-    if arr.size > summary_threshold:
-        summary_insert = "..."
-    options = np.get_printoptions()
-    options["legacy"] = legacy
-    with _printopts_context(**options):
+
+    # Format the array with version 1.13 legacy behaviour
+    with np.printoptions(legacy="1.13"):
+        # Use this (private) routine for more control.
+        formatArray = np.core.arrayprint._formatArray
+        # N.B. the 'legacy' arg had different forms in different numpy versions
+        # -- fetch the required form from the internal options dict
+        format_options_legacy = np.core.arrayprint._format_options["legacy"]
+
         result = formatArray(
             arr,
             ffunc,
@@ -1074,27 +1089,10 @@ def format_array(arr):
             separator=", ",
             edge_items=edge_items,
             summary_insert=summary_insert,
-            legacy=legacy,
+            legacy=format_options_legacy,
         )
 
     return result
-
-
-@contextmanager
-def _printopts_context(**kwargs):
-    """
-    Update the numpy printoptions for the life of this context manager.
-
-    Note: this function can be removed with numpy>=1.15 thanks to
-          https://github.com/numpy/numpy/pull/10406
-
-    """
-    original_opts = np.get_printoptions()
-    np.set_printoptions(**kwargs)
-    try:
-        yield
-    finally:
-        np.set_printoptions(**original_opts)
 
 
 def new_axis(src_cube, scalar_coord=None):

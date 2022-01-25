@@ -100,6 +100,10 @@ This document explains the changes made to Iris for this release
    Support for :class:`~pathlib.PurePath` is yet to be implemented across the rest
    of Iris (:issue:`4523`).
 
+#. `@pp-mo`_ removed broken tooling for deriving Iris metadata translations
+   from `Metarelate`_.  From now we intend to manage phenonemon translation
+   in Iris itself.  (:pull:`4484`)
+
 
 🐛 Bugs Fixed
 =============
@@ -148,12 +152,15 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ changed how a delayed unit conversion is performed on a cube
    so that a cube with lazy data awaiting a unit conversion can be pickled.
-   (:issue:`4354 `, :pull:`4377`)
+   (:issue:`4354`, :pull:`4377`)
 
 #. `@pp-mo`_ fixed a bug in netcdf loading, whereby *any* rotated latlon coordinate
    was mistakenly interpreted as a latitude, usually resulting in two 'latitude's
    instead of one latitude and one longitude.
-   (:issue:`4460 `, :pull:`4470`)
+   (:issue:`4460`, :pull:`4470`)
+
+#. `@wjbenfold`_ stopped :meth:`iris.coord_systems.GeogCS.as_cartopy_projection`
+   from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
 
 💣 Incompatible Changes
@@ -174,7 +181,15 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@wjbenfold`_ removed :mod:`iris.experimental.equalise_cubes`. In ``v3.0``
+   the experimental ``equalise_attributes`` functionality was moved to the
+   :mod:`iris.util.equalise_attributes` function. Since then, calling the
+   :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
+   an exception. (:issue:`3528`, :pull:`4496`)
+
+#. `@wjbenfold`_ deprecated :func:`iris.util.approx_equal` in preference for
+   :func:`math.isclose`. The :func:`~iris.util.approx_equal` function will be
+   removed in a future release of Iris. (:pull:`4514`)
 
 
 🔗 Dependencies
@@ -306,3 +321,4 @@ This document explains the changes made to Iris for this release
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
 .. _faster documentation building: https://docs.readthedocs.io/en/stable/guides/conda.html#making-builds-faster-with-mamba
+.. _Metarelate: http://www.metarelate.net/
