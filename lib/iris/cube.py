@@ -745,7 +745,7 @@ class Cube(CFVariableMixin):
                 mean over years             time
             Attributes:
                 STASH                       m01s16i203
-                source                      Data from Met Office Unified Model
+                source                      'Data from Met Office Unified Model'
 
 
     See the :doc:`user guide</userguide/index>` for more information.
@@ -3636,7 +3636,7 @@ class Cube(CFVariableMixin):
                     mean                        month, year
                     mean                        longitude
                 Attributes:
-                    Conventions                 CF-1.5
+                    Conventions                 'CF-1.5'
                     STASH                       m01s00i024
 
 
@@ -3871,7 +3871,7 @@ x            -              -
                     mean                        month, year
                     mean                        year
                 Attributes:
-                    Conventions                 CF-1.5
+                    Conventions                 'CF-1.5'
                     STASH                       m01s00i024
 
         """
@@ -4076,8 +4076,8 @@ x            -               -
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
-Data from Met Office Unified Model
-                    um_version                  7.6
+'Data from Met Office Unified Model'
+                    um_version                  '7.6'
 
 
             >>> print(air_press.rolling_window('time', iris.analysis.MEAN, 3))
@@ -4102,8 +4102,8 @@ x            -               -
                 Attributes:
                     STASH                       m01s00i024
                     source                      \
-Data from Met Office Unified Model
-                    um_version                  7.6
+'Data from Met Office Unified Model'
+                    um_version                  '7.6'
 
             Notice that the forecast_period dimension now represents the 4
             possible windows of size 3 from the original cube.

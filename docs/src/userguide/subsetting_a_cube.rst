@@ -30,7 +30,7 @@ A subset of a cube can be "extracted" from a multi-dimensional cube in order to 
         Scalar coordinates:
             grid_latitude               0.0 degrees
         Attributes:
-            Conventions                 CF-1.5
+            Conventions                 'CF-1.5'
 
 
 In this example we start with a 3 dimensional cube, with dimensions of ``height``, ``grid_latitude`` and ``grid_longitude``,
@@ -97,8 +97,8 @@ same way as loading with constraints:
             time                        2009-11-19 10:00:00
         Attributes:
             STASH                       m01s00i004
-            source                      Data from Met Office Unified Model
-            um_version                  7.3
+            source                      'Data from Met Office Unified Model'
+            um_version                  '7.3'
 
 
 Cube Iteration

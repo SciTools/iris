@@ -120,10 +120,10 @@ For example, given the following :class:`~iris.cube.Cube`,
         Cell methods:
             mean                        time (6 hour)
         Attributes:
-            Conventions                 CF-1.5
-            Model scenario              A1B
+            Conventions                 'CF-1.5'
+            Model scenario              'A1B'
             STASH                       m01s03i236
-            source                      Data from Met Office Unified Model 6.05
+            source                      'Data from Met Office Unified Model 6.05'
 
 We can easily get all of the associated metadata of the :class:`~iris.cube.Cube`
 using the ``metadata`` property:
