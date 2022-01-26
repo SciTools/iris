@@ -12,9 +12,10 @@ Eventual destination: dedicated module in :mod:`iris` root.
 """
 from abc import ABC, abstractmethod
 from collections import namedtuple
-import re
+from collections.abc import Container
 from typing import Iterable
 
+from cf_units import Unit
 from dask import array as da
 import numpy as np
 
@@ -24,6 +25,7 @@ from ...common import (
     metadata_filter,
     metadata_manager_factory,
 )
+from ...common.metadata import BaseMetadata
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
@@ -212,58 +214,6 @@ class Connectivity(_DimensionalMetadata):
             units=units,
             attributes=attributes,
         )
-
-    def __repr__(self):
-        def kwargs_filter(k, v):
-            result = False
-            if k != "cf_role":
-                if v is not None:
-                    result = True
-                    if (
-                        not isinstance(v, str)
-                        and isinstance(v, Iterable)
-                        and not v
-                    ):
-                        result = False
-                    elif k == "units" and v == "unknown":
-                        result = False
-            return result
-
-        def array2repr(array):
-            if self.has_lazy_indices():
-                result = repr(array)
-            else:
-                with np.printoptions(
-                    threshold=NP_PRINTOPTIONS_THRESHOLD,
-                    edgeitems=NP_PRINTOPTIONS_EDGEITEMS,
-                ):
-                    result = re.sub("\n  *", " ", repr(array))
-            return result
-
-        # positional arguments
-        args = ", ".join(
-            [
-                f"{array2repr(self.core_indices())}",
-                f"cf_role={self.cf_role!r}",
-            ]
-        )
-
-        # optional arguments (metadata)
-        kwargs = ", ".join(
-            [
-                f"{k}={v!r}"
-                for k, v in self.metadata._asdict().items()
-                if kwargs_filter(k, v)
-            ]
-        )
-
-        return f"{self.__class__.__name__}({', '.join([args, kwargs])})"
-
-    def __str__(self):
-        args = ", ".join(
-            [f"cf_role={self.cf_role!r}", f"start_index={self.start_index!r}"]
-        )
-        return f"{self.__class__.__name__}({args})"
 
     @property
     def _values(self):
@@ -984,77 +934,129 @@ class Mesh(CFVariableMixin):
             result = not result
         return result
 
-    def __repr__(self):
-        def to_coord_and_axis(members):
-            def axis(member):
-                return member.split("_")[1]
+    def summary(self, shorten=False):
+        """
+        Return a string representation of the Mesh.
 
-            result = [
-                f"({coord!s}, {axis(member)!r})"
-                for member, coord in members._asdict().items()
-                if coord is not None
-            ]
-            result = f"[{', '.join(result)}]" if result else None
-            return result
+        Parameters
+        ----------
+        shorten : bool, default = False
+            If True, produce a oneline string form of the form <Mesh: ...>.
+            If False, produce a multi-line detailed print output.
 
-        node_coords_and_axes = to_coord_and_axis(self.node_coords)
-        connectivities = [
-            str(connectivity)
-            for connectivity in self.all_connectivities
-            if connectivity is not None
-        ]
+        Returns
+        -------
+        result : str
 
-        if len(connectivities) == 1:
-            connectivities = connectivities[0]
+        """
+        if shorten:
+            result = self._summary_oneline()
         else:
-            connectivities = f"[{', '.join(connectivities)}]"
+            result = self._summary_multiline()
+        return result
 
-        # positional arguments
-        args = [
-            f"topology_dimension={self.topology_dimension!r}",
-            f"node_coords_and_axes={node_coords_and_axes}",
-            f"connectivities={connectivities}",
-        ]
+    def __repr__(self):
+        return self.summary(shorten=True)
 
-        # optional argument
-        edge_coords_and_axes = to_coord_and_axis(self.edge_coords)
-        if edge_coords_and_axes:
-            args.append(f"edge_coords_and_axes={edge_coords_and_axes}")
+    def __str__(self):
+        return self.summary(shorten=False)
 
-        # optional argument
-        if self.topology_dimension > 1:
-            face_coords_and_axes = to_coord_and_axis(self.face_coords)
-            if face_coords_and_axes:
-                args.append(f"face_coords_and_axes={face_coords_and_axes}")
+    def _summary_oneline(self):
+        # We use the repr output to produce short one-line identity summary,
+        # similar to the object.__str__ output "<object at xxx>".
+        # This form also used in other str() constructions, like MeshCoord.
+        # By contrast, __str__ (below) produces a readable multi-line printout.
+        mesh_name = self.name()
+        if mesh_name in (None, "", "unknown"):
+            mesh_name = None
+        if mesh_name:
+            # Use a more human-readable form
+            mesh_string = f"<Mesh: '{mesh_name}'>"
+        else:
+            # Mimic the generic object.__str__ style.
+            mesh_id = id(self)
+            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
 
-        def kwargs_filter(k, v):
-            result = False
-            if k != "topology_dimension":
-                if not (
-                    self.topology_dimension == 1 and k == "face_dimension"
-                ):
-                    if v is not None:
-                        result = True
-                        if (
-                            not isinstance(v, str)
-                            and isinstance(v, Iterable)
-                            and not v
-                        ):
-                            result = False
-                        elif k == "units" and v == "unknown":
-                            result = False
-            return result
+        return mesh_string
 
-        # optional arguments (metadata)
-        args.extend(
-            [
-                f"{k}={v!r}"
-                for k, v in self.metadata._asdict().items()
-                if kwargs_filter(k, v)
-            ]
+    def _summary_multiline(self):
+        # Produce a readable multi-line summary of the Mesh content.
+        lines = []
+        n_indent = 4
+        indent_str = " " * n_indent
+
+        def line(text, i_indent=0):
+            indent = indent_str * i_indent
+            lines.append(f"{indent}{text}")
+
+        line(f"Mesh : '{self.name()}'")
+        line(f"topology_dimension: {self.topology_dimension}", 1)
+        for element in ("node", "edge", "face"):
+            if element == "node":
+                element_exists = True
+            else:
+                main_conn_name = f"{element}_node_connectivity"
+                main_conn = getattr(self, main_conn_name, None)
+                element_exists = main_conn is not None
+            if element_exists:
+                # Include a section for this element
+                line(element, 1)
+                # Print element dimension
+                dim_name = f"{element}_dimension"
+                dim = getattr(self, dim_name)
+                line(f"{dim_name}: '{dim}'", 2)
+                # Print defining connectivity (except node)
+                if element != "node":
+                    main_conn_string = main_conn.summary(
+                        shorten=True, linewidth=0
+                    )
+                    line(f"{main_conn_name}: {main_conn_string}", 2)
+                # Print coords
+                include_key = f"include_{element}s"
+                coords = self.coords(**{include_key: True})
+                if coords:
+                    line(f"{element} coordinates", 2)
+                    for coord in coords:
+                        coord_string = coord.summary(shorten=True, linewidth=0)
+                        line(coord_string, 3)
+
+        # Having dealt with essential info, now add any optional connectivities
+        # N.B. includes boundaries: as optional connectivity, not an "element"
+        optional_conn_names = (
+            "boundary_connectivity",
+            "face_face_connectivity",
+            "face_edge_connectivity",
+            "edge_face_connectivity",
         )
+        optional_conns = [
+            getattr(self, name, None) for name in optional_conn_names
+        ]
+        optional_conns = {
+            name: conn
+            for conn, name in zip(optional_conns, optional_conn_names)
+            if conn is not None
+        }
+        if optional_conns:
+            line("optional connectivities", 1)
+            for name, conn in optional_conns.items():
+                conn_string = conn.summary(shorten=True, linewidth=0)
+                line(f"{name}: {conn_string}", 2)
 
-        return f"{self.__class__.__name__}({', '.join(args)})"
+        # Output the detail properties, basically those from CFVariableMixin
+        for name in BaseMetadata._members:
+            val = getattr(self, name, None)
+            if val is not None:
+                if name == "units":
+                    show = val.origin != Unit(None)
+                elif isinstance(val, Container):
+                    show = bool(val)
+                else:
+                    show = val is not None
+                if show:
+                    line(f"{name}: {val!r}", 1)
+
+        result = "\n".join(lines)
+        return result
 
     def __setstate__(self, state):
         metadata_manager, coord_manager, connectivity_manager = state
@@ -2950,61 +2952,61 @@ class MeshCoord(AuxCoord):
     def __hash__(self):
         return hash(id(self))
 
-    def _string_summary(self, repr_style):
-        # Note: bypass the immediate parent here, which is Coord, because we
-        # have no interest in reporting coord_system or climatological, or in
-        # printing out our points/bounds.
-        # We also want to list our defining properties, i.e. mesh/location/axis
-        # *first*, before names/units etc, so different from other Coord types.
-
-        # First construct a shortform text summary to identify the Mesh.
-        # IN 'str-mode', this attempts to use Mesh.name() if it is set,
-        # otherwise uses an object-id style (as also for 'repr-mode').
-        # TODO: use a suitable method provided by Mesh, e.g. something like
-        #  "Mesh.summary(shorten=True)", when it is available.
-        mesh_name = None
-        if not repr_style:
-            mesh_name = self.mesh.name()
-            if mesh_name in (None, "", "unknown"):
-                mesh_name = None
-        if mesh_name:
-            # Use a more human-readable form
-            mesh_string = f"Mesh({mesh_name!r})"
+    def summary(self, *args, **kwargs):
+        # We need to specialise _DimensionalMetadata.summary, so that we always
+        # print the mesh+location of a MeshCoord.
+        if len(args) > 0:
+            shorten = args[0]
         else:
-            # Mimic the generic object.__str__ style.
-            mesh_id = id(self.mesh)
-            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
-        result = (
-            f"mesh={mesh_string}"
-            f", location={self.location!r}"
-            f", axis={self.axis!r}"
-        )
-        # Add 'other' metadata that is drawn from the underlying node-coord.
-        # But put these *afterward*, unlike other similar classes.
-        for item in (
-            "shape",
-            "standard_name",
-            "units",
-            "long_name",
-            "attributes",
-        ):
-            # NOTE: order of these matches Coord.summary, but omit var_name.
-            val = getattr(self, item, None)
-            if item == "attributes":
-                is_blank = len(val) == 0  # an empty dict is as good as none
-            else:
-                is_blank = val is None
-            if not is_blank:
-                result += f", {item}={val!r}"
+            shorten = kwargs.get("shorten", False)
 
-        result = f"MeshCoord({result})"
+        # Get the default-form result.
+        if shorten:
+            # NOTE: we simply aren't interested in the values for the repr,
+            # so fix linewidth to suppress them
+            kwargs["linewidth"] = 1
+
+        # Plug private key, to get back the section structure info
+        section_indices = {}
+        kwargs["_section_indices"] = section_indices
+        result = super().summary(*args, **kwargs)
+
+        # Modify the generic 'default-form' result to produce what we want.
+        if shorten:
+            # Single-line form : insert mesh+location before the array part
+            # Construct a text detailing the mesh + location
+            mesh_string = self.mesh.name()
+            if mesh_string == "unknown":
+                # If no name, replace with the one-line summary
+                mesh_string = self.mesh.summary(shorten=True)
+            extra_str = f"mesh({mesh_string}) location({self.location})  "
+            # find where in the line the data-array text begins
+            i_line, i_array = section_indices["data"]
+            assert i_line == 0
+            # insert the extra text there
+            result = result[:i_array] + extra_str + result[i_array:]
+            # NOTE: this invalidates the original width calculation and may
+            # easily extend the result beyond the intended maximum linewidth.
+            # We do treat that as an advisory control over array printing, not
+            # an absolute contract, so just ignore the problem for now.
+        else:
+            # Multiline form
+            # find where the "location: ... " section is
+            i_location, i_namestart = section_indices["location"]
+            lines = result.split("\n")
+            location_line = lines[i_location]
+            # copy the indent spacing
+            indent = location_line[:i_namestart]
+            # use that to construct a suitable 'mesh' line
+            mesh_string = self.mesh.summary(shorten=True)
+            mesh_line = f"{indent}mesh: {mesh_string}"
+            # Move the 'location' line, putting it and the 'mesh' line right at
+            # the top, immediately after the header line.
+            del lines[i_location]
+            lines[1:1] = [mesh_line, location_line]
+            # Re-join lines to give the result
+            result = "\n".join(lines)
         return result
-
-    def __str__(self):
-        return self._string_summary(repr_style=False)
-
-    def __repr__(self):
-        return self._string_summary(repr_style=True)
 
     def _construct_access_arrays(self):
         """

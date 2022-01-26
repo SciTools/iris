@@ -51,6 +51,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
     >>> # Save a cube list to a PP file, appending to the contents of the file
     >>> # if it already exists
     >>> iris.save(cubes, "myfile.pp", append=True)
+    
     >>> # Save a cube to netCDF, defaults to NETCDF4 file format
     >>> iris.save(cubes[0], "myfile.nc")
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
@@ -72,6 +73,12 @@ See
 * :py:func:`iris.fileformats.pp.save`
 
 for more details on supported arguments for the individual savers.
+
+.. note::
+
+    The existence of a keyword argument for one saver does not guarantee the
+    same works for all savers. For example, it isn't possible to pass an
+    ``append`` keyword argument to the netCDF saver (see :ref:`netcdf_save`).
 
 Customising the Save Process
 ----------------------------
@@ -102,6 +109,7 @@ Similarly a PP field may need to be written out with a specific value for LBEXP.
                 yield field
         iris.fileformats.pp.save_fields(tweaked_fields(cubes[0]), '/tmp/app.pp')
 
+.. _netcdf_save:
 
 NetCDF
 ^^^^^^
