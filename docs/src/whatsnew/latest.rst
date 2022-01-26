@@ -220,6 +220,11 @@ This document explains the changes made to Iris for this release
    ``as_compatible_shape(src_cube, target_cube)`` replace with
    ``Resolve(src_cube, target_cube)(target_cube.core_data())``. (:pull:`4513`)
 
+#. `@wjbenfold`_ deprecated :func:`iris.analysis.maths.intersection_of_cubes` in
+   preference for :meth:`iris.cube.CubeList.extract_overlapping`. The
+   :func:`~iris.analysis.maths.intersection_of_cubes` function will be removed in
+   a future release of Iris. (:pull:`4541`)
+
 
 🔗 Dependencies
 ===============
