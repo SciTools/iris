@@ -47,7 +47,7 @@ class TestDecodeUri(tests.IrisTest):
         for uri, expected in tests.items():
             self.assertEqual(expected, iris.io.decode_uri(uri))
 
-    def test_decode_uri__path_object(self):
+    def test_decode_uri__path(self):
         tests = {
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
