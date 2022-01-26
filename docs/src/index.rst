@@ -100,6 +100,15 @@ For **Iris 2.4** and earlier documentation please see the
 
 .. toctree::
    :maxdepth: 1
+   :caption: What's New in Iris
+   :hidden:
+
+   whatsnew/latest
+   Archive <whatsnew/index>
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: User Guide
    :name: userguide_index
    :hidden:
@@ -154,6 +163,5 @@ For **Iris 2.4** and earlier documentation please see the
    :hidden:
 
    generated/api/iris
-   whatsnew/index
    techpapers/index
    copyright
