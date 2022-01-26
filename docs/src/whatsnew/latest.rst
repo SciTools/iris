@@ -172,6 +172,10 @@ This document explains the changes made to Iris for this release
 #. `@wjbenfold`_ stopped :meth:`iris.coord_systems.GeogCS.as_cartopy_projection`
    from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
+#. `@rcomer`_ corrected the ``long_name`` mapping from UM stash code ``m01s09i215``
+   to indicate cloud fraction greater than 7.9 oktas, rather than 7.5 
+   (:issue:`3305`, :pull:`4535`)
+
 
 💣 Incompatible Changes
 =======================
