@@ -329,8 +329,10 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["generated/gallery"],
     # filename pattern for the files in the gallery
     "filename_pattern": "/plot_",
-    # filename patternt to ignore in the gallery
+    # filename pattern to ignore in the gallery
     "ignore_pattern": r"__init__\.py",
+    # force gallery building, unless overridden (see src/Makefile)
+    "plot_gallery": "'True'",
 }
 
 # -----------------------------------------------------------------------------
