@@ -990,7 +990,7 @@ values. All other metadata members will be left unaltered.
 .. _CF Conventions: https://cfconventions.org/
 .. _Cell Measures: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#cell-measures
 .. _Flags: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#flags
-.. _GitHub Issue: https://github.com/SciTools/iris/issues/new/choose
+.. _GitHub Issue: :issue:`new/choose`
 .. _mapping: https://docs.python.org/3/glossary.html#term-mapping
 .. _namedtuple: https://docs.python.org/3/library/collections.html#collections.namedtuple
 .. _namedtuple._make: https://docs.python.org/3/library/collections.html#collections.somenamedtuple._make

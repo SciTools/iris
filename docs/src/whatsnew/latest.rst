@@ -345,7 +345,7 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _GitHub: :issue:`new/choose`
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all

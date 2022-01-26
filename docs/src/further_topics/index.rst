@@ -22,5 +22,5 @@ that may be of interest to the more advanced or curious user.
 * :doc:`lenient_maths`
 
 
-.. _GitHub Documentation Issue: https://github.com/SciTools/iris/issues/new?assignees=&labels=New%3A+Documentation%2C+Type%3A+Documentation&template=documentation.md&title=
+.. _GitHub Documentation Issue: :issue:`new?assignees=&labels=New%3A+Documentation%2C+Type%3A+Documentation&template=documentation.md&title=`
 .. _SciTools/iris: https://github.com/SciTools/iris

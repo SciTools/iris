@@ -315,7 +315,7 @@ This document explains the changes made to Iris for this release
 .. _blacken-docs: https://github.com/asottile/blacken-docs
 .. _conda-lock: https://github.com/conda-incubator/conda-lock
 .. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _GitHub: :issue:`new/choose`
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
 .. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
