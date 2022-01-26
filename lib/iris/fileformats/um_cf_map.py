@@ -681,7 +681,7 @@ STASH_TO_CF = {
     'm01s09i212': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_4p5_oktas', 'kft'),
     'm01s09i213': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_5p5_oktas', 'kft'),
     'm01s09i214': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_6p5_oktas', 'kft'),
-    'm01s09i215': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_7p5_oktas', 'kft'),
+    'm01s09i215': CFName(None, 'cloud_base_altitude_assuming_only_consider_cloud_area_fraction_greater_than_7p9_oktas', 'kft'),
     'm01s09i216': CFName(None, 'cloud_area_fraction_assuming_random_overlap', '1'),
     'm01s09i217': CFName(None, 'cloud_area_fraction_assuming_maximum_random_overlap', '1'),
     'm01s09i218': CFName(None, 'cloud_area_fraction_assuming_only_consider_surface_to_1000_feet_asl', '1'),
