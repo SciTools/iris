@@ -400,10 +400,148 @@ Regional Extraction
 
 .. rubric:: |tagline: regional extraction|
 
-.. todo: populate!
+As described in :doc:`data_model`, indexing for a range along a
+:class:`~iris.cube.Cube`\'s :meth:`~iris.cube.Cube.mesh_dim` will not provide
+a contiguous region, since **position on the unstructured dimension is
+unrelated to spatial position**. This means that subsetted
+:class:`~iris.experimental.ugrid.MeshCoord`\s cannot be reliably interpreted
+as intended, and subsetting a :class:`~iris.experimental.ugrid.MeshCoord` is
+therefore set to return an :class:`~iris.coords.AuxCoord` instead - breaking
+the link between :class:`~iris.cube.Cube` and
+:class:`~iris.experimental.ugrid.Mesh`:
+
+.. dropdown:: :opticon:`code`
+
+    .. doctest:: ugrid_operations
+
+        >>> edge_cube = my_cubelist.extract_cube("edge_data")
+        >>> print(edge_cube)
+        edge_data / (K)                     (-- : 6; height: 3)
+            Dimension coordinates:
+                height                          -          x
+            Mesh coordinates:
+                latitude                        x          -
+                longitude                       x          -
+            Attributes:
+                Conventions                 CF-1.7
+
+        # Sub-setted MeshCoords have become AuxCoords.
+        >>> print(edge_cube[:-1])
+        edge_data / (K)                     (-- : 5; height: 3)
+            Dimension coordinates:
+                height                          -          x
+            Auxiliary coordinates:
+                latitude                        x          -
+                longitude                       x          -
+            Attributes:
+                Conventions                 CF-1.7
+
+Extracting a region therefore requires extra steps - to determine the spatial
+position of the data points before they can be analysed as inside/outside the
+selected region. The recommended way to do this is using tools provided by
+:ref:`ugrid geovista`, which is optimised for performant mesh analysis:
 
 ..
-    Highlight the uselessness of indexing.
+    Not using doctest here as want to keep GeoVista as optional dependency.
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        >>> from geovista import Transform
+        >>> from geovista.geodesic import BBox
+        >>> from iris import load_cube
+        >>> from iris.experimental.ugrid import Mesh, PARSE_UGRID_ON_LOAD
+
+        # Need a larger dataset to demonstrate this operation.
+        # You could also download this file from github.com/SciTools/iris-test-data.
+        >>> from iris.tests import get_data_path
+        >>> file_path = get_data_path(
+        ...     [
+        ...         "NetCDF",
+        ...         "unstructured_grid",
+        ...         "lfric_ngvat_2D_72t_face_half_levels_main_conv_rain.nc",
+        ...     ]
+        ... )
+
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     global_cube = load_cube(file_path, "conv_rain")
+        >>> print(global_cube)
+        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 864)
+            Mesh coordinates:
+                latitude                                    -        x
+                longitude                                   -        x
+            Auxiliary coordinates:
+                time                                        x        -
+            Cell methods:
+                point                                   time
+            Attributes:
+                Conventions                             UGRID
+                description                             Created by xios
+                interval_operation                      300 s
+                interval_write                          300 s
+                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
+                online_operation                        instant
+                timeStamp                               2020-Oct-18 21:18:35 GMT
+                title                                   Created by xios
+                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
+
+        # Convert the Mesh to a GeoVista PolyData object.
+        >>> lons, lats = global_cube.mesh.node_coords
+        >>> face_node = global_cube.mesh.face_node_connectivity
+        >>> indices = face_node.indices_by_location()
+        >>> global_polydata = Transform.from_unstructured(
+        ...     lons.points, lats.points, indices, start_index=face_node.start_index
+        ... )
+
+        # Define a region of 4 corners connected by great circles.
+        #  Specialised sub-classes of BBox are also available e.g. panel/wedge.
+        >>> region = BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45])
+        # 'Apply' the region to the PolyData object.
+        >>> region_polydata = region.enclosed(global_polydata, preference="center")
+        # Get the remaining face indices, to use for indexing the Cube.
+        >>> indices = region_polydata["vtkOriginalCellIds"]
+
+        >>> print(type(indices))
+        <class 'numpy.ndarray'>
+        # 101 is smaller than the original 864.
+        >>> print(len(indices))
+        101
+        >>> print(indices[:10])
+        [ 6  7  8  9 10 11 18 19 20 21]
+
+        # Use the face indices to subset the global cube.
+        >>> region_cube = global_cube[:, indices]
+
+        # In this case we **know** the indices correspond to a contiguous
+        #  region, so we will convert the sub-setted Cube back into a
+        #  Cube-with-Mesh.
+        >>> new_mesh = Mesh.from_coords(*region_cube.coords(dimensions=1))
+        >>> new_mesh_coords = new_mesh.to_MeshCoords(global_cube.location)
+        >>> for coord in new_mesh_coords:
+        ...     region_cube.remove_coord(coord.name())
+        ...     region_cube.add_aux_coord(coord, 1)
+
+        # A Mesh-Cube with a subset (101) of the original 864 faces.
+        >>> print(region_cube)
+        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 101)
+            Mesh coordinates:
+                latitude                                    -        x
+                longitude                                   -        x
+            Auxiliary coordinates:
+                time                                        x        -
+            Cell methods:
+                point                                   time
+            Attributes:
+                Conventions                             UGRID
+                description                             Created by xios
+                interval_operation                      300 s
+                interval_write                          300 s
+                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
+                online_operation                        instant
+                timeStamp                               2020-Oct-18 21:18:35 GMT
+                title                                   Created by xios
+                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
 
 Regridding
 ----------
@@ -411,7 +549,178 @@ Regridding
 
 .. rubric:: |tagline: regridding|
 
-.. todo: populate!
+Regridding to or from a mesh requires different logic than Iris' existing
+regridders, which are designed for structured grids. For this we recommend
+ESMF's powerful regridding tools, which integrate with Iris' mesh data model
+via the :ref:`ugrid iris-esmf-regrid` package.
+
+.. todo: inter-sphinx links when available.
+
+Regridding is achieved via the
+:class:`esmf_regrid.experimental.unstructured_scheme.MeshToGridESMFRegridder`
+and
+:class:`~esmf_regrid.experimental.unstructured_scheme.GridToMeshESMFRegridder`
+classes. Regridding from a source :class:`~iris.cube.Cube` to a target
+:class:`~iris.cube.Cube` involves initialising and then calling one of these
+classes. Initialising is done by passing in the source and target
+:class:`~iris.cube.Cube` as arguments. The regridder is then called by passing
+the source :class:`~iris.cube.Cube` as an argument. We can demonstrate this
+with the
+:class:`~esmf_regrid.experimental.unstructured_scheme.MeshToGridESMFRegridder`:
+
+..
+    Not using doctest here as want to keep iris-esmf-regrid as optional dependency.
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        >>> from esmf_regrid.experimental.unstructured_scheme import MeshToGridESMFRegridder
+        >>> from iris import load, load_cube
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+
+        # You could also download these files from github.com/SciTools/iris-test-data.
+        >>> from iris.tests import get_data_path
+        >>> mesh_file = get_data_path(
+        ...     ["NetCDF", "unstructured_grid", "lfric_surface_mean.nc"]
+        ... )
+        >>> grid_file = get_data_path(
+        ...     ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
+        ... )
+
+        # Load a list of cubes defined on the same Mesh.
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     mesh_cubes = load(mesh_file)
+
+        # Extract a specific cube.
+        >>> mesh_cube1 = mesh_cubes.extract_cube("sea_surface_temperature")
+        >>> print(mesh_cube1)
+        sea_surface_temperature / (K)       (-- : 1; -- : 13824)
+            Mesh coordinates:
+                latitude                        -       x
+                longitude                       -       x
+            Auxiliary coordinates:
+                time                            x       -
+            Cell methods:
+                mean                        time (300 s)
+                mean                        time_counter
+            Attributes:
+                Conventions                 UGRID
+                description                 Created by xios
+                interval_operation          300 s
+                interval_write              1 d
+                name                        lfric_surface
+                online_operation            average
+                timeStamp                   2020-Feb-07 16:23:14 GMT
+                title                       Created by xios
+                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+        # Load the target grid.
+        >>> sample_grid = load_cube(grid_file)
+        >>> print(sample_grid)
+        sample_grid / (unknown)             (latitude: 180; longitude: 360)
+            Dimension coordinates:
+                latitude                             x               -
+                longitude                            -               x
+            Attributes:
+                Conventions                 CF-1.7
+
+        # Initialise the regridder.
+        >>> rg = MeshToGridESMFRegridder(mesh_cube1, sample_grid)
+
+        # Regrid the mesh cube cube.
+        >>> result1 = rg(mesh_cube1)
+        >>> print(result1)
+        sea_surface_temperature / (K)       (-- : 1; latitude: 180; longitude: 360)
+            Dimension coordinates:
+                latitude                        -            x               -
+                longitude                       -            -               x
+            Auxiliary coordinates:
+                time                            x            -               -
+            Cell methods:
+                mean                        time (300 s)
+                mean                        time_counter
+            Attributes:
+                Conventions                 UGRID
+                description                 Created by xios
+                interval_operation          300 s
+                interval_write              1 d
+                name                        lfric_surface
+                online_operation            average
+                timeStamp                   2020-Feb-07 16:23:14 GMT
+                title                       Created by xios
+                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+.. note::
+
+    **All** :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` are
+    retained when regridding, so watch out for any attributes that reference
+    the format (there are several in these examples) - you may want to manually
+    remove them to avoid later confusion.
+
+The initialisation process is computationally expensive so we use caching to
+improve performance. Once a regridder has been initialised, it can be used on
+any :class:`~iris.cube.Cube` which has been defined on the same
+:class:`~iris.experimental.ugrid.Mesh` (or on the same **grid** in the case of
+:class:`~esmf_regrid.experimental.unstructured_scheme.GridToMeshESMFRegridder`).
+Since calling a regridder is usually a lot faster than initialising, reusing
+regridders can save a lot of time. We can demonstrate the reuse of the
+previously initialised regridder:
+
+.. dropdown:: :opticon:`code`
+
+    .. code-block:: python
+
+        # Extract a different cube defined on te same Mesh.
+        >>> mesh_cube2 = mesh_cubes.extract_cube("precipitation_flux")
+        >>> print(mesh_cube2)
+        precipitation_flux / (kg m-2 s-1)   (-- : 1; -- : 13824)
+            Mesh coordinates:
+                latitude                        -       x
+                longitude                       -       x
+            Auxiliary coordinates:
+                time                            x       -
+            Cell methods:
+                mean                        time (300 s)
+                mean                        time_counter
+            Attributes:
+                Conventions                 UGRID
+                description                 Created by xios
+                interval_operation          300 s
+                interval_write              1 d
+                name                        lfric_surface
+                online_operation            average
+                timeStamp                   2020-Feb-07 16:23:14 GMT
+                title                       Created by xios
+                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+        # Regrid the new mesh cube using the same regridder.
+        >>> result2 = rg(mesh_cube2)
+        >>> print(result2)
+        precipitation_flux / (kg m-2 s-1)   (-- : 1; latitude: 180; longitude: 360)
+            Dimension coordinates:
+                latitude                        -            x               -
+                longitude                       -            -               x
+            Auxiliary coordinates:
+                time                            x            -               -
+            Cell methods:
+                mean                        time (300 s)
+                mean                        time_counter
+            Attributes:
+                Conventions                 UGRID
+                description                 Created by xios
+                interval_operation          300 s
+                interval_write              1 d
+                name                        lfric_surface
+                online_operation            average
+                timeStamp                   2020-Feb-07 16:23:14 GMT
+                title                       Created by xios
+                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+Support also exists for saving and loading previously initialised regridders -
+:func:`esmf_regrid.experimental.io.save_regridder` and
+:func:`~esmf_regrid.experimental.io.load_regridder` - so that they can be
+re-used by future scripts.
 
 Equality
 --------

@@ -43,6 +43,8 @@ Specifics of what operations would require their installation can be found in:
         'under construction'.
 
 
+.. _`ugrid geovista`:
+
 `GeoVista`_
 ===========
 .. image:: images/geovistalogo.svg
@@ -66,6 +68,8 @@ Applications
 
 * Extract a specific region from a mesh.
 * Combine multiple meshes into one.
+
+.. _`ugrid iris-esmf-regrid`:
 
 `iris-esmf-regrid`_
 ===================
