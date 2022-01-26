@@ -821,7 +821,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
 
     def test_connectivity(self):
         # Check we can print a Connectivity
-        # Like a Coord, but always print : cf_role, src_dim, start_index
+        # Like a Coord, but always print : cf_role, location_axis, start_index
         data = self.sample_data(shape=(3, 2), datatype=int)
         conn = Connectivity(
             data, cf_role="edge_node_connectivity", long_name="enc", units="1"
@@ -839,13 +839,13 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'enc'",
             "    cf_role: 'edge_node_connectivity'",
             "    start_index: 0",
-            "    src_dim: 0",
+            "    location_axis: 0",
         ]
         self.assertLines(expected, result)
 
     def test_connectivity__start_index(self):
         # Check we can print a Connectivity
-        # Like a Coord, but always print : cf_role, src_dim, start_index
+        # Like a Coord, but always print : cf_role, location_axis, start_index
         data = self.sample_data(shape=(3, 2), datatype=int)
         conn = Connectivity(
             data + 1,
@@ -867,17 +867,17 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'enc'",
             "    cf_role: 'edge_node_connectivity'",
             "    start_index: 1",
-            "    src_dim: 0",
+            "    location_axis: 0",
         ]
         self.assertLines(expected, result)
 
-    def test_connectivity__src_dim(self):
+    def test_connectivity__location_axis(self):
         # Check we can print a Connectivity
-        # Like a Coord, but always print : cf_role, src_dim, start_index
+        # Like a Coord, but always print : cf_role, location_axis, start_index
         data = self.sample_data(shape=(3, 2), datatype=int)
         conn = Connectivity(
             data.transpose(),
-            src_dim=1,
+            location_axis=1,
             cf_role="edge_node_connectivity",
             long_name="enc",
             units="1",
@@ -894,7 +894,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'enc'",
             "    cf_role: 'edge_node_connectivity'",
             "    start_index: 0",
-            "    src_dim: 1",
+            "    location_axis: 1",
         ]
         self.assertLines(expected, result)
 
