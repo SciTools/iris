@@ -94,9 +94,25 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ updated to the latest CF Standard Names Table ``v78`` (21 Sept 2021).
    (:issue:`4479`, :pull:`4483`)
 
+#. `@SimonPeatman`_ added support for filenames in the form of a :class:`~pathlib.PurePath`
+   in :func:`~iris.load`, :func:`~iris.load_cube`, :func:`~iris.load_cubes`,
+   :func:`~iris.load_raw` and :func:`~iris.save` (:issue:`3411`, :pull:`3917`).
+   Support for :class:`~pathlib.PurePath` is yet to be implemented across the rest
+   of Iris (:issue:`4523`).
+
 #. `@pp-mo`_ removed broken tooling for deriving Iris metadata translations
    from `Metarelate`_.  From now we intend to manage phenonemon translation
    in Iris itself.  (:pull:`4484`)
+
+#. `@pp-mo`_ improved printout of various cube data component objects :
+   :class:`~iris.coords.Coord`, :class:`~iris.coords.CellMeasure`,
+   :class:`~iris.coords.AncillaryVariable`,
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
+   :class:`~iris.experimental.ugrid.mesh.Mesh`.
+   These now all provide a more controllable ``summary()`` method, and
+   more convenient and readable ``str()`` and ``repr()`` output in the style of
+   the :class:`iris.cube.Cube`.
+   They also no longer realise lazy data.  (:pull:`4499`).
 
 
 🐛 Bugs Fixed
@@ -146,12 +162,15 @@ This document explains the changes made to Iris for this release
 
 #. `@wjbenfold`_ changed how a delayed unit conversion is performed on a cube
    so that a cube with lazy data awaiting a unit conversion can be pickled.
-   (:issue:`4354 `, :pull:`4377`)
+   (:issue:`4354`, :pull:`4377`)
 
 #. `@pp-mo`_ fixed a bug in netcdf loading, whereby *any* rotated latlon coordinate
    was mistakenly interpreted as a latitude, usually resulting in two 'latitude's
    instead of one latitude and one longitude.
-   (:issue:`4460 `, :pull:`4470`)
+   (:issue:`4460`, :pull:`4470`)
+
+#. `@wjbenfold`_ stopped :meth:`iris.coord_systems.GeogCS.as_cartopy_projection`
+   from assuming the globe to be the Earth (:issue:`4408`, :pull:`4497`)
 
 
 💣 Incompatible Changes
@@ -177,6 +196,25 @@ This document explains the changes made to Iris for this release
    :mod:`iris.util.equalise_attributes` function. Since then, calling the
    :func:`iris.experimental.equalise_cubes.equalise_attributes` function raised
    an exception. (:issue:`3528`, :pull:`4496`)
+
+#. `@wjbenfold`_ deprecated :func:`iris.util.approx_equal` in preference for
+   :func:`math.isclose`. The :func:`~iris.util.approx_equal` function will be
+   removed in a future release of Iris. (:pull:`4514`)
+
+#. `@wjbenfold`_ deprecated :mod:`iris.experimental.raster` as it is not
+   believed to still be in use. The deprecation warnings invite users to contact
+   the Iris Developers if this isn't the case. (:pull:`4525`)
+
+#. `@wjbenfold`_ deprecated :mod:`iris.fileformats.abf` and
+   :mod:`iris.fileformats.dot` as they are not believed to still be in use. The
+   deprecation warnings invite users to contact the Iris Developers if this
+   isn't the case. (:pull:`4515`)
+
+#. `@wjbenfold`_ removed the :func:`iris.util.as_compatible_shape` function,
+   which was deprecated in ``v3.0``. Instead use
+   :class:`iris.common.resolve.Resolve`. For example, rather than calling
+   ``as_compatible_shape(src_cube, target_cube)`` replace with
+   ``Resolve(src_cube, target_cube)(target_cube.core_data())``. (:pull:`4513`)
 
 
 🔗 Dependencies
@@ -297,6 +335,7 @@ This document explains the changes made to Iris for this release
 .. _@bsherratt: https://github.com/bsherratt
 .. _@larsbarring: https://github.com/larsbarring
 .. _@pdearnshaw: https://github.com/pdearnshaw
+.. _@SimonPeatman: https://github.com/SimonPeatman
 .. _@tinyendian: https://github.com/tinyendian
 
 .. comment

@@ -209,6 +209,7 @@ todo_include_todos = True
 # api generation configuration
 autodoc_member_order = "groupwise"
 autodoc_default_flags = ["show-inheritance"]
+autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]

@@ -20,7 +20,16 @@ import numpy.ma as ma
 from osgeo import gdal, osr
 
 import iris
+from iris._deprecation import warn_deprecated
 import iris.coord_systems
+
+wmsg = (
+    "iris.experimental.raster has been deprecated and will be removed in a "
+    "future release. If you make use of this functionality, please contact "
+    "the Iris Developers to discuss how to retain it (which may involve "
+    "reversing the deprecation)."
+)
+warn_deprecated(wmsg)
 
 _GDAL_DATATYPES = {
     "i2": gdal.GDT_Int16,
