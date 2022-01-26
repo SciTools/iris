@@ -88,7 +88,7 @@ subsequent example operations on this page.
         # Create some dead-centre edge coordinates.
         >>> edge_x, edge_y = [
         ...     AuxCoord(
-        ...         node_coord.points[edge_node_c.indices_by_src()].mean(axis=1),
+        ...         node_coord.points[edge_node_c.indices_by_location()].mean(axis=1),
         ...         node_coord.standard_name,
         ...     )
         ...     for node_coord in (node_x, node_y)
@@ -133,9 +133,9 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
 
         >>> my_cubelist = CubeList()
         >>> for conn in (edge_node_c, face_node_c):
-        ...    location = conn.src_location
+        ...    location = conn.location
         ...    mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
-        ...    data_shape = (len(conn.indices_by_src()), len(vertical_levels.points))
+        ...    data_shape = (len(conn.indices_by_location()), len(vertical_levels.points))
         ...    data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
         ...
         ...    my_cubelist.append(
