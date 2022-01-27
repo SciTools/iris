@@ -6,8 +6,18 @@
 """
 Regridding functions.
 
-"""
+.. note::
 
+    .. deprecated:: 3.2.0
+
+    This package will be removed in a future release.
+    The PointInCell class has now moved to :class:`iris.analysis.PointInCell`.
+    All the other content will be withdrawn.
+
+    If you still use any of this, please contact the Iris Developers to
+    discuss how to replace it or to retain it.
+
+"""
 import copy
 import functools
 import warnings
@@ -18,6 +28,7 @@ import numpy as np
 import numpy.ma as ma
 import scipy.interpolate
 
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import map_complete_blocks
 from iris.analysis._interpolation import (
     get_xy_coords,
@@ -33,6 +44,15 @@ import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
 from iris.util import _meshgrid
+
+wmsg = (
+    "The 'iris.experimental.regrid' package is deprecated since version 3.2, "
+    "and will be removed in a future release.  The PointInCell class has now "
+    "moved into iris.analysis.  All its other content will be withdrawn.  "
+    "If you still use any of this, please contact the Iris Developers to "
+    "discuss how to replace it or to retain it (reverse the deprecation)."
+)
+warn_deprecated(wmsg)
 
 
 def _get_xy_coords(cube):
@@ -593,6 +613,21 @@ def regrid_area_weighted_rectilinear_src_and_grid(
     mean of data values from src_grid regridded onto the horizontal grid of
     grid_cube.
 
+    .. note::
+
+        .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use :meth:`~iris.cube.Cube.regrid` with the
+        :class:`iris.analysis.AreaWeighted` scheme instead : this is an exact
+        replacement.
+
+        For example :
+
+        .. code::
+
+            result = src_cube.regrid(grid_cube, AreaWeighted())
+
     This function requires that the horizontal grids of both cubes are
     rectilinear (i.e. expressed in terms of two orthogonal 1D coordinates)
     and that these grids are in the same coordinate system. This function
@@ -629,6 +664,15 @@ def regrid_area_weighted_rectilinear_src_and_grid(
         A new :class:`iris.cube.Cube` instance.
 
     """
+    wmsg = (
+        "The function "
+        "'iris.experimental.regrid."
+        "regrid_area_weighted_rectilinear_src_and_grid' "
+        "has been deprecated, and will be removed in a future release.  "
+        "Please consult the docstring for details."
+    )
+    warn_deprecated(wmsg)
+
     regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         src_cube, grid_cube
     )
@@ -1093,6 +1137,21 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
 
+    .. note ::
+
+        .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use :meth:`~iris.cube.Cube.regrid` with the
+        :class:`iris.analysis.PointInCell` scheme instead : this is an exact
+        replacement.
+
+        For example :
+
+        .. code::
+
+            result = src_cube.regrid(grid_cube, PointInCell())
+
     This function requires that the :data:`src_cube` has a horizontal grid
     defined by a pair of X- and Y-axis coordinates which are mapped over the
     same cube dimensions, thus each point has an individually defined X and
@@ -1134,6 +1193,14 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
         A :class:`iris.cube.Cube` instance.
 
     """
+    wmsg = (
+        "The function "
+        "'iris.experimental.regrid."
+        "regrid_weighted_curvilinear_to_rectilinear' "
+        "has been deprecated, and will be removed in a future release.  "
+        "Please consult the docstring for details."
+    )
+    warn_deprecated(wmsg)
     regrid_info = _regrid_weighted_curvilinear_to_rectilinear__prepare(
         src_cube, weights, grid_cube
     )
@@ -1572,6 +1639,16 @@ class ProjectedUnstructuredLinear:
         Linear regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
+        .. note::
+
+            .. deprecated:: 3.2.0
+
+            This class is scheduled to be removed in a future release, and no
+            replacement is currently planned.
+            If you make use of this functionality, please contact the Iris
+            Developers to discuss how to retain it (which could include
+            reversing the deprecation).
+
         Optional Args:
 
         * projection: `cartopy.crs instance`
@@ -1581,6 +1658,12 @@ class ProjectedUnstructuredLinear:
 
         """
         self.projection = projection
+        wmsg = (
+            "The class iris.experimental.regrid.ProjectedUnstructuredLinear "
+            "has been deprecated, and will be removed in a future release.  "
+            "Please consult the docstring for details."
+        )
+        warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
         """
@@ -1639,6 +1722,17 @@ class ProjectedUnstructuredNearest:
         Nearest regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
+        .. note::
+
+            .. deprecated:: 3.2.0
+
+            This class is scheduled to be removed in a future release, and no
+            exact replacement is currently planned.
+            Please use :class:`iris.analysis.UnstructuredNearest` instead, if
+            possible.  If you have a need for this exact functionality, please
+            contact the Iris Developers to discuss how to retain it (which
+            could include reversing the deprecation).
+
         Optional Args:
 
         * projection: `cartopy.crs instance`
@@ -1648,6 +1742,13 @@ class ProjectedUnstructuredNearest:
 
         """
         self.projection = projection
+        wmsg = (
+            "iris.experimental.regrid.ProjectedUnstructuredNearest has been "
+            "deprecated, and will be removed in a future release.  "
+            "Please use 'iris.analysis.UnstructuredNearest' instead, where "
+            "possible.  Consult the docstring for details."
+        )
+        warn_deprecated(wmsg)
 
     def regridder(self, src_cube, target_grid):
         """
