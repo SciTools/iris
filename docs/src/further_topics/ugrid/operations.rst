@@ -94,7 +94,7 @@ subsequent example operations on this page.
         ...     for node_coord in (node_x, node_y)
         ... ]
 
-        >>> face_indices = np.ma.masked_where(999, [[0, 1, 3, 2], [1, 4, 3, 999]])
+        >>> face_indices = np.ma.masked_equal([[0, 1, 3, 2], [1, 4, 3, 999]], 999)
         >>> face_node_c = Connectivity(
         ...     indices=face_indices, cf_role="face_node_connectivity"
         ... )

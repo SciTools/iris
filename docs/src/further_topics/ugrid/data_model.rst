@@ -46,14 +46,26 @@ Structured Grids (the old world)
 Assigning data to locations using a structured grid is essentially an act of
 matching coordinate arrays to each dimension of the data array. The data can
 also be represented as an area (instead of a point) by including a bounds array
-for each coordinate array.
+for each coordinate array. :numref:`data_structured_grid` visualises an
+example.
 
-.. figure:: images/data_structured_grid.svg
-   :alt: Diagram of how data is represented on a structured grid
+..  _data_structured_grid:
+..  figure:: images/data_structured_grid.svg
+    :alt: Diagram of how data is represented on a structured grid
+    :align: right
+    :width: 1280
 
-   Data on a structured grid
+    Data on a structured grid.
 
-   :download:`full size image <images/data_structured_grid.svg>`
+    1D coordinate arrays (pink circles) are combined to construct a structured
+    grid of points (pink crosses). 2D bounds arrays (blue circles) can also be
+    used to describe the 1D boundaries (blue lines) at either side of each
+    rank of points; each point therefore having four bounds (x+y, upper+lower),
+    together describing a quadrilateral area around that point. Data from the
+    2D data array (orange circles) can be assigned to these point locations
+    (orange diamonds) or area locations (orange quads) by matching the relative
+    positions in the data array to the relative spatial positions - see the
+    black outlined shapes as examples of this in action.
 
 Unstructured Meshes (the new world)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -112,26 +124,49 @@ A data variable associated with a mesh has a **location** of either ``node``,
 datum per element, matched to its element by matching the datum index with the
 coordinate or connectivity index. So for an example data array called ``foo``:
 ``foo[3]`` would be at position ``(x[3], y[3])`` if it were node-located, or at
-``faces[3]`` if it were face-located.
+``faces[3]`` if it were face-located. :numref:`data_ugrid_mesh` visualises an
+example of what is described above.
 
-.. figure:: images/data_ugrid_mesh.svg
-   :alt: Diagram of how data is represented on an unstructured mesh
+..  _data_ugrid_mesh:
+..  figure:: images/data_ugrid_mesh.svg
+    :alt: Diagram of how data is represented on an unstructured mesh
+    :align: right
+    :width: 1280
 
-   Data on an Unstructured Mesh
+    Data on an unstructured mesh
 
-   :download:`full size image <images/data_ugrid_mesh.svg>`
+    1D coordinate arrays (pink circles) describe node positions in space (pink
+    crosses). A 2D connectivity array (blue circles) describes faces by
+    connecting four nodes - by referencing their indices - into a face outline
+    (blue outlines on the map). Data from the 1D data array (orange circles)
+    can be assigned to these node locations (orange diamonds) or face locations
+    (orange quads) by matching the indices in the data array to the indices in
+    the coordinate arrays (for nodes) or connectivity array (for faces). See
+    the black outlined shapes as examples of index matching in action, and the
+    black stippled shapes to demonstrate that relative array position confers
+    no relative spatial information.
 
 ----
 
 The mesh model also supports edges/faces/volumes having associated 'centre'
 coordinates - to allow point data to be assigned to these elements. 'Centre' is
 just a convenience term - the points can exist anywhere within their respective
-elements.
+elements. See :numref:`ugrid_element_centres` for a visualised example.
 
-.. figure:: images/ugrid_element_centres.svg
-   :alt: Diagram demonstrating mesh face-centred data.
+..  _ugrid_element_centres:
+..  figure:: images/ugrid_element_centres.svg
+    :alt: Diagram demonstrating mesh face-centred data.
+    :align: right
+    :width: 1280
 
-   Data can be assigned to mesh edge/face/volume 'centres'
+    Data can be assigned to mesh edge/face/volume 'centres'
+
+    1D *node* coordinate arrays (pink circles) describe node positions in
+    space (pink crosses). A 2D connectivity array (blue circles) describes
+    faces by connecting four nodes into a face outline (blue outlines on the
+    map). Further 1D *face* coordinate arrays (pink circles) describe a
+    'centre' point position (pink stars) for each face enumerated in the
+    connectivity array.
 
 Mesh Flexibility
 ++++++++++++++++
@@ -139,35 +174,56 @@ Above we have seen how one could replicate data on a structured grid using
 a mesh instead. But the utility of a mesh is the extra flexibility it offers.
 Here are the main examples:
 
-* Every node is completely independent - every one can have unique X and
-  Y (and Z) coordinate values.
+Every node is completely independent - every one can have unique X andY (and Z) coordinate values. See :numref:`ugrid_node_independence`.
 
-.. figure:: images/ugrid_node_independence.svg
-   :alt: Diagram demonstrating the independence of each mesh node
-   :align: center
-   :width: 300
+..  _ugrid_node_independence:
+..  figure:: images/ugrid_node_independence.svg
+    :alt: Diagram demonstrating the independence of each mesh node
+    :align: right
+    :width: 300
 
-   Every mesh node is completely independent
+    Every mesh node is completely independent
 
-* Faces and volumes can have variable node counts, i.e. different numbers of
-  sides. This is achieved by masking the unused 'slots' in the connectivity array.
+    The same array shape and structure used to describe the node positions
+    (pink crosses) in a regular grid (left-hand maps) is equally able to
+    describe **any** position for these nodes (e.g. the right-hand maps),
+    simply by changing the array values. The quadrilateral faces (blue
+    outlines) can therefore be given any quadrilateral shape by re-positioning
+    their constituent nodes.
 
-.. figure:: images/ugrid_variable_faces.svg
-   :alt: Diagram demonstrating mesh faces with variable node counts
-   :align: center
-   :width: 300
+Faces and volumes can have variable node counts, i.e. different numbers of
+sides. This is achieved by masking the unused 'slots' in the connectivity
+array. See :numref:`ugrid_variable_faces`.
 
-   Mesh faces can have different node counts (using masking)
+..  _ugrid_variable_faces:
+..  figure:: images/ugrid_variable_faces.svg
+    :alt: Diagram demonstrating mesh faces with variable node counts
+    :align: right
+    :width: 300
 
-* Data can be assigned to lines (edges) just as easily as points (nodes) or
-  areas (faces).
+    Mesh faces can have different node counts (using masking)
 
-.. figure:: images/ugrid_edge_data.svg
-   :alt: Diagram demonstrating data assigned to mesh edges
-   :align: center
-   :width: 300
+    The 2D connectivity array (blue circles) describes faces by connecting
+    nodes (pink crosses) to make up a face (blue outlines). The faces can use
+    different numbers of nodes by shaping the connectivity array to accommodate
+    the face with the most nodes, then masking unused node 'slots'
+    (black circles) for faces with fewer nodes than the maximum.
 
-   Data can be assigned to mesh edges
+Data can be assigned to lines (edges) just as easily as points (nodes) or
+areas (faces). See :numref:`ugrid_edge_data`.
+
+..  _ugrid_edge_data:
+..  figure:: images/ugrid_edge_data.svg
+    :alt: Diagram demonstrating data assigned to mesh edges
+    :align: right
+    :width: 300
+
+    Data can be assigned to mesh edges
+
+    The 2D connectivity array (blue circles) describes edges by connecting 2
+    nodes (pink crosses) to make up an edge (blue lines). Data can be assigned
+    to the edges (orange lines) by matching the indices of the 1D data array
+    (not shown) to the indices in the connectivity array.
 
 .. _ugrid implications:
 
@@ -221,7 +277,7 @@ Indexing a mesh data array cannot be used for:
 This is because - unlike with a structured data array - relative position in
 a mesh's 1-dimensional data arrays has no relation to relative position in
 space. We must instead perform specialised operations using the information in
-the connectivities present, or by translating the mesh into a format designed
+the mesh's connectivities, or by translating the mesh into a format designed
 for mesh analysis such as VTK.
 
 Such calculations can still be optimised to avoid them slowing workflows, but
@@ -269,7 +325,93 @@ This :class:`~iris.cube.Cube`\'s unstructured dimension has multiple attached
 ``x``/``y``), which can be used to infer the points and bounds of any index on
 the :class:`~iris.cube.Cube`\'s unstructured dimension.
 
-.. todo: Cube printout
+.. testsetup:: ugrid_summaries
+
+        import numpy as np
+
+        from iris.coords import AuxCoord, DimCoord
+        from iris.cube import Cube, CubeList
+        from iris.experimental.ugrid import Connectivity, Mesh
+
+        node_x = AuxCoord(
+                     points=[3.0, 3.0, 0.0, 0.0, 0.0],
+                     standard_name="longitude",
+                     units="degrees_east",
+                 )
+        node_y = AuxCoord(
+                     points=[0.0, 5.0, 0.0, 5.0, 8.0],
+                     standard_name="latitude",
+                     units="degrees_north",
+                 )
+
+        edge_node_c = Connectivity(
+            indices=[[0, 1], [0, 2], [1, 3], [1, 4], [2, 3], [3, 4]],
+            cf_role="edge_node_connectivity",
+        )
+
+        face_indices = np.ma.masked_equal([[0, 1, 3, 2], [1, 4, 3, 999]], 999)
+        face_node_c = Connectivity(
+            indices=face_indices, cf_role="face_node_connectivity"
+        )
+
+        def centre_coords(conn):
+            indexing = np.ma.filled(conn.indices, 0)
+            x, y = [
+                AuxCoord(
+                    node_coord.points[indexing].mean(axis=conn.connected_axis),
+                    node_coord.standard_name,
+                    units=node_coord.units,
+                )
+                for node_coord in (node_x, node_y)
+            ]
+            return [(x, "x"), (y, "y")]
+
+        my_mesh = Mesh(
+            long_name="my_mesh",
+            topology_dimension=2,
+            node_coords_and_axes=[(node_x, "x"), (node_y, "y")],
+            connectivities=[edge_node_c, face_node_c],
+            edge_coords_and_axes=centre_coords(edge_node_c),
+            face_coords_and_axes=centre_coords(face_node_c),
+        )
+
+        vertical_levels = DimCoord([0, 1, 2], "height")
+
+        def location_cube(conn):
+           location = conn.location
+           mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
+           data_shape = (conn.shape[conn.location_axis], len(vertical_levels.points))
+           data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
+
+           return Cube(
+               data=data_array,
+               long_name=f"{location}_data",
+               units="K",
+               dim_coords_and_dims=[(vertical_levels, 1)],
+               aux_coords_and_dims=[(mesh_coord_x, 0), (mesh_coord_y, 0)],
+           )
+
+        edge_cube = location_cube(edge_node_c)
+        face_cube = location_cube(face_node_c)
+
+.. doctest:: ugrid_summaries
+
+        >>> print(edge_cube)
+        edge_data / (K)                     (-- : 6; height: 3)
+            Dimension coordinates:
+                height                          -          x
+            Mesh coordinates:
+                latitude                        x          -
+                longitude                       x          -
+
+        >>> print(edge_cube.location)
+        edge
+
+        >>> print(edge_cube.mesh_dim())
+        0
+
+        >>> print(edge_cube.mesh.summary(shorten=True))
+        <Mesh: 'my_mesh'>
 
 The Detail
 ----------
@@ -280,6 +422,12 @@ How UGRID information is stored
 * | :class:`iris.experimental.ugrid.Mesh`
   | Contains all information about the mesh.
   | Includes:
+
+  * | :attr:`~iris.experimental.ugrid.Mesh.topology_dimension`
+    | The maximum dimensionality of shape (1D=edge, 2D=face) supported
+      by this :class:`~iris.experimental.ugrid.Mesh`. Determines which
+      :class:`~iris.experimental.ugrid.Connectivity`\s are required/optional
+      (see below).
 
   * 1-3 collections of :class:`iris.coords.AuxCoord`\s:
 
@@ -305,7 +453,29 @@ How UGRID information is stored
       :attr:`iris.experimental.ugrid.mesh.Connectivity.UGRID_CF_ROLES` for the
       full list of types.
 
-.. todo: MeshCoord printout?
+.. doctest:: ugrid_summaries
+
+        >>> print(edge_cube.mesh)
+        Mesh : 'my_mesh'
+            topology_dimension: 2
+            node
+                node_dimension: 'Mesh2d_node'
+                node coordinates
+                    <AuxCoord: longitude / (degrees_east)  [...]  shape(5,)>
+                    <AuxCoord: latitude / (degrees_north)  [...]  shape(5,)>
+            edge
+                edge_dimension: 'Mesh2d_edge'
+                edge_node_connectivity: <Connectivity: unknown / (unknown)  [...]  shape(6, 2)>
+                edge coordinates
+                    <AuxCoord: longitude / (degrees_east)  [...]  shape(6,)>
+                    <AuxCoord: latitude / (degrees_north)  [...]  shape(6,)>
+            face
+                face_dimension: 'Mesh2d_face'
+                face_node_connectivity: <Connectivity: unknown / (unknown)  [...]  shape(2, 4)>
+                face coordinates
+                    <AuxCoord: longitude / (degrees_east)  [...]  shape(2,)>
+                    <AuxCoord: latitude / (degrees_north)  [...]  shape(2,)>
+            long_name: 'my_mesh'
 
 * | :class:`iris.experimental.ugrid.MeshCoord`
   | Described in detail in `MeshCoords`_.
@@ -356,6 +526,41 @@ The method :meth:`iris.experimental.ugrid.Mesh.to_MeshCoords` is available to
 create a :class:`~iris.experimental.ugrid.MeshCoord` for
 every axis represented by that :class:`~iris.experimental.ugrid.Mesh`,
 given only the ``location`` argument
+
+.. doctest:: ugrid_summaries
+
+        >>> for coord in edge_cube.coords(mesh_coords=True):
+        ...     print(coord)
+        MeshCoord :  latitude / (degrees_north)
+            mesh: <Mesh: 'my_mesh'>
+            location: 'edge'
+            points: [2.5, 0. , 5. , 6.5, 2.5, 6.5]
+            bounds: [
+                [0., 5.],
+                [0., 0.],
+                [5., 5.],
+                [5., 8.],
+                [0., 5.],
+                [5., 8.]]
+            shape: (6,)  bounds(6, 2)
+            dtype: float64
+            standard_name: 'latitude'
+            axis: 'y'
+        MeshCoord :  longitude / (degrees_east)
+            mesh: <Mesh: 'my_mesh'>
+            location: 'edge'
+            points: [3. , 1.5, 1.5, 1.5, 0. , 0. ]
+            bounds: [
+                [3., 3.],
+                [3., 0.],
+                [3., 0.],
+                [3., 0.],
+                [0., 0.],
+                [0., 0.]]
+            shape: (6,)  bounds(6, 2)
+            dtype: float64
+            standard_name: 'longitude'
+            axis: 'x'
 
 
 __ CF-UGRID_
