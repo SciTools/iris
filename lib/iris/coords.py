@@ -581,6 +581,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                             if isinstance(attrval, str):
                                 # quote strings
                                 attrval = repr(attrval)
+                                # and abbreviate really long ones
+                                attrval = iris.util.clip_string(attrval)
                             attr_string = f"{attrname}  {attrval}"
                             add_output(newline_indent + indent + attr_string)
                     else:

@@ -29,7 +29,7 @@ from ...common.metadata import BaseMetadata
 from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from ...util import array_equal, guess_coord_axis
+from ...util import array_equal, clip_string, guess_coord_axis
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -1053,6 +1053,8 @@ class Mesh(CFVariableMixin):
                             if isinstance(attrval, str):
                                 # quote strings
                                 attrval = repr(attrval)
+                                # and abbreviate really long ones
+                                attrval = clip_string(attrval)
                             attr_string = f"{attrname}  {attrval}"
                             line(attr_string, 2)
                     else:

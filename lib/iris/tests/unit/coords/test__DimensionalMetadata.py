@@ -321,7 +321,10 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
                 "None": None,
                 "string": "this",
                 "long_long_long_long_long_name": 3,
-                "other": "long_long_long_long_long_long_value",
+                "other": (
+                    "long_long_long_long_long_long_long_long_"
+                    "long_long_long_long_long_long_long_long_value"
+                ),
                 "float": 4.3,
             }
         )
@@ -342,7 +345,8 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "        long_long_long_long_long_name  3",
             (
                 "        other                          "
-                "'long_long_long_long_long_long_value'"
+                "'long_long_long_long_long_long_long_long_"
+                "long_long_long_long_long_long..."
             ),
             "        float                          4.3",
         ]
