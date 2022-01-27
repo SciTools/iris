@@ -122,7 +122,8 @@ E.g. we could make a mesh of 4 nodes, with 2 triangles described using this
 A data variable associated with a mesh has a **location** of either ``node``,
 ``edge``, ``face`` or ``volume``. The data is stored in a 1D array with one
 datum per element, matched to its element by matching the datum index with the
-coordinate or connectivity index. So for an example data array called ``foo``:
+coordinate or connectivity index along the **unstructured dimension**. So for
+an example data array called ``foo``:
 ``foo[3]`` would be at position ``(x[3], y[3])`` if it were node-located, or at
 ``faces[3]`` if it were face-located. :numref:`data_ugrid_mesh` visualises an
 example of what is described above.
