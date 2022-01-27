@@ -1466,9 +1466,11 @@ class Cube(CFVariableMixin):
 
         if match is None:
             # Dimension/s of auxiliary coordinate by object id
-            dims_by_id.update({id(c): d for c, d in self._aux_coords_and_dims})
+            aux_dims_by_id = {id(c): d for c, d in self._aux_coords_and_dims}
             # Check for id match - faster than equality
-            match = dims_by_id.get(coord_id)
+            match = aux_dims_by_id.get(coord_id)
+            if match is None:
+                dims_by_id.update(aux_dims_by_id)
 
         if match is None and not name_provided:
             # We may have an equivalent coordinate but not the actual
