@@ -418,8 +418,6 @@ The Detail
 ----------
 How UGRID information is stored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. todo: Mesh printout?
-
 * | :class:`iris.experimental.ugrid.Mesh`
   | Contains all information about the mesh.
   | Includes:
