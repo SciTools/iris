@@ -617,8 +617,8 @@ v3.0.4 (22 July 2021)
 .. _xxHash: https://github.com/Cyan4973/xxHash
 .. _PyKE: https://pypi.org/project/scitools-pyke/
 .. _@owena11: https://github.com/owena11
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _readthedocs: https://readthedocs.org/
+.. _GitHub: https://github.com/SciTools/iris/discussions
 .. _CF Conventions and Metadata: https://cfconventions.org/
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _nox: https://nox.thea.codes/en/stable/

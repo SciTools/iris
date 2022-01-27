@@ -109,4 +109,4 @@ NOTE: section above is a template for bugfix patches
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
+.. _GitHub: https://github.com/SciTools/iris/discussions

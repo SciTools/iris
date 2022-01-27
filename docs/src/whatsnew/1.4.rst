@@ -182,8 +182,7 @@ Cubes With no Vertical Coord can now be Exported to GRIB
 --------------------------------------------------------
 
 Iris can now export cubes with no vertical coord to GRIB.
-The solution is still under discussion: See 
-https://github.com/SciTools/iris/issues/519.
+The solution is still under discussion: See :issue:`519`.
 
 
 .. _simple_cfg:
