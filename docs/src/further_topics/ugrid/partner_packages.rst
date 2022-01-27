@@ -88,8 +88,11 @@ Applications
 ------------
 * Regrid structured to unstructured.
 * Regrid unstructured to structured.
-* Regrid while maintaining data laziness.
-* Save a prepared regridder for re-use in subsequent runs.
+* Regrid with dask integration, computing in parallel and maintaining data
+  laziness.
+* | Save a prepared regridder for re-use in subsequent runs.
+  | Regridders can even be re-used on sources with different masks - a
+    significant efficiency gain.
 
 .. _GeoVista: https://github.com/bjlittle/geovista
 .. _PyVista: https://docs.pyvista.org/index.html
