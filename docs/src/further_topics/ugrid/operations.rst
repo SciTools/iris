@@ -20,8 +20,8 @@ Working with Mesh Data
       - |tagline: load|
     * - `Plotting`_
       - |tagline: plotting|
-    * - `Regional Extraction`_
-      - |tagline: regional extraction|
+    * - `Region Extraction`_
+      - |tagline: region extraction|
     * - `Regridding`_
       - |tagline: regridding|
     * - `Equality`_
@@ -394,11 +394,11 @@ Plotting
 
 .. todo: populate!
 
-Regional Extraction
--------------------
-.. |tagline: regional extraction| replace:: |different| - use GeoVista for mesh analysis
+Region Extraction
+-----------------
+.. |tagline: region extraction| replace:: |different| - use GeoVista for mesh analysis
 
-.. rubric:: |tagline: regional extraction|
+.. rubric:: |tagline: region extraction|
 
 As described in :doc:`data_model`, indexing for a range along a
 :class:`~iris.cube.Cube`\'s :meth:`~iris.cube.Cube.mesh_dim` will not provide
@@ -422,8 +422,6 @@ the link between :class:`~iris.cube.Cube` and
             Mesh coordinates:
                 latitude                        x          -
                 longitude                       x          -
-            Attributes:
-                Conventions                 CF-1.7
 
         # Sub-setted MeshCoords have become AuxCoords.
         >>> print(edge_cube[:-1])
@@ -433,8 +431,6 @@ the link between :class:`~iris.cube.Cube` and
             Auxiliary coordinates:
                 latitude                        x          -
                 longitude                       x          -
-            Attributes:
-                Conventions                 CF-1.7
 
 Extracting a region therefore requires extra steps - to determine the spatial
 position of the data points before they can be analysed as inside/outside the
