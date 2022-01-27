@@ -20,8 +20,8 @@ This document explains the changes made to Iris for this release
      and attached to a cube.
    * We've also dropped support for ``Python 3.7``.
 
-   And finally, get in touch with us on `GitHub`_ if you have any issues or
-   feature requests for improving Iris. Enjoy!
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
@@ -345,7 +345,6 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _GitHub: :issue:`new/choose`
 .. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
 .. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
 .. _sort-all: https://github.com/aio-libs/sort-all
