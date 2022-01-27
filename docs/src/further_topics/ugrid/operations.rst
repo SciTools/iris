@@ -6,6 +6,8 @@ Working with Mesh Data
 .. note:: Several of the operations below rely on the optional dependencies
           mentioned in :doc:`partner_packages`.
 
+Operations Summary
+------------------
 .. list-table::
     :align: left
     :widths: 35, 75
